@@ -182,15 +182,16 @@ class CompositorDependencies {
     // Set up a callback to automatically re-connect if we lose our
     // connection.
     host_frame_sink_manager.SetConnectionLostCallback(base::BindRepeating(
-        []() { CompositorDependencies::Get().OnVizFrameSinkManagerLost(); }));
+        []() { CompositorDependencies::Get().CreateVizFrameSinkManager(); }));
 
-    BrowserMainLoop::GetInstance()
-        ->gpu_channel_establish_factory()
-        ->EstablishGpuChannel(base::BindOnce(
-            &CompositorDependencies::
-                OnReadyToConnectVizFrameSinkManagerOnMainThread,
-            base::Unretained(this), std::move(frame_sink_manager_request),
-            frame_sink_manager_client.PassInterface()));
+    pending_connect_viz_on_main_thread_ = base::BindOnce(
+        &CompositorDependencies::
+            OnReadyToConnectVizFrameSinkManagerOnMainThread,
+        base::Unretained(this), std::move(frame_sink_manager_request),
+        frame_sink_manager_client.PassInterface());
+
+    // Will connect using the above callback if we are foreground.
+    TryEstablishVizConnectionIfNeeded();
   }
 
   SingleThreadTaskGraphRunner task_graph_runner;
@@ -271,18 +272,14 @@ class CompositorDependencies {
     }
   }
 
-  void OnVizFrameSinkManagerLost() {
-    needs_recreate_viz_frame_sink_manager_ = true;
-    TryRecreateVizFrameSinkManagerIfNeeded();
-  }
-
-  void TryRecreateVizFrameSinkManagerIfNeeded() {
-    // We don't recreate the frame sink manager if backgrounded, as the OS may
+  void TryEstablishVizConnectionIfNeeded() {
+    // We don't connect to the viz process if backgrounded, as the OS may
     // repeatedly kill the resulting process. Instead wait until we come to the
     // foreground.
-    if (needs_recreate_viz_frame_sink_manager_ && application_is_foreground_) {
-      needs_recreate_viz_frame_sink_manager_ = false;
-      CreateVizFrameSinkManager();
+    if (pending_connect_viz_on_main_thread_ && application_is_foreground_) {
+      BrowserMainLoop::GetInstance()
+          ->gpu_channel_establish_factory()
+          ->EstablishGpuChannel(std::move(pending_connect_viz_on_main_thread_));
     }
   }
 
@@ -330,7 +327,7 @@ class CompositorDependencies {
         SendOnForegroundedToGpuService();
         low_end_background_cleanup_task_.Cancel();
         application_is_foreground_ = true;
-        TryRecreateVizFrameSinkManagerIfNeeded();
+        TryEstablishVizConnectionIfNeeded();
         break;
       case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
       case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
@@ -348,7 +345,7 @@ class CompositorDependencies {
   // An instance of Android AppListener.
   base::android::ApplicationStatusListener app_listener_;
   bool application_is_foreground_ = true;
-  bool needs_recreate_viz_frame_sink_manager_ = false;
+  gpu::GpuChannelEstablishedCallback pending_connect_viz_on_main_thread_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
