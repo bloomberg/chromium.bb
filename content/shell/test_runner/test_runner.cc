@@ -1565,7 +1565,7 @@ void TestRunner::Reset() {
     delegate_->SetDatabaseQuota(kDefaultDatabaseQuota);
     delegate_->SetDeviceColorSpace("reset");
     delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
-    delegate_->SetBlockThirdPartyCookies(true);
+    delegate_->SetBlockThirdPartyCookies(false);
     delegate_->SetLocale("");
     delegate_->UseUnfortunateSynchronousResizeMode(false);
     delegate_->DisableAutoResizeMode(blink::WebSize());
