@@ -154,8 +154,8 @@
     new PresentationInfoRecord('Prev', '', 'fromPrevious', false, ''),
     new PresentationInfoRecord(
         'Tran',
-        'http://code.google.com/codesearch#OAMlx_jo-ck/src/content/public/' +
-        'common/page_transition_types.h&exact_package=chromium&l=24',
+        'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
+        '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
         'transition', false, 'How the user got to the result.'),
     new PresentationInfoRecord(
         'Done', '', 'providerDone', false,
