@@ -124,7 +124,6 @@ CHROMEOS_EXPORT extern const char kForceDevToolsAvailable[];
 CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kForceHappinessTrackingSystem[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
-CHROMEOS_EXPORT extern const char kForceShowRecommendAppsScreenForTest[];
 CHROMEOS_EXPORT extern const char kForceSystemCompositorMode[];
 CHROMEOS_EXPORT extern const char kGoldenScreenshotsDir[];
 CHROMEOS_EXPORT extern const char kGuestSession[];
