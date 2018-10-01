@@ -78,6 +78,11 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
                  CSSPrimitiveValue*,
                  double);
 
+  void ResolveScrollStartAndEnd(const LayoutBox*,
+                                double max_offset,
+                                double& resolved_start_scroll_offset,
+                                double& resolved_end_scroll_offset);
+
   Member<Element> scroll_source_;
   ScrollDirection orientation_;
   Member<CSSPrimitiveValue> start_scroll_offset_;
