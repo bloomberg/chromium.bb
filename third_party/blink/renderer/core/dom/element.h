@@ -163,11 +163,8 @@ class CORE_EXPORT Element : public ContainerNode {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(copy);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(gotpointercapture);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(lostpointercapture);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(paste);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
