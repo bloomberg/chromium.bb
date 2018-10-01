@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -139,10 +140,10 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
                       std::make_unique<StubFormSaver>(),
                       &fetcher_),
         filter_(&client_,
-                base::Bind(&SyncUsernameTestBase::sync_service,
-                           base::Unretained(this)),
-                base::Bind(&SyncUsernameTestBase::signin_manager,
-                           base::Unretained(this))) {
+                base::BindRepeating(&SyncUsernameTestBase::sync_service,
+                                    base::Unretained(this)),
+                base::BindRepeating(&SyncUsernameTestBase::signin_manager,
+                                    base::Unretained(this))) {
     form_manager_.Init(nullptr);
     fetcher_.Fetch();
   }
@@ -224,7 +225,7 @@ TEST_F(CredentialsFilterTest, FilterResults_AllowAll_SyncingAccount) {
        TestCase::NO_HISTOGRAM},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "i=" << i);
     CheckFilterResultsTestCase(kTestCases[i]);
   }
@@ -276,7 +277,7 @@ TEST_F(CredentialsFilterTest,
        TestCase::NO_HISTOGRAM},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "i=" << i);
     CheckFilterResultsTestCase(kTestCases[i]);
   }
@@ -326,7 +327,7 @@ TEST_F(CredentialsFilterTest, FilterResults_DisallowSync_SyncingAccount) {
        TestCase::HISTOGRAM_REPORTED},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "i=" << i);
     CheckFilterResultsTestCase(kTestCases[i]);
   }
