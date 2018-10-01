@@ -54,8 +54,10 @@ struct ExploreSitesCategory {
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesCategory);
 };
 
-using CatalogCallback = base::OnceCallback<void(
-    std::unique_ptr<std::vector<ExploreSitesCategory>>)>;
+enum class GetCatalogStatus { kFailed, kNoCatalog, kSuccess };
+
+using CatalogCallback = base::OnceCallback<
+    void(GetCatalogStatus, std::unique_ptr<std::vector<ExploreSitesCategory>>)>;
 using BooleanCallback = base::OnceCallback<void(bool)>;
 using EncodedImageBytes = std::vector<uint8_t>;
 using EncodedImageList = std::vector<std::unique_ptr<EncodedImageBytes>>;

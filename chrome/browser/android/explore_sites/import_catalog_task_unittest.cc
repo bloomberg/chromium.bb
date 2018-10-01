@@ -78,7 +78,7 @@ TEST_F(ExploreSitesImportCatalogTaskTest, StoreFailure) {
                      base::Unretained(this)));
   RunTask(&task);
 
-  // A null catalog should be completed but return with an error.
+  // A database failure should be completed but return with an error.
   EXPECT_TRUE(task.complete());
   EXPECT_FALSE(task.result());
 }
@@ -91,6 +91,19 @@ TEST_F(ExploreSitesImportCatalogTaskTest, EmptyTask) {
   RunTask(&task);
 
   // A null catalog should be completed but return with an error.
+  EXPECT_TRUE(task.complete());
+  EXPECT_FALSE(task.result());
+}
+
+TEST_F(ExploreSitesImportCatalogTaskTest, EmptyVersion) {
+  std::string empty_version_token;
+  ImportCatalogTask task(
+      store(), empty_version_token, std::make_unique<Catalog>(),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
+  RunTask(&task);
+
+  // A catalog with no version should be completed but return with an error.
   EXPECT_TRUE(task.complete());
   EXPECT_FALSE(task.result());
 }
