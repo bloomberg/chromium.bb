@@ -79,7 +79,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.widget.incognitotoggle.IncognitoToggleButton;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -146,7 +145,7 @@ public class ToolbarPhone extends ToolbarLayout
     protected LocationBarPhone mLocationBar;
 
     protected ViewGroup mToolbarButtonsContainer;
-    private IncognitoToggleButton mIncognitoToggleButton;
+    private IncognitoToggleTabLayout mIncognitoToggleTabLayout;
     protected ImageView mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
     protected @Nullable AppCompatImageButton mHomeButton;
@@ -196,7 +195,6 @@ public class ToolbarPhone extends ToolbarLayout
 
     private OnClickListener mTabSwitcherListener;
     private OnClickListener mNewTabListener;
-    private OnClickListener mIncognitoListener;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     protected boolean mUrlFocusChangeInProgress;
@@ -610,8 +608,6 @@ public class ToolbarPhone extends ToolbarLayout
                 RecordUserAction.record("MobileNewTabOpened");
                 // TODO(kkimlabs): Record UMA action for homepage button.
             }
-        } else if (mIncognitoToggleButton == v) {
-            if (mIncognitoListener != null) mIncognitoListener.onClick(v);
         } else if (mHomeButton != null && mHomeButton == v) {
             openHomepage();
             if (isNativeLibraryReady()
@@ -812,19 +808,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The right bounds of the location bar after accounting for any visible left buttons.
      */
     protected int getBoundsAfterAccountingForRightButtons() {
-        // We set the incognito toggle button's visibility from GONE to VISIBLE when the tab
-        // switcher starts to open, but we don't want this to affect the Omnibox's size during the
-        // animation, so we have to make an adjustment here.
-        // However, if the experimental button is showing it sits in a FrameLayout with the
-        // incognito button and the omnibox will be appropriately sized without an explicit
-        // adjustment.
-        int incognitoButtonWidth = 0;
-        if (mIncognitoToggleButton != null && mIncognitoToggleButton.getVisibility() == VISIBLE
-                && (mExperimentalButton == null || mExperimentalButton.getVisibility() == GONE)) {
-            incognitoButtonWidth += mIncognitoToggleButton.getMeasuredWidth();
-        }
-        return Math.max(mToolbarSidePadding,
-                mToolbarButtonsContainer.getMeasuredWidth() - incognitoButtonWidth);
+        return Math.max(mToolbarSidePadding, mToolbarButtonsContainer.getMeasuredWidth());
     }
 
     protected void updateToolbarBackground(int color) {
@@ -1836,24 +1820,21 @@ public class ToolbarPhone extends ToolbarLayout
 
         // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
         // is enabled and the user actually enters the tab switcher.
-        if (!FeatureUtilities.isBottomToolbarEnabled() && mIncognitoToggleButton == null
+        if (!FeatureUtilities.isBottomToolbarEnabled() && mIncognitoToggleTabLayout == null
                 && mTabSwitcherState != STATIC_TAB && usingHorizontalTabSwitcher()
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
-            ViewStub incognitoToggleButtonStub = findViewById(R.id.incognito_button_stub);
-            mIncognitoToggleButton = (IncognitoToggleButton) incognitoToggleButtonStub.inflate();
-            mIncognitoToggleButton.setOnClickListener(this);
-            mIncognitoToggleButton.setTabModelSelector(mTabModelSelector);
-            mTabSwitcherModeViews.add(mIncognitoToggleButton);
+            ViewStub incognitoToggleTabsStub = findViewById(R.id.incognito_tabs_stub);
+            mIncognitoToggleTabLayout =
+                    (IncognitoToggleTabLayout) incognitoToggleTabsStub.inflate();
+            mIncognitoToggleTabLayout.setTabModelSelector(mTabModelSelector);
+            mTabSwitcherModeViews.add(mIncognitoToggleTabLayout);
+            mIncognitoToggleTabLayout.updateTabCount(mTabModelSelector.getModel(false).getCount());
+
+            mBrowsingModeViews.add(mToggleTabStackButton);
         }
 
         for (View view : mTabSwitcherModeViews) {
-            // The incognito toggle button needs to be set to GONE rather than INVISIBLE so it
-            // doesn't reduce the space available for the Omnibox.
-            if (view == mIncognitoToggleButton && tabSwitcherViewsVisibility == INVISIBLE) {
-                view.setVisibility(GONE);
-            } else {
-                view.setVisibility(tabSwitcherViewsVisibility);
-            }
+            view.setVisibility(tabSwitcherViewsVisibility);
         }
         for (View view : mBrowsingModeViews) {
             view.setVisibility(browsingViewsVisibility);
@@ -1923,7 +1904,8 @@ public class ToolbarPhone extends ToolbarLayout
         } else {
             if (!mDelayingTabSwitcherAnimation) {
                 mTabSwitcherModeAnimation = createExitTabSwitcherAnimation(showToolbar);
-                if (mIncognitoToggleButton != null) mIncognitoToggleButton.setClickable(false);
+                if (mIncognitoToggleTabLayout != null)
+                    mIncognitoToggleTabLayout.setClickable(false);
             }
         }
 
@@ -1956,7 +1938,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void onTabSwitcherTransitionFinished() {
-        if (mIncognitoToggleButton != null) mIncognitoToggleButton.setClickable(true);
+        if (mIncognitoToggleTabLayout != null) mIncognitoToggleTabLayout.setClickable(true);
 
         setAlpha(1.f);
         mClipRect = null;
@@ -1998,11 +1980,6 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void setOnNewTabClickHandler(OnClickListener listener) {
         mNewTabListener = listener;
-    }
-
-    @Override
-    public void setIncognitoClickHandler(OnClickListener listener) {
-        mIncognitoListener = listener;
     }
 
     @Override
@@ -2259,6 +2236,10 @@ public class ToolbarPhone extends ToolbarLayout
                         numberOfTabs, numberOfTabs));
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
+
+        if (!isIncognito() && mIncognitoToggleTabLayout != null) {
+            mIncognitoToggleTabLayout.updateTabCount(numberOfTabs);
+        }
 
         boolean useTabStackDrawableLight = isIncognito()
                 || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
@@ -2669,8 +2650,8 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
-        if (mIncognitoToggleButton != null) {
-            mIncognitoToggleButton.setTabModelSelector(mTabModelSelector);
+        if (mIncognitoToggleTabLayout != null) {
+            mIncognitoToggleTabLayout.setTabModelSelector(mTabModelSelector);
         }
     }
 

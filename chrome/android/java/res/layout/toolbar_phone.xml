@@ -38,6 +38,14 @@
         android:layout_height="match_parent"
         android:layout_gravity="top" />
 
+    <ViewStub
+        android:id="@+id/incognito_tabs_stub"
+        android:inflatedId="@+id/incognito_toggle_tabs"
+        android:layout="@layout/incognito_toggle_tabs"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center" />
+
     <LinearLayout android:id="@+id/toolbar_buttons"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
@@ -54,14 +62,6 @@
                 android:layout="@layout/experimental_toolbar_button"
                 style="@style/ToolbarButton"
                 android:paddingStart="8dp"
-                android:visibility="gone" />
-
-            <ViewStub
-                android:id="@+id/incognito_button_stub"
-                android:inflatedId="@+id/incognito_button"
-                android:layout="@layout/toolbar_phone_incognito_button"
-                style="@style/ToolbarButton"
-                android:contentDescription="@string/accessibility_tabstrip_btn_incognito_toggle_standard"
                 android:visibility="gone" />
         </FrameLayout>
 
