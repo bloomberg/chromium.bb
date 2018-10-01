@@ -19,8 +19,8 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#import "ui/base/cocoa/accessibility_hostable.h"
 #import "ui/base/cocoa/base_view.h"
+#import "ui/base/cocoa/views_hostable.h"
 #include "ui/gfx/geometry/size.h"
 
 @class WebDragDest;
@@ -42,7 +42,7 @@ class Layer;
 }
 
 CONTENT_EXPORT
-@interface WebContentsViewCocoa : BaseView<AccessibilityHostable> {
+@interface WebContentsViewCocoa : BaseView<ViewsHostable> {
  @private
   // Instances of this class are owned by both webContentsView_ and AppKit. It
   // is possible for an instance to outlive its webContentsView_. The
@@ -55,6 +55,12 @@ CONTENT_EXPORT
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
+
+// Sets |accessibilityParent| as the object returned when the
+// receiver is queried for its accessibility parent.
+// TODO(lgrey/ellyjones): Remove this in favor of setAccessibilityParent:
+// when we switch to the new accessibility API.
+- (void)setAccessibilityParentElement:(id)accessibilityParent;
 
 // Returns the available drag operations. This is a required method for
 // NSDraggingSource. It is supposedly deprecated, but the non-deprecated API
@@ -69,7 +75,8 @@ namespace content {
 // contains all of the contents of the tab and associated child views.
 class WebContentsViewMac : public WebContentsView,
                            public RenderViewHostDelegateView,
-                           public PopupMenuHelper::Delegate {
+                           public PopupMenuHelper::Delegate,
+                           public ui::ViewsHostableView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
@@ -132,11 +139,13 @@ class WebContentsViewMac : public WebContentsView,
   // PopupMenuHelper::Delegate:
   void OnMenuClosed() override;
 
+  // ViewsHostableView:
+  void OnViewsHostableAttached(ViewsHostableView::Host* host) override;
+  void OnViewsHostableDetached() override;
+
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
-
-  void SetParentUiLayer(ui::Layer* parent_ui_layer);
 
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
@@ -149,6 +158,8 @@ class WebContentsViewMac : public WebContentsView,
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
   // Returns the fullscreen view, if one exists; otherwise, returns the content
   // native view. This ensures that the view currently attached to a NSWindow is
   // being used to query or set first responder state.
@@ -170,7 +181,8 @@ class WebContentsViewMac : public WebContentsView,
   // destroyed.
   std::list<base::WeakPtr<RenderWidgetHostViewBase>> child_views_;
 
-  ui::Layer* parent_ui_layer_ = nullptr;
+  // Interface to the views::View host of this view.
+  ViewsHostableView::Host* views_host_ = nullptr;
 
   std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
 

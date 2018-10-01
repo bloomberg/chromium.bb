@@ -8,18 +8,10 @@
 
 #include "base/mac/foundation_util.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
-#import "ui/base/cocoa/accessibility_hostable.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
-
-// NSViews that can be drawn as a ui::Layer directly will implement this
-// interface. Calling cr_setParentLayer will embed the ui::Layer of the NSView
-// under |parentUiLayer|.
-@interface NSView (UICompositor)
-- (void)cr_setParentUiLayer:(ui::Layer*)parentUiLayer;
-@end
 
 namespace views {
 namespace {
@@ -60,52 +52,65 @@ NativeViewHostMac::~NativeViewHostMac() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeViewHostMac, ViewsHostableView::Host implementation:
+
+ui::Layer* NativeViewHostMac::GetUiLayer() const {
+  return host_->layer();
+}
+
+id NativeViewHostMac::GetAccessibilityElement() const {
+  // Find the closest ancestor view that participates in the views toolkit
+  // accessibility hierarchy and set its element as the native view's parent.
+  // This is necessary because a closer ancestor might already be attaching
+  // to the NSView/content hierarchy.
+  // For example, web content is currently embedded into the views hierarchy
+  // roughly like this:
+  // BrowserView (views)
+  // |_  WebView (views)
+  //   |_  NativeViewHost (views)
+  //     |_  WebContentView (Cocoa, is |native_view_| in this scenario,
+  //         |               accessibility ignored).
+  //         |_ RenderWidgetHostView (Cocoa)
+  // WebView specifies either the RenderWidgetHostView or the native view as
+  // its accessibility element. That means that if we were to set it as
+  // |native_view_|'s parent, the RenderWidgetHostView would be its own
+  // accessibility parent! Instead, we want to find the browser view and
+  // attach to its node.
+  return ClosestPlatformAncestorNode(host_->parent());
+}
+
+void NativeViewHostMac::OnHostableViewDestroying() {
+  DCHECK(native_view_hostable_);
+  host_->NativeViewDestroyed();
+  DCHECK(!native_view_hostable_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostMac, NativeViewHostWrapper implementation:
 
 void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
   DCHECK(!native_view_);
   native_view_.reset([host_->native_view() retain]);
-
-  if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
-    [native_view_ cr_setParentUiLayer:host_->layer()];
-  if ([native_view_ conformsToProtocol:@protocol(AccessibilityHostable)]) {
-    // Find the closest ancestor view that participates in the views toolkit
-    // accessibility hierarchy and set its element as the native view's parent.
-    // This is necessary because a closer ancestor might already be attaching
-    // to the NSView/content hierarchy.
-    // For example, web content is currently embedded into the views hierarchy
-    // roughly like this:
-    // BrowserView (views)
-    // |_  WebView (views)
-    //   |_  NativeViewHost (views)
-    //     |_  WebContentView (Cocoa, is |native_view_| in this scenario,
-    //         |               accessibility ignored).
-    //         |_ RenderWidgetHostView (Cocoa)
-    // WebView specifies either the RenderWidgetHostView or the native view as
-    // its accessibility element. That means that if we were to set it as
-    // |native_view_|'s parent, the RenderWidgetHostView would be its own
-    // accessibility parent! Instead, we want to find the browser view and
-    // attach to its node.
-    id hostable = native_view_;
-    [hostable setAccessibilityParentElement:ClosestPlatformAncestorNode(
-                                                host_->parent())];
-  }
-
   EnsureNativeViewHasNoChildWidgets(native_view_);
   BridgedNativeWidgetHostImpl* bridge_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow(
           host_->GetWidget()->GetNativeWindow());
   DCHECK(bridge_host);
   bridge_host->SetAssociationForView(host_, native_view_);
+
+  if ([native_view_ conformsToProtocol:@protocol(ViewsHostable)]) {
+    id hostable = native_view_;
+    native_view_hostable_ = [hostable viewsHostableView];
+    if (native_view_hostable_)
+      native_view_hostable_->OnViewsHostableAttached(this);
+  }
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
-  // |destroyed| is only true if this class calls host_->NativeViewDestroyed().
-  // Aura does this after observing an aura OnWindowDestroying, but NSViews
-  // are reference counted so there isn't a reliable signal. Instead, a
-  // reference is retained until the NativeViewHost is detached.
-  DCHECK(!destroyed);
+  // |destroyed| is only true if this class calls host_->NativeViewDestroyed(),
+  // which is called if a hosted WebContentsView about to be destroyed (note
+  // that its corresponding NSView may still exist).
 
   // |native_view_| can be nil here if RemovedFromWidget() is called before
   // NativeViewHost::Detach().
@@ -118,11 +123,9 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   [host_->native_view() setHidden:YES];
   [host_->native_view() removeFromSuperview];
 
-  if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
-    [native_view_ cr_setParentUiLayer:nullptr];
-  if ([native_view_ conformsToProtocol:@protocol(AccessibilityHostable)]) {
-    id hostable = native_view_;
-    [hostable setAccessibilityParentElement:nil];
+  if (native_view_hostable_) {
+    native_view_hostable_->OnViewsHostableDetached();
+    native_view_hostable_ = nullptr;
   }
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
