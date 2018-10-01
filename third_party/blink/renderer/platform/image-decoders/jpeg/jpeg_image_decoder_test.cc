@@ -38,9 +38,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
@@ -383,5 +385,91 @@ TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
         << sizes[i].height();
   }
 }
+
+struct ColorSpaceUMATestParam {
+  std::string file;
+  bool expected_success;
+  BitmapImageMetrics::JpegColorSpace expected_color_space;
+};
+
+class ColorSpaceUMATest
+    : public ::testing::TestWithParam<ColorSpaceUMATestParam> {};
+
+// Tests that the JPEG color space/subsampling is recorded correctly as a UMA
+// for a variety of images. When the decode fails, no UMA should be recorded.
+TEST_P(ColorSpaceUMATest, CorrectColorSpaceRecorded) {
+  HistogramTester histogram_tester;
+  scoped_refptr<SharedBuffer> data =
+      ReadFile(("/images/resources/" + GetParam().file).c_str());
+  ASSERT_TRUE(data);
+
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder();
+  decoder->SetData(data.get(), true);
+
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+
+  if (GetParam().expected_success) {
+    ASSERT_FALSE(decoder->Failed());
+    histogram_tester.ExpectUniqueSample("Blink.ImageDecoders.Jpeg.ColorSpace",
+                                        GetParam().expected_color_space, 1);
+  } else {
+    ASSERT_TRUE(decoder->Failed());
+    histogram_tester.ExpectTotalCount("Blink.ImageDecoders.Jpeg.ColorSpace", 0);
+  }
+}
+
+const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
+    {"cs-uma-grayscale.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kGrayscale},
+    {"cs-uma-rgb.jpg", true, BitmapImageMetrics::JpegColorSpace::kRGB},
+    // Each component is in a separate plane. Should not make a difference.
+    {"cs-uma-rgb-non-interleaved.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kRGB},
+    {"cs-uma-cmyk.jpg", true, BitmapImageMetrics::JpegColorSpace::kCMYK},
+    // 4 components/no markers, so we expect libjpeg_turbo to guess CMYK.
+    {"cs-uma-cmyk-no-jfif-or-adobe-markers.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kCMYK},
+    // 4 components are not legal in JFIF, but we expect libjpeg_turbo to guess
+    // CMYK.
+    {"cs-uma-cmyk-jfif-marker.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kCMYK},
+    {"cs-uma-ycck.jpg", true, BitmapImageMetrics::JpegColorSpace::kYCCK},
+    // Contains CMYK data but uses a bad Adobe color transform, so libjpeg_turbo
+    // will guess YCCK.
+    {"cs-uma-cmyk-unknown-transform.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCCK},
+    {"cs-uma-ycbcr-410.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr410},
+    {"cs-uma-ycbcr-411.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr411},
+    {"cs-uma-ycbcr-420.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr420},
+    // Each component is in a separate plane. Should not make a difference.
+    {"cs-uma-ycbcr-420-non-interleaved.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr420},
+    // 3 components/both JFIF and Adobe markers, so we expect libjpeg_turbo to
+    // guess YCbCr.
+    {"cs-uma-ycbcr-420-both-jfif-adobe.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr420},
+    {"cs-uma-ycbcr-422.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr422},
+    {"cs-uma-ycbcr-440.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr440},
+    {"cs-uma-ycbcr-444.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr444},
+    // Contains RGB data but uses a bad Adobe color transform, so libjpeg_turbo
+    // will guess YCbCr.
+    {"cs-uma-rgb-unknown-transform.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCr444},
+    {"cs-uma-ycbcr-other.jpg", true,
+     BitmapImageMetrics::JpegColorSpace::kYCbCrOther},
+    // Contains only 2 components. We expect the decode to fail and not produce
+    // any samples.
+    {"cs-uma-two-channels-jfif-marker.jpg", false}};
+
+INSTANTIATE_TEST_CASE_P(JPEGImageDecoderTest,
+                        ColorSpaceUMATest,
+                        ::testing::ValuesIn(kColorSpaceUMATestParams));
 
 }  // namespace blink

@@ -79,6 +79,13 @@ void BitmapImageMetrics::CountImageGammaAndGamut(
       static_cast<int>(ColorSpaceUtilities::GetColorSpaceGamut(color_profile)));
 }
 
+void BitmapImageMetrics::CountJpegColorSpace(JpegColorSpace color_space) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, color_space_histogram,
+      ("Blink.ImageDecoders.Jpeg.ColorSpace", JpegColorSpace::kMaxValue));
+  color_space_histogram.Count(color_space);
+}
+
 BitmapImageMetrics::Gamma BitmapImageMetrics::GetColorSpaceGamma(
     const skcms_ICCProfile* color_profile) {
   Gamma gamma = kGammaNull;
