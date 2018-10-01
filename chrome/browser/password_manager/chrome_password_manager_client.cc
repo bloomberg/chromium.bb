@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -44,13 +44,12 @@
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
-#include "components/password_manager/core/browser/password_sync_util.h"
+#include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -60,7 +59,6 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -126,39 +124,6 @@ const SigninManagerBase* GetSigninManager(Profile* profile) {
   return SigninManagerFactory::GetForProfile(profile);
 }
 
-// This routine is called when PasswordManagerClient is constructed.
-// Currently we report metrics only once at startup. We require
-// that this is only ever called from a single thread in order to
-// avoid needing to lock (a static boolean flag is then sufficient to
-// guarantee running only once).
-void ReportMetrics(bool password_manager_enabled,
-                   password_manager::PasswordManagerClient* client,
-                   Profile* profile) {
-  static base::PlatformThreadId initial_thread_id =
-      base::PlatformThread::CurrentId();
-  DCHECK_EQ(base::PlatformThread::CurrentId(), initial_thread_id);
-
-  static bool ran_once = false;
-  if (ran_once)
-    return;
-  ran_once = true;
-
-  password_manager::PasswordStore* store = client->GetPasswordStore();
-  // May be null in tests.
-  if (store) {
-    store->ReportMetrics(
-        password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-            GetSyncService(profile), GetSigninManager(profile)),
-        client->GetPasswordSyncState() ==
-            password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE);
-  }
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.ShouldShowAutoSignInFirstRunExperience",
-      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          profile->GetPrefs()));
-}
-
 #if !defined(OS_ANDROID)
 // Adds |observer| to the input observers of |widget_host|.
 void AddToWidgetInputEventObservers(
@@ -218,7 +183,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 
   saving_and_filling_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
-  ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
+  static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
+      *saving_and_filling_passwords_enabled_, this, GetSyncService(profile_),
+      GetSigninManager(profile_), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 }
 
