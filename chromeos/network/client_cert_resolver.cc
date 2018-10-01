@@ -284,12 +284,13 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
 }
 
 // Searches for matches between |networks| and |all_certs| (for networks
-// configured in user policy) / |system_certs| (for networks configured in
-// device policy). Returns the matches that were found. Because this calls NSS
-// functions and is potentially slow, it must be run on a worker thread.
+// configured in user policy) / |system_token_client_certs| (for networks
+// configured in device policy). Returns the matches that were found. Because
+// this calls NSS functions and is potentially slow, it must be run on a worker
+// thread.
 std::vector<NetworkAndMatchingCert> FindCertificateMatches(
     net::ScopedCERTCertificateList all_certs,
-    net::ScopedCERTCertificateList system_certs,
+    net::ScopedCERTCertificateList system_token_client_certs,
     const std::vector<NetworkAndCertPattern>& networks,
     base::Time now) {
   std::vector<NetworkAndMatchingCert> matches;
@@ -297,7 +298,7 @@ std::vector<NetworkAndMatchingCert> FindCertificateMatches(
   std::vector<CertAndIssuer> all_client_certs(
       CreateSortedCertAndIssuerList(std::move(all_certs), now));
   std::vector<CertAndIssuer> system_client_certs(
-      CreateSortedCertAndIssuerList(std::move(system_certs), now));
+      CreateSortedCertAndIssuerList(std::move(system_token_client_certs), now));
 
   for (const NetworkAndCertPattern& network_and_pattern : networks) {
     // Use only certs from the system token if the source of the client cert
@@ -425,10 +426,10 @@ bool ClientCertResolver::ResolveCertificatePatternSync(
   // system token if the source of the client cert pattern is device policy.
   std::vector<CertAndIssuer> client_certs;
   if (client_cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
-    client_certs =
-        CreateSortedCertAndIssuerList(net::x509_util::DupCERTCertificateList(
-                                          CertLoader::Get()->system_certs()),
-                                      base::Time::Now());
+    client_certs = CreateSortedCertAndIssuerList(
+        net::x509_util::DupCERTCertificateList(
+            CertLoader::Get()->system_token_client_certs()),
+        base::Time::Now());
   } else {
     client_certs = CreateSortedCertAndIssuerList(
         net::x509_util::DupCERTCertificateList(CertLoader::Get()->all_certs()),
@@ -622,7 +623,7 @@ void ClientCertResolver::ResolveNetworks(
                      net::x509_util::DupCERTCertificateList(
                          CertLoader::Get()->all_certs()),
                      net::x509_util::DupCERTCertificateList(
-                         CertLoader::Get()->system_certs()),
+                         CertLoader::Get()->system_token_client_certs()),
                      networks_to_resolve, Now()),
       base::BindOnce(&ClientCertResolver::ConfigureCertificates,
                      weak_ptr_factory_.GetWeakPtr()));

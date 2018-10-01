@@ -164,7 +164,7 @@ bool IsCertificateOnSlot(CERTCertificate* certificate, PK11SlotInfo* slot) {
   return false;
 }
 
-// Goes through all certificates in |all_certs| and copies those certificates
+// Goes through all certificates in |certs| and copies those certificates
 // which are on |system_slot| to a new list.
 net::ScopedCERTCertificateList FilterSystemTokenCertificates(
     net::ScopedCERTCertificateList certs,
@@ -182,6 +182,26 @@ net::ScopedCERTCertificateList FilterSystemTokenCertificates(
                      }),
       certs.end());
   return certs;
+}
+
+void AddPolicyProvidedAuthorities(
+    const PolicyCertificateProvider* policy_certificate_provider,
+    net::ScopedCERTCertificateList* out_certs) {
+  DCHECK(out_certs);
+  if (!policy_certificate_provider)
+    return;
+  for (const auto& certificate :
+       policy_certificate_provider->GetAllAuthorityCertificates()) {
+    net::ScopedCERTCertificate x509_cert =
+        net::x509_util::CreateCERTCertificateFromX509Certificate(
+            certificate.get());
+    if (!x509_cert) {
+      LOG(ERROR) << "Unable to create CERTCertificate";
+      continue;
+    }
+
+    out_certs->push_back(std::move(x509_cert));
+  }
 }
 
 }  // namespace
@@ -214,13 +234,15 @@ bool CertLoader::IsInitialized() {
 }
 
 CertLoader::CertLoader() : weak_factory_(this) {
-  system_cert_cache_ = std::make_unique<CertCache>(
-      base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
-  user_cert_cache_ = std::make_unique<CertCache>(
-      base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
+  system_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
+      &CertLoader::OnCertCacheOrPolicyCertsUpdated, base::Unretained(this)));
+  user_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
+      &CertLoader::OnCertCacheOrPolicyCertsUpdated, base::Unretained(this)));
 }
 
-CertLoader::~CertLoader() = default;
+CertLoader::~CertLoader() {
+  DCHECK(policy_certificate_providers_.empty());
+}
 
 void CertLoader::SetSystemNSSDB(net::NSSCertDatabase* system_slot_database) {
   system_cert_cache_->SetNSSDB(system_slot_database);
@@ -228,6 +250,24 @@ void CertLoader::SetSystemNSSDB(net::NSSCertDatabase* system_slot_database) {
 
 void CertLoader::SetUserNSSDB(net::NSSCertDatabase* user_database) {
   user_cert_cache_->SetNSSDB(user_database);
+}
+
+void CertLoader::AddPolicyCertificateProvider(
+    PolicyCertificateProvider* policy_certificate_provider) {
+  policy_certificate_provider->AddPolicyProvidedCertsObserver(this);
+  policy_certificate_providers_.push_back(policy_certificate_provider);
+  OnCertCacheOrPolicyCertsUpdated();
+}
+
+void CertLoader::RemovePolicyCertificateProvider(
+    PolicyCertificateProvider* policy_certificate_provider) {
+  auto iter = std::find(policy_certificate_providers_.begin(),
+                        policy_certificate_providers_.end(),
+                        policy_certificate_provider);
+  DCHECK(iter != policy_certificate_providers_.end());
+  policy_certificate_providers_.erase(iter);
+  policy_certificate_provider->RemovePolicyProvidedCertsObserver(this);
+  OnCertCacheOrPolicyCertsUpdated();
 }
 
 void CertLoader::AddObserver(CertLoader::Observer* observer) {
@@ -296,9 +336,26 @@ std::string CertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
   return pkcs11_id;
 }
 
-void CertLoader::CacheUpdated() {
+void CertLoader::OnCertCacheOrPolicyCertsUpdated() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "CacheUpdated";
+  VLOG(1) << "OnCertCacheOrPolicyCertsUpdated";
+
+  // Only trigger a notification to observers if one of the |CertCache|s has
+  // already loaded certificates. Don't trigger notifications if policy-provided
+  // certificates change before that.
+  // TODO(https://crbug.com/888451): When we handle client and authority
+  // certificates separately in CertLoader, we could fire different
+  // notifications for policy-provided cert changes instead of holding back
+  // notifications. Note that it is possible that only |system_cert_cache_| has
+  // loaded certificates (e.g. on the ChromeOS sign-in screen), and it is also
+  // possible that only |user_cert_cache_| has loaded certificates (e.g. if the
+  // system slot is not available for some reason, but a primary user has signed
+  // in).
+  bool has_loaded_any_certs_from_db =
+      user_cert_cache_->initial_load_finished() ||
+      system_cert_cache_->initial_load_finished();
+  if (!has_loaded_any_certs_from_db)
+    return;
 
   // If user_cert_cache_ has access to system certificates and it has already
   // finished its initial load, it will contain system certificates which we can
@@ -321,28 +378,39 @@ void CertLoader::CacheUpdated() {
                            user_cert_cache_->cert_list())));
   } else {
     // The user's cert cache does not contain system certificates.
-    net::ScopedCERTCertificateList system_certs =
+    net::ScopedCERTCertificateList system_token_client_certs =
         net::x509_util::DupCERTCertificateList(system_cert_cache_->cert_list());
     net::ScopedCERTCertificateList all_certs =
         net::x509_util::DupCERTCertificateList(user_cert_cache_->cert_list());
-    all_certs.reserve(all_certs.size() + system_certs.size());
-    for (const net::ScopedCERTCertificate& cert : system_certs)
+    all_certs.reserve(all_certs.size() + system_token_client_certs.size());
+    for (const net::ScopedCERTCertificate& cert : system_token_client_certs)
       all_certs.push_back(net::x509_util::DupCERTCertificate(cert.get()));
-    UpdateCertificates(std::move(all_certs), std::move(system_certs));
+    UpdateCertificates(std::move(all_certs),
+                       std::move(system_token_client_certs));
   }
 }
 
 void CertLoader::UpdateCertificates(
     net::ScopedCERTCertificateList all_certs,
-    net::ScopedCERTCertificateList system_certs) {
+    net::ScopedCERTCertificateList system_token_client_certs) {
   CHECK(thread_checker_.CalledOnValidThread());
 
   VLOG(1) << "UpdateCertificates: " << all_certs.size() << " ("
-          << system_certs.size() << " on system slot)";
+          << system_token_client_certs.size()
+          << " client certs on system slot)";
 
   // Ignore any existing certificates.
   all_certs_ = std::move(all_certs);
-  system_certs_ = std::move(system_certs);
+  system_token_client_certs_ = std::move(system_token_client_certs);
+
+  // Add policy-provided certificates.
+  // TODO(https://crbug.com/888451): Instead of putting authorities and client
+  // certs into |all_certs_| and then filtering in NetworkCertificateHandler, we
+  // should separate the two categories here in |CertLoader| already (pmarko@).
+  for (const PolicyCertificateProvider* policy_certificate_provider :
+       policy_certificate_providers_) {
+    AddPolicyProvidedAuthorities(policy_certificate_provider, &all_certs_);
+  }
 
   NotifyCertificatesLoaded();
 }
@@ -350,6 +418,13 @@ void CertLoader::UpdateCertificates(
 void CertLoader::NotifyCertificatesLoaded() {
   for (auto& observer : observers_)
     observer.OnCertificatesLoaded(all_certs_);
+}
+
+void CertLoader::OnPolicyProvidedCertsChanged(
+    const net::CertificateList& all_server_and_authority_certs,
+    const net::CertificateList& trust_anchors) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  OnCertCacheOrPolicyCertsUpdated();
 }
 
 }  // namespace chromeos

@@ -1491,7 +1491,6 @@ source_set("chromeos") {
     "policy/policy_cert_service_factory.h",
     "policy/policy_cert_verifier.cc",
     "policy/policy_cert_verifier.h",
-    "policy/policy_certificate_provider.h",
     "policy/policy_oauth2_token_fetcher.cc",
     "policy/policy_oauth2_token_fetcher.h",
     "policy/pre_signin_policy_fetcher.cc",

@@ -13,13 +13,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
-#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -30,11 +27,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
+#include "chromeos/policy_certificate_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -49,10 +48,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -71,28 +72,55 @@ constexpr char kNetworkComponentDirectory[] = "network";
 // A PEM-encoded certificate which was signed by the Authority specified in
 // |kRootCertOnc|.
 constexpr char kGoodCert[] = "ok_cert.pem";
+// The PEM-encoded Authority certificate specified by |kRootCertOnc|.
+constexpr char kRootCert[] = "root_ca_cert.pem";
 constexpr char kDeviceLocalAccountId[] = "dla1@example.com";
 
 // Allows waiting until the list of policy-pushed web-trusted certificates
 // changes.
 class WebTrustedCertsChangedObserver
-    : public PolicyCertificateProvider::Observer {
+    : public chromeos::PolicyCertificateProvider::Observer {
  public:
-  WebTrustedCertsChangedObserver() {}
+  WebTrustedCertsChangedObserver() = default;
 
-  // PolicyCertificateProvider::Observer
+  // chromeos::PolicyCertificateProvider::Observer
   void OnPolicyProvidedCertsChanged(
       const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& trust_anchors) override {
-    run_loop.Quit();
+    run_loop_.Quit();
   }
 
-  void Wait() { run_loop.Run(); }
+  void Wait() { run_loop_.Run(); }
 
  private:
-  base::RunLoop run_loop;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTrustedCertsChangedObserver);
+};
+
+// Allows waiting until |CertLoader| updates its list of certificates.
+class CertLoaderTestObserver : public chromeos::CertLoader::Observer {
+ public:
+  explicit CertLoaderTestObserver(chromeos::CertLoader* cert_loader)
+      : cert_loader_(cert_loader) {
+    cert_loader_->AddObserver(this);
+  }
+
+  ~CertLoaderTestObserver() override { cert_loader_->RemoveObserver(this); }
+
+  // chromeos::CertLoader::Observer
+  void OnCertificatesLoaded(
+      const net::ScopedCERTCertificateList& all_certs) override {
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  chromeos::CertLoader* cert_loader_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertLoaderTestObserver);
 };
 
 // Allows waiting until the |CertDatabase| notifies its observers that it has
@@ -101,12 +129,12 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
  public:
   CertDatabaseChangedObserver() {}
 
-  void OnCertDBChanged() override { run_loop.Quit(); }
+  void OnCertDBChanged() override { run_loop_.Quit(); }
 
-  void Wait() { run_loop.Run(); }
+  void Wait() { run_loop_.Run(); }
 
  private:
-  base::RunLoop run_loop;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
 };
@@ -222,12 +250,28 @@ bool IsCertInNSSDatabase(Profile* profile,
   return cert_found;
 }
 
+bool IsCertInCertificateList(const net::X509Certificate* cert,
+                             const net::ScopedCERTCertificateList& cert_list) {
+  for (const auto& cert_list_element : cert_list) {
+    if (net::x509_util::IsSameCertificate(cert_list_element.get(), cert))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // Base class for testing if policy-provided trust roots take effect.
 class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
  protected:
-  PolicyProvidedTrustAnchorsTestBase() {}
+  PolicyProvidedTrustAnchorsTestBase() {
+    // Use the same testing slot as private and public slot for testing.
+    test_nss_cert_db_ = std::make_unique<net::NSSCertDatabase>(
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* public slot */,
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* private slot */);
+  }
 
   // InProcessBrowserTest:
   ~PolicyProvidedTrustAnchorsTestBase() override {}
@@ -235,11 +279,19 @@ class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     // Load the certificate which is only OK if the policy-provided authority is
     // actually trusted.
-    base::FilePath cert_pem_file_path;
+    base::FilePath server_cert_pem_file_path;
     chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kGoodCert,
-                                          &cert_pem_file_path);
-    test_server_cert_ = net::ImportCertFromFile(
-        cert_pem_file_path.DirName(), cert_pem_file_path.BaseName().value());
+                                          &server_cert_pem_file_path);
+    test_server_cert_ =
+        net::ImportCertFromFile(server_cert_pem_file_path.DirName(),
+                                server_cert_pem_file_path.BaseName().value());
+
+    base::FilePath root_cert_pem_file_path;
+    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kRootCert,
+                                          &root_cert_pem_file_path);
+    test_root_cert_ =
+        net::ImportCertFromFile(root_cert_pem_file_path.DirName(),
+                                root_cert_pem_file_path.BaseName().value());
 
     // Set up the mock policy provider.
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
@@ -283,6 +335,10 @@ class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
  protected:
   // Certificate which is signed by authority specified in |kRootCertOnc|.
   scoped_refptr<net::X509Certificate> test_server_cert_;
+  scoped_refptr<net::X509Certificate> test_root_cert_;
+
+  crypto::ScopedTestNSSDB test_nssdb_;
+  std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
 
 class PolicyProvidedTrustAnchorsRegularUserTest
@@ -293,6 +349,29 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
   SetRootCertONCPolicy(browser()->profile());
   EXPECT_EQ(net::OK,
             VerifyTestServerCert(browser()->profile(), test_server_cert_));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
+                       AuthorityAvailableThroughCertLoader) {
+  // Set |CertLoader| to use a test NSS database - otherwise, it is not properly
+  // initialized because |UserSessionManager| only sets the primary user's NSS
+  // Database in |CertLoader| if running on ChromeOS according to
+  // |base::SysInfo|.
+  ASSERT_TRUE(chromeos::CertLoader::IsInitialized());
+  chromeos::CertLoader::Get()->SetUserNSSDB(test_nss_cert_db_.get());
+
+  EXPECT_FALSE(IsCertInCertificateList(
+      test_root_cert_.get(), chromeos::CertLoader::Get()->all_certs()));
+
+  CertLoaderTestObserver cert_loader_observer(chromeos::CertLoader::Get());
+  SetRootCertONCPolicy(browser()->profile());
+  cert_loader_observer.Wait();
+
+  // Check that |CertLoader| is aware of the authority certificate.
+  // (Web Trust does not matter for the CertLoader, but we currently only set a
+  // policy with a certificate requesting Web Trust here).
+  EXPECT_TRUE(IsCertInCertificateList(
+      test_root_cert_.get(), chromeos::CertLoader::Get()->all_certs()));
 }
 
 // Base class for testing policy-provided trust roots with device-local

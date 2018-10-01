@@ -32,9 +32,9 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chromeos/policy_certificate_provider.h"
 #endif
 
 using content::BrowserThread;
@@ -268,7 +268,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
 #if defined(OS_CHROMEOS)
 // Provides certificates installed through enterprise policy.
 class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
-                          policy::PolicyCertificateProvider::Observer {
+                          chromeos::PolicyCertificateProvider::Observer {
  public:
   // Defines which policy-provided certificates this CertsSourcePolicy instance
   // should yield.
@@ -282,7 +282,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
   };
 
   CertsSourcePolicy(base::RepeatingClosure certs_source_updated_callback,
-                    policy::PolicyCertificateProvider* policy_certs_provider,
+                    chromeos::PolicyCertificateProvider* policy_certs_provider,
                     Mode mode)
       : CertsSource(certs_source_updated_callback),
         policy_certs_provider_(policy_certs_provider),
@@ -294,7 +294,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
     policy_certs_provider_->RemovePolicyProvidedCertsObserver(this);
   }
 
-  // policy::PolicyCertificateProvider::Observer
+  // chromeos::PolicyCertificateProvider::Observer
   void OnPolicyProvidedCertsChanged(
       const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& web_trusted_certs) override {
@@ -359,7 +359,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
     SetCertInfos(std::move(cert_infos));
   }
 
-  policy::PolicyCertificateProvider* policy_certs_provider_;
+  chromeos::PolicyCertificateProvider* policy_certs_provider_;
   Mode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(CertsSourcePolicy);

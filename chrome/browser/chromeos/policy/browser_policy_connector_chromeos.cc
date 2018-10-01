@@ -41,6 +41,7 @@
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -178,6 +179,11 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()->network_device_handler(),
           chromeos::CrosSettings::Get(),
           DeviceNetworkConfigurationUpdater::DeviceAssetIDFetcher());
+  // CertLoader may be not initialized in tests.
+  if (chromeos::CertLoader::IsInitialized()) {
+    chromeos::CertLoader::Get()->AddPolicyCertificateProvider(
+        device_network_configuration_updater_.get());
+  }
 
   bluetooth_policy_handler_ =
       std::make_unique<BluetoothPolicyHandler>(chromeos::CrosSettings::Get());
@@ -200,6 +206,11 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
+  // CertLoader may be not initialized in tests.
+  if (chromeos::CertLoader::IsInitialized()) {
+    chromeos::CertLoader::Get()->RemovePolicyCertificateProvider(
+        device_network_configuration_updater_.get());
+  }
   device_network_configuration_updater_.reset();
 
   if (device_local_account_policy_service_)
