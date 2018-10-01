@@ -638,6 +638,7 @@ extern const char kReportingUsers[];
 extern const char kArcAppInstallEventLoggingEnabled[];
 extern const char kRemoveUsersRemoteCommand[];
 extern const char kCameraMediaConsolidated[];
+extern const char kVpnConfigAllowed[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

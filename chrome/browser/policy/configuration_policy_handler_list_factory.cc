@@ -815,6 +815,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCastReceiverEnabled,
     prefs::kCastReceiverEnabled,
     base::Value::Type::BOOLEAN },
+
+  { key::kVpnConfigAllowed,
+    prefs::kVpnConfigAllowed,
+    base::Value::Type::BOOLEAN },
 #endif
 
   { key::kRoamingProfileSupportEnabled,

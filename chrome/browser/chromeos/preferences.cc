@@ -507,6 +507,7 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kTPMFirmwareUpdateCleanupDismissed,
                                 false);
+  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
