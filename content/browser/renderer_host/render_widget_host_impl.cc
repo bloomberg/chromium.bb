@@ -1156,6 +1156,9 @@ void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
   current_content_source_id_ = next_source_id;
   did_receive_first_frame_after_navigation_ = false;
 
+  // Stop the flinging after navigating to a new page.
+  StopFling();
+
   if (enable_surface_synchronization_) {
     // Resize messages before navigation are not acked, so reset
     // |visual_properties_ack_pending_| and make sure the next resize will be

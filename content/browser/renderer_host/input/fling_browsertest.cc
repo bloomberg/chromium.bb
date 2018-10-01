@@ -204,11 +204,11 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     }
   }
 
-  void GiveItSomeTime() {
+  void GiveItSomeTime(int64_t time_delta_ms = 10) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
+        base::TimeDelta::FromMilliseconds(time_delta_ms));
     run_loop.Run();
   }
 
@@ -248,6 +248,34 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
   LoadURL(kBrowserFlingDataURL);
   SimulateTouchpadFling(GetWidgetHost());
   WaitForScroll();
+}
+
+// Tests that flinging does not continue after navigating to a page that uses
+// the same renderer.
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
+                       FlingingStopsAfterNavigation) {
+  GURL first_url(embedded_test_server()->GetURL(
+      "b.a.com", "/scrollable_page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), first_url));
+  MainThreadFrameObserver main_thread_sync1(GetWidgetHost());
+  main_thread_sync1.Wait();
+  SimulateTouchscreenFling(GetWidgetHost());
+  WaitForScroll();
+
+  // Navigate to a second page with the same domain.
+  GURL second_url(
+      embedded_test_server()->GetURL("a.com", "/scrollable_page.html"));
+  NavigateToURL(shell(), second_url);
+  MainThreadFrameObserver main_thread_sync2(GetWidgetHost());
+  main_thread_sync2.Wait();
+
+  // Wait for 100ms. Then check that the second page has not scrolled.
+  GiveItSomeTime(100);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(
+      0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFlingInOOPIF) {
