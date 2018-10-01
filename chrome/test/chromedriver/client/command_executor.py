@@ -4,7 +4,7 @@
 
 import httplib
 import json
-
+from urlparse import urlparse
 
 class _Method(object):
   GET = 'GET'
@@ -182,8 +182,9 @@ class Command(object):
 class CommandExecutor(object):
   def __init__(self, server_url):
     self._server_url = server_url
-    port = int(server_url.split(':')[2].split('/')[0])
-    self._http_client = httplib.HTTPConnection('127.0.0.1', port, timeout=30)
+    parsed_url = urlparse(server_url)
+    self._http_client = httplib.HTTPConnection(
+        parsed_url.hostname, parsed_url.port, timeout=30)
 
   def Execute(self, command, params):
     url_parts = command[1].split('/')
