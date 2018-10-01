@@ -72,8 +72,11 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
 
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
     base::StringPiece authenticator_id,
+    base::StringPiece16 authenticator_display_name,
     device::FidoTransportProtocol transport)
-    : authenticator_id(authenticator_id), transport(transport) {}
+    : authenticator_id(authenticator_id),
+      authenticator_display_name(authenticator_display_name),
+      transport(transport) {}
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
     AuthenticatorReference&& data) = default;
 AuthenticatorRequestDialogModel::AuthenticatorReference&

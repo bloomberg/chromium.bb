@@ -300,7 +300,8 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
     return;
 
   weak_dialog_model_->saved_authenticators().emplace_back(
-      authenticator.GetId(), authenticator.AuthenticatorTransport());
+      authenticator.GetId(), authenticator.GetDisplayName(),
+      authenticator.AuthenticatorTransport());
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
