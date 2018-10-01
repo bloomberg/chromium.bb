@@ -13222,7 +13222,6 @@
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report OS and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Version Information''',
       'example_value': False,
-      'default_for_enterprise_users': True,
       'desc': '''This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> channel.
 
       When this policy is left unset or set to True, version information is gathered.
@@ -13243,7 +13242,6 @@
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Policy Information''',
       'example_value': False,
-      'default_for_enterprise_users': True,
       'desc': '''This policy controls whether to report policy data and time of policy fetch.
 
       When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
@@ -13264,7 +13262,6 @@
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report Machine Identification information''',
       'example_value': False,
-      'default_for_enterprise_users': True,
       'desc': '''This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
 
       When this policy is left unset or set to True, information that can be used to identify machines is gathered.
@@ -13285,7 +13282,6 @@
       'supported_on': ['chrome.*:70-'],
       'caption': '''Report User Identification information''',
       'example_value': False,
-      'default_for_enterprise_users': True,
       'desc': '''This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile name, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile path and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> executable path.
 
       When this policy is left unset or set to True, information that can be used to identify users is gathered.
