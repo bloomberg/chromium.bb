@@ -113,24 +113,26 @@ ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
       view));
 }
 
-// Clears the password for the given |LoginPasswordView| instance and then
-// deletes itself.
-class ClearPasswordAnimationObserver : public ui::ImplicitAnimationObserver {
+// Clears the password for the given |LoginPasswordView| instance, hides it, and
+// then deletes itself.
+class ClearPasswordAndHideAnimationObserver
+    : public ui::ImplicitAnimationObserver {
  public:
-  explicit ClearPasswordAnimationObserver(LoginPasswordView* view)
-      : view_(view) {}
-  ~ClearPasswordAnimationObserver() override = default;
+  explicit ClearPasswordAndHideAnimationObserver(LoginPasswordView* view)
+      : password_view_(view) {}
+  ~ClearPasswordAndHideAnimationObserver() override = default;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    view_->Clear();
+    password_view_->Clear();
+    password_view_->SetVisible(false);
     delete this;
   }
 
  private:
-  LoginPasswordView* view_;
+  LoginPasswordView* const password_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAnimationObserver);
+  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAndHideAnimationObserver);
 };
 
 void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
@@ -454,8 +456,13 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
-  auto* wrapped_password_view =
-      login_views_utils::WrapViewForPreferredSize(password_view_);
+  // Wrap the password view with a fill layout so that it always consumes space,
+  // ie, when the password view is hidden the wrapped view will still consume
+  // the same amount of space. This prevents the user view from shrinking.
+  auto* wrapped_password_view = new NonAccessibleView();
+  wrapped_password_view->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  wrapped_password_view->AddChildView(password_view_);
   auto* wrapped_online_sign_in_message_view =
       login_views_utils::WrapViewForPreferredSize(online_sign_in_message_);
   auto* wrapped_disabled_auth_message_view =
@@ -545,7 +552,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
   password_view_->SetFocusEnabledForChildViews(has_password);
-  password_view_->SetVisible(!hide_auth);
+  password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
   if (!had_password && has_password)
@@ -646,6 +653,9 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
     if (!has_password)
       std::swap(opacity_start, opacity_end);
 
+    if (cached_animation_state_->had_password)
+      password_view_->SetVisible(true);
+
     password_view_->layer()->SetOpacity(opacity_start);
 
     {
@@ -656,7 +666,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
       if (cached_animation_state_->had_password && !has_password) {
         settings.AddObserver(
-            new ClearPasswordAnimationObserver(password_view_));
+            new ClearPasswordAndHideAnimationObserver(password_view_));
       }
 
       password_view_->layer()->SetOpacity(opacity_end);
