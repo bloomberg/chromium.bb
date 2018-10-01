@@ -121,6 +121,10 @@
       status: "stable",
     },
     {
+      name: "Badging",
+      status: "test",
+    },
+    {
       name: "BlinkGenPropertyTrees",
     },
     {

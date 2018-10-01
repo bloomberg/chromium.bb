@@ -81,6 +81,7 @@
         "renderer": [
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
+          "blink.mojom.BadgeService",
           "blink.mojom.CredentialManager",
           "blink.mojom.InstalledAppProvider",
           "blink.mojom.MediaDownloadInProductHelp",

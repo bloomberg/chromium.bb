@@ -682,6 +682,7 @@ mojom("mojo_bindings") {
     "platform/modules/app_banner/app_banner.mojom",
     "platform/modules/background_fetch/background_fetch.mojom",
     "platform/modules/background_sync/background_sync.mojom",
+    "platform/modules/badging/badging.mojom",
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/cache_storage/cache_storage.mojom",
     "platform/modules/credentialmanager/credential_manager.mojom",

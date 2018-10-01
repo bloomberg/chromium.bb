@@ -443,6 +443,11 @@ interface BackgroundFetchRegistration : EventTarget
     method abort
     method constructor
     setter onprogress
+interface Badge
+    static method clear
+    static method set
+    attribute @@toStringTag
+    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible
