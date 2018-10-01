@@ -4394,11 +4394,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self userClickedRecently] &&
       net::GURLWithNSURL(action.request.mainDocumentURL) ==
           _lastUserInteraction->main_document_url;
-  web::NavigationItem* item = self.currentNavItem;
-  const GURL& sourceURL =
-      item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, sourceURL, isMainFrameNavigationAction,
+      transition, isMainFrameNavigationAction,
       userInteractedWithRequestMainFrame);
   // First check if the navigation action should be blocked by the controller
   // and make sure to update the controller in the case that the controller

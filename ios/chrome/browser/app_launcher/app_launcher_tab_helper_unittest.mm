@@ -124,8 +124,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
                               bool has_user_gesture) WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK,
-        /*source_url=*/GURL::EmptyGURL(), target_frame_is_main,
+        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
         has_user_gesture);
     return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
                                            request_info);
@@ -174,7 +173,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        transition_type, pending_url,
+        transition_type,
         /*target_frame_is_main=*/true, /*has_user_gesture=*/true);
     EXPECT_FALSE(tab_helper_->ShouldAllowRequest(
         [NSURLRequest requestWithURL:url], request_info));

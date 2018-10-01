@@ -554,7 +554,6 @@ ACTION_P5(VerifyRestorationFinishedContext,
 MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
   return ui::PageTransitionTypeIncludingQualifiersIs(
              arg.transition_type, expected_request_info.transition_type) &&
-         arg.source_url == expected_request_info.source_url &&
          arg.target_frame_is_main ==
              expected_request_info.target_frame_is_main &&
          arg.has_user_gesture == expected_request_info.has_user_gesture;
@@ -668,7 +667,7 @@ TEST_P(WebStateObserverTest, NewPageNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -702,7 +701,7 @@ TEST_P(WebStateObserverTest, EnableWebUsageTwice) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -740,7 +739,7 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -776,7 +775,7 @@ TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -796,7 +795,7 @@ TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo reload_request_info(
-      ui::PageTransition::PAGE_TRANSITION_RELOAD, url,
+      ui::PageTransition::PAGE_TRANSITION_RELOAD,
       /*target_main_frame=*/true,
       /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
@@ -836,7 +835,7 @@ TEST_P(WebStateObserverTest, ReloadWithUserAgentType) {
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -889,7 +888,7 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -911,14 +910,14 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
 
   // Perform same-document navigation.
   const GURL hash_url = test_server_->GetURL("/echo#1");
-  WebStatePolicyDecider::RequestInfo hash_url_expected_request_info_(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, hash_url,
+  WebStatePolicyDecider::RequestInfo hash_url_expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
 
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(
       *decider_,
-      ShouldAllowRequest(_, RequestInfoMatch(hash_url_expected_request_info_)))
+      ShouldAllowRequest(_, RequestInfoMatch(hash_url_expected_request_info)))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
@@ -968,7 +967,7 @@ TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1023,7 +1022,7 @@ TEST_P(WebStateObserverTest, StateNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1160,7 +1159,7 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, web_url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1228,7 +1227,7 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
     int32_t nav_id = 0;
     EXPECT_CALL(observer_, DidStartLoading(web_state()));
     WebStatePolicyDecider::RequestInfo expected_request_info(
-        ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+        ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
         /*target_main_frame=*/true, /*has_user_gesture=*/false);
     EXPECT_CALL(*decider_,
                 ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1257,7 +1256,7 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1295,7 +1294,7 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1316,7 +1315,7 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
   WebStatePolicyDecider::RequestInfo form_request_info(
-      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT, url,
+      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(form_request_info)))
@@ -1352,7 +1351,7 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1371,7 +1370,7 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
 
   // Submit the form using JavaScript.
   WebStatePolicyDecider::RequestInfo form_request_info(
-      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT, url,
+      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(form_request_info)))
@@ -1401,7 +1400,7 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
     // repost before calling policy decider.
   } else {
     WebStatePolicyDecider::RequestInfo form_reload_request_info(
-        ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT, action,
+        ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT,
         /*target_main_frame=*/true, /*has_user_gesture=*/false);
 
     EXPECT_CALL(*decider_, ShouldAllowRequest(
@@ -1453,7 +1452,7 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1472,7 +1471,7 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
 
   // Submit the form using JavaScript.
   WebStatePolicyDecider::RequestInfo form_request_info(
-      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT, url,
+      ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(form_request_info)))
@@ -1495,7 +1494,7 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
 
   // Go Back.
   WebStatePolicyDecider::RequestInfo back_request_info(
-      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK, url,
+      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
@@ -1528,7 +1527,7 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
 
   // Go forward.
   WebStatePolicyDecider::RequestInfo forward_request_info(
-      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK, action,
+      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
@@ -1574,7 +1573,7 @@ TEST_P(WebStateObserverTest, RedirectNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1608,7 +1607,7 @@ TEST_P(WebStateObserverTest, DownloadNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1642,7 +1641,7 @@ TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1679,7 +1678,6 @@ TEST_P(WebStateObserverTest, DisallowRequest) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-      test_server_->GetURL("/echo"),
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1699,7 +1697,7 @@ TEST_P(WebStateObserverTest, DisallowResponse) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1725,7 +1723,6 @@ TEST_P(WebStateObserverTest, StopNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-      /*source_url=*/GURL::EmptyGURL(),
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1743,7 +1740,7 @@ TEST_P(WebStateObserverTest, StopFinishedNavigation) {
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1788,7 +1785,7 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
   // Callbacks due to loading of the main frame.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
@@ -1799,7 +1796,7 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   // Callbacks due to initial loading of iframe.
   WebStatePolicyDecider::RequestInfo iframe_request_info(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, url,
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/false, /*has_user_gesture=*/true);
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(iframe_request_info)))
