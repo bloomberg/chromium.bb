@@ -266,6 +266,7 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
     : controller_(std::move(controller)) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 TabStrip::~TabStrip() {
@@ -1464,6 +1465,7 @@ void TabStrip::Init() {
       std::make_unique<views::ViewTargeter>(new_tab_button_));
   AddChildView(new_tab_button_);
 
+  UpdateNewTabButtonBorder();
   new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
 
   if (g_drop_indicator_width == 0) {
@@ -2433,6 +2435,16 @@ void TabStrip::SetResetToShrinkOnExit(bool value) {
     RemoveMessageLoopObserver();
 }
 
+void TabStrip::UpdateNewTabButtonBorder() {
+  // The button is placed vertically exactly in the center of the tabstrip.
+  const int extra_vertical_space = GetLayoutConstant(TAB_HEIGHT) -
+                                   GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
+                                   NewTabButton::kButtonSize.height();
+  constexpr int kHorizontalInset = 8;
+  new_tab_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      extra_vertical_space / 2, kHorizontalInset, 0, kHorizontalInset)));
+}
+
 void TabStrip::SingleTabModeChanged() {
   const int active_tab_index = controller_->GetActiveIndex();
   if (IsValidModelIndex(active_tab_index))
@@ -2596,4 +2608,11 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
       return ConvertPointToViewAndGetEventHandler(this, tab, point);
   }
   return this;
+}
+
+void TabStrip::OnMdModeChanged() {
+  UpdateNewTabButtonBorder();
+  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
+  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+  StopAnimating(true);
 }
