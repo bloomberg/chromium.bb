@@ -302,10 +302,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
   cmd = ['lvs', chroot_lv]
   result = cros_build_lib.SudoRunCommand(
       cmd, capture_output=True, error_code_ok=True, print_cmd=False)
-  if result.returncode == 0:
-    logging.debug('Activating existing LV %s', chroot_lv)
-    cmd = ['lvchange', '-q', '-ay', chroot_lv]
-  else:
+  if result.returncode != 0:
     cmd = ['lvcreate', '-q', '-L499G', '-T',
            '%s/%s' % (chroot_vg, CHROOT_THINPOOL_NAME), '-V500G',
            '-n', CHROOT_LV_NAME]
