@@ -250,6 +250,12 @@ typedef enum {
   LOW_TXFM_RD,
 } TXFM_RD_MODEL;
 
+typedef enum {
+  JNT_COMP_ENABLED,
+  JNT_COMP_SKIP_MV_SEARCH,
+  JNT_COMP_DISABLED,
+} JNT_COMP_FLAG;
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 
@@ -531,8 +537,8 @@ typedef struct SPEED_FEATURES {
   // Use model rd instead of transform search in jnt_comp
   int jnt_comp_fast_tx_search;
 
-  // Skip mv search in jnt_comp
-  int jnt_comp_skip_mv_search;
+  // Decide when and how to use joint_comp.
+  JNT_COMP_FLAG use_jnt_comp_flag;
 
   // Decoder side speed feature to add penalty for use of dual-sgr filters.
   // Takes values 0 - 10, 0 indicating no penalty and each additional level
