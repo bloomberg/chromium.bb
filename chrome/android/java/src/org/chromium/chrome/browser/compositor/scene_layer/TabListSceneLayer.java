@@ -66,6 +66,9 @@ public class TabListSceneLayer extends SceneLayer {
                 viewport.top, viewport.width(), viewport.height(), layerTitleCache,
                 tabContentManager, resourceManager);
 
+        boolean isHTSEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+
         for (int i = 0; i < tabsCount; i++) {
             LayoutTab t = tabs[i];
             assert t.isVisible() : "LayoutTab in that list should be visible";
@@ -80,14 +83,14 @@ public class TabListSceneLayer extends SceneLayer {
                 shadowAlpha /= 2;
             }
 
+            boolean useLightIcon = t.isIncognito() && !isHTSEnabled;
             int defaultThemeColor =
-                    ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
+                    ColorUtils.getDefaultThemeColor(res, useModernDesign, useLightIcon);
 
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = useModernDesign ? 1.f : t.getTextBoxAlpha();
 
-            int closeButtonColor =
-                    ColorUtils.getThemedAssetColor(defaultThemeColor, t.isIncognito());
+            int closeButtonColor = ColorUtils.getThemedAssetColor(defaultThemeColor, useLightIcon);
 
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
