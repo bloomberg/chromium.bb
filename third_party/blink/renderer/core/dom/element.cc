@@ -1636,16 +1636,18 @@ void Element::setAttribute(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_TT,
     ExceptionState& exception_state) {
-  if (GetCheckedAttributeNames().Contains(name)) {
+  // TODO(vogelheim): Check whether this applies to non-HTML documents, too.
+  AtomicString name_lowercase = LowercaseIfNecessary(name);
+  if (GetCheckedAttributeNames().Contains(name_lowercase)) {
     String attr_value =
         GetStringFromTrustedType(string_or_TT, &GetDocument(), exception_state);
     if (!exception_state.HadException())
-      setAttribute(name, AtomicString(attr_value), exception_state);
+      setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
     return;
   }
   AtomicString value_string =
       AtomicString(GetStringFromTrustedTypeWithoutCheck(string_or_TT));
-  setAttribute(name, value_string, exception_state);
+  setAttribute(name_lowercase, value_string, exception_state);
 }
 
 const HashSet<AtomicString>& Element::GetCheckedAttributeNames() const {
