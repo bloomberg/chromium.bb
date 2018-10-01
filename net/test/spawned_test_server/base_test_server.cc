@@ -440,15 +440,23 @@ void BaseTestServer::RegisterTestCerts() {
 
 bool BaseTestServer::LoadTestRootCert() const {
   TestRootCerts* root_certs = TestRootCerts::GetInstance();
-  if (!root_certs)
-    return false;
+  DCHECK(root_certs);
 
   // Should always use absolute path to load the root certificate.
   base::FilePath root_certificate_path;
-  if (!GetLocalCertificatesDir(certificates_dir_, &root_certificate_path))
+  if (!GetLocalCertificatesDir(certificates_dir_, &root_certificate_path)) {
+    LOG(ERROR) << "Could not get local certificates directory from "
+               << certificates_dir_ << ".";
     return false;
+  }
 
-  return RegisterRootCertsInternal(root_certificate_path);
+  if (!RegisterRootCertsInternal(root_certificate_path)) {
+    LOG(ERROR) << "Could not register root certificates from "
+               << root_certificate_path << ".";
+    return false;
+  }
+
+  return true;
 }
 
 scoped_refptr<X509Certificate> BaseTestServer::GetCertificate() const {
@@ -520,8 +528,10 @@ bool BaseTestServer::SetupWhenServerStarted() {
   DCHECK(host_port_pair_.port());
   DCHECK(!started_);
 
-  if (UsingSSL(type_) && !LoadTestRootCert())
-      return false;
+  if (UsingSSL(type_) && !LoadTestRootCert()) {
+    LOG(ERROR) << "Could not load test root certificate.";
+    return false;
+  }
 
   started_ = true;
   allowed_port_.reset(new ScopedPortException(host_port_pair_.port()));
