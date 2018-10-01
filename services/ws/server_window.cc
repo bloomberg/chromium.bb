@@ -8,6 +8,7 @@
 
 #include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "services/ws/client_root.h"
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -498,6 +499,11 @@ void ServerWindow::SetClientArea(
 
   additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
+  ClientRoot* client_root =
+      owning_window_tree_ ? owning_window_tree_->GetClientRootForWindow(window_)
+                          : nullptr;
+  if (client_root)
+    client_root->SetClientAreaInsets(insets);
 }
 
 void ServerWindow::SetHitTestInsets(const gfx::Insets& mouse,

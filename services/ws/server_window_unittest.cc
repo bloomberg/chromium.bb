@@ -7,11 +7,13 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "services/ws/client_root_test_helper.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
@@ -85,6 +87,24 @@ TEST(ServerWindow, FindTargetForWindowWithResizeInset) {
                                /* changed_button_flags_ */ 0);
   EXPECT_EQ(top_level, setup.root()->targeter()->FindTargetForEvent(
                            setup.root(), &mouse_event_2));
+}
+
+TEST(ServerWindow, SetClientAreaPropagatesToClientSurfaceEmbedder) {
+  WindowServiceTestSetup setup;
+
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  const gfx::Rect top_level_bounds(100, 200, 200, 200);
+  top_level->SetBounds(top_level_bounds);
+  const gfx::Insets top_level_insets(1, 2, 11, 12);
+  setup.window_tree_test_helper()->SetClientArea(top_level, top_level_insets);
+  aura::ClientSurfaceEmbedder* client_surface_embedder =
+      ClientRootTestHelper(
+          setup.window_tree()->GetClientRootForWindow(top_level))
+          .GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  EXPECT_EQ(top_level_insets, client_surface_embedder->client_area_insets());
 }
 
 }  // namespace ws
