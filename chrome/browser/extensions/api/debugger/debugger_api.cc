@@ -365,9 +365,8 @@ bool ExtensionDevToolsClientHost::MayAttachToRenderer(
   const GURL& site_instance_url =
       render_frame_host->GetSiteInstance()->GetSiteURL();
 
-  if (site_instance_url.is_empty()) {
-    // |site_instance_url| is empty for about:blank. Allow the extension to
-    // attach.
+  if (site_instance_url.is_empty() || site_instance_url == "about:") {
+    // Allow the extension to attach to about:blank.
     return true;
   }
 
