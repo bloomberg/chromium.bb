@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/mouse_watcher.h"
@@ -81,12 +82,23 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  // Anchor mode being set at creation.
+  enum class AnchorMode {
+    // Anchor to |anchor_view|. This is the default.
+    kView,
+    // Anchor to |anchor_rect|. Used for anchoring to the shelf.
+    kRect
+  };
+
   struct VIEWS_EXPORT InitParams {
     InitParams();
     InitParams(const InitParams& other);
     Delegate* delegate = nullptr;
     gfx::NativeWindow parent_window = nullptr;
     View* anchor_view = nullptr;
+    AnchorMode anchor_mode = AnchorMode::kView;
+    // Only used if anchor_mode == AnchorMode::kRect.
+    gfx::Rect anchor_rect;
     AnchorAlignment anchor_alignment = ANCHOR_ALIGNMENT_BOTTOM;
     int min_width = 0;
     int max_width = 0;
@@ -131,7 +143,15 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   void ResetDelegate();
 
   // Anchors the bubble to |anchor_view|.
+  // Only eligible if anchor_mode == AnchorMode::kView.
   void ChangeAnchorView(views::View* anchor_view);
+
+  // Anchors the bubble to |anchor_rect|. Exclusive with ChangeAnchorView().
+  // Only eligible if anchor_mode == AnchorMode::kRect.
+  void ChangeAnchorRect(const gfx::Rect& anchor_rect);
+
+  // Change anchor alignment mode when anchoring either the rect or view.
+  void ChangeAnchorAlignment(AnchorAlignment alignment);
 
   Delegate* delegate() { return delegate_; }
 
