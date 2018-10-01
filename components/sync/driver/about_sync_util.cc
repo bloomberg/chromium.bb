@@ -54,7 +54,8 @@ const char kRequestIncludeSpecificsInitialState[] =
     "requestIncludeSpecificsInitialState";
 const char kRequestListOfTypes[] = "requestListOfTypes";
 const char kRequestStart[] = "requestStart";
-const char kRequestStop[] = "requestStop";
+const char kRequestStopKeepData[] = "requestStopKeepData";
+const char kRequestStopClearData[] = "requestStopClearData";
 const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
 const char kRequestUserEventsVisibility[] = "requestUserEventsVisibility";
 const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
