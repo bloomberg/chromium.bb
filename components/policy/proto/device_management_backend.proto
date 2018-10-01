@@ -1393,6 +1393,9 @@ message RemoteCommand {
 
     // Start Chrome Remote Desktop session (limited to Kiosk sessions only).
     DEVICE_START_CRD_SESSION = 6;
+
+    // Wipe the device (perform a powerwash).
+    DEVICE_REMOTE_POWERWASH = 7;
   }
 
   // The command type.
