@@ -63,6 +63,14 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    // This property should be set by the parent only and should not change
+    // after the element is created.
+    hideButtons: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     /** @private {boolean} */
     shouldShowAvatarRow_: {
       type: Boolean,
@@ -242,7 +250,8 @@ Polymer({
    * @private
    */
   shouldShowTurnOffButton_: function() {
-    return !!this.syncStatus.signedIn && !this.embeddedInSubpage;
+    return !this.hideButtons && !!this.syncStatus.signedIn &&
+        !this.embeddedInSubpage;
   },
 
   /**
@@ -250,8 +259,8 @@ Polymer({
    * @private
    */
   shouldShowSigninAgainButton_: function() {
-    return !!this.syncStatus.signedIn && this.embeddedInSubpage &&
-        !!this.syncStatus.hasError &&
+    return !this.hideButtons && !!this.syncStatus.signedIn &&
+        this.embeddedInSubpage && !!this.syncStatus.hasError &&
         this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE;
   },
 
