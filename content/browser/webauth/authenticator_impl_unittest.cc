@@ -830,13 +830,16 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   auto authenticator = ConnectToAuthenticator();
-// On Windows caBLE should be disabled by default.
+// On Windows caBLE should be disabled by default regardless of version.
 #if defined(OS_WIN)
   EXPECT_FALSE(SupportsTransportProtocol(
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+// Otherwise, it should be enabled by default if BLE is supported.
 #else
-  EXPECT_TRUE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+  EXPECT_EQ(
+      device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
+      SupportsTransportProtocol(
+          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 #endif
 }
 
@@ -854,8 +857,12 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithWinFlag) {
   EnableFeature(features::kWebAuthCableWin);
 
   auto authenticator = ConnectToAuthenticator();
-  EXPECT_TRUE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+
+  // Should be enabled if the new Windows BLE stack is.
+  EXPECT_EQ(
+      device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
+      SupportsTransportProtocol(
+          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
 // Tests that caBLE is not supported when features::kWebAuthCable is disabled,
@@ -904,6 +911,9 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
   EXPECT_CALL(*mock_adapter, IsPresent())
       .WillRepeatedly(::testing::Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  auto bluetooth_adapter_factory_overrides =
+      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+  bluetooth_adapter_factory_overrides->SetLESupported(true);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -1859,6 +1869,9 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   EXPECT_CALL(*mock_adapter, IsPresent())
       .WillRepeatedly(::testing::Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  auto bluetooth_adapter_factory_overrides =
+      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+  bluetooth_adapter_factory_overrides->SetLESupported(true);
 
   device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
   auto* fake_ble_discovery = discovery_factory.ForgeNextBleDiscovery();
