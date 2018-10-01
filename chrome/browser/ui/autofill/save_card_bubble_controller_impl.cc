@@ -194,9 +194,7 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (AccountConsistencyModeManager::IsDiceEnabledForProfile(
               GetProfile())) {
-        return l10n_util::GetStringUTF16(dice_accounts_.empty()
-                                             ? IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE
-                                             : IDS_AUTOFILL_SYNC_PROMO_MESSAGE);
+        return l10n_util::GetStringUTF16(IDS_AUTOFILL_SYNC_PROMO_MESSAGE);
       }
 #endif
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_SAVED);
@@ -504,11 +502,6 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
     return;
   account_info_ = account_tracker->GetAccountInfo(
       signin_manager->GetAuthenticatedAccountId());
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile))
-    dice_accounts_ = signin_ui_util::GetAccountsForDicePromos(profile);
-#endif
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {

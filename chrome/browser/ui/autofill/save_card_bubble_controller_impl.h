@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_AUTOFILL_SAVE_CARD_BUBBLE_CONTROLLER_IMPL_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -172,10 +171,6 @@ class SaveCardBubbleControllerImpl
 
   // The account info of the signed-in user.
   AccountInfo account_info_;
-
-  // The list of accounts that are signed-in but not syncing. Used for checking
-  // which promo message to show.
-  std::vector<AccountInfo> dice_accounts_;
 
   // Contains the details of the card that will be saved if the user accepts.
   CreditCard card_;
