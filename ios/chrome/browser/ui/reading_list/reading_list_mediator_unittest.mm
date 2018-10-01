@@ -70,18 +70,11 @@ class ReadingListMediatorTest
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
 
-    if (GetParam() == FaviconServiceType::FAVICON_LOADER) {
       favicon_loader.reset(new FaviconLoader(large_icon_service_.get()));
       mediator_ = [[ReadingListMediator alloc]
             initWithModel:model_.get()
             faviconLoader:favicon_loader.get()
           listItemFactory:[[ReadingListListItemFactory alloc] init]];
-    } else {
-      mediator_ = [[ReadingListMediator alloc]
-             initWithModel:model_.get()
-          largeIconService:large_icon_service_.get()
-           listItemFactory:[[ReadingListListItemFactory alloc] init]];
-    }
   }
 
  protected:
