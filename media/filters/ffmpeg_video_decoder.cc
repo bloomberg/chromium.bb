@@ -116,6 +116,7 @@ bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
 
 FFmpegVideoDecoder::FFmpegVideoDecoder(MediaLog* media_log)
     : media_log_(media_log), state_(kUninitialized), decode_nalus_(false) {
+  DVLOG(1) << __func__;
   thread_checker_.DetachFromThread();
 }
 
@@ -254,6 +255,7 @@ void FFmpegVideoDecoder::Initialize(
     const InitCB& init_cb,
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
   DCHECK(output_cb);
@@ -279,6 +281,7 @@ void FFmpegVideoDecoder::Initialize(
 
 void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                 const DecodeCB& decode_cb) {
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer.get());
   DCHECK(decode_cb);
@@ -331,6 +334,7 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   avcodec_flush_buffers(codec_context_.get());

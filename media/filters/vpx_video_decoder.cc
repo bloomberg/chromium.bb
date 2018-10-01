@@ -138,6 +138,7 @@ void VpxVideoDecoder::Initialize(
     const InitCB& init_cb,
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 
