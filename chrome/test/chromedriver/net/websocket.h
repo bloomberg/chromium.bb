@@ -53,7 +53,7 @@ class WebSocket {
   void ContinueWritingIfNecessary();
 
   void Read();
-  void OnRead(int code);
+  void OnRead(bool read_again, int code);
   void OnReadDuringHandshake(const char* data, int len);
   void OnReadDuringOpen(const char* data, int len);
 

@@ -205,15 +205,20 @@ void WebSocket::ContinueWritingIfNecessary() {
 }
 
 void WebSocket::Read() {
-  int code =
-      socket_->Read(read_buffer_.get(),
-                    read_buffer_->size(),
-                    base::Bind(&WebSocket::OnRead, base::Unretained(this)));
-  if (code != net::ERR_IO_PENDING)
-    OnRead(code);
+  while (true) {
+    int code = socket_->Read(
+        read_buffer_.get(), read_buffer_->size(),
+        base::Bind(&WebSocket::OnRead, base::Unretained(this), true));
+    if (code == net::ERR_IO_PENDING)
+      break;
+
+    OnRead(false, code);
+    if (state_ == CLOSED)
+      break;
+  }
 }
 
-void WebSocket::OnRead(int code) {
+void WebSocket::OnRead(bool read_again, int code) {
   if (code <= 0) {
     VLOG(4) << "WebSocket::OnRead error " << net::ErrorToShortString(code);
     Close(code ? code : net::ERR_FAILED);
@@ -225,7 +230,13 @@ void WebSocket::OnRead(int code) {
   else if (state_ == OPEN)
     OnReadDuringOpen(read_buffer_->data(), code);
 
-  if (state_ != CLOSED)
+  // If we were called by the event loop due to arrival of data, call Read()
+  // again to read more data. If we were called by Read(), however, simply
+  // return to Read() and let it call socket_->Read() to read more data, and
+  // potentially call OnRead() again. This is necessary to avoid mutual
+  // recursion between Read and OnRead, which can cause stack overflow (e.g.,
+  // see https://crbug.com/877105).
+  if (read_again && state_ != CLOSED)
     Read();
 }
 
