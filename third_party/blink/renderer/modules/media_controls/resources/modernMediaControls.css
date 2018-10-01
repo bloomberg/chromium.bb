@@ -601,7 +601,7 @@ video::-webkit-media-controls-volume-slider {
   width: 100px;
   transition: width 0.3s;
   margin: 0;
-  padding: 22px 0 22px 0; /* (48px button panel height - 4px slider height) / 2 for top/bottom */
+  padding: 22px 0; /* (48px button panel height - 4px slider height) / 2  */
   background: transparent;
   /* This prevents layout issues in quirks mode. */
   box-sizing: unset !important;
@@ -613,6 +613,11 @@ video::-webkit-media-controls-volume-slider.closed {
   opacity: 0;
   pointer-events: none;
   transition: width 0.3s ease, opacity 0.28s step-end;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-volume-slider" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-volume-slider" i] {
+  padding: 30px 0; /* (64px button panel height - 4px slider height) / 2  */
 }
 
 /**
