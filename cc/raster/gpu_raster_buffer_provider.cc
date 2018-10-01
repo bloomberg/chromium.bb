@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -31,7 +30,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
@@ -367,16 +365,9 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->worker_context_provider = worker_context_provider_;
-    const auto& caps = compositor_context_provider_->ContextCapabilities();
-    backing->overlay_candidate =
-        use_gpu_memory_buffer_resources_ && caps.texture_storage_image &&
-        IsGpuMemoryBufferFormatSupported(resource.format());
-    if (backing->overlay_candidate) {
-      backing->texture_target = gpu::GetBufferTextureTarget(
-          gfx::BufferUsage::SCANOUT, BufferFormat(resource.format()), caps);
-    } else {
-      backing->texture_target = GL_TEXTURE_2D;
-    }
+    backing->InitOverlayCandidateAndTextureTarget(
+        resource.format(), compositor_context_provider_->ContextCapabilities(),
+        use_gpu_memory_buffer_resources_);
     resource.set_gpu_backing(std::move(backing));
   }
   GpuRasterBacking* backing =

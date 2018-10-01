@@ -25,6 +25,8 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -66,6 +68,21 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
 }  // namespace
 
 constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
+
+void ResourcePool::GpuBacking::InitOverlayCandidateAndTextureTarget(
+    const viz::ResourceFormat format,
+    const gpu::Capabilities& caps,
+    bool use_gpu_memory_buffer_resources) {
+  overlay_candidate = use_gpu_memory_buffer_resources &&
+                      caps.texture_storage_image &&
+                      IsGpuMemoryBufferFormatSupported(format);
+  if (overlay_candidate) {
+    texture_target = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
+                                                 BufferFormat(format), caps);
+  } else {
+    texture_target = GL_TEXTURE_2D;
+  }
+}
 
 ResourcePool::ResourcePool(
     viz::ClientResourceProvider* resource_provider,
