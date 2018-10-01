@@ -1456,7 +1456,10 @@ bool TabStripModel::CloseWebContentses(
     notifications.detached_web_contents.push_back(std::move(dwc));
   }
 
-  SendDetachWebContentsNotifications(&notifications);
+  // When unload handler is triggered for all items, we should wait for the
+  // result.
+  if (!notifications.detached_web_contents.empty())
+    SendDetachWebContentsNotifications(&notifications);
 
   return closed_all;
 }
