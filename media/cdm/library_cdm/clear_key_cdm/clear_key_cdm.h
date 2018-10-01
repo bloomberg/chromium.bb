@@ -211,6 +211,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   std::unique_ptr<UpdateParams> pending_update_params_;
 
   std::unique_ptr<CdmVideoDecoder> video_decoder_;
+
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;
   std::unique_ptr<CdmProxyHandler> cdm_proxy_handler_;
 

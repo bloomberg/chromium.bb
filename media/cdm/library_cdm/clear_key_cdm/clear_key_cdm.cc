@@ -230,10 +230,7 @@ void ConvertCdmKeysInfo(const media::CdmKeysInfo& keys_info,
 
 void INITIALIZE_CDM_MODULE() {
   DVLOG(1) << __func__;
-#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   media::InitializeMediaLibrary();
-#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
-
   g_is_cdm_module_initialized = true;
 }
 
@@ -817,15 +814,14 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     return cdm::kInitializationError;
   }
 
-  if (video_decoder_ && video_decoder_->is_initialized()) {
-    DCHECK(!video_decoder_->is_initialized());
-    return cdm::kInitializationError;
+  if (!video_decoder_) {
+    video_decoder_ =
+        CreateVideoDecoder(cdm_host_proxy_.get(), video_decoder_config);
+    if (!video_decoder_)
+      return cdm::kInitializationError;
   }
 
-  // Any uninitialized decoder will be replaced.
-  video_decoder_ =
-      CreateVideoDecoder(cdm_host_proxy_.get(), video_decoder_config);
-  if (!video_decoder_)
+  if (!video_decoder_->Initialize(video_decoder_config))
     return cdm::kInitializationError;
 
   return cdm::kSuccess;
@@ -889,16 +885,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   if (status != cdm::kSuccess)
     return status;
 
-  const uint8_t* data = NULL;
-  int32_t size = 0;
-  int64_t timestamp = 0;
-  if (!buffer->end_of_stream()) {
-    data = buffer->data();
-    size = buffer->data_size();
-    timestamp = encrypted_buffer.timestamp;
-  }
-
-  return video_decoder_->DecodeFrame(data, size, timestamp, decoded_frame);
+  return video_decoder_->Decode(buffer, decoded_frame);
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
