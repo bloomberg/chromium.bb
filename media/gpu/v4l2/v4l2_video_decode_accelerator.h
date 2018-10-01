@@ -180,17 +180,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     Picture picture;  // The decoded picture.
   };
 
-  // Record for input buffers.
-  struct InputRecord {
-    InputRecord();
-    ~InputRecord();
-    bool at_device;    // held by device.
-    void* address;     // mmap() address.
-    size_t length;     // mmap() length.
-    off_t bytes_used;  // bytes filled in the mmap() segment.
-    int32_t input_id;  // triggering input_id as given to Decode().
-  };
-
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
@@ -473,8 +462,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // queued afterwards.  For flushing or resetting the pipeline then, we will
   // delay these buffers until after the flush or reset completes.
   int decoder_delay_bitstream_buffer_id_;
-  // Input buffer we're presently filling.
-  int decoder_current_input_buffer_;
   // We track the number of buffer decode tasks we have scheduled, since each
   // task execution should complete one buffer.  If we fall behind (due to
   // resource backpressure, etc.), we'll have to schedule more to catch up.
@@ -507,31 +494,25 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   //
   // Hardware state and associated queues.  Since decoder_thread_ services
   // the hardware, decoder_thread_ owns these too.
-  // output_buffer_map_, free_output_buffers_ and output_planes_count_ are an
+  // output_buffer_map_ and output_planes_count_ are an
   // exception during the buffer (re)allocation sequence, when the
   // decoder_thread_ is blocked briefly while the Child thread manipulates
   // them.
   //
 
-  // Completed decode buffers.
-  base::queue<int> input_ready_queue_;
+  V4L2WritableBufferRef current_input_buffer_;
 
-  // Input buffer state.
-  bool input_streamon_;
-  // Input buffers enqueued to device.
-  int input_buffer_queued_count_;
-  // Input buffers ready to use, as a LIFO since we don't care about ordering.
-  std::vector<int> free_input_buffers_;
-  // Mapping of int index to input buffer record.
-  std::vector<InputRecord> input_buffer_map_;
+  scoped_refptr<V4L2Queue> input_queue_;
+  scoped_refptr<V4L2Queue> output_queue_;
+  // Input buffers ready to be queued.
+  base::queue<V4L2WritableBufferRef> input_ready_queue_;
 
-  // Output buffer state.
-  bool output_streamon_;
-  // Output buffers enqueued to device.
-  int output_buffer_queued_count_;
-  // Output buffers ready to use, as a FIFO since we want oldest-first to hide
-  // synchronization latency with GL.
-  std::list<int> free_output_buffers_;
+  // Buffers that have been allocated but are awaiting an ImportBuffer
+  // or AssignEGLImage event.
+  std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
+  // Keeps decoded buffers out of the free list until the client returns them.
+  std::map<int32_t, V4L2ReadableBufferRef> buffers_at_client_;
+
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
   // Required size of DPB for decoding.
