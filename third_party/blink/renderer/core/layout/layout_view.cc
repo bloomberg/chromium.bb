@@ -668,7 +668,7 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
   Document& document = GetDocument();
   if (Node* body = document.body()) {
     // Framesets can't scroll.
-    if (IsHTMLFrameSetElement(body) && body->GetLayoutObject())
+    if (body->GetLayoutObject() && body->GetLayoutObject()->IsFrameSet())
       RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
   }
 
