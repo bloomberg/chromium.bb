@@ -114,6 +114,7 @@ const DecodeParam kAV1InvalidFileTests[] = {
   { 1, "invalid-oss-fuzz-10061.ivf" },
   { 1, "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf" },
   { 1, "invalid-oss-fuzz-10227.ivf" },
+  { 1, "invalid-oss-fuzz-10389.ivf" },
   { 4, "invalid-oss-fuzz-10555.ivf" },
   { 1, "invalid-oss-fuzz-10705.ivf" },
   { 1, "invalid-oss-fuzz-10723.ivf" },

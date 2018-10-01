@@ -8,6 +8,8 @@ c9e06c4c7fb7d69fd635a1f606a5e478d60e99cf *invalid-oss-fuzz-10117-mc-buf-use-high
 88e18e61bd2b7457b4c71ebefbdff0029c41cc04 *invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf.res
 91a5bedeb4832c1c2900736cc0f644bb63971bbc *invalid-oss-fuzz-10227.ivf
 b055f06b9a95aaa5697fa26497b592a47843a7c8 *invalid-oss-fuzz-10227.ivf.res
+38729f95909e1a3dbe1c38ebd2860862e2f0536f *invalid-oss-fuzz-10389.ivf
+2318c583a419d843e38660732c21c25b4281b25e *invalid-oss-fuzz-10389.ivf.res
 11df8e9a068669c678097d460b63609d3da73828 *invalid-oss-fuzz-10555.ivf
 b055f06b9a95aaa5697fa26497b592a47843a7c8 *invalid-oss-fuzz-10555.ivf.res
 03b6fd16abe30d56a3dd09f5280a6450a1b83a78 *invalid-oss-fuzz-10705.ivf
