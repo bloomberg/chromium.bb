@@ -4,99 +4,15 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ከእርስዎ ካሜራ ጋር ሥዕሎችን ያንሡ እና ቪዲዮዎችን ይቅረጹ።",
+    "message": "በካሜራዎ ፎቶዎችን ያንሱ እና ቪዲዮዎችን ይቅረጹ።",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "አንዲ",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "ትልቅ አይኖች",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "ውበት",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "አቅልም",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ፈንኪ",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "ግራጫ",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "ጋዜጣ",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "መደበኛ",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "ትልቅ ራስ",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "ትልቅ መንጋጋ",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "የጥንቸል ራስ",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "ሴፒያ",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "ሬትሮ '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "ሬትሮ '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "ሬትሮ '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "የፎቶ ቤተ-ሙከራ",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "ዘመናዊ",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "አዙሪት",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "የቲልት ቅያሬ",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "ሲኒማ",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "ቪንቴጅ",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "መንፈስ",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "የፋይል ስርዓት ስህተቶች።",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "የእርስዎ ካሜራ በአሁኑ ጊዜ  አይገኝም።",
+    "message": "የእርስዎ ካሜራ በአሁኑ ጊዜ አይገኝም።",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "ማዕከለ-ሥዕላቱን መጫን አልተቻለም።",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ወደ ማዕከለ-ሥዕላት ማከል አልተቻለም።",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ን ማስቀመጥ አልተቻለም።",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ን ወደ ውጭ መላክ አልተቻለም።",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "ቪዲዮን መቅረጽ አልተቻለም።",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ፋይሉን ማስቀመጥ አልተሳካም።",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ፎቶን ማንሳት አልተቻለም።",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "መቅረጽ መጀመር አልተቻለም።",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "ምንም አልተቀረጸም።",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "ሃርድዌር ማፍጠኛ አይገኝም።",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "ኮምፒውተርዎ ተኳኋኝ ያልሆነ ግራፊክስ ካርድ ወይም የቆዩ ነጂዎች ሊኖረው ይችላል።",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
-    "message": "ወደ ማዕከለ-ሥዕላት ይሂዱ",
+    "message": "ወደ ማዕከለ-ሥዕላት ሂድ",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "ማጣሪያዎችን ቀያይር",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "ሰርዝ",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ወደ ዲስክ አስቀምጥ",
+    "message": "ወደ ዲስክ ላክ",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,100 +69,64 @@
     "message": "ተመለስ",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "አስፋ",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "ዝጋ",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "የማዕከለ-ሥዕላት ምስሎች",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "ፎቶ ያንሱ",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ፎቶን ማንሳት አቁም",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "መቅረጽ ይጀምሩ",
-    "description": "Label for the red video recording button to start recording."
+    "message": "መቅረጽ ጀምር",
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "መቅዳት አቁም",
-    "description": "Label for the red video recording button to stop recording."
+    "message": "መቅረጽ አቁም",
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "ሰዓት ቆጣሪ ቀያይር",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "ብዙ-ማንሳት ቀያይር",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "ካሜራን ቀያይር",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "ቪዲዮ ለመቅረጽ ቀይር",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "ፎቶ ለማንሣት ቀይር",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "ቪዲዮ ቀረጻ ገቢር",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ፎቶ ማንሣት ገቢር",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "ፎቶ ለማንሳት ይቀይሩ",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
-    "message": "የመቀያየሪያ ነጸብራቅ",
+    "message": "ማንጸባረቅን ቀያይር",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "ሰዓት ቆጣሪ ገቢር ነው",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "ፍርግርግን ቀያይር",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "ሰዓት ቆጣሪ ቦዝኗል",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "ብዙ-ማንሳት ገቢር ነው",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "ብዙ-ማንሳት ቦዝኗል",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "ማንጸባረቅ ገቢር ነው",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "ማንጸባረቅ ቦዝኗል",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "አዎ",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "አይ",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "ማይክሮፎንን ቀያይር",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "እሺ",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "ይቅር",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "$file$ን ማስወገድ በእርግጥ ይፈልጋሉ?",
+    "message": "እርግጠኛ ነዎት $file$ን ማስወገድ ይፈልጋሉ?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -264,7 +136,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "$count$ ንጥሎችን በእርግጥ ማስወገድ ይፈልጋሉ?",
+    "message": "እርግጠኛ ነዎት $count$ ንጥሎችን ማስወገድ ይፈልጋሉ?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "መቅዳት መጀመር አልተቻለም።",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "በካሜራው የተነሱ ፎቶዎች ወይም የተቀረጹ ቪዲዮዎች ወደ የውርዶች አቃፊው ይወሰዳሉ። በፋይሎች ውስጥ ሊደርሱባቸው ይችላሉ። የማከማቻ ፈቃዶች ያላቸው መተግበሪያዎች የእርስዎን ፎቶዎች እና ቪዲዮዎች መዳረሻ ይኖራቸዋል።",
+    "message": "በካሜራው የተነሱ ፎቶዎች ወይም የተቀረጹ ቪዲዮዎች ወደ የውርዶች አቃፊው ይወሰዳሉ። በፋይሎች ውስጥ ሊደርሱባቸው ይችላሉ።\n\nየማከማቻ ፈቃዶች ያላቸው መተግበሪያዎች የእርስዎን ፎቶዎች እና ቪዲዮዎች መዳረሻ ይኖራቸዋል።",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "ፎቶ ማንሳት አልተቻለም።",
-    "description": "Error message shown when failing to take photo."
   }
 }

@@ -7,93 +7,9 @@
     "message": "Фотографуйте й записуйте відео камерою.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Енді",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Великі очі",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Усунення недоліків",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Кольори",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Нестандарт",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Відтінки сірого",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Газета",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Без ефектів",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Великий лоб",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Велика щелепа",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Голова кролика",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Сепія",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Ретро 1930-х",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Ретро 1950-х",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Ретро 1960-х",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Фотолабораторія",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Модерн",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Вир",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Світ іграшок",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Кінофільм",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Вінтаж",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Привид",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Помилки файлової системи.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Камера зараз недоступна.",
@@ -107,13 +23,9 @@
     "message": "Не вдалося завантажити галерею.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Не вдалося додати в галерею.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Не вдалося зберегти файл $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Не вдалося експортувати файл $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Не вдалося записати відео.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Не вдалося зберегти файл.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Не вдалося сфотографувати.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Не вдалося почати запис.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Нічого не записано.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Апаратне прискорення недоступне.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Можливо, графічна карта вашого комп’ютера несумісна або драйвери застаріли.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Перейти в галерею",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Увімкнути/вимкнути фільтри",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Видалити",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Зберегти на диску",
+    "message": "Експортувати на диск",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Назад",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Розгорнути",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Закрити",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
-    "message": "Галерея зображень",
+    "message": "Зображення галерей",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Сфотографувати",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Припинити фотографувати",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Почати запис",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Припинити запис",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Увімкнути/вимкнути таймер",
+    "message": "Увімкнути або вимкнути таймер",
     "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleMultiButton": {
-    "message": "Увімкнути/вимкнути серійну зйомку",
-    "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
     "message": "Перемкнути камеру",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "Увімкнути режим запису відео",
+  "switchRecordVideoButton": {
+    "message": "Перейти в режим запису відео",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Увімкнути режим фотографування",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Режим запису відео ввімкнено",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Режим фотографування ввімкнено",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Перейти в режим фотографування",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
-    "message": "Увімкнути/вимкнути дзеркальне відображення",
+    "message": "Увімкнути або вимкнути дзеркалювання",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Таймер увімкнено",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Увімкнути або вимкнути сітку",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Таймер вимкнено",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Серійну зйомку ввімкнено",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Серійну зйомку вимкнено",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Дзеркальне відображення ввімкнено",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Дзеркальне відображення вимкнено",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Так",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Ні",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Увімкнути або вимкнути мікрофон",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Скасувати",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Видалити файл $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Не вдалося почати запис.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Фото й відео з камери буде перенесено в папку \"Завантаження\". Ви зможете відкривати їх у Файлах.\n\nДодатки з дозволами для пам’яті також матимуть до них доступ.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Не вдалося зробити знімок.",
-    "description": "Error message shown when failing to take photo."
   }
 }

@@ -7,113 +7,25 @@
     "message": "നിങ്ങളുടെ ക്യാമറ ഉപയോഗിച്ച് ചിത്രങ്ങൾ എടുക്കുക, വീഡിയോകൾ റെക്കോർഡ് ചെയ്യുക.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "ആൻഡി",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "വലിയ കണ്ണുകൾ",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "സൗന്ദര്യം",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "വർണ്ണാഭമാക്കുക",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ഫങ്കി",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "ഗ്രേസ്‌കെയിൽ",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "ന്യൂസ്‌പേപ്പർ",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "സാധാരണം",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "വലിയ തല",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "വലിയ താടിയെല്ല്",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "മുയൽത്തല",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "സെപിയ",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "റിട്രോ '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "റിട്രോ '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "റിട്രോ '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "ഫോട്ടോ ലാബ്",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "മോഡേൺ",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "നീർച്ചുഴി",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "ടിൽറ്റ് ഷിഫ്റ്റ്",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "സിനിമ",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "വിന്റേജ്",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "ഗോസ്റ്റ്",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ഫയൽ സിസ്‌റ്റം പിശകുകൾ.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "നിലവിൽ നിങ്ങളുടെ ക്യാമറ ലഭ്യമല്ല.",
+    "message": "നിങ്ങളുടെ ക്യാമറ നിലവിൽ ലഭ്യമല്ല.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ക്യാമറ ശരിയായി കണക്‌റ്റ് ചെയ്തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
+    "message": "ക്യാമറ ശരിയായി കണക്‌റ്റ് ചെയ്‌തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "ഗാലറി ലോഡ് ചെയ്യാനാവില്ല",
+    "message": "ഗാലറി ലോഡ് ചെയ്യാനായില്ല.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ഗാലറിയിലേക്ക് ചേർക്കാനാവില്ല.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ സംരക്ഷിക്കാനാവില്ല.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ എക്‌സ്‌പോർട്ട് ചെയ്യാനായില്ല.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യാനാവില്ല.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ഫയൽ സംരക്ഷിക്കാനായില്ല.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ഫോട്ടോ എടുക്കാനായില്ല.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "റെക്കോർഡിംഗ് ആരംഭിക്കാനായില്ല.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "ഹാർഡ്‌വെയർ ആക്‌സിലറേഷൻ ലഭ്യമല്ല.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അനുയോജ്യമല്ലാത്ത ഗ്രാഫിക്‌സ് കാർഡ് അല്ലെങ്കിൽ പഴയ ഡ്രൈവറുകൾ ഉണ്ടാകാം.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "ഗാലറിയിലേക്ക് പോകുക",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "ഫിൽട്ടറുകൾ മാറ്റുക",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "ഇല്ലാതാക്കുക",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ഡിസ്‌ക്കിലേക്ക് സംരക്ഷിക്കുക",
+    "message": "ഡിസ്‌ക്കിലേക്ക് എക്‌സ്‌പോർട്ട് ചെയ്യുക",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "തിരികെ പോവുക",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "വലുതാക്കുക",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "അവസാനിപ്പിക്കുക",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "ഗാലറി ചിത്രങ്ങൾ",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "ഒരു ചിത്രമെടുക്കുക",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "ഫോട്ടോ എടുക്കുക",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ഫോട്ടോ എടുക്കുന്നത് നിർത്തുക",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "റെക്കോര്‍ഡിംഗ് ആരംഭിക്കുക",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "റെക്കോർഡിംഗ് നിർത്തുക",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "ടൈമർ മാറ്റുക",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "മൾട്ടി-ഷോട്ട് മാറ്റുക",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "ക്യാമറ മാറ്റുക",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് സ്വിച്ച് ചെയ്യുക",
+  "switchRecordVideoButton": {
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് മാറുക",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "ചിത്രമെടുക്കുന്നതിലേക്ക് സ്വിച്ച് ചെയ്യുക",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യൽ സജീവമാണ്",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ചിത്രമെടുക്കൽ സജീവമാണ്",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "ഫോട്ടോ എടുക്കുന്നതിലേക്ക് മാറുക",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "മിററിംഗ് മാറ്റുക",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "ടൈമർ സജീവം",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "ഗ്രിഡ് മാറ്റുക",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "ടൈമർ നിഷ്‌ക്രിയം",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "മൾട്ടി-ഷോട്ട് സജീവം",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "മൾട്ടി-ഷോട്ട് നിഷ്‌ക്രിയം",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "മിററിംഗ് സജീവം",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "മിററിംഗ് നിഷ്‌ക്രിയം",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "വേണം",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "വേണ്ട",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "മൈക്രോ‌ഫോൺ മാറ്റുക",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ശരി",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "റദ്ദാക്കുക",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "നിങ്ങൾക്ക് ശരിക്കും $file$ നീക്കം ചെയ്യണോ?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "റെക്കോർഡിംഗ് ആരംഭിക്കാനാവില്ല.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "ക്യാമറ ഉപയോഗിച്ചെടുത്ത ഫോട്ടോകളും വീഡിയോകളും 'ഡൗൺലോഡുകൾ' ഫോൾഡറിലേക്ക് നീക്കും. നിങ്ങൾക്ക് അവ ഫയലുകളിൽ ആക്‌സസ് ചെയ്യാനാവും.\n\nസ്‌റ്റോറേജ് അനുമതികളുള്ള ആപ്പുകൾക്ക് നിങ്ങളുടെ ഫോട്ടോകളിലേക്കും വീഡിയോകളിലേക്കും ആക്‌സസ് ഉണ്ടായിരിക്കും.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "ചിത്രം എടുക്കാനാവില്ല.",
-    "description": "Error message shown when failing to take photo."
   }
 }

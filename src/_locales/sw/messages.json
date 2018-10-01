@@ -4,116 +4,28 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Piga picha na urekodi video kwa kamera yako.",
+    "message": "Piga picha na urekodi video ukitumia kamera yako.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Macho Makubwa",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Urembo",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Ongeza rangi",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Maridadi",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Rangi nyeusi na nyeupe",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Gazeti",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Kawaida",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Kichwa Kikubwa",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Taya Kubwa",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Kichwa cha Sungura",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Maabara ya Picha",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Kisasa",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Kinyamkera",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Mwonekano wa Mwinamo",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Filamu",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Ukale",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Rudufu",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Hitilafu za mfumo wa faili.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Kamera yako haipatikani kwa sasa.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Angalia ikiwa kamera imeunganishwa vizuri.",
+    "message": "Angalia ikiwa umeunganisha kamera vizuri.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Imeshindwa kufungua matunzio.",
+    "message": "Imeshindwa kupakia matunzio.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Imeshindwa kuongeza kwenye matunzio.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Imeshindwa kuhifadhi $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Imeshindwa kuhamisha $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Imeshindwa kurekodi video.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Imeshindwa kuhifadhi faili.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Imeshindwa kupiga picha.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Imeshindwa kuanza kurekodi.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Haijarekodi chochote.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Kipengele cha kuongeza kasi kwa kutumia maunzi hakipatikani.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Huenda kompyuta yako ina kadi ya picha ambayo haioani, au viendeshaji vya zamani.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Nenda kwenye matunzio",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Geuza vichujio",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Futa",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Hifadhi kwenye diski",
+    "message": "Hamishia kwenye diski",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Rudi nyuma",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Panua",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Funga",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Picha za matunzio",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Piga picha",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Acha kupiga picha",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Anza kurekodi",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Acha kurekodi",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Geuza kipima muda",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Geuza upigaji picha nyingi",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Geuza kamera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Rekodi video",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Piga picha",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Kipengele cha kurekodi video kinatumika",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Kipengele cha kupiga picha kinatumika",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Geuza uakisi",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Kipima muda kinatumika",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Geuza gridi",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Kipima muda hakitumiki",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Kipengele cha kupiga picha nyingi kinatumika",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Kipengele cha kupiga picha nyingi hakitumiki",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Kipengele cha uakisi kinatumika",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Kipengele cha uakisi hakitumiki",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Ndiyo",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Hapana",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Geuza maikrofoni",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Sawa",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Ghairi",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Una uhakika ungependa kuondoa $file$ kwenye matunzio?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Imeshindwa kuanza kurekodi.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Picha na video zinazopigwa kwa kamera zitahamishiwa kwenye folda ya Vipakuliwa. Unaweza kuzifikia kwenye Faili.\n\nProgramu zilizo na ruhusa za hifadhi zitaweza kufikia picha na video zako.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Imeshindwa kupiga picha.",
-    "description": "Error message shown when failing to take photo."
   }
 }

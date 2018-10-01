@@ -4,99 +4,15 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ambil gambar dan rekam video dengan kamera Anda.",
+    "message": "Ambil foto dan rekam video dengan kamera Anda.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Mata Besar",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Percantik",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Warnai",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Funky",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Grayscale",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Koran",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normal",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Kepala Besar",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Rahang Besar",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Kepala Kelinci",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Kuno era '30-an",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Kuno era '50-an",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Kuno era '60-an",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Lab Foto",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modern",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Berpusar",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Miring",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Bioskop",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Klasik",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Berhantu",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Error sistem file.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Untuk saat ini kamera Anda tidak tersedia.",
+    "message": "Kamera Anda tidak tersedia untuk saat ini.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "Tidak dapat memuat galeri.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Tidak dapat menambahkan ke galeri.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Tidak dapat menyimpan $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Tidak dapat mengekspor $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Tidak dapat merekam video.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Tidak dapat menyimpan file.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Tidak dapat mengambil foto.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Tidak dapat memulai perekaman.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Tidak ada yang direkam.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Akselerasi hardware tidak tersedia.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Mungkin komputer Anda memiliki kartu grafis yang tidak kompatibel atau driver lawas.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Buka galeri",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Aktifkan/matikan filter",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Hapus",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Simpan ke disk",
+    "message": "Ekspor ke disk",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Kembali",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maksimalkan",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Tutup",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Foto galeri",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Ambil foto",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Berhenti mengambil foto",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Mulai merekam",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Hentikan rekaman",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Aktifkan/matikan timer",
+    "message": "Aktifkan/nonaktifkan timer",
     "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleMultiButton": {
-    "message": "Beralih multi-foto",
-    "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
     "message": "Beralih kamera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Beralih ke mode rekam video",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Beralih ke mode ambil gambar",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Fitur perekaman video aktif",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Fitur pengambilan gambar aktif",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Beralih ke mode ambil foto",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
-    "message": "Aktifkan/matikan pencerminan",
+    "message": "Aktifkan/nonaktifkan pencerminan",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Timer aktif",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Beralih grid",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Timer tidak aktif",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Multi-foto aktif",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Multi-foto tidak aktif",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Pencerminan aktif",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Pencerminan tidak aktif",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Ya",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Tidak",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Aktifkan/nonaktifkan mikrofon",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Oke",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Batal",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Yakin ingin menghapus $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Tidak dapat memulai perekaman.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Foto dan video yang diambil dengan kamera akan dipindahkan ke folder Download. Anda dapat mengaksesnya di File.\n\nAplikasi yang memiliki izin penyimpanan dapat mengakses foto dan video.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Tidak dapat mengambil gambar.",
-    "description": "Error message shown when failing to take photo."
   }
 }

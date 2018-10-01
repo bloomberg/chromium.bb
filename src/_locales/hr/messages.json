@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Snimajte slike i videozapise svojim fotoaparatom.",
+    "message": "Snimajte fotografije i videozapise svojim fotoaparatom.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Velike oči",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Uljepšavanje",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Bojenje",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Pomaknuto",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Nijanse sive",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Novine",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Uobičajeno",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Velika glava",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Velika čeljust",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Zečja glava",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepija",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro tridesete",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro pedesete",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro šezdesete",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotografski laboratorij",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Moderno",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Vrtlog",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Zakretanje i pomak",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Kino",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Starinski",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Duh",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Pogreške datotečnog sustava.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Vaš fotoaparat trenutačno nije dostupan.",
@@ -107,13 +23,9 @@
     "message": "Učitavanje galerije nije uspjelo.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Dodavanje galerije nije uspjelo.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Spremanje datoteke $file$ nije uspjelo.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Izvoz datoteke $file$ nije uspio.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Snimanje videozapisa nije uspjelo.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Spremanje datoteke nije uspjelo.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Snimanje fotografije nije uspjelo.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Pokretanje snimanja nije uspjelo.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Nije snimljeno ništa.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Hardversko ubrzanje nije dostupno.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Grafička kartica na vašem računalu možda nije kompatibilna ili su upravljački programi zastarjeli.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
-    "message": "Idi na galeriju",
+    "message": "Otvori galeriju",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Prikaži/sakrij filtre",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Izbriši",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Spremi na disk",
+    "message": "Izvezi na disk",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Natrag",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Maksimiziraj",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Zatvori",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Slike iz galerije",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Snimi sliku",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Snimi fotografiju",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Zaustavi snimanje fotografije",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Započni snimanje",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Zaustavi snimanje",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Prikaži/sakrij odbrojavanje",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Prikaži/sakrij višestruko snimanje",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Uključi/isključi fotoaparat",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Prijeđi na snimanje videozapisa",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Prijeđi na snimanje slike",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Snimanje videozapisa aktivno",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Snimanje slike aktivno",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Prijeđi na snimanje fotografije",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Prikaži/sakrij zrcaljenje",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Odbrojavanje je aktivno",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Prikaži/sakrij rešetku",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Odbrojavanje nije aktivno",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Uzastopno je snimanje aktivno",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Uzastopno snimanje nije aktivno",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Zrcaljenje je aktivno",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Zrcaljenje nije aktivno",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Da",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Ne",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Uključi/isključi mikrofon",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "U redu",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Odustani",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Želite li doista ukloniti datoteku $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Pokretanje snimanja nije uspjelo.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Fotografije i videozapisi snimljeni fotoaparatom premjestit će se u mapu Preuzimanja. Možete im pristupiti u Datotekama.\n\nAplikacije s dopuštenjima za pohranu imat će pristup vašim fotografijama i videozapisima.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Snimanje slike nije uspjelo.",
-    "description": "Error message shown when failing to take photo."
   }
 }

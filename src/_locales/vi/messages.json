@@ -7,93 +7,9 @@
     "message": "Chụp ảnh và quay video bằng máy ảnh của bạn.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Mắt to",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Làm đẹp",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Chỉnh màu sắc",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Cá tính",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Thang độ xám",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Báo chí",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Bình thường",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Đầu to",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Hàm to",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Đầu thỏ",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Màu nâu đỏ",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Những năm 30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Những năm 50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Những năm 60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Phòng xử lý ảnh",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Hiện đại",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Xoáy nước",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Ống kính trượt nghiêng",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Điện ảnh",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Cổ điển",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Bóng ma",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Lỗi hệ thống tệp.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Máy ảnh của bạn hiện chưa sẵn sàng.",
@@ -107,13 +23,9 @@
     "message": "Không thể tải thư viện.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Không thể thêm vào thư viện.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Không thể lưu $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Không thể xuất $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Không thể quay video.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Không thể lưu tệp.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Không thể chụp ảnh.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Không thể bắt đầu quay video.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Chưa ghi dữ liệu nào.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Chế độ tăng tốc phần cứng không có sẵn.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Máy tính của bạn có thể có cạc đồ họa không tương thích hoặc trình điều khiển cũ.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Truy cập thư viện",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Bật/tắt bộ lọc",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Xóa",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Lưu vào đĩa",
+    "message": "Xuất ra đĩa",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Quay lại",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Phóng to",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Đóng",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Ảnh trong thư viện",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Chụp ảnh",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Dừng chụp ảnh",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Bắt đầu ghi",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Dừng ghi",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Bật/tắt bộ tính giờ",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Bật/tắt chế độ chụp nhiều ảnh",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Bật/tắt máy ảnh",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Chuyển sang quay video",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Chuyển sang chụp ảnh",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Đang bật chế độ quay video",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Đang bật chế độ chụp ảnh",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Bật/tắt phản chiếu",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Đang bật bộ hẹn giờ",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Bật/tắt lưới",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Đã tắt bộ hẹn giờ",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Đang bật chế độ chụp nhiều ảnh",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Đã tắt chế độ chụp nhiều ảnh",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Đang bật chế độ phản chiếu",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Đã tắt chế độ phản chiếu",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Có",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Không",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Bật/tắt micrô",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Hủy",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Bạn có thực sự muốn xóa $file$ không?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Không thể bắt đầu quay video.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Ảnh và video được chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tài nguyên đã tải xuống. Bạn có thể truy cập vào ảnh và video trong Tệp.\n\nỨng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Không thể chụp ảnh.",
-    "description": "Error message shown when failing to take photo."
   }
 }

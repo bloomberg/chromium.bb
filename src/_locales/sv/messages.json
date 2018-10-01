@@ -4,99 +4,15 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Ta bilder och spela in video med kameran.",
+    "message": "Ta foton och spela in video med kameran.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Stora ögon",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Skönhet",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Färgsätt",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Stencool",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Gråskala",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Tidning",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normal",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Stort huvud",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Stor haka",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Kaninhuvud",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30-talsretro",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50-talsretro",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60-talsretro",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotolabb",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modern",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Virvel",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Tiltshift",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Bio",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Patinering",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Spöke",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Fel i filsystemet.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Kameran är inte tillgänglig för närvarande.",
+    "message": "Kameran är för närvarande inte tillgänglig.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "Det gick inte att läsa in galleriet.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Det gick inte att lägga till i galleriet.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Det gick inte att spara $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Det gick inte att exportera $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Det gick inte att spela in video.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Det gick inte att spara filen.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Det gick inte att ta ett foto.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Det gick inte att starta inspelningen.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Inget har spelats in.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Alternativet Maskinvaruacceleration är inte tillgängligt.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Datorns grafikkort kanske inte är kompatibelt, eller så är drivrutinerna för gamla.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Besök galleriet",
     "description": "Label for the gallery button."
   },
-  "filtersButton": {
-    "message": "Filter på/av",
-    "description": "Label for the toggle filters button."
-  },
   "deleteButton": {
-    "message": "Ta bort",
+    "message": "Radera",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Spara på disk",
+    "message": "Exportera till disk",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Tillbaka",
+    "message": "Föregående",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "Maximera",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Stäng",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "Bilder i galleriet",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Ta en bild",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Ta foto",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Sluta ta foton",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Börja spela in",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Sluta spela in",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Aktivera och inaktivera timer",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Aktivera och inaktivera seriebildsläge",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Aktivera och inaktivera kamera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "Byte till videoinspelning",
+  "switchRecordVideoButton": {
+    "message": "Byt till videoinspelning",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Byte till bildläge",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Videoinspelning aktiverad",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Bildläge aktiverat",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Byt till fotoläge",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Aktivera och inaktivera spegling",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Timer aktiverad",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Aktivera och inaktivera rutnät",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Timer inaktiverad",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Seriebildsläge aktiverat",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Seriebildsläge inaktiverat",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Spegling aktiverad",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Spegling inaktiverad",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Ja",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Nej",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Aktivera och inaktivera mikrofon",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
-    "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "message": "Ok",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Avbryt",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Vill du ta bort $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Det gick inte att starta inspelningen.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Videor och foton du tagit med kameran flyttas till mappen Nedladdningar. Du kan öppna dem i Filer.\n\nFotona och videorna blir tillgängliga för appar som har åtkomstbehörighet till lagringsutrymmet.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Det gick inte att ta bilden.",
-    "description": "Error message shown when failing to take photo."
   }
 }

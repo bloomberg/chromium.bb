@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "카메라로 사진을 찍고 동영상을 녹화하세요.",
+    "message": "카메라로 사진을 찍고 동영상을 녹화합니다.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "팝아트",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "눈 크게",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "뷰티",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "색칠",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "펑키",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "회색조",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "신문",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "원본",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "머리 크게",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "턱 길게",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "토끼 머리",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "세피아",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "레트로 '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "레트로 '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "레트로 '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "사진관",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "모던",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "소용돌이",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "미니어처",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "시네마",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "빈티지",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "고스트",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "파일 시스템 오류가 발생했습니다.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "현재 카메라를 사용할 수 없습니다.",
@@ -107,13 +23,9 @@
     "message": "갤러리를 로드할 수 없습니다.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "갤러리에 추가할 수 없습니다.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ 파일을 저장할 수 없습니다.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ 파일을 내보낼 수 없습니다.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "동영상을 녹화할 수 없습니다.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "파일을 저장할 수 없습니다.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "사진을 찍을 수 없습니다.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "녹화를 시작할 수 없습니다.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "녹화된 동영상이 없습니다.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "하드웨어 가속을 사용할 수 없습니다.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "컴퓨터에서 호환되지 않는 그래픽 카드나 오래된 드라이버를 사용 중일 수 있습니다.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "갤러리로 이동",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "필터 전환",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "삭제",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "디스크에 저장",
+    "message": "디스크로 내보내기",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "뒤로",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "최대화",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "닫기",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "갤러리 이미지",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "사진 촬영",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "사진 찍기",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "사진 촬영 중지",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "녹화 시작",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "녹화 중지",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "타이머 전환",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "연속 촬영 전환",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "카메라 전환",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "동영상 녹화 모드로 전환",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "사진 촬영 모드로 전환",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "동영상 녹화 사용 중",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "사진 촬영 사용 중",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "미러링 전환",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "타이머 사용 중",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "그리드 전환",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "타이머 사용 안함",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "연속 촬영 사용 중",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "연속 촬영 사용 안함",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "미러링 사용 중",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "미러링 사용 안함",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "예",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "아니요",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "마이크 전환",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "확인",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "취소",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "$file$ 파일을 삭제하시겠습니까?",
@@ -264,7 +136,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "$count$개의 항목을 삭제하시겠습니까?",
+    "message": "항목 $count$개를 삭제하시겠습니까?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "녹화를 시작할 수 없습니다.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동됩니다. 파일 앱에서 이러한 사진 및 동영상에 액세스할 수 있습니다.\n\n저장용량 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "사진을 촬영할 수 없습니다.",
-    "description": "Error message shown when failing to take photo."
   }
 }

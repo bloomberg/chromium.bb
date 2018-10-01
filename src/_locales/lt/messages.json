@@ -1,99 +1,15 @@
 {
   "name": {
-    "message": "Fotoaparatas",
+    "message": "Žiniatinklio kamera",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Fotografuokite ir filmuokite naudodami fotoaparatą.",
+    "message": "Fotografuokite ir filmuokite naudodami žiniatinklio kamerą.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Didelės akys",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Grožis",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Spalvota",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Madinga",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Nespalvota",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Laikraštis",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normalu",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Didelė galva",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Didelis žandikaulis",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Kiškio galva",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepija",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Ketvirtojo dešimtmečio retro",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Šeštojo dešimtmečio retro",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Septintojo dešimtmečio retro",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotolaboratorija",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modernu",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Sūkurys",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Pakreipimas",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Kinas",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Vintažas",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Vaiduoklis",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Failų sistemos klaidos.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Žiniatinklio kamera šiuo metu nepasiekiama.",
@@ -107,13 +23,9 @@
     "message": "Nepavyko įkelti galerijos.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Nepavyko pridėti prie galerijos.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Nepavyko išsaugoti failo $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Nepavyko eksportuoti failo $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Nepavyko įrašyti vaizdo įrašo.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Nepavyko išsaugoti failo.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nepavyko nufotografuoti.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nepavyko pradėti įrašymo.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Nieko neįrašyta.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Negalima paspartinti aparatinės įrangos.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Kompiuteryje gali būti nesuderinama grafikos plokštė arba senų tvarkyklių.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Eiti į galeriją",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Perjungti filtrus",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Ištrinti",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Išsaugoti diske",
+    "message": "Eksportuoti į diską",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Grįžti",
+    "message": "Grįžti atgal",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "Padidinti",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Uždaryti",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "Galerijos vaizdai",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Fotografuoti",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Sustabdyti fotografavimą",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Pradėti įrašymą",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Sustabdyti įrašymą",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Perjungti laikmatį",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Perjungti kelių nuotraukų funkciją",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
-    "message": "Perjungti fotoaparatą",
+    "message": "Perjungti žiniatinklio kamerą",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Perjungti į vaizdo įrašymo režimą",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Perjungti į fotografavimo režimą",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Vaizdo įrašymo funkcija aktyvi",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Fotografavimo funkcija aktyvi",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Perjungti ekrano vaizdo bendrinimą",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Laikmatis aktyvus",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Perjungti tinklelį",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Laikmatis neaktyvus",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Kelių nuotraukų funkcija aktyvi",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Kelių nuotraukų funkcija neaktyvi",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Ekrano vaizdo bendrinimas aktyvus",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Ekrano vaizdo bendrinimas neaktyvus",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Taip",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Ne",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Perjungti mikrofoną",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Gerai",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Atšaukti",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Ar tikrai norite pašalinti failą $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Nepavyko pradėti įrašymo.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Nuotraukos ir vaizdo įrašai, sukurti naudojant fotoaparatą, bus perkelti į aplanką „Atsisiuntimai“. Juos galite pasiekti Failų programoje.\n\nProgramos su saugyklos leidimais turės prieigą prie nuotraukų ir vaizdo įrašų.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Nepavyko padaryti nuotraukos.",
-    "description": "Error message shown when failing to take photo."
   }
 }

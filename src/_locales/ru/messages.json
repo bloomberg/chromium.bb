@@ -7,93 +7,9 @@
     "message": "Съемка фото и видео при помощи камеры.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Энди Уорхол",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Большие глаза",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Гладкая кожа",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Колоризация",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Забавный",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Оттенки серого",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Газета",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Без эффектов",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Большая голова",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Большая челюсть",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Зайчик",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Сепия",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Ретро: 30-е",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Ретро: 50-е",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Ретро: 60-е",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Фотолаборатория",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Модерн",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Воронка",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Сдвиг и наклон",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Кино",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Винтаж",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Призрак",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Ошибки файловой системы.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Камера недоступна.",
@@ -107,13 +23,9 @@
     "message": "Не удалось загрузить галерею.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Не удалось добавить объект в галерею.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Не удалось сохранить файл \"$file$\".",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Не удалось экспортировать файл $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Не удалось записать видео.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Не удалось сохранить файл.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Не удалось сделать снимок.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Не удалось начать запись.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Ничего не записано.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Аппаратное ускорение недоступно.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Возможно, ваша видеокарта не поддерживается или драйверы устарели.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Перейти в галерею",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Фильтры",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Удалить",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Сохранить на диске",
+    "message": "Экспортировать на диск",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,100 +69,64 @@
     "message": "Назад",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Развернуть",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Закрыть",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Изображения в галерее",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "Сделать снимок",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Остановить съемку",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Начать запись",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Остановить запись",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Таймер",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Серийная съемка",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Сменить камеру",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Переключиться на видеосъемку",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "Переключиться на фотосъемку",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Режим видеосъемки включен",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Режим фотосъемки включен",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Дублирование экрана",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Таймер включен",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Сетка",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Таймер выключен",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Серийная съемка включена",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Серийная съемка выключена",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Дублирование включено",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Дублирование выключено",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Да",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Нет",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Микрофон",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ОК",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Отмена",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Удалить файл \"$file$\"?",
+    "message": "Удалить файл $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Не удалось начать запись.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Фотографии и видео, полученные с камеры, будут перемещены в папку \"Скачивания\". Вы также сможете найти их в папке \"Файлы\".\n\nПриложения, у которых есть доступ к хранилищу, смогут работать с вашими фотографиями и видео.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Не удалось сделать снимок.",
-    "description": "Error message shown when failing to take photo."
   }
 }

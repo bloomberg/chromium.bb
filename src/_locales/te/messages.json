@@ -7,93 +7,9 @@
     "message": "మీ కెమెరాతో చిత్రాలను తీయండి మరియు వీడియోలను రికార్డ్ చేయండి.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "ఆండీ",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "పెద్ద కళ్లు",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "అందం",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "రంగు నింపడం",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "అల్లరిగా",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "గ్రేస్కేల్",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "వార్తాపత్రిక",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "సాధారణం",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "పెద్ద తల",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "పెద్ద దవడ",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "కుందేలు తల",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "గోధుమ రంగు",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "రెట్రో '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "రెట్రో '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "రెట్రో '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "ఫోటో ల్యాబ్",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "ఆధునికం",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "స్విర్ల్",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "టిల్ట్ షిఫ్ట్",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "సినిమా",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "వింటేజ్",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "భూతం",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ఫైల్ సిస్టమ్ ఎర్రర్‌లు.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.",
@@ -107,13 +23,9 @@
     "message": "గ్యాలరీని లోడ్ చేయడం సాధ్యపడలేదు.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "గ్యాలరీకి జోడించడం సాధ్యపడలేదు.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ను సేవ్ చేయడం సాధ్యపడలేదు.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ను ఎగుమతి చేయడం సాధ్యం కాలేదు.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "వీడియోని రికార్డ్ చేయడం సాధ్యపడలేదు.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ఫైల్‌ను సేవ్ చేయడం సాధ్యం కాలేదు.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ఫోటోను తీయడం సాధ్యం కాలేదు.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "రికార్డింగ్‌ను ప్రారంభించడం సాధ్యం కాలేదు.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "ఏదీ రికార్డ్ చేయబడలేదు.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "హార్డ్‌వేర్ వేగవృద్ధి అందుబాటులో లేదు.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "మీ కంప్యూటర్ అననుకూల గ్రాఫిక్స్ కార్డ్‌ను లేదా పాత డ్రైవర్‌లను కలిగి ఉండవచ్చు.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "గ్యాలరీకి వెళ్లు",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "ఫిల్టర్‌లను టోగుల్ చేయి",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "తొలగించు",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "డిస్క్‌లో సేవ్ చేయి",
+    "message": "డిస్క్‌కి ఎగుమతి చేయి",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,100 +69,64 @@
     "message": "వెనుకకు వెళ్లు",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "గరిష్టీకరించు",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "మూసివేయి",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "గ్యాలరీ చిత్రాలు",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "చిత్రాన్ని తీయి",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "ఫోటోను తీయి",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ఫోటోను తీయడం ఆపివేయి",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "రికార్డింగ్‌ను ప్రారంభించు",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "రికార్డింగ్ ఆపివేయి",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "టైమర్‌ను టోగుల్ చేయి",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "బహుళ-షాట్‌ను టోగుల్ చేయి",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "కెమెరాను టోగుల్ చేయి",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "వీడియో రికార్డ్ చేయడానికి మారండి",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "చిత్రాన్ని తీయడానికి మారండి",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "వీడియోను రికార్డ్ చేయి సక్రియంగా ఉంది",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "చిత్రాన్ని తీయండి సక్రియంగా ఉంది",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "ఫోటోను తీయడానికి మారండి",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "మిర్రరింగ్‌ను టోగుల్ చేయి",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "టైమర్ సక్రియంగా ఉంది",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "గ్రిడ్‌ను టోగుల్ చేయి",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "టైమర్ నిష్క్రియంగా ఉంది",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "బహుళ-షాట్ సక్రియంగా ఉంది",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "బహుళ-షాట్ నిష్క్రియంగా ఉంది",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "మిర్రరింగ్ సక్రియంగా ఉంది",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "మిర్రరింగ్ నిష్క్రియంగా ఉంది",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "అవును",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "వద్దు",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "మైక్రోఫోన్‌ను టోగుల్ చేయి",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "సరే",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "రద్దు చేయి",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "మీరు $file$ని ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "message": "మీరు $file$ని నిజంగా తీసివేయాలనుకుంటున్నారా?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -264,7 +136,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "మీరు $count$ అంశాలను ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "message": "మీరు $count$ అంశాలను నిజంగా తీసివేయాలనుకుంటున్నారా?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "రికార్డింగ్‌ను ప్రారంభించడం సాధ్యపడలేదు.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "కెమెరాతో తీసిన ఫోటోలు మరియు వీడియోలు డౌన్‌లోడ్‌లు ఫోల్డర్‌కు తరలించబడతాయి. మీరు వాటిని ఫైల్స్‌లో యాక్సెస్ చేయవచ్చు. నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "చిత్రాన్ని తీయడం సాధ్యపడలేదు.",
-    "description": "Error message shown when failing to take photo."
   }
 }

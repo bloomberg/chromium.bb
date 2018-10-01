@@ -1,102 +1,18 @@
 {
   "name": {
-    "message": "الكاميرا",
+    "message": "كاميرا",
     "description": "Name of the Camera App."
   },
   "description": {
     "message": "يمكنك التقاط الصور وتسجيل الفيديوهات باستخدام الكاميرا.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "أندي",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "عيون كبيرة",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "تجميل",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "تلوين",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "غير تقليدي",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "تدرج الرمادي",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "صحيفة",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "عادي",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "رأس كبير",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "فك كبير",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "رأس سنجاب",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "بني داكن",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "رجوع '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "رجوع '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "رجوع '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "معمل الصور",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "حديث",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "دوامة",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "إمالة وإزاحة",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "سينما",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "صورة عتيقة",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "شبح",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "أخطاء نظام الملفات.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "الكاميرا غير متاحة حاليًا.",
+    "message": "الكاميرا غير مُتاحة حاليًا.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
@@ -107,13 +23,9 @@
     "message": "يتعذّر تحميل المعرض.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "تتعذّر الإضافة إلى المعرض.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "يتعذّر حفظ $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "يتعذَّر تصدير $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "يتعذّر تسجيل فيديو.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "يتعذَّر حفظ الملف.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "يتعذّر التقاط الصورة.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "يتعذّر بدء التسجيل.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "لم يتم تسجيل أي بيانات.",
+    "message": "لم يتمّ تسجيل أيّ بيانات.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
-  },
-  "errorMsgNoWebGL": {
-    "message": "لا تتوفر ميزة تسريع الأجهزة.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "قد تكون هناك بطاقة رسومات غير متوافقة أو برامج تشغيل قديمة على جهاز الكمبيوتر.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
     "message": "الانتقال إلى المعرض",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "تبديل الفلاتر",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "حذف",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "الحفظ في القرص",
+    "message": "تصدير إلى القرص",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "رجوع",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "تكبير",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "إغلاق",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "صور المعرض",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
+  "takePhotoButton": {
     "message": "التقاط صورة",
-    "description": "Label for the red picture taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "التوقف عن التقاط صورة",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "بدء التسجيل",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "إيقاف التسجيل",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "تبديل المؤقِّت",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "تبديل اللقطات المتعددة",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "تبديل الكاميرا",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "التبديل لتسجيل فيديو",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "التبديل لالتقاط صورة",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "ميزة \"تسجيل الفيديو\" نشطة",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ميزة \"التقاط صورة\" نشطة",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "تبديل النسخ المطابق",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "الموقِّت نشط",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "تبديل الشبكة",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "المؤقِّت غير نشط",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "اللقطات المتعددة نشطة",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "اللقطات المتعددة غير نشطة",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "النسخ المطابق نشط",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "النسخ المطابق غير نشط",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "نعم",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "لا",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "تبديل الميكروفون",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "حسنًا",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "إلغاء",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "هل تريد بالتأكيد إزالة $file$؟",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "يتعذّر بدء التسجيل.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "سيتم نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد \"التنزيلات\" ويمكنك الوصول إليها من خلال تطبيق \"الملفات\".\n\nستتمكن التطبيقات من الوصول إلى صورك وفيديوهاتك في حال تزويدها بأذونات الاطّلاع على سعة التخزين.",
+    "message": "سيتمّ نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد \"التنزيلات\" ويمكنك الوصول إليها من خلال تطبيق \"الملفات\".\n\nستتمكَّن التطبيقات من الوصول إلى صورك وفيديوهاتك في حال تزويدها بأذونات الاطّلاع على سعة التخزين.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "يتعذّر التقاط صورة.",
-    "description": "Error message shown when failing to take photo."
   }
 }

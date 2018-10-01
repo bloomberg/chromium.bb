@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Uzņemiet attēlus un ierakstiet videoklipus, izmantojot savu kameru.",
+    "message": "Uzņemiet fotoattēlus un ierakstiet videoklipus, izmantojot savu kameru.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Lielas acis",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Skaistums",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Krāsains",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Fanks",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Pelēktoņu",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Laikraksts",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Parasts",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Liela galva",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Liels žoklis",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Truša galva",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sēpija",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "30. gadu retro",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "50. gadu retro",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "60. gadu retro",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotolaboratorija",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Moderns",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Virpulis",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Makroimitācija",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Kino",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Retro",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Spoks",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Failu sistēmas kļūdas.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Kamera pašlaik nav pieejama.",
@@ -107,13 +23,9 @@
     "message": "Nevar ielādēt galeriju.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Nevar pievienot galerijai.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Nevar saglabāt failu $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Nevar eksportēt failu $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Nevar ierakstīt videoklipu.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Nevar saglabāt failu.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nevar uzņemt fotoattēlu.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nevar sākt ierakstīšanu.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Nekas nav ierakstīts.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Paātrināta aparatūras darbība nav pieejama.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Iespējams, jūsu datora grafikas karte nav saderīga vai tam ir novecojuši draiveri.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Doties uz galeriju",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Pārslēgt filtrus",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Dzēst",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Saglabāt diskā",
+    "message": "Eksportēt diskā",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Atgriezties",
+    "message": "Atpakaļ",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "Maksimizēt",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Aizvērt",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "Galerijas attēli",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Uzņemt attēlu",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Uzņemt fotoattēlu",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Apturēt fotoattēla uzņemšanu",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Sākt ierakstīšanu",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Apturēt ierakstīšanu",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
-    "message": "Pārslēgt uz taimeri",
+    "message": "Pārslēgt taimeri",
     "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleMultiButton": {
-    "message": "Pārslēgt uz vairāku attēlu uzņemšanu",
-    "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleCameraButton": {
     "message": "Pārslēgt kameru",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
-    "message": "Pārslēgt uz videoklipa ierakstīšanu",
+  "switchRecordVideoButton": {
+    "message": "Pārslēgties uz videoklipa ierakstīšanu",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Pārslēgt uz attēla uzņemšanu",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Videoklipa ierakstīšanas ieslēgšana",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Attēla uzņemšanas ieslēgšana",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Pārslēgties uz fotoattēla uzņemšanu",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
-    "message": "Pārslēgt uz spoguļošanu",
+    "message": "Pārslēgt spoguļošanu",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Taimera ieslēgšana",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Pārslēgt režģi",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Taimera izslēgšana",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Vairāku attēlu uzņemšanas ieslēgšana",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Vairāku attēlu uzņemšanas izslēgšana",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Spoguļošanas ieslēgšana",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Spoguļošanas izslēgšana",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Jā",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Nē",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Pārslēgt mikrofonu",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Labi",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Atcelt",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Vai tiešām vēlaties noņemt failu $file$?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Nevar sākt ierakstīšanu.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Ar kameru uzņemtie fotoattēli un videoklipi tiks ievietoti mapē Lejupielādes. Varat tiem piekļūt lietotnē Faili.\n\nJūsu fotoattēliem un videoklipiem varēs piekļūt lietotnes, kam ir krātuves atļaujas.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Nevar uzņemt attēlu.",
-    "description": "Error message shown when failing to take photo."
   }
 }

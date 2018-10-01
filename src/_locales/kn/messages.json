@@ -4,96 +4,12 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ನಿಮ್ಮ ಕ್ಯಾಮರಾದ ಮೂಲಕ ಚಿತ್ರಗಳನ್ನು ಸೆರೆಹಿಡಿಯಿರಿ ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ.",
+    "message": "ನಿಮ್ಮ ಕ್ಯಾಮರಾದ ಮೂಲಕ ಚಿತ್ರಗಳನ್ನು ತೆಗೆಯಿರಿ ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "ಆ್ಯಂಡಿ",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "ದೊಡ್ಡ ಕಣ್ಣುಗಳು",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "ಸೌಂದರ್ಯ",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "ಬಣ್ಣ ಹಾಕಿ",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ಫಂಕಿ",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "ಗ್ರೇಸ್ಕೇಲ್",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "ದಿನಪತ್ರಿಕೆ",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "ಸಾಮಾನ್ಯ",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "ಬಿಗ್ ಹೆಡ್",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "ಬಿಗ್ ಜಾ",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "ಬನ್ನಿ ಹೆಡ್",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "ಸೆಪಿಯಾ",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "ರೆಟ್ರೋ '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "ರೆಟ್ರೋ '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "ರೆಟ್ರೋ '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "ಫೋಟೋ ಲ್ಯಾಬ್",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "ಆಧುನಿಕ",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "ಸ್ವಿರ್ಲ್",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "ಟಿಲ್ಟ್-ಶಿಫ್ಟ್",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "ಸಿನಿಮಾ",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "ವಿಂಟೇಜ್",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "ಘೋಸ್ಟ್",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ಫೈಲ್ ಸಿಸ್ಟಂ ದೋಷಗಳು.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ.",
@@ -107,13 +23,9 @@
     "message": "ಗ್ಯಾಲರಿ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ಗ್ಯಾಲರಿಗೆ ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ ಫೈಲ್ ಉಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ ಅನ್ನು ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ಫೈಲ್ ಅನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "ಹಾರ್ಡ್‌ವೇರ್ ವೇಗವರ್ಧನೆ ಲಭ್ಯವಿಲ್ಲ.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಹೊಂದಾಣಿಕೆಯಾಗದ ಗ್ರಾಫಿಕ್ಸ್ ಕಾರ್ಡ್‌ ಅಥವಾ ಹಳೆಯ ಡ್ರೈವರ್‌ಗಳಿರಬಹುದು.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "ಗ್ಯಾಲರಿಗೆ ಹೋಗಿ",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "ಫಿಲ್ಟರ್‌‌ಗಳನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "ಅಳಿಸಿ",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಉಳಿಸಿ",
+    "message": "ಡಿಸ್ಕ್‌ಗೆ ರಫ್ತು ಮಾಡಿ",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -158,100 +66,64 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "ಹಿಂತಿರುಗಿ",
+    "message": "ಹಿಂದಿರುಗಿ",
     "description": "Label for the back button."
-  },
-  "maximizeButton": {
-    "message": "ಗರಿಷ್ಠಗೊಳಿಸಿ",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "ಮುಚ್ಚಿ",
-    "description": "Text to speech label for the close button."
   },
   "galleryImages": {
     "message": "ಗ್ಯಾಲರಿ ಚಿತ್ರಗಳು",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "ಚಿತ್ರ ತೆಗೆದುಕೊಳ್ಳಿ",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "ಫೋಟೋ ತೆಗೆಯಿರಿ",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ಫೋಟೋ ತೆಗೆಯುವುದನ್ನು ನಿಲ್ಲಿಸಿ",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ",
-    "description": "Label for the red video recording button to start recording."
+    "message": "ರೆಕಾರ್ಡ್‌ ಮಾಡಲು ಪ್ರಾರಂಭಿಸಿ",
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "ರೆಕಾರ್ಡ್ ಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "ಟೈಮರ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "ಬಹು ಶಾಟ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "ಕ್ಯಾಮರಾ ಟಾಗಲ್ ಮಾಡಿ",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "\"ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡುವಿಕೆ\" ಗೆ ಬದಲಿಸಿ",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "\"ಚಿತ್ರ ತೆಗೆಯುವಿಕೆ\" ಗೆ ಬದಲಿಸಿ",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡುವಿಕೆ ಸಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ಚಿತ್ರ ತೆಗೆಯುವಿಕೆ ಸಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "ಫೋಟೋ ತೆಗೆಯುವುದನ್ನು ಬದಲಿಸಿ",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "ಟಾಗಲ್ ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "ಟೈಮರ್ ಸಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "ಗ್ರಿಡ್ ಟಾಗಲ್ ಮಾಡಿ",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "ಟೈಮರ್ ನಿಷ್ಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "ಬಹು ಶಾಟ್ ಸಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "ಬಹು ಶಾಟ್ ನಿಷ್ಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ ಸಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ ನಿಷ್ಕ್ರಿಯವಾಗಿದೆ",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "ಹೌದು",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "ಇಲ್ಲ",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "ಮೈಕ್ರೋಫೋನ್‌ ಟಾಗಲ್ ಮಾಡಿ",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ಸರಿ",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "ರದ್ದುಮಾಡಿ",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "ನೀವು ನಿಜವಾಗಿಯೂ $file$ ಅನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "ಕ್ಯಾಮರಾದಿಂದ ಸೆರೆಹಿಡಿದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ವರ್ಗಾಯಿಸಲಾಗುತ್ತದೆ. ನೀವು ಅವುಗಳನ್ನು ಫೈಲ್‌ಗಳಲ್ಲಿ ಪ್ರವೇಶಿಸಬಹುದು.\n\nಸಂಗ್ರಹಣೆ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.",
+    "message": "ಕ್ಯಾಮರಾದಿಂದ ಸೆರೆಹಿಡಿದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ವರ್ಗಾಯಿಸಲಾಗುತ್ತದೆ. ನೀವು ಅವುಗಳನ್ನು ಫೈಲ್‌ಗಳಲ್ಲಿ ಪ್ರವೇಶಿಸಬಹುದು.\nಸಂಗ್ರಹಣೆ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಆ್ಯಪ್‌ಗಳು ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "ಫೋಟೋ ಸೆರೆಹಿಡಿಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when failing to take photo."
   }
 }

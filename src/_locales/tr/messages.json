@@ -7,93 +7,9 @@
     "message": "Kameranızla fotoğraf çekin ve video kaydedin.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Büyük Gözler",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Güzellik",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Renklendir",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Funky",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Gri Tonlamalı",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Gazete",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normal",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Koca Kafa",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Büyük Çene",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Tavşan Kafa",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepya",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro 30'lar",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro 50'ler",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro 60'lar",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Fotoğraf Laboratuvarı",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modern",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Girdap",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Minyatürleştirme",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Sinema",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Klasik",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Hayalet",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "Dosya sistemi hataları.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "Kameranız şu anda kullanılamıyor.",
@@ -107,13 +23,9 @@
     "message": "Galeri yüklenemiyor.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Galeriye eklenemiyor.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ kaydedilemiyor.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ dışa aktarılamıyor.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Video kaydedilemedi.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "Dosya kaydedilemiyor.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Fotoğraf çekilemiyor.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Kayıt başlatılamıyor.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Hiçbir şey kaydedilemedi.",
+    "message": "Hiçbir şey kaydedilmedi.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
-  },
-  "errorMsgNoWebGL": {
-    "message": "Donanım hızlandırma özelliği kullanılamıyor.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Bilgisayarınızdaki grafik kartı uyumsuz olabilir veya sürücüleri eski olabilir.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
     "message": "Galeriye git",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Filtreleri aç/kapat",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Sil",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Diske kaydet",
+    "message": "Diske aktar",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "Geri dön",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "Ekranı kapla",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "Kapat",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Galeri resimleri",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "Resim çek",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "Fotoğraf çek",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Fotoğraf çekmeyi durdur",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Kaydı başlat",
-    "description": "Label for the red video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Kaydı durdur",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Zamanlayıcıyı aç/kapat",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Çoklu çekimi aç/kapat",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
-    "message": "Kamerayı değiştir",
+    "message": "Kamerayı aç/kapat",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "Video kaydetmeye geç",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
-    "message": "Resim çekmeye geç",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "Video kaydı etkin",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Resim çekme etkin",
-    "description": "Message shown when activating the photo taking feature."
+  "switchTakePhotoButton": {
+    "message": "Fotoğraf çekmeye geç",
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "Yansıtmayı aç/kapat",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "Zamanlayıcı etkin",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "Izgarayı aç/kapat",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "Zamanlayıcı devre dışı",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Çoklu çekim etkin",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Çoklu çekim devre dışı",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Ayna görüntü etkin",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Ayna görüntü devre dışı",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "Evet",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "Hayır",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "Mikrofonu aç/kapat",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Tamam",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "İptal",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "$file$ adlı dosyayı gerçekten kaldırmak istiyor musunuz?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "Kayıt başlatılamıyor.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
     "message": "Kamerayla çekilen fotoğraflar ve videolar, İndirilenler klasörüne taşınacaktır. Bunlara Dosyalar uygulamasından erişebilirsiniz.\n\nDepolama iznine sahip uygulamalar fotoğraflarınıza ve videolarınıza erişebilecektir.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "Fotoğraf çekilemiyor.",
-    "description": "Error message shown when failing to take photo."
   }
 }

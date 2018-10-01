@@ -7,93 +7,9 @@
     "message": "તમારા કૅમેરા વડે ફોટા લો અને વીડિઓ રેકોર્ડ કરો.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "મોટી આંખો",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "સૌંદર્ય",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "રંગીન બનાવો",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "ફંકી",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "ગ્રેસ્કેલ",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "સમાચારપત્ર",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "સામાન્ય",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "મોટું માથું",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "બિગ જૉ",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "બની હેડ",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "જુનવાણી",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "રેટ્રો '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "રેટ્રો '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "રેટ્રો '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "ફોટો લૅબ",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "આધુનિક",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "સ્વર્લ",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "ટિલ્ટ શિફ્ટ",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "સિનેમા",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "વિન્ટેજ",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "ભૂતિયું",
-    "description": "Ghost effect's name. Duplicates face when moving."
+  "errorMsgFileSystemFailed": {
+    "message": "ફાઇલ સિસ્ટમની ભૂલો.",
+    "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
     "message": "તમારો કૅમેરા હાલમાં અનુપલબ્ધ છે.",
@@ -104,16 +20,12 @@
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "ગૅલેરી લોડ કરવામાં અસમર્થ છીએ.",
+    "message": "ગૅલેરી લોડ કરવામાં નિષ્ફળ રહ્યાં.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ગૅલેરીમાં ઉમેરવામાં અસમર્થ છીએ.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ને સાચવવામાં અસમર્થ છીએ.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "$file$ને નિકાસ કરવામાં નિષ્ફળ રહ્યાં.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
@@ -121,36 +33,32 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "વીડિઓ રેકોર્ડ કરવામાં અસમર્થ રહ્યાં.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgSaveFileFailed": {
+    "message": "ફાઇલ સાચવવામાં નિષ્ફળ રહ્યાં.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ફોટો લેવામાં નિષ્ફળ રહ્યાં.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "રેકોર્ડિંગ શરૂ કરવામાં નિષ્ફળ રહ્યાં.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "કંઈ રેકોર્ડ થયું નથી.",
+    "message": "કંઈપણ રેકોર્ડ થયું નથી.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
-  },
-  "errorMsgNoWebGL": {
-    "message": "હાર્ડવેરની વધુ ઝડપ ઉપલબ્ધ નથી.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "તમારા કમ્પ્યુટરમાં અસંગત ગ્રાફિક કાર્ડ અથવા જૂના ડ્રાઇવર હોઈ શકે છે.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
     "message": "ગૅલેરી પર જાઓ",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "ફિલ્ટર ટૉગલ કરો",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "ડિલીટ કરો",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ડિસ્કમાં સાચવો",
+    "message": "ડિસ્કમાં નિકાસ કરો",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -161,97 +69,61 @@
     "message": "પાછા જાઓ",
     "description": "Label for the back button."
   },
-  "maximizeButton": {
-    "message": "મોટું કરો",
-    "description": "Text to speech Label for the maximize button."
-  },
-  "closeButton": {
-    "message": "બંધ કરો",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
-    "message": "ગૅલેરી છબીઓ",
+    "message": "છબીઓની ગૅલેરી",
     "description": "Text to speech label for the gallery list."
   },
-  "takePictureButton": {
-    "message": "ફોટો પાડો",
-    "description": "Label for the red picture taking button."
+  "takePhotoButton": {
+    "message": "ફોટો લો",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ફોટા લેવાનું બંધ કરો",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "રેકોર્ડિંગ પ્રારંભ કરો",
-    "description": "Label for the red video recording button to start recording."
+    "message": "રેકોર્ડિંગ શરૂ કરો",
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "રેકોર્ડિંગ રોકો",
-    "description": "Label for the red video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "ટાઇમરને ટૉગલ કરો",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "મલ્ટિ-શૉટને ટૉગલ કરો",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "કૅમેરાને ટૉગલ કરો",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "toggleRecordOnButton": {
+  "switchRecordVideoButton": {
     "message": "વીડિઓ રેકોર્ડ કરવા માટે સ્વિચ કરો",
     "description": "Label for the button to switch to record video mode."
   },
-  "toggleRecordOffButton": {
+  "switchTakePhotoButton": {
     "message": "ફોટો લેવા માટે સ્વિચ કરો",
-    "description": "Label for the button to switch to take picture mode."
-  },
-  "recordVideoActiveMessage": {
-    "message": "વીડિઓ રેકોર્ડ કરવાનું સક્રિય થયું",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "ફોટા લેવાનું સક્રિય થયું",
-    "description": "Message shown when activating the photo taking feature."
+    "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
     "message": "મીરરીંગને ટૉગલ કરો",
     "description": "Label for the button to toggle the preview mirroring."
   },
-  "toggleTimerActiveMessage": {
-    "message": "ટાઇમર સક્રિય છે",
-    "description": "Message shown when activating the timer."
+  "toggleGridButton": {
+    "message": "ગ્રિડને ટૉગલ કરો",
+    "description": "Label for the button to toggle the grid shown on preview."
   },
-  "toggleTimerInactiveMessage": {
-    "message": "ટાઇમર નિષ્ક્રિય છે",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "મલ્ટિ-શૉટ સક્રિય છે",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "મલ્ટિ-શૉટ નિષ્ક્રિય છે",
-    "description": "Message shown when inactivating the multi-shot feature."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "મીરરીંગ સક્રિય છે",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "મીરરીંગ નિષ્ક્રિય છે",
-    "description": "Message shown when inactivating the preview mirroring."
-  },
-  "dialogYesButton": {
-    "message": "હા",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "ના",
-    "description": "Label for the dismissing button in the confirmation dialog."
+  "toggleMicButton": {
+    "message": "માઇક્રોફોનને ટૉગલ કરો",
+    "description": "Label for the button to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ઓકે",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "રદ કરો",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "શું તમે ખરેખર $file$ને કાઢી નાખવા માગો છો?",
@@ -273,16 +145,8 @@
       }
     }
   },
-  "errorMsgRecordStartFailed": {
-    "message": "રેકોર્ડિંગ શરૂ કરવામાં અસમર્થ છીએ.",
-    "description": "Error message shown when failing to start recording video."
-  },
   "migratePicturesMsg": {
-    "message": "કૅમેરા વડે લીધેલા ફોટા અને વીડિઓ ડાઉનલોડ ફોલ્ડરમાં ખસેડવામાં આવશે. તમે તેઓને ફાઇલોમાંથી ઍક્સેસ કરી શકશો.\n\nસ્ટોરેજ માટે પરવાનગી ધરાવતી ઍપ તમારા ફોટા તથા વીડિઓને ઍક્સેસ કરી શકશે.",
+    "message": "કૅમેરા વડે લીધેલા ફોટા અને વીડિઓ ડાઉનલોડ ફોલ્ડરમાં ખસેડવામાં આવશે. તમે તેઓને ફાઇલોમાં ઍક્સેસ કરી શકશો.\n\nસ્ટોરેજ માટે પરવાનગી ધરાવતી ઍપ તમારા ફોટા તથા વીડિઓને ઍક્સેસ કરી શકશે.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "errorMsgTakePhotoFailed": {
-    "message": "ફોટો લેવામાં અસમર્થ છીએ.",
-    "description": "Error message shown when failing to take photo."
   }
 }
