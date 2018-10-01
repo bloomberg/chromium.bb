@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__
-#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H_
 
 #include <string>
 
@@ -27,16 +27,16 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   PasswordDataTypeController(
-      const base::Closure& dump_stack,
+      const base::RepeatingClosure& dump_stack,
       syncer::SyncClient* sync_client,
-      const base::Closure& state_changed_callback,
+      const base::RepeatingClosure& state_changed_callback,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~PasswordDataTypeController() override;
 
  protected:
   // AsyncDirectoryTypeController interface.
   bool PostTaskOnModelThread(const base::Location& from_here,
-                             const base::Closure& task) override;
+                             const base::RepeatingClosure& task) override;
   bool StartModels() override;
   void StopModels() override;
 
@@ -45,7 +45,7 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
 
  private:
   syncer::SyncClient* const sync_client_;
-  const base::Closure state_changed_callback_;
+  const base::RepeatingClosure state_changed_callback_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDataTypeController);
@@ -53,4 +53,4 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H_

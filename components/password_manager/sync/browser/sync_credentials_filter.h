@@ -22,10 +22,10 @@ namespace password_manager {
 // The sync- and GAIA- aware implementation of the filter.
 class SyncCredentialsFilter : public CredentialsFilter {
  public:
-  typedef base::Callback<const syncer::SyncService*(void)>
-      SyncServiceFactoryFunction;
-  typedef base::Callback<const SigninManagerBase*(void)>
-      SigninManagerFactoryFunction;
+  using SyncServiceFactoryFunction =
+      base::RepeatingCallback<const syncer::SyncService*(void)>;
+  using SigninManagerFactoryFunction =
+      base::RepeatingCallback<const SigninManagerBase*(void)>;
 
   // Implements protection of sync credentials. Uses |client| to get the last
   // commited entry URL for a check against GAIA reauth site. Uses the factory

@@ -13,9 +13,9 @@
 namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(
-    const base::Closure& dump_stack,
+    const base::RepeatingClosure& dump_stack,
     syncer::SyncClient* sync_client,
-    const base::Closure& state_changed_callback,
+    const base::RepeatingClosure& state_changed_callback,
     const scoped_refptr<password_manager::PasswordStore>& password_store)
     : AsyncDirectoryTypeController(syncer::PASSWORDS,
                                    dump_stack,
@@ -30,7 +30,7 @@ PasswordDataTypeController::~PasswordDataTypeController() {}
 
 bool PasswordDataTypeController::PostTaskOnModelThread(
     const base::Location& from_here,
-    const base::Closure& task) {
+    const base::RepeatingClosure& task) {
   DCHECK(CalledOnValidThread());
   if (!password_store_)
     return false;

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_reuse_defines.h"
@@ -24,7 +24,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 namespace sync_util {
 
-typedef SyncUsernameTestBase PasswordSyncUtilTest;
+using PasswordSyncUtilTest = SyncUsernameTestBase;
 
 PasswordForm SimpleGAIAChangePasswordForm() {
   PasswordForm form;
@@ -58,7 +58,7 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
        nullptr},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "i=" << i);
     SetSyncingPasswords(kTestCases[i].password_sync ==
                         TestCase::SYNCING_PASSWORDS);
@@ -85,7 +85,7 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
       {SimpleGAIAChangePasswordForm(), "sync_user@example.org", true},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "i=" << i);
     SetSyncingPasswords(true);
     FakeSigninAs(kTestCases[i].fake_sync_username);
@@ -179,7 +179,7 @@ TEST_F(PasswordSyncUtilEnterpriseTest, ShouldSavePasswordHash) {
   };
 
   for (bool syncing_passwords : {false, true}) {
-    for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    for (size_t i = 0; i < base::size(kTestCases); ++i) {
       SCOPED_TRACE(testing::Message() << "i=" << i);
       SetSyncingPasswords(syncing_passwords);
       FakeSigninAs(kTestCases[i].fake_sync_username);
