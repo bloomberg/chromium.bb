@@ -96,9 +96,12 @@ class RulesetManagerTest : public DNRTestBase {
     return last_loaded_extension_.get();
   }
 
+  // Returns a renderer-initiated request to the given |url|.
   WebRequestInfo GetRequestForURL(base::StringPiece url) {
+    const int kRendererId = 1;
     WebRequestInfo info;
     info.url = GURL(url);
+    info.render_process_id = kRendererId;
     return info;
   }
 

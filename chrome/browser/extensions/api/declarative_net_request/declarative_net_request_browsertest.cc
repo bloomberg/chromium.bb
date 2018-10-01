@@ -1607,67 +1607,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   verify_page_load(false /*expect_load*/);
 }
 
-// Tests that requests which can't be mapped to a render frame (e.g. non-
-// navigation browser requests) are not affected by the page allowing API.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       PageAllowingAPI_BrowserRequests) {
-  // Load an extension which blocks all requests.
-  set_has_background_script(true);
-  std::vector<TestRule> rules;
-  TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("*");
-  rules.push_back(rule);
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
-
-  // Allow requests served from "google.com/*" pages.
-  AddAllowedPages(last_loaded_extension_id(), {"http://google.com:*/*"});
-
-  const GURL url = embedded_test_server()->GetURL(
-      "google.com", "/pages_with_script/index.html");
-
-  // A navigation to |url| should not be blocked as google.com/* pages have been
-  // allowed. This will cause two network requests to index.html and
-  // script.js.
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
-  std::set<GURL> requests_seen = GetAndResetRequestsToServer();
-
-  // The EmbeddedTestServer sees requests after the hostname has been resolved.
-  EXPECT_TRUE(base::ContainsKey(
-      requests_seen,
-      embedded_test_server()->GetURL("/pages_with_script/index.html")));
-  EXPECT_TRUE(base::ContainsKey(
-      requests_seen,
-      embedded_test_server()->GetURL("/pages_with_script/script.js")));
-
-  // But a non-navigation browser initiated resource request should still be
-  // blocked. This is because such a request can't be mapped to a top level
-  // frame and hence won't be considered for allowing by the page
-  // allowing API.
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url = embedded_test_server()->GetURL("google.com",
-                                                "/pages_with_script/script.js");
-  request->resource_type = content::ResourceType::RESOURCE_TYPE_SCRIPT;
-  request->render_frame_id = MSG_ROUTING_NONE;
-
-  auto loader = network::SimpleURLLoader::Create(std::move(request),
-                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
-  content::SimpleURLLoaderTestHelper loader_helper;
-  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      loader_helper.GetCallback());
-  loader_helper.WaitForCallback();
-
-  EXPECT_FALSE(loader_helper.response_body());
-  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, loader->NetError());
-  EXPECT_FALSE(base::ContainsKey(
-      GetAndResetRequestsToServer(),
-      embedded_test_server()->GetURL("/pages_with_script/script.js")));
-}
-
 // Ensures that any <img> elements blocked by the API are collapsed.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ImageCollapsed) {
   // Loads a page with an image and returns whether the image was collapsed.

@@ -1104,6 +1104,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   auto make_browser_request = [this](const GURL& url) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
+    request->resource_type = content::RESOURCE_TYPE_SUB_RESOURCE;
 
     auto* url_loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(profile())
@@ -1129,11 +1130,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       embedded_test_server()->GetURL("clients1.google.com", "/simple.html"));
   EXPECT_EQ(1, get_clients_google_request_count());
 
-  // Sanity check that other requests made by the browser can still be
-  // intercepted by the extension.
+  // Other non-navigation browser requests should also be hidden from
+  // extensions.
   make_browser_request(
       embedded_test_server()->GetURL("yahoo.com", "/simple.html"));
-  EXPECT_EQ(1, get_yahoo_request_count());
+  EXPECT_EQ(0, get_yahoo_request_count());
 }
 
 // Verify that requests for PAC scripts are protected properly.
@@ -1405,7 +1406,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   GURL google_url =
       embedded_test_server()->GetURL("google.com", "/extensions/body1.html");
 
-  // First, check normal requets (e.g., navigations) to verify the extension
+  // First, check normal requests (e.g., navigations) to verify the extension
   // is working correctly.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1483,10 +1484,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   }
 
   {
-    // example.com should fail.
+    // example.com should also succeed since non-navigation browser-initiated
+    // requests are hidden from extensions. See crbug.com/884932.
     SCOPED_TRACE("example.com with Profile's url loader");
-    make_browser_request(url_loader_factory, example_url, base::nullopt,
-                         net::ERR_BLOCKED_BY_CLIENT);
+    make_browser_request(url_loader_factory, example_url, kExampleFullContent,
+                         net::OK);
   }
 
   // Requests going through the system network context manager should always

@@ -26,6 +26,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extensions_client.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -146,6 +147,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
     const std::string& extension_id,
     const WebRequestActionSet* action_set,
     RequestStage stage) {
+  const int kRendererId = 2;
   std::unique_ptr<net::URLRequest> regular_request(
       context_.CreateRequest(GURL(url_string), net::DEFAULT_PRIORITY, NULL,
                              TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -153,6 +155,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
   WebRequestInfo request_info(regular_request.get());
+  request_info.render_process_id = kRendererId;
   WebRequestData request_data(&request_info, stage, headers.get());
   std::set<std::string> ignored_tags;
   WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),
@@ -177,12 +180,13 @@ void WebRequestActionWithThreadsTest::CheckActionNeedsAllUrls(
   EXPECT_TRUE(ActionWorksOnRequest(
       "http://test.com", extension_all_urls_->id(), action_set.get(), stage));
 
+  const std::string& webstore_url =
+      ExtensionsClient::Get()->GetWebstoreBaseURL().spec();
   // The protected URLs should not be touched at all.
-  EXPECT_FALSE(ActionWorksOnRequest(
-      "http://clients1.google.com", extension_->id(), action_set.get(), stage));
-  EXPECT_FALSE(ActionWorksOnRequest("http://clients1.google.com",
-                                    extension_all_urls_->id(),
-                                    action_set.get(),
+  EXPECT_FALSE(ActionWorksOnRequest(webstore_url.c_str(), extension_->id(),
+                                    action_set.get(), stage));
+  EXPECT_FALSE(ActionWorksOnRequest(webstore_url.c_str(),
+                                    extension_all_urls_->id(), action_set.get(),
                                     stage));
 }
 
@@ -359,13 +363,12 @@ TEST_F(WebRequestActionWithThreadsTest, PermissionsToSendMessageToExtension) {
                                    ON_BEFORE_REQUEST));
 
   // The protected URLs should not be touched at all.
-  EXPECT_FALSE(ActionWorksOnRequest("http://clients1.google.com",
-                                    extension_->id(),
-                                    action_set.get(),
-                                    ON_BEFORE_REQUEST));
-  EXPECT_FALSE(ActionWorksOnRequest("http://clients1.google.com",
-                                    extension_all_urls_->id(),
-                                    action_set.get(),
+  const std::string& webstore_url =
+      ExtensionsClient::Get()->GetWebstoreBaseURL().spec();
+  EXPECT_FALSE(ActionWorksOnRequest(webstore_url.c_str(), extension_->id(),
+                                    action_set.get(), ON_BEFORE_REQUEST));
+  EXPECT_FALSE(ActionWorksOnRequest(webstore_url.c_str(),
+                                    extension_all_urls_->id(), action_set.get(),
                                     ON_BEFORE_REQUEST));
 }
 

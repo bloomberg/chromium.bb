@@ -21,67 +21,130 @@
 namespace extensions {
 
 TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
+  enum HideRequestMask {
+    HIDE_NONE = 0,
+    HIDE_RENDERER_REQUEST = 1,
+    HIDE_SUB_FRAME_NAVIGATION = 2,
+    HIDE_MAIN_FRAME_NAVIGATION = 4,
+    HIDE_BROWSER_SUB_RESOURCE_REQUEST = 8,
+    HIDE_ALL = HIDE_RENDERER_REQUEST | HIDE_SUB_FRAME_NAVIGATION |
+               HIDE_MAIN_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST,
+  };
+
   ExtensionsAPIClient api_client;
+
   struct TestCase {
     const char* url;
-    bool is_sensitive_if_request_from_common_renderer;
-    bool is_sensitive_if_request_from_browser_or_webui_renderer;
+    int expected_hide_request_mask;
   } cases[] = {
-      {"https://www.google.com", false, false},
-      {"http://www.example.com", false, false},
-      {"https://www.example.com", false, false},
-      {"https://clients.google.com", false, true},
-      {"https://clients4.google.com", false, true},
-      {"https://clients9999.google.com", false, true},
-      {"https://clients9999..google.com", false, false},
-      {"https://clients9999.example.google.com", false, false},
-      {"https://clients.google.com.", false, true},
-      {"https://.clients.google.com.", false, true},
-      {"http://google.example.com", false, false},
-      {"http://www.example.com", false, false},
-      {"https://www.example.com", false, false},
-      {"https://clients.google.com", false, true},
-      {"https://sb-ssl.google.com", true, true},
-      {"https://sb-ssl.random.google.com", false, false},
-      {"https://safebrowsing.googleapis.com", true, true},
+      {"https://www.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"http://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://clients.google.com",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"https://clients4.google.com",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"https://clients9999.google.com",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"https://clients9999..google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://clients9999.example.google.com",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://clients.google.com.",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"https://.clients.google.com.",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"http://google.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"http://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://sb-ssl.google.com", HIDE_ALL},
+      {"https://sb-ssl.random.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://safebrowsing.googleapis.com", HIDE_ALL},
+      // Unsupported scheme.
       {"blob:https://safebrowsing.googleapis.com/"
        "fc3f440b-78ed-469f-8af8-7a1717ff39ae",
-       true, true},
-      {"filesystem:https://safebrowsing.googleapis.com/path", true, true},
-      {"https://safebrowsing.googleapis.com.", true, true},
-      {"https://safebrowsing.googleapis.com/v4", true, true},
-      {"https://safebrowsing.googleapis.com:80/v4", true, true},
-      {"https://safebrowsing.googleapis.com./v4", true, true},
-      {"https://safebrowsing.googleapis.com/v5", true, true},
-      {"https://safebrowsing.google.com/safebrowsing", true, true},
-      {"https://safebrowsing.google.com/safebrowsing/anything", true, true},
-      {"https://safebrowsing.google.com", false, false},
-      {"https://chrome.google.com", false, false},
-      {"https://chrome.google.com/webstore", true, true},
-      {"https://chrome.google.com./webstore", true, true},
+       HIDE_ALL},
+      {"filesystem:https://safebrowsing.googleapis.com/path", HIDE_ALL},
+      {"https://safebrowsing.googleapis.com.", HIDE_ALL},
+      {"https://safebrowsing.googleapis.com/v4", HIDE_ALL},
+      {"https://safebrowsing.googleapis.com:80/v4", HIDE_ALL},
+      {"https://safebrowsing.googleapis.com./v4", HIDE_ALL},
+      {"https://safebrowsing.googleapis.com/v5", HIDE_ALL},
+      {"https://safebrowsing.google.com/safebrowsing", HIDE_ALL},
+      {"https://safebrowsing.google.com/safebrowsing/anything", HIDE_ALL},
+      {"https://safebrowsing.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://chrome.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"https://chrome.google.com/webstore", HIDE_ALL},
+      {"https://chrome.google.com./webstore", HIDE_ALL},
+      // Unsupported scheme.
       {"blob:https://chrome.google.com/fc3f440b-78ed-469f-8af8-7a1717ff39ae",
-       false, false},
-      {"https://chrome.google.com:80/webstore", true, true},
-      {"https://chrome.google.com/webstore?query", true, true},
+       HIDE_ALL},
+      {"https://chrome.google.com:80/webstore", HIDE_ALL},
+      {"https://chrome.google.com/webstore?query", HIDE_ALL},
   };
-  for (const TestCase& test : cases) {
+  const int kRendererProcessId = 1;
+  const int kBrowserProcessId = -1;
+  extensions::InfoMap* info_map = nullptr;
+
+  // Returns a WebRequestInfo instance constructed as per the given parameters.
+  auto create_request = [](const GURL& url, content::ResourceType type,
+                           int render_process_id) {
     WebRequestInfo request;
-    request.url = GURL(test.url);
-    EXPECT_TRUE(request.url.is_valid()) << test.url;
+    request.url = url;
+    request.type = type;
+    request.render_process_id = render_process_id;
 
-    request.initiator = url::Origin::Create(request.url);
-    EXPECT_EQ(test.is_sensitive_if_request_from_common_renderer,
-              IsSensitiveRequest(request, false /* is_request_from_browser */,
-                                 false /* is_request_from_web_ui_renderer */))
-        << test.url;
+    request.web_request_type = ToWebRequestResourceType(type);
+    request.is_browser_side_navigation =
+        type == content::RESOURCE_TYPE_MAIN_FRAME ||
+        type == content::RESOURCE_TYPE_SUB_FRAME;
+    return request;
+  };
 
-    const bool supported_in_webui_renderers =
-        !request.url.SchemeIsHTTPOrHTTPS();
-    request.initiator = base::nullopt;
-    EXPECT_EQ(test.is_sensitive_if_request_from_browser_or_webui_renderer,
-              IsSensitiveRequest(request, true /* is_request_from_browser */,
-                                 supported_in_webui_renderers))
-        << test.url;
+  for (const TestCase& test_case : cases) {
+    SCOPED_TRACE(test_case.url);
+
+    GURL request_url(test_case.url);
+    ASSERT_TRUE(request_url.is_valid());
+
+    {
+      SCOPED_TRACE("Renderer initiated sub-resource request");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_RESOURCE, kRendererProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
+      EXPECT_EQ(expect_hidden,
+                WebRequestPermissions::HideRequest(info_map, request));
+    }
+
+    {
+      SCOPED_TRACE("Browser initiated sub-resource request");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_RESOURCE, kBrowserProcessId);
+      bool expect_hidden = test_case.expected_hide_request_mask &
+                           HIDE_BROWSER_SUB_RESOURCE_REQUEST;
+      EXPECT_EQ(expect_hidden,
+                WebRequestPermissions::HideRequest(info_map, request));
+    }
+
+    {
+      SCOPED_TRACE("Main-frame navigation");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_MAIN_FRAME, kBrowserProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_MAIN_FRAME_NAVIGATION;
+      EXPECT_EQ(expect_hidden,
+                WebRequestPermissions::HideRequest(info_map, request));
+    }
+
+    {
+      SCOPED_TRACE("Sub-frame navigation");
+      WebRequestInfo request = create_request(
+          request_url, content::RESOURCE_TYPE_SUB_FRAME, kBrowserProcessId);
+      bool expect_hidden =
+          test_case.expected_hide_request_mask & HIDE_SUB_FRAME_NAVIGATION;
+      EXPECT_EQ(expect_hidden,
+                WebRequestPermissions::HideRequest(info_map, request));
+    }
   }
 }
 

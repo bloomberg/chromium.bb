@@ -25,10 +25,6 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "net/base/request_priority.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,6 +35,8 @@ using extension_test_util::LoadManifestUnchecked;
 using testing::HasSubstr;
 using url_matcher::URLMatcher;
 
+namespace extensions {
+
 namespace {
 const char kExtensionId[] = "ext1";
 const char kExtensionId2[] = "ext2";
@@ -46,9 +44,18 @@ const char kRuleId1[] = "rule1";
 const char kRuleId2[] = "rule2";
 const char kRuleId3[] = "rule3";
 const char kRuleId4[] = "rule4";
-}  // namespace
 
-namespace extensions {
+// Creates a main-frame navigation request to |url|.
+WebRequestInfo CreateRequest(const GURL& url) {
+  WebRequestInfo info;
+  info.url = url;
+  info.is_browser_side_navigation = true;
+  info.type = content::RESOURCE_TYPE_MAIN_FRAME;
+  info.web_request_type = WebRequestResourceType::MAIN_FRAME;
+  return info;
+}
+
+}  // namespace
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = declarative_webrequest_constants;
@@ -280,10 +287,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   std::set<const WebRequestRule*> matches;
 
   GURL http_url("http://www.example.com");
-  net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
-      http_url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo http_request_info(http_request.get());
+  WebRequestInfo http_request_info = CreateRequest(http_url);
   WebRequestData request_data(&http_request_info, ON_BEFORE_REQUEST);
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(2u, matches.size());
@@ -298,9 +302,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
       base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
 
   GURL foobar_url("http://www.foobar.com");
-  std::unique_ptr<net::URLRequest> foobar_request(context.CreateRequest(
-      foobar_url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo foobar_request_info(foobar_request.get());
+  WebRequestInfo foobar_request_info = CreateRequest(foobar_url);
   request_data.request = &foobar_request_info;
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
@@ -425,10 +427,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   EXPECT_EQ("", error);
 
   GURL url("http://www.google.com");
-  net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo request_info(request.get());
+  WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(NULL, request_data, false);
@@ -475,10 +474,7 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   EXPECT_EQ("", error);
 
   GURL url("http://www.google.com/index.html");
-  net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo request_info(request.get());
+  WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(nullptr, request_data, false);
@@ -550,10 +546,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
   EXPECT_FALSE(registry->IsEmpty());
 
   GURL url("http://www.foo.com/test");
-  net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo request_info(request.get());
+  WebRequestInfo request_info = CreateRequest(url);
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(NULL, request_data, false);
@@ -601,10 +594,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   std::set<const WebRequestRule*> matches;
 
   GURL http_url("http://www.example.com");
-  net::TestURLRequestContext context;
-  std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
-      http_url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo http_request_info(http_request.get());
+  WebRequestInfo http_request_info = CreateRequest(http_url);
   WebRequestData request_data(&http_request_info, ON_BEFORE_REQUEST);
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
@@ -658,14 +648,11 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   static_assert(arraysize(urls) == arraysize(matchingRuleIds),
                 "urls and matchingRuleIds must have the same number "
                 "of elements");
-  net::TestURLRequestContext context;
 
   for (size_t i = 0; i < arraysize(matchingRuleIds); ++i) {
     // Construct the inputs.
-    std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
-        urls[i], net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-    http_request->set_site_for_cookies(firstPartyUrls[i]);
-    WebRequestInfo http_request_info(http_request.get());
+    WebRequestInfo http_request_info = CreateRequest(urls[i]);
+    http_request_info.site_for_cookies = firstPartyUrls[i];
     WebRequestData request_data(&http_request_info, ON_BEFORE_REQUEST);
     // Now run both rules on the input.
     matches = registry->GetMatches(request_data);
@@ -807,23 +794,18 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
   std::string error = registry->AddRulesImpl(kExtensionId, rules);
   EXPECT_EQ("", error);
 
-  net::TestURLRequestContext context;
   std::list<LinkedPtrEventResponseDelta> deltas;
 
   // No match because match is in the query parameter.
   GURL url1("http://bar.com/index.html?foo.com");
-  std::unique_ptr<net::URLRequest> request1(context.CreateRequest(
-      url1, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo request1_info(request1.get());
+  WebRequestInfo request1_info = CreateRequest(url1);
   WebRequestData request_data1(&request1_info, ON_BEFORE_REQUEST);
   deltas = registry->CreateDeltas(NULL, request_data1, false);
   EXPECT_EQ(0u, deltas.size());
 
   // This is a correct match.
   GURL url2("http://foo.com/index.html");
-  std::unique_ptr<net::URLRequest> request2(context.CreateRequest(
-      url2, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
-  WebRequestInfo request2_info(request2.get());
+  WebRequestInfo request2_info = CreateRequest(url2);
   WebRequestData request_data2(&request2_info, ON_BEFORE_REQUEST);
   deltas = registry->CreateDeltas(NULL, request_data2, false);
   EXPECT_EQ(1u, deltas.size());
