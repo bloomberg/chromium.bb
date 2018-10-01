@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -24,6 +25,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -176,6 +178,12 @@
   if (params.input_missing ||
       trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
       !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+    [self reset];
+    return;
+  }
+
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
+      (!frame || !frame->CanCallJavaScriptFunction())) {
     [self reset];
     return;
   }
