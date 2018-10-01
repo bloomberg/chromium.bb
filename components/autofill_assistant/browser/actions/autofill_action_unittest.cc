@@ -74,25 +74,19 @@ class AutofillActionTest : public testing::Test {
   const char* const kFirstName = "Foo";
   const char* const kLastName = "Bar";
   const char* const kEmail = "foobar@gmail.com";
-  const char* const kFillForm = "fill_form";
-  const char* const kCheckForm = "check_form";
 
   ActionProto CreateUseAddressAction() {
     ActionProto action;
     UseAddressProto* use_address = action.mutable_use_address();
     use_address->set_name(kAddressName);
     use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
-    use_address->mutable_strings()->set_fill_form(kFillForm);
-    use_address->mutable_strings()->set_check_form(kCheckForm);
     return action;
   }
 
   ActionProto CreateUseCardAction() {
     ActionProto action;
-    UseCreditCardProto* use_card = action.mutable_use_card();
-    use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
-    use_card->mutable_strings()->set_fill_form(kFillForm);
-    use_card->mutable_strings()->set_check_form(kCheckForm);
+    action.mutable_use_card()->mutable_form_field_element()->add_selectors(
+        kFakeSelector);
     return action;
   }
 
@@ -104,15 +98,6 @@ class AutofillActionTest : public testing::Test {
     action.ProcessAction(&mock_action_delegate_, callback.Get());
     return callback.GetResultOrDie()->status() ==
            ProcessedActionStatus::ACTION_APPLIED;
-  }
-
-  void ExpectActionToStopScript(const ActionProto& action_proto,
-                                const std::string& expected_message) {
-    EXPECT_CALL(mock_action_delegate_, StopCurrentScript(expected_message));
-
-    // The AutofillAction should finish successfully even when stopping the
-    // current script.
-    EXPECT_TRUE(ProcessAction(action_proto));
   }
 
   MockActionDelegate mock_action_delegate_;
@@ -140,7 +125,7 @@ TEST_F(AutofillActionTest, FillManually) {
   // We save the selection in memory.
   EXPECT_CALL(mock_client_memory_, set_selected_address(kAddressName, ""));
 
-  ExpectActionToStopScript(action_proto, kFillForm);
+  EXPECT_FALSE(ProcessAction(action_proto));
 }
 
 TEST_F(AutofillActionTest, FillCardFormFails) {
@@ -248,7 +233,7 @@ TEST_F(AutofillActionTest, FallbackFails) {
               OnSetFieldValue(ElementsAre(kFakeSelector), kFirstName, _))
       .WillOnce(RunOnceCallback<2>(false));
 
-  ExpectActionToStopScript(action_proto, kCheckForm);
+  EXPECT_FALSE(ProcessAction(action_proto));
 }
 
 TEST_F(AutofillActionTest, FallbackSucceeds) {
