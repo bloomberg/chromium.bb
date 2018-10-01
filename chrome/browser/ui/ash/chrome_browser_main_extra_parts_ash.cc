@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/ash/network/data_promo_notification.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
+#include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
@@ -203,6 +204,13 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
         ->BindInterface(ws::mojom::kServiceName, &user_activity_monitor);
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
+  }
+
+  // TODO(estade): implement ScreenOrientationDelegateChromeos for Mash and
+  // remove this condition.
+  if (!features::IsUsingWindowService()) {
+    screen_orientation_delegate_ =
+        std::make_unique<ScreenOrientationDelegateChromeos>();
   }
 
   app_list_client_ = std::make_unique<AppListClientImpl>();

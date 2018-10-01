@@ -2,37 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/content/screen_orientation_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 
-#include "ash/display/screen_orientation_controller.h"
-#include "ash/shell.h"
+#include "ash/display/screen_orientation_controller.h"  // mash-ok
+#include "ash/shell.h"                                  // mash-ok
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/web_contents.h"
 
-namespace ash {
 namespace {
 
-OrientationLockType ToAshOrientationLockType(
+ash::OrientationLockType ToAshOrientationLockType(
     blink::WebScreenOrientationLockType blink_orientation_lock) {
   switch (blink_orientation_lock) {
     case blink::kWebScreenOrientationLockDefault:
     case blink::kWebScreenOrientationLockAny:
-      return OrientationLockType::kAny;
+      return ash::OrientationLockType::kAny;
     case blink::kWebScreenOrientationLockPortrait:
-      return OrientationLockType::kPortrait;
+      return ash::OrientationLockType::kPortrait;
     case blink::kWebScreenOrientationLockPortraitPrimary:
-      return OrientationLockType::kPortraitPrimary;
+      return ash::OrientationLockType::kPortraitPrimary;
     case blink::kWebScreenOrientationLockPortraitSecondary:
-      return OrientationLockType::kPortraitSecondary;
+      return ash::OrientationLockType::kPortraitSecondary;
     case blink::kWebScreenOrientationLockLandscape:
-      return OrientationLockType::kLandscape;
+      return ash::OrientationLockType::kLandscape;
     case blink::kWebScreenOrientationLockLandscapePrimary:
-      return OrientationLockType::kLandscapePrimary;
+      return ash::OrientationLockType::kLandscapePrimary;
     case blink::kWebScreenOrientationLockLandscapeSecondary:
-      return OrientationLockType::kLandscapeSecondary;
+      return ash::OrientationLockType::kLandscapeSecondary;
     case blink::kWebScreenOrientationLockNatural:
-      return OrientationLockType::kNatural;
+      return ash::OrientationLockType::kNatural;
   }
-  return OrientationLockType::kAny;
+  return ash::OrientationLockType::kAny;
 }
 
 }  // namespace
@@ -53,21 +53,19 @@ bool ScreenOrientationDelegateChromeos::FullScreenRequired(
 void ScreenOrientationDelegateChromeos::Lock(
     content::WebContents* web_contents,
     blink::WebScreenOrientationLockType orientation_lock) {
-  Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
+  ash::Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
       web_contents->GetNativeView(),
       ToAshOrientationLockType(orientation_lock));
 }
 
 bool ScreenOrientationDelegateChromeos::ScreenOrientationProviderSupported() {
-  return Shell::Get()
-      ->screen_orientation_controller()
-      ->ScreenOrientationProviderSupported();
+  return TabletModeClient::Get() &&
+         TabletModeClient::Get()->tablet_mode_enabled();
 }
 
 void ScreenOrientationDelegateChromeos::Unlock(
     content::WebContents* web_contents) {
-  Shell::Get()->screen_orientation_controller()->UnlockOrientationForWindow(
-      web_contents->GetNativeView());
+  ash::Shell::Get()
+      ->screen_orientation_controller()
+      ->UnlockOrientationForWindow(web_contents->GetNativeView());
 }
-
-}  // namespace ash

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CONTENT_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
-#define ASH_CONTENT_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_ASH_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
 
 #include "content/public/browser/screen_orientation_delegate.h"
 
-#include "ash/content/ash_with_content_export.h"
-
-namespace ash {
-
-class ASH_WITH_CONTENT_EXPORT ScreenOrientationDelegateChromeos
+// Chrome OS implementation for screen orientation JS api. TODO(estade):
+// implement for Mash.
+class ScreenOrientationDelegateChromeos
     : public content::ScreenOrientationDelegate {
  public:
   ScreenOrientationDelegateChromeos();
@@ -28,6 +26,4 @@ class ASH_WITH_CONTENT_EXPORT ScreenOrientationDelegateChromeos
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDelegateChromeos);
 };
 
-}  // namespace ash
-
-#endif  // ASH_CONTENT_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_ASH_SCREEN_ORIENTATION_DELEGATE_CHROMEOS_H_
