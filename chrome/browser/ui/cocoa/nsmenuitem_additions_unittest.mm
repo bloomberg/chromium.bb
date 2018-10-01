@@ -316,6 +316,21 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   key = KeyEvent(0x60103, @"\x19", @"\x19", 1);
   ExpectKeyFiresItem(key, MenuItem(@"\x9", NSShiftKeyMask | NSControlKeyMask),
                      false);
+
+  // In 2-set Korean layout, (cmd + shift + t) and (cmd + t) both produce
+  // multi-byte unmodified chars. For keyEquivalent purposes, we use their
+  // raw characters, where "shift" should be handled correctly.
+  key = KeyEvent(0x100108, @"t", @"\u3145", 17);
+  ExpectKeyFiresItem(key, MenuItem(@"t", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"T", NSCommandKeyMask),
+                          /*compareCocoa=*/false);
+
+  key = KeyEvent(0x12010a, @"t", @"\u3146", 17);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"t", NSCommandKeyMask),
+                          /*compareCocoa=*/false);
+  ExpectKeyFiresItem(key, MenuItem(@"T", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
