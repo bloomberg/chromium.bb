@@ -25,13 +25,6 @@
   let showAllProviders;
 
   /**
-   * @type {!Array<mojom.OmniboxResult>} an array of all autocomplete results we've seen
-   *     for this query.  We append to this list once for every call to
-   *     handleNewAutocompleteResult.  See omnibox.mojom for details..
-   */
-  let progressiveAutocompleteResults = [];
-
-  /**
    * @type {number} the value for cursor position we sent with the most
    *     recent request.  We need to remember this in order to display it
    *     in the output; otherwise it's hard or impossible to determine
@@ -42,11 +35,13 @@
   /**
    * Register our event handlers.
    */
-  function initialize() {
+  function initializeEventHandlers() {
     omniboxDebugText = $('omnibox-debug-text');
     showIncompleteResults = $('show-incomplete-results');
     showDetails = $('show-details');
     showAllProviders = $('show-all-providers');
+
+    let startOmniboxQuery = () => browserProxy.makeRequest();
 
     $('input-text').addEventListener('input', startOmniboxQuery);
     $('prevent-inline-autocomplete')
@@ -56,29 +51,6 @@
     showIncompleteResults.addEventListener('change', refreshAllResults);
     showDetails.addEventListener('change', refreshAllResults);
     showAllProviders.addEventListener('change', refreshAllResults);
-  }
-
-  /**
-   * Extracts the input text from the text field and sends it to the
-   * C++ portion of chrome to handle.  The C++ code will iteratively
-   * call handleNewAutocompleteResult as results come in.
-   */
-  function startOmniboxQuery(event) {
-    // First, clear the results of past calls (if any).
-    clearOutput();
-    progressiveAutocompleteResults = [];
-    // Then, call chrome with a five-element list:
-    // - first element: the value in the text box
-    // - second element: the location of the cursor in the text box
-    // - third element: the value of prevent-inline-autocomplete
-    // - forth element: the value of prefer-keyword
-    // - fifth element: the value of page-classification
-    let inputTextElement = $('input-text');
-    cursorPositionUsed = inputTextElement.selectionEnd;
-    browserProxy.startOmniboxQuery(
-        inputTextElement.value, cursorPositionUsed,
-        $('prevent-inline-autocomplete').checked, $('prefer-keyword').checked,
-        parseInt($('page-classification').value, 10));
   }
 
   /**
@@ -128,8 +100,8 @@
     new PresentationInfoRecord(
         'Can Be Default', '', 'allowedToBeDefaultMatch', false,
         'A green checkmark indicates that the result can be the default ' +
-        'match (i.e., can be the match that pressing enter in the omnibox ' +
-        'navigates to).'),
+            'match (i.e., can be the match that pressing enter in the ' +
+            'omnibox navigates to).'),
     new PresentationInfoRecord(
         'Starred', '', 'starred', false,
         'A green checkmark indicates that the result has been bookmarked.'),
@@ -137,7 +109,8 @@
         'Has tab match', '', 'hasTabMatch', false,
         'A green checkmark indicates that the result URL matches an open tab.'),
     new PresentationInfoRecord(
-        'Description', '', 'description', false, 'The page title of the result.'),
+        'Description', '', 'description', false,
+        'The page title of the result.'),
     new PresentationInfoRecord(
         'URL', '', 'destinationUrl', true, 'The URL for the result.'),
     new PresentationInfoRecord(
@@ -146,32 +119,32 @@
     new PresentationInfoRecord(
         'Inline Autocompletion', '', 'inlineAutocompletion', false,
         'The text shown in the omnibox as a blue highlight selection ' +
-        'following the cursor, if this match is shown inline.'),
+            'following the cursor, if this match is shown inline.'),
     new PresentationInfoRecord(
         'Del', '', 'deletable', false,
         'A green checkmark indicates that the result can be deleted from ' +
-        'the visit history.'),
+            'the visit history.'),
     new PresentationInfoRecord('Prev', '', 'fromPrevious', false, ''),
     new PresentationInfoRecord(
         'Tran',
         'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
-        '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
+            '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
         'transition', false, 'How the user got to the result.'),
     new PresentationInfoRecord(
         'Done', '', 'providerDone', false,
         'A green checkmark indicates that the provider is done looking for ' +
-        'more results.'),
+            'more results.'),
     new PresentationInfoRecord(
         'Associated Keyword', '', 'associatedKeyword', false,
         'If non-empty, a "press tab to search" hint will be shown and will ' +
-        'engage this keyword.'),
+            'engage this keyword.'),
     new PresentationInfoRecord(
         'Keyword', '', 'keyword', false,
         'The keyword of the search engine to be used.'),
     new PresentationInfoRecord(
         'Duplicates', '', 'duplicates', false,
         'The number of matches that have been marked as duplicates of this ' +
-        'match.'),
+            'match.'),
     new PresentationInfoRecord(
         'Additional Info', '', 'additionalInfo', false,
         'Provider-specific information about the result.'),
@@ -400,9 +373,11 @@
   function refreshAllResults() {
     clearOutput();
     if (showIncompleteResults.checked)
-      progressiveAutocompleteResults.forEach(addResultToOutput);
-    else if (progressiveAutocompleteResults.length)
-      addResultToOutput(progressiveAutocompleteResults[progressiveAutocompleteResults.length - 1]);
+      browserProxy.progressiveAutocompleteResults.forEach(addResultToOutput);
+    else if (browserProxy.progressiveAutocompleteResults.length)
+      addResultToOutput(
+          browserProxy.progressiveAutocompleteResults
+              [browserProxy.progressiveAutocompleteResults.length - 1]);
   }
 
   /*
@@ -416,7 +391,9 @@
   function refreshNewResult() {
     if (!showIncompleteResults.checked)
       clearOutput();
-    addResultToOutput(progressiveAutocompleteResults[progressiveAutocompleteResults.length - 1]);
+    addResultToOutput(
+        browserProxy.progressiveAutocompleteResults
+            [browserProxy.progressiveAutocompleteResults.length - 1]);
   }
 
   /*
@@ -427,35 +404,62 @@
       omniboxDebugText.removeChild(omniboxDebugText.firstChild);
   }
 
-// NOTE: Need to keep a global reference to the |pageImpl| such that it is not
-// garbage collected, which causes the pipe to close and future calls from C++
-// to JS to get dropped.
-  let pageImpl = null;
-  let browserProxy = null;
+  class BrowserProxy {
+    constructor() {
+      /** @private {!mojom.OmniboxPageHandlerPtr} */
+      this.pagehandlePtr_ = new mojom.OmniboxPageHandlerPtr;
+      Mojo.bindInterface(
+          mojom.OmniboxPageHandler.name,
+          mojo.makeRequest(this.pagehandlePtr_).handle);
+      let client = new mojom.OmniboxPagePtr;
+      // NOTE: Need to keep a global reference to the |binding_| such that it is
+      // not garbage collected, which causes the pipe to close and future calls
+      // from C++ to JS to get dropped.
+      /** @private {!mojo.Binding} */
+      this.binding_ =
+          new mojo.Binding(mojom.OmniboxPage, this, mojo.makeRequest(client));
+      this.pagehandlePtr_.setClientPage(client);
 
-  function initializeProxies() {
-    browserProxy = new mojom.OmniboxPageHandlerPtr;
-    Mojo.bindInterface(
-        mojom.OmniboxPageHandler.name, mojo.makeRequest(browserProxy).handle);
-
-    class OmniboxPageImpl {
-      constructor(request) {
-        this.binding_ = new mojo.Binding(mojom.OmniboxPage, this, request);
-      }
-
-      handleNewAutocompleteResult(result) {
-        progressiveAutocompleteResults.push(result);
-        refreshNewResult();
-      }
+      /**
+       * @type {!Array<mojom.OmniboxResult>} an array of all autocomplete
+       *     results we've seen for this query.  We append to this list once for
+       *     every call to handleNewAutocompleteResult.  See omnibox.mojom for
+       *     details..
+       */
+      this.progressiveAutocompleteResults = [];
     }
 
-    let client = new mojom.OmniboxPagePtr;
-    pageImpl = new OmniboxPageImpl(mojo.makeRequest(client));
-    browserProxy.setClientPage(client);
+    /**
+     * Extracts the input text from the text field and sends it to the
+     * C++ portion of chrome to handle.  The C++ code will iteratively
+     * call handleNewAutocompleteResult as results come in.
+     */
+    makeRequest() {
+      this.progressiveAutocompleteResults = [];
+      // Then, call chrome with a five-element list:
+      // - first element: the value in the text box
+      // - second element: the location of the cursor in the text box
+      // - third element: the value of prevent-inline-autocomplete
+      // - forth element: the value of prefer-keyword
+      // - fifth element: the value of page-classification
+      let inputTextElement = $('input-text');
+      cursorPositionUsed = inputTextElement.selectionEnd;
+      this.pagehandlePtr_.startOmniboxQuery(
+          inputTextElement.value, cursorPositionUsed,
+          $('prevent-inline-autocomplete').checked, $('prefer-keyword').checked,
+          parseInt($('page-classification').value, 10));
+    }
+
+    handleNewAutocompleteResult(result) {
+      this.progressiveAutocompleteResults.push(result);
+      refreshNewResult();
+    }
   }
 
+  let browserProxy;
+
   document.addEventListener('DOMContentLoaded', () => {
-    initializeProxies();
-    initialize();
+    browserProxy = new BrowserProxy();
+    initializeEventHandlers();
   });
 })();
