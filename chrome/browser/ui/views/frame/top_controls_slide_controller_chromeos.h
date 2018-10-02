@@ -51,6 +51,7 @@ class TopControlsSlideControllerChromeOS
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
+  bool IsTopControlsGestureScrollInProgress() const override;
 
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool tablet_mode_enabled) override;
