@@ -61,6 +61,10 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   if (!IsCreditCardMigrationEnabled())
     return false;
 
+  // Don't show the the prompt if user cancelled/rejected previously.
+  if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(client_->GetPrefs()))
+    return false;
+
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
   GetMigratableCreditCards();
 
