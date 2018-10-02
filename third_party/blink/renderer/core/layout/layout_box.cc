@@ -5405,7 +5405,8 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
   if (IsAtomicInlineLevel() || HasUnsplittableScrollingOverflow() ||
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
-       StyleRef().GetPosition() == EPosition::kFixed))
+       StyleRef().GetPosition() == EPosition::kFixed) ||
+      ShouldApplySizeContainment())
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();
