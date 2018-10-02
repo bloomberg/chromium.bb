@@ -20265,6 +20265,8 @@ Called by update_net_error_codes.py.-->
   <int value="2552" label="BackgroundFetchRegistrationAbort"/>
   <int value="2553" label="BackgroundFetchRegistrationMatch"/>
   <int value="2554" label="BackgroundFetchRegistrationMatchAll"/>
+  <int value="2555" label="V8AtomicsNotify"/>
+  <int value="2556" label="V8AtomicsWake"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
