@@ -22,6 +22,7 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace printing {
@@ -41,9 +42,11 @@ void SetSizes(PrintSettings* settings, int dpi, int width, int height) {
                                     false);
 }
 
-void GetPageRanges(JNIEnv* env, jintArray int_arr, PageRanges* range_vector) {
+void GetPageRanges(JNIEnv* env,
+                   const JavaRef<jintArray>& int_arr,
+                   PageRanges* range_vector) {
   std::vector<int> pages;
-  base::android::JavaIntArrayToIntVector(env, int_arr, &pages);
+  base::android::JavaIntArrayToIntVector(env, int_arr.obj(), &pages);
   for (int page : pages) {
     PageRange range;
     range.from = page;
@@ -115,9 +118,9 @@ void PrintingContextAndroid::AskUserForSettingsReply(
 
   ScopedJavaLocalRef<jintArray> intArr =
       Java_PrintingContext_getPages(env, j_printing_context_);
-  if (intArr.obj()) {
+  if (!intArr.is_null()) {
     PageRanges range_vector;
-    GetPageRanges(env, intArr.obj(), &range_vector);
+    GetPageRanges(env, intArr, &range_vector);
     settings_.set_ranges(range_vector);
   }
 
