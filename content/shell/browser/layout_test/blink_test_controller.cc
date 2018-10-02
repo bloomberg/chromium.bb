@@ -387,9 +387,16 @@ bool BlinkTestController::PrepareForLayoutTest(
       test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
   if (!main_window_) {
-    main_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
-                                                   nullptr, initial_size_);
+    main_window_ = content::Shell::CreateNewWindow(
+        browser_context, GURL(url::kAboutBlankURL), nullptr, initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
+
+    // The render frame host is constructed before the call to
+    // WebContentsObserver::Observe, so we need to manually handle the creation
+    // of the new render frame host.
+    HandleNewRenderFrameHost(
+        main_window_->web_contents()->GetRenderViewHost()->GetMainFrame());
+
     if (is_devtools_protocol_test) {
       devtools_protocol_test_bindings_.reset(
           new DevToolsProtocolTestBindings(main_window_->web_contents()));
@@ -398,10 +405,24 @@ bool BlinkTestController::PrepareForLayoutTest(
     default_prefs_ = main_window_->web_contents()
                          ->GetRenderViewHost()
                          ->GetWebkitPreferences();
-    if (is_devtools_js_test)
+    if (is_devtools_js_test) {
       LoadDevToolsJSTest();
-    else
-      main_window_->LoadURL(test_url_);
+    } else {
+      // Loading the URL will immediately start the layout test. Manually call
+      // LoadURLWithParams on the WebContents to avoid extraneous calls from
+      // content::Shell such as SetFocus(), which could race with the layout
+      // test.
+      NavigationController::LoadURLParams params(test_url_);
+
+      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
+      // between layout tests.
+      params.transition_type =
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
+
+      // Clear history to purge the prior navigation to about:blank.
+      params.should_clear_history_list = true;
+      main_window_->web_contents()->GetController().LoadURLWithParams(params);
+    }
   } else {
 #if defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
