@@ -1131,10 +1131,12 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
 
   gfx::Rect gfx_rect(rect);
   Context3D context_3d;
+  gpu::ContextSupport* context_support = nullptr;
   if (video_frame.get() && video_frame->HasTextures()) {
     if (context_provider_) {
       context_3d = Context3D(context_provider_->ContextGL(),
                              context_provider_->GrContext());
+      context_support = context_provider_->ContextSupport();
     }
     if (!context_3d.gl)
       return;  // Unable to get/create a shared main thread context.
@@ -1152,7 +1154,8 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
   }
   video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(gfx_rect), flags,
-      pipeline_metadata_.video_decoder_config.video_rotation(), context_3d);
+      pipeline_metadata_.video_decoder_config.video_rotation(), context_3d,
+      context_support);
 }
 
 bool WebMediaPlayerImpl::DidGetOpaqueResponseFromServiceWorker() const {
@@ -1238,13 +1241,15 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
   }
 
   Context3D context_3d;
+  gpu::ContextSupport* context_support = nullptr;
   if (context_provider_) {
     context_3d = Context3D(context_provider_->ContextGL(),
                            context_provider_->GrContext());
+    context_support = context_provider_->ContextSupport();
   }
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      context_3d, context_support, gl, video_frame.get(), target, texture,
+      internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
 // static
