@@ -397,7 +397,7 @@ void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
     return;
   }
 
-  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
+  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
   if (favicon.empty())
     return;
 

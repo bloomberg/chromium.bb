@@ -399,7 +399,7 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
 
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
     const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
-    SkBitmap bitmap = rep.sk_bitmap();
+    SkBitmap bitmap = rep.GetBitmap();
     SkBitmap white;
     white.allocN32Pixels(bitmap.width(), bitmap.height());
     white.eraseARGB(0, 0, 0, 0);

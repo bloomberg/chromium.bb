@@ -239,8 +239,7 @@ gfx::Image SelectFaviconFramesFromPNGs(
   for (size_t i = 0; i < resized_image_skia_reps.size(); ++i) {
     scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
     if (gfx::PNGCodec::EncodeBGRASkBitmap(
-            resized_image_skia_reps[i].sk_bitmap(),
-            false,
+            resized_image_skia_reps[i].GetBitmap(), false,
             &png_bytes->data())) {
       png_reps.push_back(
           gfx::ImagePNGRep(png_bytes, resized_image_skia_reps[i].scale()));

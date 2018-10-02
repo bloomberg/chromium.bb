@@ -367,10 +367,8 @@ bool FaviconsMatch(BookmarkModel* model_a,
     return false;
 
   // Compare only the 1x bitmaps as only those are synced.
-  SkBitmap bitmap_a = image_a.AsImageSkia().GetRepresentation(
-      1.0f).sk_bitmap();
-  SkBitmap bitmap_b = image_b.AsImageSkia().GetRepresentation(
-      1.0f).sk_bitmap();
+  SkBitmap bitmap_a = image_a.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
+  SkBitmap bitmap_b = image_b.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
   return FaviconRawBitmapsMatch(bitmap_a, bitmap_b);
 }
 

@@ -21,7 +21,7 @@ namespace {
 // Returns the pixels for the bitmap in |image| at scale |image_scale|.
 void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
   DCHECK_NE(0.0f, image_scale);
-  return img.GetRepresentation(image_scale).sk_bitmap().getPixels();
+  return img.GetRepresentation(image_scale).GetBitmap().getPixels();
 }
 
 }  // namespace
@@ -259,7 +259,7 @@ gfx::ImageSkia ImageView::GetPaintImage(float scale) {
   gfx::Size scaled_size =
       gfx::ScaleToCeiledSize(rep.pixel_size(), scale / rep.scale());
   scaled_image_.AddRepresentation(gfx::ImageSkiaRep(
-      skia::ImageOperations::Resize(rep.sk_bitmap(),
+      skia::ImageOperations::Resize(rep.GetBitmap(),
                                     skia::ImageOperations::RESIZE_BEST,
                                     scaled_size.width(), scaled_size.height()),
       scale));

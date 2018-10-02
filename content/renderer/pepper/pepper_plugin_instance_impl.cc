@@ -3103,7 +3103,7 @@ PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
   SkCanvas* canvas = image_data->GetCanvas();
   // Note: Do not SkBitmap::copyTo the canvas bitmap directly because it will
   // ignore the allocated pixels in shared memory and re-allocate a new buffer.
-  canvas->writePixels(image_skia_rep.sk_bitmap(), 0, 0);
+  canvas->writePixels(image_skia_rep.GetBitmap(), 0, 0);
 
   return image_data->GetReference();
 }

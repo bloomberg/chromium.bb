@@ -48,7 +48,7 @@ class GetAttentionImageSource : public gfx::ImageSkiaSource {
     gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
     color_utils::HSL shift = {-1, 0, 0.5};
     return gfx::ImageSkiaRep(
-        SkBitmapOperations::CreateHSLShiftedBitmap(icon_rep.sk_bitmap(), shift),
+        SkBitmapOperations::CreateHSLShiftedBitmap(icon_rep.GetBitmap(), shift),
         icon_rep.scale());
   }
 

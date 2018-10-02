@@ -232,7 +232,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
       ADD_FAILURE() << "No image representation.";
       average_color_ = SkColorSetARGB(0, 0, 0, 0);
     }
-    average_color_ = ComputeAverageColor(representation.sk_bitmap());
+    average_color_ = ComputeAverageColor(representation.GetBitmap());
     if (run_loop_)
       run_loop_->Quit();
   }

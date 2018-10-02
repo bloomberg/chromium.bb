@@ -131,7 +131,7 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
       gfx::ImageSkiaRep image_skia_rep = image_skia.GetRepresentation(scale);
       if (!image_skia_rep.is_null()) {
         image_family.Add(
-            gfx::Image::CreateFrom1xBitmap(image_skia_rep.sk_bitmap()));
+            gfx::Image::CreateFrom1xBitmap(image_skia_rep.GetBitmap()));
       }
     }
   }

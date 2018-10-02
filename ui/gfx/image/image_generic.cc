@@ -112,7 +112,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
 
   scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
   if (image_skia_rep.scale() != 1.0f ||
-      !PNGCodec::EncodeBGRASkBitmap(image_skia_rep.sk_bitmap(), false,
+      !PNGCodec::EncodeBGRASkBitmap(image_skia_rep.GetBitmap(), false,
                                     &png_bytes->data())) {
     return NULL;
   }
