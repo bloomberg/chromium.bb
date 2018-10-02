@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/ble_adapter_power_manager.h"
+#include "device/fido/ble_adapter_manager.h"
 
 #include <utility>
 
@@ -11,14 +11,13 @@
 
 namespace device {
 
-BleAdapterPowerManager::BleAdapterPowerManager(
-    FidoRequestHandlerBase* request_handler)
+BleAdapterManager::BleAdapterManager(FidoRequestHandlerBase* request_handler)
     : request_handler_(request_handler), weak_factory_(this) {
   BluetoothAdapterFactory::Get().GetAdapter(base::BindRepeating(
-      &BleAdapterPowerManager::Start, weak_factory_.GetWeakPtr()));
+      &BleAdapterManager::Start, weak_factory_.GetWeakPtr()));
 }
 
-BleAdapterPowerManager::~BleAdapterPowerManager() {
+BleAdapterManager::~BleAdapterManager() {
   if (adapter_powered_on_programmatically_)
     SetAdapterPower(false /* set_power_on */);
 
@@ -26,19 +25,19 @@ BleAdapterPowerManager::~BleAdapterPowerManager() {
     adapter_->RemoveObserver(this);
 }
 
-void BleAdapterPowerManager::SetAdapterPower(bool set_power_on) {
+void BleAdapterManager::SetAdapterPower(bool set_power_on) {
   if (set_power_on)
     adapter_powered_on_programmatically_ = true;
 
   adapter_->SetPowered(set_power_on, base::DoNothing(), base::DoNothing());
 }
 
-void BleAdapterPowerManager::AdapterPoweredChanged(BluetoothAdapter* adapter,
-                                                   bool powered) {
+void BleAdapterManager::AdapterPoweredChanged(BluetoothAdapter* adapter,
+                                              bool powered) {
   request_handler_->OnBluetoothAdapterPowerChanged(powered);
 }
 
-void BleAdapterPowerManager::Start(scoped_refptr<BluetoothAdapter> adapter) {
+void BleAdapterManager::Start(scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(!adapter_);
   adapter_ = std::move(adapter);
   DCHECK(adapter_);

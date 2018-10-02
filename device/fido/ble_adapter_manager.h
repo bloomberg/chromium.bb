@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_BLE_ADAPTER_POWER_MANAGER_H_
-#define DEVICE_FIDO_BLE_ADAPTER_POWER_MANAGER_H_
+#ifndef DEVICE_FIDO_BLE_ADAPTER_MANAGER_H_
+#define DEVICE_FIDO_BLE_ADAPTER_MANAGER_H_
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -14,7 +14,7 @@
 
 namespace device {
 
-class COMPONENT_EXPORT(DEVICE_FIDO) BleAdapterPowerManager
+class COMPONENT_EXPORT(DEVICE_FIDO) BleAdapterManager
     : public BluetoothAdapter::Observer {
  public:
   // Handles notifying |request_handler| when BluetoothAdapter is powered on and
@@ -22,13 +22,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BleAdapterPowerManager
   // programmatically, and if BluetoothAdapter was powered on programmatically,
   // powers off BluetoothAdapter when |this| goes out of scope.
   // |request_handler| must outlive |this|.
-  BleAdapterPowerManager(FidoRequestHandlerBase* request_handler);
-  ~BleAdapterPowerManager() override;
+  BleAdapterManager(FidoRequestHandlerBase* request_handler);
+  ~BleAdapterManager() override;
 
   void SetAdapterPower(bool set_power_on);
 
  private:
-  friend class FidoBleAdapterPowerManagerTest;
+  friend class FidoBleAdapterManagerTest;
 
   // BluetoothAdapter::Observer:
   void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
@@ -39,11 +39,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BleAdapterPowerManager
   scoped_refptr<BluetoothAdapter> adapter_;
   bool adapter_powered_on_programmatically_ = false;
 
-  base::WeakPtrFactory<BleAdapterPowerManager> weak_factory_;
+  base::WeakPtrFactory<BleAdapterManager> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BleAdapterPowerManager);
+  DISALLOW_COPY_AND_ASSIGN(BleAdapterManager);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_BLE_ADAPTER_POWER_MANAGER_H_
+#endif  // DEVICE_FIDO_BLE_ADAPTER_MANAGER_H_
