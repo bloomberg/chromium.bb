@@ -113,6 +113,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             public void onCrash(Tab tab, boolean sadTabShown) {
                 clearRequestsAndHide();
             }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                if (mLastActivityTab == tab) mLastActivityTab = null;
+            }
         };
 
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
