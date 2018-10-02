@@ -433,10 +433,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutSize PhysicalContentBoxOffset() const {
     return LayoutSize(ContentLeft(), ContentTop());
   }
-  // The content box in absolute coords. Ignores transforms.
-  IntRect AbsoluteContentBox() const;
-  // The offset of the content box in absolute coords, ignoring transforms.
-  IntSize AbsoluteContentBoxOffset() const;
   // The content box converted to absolute coords (taking transforms into
   // account).
   FloatQuad AbsoluteContentQuad(MapCoordinatesFlags = 0) const;
