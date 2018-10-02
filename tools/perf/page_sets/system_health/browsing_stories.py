@@ -196,6 +196,20 @@ class NytimesDesktopStory(_ArticleBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class NytimesDesktopStory2018(_ArticleBrowsingStory):
+  """
+  The third top website in http://www.alexa.com/topsites/category/News
+  Known Replay Errors:
+  - window.EventTracker is not loaded
+  - all network errors are related to ads
+  """
+  NAME = 'browse:news:nytimes:2018'
+  URL = 'http://www.nytimes.com'
+  ITEM_SELECTOR = "a[href*='/2018/']"
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+
 # Desktop qq.com opens a news item in a separate tab, for which the back button
 # does not work.
 class QqMobileStory(_ArticleBrowsingStory):

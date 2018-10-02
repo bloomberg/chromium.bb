@@ -33,6 +33,9 @@
         "browse:news:nytimes": {
             "DEFAULT": "system_health_desktop_015.wprgo"
         },
+        "browse:news:nytimes:2018": {
+            "DEFAULT": "system_health_desktop_e2dd18933f.wprgo"
+        },
         "browse:news:reddit": {
             "DEFAULT": "system_health_desktop_016.wprgo"
         },
