@@ -104,6 +104,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD1(StopCurrentScript, void(const std::string& message));
 };
 
 }  // namespace autofill_assistant

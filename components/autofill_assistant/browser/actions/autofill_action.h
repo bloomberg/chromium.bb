@@ -78,10 +78,14 @@ class AutofillAction : public Action {
                        ActionDelegate* delegate,
                        bool successful);
 
+  void EndAction(bool successful);
+
   // Usage of the autofilled address. Ignored if autofilling a card.
   std::string name_;
   std::string prompt_;
   std::vector<std::string> selectors_;
+  std::string fill_form_message_;
+  std::string check_form_message_;
 
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;

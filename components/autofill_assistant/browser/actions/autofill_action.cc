@@ -97,6 +97,8 @@ AutofillAction::AutofillAction(const ActionProto& proto)
          proto.use_address().form_field_element().selectors()) {
       selectors_.emplace_back(selector);
     }
+    fill_form_message_ = proto.use_address().strings().fill_form();
+    check_form_message_ = proto.use_address().strings().check_form();
   } else {
     DCHECK(proto.has_use_card());
     is_autofill_card_ = true;
@@ -106,6 +108,8 @@ AutofillAction::AutofillAction(const ActionProto& proto)
          proto.use_card().form_field_element().selectors()) {
       selectors_.emplace_back(selector);
     }
+    fill_form_message_ = proto.use_card().strings().fill_form();
+    check_form_message_ = proto.use_card().strings().check_form();
   }
 }
 
@@ -127,19 +131,14 @@ void AutofillAction::ProcessAction(ActionDelegate* delegate,
     const std::string& guid = selected_data.value();
     if (guid.empty()) {
       // User selected 'Fill manually'.
-      // TODO(crbug.com/806868): We need to differentiate between action failure
-      // and stopping an action to let the user fill a form (expected stop).
-      UpdateProcessedAction(false);
-      std::move(process_action_callback_)
-          .Run(std::move(processed_action_proto_));
+      delegate->StopCurrentScript(fill_form_message_);
+      EndAction(/* successful= */ true);
       return;
     }
 
     if (selectors_.empty()) {
       // If there is no selector, finish the action directly.
-      UpdateProcessedAction(true);
-      std::move(process_action_callback_)
-          .Run(std::move(processed_action_proto_));
+      EndAction(/* successful= */ true);
       return;
     }
 
@@ -164,6 +163,11 @@ void AutofillAction::ProcessAction(ActionDelegate* delegate,
   delegate->ChooseAddress(std::move(selection_callback));
 }
 
+void AutofillAction::EndAction(bool successful) {
+  UpdateProcessedAction(successful);
+  std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+}
+
 void AutofillAction::OnDataSelected(ActionDelegate* delegate,
                                     const std::string& guid) {
   // Remember the selection.
@@ -177,21 +181,17 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     // If there is no selector, finish the action directly. This can be the case
     // when we want to trigger the selection of address or card at the beginning
     // of the script and use it later.
-    UpdateProcessedAction(true);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    EndAction(/* successful= */ true);
     return;
   }
 
   if (guid.empty()) {
     // User selected 'Fill manually'.
-    // TODO(crbug.com/806868): We need to differentiate between action failure
-    // and stopping an action to let the user fill a form (expected stop).
-    UpdateProcessedAction(false);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    delegate->StopCurrentScript(fill_form_message_);
+    EndAction(/* successful= */ true);
     return;
   }
 
-  // TODO(crbug.com/806868): Validate form and use fallback if needed.
   FillFormWithData(guid, delegate);
 }
 
@@ -238,11 +238,9 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
 void AutofillAction::OnFormFilled(const std::string& guid,
                                   ActionDelegate* delegate,
                                   bool successful) {
-  // In case Autofill failed, we stop the action.
+  // In case Autofill failed, we fail the action.
   if (!successful) {
-    UpdateProcessedAction(false);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
-    // TODO(crbug.com/806868): Tell the user to fill the form manually.
+    EndAction(/* successful= */ false);
     return;
   }
 
@@ -254,15 +252,13 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
                                          bool allow_fallback) {
   if (is_autofill_card_) {
     // TODO(crbug.com/806868): Implement required fields checking for cards.
-    UpdateProcessedAction(true);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    EndAction(/* successful= */ true);
     return;
   }
 
   // If there are no required fields, finish the action successfully.
   if (proto_.use_address().required_fields().empty()) {
-    UpdateProcessedAction(true);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    EndAction(/* successful= */ true);
     return;
   }
 
@@ -313,12 +309,10 @@ void AutofillAction::OnGetRequiredFieldValue(
   for (size_t i = 0; i < required_fields_value_status_.size(); i++) {
     if (required_fields_value_status_[i] == EMPTY) {
       if (!allow_fallback) {
-        // Validation failed and we don't want to try the fallback, so we fail
-        // the action.
-        UpdateProcessedAction(false);
-        std::move(process_action_callback_)
-            .Run(std::move(processed_action_proto_));
-        // TODO(crbug.com/806868): Tell the user to fill the form manually.
+        // Validation failed and we don't want to try the fallback, so we stop
+        // the script.
+        delegate->StopCurrentScript(check_form_message_);
+        EndAction(/* successful= */ true);
         return;
       }
 
@@ -342,17 +336,15 @@ void AutofillAction::OnGetRequiredFieldValue(
   DCHECK_EQ(failed_selectors.size(), fallback_values.size());
 
   if (validation_successful) {
-    UpdateProcessedAction(true);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    EndAction(/* successful= */ true);
     return;
   }
 
   if (fallback_values.empty()) {
     // One or more required fields is empty but there is no fallback value, so
-    // we fail the action.
-    UpdateProcessedAction(false);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
-    // TODO(crbug.com/806868): Tell the user to fill the form manually.
+    // we stop the script.
+    delegate->StopCurrentScript(check_form_message_);
+    EndAction(/* successful= */ true);
     return;
   }
 
@@ -413,12 +405,10 @@ void AutofillAction::OnSetFieldValue(const std::string& guid,
   // We can ignore the other SetFieldValue callbacks given that an action is
   // processed only once.
   if (!successful) {
-    // Fallback failed: we fail the action without checking the fields.
+    // Fallback failed: we stop the script without checking the fields.
     if (process_action_callback_) {
-      UpdateProcessedAction(false);
-      std::move(process_action_callback_)
-          .Run(std::move(processed_action_proto_));
-      // TODO(crbug.com/806868): Tell the user to fill the form manually.
+      delegate->StopCurrentScript(check_form_message_);
+      EndAction(/* successful= */ true);
     }
     return;
   }
