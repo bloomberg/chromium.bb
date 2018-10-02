@@ -8,15 +8,12 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "base/macros.h"
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace ash {
 
 // The drag delegate for browser windows. It not only includes the logic in
 // TabletModeWindowDragDelegate, but also has special logic for browser windows,
-// e.g., scales the source window, shows/hides the blurred background, etc.
+// e.g., scales the source window, shows/hides the other windows below the
+// source window.
 class TabletModeBrowserWindowDragDelegate
     : public TabletModeWindowDragDelegate {
  public:
@@ -40,24 +37,19 @@ class TabletModeBrowserWindowDragDelegate
   // current drag location for the dragged window.
   void UpdateSourceWindow(const gfx::Point& location_in_screen);
 
-  // Shows/Hides/Destroies the scrim widget |scrim_| based on the current
-  // location |location_in_screen|.
-  void UpdateScrim(const gfx::Point& location_in_screen);
-
-  // Shows the scrim with the specified opacity, blur and expected bounds.
-  void ShowScrim(float opacity, float blur, const gfx::Rect& bounds_in_screen);
-
-  // A widget placed below the current dragged window to show the blurred or
-  // transparent background and to prevent the dragged window merge into any
-  // browser window beneath it during dragging.
-  std::unique_ptr<views::Widget> scrim_;
-
   // It's used to hide all visible windows if the source window needs to be
   // scaled up/down during dragging a tab out of the source window. It also
   // hides the home launcher if home launcher is enabled, blurs and darkens the
   // background upon its creation. All of these will be restored upon its
   // destruction.
   std::unique_ptr<WindowsHider> windows_hider_;
+
+  // The observer to observe the source window's bounds change animation during
+  // dragging. It's used to prevent the dragged window to merge back into the
+  // source window during dragging. Only when the source window restores to its
+  // maximized window size, the dragged window can be merged back into the
+  // source window.
+  std::unique_ptr<ui::ImplicitAnimationObserver> source_window_bounds_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeBrowserWindowDragDelegate);
 };

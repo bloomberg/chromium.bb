@@ -19,7 +19,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/layer_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -35,19 +34,6 @@ namespace {
 // threshold.
 constexpr float kSourceWindowScale = 0.85;
 
-// Values of the blurred scrim.
-constexpr SkColor kScrimBackgroundColor = SK_ColorGRAY;
-constexpr float kScrimOpacity = 0.8;
-constexpr float kScrimBlur = 5.f;
-constexpr int kScrimTransitionInMs = 250;
-constexpr int kScrimRoundRectRadiusDp = 4;
-
-// The threshold to compute the vertical distance to create/reset the scrim. The
-// scrim is placed below the current dragged window. This value is smaller than
-// kIndicatorsThreshouldRatio to prevent the dragged window to merge back to
-// its source window during its source window's animation.
-constexpr float kScrimResetThresholdRatio = 0.05;
-
 // Returns the window selector if overview mode is active, otherwise returns
 // nullptr.
 WindowSelector* GetWindowSelector() {
@@ -56,79 +42,63 @@ WindowSelector* GetWindowSelector() {
              : nullptr;
 }
 
-// Creates a transparent scrim which is placed below |dragged_window|.
-std::unique_ptr<views::Widget> CreateScrim(aura::Window* dragged_window,
-                                           const gfx::Rect& bounds) {
-  std::unique_ptr<views::Widget> widget = CreateBackgroundWidget(
-      /*root_window=*/dragged_window->GetRootWindow(),
-      /*layer_type=*/ui::LAYER_TEXTURED,
-      /*background_color=*/kScrimBackgroundColor,
-      /*border_thickness=*/0,
-      /*border_radius=*/kScrimRoundRectRadiusDp,
-      /*border_color=*/SK_ColorTRANSPARENT,
-      /*initial_opacity=*/0.f,
-      /*parent=*/dragged_window->parent(),
-      /*stack_on_top=*/false);
-  widget->SetBounds(bounds);
-  return widget;
-}
-
-// When the dragged window is dragged past this value, a transparent scrim will
-// be created to place below the current dragged window to prevent the dragged
-// window to merge into any browser window beneath it and when it's dragged back
-// toward the top of the screen, the scrim will be destroyed.
-int GetScrimVerticalThreshold(const gfx::Rect& work_area_bounds) {
-  return work_area_bounds.y() +
-         work_area_bounds.height() * kScrimResetThresholdRatio;
-}
-
-// The class to observe the source window's bounds change animation. When the
-// bounds animation is running, set the dragged window not be able to attach to
-// any window to prevent it accidently attach into the animating source window.
+// The class to observe the source window's bounds change animation. It's used
+// to prevent the dragged window to merge back into the source window during
+// dragging. Only when the source window restores to its maximized window size,
+// the dragged window can be merged back into the source window.
 class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
-                                      public ui::LayerObserver,
                                       public aura::WindowObserver {
  public:
-  SourceWindowAnimationObserver(ui::Layer* source_window_layer,
+  SourceWindowAnimationObserver(aura::Window* source_window,
                                 aura::Window* dragged_window)
-      : source_window_layer_(source_window_layer),
-        dragged_window_(dragged_window) {
-    source_window_layer_->AddObserver(this);
+      : source_window_(source_window), dragged_window_(dragged_window) {
+    source_window_->AddObserver(this);
     dragged_window_->AddObserver(this);
   }
 
-  ~SourceWindowAnimationObserver() override {
-    if (source_window_layer_)
-      source_window_layer_->RemoveObserver(this);
-
-    if (dragged_window_) {
-      dragged_window_->RemoveObserver(this);
-      dragged_window_->ClearProperty(ash::kCanAttachToAnotherWindowKey);
-    }
-  }
+  ~SourceWindowAnimationObserver() override { StopObserving(); }
 
   // ui::ImplicitAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
-    DCHECK(dragged_window_);
+    DCHECK(dragged_window_ && source_window_);
     dragged_window_->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
   }
 
-  void OnImplicitAnimationsCompleted() override { delete this; }
-
-  // ui::LayerObserver:
-  void LayerDestroyed(ui::Layer* layer) override {
-    DCHECK_EQ(source_window_layer_, layer);
-    delete this;
+  void OnImplicitAnimationsCompleted() override {
+    DCHECK(dragged_window_ && source_window_);
+    // When arriving here, we know the source window bounds change animation
+    // just ended. Only clear the property ash::kCanAttachToAnotherWindowKey if
+    // the source window bounds restores to its maximized window size.
+    gfx::Rect work_area_bounds = display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(source_window_)
+                                     .work_area();
+    ::wm::ConvertRectFromScreen(source_window_->parent(), &work_area_bounds);
+    if (source_window_->bounds() == work_area_bounds)
+      StopObserving();
   }
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(dragged_window_, window);
-    delete this;
+    DCHECK(window == source_window_ || window == dragged_window_);
+    StopObserving();
   }
 
  private:
-  ui::Layer* source_window_layer_;
+  void StopObserving() {
+    StopObservingImplicitAnimations();
+    if (source_window_) {
+      source_window_->RemoveObserver(this);
+      source_window_ = nullptr;
+    }
+
+    if (dragged_window_) {
+      dragged_window_->RemoveObserver(this);
+      dragged_window_->ClearProperty(ash::kCanAttachToAnotherWindowKey);
+      dragged_window_ = nullptr;
+    }
+  }
+
+  aura::Window* source_window_;
   aura::Window* dragged_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceWindowAnimationObserver);
@@ -291,9 +261,6 @@ void TabletModeBrowserWindowDragDelegate::UpdateForDraggedWindow(
 
   // Update the source window if necessary.
   UpdateSourceWindow(location_in_screen);
-
-  // Update the scrim that beneath the dragged window if necessary.
-  UpdateScrim(location_in_screen);
 }
 
 void TabletModeBrowserWindowDragDelegate::EndingForDraggedWindow(
@@ -312,7 +279,6 @@ void TabletModeBrowserWindowDragDelegate::EndingForDraggedWindow(
     TabletModeWindowState::UpdateWindowPosition(
         wm::GetWindowState(source_window));
   }
-  scrim_.reset();
   windows_hider_.reset();
 }
 
@@ -373,95 +339,12 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
         source_window->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.AddObserver(new SourceWindowAnimationObserver(
-        source_window->layer(), dragged_window_));
+    source_window_bounds_observer_ =
+        std::make_unique<SourceWindowAnimationObserver>(source_window,
+                                                        dragged_window_);
+    settings.AddObserver(source_window_bounds_observer_.get());
     source_window->SetBounds(expected_bounds);
   }
-}
-
-void TabletModeBrowserWindowDragDelegate::UpdateScrim(
-    const gfx::Point& location_in_screen) {
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(dragged_window_)
-          .work_area();
-  if (location_in_screen.y() < GetScrimVerticalThreshold(work_area_bounds) ||
-      location_in_screen.y() >= work_area_bounds.bottom()) {
-    // Remove |scrim_| entirely so that the dragged window can be merged back
-    // to the source window when the dragged window is dragged back toward the
-    // top area of the screen. Also remove |scrim_| if the dragged window is
-    // dragged to the bottom of the screen.
-    scrim_.reset();
-    return;
-  }
-
-  // If overview mode is active, do not show the scrim on the overview side of
-  // the screen.
-  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
-    WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
-        dragged_window_->GetRootWindow());
-    if (window_grid && window_grid->bounds().Contains(location_in_screen)) {
-      scrim_.reset();
-      return;
-    }
-  }
-
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPosition(location_in_screen);
-  gfx::Rect expected_bounds(work_area_bounds);
-  if (split_view_controller_->IsSplitViewModeActive()) {
-    expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
-        dragged_window_, snap_position);
-  } else {
-    expected_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                          kHighlightScreenEdgePaddingDp);
-  }
-
-  bool should_show_blurred_scrim = false;
-  if (location_in_screen.y() >=
-      GetMaximizeVerticalThreshold(work_area_bounds)) {
-    if (split_view_controller_->IsSplitViewModeActive() !=
-        (snap_position == SplitViewController::NONE)) {
-      should_show_blurred_scrim = true;
-    }
-  }
-  // When the event is between |indicators_vertical_threshold| and
-  // |maximize_vertical_threshold|, the scrim is still shown but is invisible
-  // to the user (transparent). It's needed to prevent the dragged window to
-  // merge into the scaled down source window.
-  ShowScrim(should_show_blurred_scrim ? kScrimOpacity : 0.f,
-            should_show_blurred_scrim ? kScrimBlur : 0.f, expected_bounds);
-}
-
-void TabletModeBrowserWindowDragDelegate::ShowScrim(
-    float opacity,
-    float blur,
-    const gfx::Rect& bounds_in_screen) {
-  gfx::Rect bounds(bounds_in_screen);
-  ::wm::ConvertRectFromScreen(dragged_window_->parent(), &bounds);
-
-  if (scrim_ && scrim_->GetLayer()->GetTargetOpacity() == opacity &&
-      scrim_->GetNativeWindow()->bounds() == bounds) {
-    return;
-  }
-
-  if (!scrim_)
-    scrim_ = CreateScrim(dragged_window_, bounds);
-  dragged_window_->parent()->StackChildBelow(scrim_->GetNativeWindow(),
-                                             dragged_window_);
-  scrim_->GetLayer()->SetBackgroundBlur(blur);
-
-  if (scrim_->GetNativeWindow()->bounds() != bounds) {
-    scrim_->SetOpacity(0.f);
-    scrim_->SetBounds(bounds);
-  }
-  ui::ScopedLayerAnimationSettings animation(scrim_->GetLayer()->GetAnimator());
-  animation.SetTweenType(gfx::Tween::EASE_IN_OUT);
-  animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kScrimTransitionInMs));
-  animation.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  scrim_->SetOpacity(opacity);
 }
 
 }  // namespace ash

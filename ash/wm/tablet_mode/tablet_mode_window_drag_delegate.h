@@ -81,10 +81,6 @@ class TabletModeWindowDragDelegate {
   // will show up.
   int GetIndicatorsVerticalThreshold(const gfx::Rect& work_area_bounds) const;
 
-  // When the dragged window is dragged past this value, a blured scrim will
-  // show up, indicating the dragged window will be maximized after releasing.
-  int GetMaximizeVerticalThreshold(const gfx::Rect& work_area_bounds) const;
-
   // Gets the desired snap position for |location_in_screen|.
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;

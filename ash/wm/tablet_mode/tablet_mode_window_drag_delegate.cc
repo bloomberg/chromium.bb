@@ -29,10 +29,6 @@ namespace {
 // tablet mode.
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
-// The threshold to compute the vertical distance to hide the drag indicators
-// and maximize the dragged window after the drag ends.
-constexpr float kMaximizeThresholdRatio = 0.4;
-
 // Returns the window selector if overview mode is active, otherwise returns
 // nullptr.
 WindowSelector* GetWindowSelector() {
@@ -245,16 +241,6 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     return IndicatorState::kNone;
   }
 
-  // If the event location has passed the maximize vertical threshold, and the
-  // event location is not in snap indicator area, and overview mode is not
-  // active at the moment, do not show the drag indicators.
-  if (location_in_screen.y() >=
-          GetMaximizeVerticalThreshold(work_area_bounds) &&
-      snap_position == SplitViewController::NONE &&
-      !Shell::Get()->window_selector_controller()->IsSelecting()) {
-    return IndicatorState::kNone;
-  }
-
   // No top drag indicator if in portrait screen orientation.
   if (split_view_controller_->IsCurrentScreenOrientationLandscape())
     return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
@@ -272,12 +258,6 @@ int TabletModeWindowDragDelegate::GetIndicatorsVerticalThreshold(
     const gfx::Rect& work_area_bounds) const {
   return work_area_bounds.y() +
          work_area_bounds.height() * kIndicatorsThresholdRatio;
-}
-
-int TabletModeWindowDragDelegate::GetMaximizeVerticalThreshold(
-    const gfx::Rect& work_area_bounds) const {
-  return work_area_bounds.y() +
-         work_area_bounds.height() * kMaximizeThresholdRatio;
 }
 
 SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
