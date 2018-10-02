@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/autofill/autofill_profile_validator_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,6 +52,7 @@ KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 IdentityManagerFactory::GetForProfile(profile),
+                AutofillProfileValidatorFactory::GetInstance(),
                 profile->IsOffTheRecord());
   return service;
 }

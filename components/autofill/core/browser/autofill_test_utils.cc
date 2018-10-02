@@ -354,6 +354,7 @@ AutofillProfile GetServerProfile() {
 
   profile.set_language_code("en");
   profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.set_is_client_validity_states_updated(true);
   profile.set_use_count(7);
   profile.set_use_date(base::Time::FromTimeT(54321));
 
@@ -376,6 +377,7 @@ AutofillProfile GetServerProfile2() {
 
   profile.set_language_code("en");
   profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.set_is_client_validity_states_updated(true);
   profile.set_use_count(14);
   profile.set_use_date(base::Time::FromTimeT(98765));
 

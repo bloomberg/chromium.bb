@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/account_info_getter.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_validator.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
@@ -33,6 +34,8 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class Browser;
 class PrefService;
@@ -85,6 +88,7 @@ class PersonalDataManager : public KeyedService,
             scoped_refptr<AutofillWebDataService> account_database,
             PrefService* pref_service,
             identity::IdentityManager* identity_manager,
+            AutofillProfileValidator* client_profile_validator,
             bool is_off_the_record);
 
   // KeyedService:
@@ -232,8 +236,13 @@ class PersonalDataManager : public KeyedService,
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
 
+  // Updates the validity states of |profiles| according to server validity map.
   void UpdateProfilesValidityMapsIfNeeded(
       std::vector<AutofillProfile*>& profiles);
+
+  // Updates the validity states of |profiles| according to client side
+  // validation API: |client_profile_validator_|.
+  void UpdateClientValidityStates(std::vector<AutofillProfile*>& profiles);
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -700,6 +709,9 @@ class PersonalDataManager : public KeyedService,
     profile_validities_need_update = true;
   };
 
+  // Called when the |profile| is validated by the AutofillProfileValidator.
+  void OnValidated(AutofillProfile* profile);
+
   const std::string app_locale_;
 
   // The default country code for new addresses.
@@ -715,6 +727,8 @@ class PersonalDataManager : public KeyedService,
   // observing changes in pref_services. We need to set the
   // |profile_validities_need_update| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
+
+  AutofillProfileValidator* client_profile_validator_;
 
   // The identity manager that this instance uses. Must outlive this instance.
   identity::IdentityManager* identity_manager_ = nullptr;

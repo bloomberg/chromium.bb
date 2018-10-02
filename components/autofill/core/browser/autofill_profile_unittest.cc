@@ -39,12 +39,14 @@ base::string16 GetLabel(AutofillProfile* profile) {
   return labels[0];
 }
 
-void SetupTestProfile(AutofillProfile& profile) {
+void SetupValidatedTestProfile(AutofillProfile& profile) {
   profile.set_guid(base::GenerateGUID());
   profile.set_origin(kSettingsOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
+  profile.SetClientValidityFromBitfieldValue(1984);
+  profile.set_is_client_validity_states_updated(true);
 }
 
 std::vector<AutofillProfile*> ToRawPointerVector(
@@ -705,9 +707,25 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
+TEST(AutofillProfileTest, SetRawInfo_UpdateValidityFlag) {
+  AutofillProfile a;
+  SetupValidatedTestProfile(a);
+  EXPECT_TRUE(a.is_client_validity_states_updated());
+
+  a.SetRawInfo(NAME_FULL, ASCIIToUTF16("Alice Munro"));
+  // NAME_FULL is NOT validated through the client API (not supported),
+  // therefore it should not change the validity flag.
+  EXPECT_TRUE(a.is_client_validity_states_updated());
+
+  a.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Ooz"));
+  // ADDRESS_HOME_CITY IS validated through the client API, therefore it should
+  // change the flag to false.
+  EXPECT_FALSE(a.is_client_validity_states_updated());
+}
+
 TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
   AutofillProfile a;
-  SetupTestProfile(a);
+  SetupValidatedTestProfile(a);
 
   // Create an identical profile except that the new profile:
   //   (1) Has a different origin,
@@ -726,6 +744,8 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
   b.set_language_code("en");
 
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));
+  // Merge has modified profile a, the validation is not updated.
+  EXPECT_FALSE(a.is_client_validity_states_updated());
   EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("Unit 5, area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
@@ -736,13 +756,18 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
 
 TEST(AutofillProfileTest, MergeDataFrom_SameProfile) {
   AutofillProfile a;
-  SetupTestProfile(a);
+  SetupValidatedTestProfile(a);
 
   // The profile has no full name yet. Merge will add it.
   AutofillProfile b = a;
   b.set_guid(base::GenerateGUID());
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));
+  // Merge has modified profile a, the validation is not updated.
+  EXPECT_FALSE(a.is_client_validity_states_updated());
   EXPECT_EQ(1u, a.use_count());
+
+  // pretend that the profile is re-validated.
+  a.set_is_client_validity_states_updated(true);
 
   // Now the profile is fully populated. Merging it again has no effect (except
   // for usage statistics).
@@ -750,6 +775,8 @@ TEST(AutofillProfileTest, MergeDataFrom_SameProfile) {
   c.set_guid(base::GenerateGUID());
   c.set_use_count(3);
   EXPECT_FALSE(a.MergeDataFrom(c, "en-US"));
+  // Merge has not modified anything, the validation should not changed.
+  EXPECT_TRUE(a.is_client_validity_states_updated());
   EXPECT_EQ(3u, a.use_count());
 }
 
