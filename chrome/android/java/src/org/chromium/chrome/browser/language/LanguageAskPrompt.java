@@ -36,6 +36,12 @@ import java.util.List;
  * once at browser startup when no other promo or modals are shown.
  */
 public class LanguageAskPrompt implements ModalDialogView.Controller {
+    private class SeparatorViewHolder extends ViewHolder {
+        SeparatorViewHolder(View view) {
+            super(view);
+        }
+    }
+
     private class LanguageAskPromptRowViewHolder extends ViewHolder {
         private TextView mLanguageNameTextView;
         private TextView mNativeNameTextView;
@@ -81,9 +87,13 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         }
     }
 
-    private class LanguageItemAdapter extends RecyclerView.Adapter<LanguageAskPromptRowViewHolder> {
-        private List<LanguageItem> mLanguages;
+    private class LanguageItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private List<LanguageItem> mTopLanguages;
+        private List<LanguageItem> mBottomLanguages;
         private HashSet<String> mLanguagesUpdate;
+
+        private static final int TYPE_LANGUAGE_ITEM = 0;
+        private static final int TYPE_SEPARATOR = 1;
 
         /**
          * @param context The context this item's views will be associated with.
@@ -91,38 +101,78 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
          *        add/remove from the language list.
          */
         public LanguageItemAdapter(Context context, HashSet<String> languagesUpdate) {
-            mLanguages = new ArrayList<LanguageItem>();
+            mTopLanguages = new ArrayList<LanguageItem>();
+            mBottomLanguages = new ArrayList<LanguageItem>();
             mLanguagesUpdate = languagesUpdate;
         }
 
         @Override
-        public LanguageAskPromptRowViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View row = LayoutInflater.from(parent.getContext())
-                               .inflate(R.layout.language_ask_prompt_row, parent, false);
+        public int getItemViewType(int position) {
+            if (position == mTopLanguages.size()) {
+                return TYPE_SEPARATOR;
+            }
 
-            return new LanguageAskPromptRowViewHolder(row);
+            return TYPE_LANGUAGE_ITEM;
         }
 
         @Override
-        public void onBindViewHolder(LanguageAskPromptRowViewHolder holder, int position) {
-            LanguageItem lang = mLanguages.get(position);
-            holder.setLanguage(lang.getDisplayName(), lang.getNativeDisplayName(), lang.getCode(),
-                    mLanguagesUpdate);
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == TYPE_LANGUAGE_ITEM) {
+                View row = LayoutInflater.from(parent.getContext())
+                                   .inflate(R.layout.language_ask_prompt_row, parent, false);
+
+                return new LanguageAskPromptRowViewHolder(row);
+            } else if (viewType == TYPE_SEPARATOR) {
+                return new SeparatorViewHolder(
+                        LayoutInflater.from(parent.getContext())
+                                .inflate(
+                                        R.layout.language_ask_prompt_row_separator, parent, false));
+            }
+            // NOTREACHED
+            return null;
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if (getItemViewType(position) == TYPE_LANGUAGE_ITEM) {
+                LanguageItem lang = getLanguageItemAt(position);
+                ((LanguageAskPromptRowViewHolder) holder)
+                        .setLanguage(lang.getDisplayName(), lang.getNativeDisplayName(),
+                                lang.getCode(), mLanguagesUpdate);
+            }
+            // No binding necessary for the separator.
         }
 
         @Override
         public int getItemCount() {
-            return mLanguages.size();
+            // Sum of both lists + a separator.
+            return mTopLanguages.size() + mBottomLanguages.size() + 1;
+        }
+
+        private LanguageItem getLanguageItemAt(int position) {
+            if (position < mTopLanguages.size()) {
+                return mTopLanguages.get(position);
+            } else if (position > mTopLanguages.size()) {
+                return mBottomLanguages.get(position - mTopLanguages.size() - 1);
+            }
+
+            // NOTREACHED, this would mean the language item at the separator's position is being
+            // requested
+            return null;
         }
 
         /**
          * Sets the list of languages to |languages| and notifies the RecyclerView that the data has
          * changed.
-         * @param languages The new list of languages to be displayed by the RecyclerView.
+         * @param topLanguages The new list of languages to be displayed above the separator.
+         * @param bottomLanguages The new list of languages to be displayed below the separator.
          */
-        public void setLanguages(List<LanguageItem> languages) {
-            mLanguages.clear();
-            mLanguages.addAll(languages);
+        public void setLanguages(
+                List<LanguageItem> topLanguages, List<LanguageItem> bottomLanguages) {
+            mTopLanguages.clear();
+            mTopLanguages.addAll(topLanguages);
+            mBottomLanguages.clear();
+            mBottomLanguages.addAll(bottomLanguages);
             notifyDataSetChanged();
         }
     }
@@ -202,20 +252,33 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         List<LanguageItem> languages = PrefServiceBridge.getInstance().getChromeLanguageList();
         LinkedHashSet<String> currentGeoLanguages =
                 GeoLanguageProviderBridge.getCurrentGeoLanguages();
-        Collections.sort(languages, new Comparator<LanguageItem>() {
+
+        List<LanguageItem> topLanguages = new ArrayList<LanguageItem>();
+        List<LanguageItem> bottomLanguages = new ArrayList<LanguageItem>();
+        for (LanguageItem language : languages) {
+            if (currentGeoLanguages.contains(language.getCode())
+                    || mInitialLanguages.contains(language.getCode())) {
+                topLanguages.add(language);
+            } else {
+                bottomLanguages.add(language);
+            }
+        }
+
+        Collections.sort(topLanguages, new Comparator<LanguageItem>() {
             private int computeItemScore(LanguageItem item) {
                 // Order languages so that the region's languages are on top, followed by the ones
-                // already in the user's accept languages, then the remaining languages in
-                // alphabetical order.
+                // already in the user's accept languages.
                 if (currentGeoLanguages.contains(item.getCode())) return -2;
-                return mInitialLanguages.contains(item.getCode()) ? -1 : 0;
+                if (mInitialLanguages.contains(item.getCode())) return -1;
+                return 0;
             }
             @Override
             public int compare(LanguageItem first, LanguageItem second) {
                 return computeItemScore(first) - computeItemScore(second);
             }
         });
-        adapter.setLanguages(languages);
+
+        adapter.setLanguages(topLanguages, bottomLanguages);
 
         mModalDialogManager = activity.getModalDialogManager();
         mDialog = new ModalDialogView(this, params);
