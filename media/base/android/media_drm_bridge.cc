@@ -36,9 +36,6 @@
 #include "media/base/provision_fetcher.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
-// In SHARED_INTERMEDIATE_DIR
-#include "widevine_cdm_version.h"  // NOLINT(build/include)
-
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
