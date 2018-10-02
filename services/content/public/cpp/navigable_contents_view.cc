@@ -19,6 +19,7 @@
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"  // nogncheck
 #include "ui/base/ui_base_features.h"                   // nogncheck
+#include "ui/views/controls/native/native_view_host.h"  // nogncheck
 #include "ui/views/mus/remote_view/remote_view_host.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 #endif  // defined(TOOLKIT_VIEWS)
@@ -41,6 +42,15 @@ base::AtomicFlag& GetInServiceProcessFlag() {
   return *in_service_process;
 }
 
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
+NavigableContentsView::RemoteViewFactory& GetRemoteViewFactory() {
+  static base::NoDestructor<NavigableContentsView::RemoteViewFactory> factory;
+  return *factory;
+}
+
+#endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
 }  // namespace
 
 NavigableContentsView::~NavigableContentsView() = default;
@@ -60,25 +70,41 @@ NavigableContentsView::NavigableContentsView() {
   view_ = std::make_unique<views::View>();
   view_->set_owned_by_client();
   view_->SetLayoutManager(std::make_unique<views::FillLayout>());
-#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  if (!IsClientRunningInServiceProcess()) {
-    DCHECK(!remote_view_host_);
-    remote_view_host_ = new views::RemoteViewHost;
-    view_->AddChildView(remote_view_host_);
-  }
-#endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 #endif  // defined(TOOLKIT_VIEWS)
 }
+
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
+// static
+void NavigableContentsView::SetRemoteViewFactory(RemoteViewFactory factory) {
+  GetRemoteViewFactory() = std::move(factory);
+}
+
+#endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 
 void NavigableContentsView::EmbedUsingToken(
     const base::UnguessableToken& token) {
 #if defined(TOOLKIT_VIEWS)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  if (remote_view_host_) {
-    const uint32_t kEmbedFlags =
-        ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
-        ws::mojom::kEmbedFlagEmbedderControlsVisibility;
-    remote_view_host_->EmbedUsingToken(token, kEmbedFlags, base::DoNothing());
+  if (!IsClientRunningInServiceProcess()) {
+    const RemoteViewFactory& factory = GetRemoteViewFactory();
+    std::unique_ptr<views::NativeViewHost> remote_view_host;
+    if (factory) {
+      remote_view_host = factory.Run(token);
+    } else {
+      auto host = std::make_unique<views::RemoteViewHost>();
+      constexpr uint32_t kEmbedFlags =
+          ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
+          ws::mojom::kEmbedFlagEmbedderControlsVisibility;
+      host->EmbedUsingToken(token, kEmbedFlags, base::DoNothing());
+      remote_view_host = std::move(host);
+    }
+
+    auto* raw_remote_view_host = remote_view_host.release();
+    view_->AddChildView(raw_remote_view_host);
+    native_view_ = raw_remote_view_host->native_view();
+
+    view_->Layout();
     return;
   }
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
@@ -94,6 +120,9 @@ void NavigableContentsView::EmbedUsingToken(
     return;
   }
 
+  // Invoke a callback provided by the Content Service's host environment. This
+  // should parent a web content view to our own |view()|, as well as set
+  // |native_view_| to the corresponding web contents' own NativeView.
   auto callback = std::move(it->second);
   embeddings.erase(it);
   std::move(callback).Run(this);
