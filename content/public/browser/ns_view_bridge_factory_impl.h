@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
+#include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
@@ -26,6 +27,10 @@ class CONTENT_EXPORT NSViewBridgeFactoryImpl
   void CreateRenderWidgetHostNSViewBridge(
       mojom::StubInterfaceAssociatedPtrInfo client,
       mojom::StubInterfaceAssociatedRequest bridge_request) override;
+  void CreateWebContentsNSViewBridge(
+      uint64_t view_id,
+      mojom::WebContentsNSViewClientAssociatedPtrInfo client,
+      mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request) override;
 
  private:
   friend class base::NoDestructor<NSViewBridgeFactoryImpl>;

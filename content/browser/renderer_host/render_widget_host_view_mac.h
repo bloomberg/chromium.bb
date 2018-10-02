@@ -42,6 +42,7 @@ class ScopedPasswordInputEnabler;
 namespace content {
 
 class CursorManager;
+class NSViewBridgeFactoryHost;
 class RenderWidgetHost;
 class RenderWidgetHostNSViewBridgeLocal;
 class RenderWidgetHostViewMac;
@@ -447,6 +448,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // https://crbug.com/831843
   RenderWidgetHostImpl* GetWidgetForKeyboardEvent();
 
+  // Migrate the NSView for this RenderWidgetHostView to be in the process
+  // hosted by |bridge_factory_host|, and make it a child view of the NSView
+  // referred to by |parent_ns_view_id|.
+  void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
+                           uint64_t parent_ns_view_id);
+
  protected:
   // This class is to be deleted through the Destroy method.
   ~RenderWidgetHostViewMac() override;
@@ -468,10 +475,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();
-
-  // Update |ns_view_bridge_| so that the instance that it points at be hosted
-  // in the process indicated |host_id|.
-  void MigrateNSViewBridge(uint64_t host_id);
 
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
@@ -512,11 +515,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> ns_view_bridge_local_;
 
   // If the NSView is hosted in a remote process and accessed via mojo then
-  // - |ns_view_bridge_factory_host_id_| can be used to look up the needed
-  //   NSViewBridgeFactoryHost.
   // - |ns_view_bridge_| will point to |ns_view_bridge_remote_|
   // - |ns_view_client_binding_| is the binding provided to the bridge.
-  uint64_t ns_view_bridge_factory_host_id_;
   mojom::RenderWidgetHostNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
   mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewClient>
       ns_view_client_binding_;

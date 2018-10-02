@@ -51,11 +51,31 @@ NativeViewHostMac::NativeViewHostMac(NativeViewHost* host) : host_(host) {
 NativeViewHostMac::~NativeViewHostMac() {
 }
 
+BridgedNativeWidgetHostImpl* NativeViewHostMac::GetBridgedNativeWidgetHost()
+    const {
+  return BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+      host_->GetWidget()->GetNativeWindow());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostMac, ViewsHostableView::Host implementation:
 
 ui::Layer* NativeViewHostMac::GetUiLayer() const {
   return host_->layer();
+}
+
+uint64_t NativeViewHostMac::GetViewsFactoryHostId() const {
+  auto* bridge_host = GetBridgedNativeWidgetHost();
+  if (bridge_host && bridge_host->bridge_factory_host())
+    return bridge_host->bridge_factory_host()->GetHostId();
+  return 0;
+}
+
+uint64_t NativeViewHostMac::GetNSViewId() const {
+  auto* bridge_host = GetBridgedNativeWidgetHost();
+  if (bridge_host)
+    return bridge_host->GetRootViewNSViewId();
+  return 0;
 }
 
 id NativeViewHostMac::GetAccessibilityElement() const {
@@ -93,9 +113,8 @@ void NativeViewHostMac::AttachNativeView() {
   DCHECK(!native_view_);
   native_view_.reset([host_->native_view() retain]);
   EnsureNativeViewHasNoChildWidgets(native_view_);
-  BridgedNativeWidgetHostImpl* bridge_host =
-      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
-          host_->GetWidget()->GetNativeWindow());
+
+  auto* bridge_host = GetBridgedNativeWidgetHost();
   DCHECK(bridge_host);
   bridge_host->SetAssociationForView(host_, native_view_);
 
@@ -129,9 +148,7 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   }
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
-  BridgedNativeWidgetHostImpl* bridge_host =
-      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
-          host_->GetWidget()->GetNativeWindow());
+  auto* bridge_host = GetBridgedNativeWidgetHost();
   // BridgedNativeWidgetImpl can be null when Widget is closing.
   if (bridge_host)
     bridge_host->ClearAssociationForView(host_);
@@ -195,15 +212,24 @@ void NativeViewHostMac::ShowWidget(int x,
       [[host_->native_view() superview] convertRect:window_rect fromView:nil];
   [host_->native_view() setFrame:container_rect];
   [host_->native_view() setHidden:NO];
+
+  if (native_view_hostable_)
+    native_view_hostable_->OnViewsHostableShow(gfx::Rect(x, y, w, h));
 }
 
 void NativeViewHostMac::HideWidget() {
   [host_->native_view() setHidden:YES];
+
+  if (native_view_hostable_)
+    native_view_hostable_->OnViewsHostableHide();
 }
 
 void NativeViewHostMac::SetFocus() {
   if ([host_->native_view() acceptsFirstResponder])
     [[host_->native_view() window] makeFirstResponder:host_->native_view()];
+
+  if (native_view_hostable_)
+    native_view_hostable_->OnViewsHostableMakeFirstResponder();
 }
 
 gfx::NativeView NativeViewHostMac::GetNativeViewContainer() const {

@@ -4,9 +4,12 @@
 
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "content/browser/renderer_host/render_widget_host_ns_view_bridge_local.h"
+#include "content/browser/web_contents/web_contents_ns_view_bridge.h"
 
 namespace content {
 
@@ -38,6 +41,17 @@ void NSViewBridgeFactoryImpl::CreateRenderWidgetHostNSViewBridge(
   // destroyed when its underlying pipe is closed.
   ignore_result(new RenderWidgetHostNSViewBridgeLocal(
       std::move(client), std::move(bridge_request)));
+}
+
+void NSViewBridgeFactoryImpl::CreateWebContentsNSViewBridge(
+    uint64_t view_id,
+    mojom::WebContentsNSViewClientAssociatedPtrInfo client,
+    mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request) {
+  // Note that the resulting object will be destroyed when its underlying pipe
+  // is closed.
+  ignore_result(new WebContentsNSViewBridge(
+      view_id, mojom::WebContentsNSViewClientAssociatedPtr(std::move(client)),
+      std::move(bridge_request)));
 }
 
 NSViewBridgeFactoryImpl::NSViewBridgeFactoryImpl() : binding_(this) {}

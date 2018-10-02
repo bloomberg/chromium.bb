@@ -32,6 +32,9 @@ class TestViewsHostable : public ui::ViewsHostableView {
   void OnViewsHostableDetached() override {
     parent_accessibility_element_ = nil;
   }
+  void OnViewsHostableShow(const gfx::Rect& bounds_in_window) override {}
+  void OnViewsHostableHide() override {}
+  void OnViewsHostableMakeFirstResponder() override {}
 
   id parent_accessibility_element_ = nil;
 };
