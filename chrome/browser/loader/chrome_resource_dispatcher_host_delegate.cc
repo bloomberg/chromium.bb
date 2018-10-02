@@ -516,8 +516,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     std::unique_ptr<content::StreamInfo> stream) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =
-      stream_target_info_.find(request);
+  auto ix = stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
   bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
   base::PostTaskWithTraits(

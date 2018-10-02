@@ -109,7 +109,7 @@ void TabMemoryMetricsReporter::UpdateTimerCallback() {
 
   // Extract all WebContentsData whose next_emit_time have expired,
   // and emit metrics for them.
-  std::set<WebContentsData>::iterator it = monitored_contents_.begin();
+  auto it = monitored_contents_.begin();
   while (it != monitored_contents_.end() &&
          it->next_emit_time <= current_time) {
     if (EmitMemoryMetricsAfterPageLoaded(*it))

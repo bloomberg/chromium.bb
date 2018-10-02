@@ -245,8 +245,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
     base::FilePath::StringType name =
         base::FilePath(kFilteringTestCases[i].path).BaseName().value();
-    std::set<base::FilePath::StringType>::const_iterator found =
-        content.find(name);
+    auto found = content.find(name);
     EXPECT_EQ(kFilteringTestCases[i].visible, found != content.end());
   }
 }

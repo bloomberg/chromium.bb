@@ -89,9 +89,8 @@ syncer::SyncMergeResult ThemeSyncableService::MergeDataAndStartSyncing(
 
   // Find the last SyncData that has theme data and set the current theme from
   // it.
-  for (syncer::SyncDataList::const_reverse_iterator sync_data =
-      initial_sync_data.rbegin(); sync_data != initial_sync_data.rend();
-      ++sync_data) {
+  for (auto sync_data = initial_sync_data.rbegin();
+       sync_data != initial_sync_data.rend(); ++sync_data) {
     if (sync_data->GetSpecifics().has_theme()) {
       if (!current_specifics.use_custom_theme() ||
           sync_data->GetSpecifics().theme().use_custom_theme()) {
@@ -171,9 +170,8 @@ syncer::SyncError ThemeSyncableService::ProcessSyncChanges(
 
   // Set current theme from the theme specifics of the last change of type
   // |ACTION_ADD| or |ACTION_UPDATE|.
-  for (syncer::SyncChangeList::const_reverse_iterator theme_change =
-      change_list.rbegin(); theme_change != change_list.rend();
-      ++theme_change) {
+  for (auto theme_change = change_list.rbegin();
+       theme_change != change_list.rend(); ++theme_change) {
     if (theme_change->sync_data().GetSpecifics().has_theme() &&
         (theme_change->change_type() == syncer::SyncChange::ACTION_ADD ||
             theme_change->change_type() == syncer::SyncChange::ACTION_UPDATE)) {

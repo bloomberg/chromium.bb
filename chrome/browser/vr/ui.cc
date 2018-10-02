@@ -691,7 +691,7 @@ void Ui::HandleInput(base::TimeTicks current_time,
 }
 
 void Ui::HandleMenuButtonEvents(InputEventList* input_event_list) {
-  InputEventList::iterator it = input_event_list->begin();
+  auto it = input_event_list->begin();
   while (it != input_event_list->end()) {
     if (InputEvent::IsMenuButtonEventType((*it)->type())) {
       switch ((*it)->type()) {

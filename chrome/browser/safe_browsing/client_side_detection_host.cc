@@ -728,7 +728,7 @@ void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
   if (ip.empty() || url.empty())
     return;
 
-  IPUrlMap::iterator it = browse_info_->ips.find(ip);
+  auto it = browse_info_->ips.find(ip);
   if (it == browse_info_->ips.end()) {
     if (browse_info_->ips.size() < kMaxIPsPerBrowse) {
       std::vector<IPUrlInfo> url_infos;

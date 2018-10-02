@@ -436,8 +436,7 @@ void DownloadPrefs::ResetAutoOpen() {
 
 void DownloadPrefs::SaveAutoOpenState() {
   std::string extensions;
-  for (AutoOpenSet::iterator it = auto_open_.begin();
-       it != auto_open_.end(); ++it) {
+  for (auto it = auto_open_.begin(); it != auto_open_.end(); ++it) {
 #if defined(OS_POSIX)
     std::string this_extension = *it;
 #elif defined(OS_WIN)

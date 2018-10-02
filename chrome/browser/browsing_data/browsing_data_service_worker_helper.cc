@@ -156,8 +156,7 @@ void CannedBrowsingDataServiceWorkerHelper::StartFetching(
 
 void CannedBrowsingDataServiceWorkerHelper::DeleteServiceWorkers(
     const GURL& origin) {
-  for (std::set<PendingServiceWorkerUsageInfo>::iterator it =
-           pending_service_worker_info_.begin();
+  for (auto it = pending_service_worker_info_.begin();
        it != pending_service_worker_info_.end();) {
     if (it->origin == origin)
       pending_service_worker_info_.erase(it++);

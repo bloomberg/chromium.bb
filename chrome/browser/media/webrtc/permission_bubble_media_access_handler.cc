@@ -136,8 +136,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::map<content::WebContents*, RequestsQueue>::iterator it =
-      pending_requests_.find(web_contents);
+  auto it = pending_requests_.find(web_contents);
 
   if (it == pending_requests_.end() || it->second.empty()) {
     // Don't do anything if the tab was closed.
@@ -174,7 +173,7 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
     return;
 
   bool found = false;
-  for (RequestsQueues::iterator rqs_it = pending_requests_.begin();
+  for (auto rqs_it = pending_requests_.begin();
        rqs_it != pending_requests_.end(); ++rqs_it) {
     RequestsQueue& queue = rqs_it->second;
     for (RequestsQueue::iterator it = queue.begin(); it != queue.end(); ++it) {
@@ -198,8 +197,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     std::unique_ptr<content::MediaStreamUI> ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::map<content::WebContents*, RequestsQueue>::iterator it =
-      pending_requests_.find(web_contents);
+  auto it = pending_requests_.find(web_contents);
   if (it == pending_requests_.end()) {
     // WebContents has been destroyed. Don't need to do anything.
     return;

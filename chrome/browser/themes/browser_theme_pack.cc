@@ -171,7 +171,7 @@ int GetPersistentIDByIDR(int idr) {
       (*lookup_table)[idr] = prs_id;
     }
   }
-  std::map<int,int>::iterator it = lookup_table->find(idr);
+  auto it = lookup_table->find(idr);
   return (it == lookup_table->end()) ? -1 : it->second;
 }
 
@@ -657,7 +657,7 @@ void BrowserThemePack::BuildFromExtension(
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
   pack->images_on_file_thread_ = pack->images_;
-  for (ImageCache::iterator it = pack->images_on_file_thread_.begin();
+  for (auto it = pack->images_on_file_thread_.begin();
        it != pack->images_on_file_thread_.end(); ++it) {
     gfx::ImageSkia* image_skia =
         const_cast<gfx::ImageSkia*>(it->second.ToImageSkia());
@@ -669,8 +669,7 @@ void BrowserThemePack::BuildFromExtension(
   // ImageSkiaRep for a scale factor not specified by the theme author.
   // Callers of BrowserThemePack::GetImageNamed() to be able to retrieve
   // ImageSkiaReps for all supported scale factors.
-  for (ImageCache::iterator it = pack->images_.begin();
-       it != pack->images_.end(); ++it) {
+  for (auto it = pack->images_.begin(); it != pack->images_.end(); ++it) {
     const gfx::ImageSkia source_image_skia = it->second.AsImageSkia();
     auto source = std::make_unique<ThemeImageSource>(source_image_skia);
     gfx::ImageSkia image_skia(std::move(source), source_image_skia.size());
@@ -912,7 +911,7 @@ base::RefCountedMemory* BrowserThemePack::GetRawData(
     if (data_pack_.get()) {
       memory = data_pack_->GetStaticMemory(raw_id);
     } else {
-      RawImages::const_iterator it = image_memory_.find(raw_id);
+      auto it = image_memory_.find(raw_id);
       if (it != image_memory_.end()) {
         memory = it->second.get();
       }
@@ -1175,8 +1174,7 @@ void BrowserThemePack::AddFileAtScaleToMap(const std::string& image_name,
 
 void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
   std::vector<int> ids;
-  for (FilePathMap::const_iterator it = file_paths.begin();
-       it != file_paths.end(); ++it) {
+  for (auto it = file_paths.begin(); it != file_paths.end(); ++it) {
     ids.push_back(it->first);
   }
 
@@ -1192,8 +1190,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
   // http://crbug.com/61838
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  for (FilePathMap::const_iterator it = file_paths.begin();
-       it != file_paths.end(); ++it) {
+  for (auto it = file_paths.begin(); it != file_paths.end(); ++it) {
     int prs_id = it->first;
     // Some images need to go directly into |image_memory_|. No modification is
     // necessary or desirable.
@@ -1211,8 +1208,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
       // process scale factor 100% first because the first image added
       // in image_skia.AddRepresentation() determines the DIP size for
       // all representations.
-      for (ScaleFactorToFileMap::const_iterator s2f = it->second.begin();
-           s2f != it->second.end(); ++s2f) {
+      for (auto s2f = it->second.begin(); s2f != it->second.end(); ++s2f) {
         ui::ScaleFactor scale_factor = s2f->first;
         if ((pass == 0 && scale_factor != ui::SCALE_FACTOR_100P) ||
             (pass == 1 && scale_factor == ui::SCALE_FACTOR_100P)) {
@@ -1255,7 +1251,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 void BrowserThemePack::CropImages(ImageCache* images) const {
   for (size_t i = 0; i < arraysize(kImagesToCrop); ++i) {
     int prs_id = kImagesToCrop[i].prs_id;
-    ImageCache::iterator it = images->find(prs_id);
+    auto it = images->find(prs_id);
     if (it == images->end())
       continue;
 
@@ -1591,8 +1587,7 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
                                     RawImages* reencoded_images) const {
-  for (ImageCache::const_iterator it = images.begin();
-       it != images.end(); ++it) {
+  for (auto it = images.begin(); it != images.end(); ++it) {
     gfx::ImageSkia image_skia = *it->second.ToImageSkia();
 
     typedef std::vector<gfx::ImageSkiaRep> ImageSkiaReps;
@@ -1600,8 +1595,8 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
     if (image_reps.empty()) {
       NOTREACHED() << "No image reps for resource " << it->first << ".";
     }
-    for (ImageSkiaReps::iterator rep_it = image_reps.begin();
-         rep_it != image_reps.end(); ++rep_it) {
+    for (auto rep_it = image_reps.begin(); rep_it != image_reps.end();
+         ++rep_it) {
       std::vector<unsigned char> bitmap_data;
       if (!gfx::PNGCodec::EncodeBGRASkBitmap(rep_it->GetBitmap(), false,
                                              &bitmap_data)) {
@@ -1619,16 +1614,14 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
 
 void BrowserThemePack::MergeImageCaches(
     const ImageCache& source, ImageCache* destination) const {
-  for (ImageCache::const_iterator it = source.begin(); it != source.end();
-       ++it) {
+  for (auto it = source.begin(); it != source.end(); ++it) {
     (*destination)[it->first] = it->second;
   }
 }
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
-  for (RawImages::const_iterator it = images.begin(); it != images.end();
-       ++it) {
+  for (auto it = images.begin(); it != images.end(); ++it) {
     (*out)[it->first] = base::StringPiece(
         it->second->front_as<char>(), it->second->size());
   }

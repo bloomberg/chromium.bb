@@ -127,7 +127,7 @@ void PerformanceMonitor::MarkProcessAsAlive(
     return;
   }
 
-  MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
+  auto process_metrics_iter = metrics_map_.find(handle);
   if (process_metrics_iter == metrics_map_.end()) {
     // If we're not already watching the process, let's initialize it.
     metrics_map_[handle] = std::make_unique<ProcessMetricsHistory>();
@@ -191,7 +191,7 @@ void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
 void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Update metrics for all watched processes; remove dead entries from the map.
-  MetricsMap::iterator iter = metrics_map_.begin();
+  auto iter = metrics_map_.begin();
   while (iter != metrics_map_.end()) {
     ProcessMetricsHistory* process_metrics = iter->second.get();
     if (process_metrics->last_update_sequence() != current_update_sequence) {

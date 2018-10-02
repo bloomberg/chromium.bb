@@ -633,8 +633,7 @@ ProfileIOData::~ProfileIOData() {
     domain_reliability_monitor_unowned_->Shutdown();
 
   current_context = 0;
-  for (URLRequestContextMap::iterator it =
-           isolated_media_request_context_map_.begin();
+  for (auto it = isolated_media_request_context_map_.begin();
        it != isolated_media_request_context_map_.end(); ++it) {
     if (current_context < kMaxCachedContexts) {
       CHECK_EQ(media_context_cache[current_context], it->second);
@@ -700,9 +699,7 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
 void ProfileIOData::InstallProtocolHandlers(
     net::URLRequestJobFactoryImpl* job_factory,
     content::ProtocolHandlerMap* protocol_handlers) {
-  for (content::ProtocolHandlerMap::iterator it =
-           protocol_handlers->begin();
-       it != protocol_handlers->end();
+  for (auto it = protocol_handlers->begin(); it != protocol_handlers->end();
        ++it) {
     bool set_protocol =
         job_factory->SetProtocolHandler(it->first, std::move(it->second));

@@ -199,7 +199,7 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       new_image_hashes[id] = frame_hash;
 
       // Scale the image only if it has changed.
-      ImageHashesMap::iterator it = image_hashes_.find(id);
+      auto it = image_hashes_.find(id);
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);

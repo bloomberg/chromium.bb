@@ -272,8 +272,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   int InMemoryHandlerCount() {
     int in_memory_handler_count = 0;
-    ProtocolHandlerRegistry::ProtocolHandlerMultiMap::iterator it =
-        registry()->protocol_handlers_.begin();
+    auto it = registry()->protocol_handlers_.begin();
     for (; it != registry()->protocol_handlers_.end(); ++it)
       in_memory_handler_count += it->second.size();
     return in_memory_handler_count;
@@ -287,8 +286,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   int InMemoryIgnoredHandlerCount() {
     int in_memory_ignored_handler_count = 0;
-    ProtocolHandlerRegistry::ProtocolHandlerList::iterator it =
-        registry()->ignored_protocol_handlers_.begin();
+    auto it = registry()->ignored_protocol_handlers_.begin();
     for (; it != registry()->ignored_protocol_handlers_.end(); ++it)
       in_memory_ignored_handler_count++;
     return in_memory_ignored_handler_count;

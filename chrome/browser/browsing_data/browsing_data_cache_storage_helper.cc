@@ -149,8 +149,7 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(
     const GURL& origin) {
-  for (std::set<PendingCacheStorageUsageInfo>::iterator it =
-           pending_cache_storage_info_.begin();
+  for (auto it = pending_cache_storage_info_.begin();
        it != pending_cache_storage_info_.end();) {
     if (it->origin == origin)
       pending_cache_storage_info_.erase(it++);

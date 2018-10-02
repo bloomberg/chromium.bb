@@ -114,8 +114,7 @@ void DownloadCoreServiceImpl::CancelDownloads() {
       BrowserContext::GetDownloadManager(profile_);
   DownloadManager::DownloadVector downloads;
   download_manager->GetAllDownloads(&downloads);
-  for (DownloadManager::DownloadVector::iterator it = downloads.begin();
-       it != downloads.end(); ++it) {
+  for (auto it = downloads.begin(); it != downloads.end(); ++it) {
     if ((*it)->GetState() == download::DownloadItem::IN_PROGRESS)
       (*it)->Cancel(false);
   }

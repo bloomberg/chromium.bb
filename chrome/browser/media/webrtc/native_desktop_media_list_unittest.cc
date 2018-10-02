@@ -117,8 +117,7 @@ class FakeWindowCapturer : public webrtc::DesktopCapturer {
 
     base::AutoLock lock(frame_values_lock_);
 
-    std::map<SourceId, int8_t>::iterator it =
-        frame_values_.find(selected_window_id_);
+    auto it = frame_values_.find(selected_window_id_);
     int8_t value = (it != frame_values_.end()) ? it->second : 0;
     std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));

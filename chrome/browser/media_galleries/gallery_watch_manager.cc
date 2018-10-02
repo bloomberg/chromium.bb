@@ -233,7 +233,7 @@ void GalleryWatchManager::ShutdownBrowserContext(
   if (observed > 0)
     preferences->RemoveGalleryChangeObserver(this);
 
-  WatchesMap::iterator it = watches_.begin();
+  auto it = watches_.begin();
   while (it != watches_.end()) {
     if (it->first.browser_context == browser_context) {
       DeactivateFileWatch(it->first, it->second);
@@ -318,7 +318,7 @@ void GalleryWatchManager::RemoveWatch(BrowserContext* browser_context,
   DCHECK(browser_context);
 
   WatchOwner owner(browser_context, extension_id, gallery_id);
-  WatchesMap::iterator it = watches_.find(owner);
+  auto it = watches_.find(owner);
   if (it != watches_.end()) {
     DeactivateFileWatch(owner, it->second);
     watches_.erase(it);
@@ -330,7 +330,7 @@ void GalleryWatchManager::RemoveAllWatches(BrowserContext* browser_context,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
 
-  WatchesMap::iterator it = watches_.begin();
+  auto it = watches_.begin();
   while (it != watches_.end()) {
     if (it->first.extension_id == extension_id) {
       DeactivateFileWatch(it->first, it->second);
@@ -374,7 +374,7 @@ void GalleryWatchManager::EnsureBrowserContextSubscription(
 void GalleryWatchManager::DeactivateFileWatch(const WatchOwner& owner,
                                               const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WatchedPaths::iterator it = watched_paths_.find(path);
+  auto it = watched_paths_.find(path);
   if (it == watched_paths_.end())
     return;
 
@@ -403,7 +403,7 @@ void GalleryWatchManager::OnFileWatchActivated(const WatchOwner& owner,
 
 void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
                                             bool error) {
-  WatchedPaths::iterator notification_info = watched_paths_.find(path);
+  auto notification_info = watched_paths_.find(path);
   if (notification_info == watched_paths_.end())
     return;
 
@@ -412,8 +412,7 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
   if (error) {
     // Make a copy, as |watched_paths_| is modified as we erase watches.
     std::set<WatchOwner> owners = notification_info->second.owners;
-    for (std::set<WatchOwner>::iterator it = owners.begin(); it != owners.end();
-         ++it) {
+    for (auto it = owners.begin(); it != owners.end(); ++it) {
       Profile* profile = Profile::FromBrowserContext(it->browser_context);
       RemoveWatch(it->browser_context, it->extension_id, it->gallery_id);
       if (base::ContainsKey(observers_, profile))
@@ -477,9 +476,7 @@ void GalleryWatchManager::OnGalleryRemoved(MediaGalleriesPreferences* pref,
     }
   }
 
-  for (std::set<std::string>::const_iterator it = extension_ids.begin();
-       it != extension_ids.end();
-       ++it) {
+  for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
     RemoveWatch(pref->profile(), *it, pref_id);
     if (base::ContainsKey(observers_, pref->profile()))
       observers_[pref->profile()]->OnGalleryWatchDropped(*it, pref_id);
@@ -488,7 +485,7 @@ void GalleryWatchManager::OnGalleryRemoved(MediaGalleriesPreferences* pref,
 
 void GalleryWatchManager::OnRemovableStorageDetached(
     const storage_monitor::StorageInfo& info) {
-  WatchesMap::iterator it = watches_.begin();
+  auto it = watches_.begin();
   while (it != watches_.end()) {
     MediaGalleriesPreferences* preferences =
         g_browser_process->media_file_system_registry()->GetPreferences(

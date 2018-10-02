@@ -731,8 +731,7 @@ class DownloadTest : public InProcessBrowserTest {
     manager->GetAllDownloads(&items);
 
     DownloadItem* new_item = NULL;
-    for (DownloadManager::DownloadVector::iterator iter = items.begin();
-         iter != items.end(); ++iter) {
+    for (auto iter = items.begin(); iter != items.end(); ++iter) {
       if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
         // There should be only one IN_PROGRESS item.
         EXPECT_EQ(NULL, new_item);

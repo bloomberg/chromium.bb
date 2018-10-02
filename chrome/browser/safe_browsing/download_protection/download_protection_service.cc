@@ -401,8 +401,7 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
   std::string hashed = base::SHA1HashString(std::string(
       net::x509_util::CryptoBufferAsStringPiece(issuer.cert_buffer())));
   std::string issuer_fp = base::HexEncode(hashed.data(), hashed.size());
-  for (std::set<std::string>::iterator it = paths_to_check.begin();
-       it != paths_to_check.end(); ++it) {
+  for (auto it = paths_to_check.begin(); it != paths_to_check.end(); ++it) {
     whitelist_strings->push_back("cert/" + issuer_fp + *it);
   }
 }

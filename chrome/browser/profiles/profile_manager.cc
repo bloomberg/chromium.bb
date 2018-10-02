@@ -574,7 +574,7 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
   }
 
   // Create the profile if needed and collect its ProfileInfo.
-  ProfilesInfoMap::iterator iter = profiles_info_.find(profile_path);
+  auto iter = profiles_info_.find(profile_path);
   ProfileInfo* info = NULL;
 
   if (iter != profiles_info_.end()) {
@@ -616,8 +616,8 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
 }
 
 bool ProfileManager::IsValidProfile(const void* profile) {
-  for (ProfilesInfoMap::iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
+  for (auto iter = profiles_info_.begin(); iter != profiles_info_.end();
+       ++iter) {
     if (iter->second->created) {
       Profile* candidate = iter->second->profile.get();
       if (candidate == profile ||
@@ -732,8 +732,8 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
 
 std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
   std::vector<Profile*> profiles;
-  for (ProfilesInfoMap::const_iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
+  for (auto iter = profiles_info_.begin(); iter != profiles_info_.end();
+       ++iter) {
     if (iter->second->created)
       profiles.push_back(iter->second->profile.get());
   }
@@ -1238,7 +1238,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
                                       bool is_new_profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ProfilesInfoMap::iterator iter = profiles_info_.find(profile->GetPath());
+  auto iter = profiles_info_.find(profile->GetPath());
   DCHECK(iter != profiles_info_.end());
   ProfileInfo* info = iter->second.get();
 
@@ -1642,7 +1642,7 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
 
 ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
     const base::FilePath& path) const {
-  ProfilesInfoMap::const_iterator iter = profiles_info_.find(path);
+  auto iter = profiles_info_.find(path);
   return (iter == profiles_info_.end()) ? NULL : iter->second.get();
 }
 

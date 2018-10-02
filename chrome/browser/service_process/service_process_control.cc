@@ -154,7 +154,7 @@ void ServiceProcessControl::RunConnectDoneTasks() {
 
 // static
 void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
-  TaskList::iterator index = task_list->begin();
+  auto index = task_list->begin();
   while (index != task_list->end()) {
     std::move(*index).Run();
     index = task_list->erase(index);

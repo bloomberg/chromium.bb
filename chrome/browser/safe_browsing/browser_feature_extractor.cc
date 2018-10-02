@@ -51,7 +51,7 @@ void FilterBenignIpsOnIOThread(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     IPUrlMap* ips) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (IPUrlMap::iterator it = ips->begin(); it != ips->end();) {
+  for (auto it = ips->begin(); it != ips->end();) {
     if (!database_manager.get() ||
         !database_manager->MatchMalwareIP(it->first)) {
       // it++ here returns a copy of the old iterator and passes it to erase.
@@ -96,8 +96,7 @@ static void AddMalwareIpUrlInfo(const std::string& ip,
                                 const std::vector<IPUrlInfo>& meta_infos,
                                 ClientMalwareRequest* request) {
   DCHECK(request);
-  for (std::vector<IPUrlInfo>::const_iterator it = meta_infos.begin();
-       it != meta_infos.end(); ++it) {
+  for (auto it = meta_infos.begin(); it != meta_infos.end(); ++it) {
     ClientMalwareRequest::UrlInfo* urlinfo =
         request->add_bad_ip_url_info();
     // We add the information about url on the bad ip.
@@ -347,9 +346,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   int num_visits_24h_ago = 0;
   int num_visits_typed = 0;
   int num_visits_link = 0;
-  for (history::VisitVector::const_iterator it = visits.begin();
-       it != visits.end();
-       ++it) {
+  for (auto it = visits.begin(); it != visits.end(); ++it) {
     if (!ui::PageTransitionIsMainFrame(it->transition)) {
       continue;
     }

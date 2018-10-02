@@ -172,10 +172,8 @@ void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
     const std::string& name) {
   GURL origin =
       storage::DatabaseIdentifier::Parse(origin_identifier).ToOrigin();
-  for (std::set<PendingDatabaseInfo>::iterator it =
-           pending_database_info_.begin();
-       it != pending_database_info_.end();
-       ++it) {
+  for (auto it = pending_database_info_.begin();
+       it != pending_database_info_.end(); ++it) {
     if (it->origin == origin && it->name == name) {
       pending_database_info_.erase(it);
       break;

@@ -134,9 +134,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
 
 void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(
     const GURL& origin) {
-  for (std::set<PendingIndexedDBInfo>::iterator it =
-           pending_indexed_db_info_.begin();
-       it != pending_indexed_db_info_.end(); ) {
+  for (auto it = pending_indexed_db_info_.begin();
+       it != pending_indexed_db_info_.end();) {
     if (it->origin == origin)
       pending_indexed_db_info_.erase(it++);
     else

@@ -402,10 +402,8 @@ void ThreadWatcherList::GetStatusOfThreads(
   if (!g_thread_watcher_list_)
     return;
 
-  for (RegistrationList::iterator it =
-           g_thread_watcher_list_->registered_.begin();
-       g_thread_watcher_list_->registered_.end() != it;
-       ++it) {
+  for (auto it = g_thread_watcher_list_->registered_.begin();
+       g_thread_watcher_list_->registered_.end() != it; ++it) {
     if (it->second->IsVeryUnresponsive())
       ++(*unresponding_thread_count);
     else
@@ -419,10 +417,8 @@ void ThreadWatcherList::WakeUpAll() {
   if (!g_thread_watcher_list_)
     return;
 
-  for (RegistrationList::iterator it =
-           g_thread_watcher_list_->registered_.begin();
-       g_thread_watcher_list_->registered_.end() != it;
-       ++it)
+  for (auto it = g_thread_watcher_list_->registered_.begin();
+       g_thread_watcher_list_->registered_.end() != it; ++it)
     it->second->WakeUp();
 }
 
@@ -557,8 +553,7 @@ void ThreadWatcherList::StartWatching(
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
-  CrashOnHangThreadMap::const_iterator it =
-      crash_on_hang_threads.find(thread_name);
+  auto it = crash_on_hang_threads.find(thread_name);
   bool crash_on_hang = false;
   if (it != crash_on_hang_threads.end()) {
     crash_on_hang = true;
@@ -588,7 +583,7 @@ void ThreadWatcherList::DeleteAll() {
 
   // Delete all thread watcher objects.
   while (!g_thread_watcher_list_->registered_.empty()) {
-    RegistrationList::iterator it = g_thread_watcher_list_->registered_.begin();
+    auto it = g_thread_watcher_list_->registered_.begin();
     delete it->second;
     g_thread_watcher_list_->registered_.erase(it);
   }
@@ -601,8 +596,7 @@ ThreadWatcher* ThreadWatcherList::Find(const BrowserThread::ID& thread_id) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   if (!g_thread_watcher_list_)
     return nullptr;
-  RegistrationList::iterator it =
-      g_thread_watcher_list_->registered_.find(thread_id);
+  auto it = g_thread_watcher_list_->registered_.find(thread_id);
   if (g_thread_watcher_list_->registered_.end() == it)
     return nullptr;
   return it->second;

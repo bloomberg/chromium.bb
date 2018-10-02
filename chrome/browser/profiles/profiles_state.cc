@@ -157,7 +157,7 @@ std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
   DCHECK(identity_manager->HasPrimaryAccount());
   AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
 
-  std::vector<AccountInfo>::iterator primary_index = std::find_if(
+  auto primary_index = std::find_if(
       accounts.begin(), accounts.end(),
       [&primary_account](const AccountInfo& account_info) {
         return account_info.account_id == primary_account.account_id;

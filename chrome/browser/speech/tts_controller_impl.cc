@@ -518,10 +518,8 @@ int TtsControllerImpl::GetMatchingVoice(
     // Next, prefer required event types.
     if (utterance->required_event_types().size() > 0) {
       bool has_all_required_event_types = true;
-      for (std::set<TtsEventType>::const_iterator iter =
-               utterance->required_event_types().begin();
-           iter != utterance->required_event_types().end();
-           ++iter) {
+      for (auto iter = utterance->required_event_types().begin();
+           iter != utterance->required_event_types().end(); ++iter) {
         if (voice.events.find(*iter) == voice.events.end()) {
           has_all_required_event_types = false;
           break;
@@ -624,8 +622,7 @@ void TtsControllerImpl::VoicesChanged() {
   if (!platform_impl_)
     return;
 
-  for (std::set<VoicesChangedDelegate*>::iterator iter =
-           voices_changed_delegates_.begin();
+  for (auto iter = voices_changed_delegates_.begin();
        iter != voices_changed_delegates_.end(); ++iter) {
     (*iter)->OnVoicesChanged();
   }

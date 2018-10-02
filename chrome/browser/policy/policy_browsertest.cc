@@ -2509,9 +2509,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
   extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
-  for (extensions::ProcessManager::FrameSet::const_iterator iter =
-           all_frames.begin();
-       iter != all_frames.end();) {
+  for (auto iter = all_frames.begin(); iter != all_frames.end();) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(*iter);
     ASSERT_TRUE(web_contents);

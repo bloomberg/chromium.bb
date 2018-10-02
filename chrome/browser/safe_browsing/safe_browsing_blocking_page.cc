@@ -165,7 +165,7 @@ void SafeBrowsingBlockingPage::HandleSubresourcesAfterProceed() {
   // Check to see if some new notifications of unsafe resources have been
   // received while we were showing the interstitial.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-  UnsafeResourceMap::iterator iter = unsafe_resource_map->find(web_contents());
+  auto iter = unsafe_resource_map->find(web_contents());
   if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
     // All queued unsafe resources should be for the same page:
     UnsafeResourceList unsafe_resources = iter->second;

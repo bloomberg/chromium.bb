@@ -282,8 +282,7 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
 
   // Keep a map of request context getters, one per requested storage partition.
   StoragePartitionDescriptor descriptor(partition_path, in_memory);
-  ChromeURLRequestContextGetterMap::iterator iter =
-      app_request_context_getter_map_.find(descriptor);
+  auto iter = app_request_context_getter_map_.find(descriptor);
   if (iter != app_request_context_getter_map_.end())
     return iter->second;
 
@@ -326,8 +325,7 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
 
   // Keep a map of request context getters, one per requested storage partition.
   StoragePartitionDescriptor descriptor(partition_path, in_memory);
-  ChromeURLRequestContextGetterMap::iterator iter =
-      isolated_media_request_context_getter_map_.find(descriptor);
+  auto iter = isolated_media_request_context_getter_map_.find(descriptor);
   if (iter != isolated_media_request_context_getter_map_.end())
     return iter->second;
 
