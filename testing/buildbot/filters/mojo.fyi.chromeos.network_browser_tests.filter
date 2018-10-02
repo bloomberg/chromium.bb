@@ -52,6 +52,11 @@
 -SamlTest.ScrapedNone
 -SamlTest.ScrapedSingle
 -SamlTest.UseAutenticatedUserEmailAddress
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsError
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsUserCancelled
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithAuthRetry
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithDmRetry
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSuccess
 
 # |NetworkChangeNotifier()| Not implemented.
 # https://crbug.com/882610
@@ -85,19 +90,20 @@
 -WizardControllerDeviceStateTest.ControlFlowDeviceDisabled
 -WizardControllerDeviceStateWithInitialEnrollmentTest.ControlFlowInitialEnrollment
 
-# Relies on net::URLRequestInterceptor.
-# https://crbug.com/884782
+# Convert from policy::TestRequestInterceptor to network::TestURLLoaderFactory.
+# See https://chromium-review.googlesource.com/c/chromium/src/+/1113029 for
+# examples.
 -ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.ArcDisabled
 -ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.RequestAccountInfoSuccess
--ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsError
--ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsUserCancelled
--ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithAuthRetry
--ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithDmRetry
--ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSuccess
--ArcRobotAccountAuthServiceTest.GetDemoAccount
--ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailure
 -ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoError
 -ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoSuccess
+-ArcRobotAccountAuthServiceTest.GetDemoAccount
+-ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailure
+
+# Relies on net::URLRequestInterceptor.
+# https://crbug.com/884782
+# Convert the production code using example of how we add/remove
+# variations::kClientDataHeader in GoogleURLLoaderThrottle.
 -ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
 
 # Relies on net::URLRequestMockHTTPJob.
