@@ -221,7 +221,7 @@ void WorkerThreadScheduler::InitImpl() {
 
 void WorkerThreadScheduler::OnTaskCompleted(
     NonMainThreadTaskQueue* task_queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   worker_metrics_helper_.RecordTaskMetrics(task_queue, task, task_timing);
 
@@ -300,7 +300,7 @@ void WorkerThreadScheduler::CreateTaskQueueThrottler() {
 
 void WorkerThreadScheduler::RecordTaskUkm(
     NonMainThreadTaskQueue* worker_task_queue,
-    const base::sequence_manager::TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
@@ -311,7 +311,7 @@ void WorkerThreadScheduler::RecordTaskUkm(
 
   builder.SetRendererBackgrounded(
       internal::ProcessState::Get()->is_process_backgrounded);
-  builder.SetTaskType(task.task_type());
+  builder.SetTaskType(task.task_type);
   builder.SetFrameStatus(static_cast<int>(initial_frame_status_));
   builder.SetTaskDuration(task_timing.wall_duration().InMicroseconds());
 

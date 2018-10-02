@@ -243,11 +243,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   QueueTraits GetQueueTraits() const { return queue_traits_; }
 
   void OnTaskStarted(
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnTaskCompleted(
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void DetachFromMainThreadScheduler();

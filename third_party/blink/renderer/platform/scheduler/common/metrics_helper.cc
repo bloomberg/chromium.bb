@@ -71,7 +71,7 @@ MetricsHelper::~MetricsHelper() {}
 
 bool MetricsHelper::ShouldDiscardTask(
     base::sequence_manager::TaskQueue* queue,
-    const base::sequence_manager::TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   // TODO(altimin): Investigate the relationship between thread time and
   // wall time for discarded tasks.
@@ -80,7 +80,7 @@ bool MetricsHelper::ShouldDiscardTask(
 
 void MetricsHelper::RecordCommonTaskMetrics(
     base::sequence_manager::TaskQueue* queue,
-    const base::sequence_manager::TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   thread_metrics_.RecordTaskMetrics(queue, task, task_timing);
 

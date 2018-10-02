@@ -55,7 +55,7 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
 
 void TimeDomain::SetNextWakeUpForQueue(
     internal::TaskQueueImpl* queue,
-    Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
+    Optional<internal::DelayedWakeUp> wake_up,
     LazyNow* lazy_now) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK_EQ(queue->GetTimeDomain(), this);

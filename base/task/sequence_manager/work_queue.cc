@@ -17,7 +17,7 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
 
 void WorkQueue::AsValueInto(TimeTicks now,
                             trace_event::TracedValue* state) const {
-  for (const TaskQueueImpl::Task& task : tasks_) {
+  for (const Task& task : tasks_) {
     TaskQueueImpl::TaskAsValueInto(task, now, state);
   }
 }
@@ -27,13 +27,13 @@ WorkQueue::~WorkQueue() {
                             << work_queue_sets_->GetName() << " : " << name_;
 }
 
-const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
+const Task* WorkQueue::GetFrontTask() const {
   if (tasks_.empty())
     return nullptr;
   return &tasks_.front();
 }
 
-const TaskQueueImpl::Task* WorkQueue::GetBackTask() const {
+const Task* WorkQueue::GetBackTask() const {
   if (tasks_.empty())
     return nullptr;
   return &tasks_.back();
@@ -60,7 +60,7 @@ bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   return true;
 }
 
-void WorkQueue::Push(TaskQueueImpl::Task task) {
+void WorkQueue::Push(Task task) {
   bool was_empty = tasks_.empty();
 #ifndef NDEBUG
   DCHECK(task.enqueue_order_set());
@@ -80,7 +80,7 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
 }
 
-void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
+void WorkQueue::PushNonNestableTaskToFront(Task task) {
   DCHECK(task.nestable == Nestable::kNonNestable);
 
   bool was_empty = tasks_.empty();
@@ -90,7 +90,7 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
 #endif
 
   if (!was_empty) {
-    // Make sure the |enqueue_order()| is monotonically increasing.
+    // Make sure the |enqueue_order| is monotonically increasing.
     DCHECK_LE(task.enqueue_order(), tasks_.front().enqueue_order())
         << task_queue_->GetName() << " : " << work_queue_sets_->GetName()
         << " : " << name_;
@@ -126,11 +126,11 @@ void WorkQueue::ReloadEmptyImmediateQueue() {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
 }
 
-TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
+Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!tasks_.empty());
 
-  TaskQueueImpl::Task pending_task = std::move(tasks_.front());
+  Task pending_task = std::move(tasks_.front());
   tasks_.pop_front();
   // NB immediate tasks have a different pipeline to delayed ones.
   if (tasks_.empty()) {

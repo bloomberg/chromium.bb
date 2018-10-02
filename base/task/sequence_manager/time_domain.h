@@ -97,10 +97,9 @@ class BASE_EXPORT TimeDomain {
   // the same |queue| invalidate previous requests.
   // Nullopt |wake_up| cancels a previously set wake up for |queue|.
   // NOTE: |lazy_now| is provided in TimeDomain's time.
-  void SetNextWakeUpForQueue(
-      internal::TaskQueueImpl* queue,
-      Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
-      LazyNow* lazy_now);
+  void SetNextWakeUpForQueue(internal::TaskQueueImpl* queue,
+                             Optional<internal::DelayedWakeUp> wake_up,
+                             LazyNow* lazy_now);
 
   // Remove the TaskQueue from any internal data sctructures.
   void UnregisterQueue(internal::TaskQueueImpl* queue);
@@ -109,7 +108,7 @@ class BASE_EXPORT TimeDomain {
   void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
 
   struct ScheduledDelayedWakeUp {
-    internal::TaskQueueImpl::DelayedWakeUp wake_up;
+    internal::DelayedWakeUp wake_up;
     internal::TaskQueueImpl* queue;
 
     bool operator<=(const ScheduledDelayedWakeUp& other) const {

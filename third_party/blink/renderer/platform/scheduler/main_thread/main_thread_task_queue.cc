@@ -125,14 +125,14 @@ MainThreadTaskQueue::MainThreadTaskQueue(
 MainThreadTaskQueue::~MainThreadTaskQueue() = default;
 
 void MainThreadTaskQueue::OnTaskStarted(
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   if (main_thread_scheduler_)
     main_thread_scheduler_->OnTaskStarted(this, task, task_timing);
 }
 
 void MainThreadTaskQueue::OnTaskCompleted(
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   if (main_thread_scheduler_) {
     main_thread_scheduler_->OnTaskCompleted(this, task, task_timing);

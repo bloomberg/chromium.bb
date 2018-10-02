@@ -73,24 +73,6 @@ TaskQueueImpl::~TaskQueueImpl() {
 #endif
 }
 
-TaskQueueImpl::Task::Task(PostedTask task,
-                          TimeTicks desired_run_time,
-                          EnqueueOrder sequence_number)
-    : TaskQueue::Task(std::move(task), desired_run_time) {
-  // It might wrap around to a negative number but it's handled properly.
-  sequence_num = static_cast<int>(sequence_number);
-}
-
-TaskQueueImpl::Task::Task(PostedTask task,
-                          TimeTicks desired_run_time,
-                          EnqueueOrder sequence_number,
-                          EnqueueOrder enqueue_order)
-    : TaskQueue::Task(std::move(task), desired_run_time),
-      enqueue_order_(enqueue_order) {
-  // It might wrap around to a negative number but it's handled properly.
-  sequence_num = static_cast<int>(sequence_number);
-}
-
 TaskQueueImpl::AnyThread::AnyThread(SequenceManagerImpl* sequence_manager,
                                     TimeDomain* time_domain)
     : sequence_manager(sequence_manager), time_domain(time_domain) {}
@@ -263,7 +245,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
       Task(PostedTask(BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
                                Unretained(this), std::move(pending_task)),
                       FROM_HERE, TimeDelta(), Nestable::kNonNestable,
-                      pending_task.task_type()),
+                      pending_task.task_type),
            TimeTicks(), thread_hop_task_sequence_number,
            thread_hop_task_sequence_number));
 }
@@ -401,8 +383,7 @@ bool TaskQueueImpl::HasTaskToRunImmediately() const {
   return !immediate_incoming_queue().empty();
 }
 
-Optional<TaskQueueImpl::DelayedWakeUp>
-TaskQueueImpl::GetNextScheduledWakeUpImpl() {
+Optional<DelayedWakeUp> TaskQueueImpl::GetNextScheduledWakeUpImpl() {
   // Note we don't scheduled a wake-up for disabled queues.
   if (main_thread_only().delayed_incoming_queue.empty() || !IsQueueEnabled())
     return nullopt;
@@ -430,6 +411,7 @@ void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
     if (task.delayed_run_time > lazy_now->Now())
       break;
     ActivateDelayedFenceIfNeeded(task.delayed_run_time);
+    DCHECK(!task.enqueue_order_set());
     task.set_enqueue_order(
         main_thread_only().sequence_manager->GetNextSequenceNumber());
     main_thread_only().delayed_work_queue->Push(std::move(task));
@@ -888,8 +870,7 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(TimeTicks now) {
   UpdateDelayedWakeUp(&lazy_now);
 }
 
-void TaskQueueImpl::PushImmediateIncomingTaskForTest(
-    TaskQueueImpl::Task&& task) {
+void TaskQueueImpl::PushImmediateIncomingTaskForTest(Task&& task) {
   AutoLock lock(immediate_incoming_queue_lock_);
   immediate_incoming_queue().push_back(std::move(task));
 }
@@ -928,9 +909,8 @@ void TaskQueueImpl::UpdateDelayedWakeUp(LazyNow* lazy_now) {
   return UpdateDelayedWakeUpImpl(lazy_now, GetNextScheduledWakeUpImpl());
 }
 
-void TaskQueueImpl::UpdateDelayedWakeUpImpl(
-    LazyNow* lazy_now,
-    Optional<TaskQueueImpl::DelayedWakeUp> wake_up) {
+void TaskQueueImpl::UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
+                                            Optional<DelayedWakeUp> wake_up) {
   if (main_thread_only().scheduled_wake_up == wake_up)
     return;
   main_thread_only().scheduled_wake_up = wake_up;
@@ -946,7 +926,7 @@ void TaskQueueImpl::UpdateDelayedWakeUpImpl(
 }
 
 void TaskQueueImpl::SetDelayedWakeUpForTesting(
-    Optional<TaskQueueImpl::DelayedWakeUp> wake_up) {
+    Optional<DelayedWakeUp> wake_up) {
   LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
   UpdateDelayedWakeUpImpl(&lazy_now, wake_up);
 }
@@ -968,7 +948,7 @@ void TaskQueueImpl::SetOnTaskStartedHandler(
   main_thread_only().on_task_started_handler = std::move(handler);
 }
 
-void TaskQueueImpl::OnTaskStarted(const TaskQueue::Task& task,
+void TaskQueueImpl::OnTaskStarted(const Task& task,
                                   const TaskQueue::TaskTiming& task_timing) {
   if (!main_thread_only().on_task_started_handler.is_null())
     main_thread_only().on_task_started_handler.Run(task, task_timing);
@@ -979,7 +959,7 @@ void TaskQueueImpl::SetOnTaskCompletedHandler(
   main_thread_only().on_task_completed_handler = std::move(handler);
 }
 
-void TaskQueueImpl::OnTaskCompleted(const TaskQueue::Task& task,
+void TaskQueueImpl::OnTaskCompleted(const Task& task,
                                     const TaskQueue::TaskTiming& task_timing) {
   if (!main_thread_only().on_task_completed_handler.is_null())
     main_thread_only().on_task_completed_handler.Run(task, task_timing);

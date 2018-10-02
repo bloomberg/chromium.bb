@@ -79,91 +79,22 @@ class BASE_EXPORT TaskQueueImpl {
 
   ~TaskQueueImpl();
 
-  // Represents a time at which a task wants to run. Tasks scheduled for the
-  // same point in time will be ordered by their sequence numbers.
-  struct DelayedWakeUp {
-    TimeTicks time;
-    int sequence_num;
-
-    bool operator!=(const DelayedWakeUp& other) const {
-      return time != other.time || other.sequence_num != sequence_num;
-    }
-
-    bool operator==(const DelayedWakeUp& other) const {
-      return !(*this != other);
-    }
-
-    bool operator<=(const DelayedWakeUp& other) const {
-      if (time == other.time) {
-        // Debug gcc builds can compare an element against itself.
-        DCHECK(sequence_num != other.sequence_num || this == &other);
-        // |PendingTask::sequence_num| is int and might wrap around to
-        // a negative number when casted from EnqueueOrder.
-        // This way of comparison handles that properly.
-        return (sequence_num - other.sequence_num) <= 0;
-      }
-      return time < other.time;
-    }
-  };
-
-  class BASE_EXPORT Task : public TaskQueue::Task {
-   public:
-    Task(PostedTask task,
-         TimeTicks desired_run_time,
-         EnqueueOrder sequence_number);
-
-    Task(PostedTask task,
-         TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         EnqueueOrder enqueue_order);
-
-    DelayedWakeUp delayed_wake_up() const {
-      // Since we use |sequence_num| in DelayedWakeUp for ordering purposes
-      // and integer overflow handling is type-sensitive it's worth to protect
-      // it from an unnoticed potential change in the PendingTask base class.
-      static_assert(std::is_same<decltype(sequence_num), int>::value, "");
-      return DelayedWakeUp{delayed_run_time, sequence_num};
-    }
-
-    EnqueueOrder enqueue_order() const {
-      DCHECK(enqueue_order_);
-      return enqueue_order_;
-    }
-
-    void set_enqueue_order(EnqueueOrder enqueue_order) {
-      DCHECK(!enqueue_order_);
-      enqueue_order_ = enqueue_order;
-    }
-
-    bool enqueue_order_set() const { return enqueue_order_; }
-
-   private:
-    // Similar to sequence number, but ultimately the |enqueue_order_| is what
-    // the scheduler uses for task ordering. For immediate tasks |enqueue_order|
-    // is set when posted, but for delayed tasks it's not defined until they are
-    // enqueued on the |delayed_work_queue_|. This is because otherwise delayed
-    // tasks could run before an immediate task posted after the delayed task.
-    EnqueueOrder enqueue_order_;
-  };
-
   // Types of queues TaskQueueImpl is maintaining internally.
   enum class WorkQueueType { kImmediate, kDelayed };
 
   // Non-nestable tasks may get deferred but such queue is being maintained on
   // SequenceManager side, so we need to keep information how to requeue it.
   struct DeferredNonNestableTask {
-    internal::TaskQueueImpl::Task task;
+    Task task;
     internal::TaskQueueImpl* task_queue;
     WorkQueueType work_queue_type;
   };
 
   using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
   using OnTaskStartedHandler =
-      RepeatingCallback<void(const TaskQueue::Task&,
-                             const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
-      RepeatingCallback<void(const TaskQueue::Task&,
-                             const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
 
   // May be called from any thread.
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type) const;
@@ -255,7 +186,7 @@ class BASE_EXPORT TaskQueueImpl {
   // TODO(kraynov): Simplify non-nestable task logic https://crbug.com/845437.
   void RequeueDeferredNonNestableTask(DeferredNonNestableTask task);
 
-  void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
+  void PushImmediateIncomingTaskForTest(Task&& task);
 
   class QueueEnabledVoterImpl : public TaskQueue::QueueEnabledVoter {
    public:
@@ -282,10 +213,10 @@ class BASE_EXPORT TaskQueueImpl {
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
-  void OnTaskStarted(const TaskQueue::Task& task,
+  void OnTaskStarted(const Task& task,
                      const TaskQueue::TaskTiming& task_timing);
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
-  void OnTaskCompleted(const TaskQueue::Task& task,
+  void OnTaskCompleted(const Task& task,
                        const TaskQueue::TaskTiming& task_timing);
   bool RequiresTaskTiming() const;
 
@@ -341,7 +272,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
-    std::priority_queue<TaskQueueImpl::Task> delayed_incoming_queue;
+    std::priority_queue<Task> delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     size_t set_index;
     HeapHandle heap_handle;

@@ -68,7 +68,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   // NonMainThreadSchedulerImpl implementation:
   scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
   void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
-                       const base::sequence_manager::TaskQueue::Task& task,
+                       const base::sequence_manager::Task& task,
                        const base::sequence_manager::TaskQueue::TaskTiming&
                            task_timing) override;
 
@@ -132,7 +132,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   void RecordTaskUkm(
       NonMainThreadTaskQueue* worker_task_queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   const WebThreadType thread_type_;

@@ -52,14 +52,6 @@ TaskQueue::~TaskQueue() {
       TakeTaskQueueImpl());
 }
 
-TaskQueue::Task::Task(internal::PostedTask posted_task,
-                      TimeTicks desired_run_time)
-    : PendingTask(posted_task.location,
-                  std::move(posted_task.callback),
-                  desired_run_time,
-                  posted_task.nestable),
-      task_type_(posted_task.task_type) {}
-
 TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)
     : has_wall_time_(has_wall_time), has_thread_time_(has_thread_time) {}
 
