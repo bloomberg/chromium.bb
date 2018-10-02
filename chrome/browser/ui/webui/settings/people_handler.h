@@ -121,6 +121,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       RestartSyncAfterDashboardClearWithStandaloneTransport);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
+                           StoredAccountsList);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
