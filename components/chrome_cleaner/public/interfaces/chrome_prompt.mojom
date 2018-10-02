@@ -65,5 +65,6 @@ interface ChromePrompt {
   //        returned.
   // Returns:
   //  - success: indicates if the extension removal was successful.
-  DisableExtensions(array<ExtensionId> extension_ids) => (bool success);
+  [MinVersion=2] DisableExtensions(array<ExtensionId> extension_ids)
+      => (bool success);
 };
