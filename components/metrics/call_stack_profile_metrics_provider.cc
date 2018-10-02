@@ -86,9 +86,6 @@ class PendingProfiles {
   // provided to future invocations of CollectProfilesIfCollectionEnabled.
   void SetCollectionEnabled(bool enabled);
 
-  // True if profiles are being collected.
-  bool IsCollectionEnabled() const;
-
   // Adds |profile| to the list of profiles if collection is enabled; it is
   // not const& because it must be passed with std::move.
   void CollectProfilesIfCollectionEnabled(ProfileState profile);
@@ -145,11 +142,6 @@ void PendingProfiles::SetCollectionEnabled(bool enabled) {
   } else {
     last_collection_enable_time_ = base::TimeTicks::Now();
   }
-}
-
-bool PendingProfiles::IsCollectionEnabled() const {
-  base::AutoLock scoped_lock(lock_);
-  return collection_enabled_;
 }
 
 void PendingProfiles::CollectProfilesIfCollectionEnabled(ProfileState profile) {
