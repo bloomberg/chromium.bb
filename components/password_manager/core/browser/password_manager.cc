@@ -591,8 +591,14 @@ void PasswordManager::UpdateFormManagers() {
 
   // The autofill manager will be repopulated again when the credentials
   // are retrieved.
-  for (PasswordManagerDriver* driver : drivers)
-    driver->GetPasswordAutofillManager()->DeleteFillData();
+  for (PasswordManagerDriver* driver : drivers) {
+    // GetPasswordAutofillManager() is returning nullptr in iOS Chrome, since
+    // PasswordAutofillManager is not instantiated on iOS Chrome.
+    // See //ios/chrome/browser/passwords/ios_chrome_password_manager_driver.mm
+    if (driver->GetPasswordAutofillManager()) {
+      driver->GetPasswordAutofillManager()->DeleteFillData();
+    }
+  }
 }
 
 void PasswordManager::DropFormManagers() {
