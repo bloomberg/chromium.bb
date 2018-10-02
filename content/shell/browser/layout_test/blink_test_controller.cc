@@ -511,6 +511,8 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   main_frame_dump_ = nullptr;
   waiting_for_pixel_results_ = false;
   waiting_for_main_frame_dump_ = false;
+  composite_all_frames_node_storage_.clear();
+  composite_all_frames_node_queue_ = std::queue<Node*>();
   weak_factory_.InvalidateWeakPtrs();
 
 #if defined(OS_ANDROID)
@@ -603,15 +605,12 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableThreadedCompositing)) {
       rwhv->EnsureSurfaceSynchronizedForLayoutTest();
+      EnqueueSurfaceCopyRequest();
     } else {
-      CompositeAllFrames();
+      CompositeAllFramesThen(
+          base::BindOnce(&BlinkTestController::EnqueueSurfaceCopyRequest,
+                         weak_factory_.GetWeakPtr()));
     }
-
-    // Enqueue an image copy output request.
-    rwhv->CopyFromSurface(
-        gfx::Rect(), gfx::Size(),
-        base::BindOnce(&BlinkTestController::OnPixelDumpCaptured,
-                       weak_factory_.GetWeakPtr()));
   }
 
   RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
@@ -621,33 +620,71 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
                      weak_factory_.GetWeakPtr()));
 }
 
-void BlinkTestController::CompositeAllFrames() {
-  std::vector<Node> node_storage;
-  Node* root = BuildFrameTree(main_window_->web_contents()->GetAllFrames(),
-                              &node_storage);
+// Enqueue an image copy output request.
+void BlinkTestController::EnqueueSurfaceCopyRequest() {
+  auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
+  rwhv->CopyFromSurface(
+      gfx::Rect(), gfx::Size(),
+      base::BindOnce(&BlinkTestController::OnPixelDumpCaptured,
+                     weak_factory_.GetWeakPtr()));
+}
 
-  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
-  CompositeDepthFirst(root);
+void BlinkTestController::CompositeAllFramesThen(
+    base::OnceCallback<void()> callback) {
+  // Start with fresh storage and queue.
+  DCHECK(composite_all_frames_node_storage_.empty())
+      << "Attempted to composite twice in one test";
+  DCHECK(composite_all_frames_node_queue_.empty())
+      << "Attempted to composite twice in one test";
+  Node* root = BuildFrameTree(main_window_->web_contents()->GetAllFrames());
+  BuildDepthFirstQueue(root);
+  // Now asynchronously run through the node queue.
+  CompositeNodeQueueThen(std::move(callback));
+}
+
+void BlinkTestController::CompositeNodeQueueThen(
+    base::OnceCallback<void()> callback) {
+  RenderFrameHost* next_node_host;
+  do {
+    if (composite_all_frames_node_queue_.empty()) {
+      // Done with the queue - call the callback.
+      std::move(callback).Run();
+      return;
+    }
+    next_node_host =
+        composite_all_frames_node_queue_.front()->render_frame_host;
+    composite_all_frames_node_queue_.pop();
+  } while (!next_node_host || !next_node_host->IsRenderFrameLive());
+  GetLayoutTestControlPtr(next_node_host)
+      ->CompositeWithRaster(
+          base::BindOnce(&BlinkTestController::CompositeNodeQueueThen,
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BlinkTestController::BuildDepthFirstQueue(Node* node) {
+  for (auto* child : node->children)
+    BuildDepthFirstQueue(child);
+  composite_all_frames_node_queue_.push(node);
 }
 
 BlinkTestController::Node* BlinkTestController::BuildFrameTree(
-    const std::vector<RenderFrameHost*>& frames,
-    std::vector<Node>* storage) const {
+    const std::vector<RenderFrameHost*>& frames) {
   // Ensure we don't reallocate during tree construction.
-  storage->reserve(frames.size());
+  composite_all_frames_node_storage_.reserve(frames.size());
 
   // Returns a Node for a given RenderFrameHost, or nullptr if doesn't exist.
-  auto node_for_frame = [storage](RenderFrameHost* rfh) {
+  auto node_for_frame = [this](RenderFrameHost* rfh) {
     auto it = std::find_if(
-        storage->begin(), storage->end(),
+        composite_all_frames_node_storage_.begin(),
+        composite_all_frames_node_storage_.end(),
         [rfh](const Node& node) { return node.render_frame_host == rfh; });
-    return it == storage->end() ? nullptr : &*it;
+    return it == composite_all_frames_node_storage_.end() ? nullptr : &*it;
   };
 
   // Add all of the frames to storage.
   for (auto* frame : frames) {
     DCHECK(!node_for_frame(frame)) << "Frame seen multiple times.";
-    storage->emplace_back(frame);
+    composite_all_frames_node_storage_.emplace_back(frame);
   }
 
   // Construct a tree rooted at |root|.
@@ -666,14 +703,6 @@ BlinkTestController::Node* BlinkTestController::BuildFrameTree(
   }
   DCHECK(root) << "No root found.";
   return root;
-}
-
-void BlinkTestController::CompositeDepthFirst(Node* node) {
-  if (!node->render_frame_host->IsRenderFrameLive())
-    return;
-  for (auto* child : node->children)
-    CompositeDepthFirst(child);
-  GetLayoutTestControlPtr(node->render_frame_host)->CompositeWithRaster();
 }
 
 bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {

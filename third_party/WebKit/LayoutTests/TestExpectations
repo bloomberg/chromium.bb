@@ -2648,6 +2648,7 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/654477 fast/layers/video-layer.html [ Failure ]
+# These could likely be removed - see https://chromium-review.googlesource.com/c/chromium/src/+/1252141
 crbug.com/654477 media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 virtual/video-surface-layer/media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
