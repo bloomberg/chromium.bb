@@ -16,6 +16,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
+#include "headless/lib/browser/headless_network_conditions.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
@@ -109,6 +110,9 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
+  void SetNetworkConditions(HeadlessNetworkConditions conditions);
+  HeadlessNetworkConditions GetNetworkConditions() override;
+
  private:
   HeadlessBrowserContextImpl(
       HeadlessBrowserImpl* browser,
@@ -139,6 +143,8 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   std::unique_ptr<content::PermissionControllerDelegate>
       permission_controller_delegate_;
+
+  HeadlessNetworkConditions network_conditions_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };
