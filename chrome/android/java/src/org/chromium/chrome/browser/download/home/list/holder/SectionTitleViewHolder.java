@@ -12,12 +12,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.ListUtils;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.download.R;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemState;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A {@link ViewHolder} specifically meant to display a section header.
@@ -32,7 +39,8 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
     private Runnable mDeleteAllCallback;
     private Runnable mSelectCallback;
 
-    private boolean mListHasMultipleItems;
+    private boolean mHasMultipleItems;
+    private boolean mCanSelectItems;
 
     /** Create a new {@link SectionTitleViewHolder} instance. */
     public static SectionTitleViewHolder create(ViewGroup parent) {
@@ -51,7 +59,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
     // ListItemViewHolder implementation.
     @Override
     public void bind(PropertyModel properties, ListItem item) {
-        ListItem.SectionHeaderListItem sectionItem = (ListItem.SectionHeaderListItem) item;
+        SectionHeaderListItem sectionItem = (SectionHeaderListItem) item;
         mTitle.setText(ListUtils.getTextForSection(sectionItem.filter));
 
         boolean isPhoto = sectionItem.filter == OfflineItemFilter.FILTER_IMAGE;
@@ -74,7 +82,8 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
 
         if (mMore != null) mMore.setVisibility(isPhoto ? View.VISIBLE : View.GONE);
 
-        mListHasMultipleItems = sectionItem.items.size() > 1;
+        mHasMultipleItems = sectionItem.items.size() > 1;
+        mCanSelectItems = !getCompletedItems(sectionItem.items).isEmpty();
 
         if (isPhoto && mMore != null) {
             assert sectionItem.items.size() > 0;
@@ -87,7 +96,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
 
             mShareAllCallback = ()
                     -> properties.get(ListProperties.CALLBACK_SHARE_ALL)
-                               .onResult(sectionItem.items);
+                               .onResult(getCompletedItems(sectionItem.items));
             mDeleteAllCallback = ()
                     -> properties.get(ListProperties.CALLBACK_REMOVE_ALL)
                                .onResult(sectionItem.items);
@@ -101,14 +110,14 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
     @Override
     public ListMenuButton.Item[] getItems() {
         Context context = itemView.getContext();
-        if (mListHasMultipleItems) {
+        if (mHasMultipleItems) {
             return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(context, R.string.select, true),
-                    new ListMenuButton.Item(context, R.string.share_group, true),
+                    new ListMenuButton.Item(context, R.string.select, mCanSelectItems),
+                    new ListMenuButton.Item(context, R.string.share_group, mCanSelectItems),
                     new ListMenuButton.Item(context, R.string.delete_group, true)};
         } else {
             return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(context, R.string.share, true),
+                    new ListMenuButton.Item(context, R.string.share, mCanSelectItems),
                     new ListMenuButton.Item(context, R.string.delete, true)};
         }
     }
@@ -126,5 +135,15 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         } else if (item.getTextId() == R.string.delete_group) {
             mDeleteAllCallback.run();
         }
+    }
+
+    private static List<OfflineItem> getCompletedItems(Collection<OfflineItem> items) {
+        List<OfflineItem> completedItems = new ArrayList<>();
+        for (OfflineItem item : items) {
+            if (item.state != OfflineItemState.COMPLETE) continue;
+            completedItems.add(item);
+        }
+
+        return completedItems;
     }
 }

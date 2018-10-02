@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
@@ -245,6 +246,10 @@ class DateOrderedListMediator {
         onDeleteItems(CollectionUtil.newArrayList(item));
     }
 
+    /**
+     * Deletes a given list of items. If the items are not completed yet, they would be cancelled.
+     * @param items The list of items to delete.
+     */
     private void onDeleteItems(List<OfflineItem> items) {
         // Calculate the real offline items we are going to remove here.
         final Collection<OfflineItem> itemsToDelete =
@@ -254,7 +259,11 @@ class DateOrderedListMediator {
         mDeleteController.canDelete(items, delete -> {
             if (delete) {
                 for (OfflineItem item : itemsToDelete) {
-                    mProvider.removeItem(item);
+                    if (item.state != OfflineItemState.COMPLETE) {
+                        mProvider.cancelDownload(item);
+                    } else {
+                        mProvider.removeItem(item);
+                    }
 
                     // Remove and have a single decision path for cleaning up thumbnails when the
                     // glue layer is no longer needed.

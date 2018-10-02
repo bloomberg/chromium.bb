@@ -107,13 +107,17 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
             onItemsRemoved(CollectionUtil.newArrayList(oldItem));
             onItemsAdded(CollectionUtil.newArrayList(item));
         } else {
+            int sectionHeaderIndex = -1;
             for (int i = 0; i < mModel.size(); i++) {
                 ListItem listItem = mModel.get(i);
+                if (listItem instanceof SectionHeaderListItem) sectionHeaderIndex = i;
                 if (!(listItem instanceof OfflineItemListItem)) continue;
 
                 OfflineItem offlineListItem = ((OfflineItemListItem) listItem).item;
                 if (item.id.equals(offlineListItem.id)) {
                     mModel.update(i, new OfflineItemListItem(item));
+                    if (oldItem.state != item.state) updateSectionHeader(sectionHeaderIndex, i);
+                    break;
                 }
             }
         }
@@ -121,11 +125,20 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         mModel.dispatchLastEvent();
     }
 
+    private void updateSectionHeader(int sectionHeaderIndex, int offlineItemIndex) {
+        if (sectionHeaderIndex < 0) return;
+
+        SectionHeaderListItem sectionHeader =
+                (SectionHeaderListItem) mModel.get(sectionHeaderIndex);
+        OfflineItem offlineItem = ((OfflineItemListItem) mModel.get(offlineItemIndex)).item;
+        sectionHeader.items.set(offlineItemIndex - sectionHeaderIndex - 1, offlineItem);
+        mModel.update(sectionHeaderIndex, sectionHeader);
+    }
+
     // Flattens out the hierarchical data and adds items to the model in the order they should be
     // displayed. Date header, section header, date separator and section separators are added
     // wherever necessary. The existing items in the model are replaced by the new set of items
     // computed.
-    // TODO(shaktisahu): Write a version having no headers for the prefetch tab.
     private void pushItemsToModel() {
         List<ListItem> listItems = new ArrayList<>();
         int dateIndex = 0;
