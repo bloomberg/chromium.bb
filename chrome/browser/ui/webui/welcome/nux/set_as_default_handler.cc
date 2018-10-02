@@ -4,28 +4,24 @@
 
 #include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
 
-#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
-#include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace nux {
 
-SetAsDefaultHandler::SetAsDefaultHandler() {}
+SetAsDefaultHandler::SetAsDefaultHandler()
+    : settings::DefaultBrowserHandler() {}
 
 SetAsDefaultHandler::~SetAsDefaultHandler() {}
 
-void SetAsDefaultHandler::RegisterMessages() {}
+void SetAsDefaultHandler::RecordSetAsDefaultUMA() {
+  // TODO(scottchen): Add UMA tracking.
+}
 
 void SetAsDefaultHandler::AddSources(content::WebUIDataSource* html_source) {
   // Localized strings.
