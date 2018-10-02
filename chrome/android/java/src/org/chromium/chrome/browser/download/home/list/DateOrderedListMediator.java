@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
+import org.chromium.chrome.browser.download.home.filter.InvalidStateOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.OffTheRecordOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
@@ -69,6 +70,7 @@ class DateOrderedListMediator {
     private final SelectionDelegate<ListItem> mSelectionDelegate;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
+    private final InvalidStateOfflineItemFilter mInvalidStateFilter;
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
@@ -120,11 +122,12 @@ class DateOrderedListMediator {
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
         //         [OffTheRecordOfflineItemFilter] ->
-        //             [DeleteUndoOfflineItemFilter] ->
-        //                 [TypeOfflineItemFilter] ->
-        //                     [SearchOfflineItemFitler] ->
-        //                         [DateOrderedListMutator] ->
-        //                             [ListItemModel]
+        //             [InvalidStateOfflineItemFilter] ->
+        //                 [DeleteUndoOfflineItemFilter] ->
+        //                     [TypeOfflineItemFilter] ->
+        //                         [SearchOfflineItemFitler] ->
+        //                             [DateOrderedListMutator] ->
+        //                                 [ListItemModel]
 
         mProvider = new OfflineContentProviderGlue(provider, offTheRecord);
         mShareController = shareController;
@@ -134,7 +137,8 @@ class DateOrderedListMediator {
 
         mSource = new OfflineItemSource(mProvider);
         mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
-        mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mOffTheRecordFilter);
+        mInvalidStateFilter = new InvalidStateOfflineItemFilter(mOffTheRecordFilter);
+        mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
         mTypeFilter = new TypeOfflineItemFilter(mDeleteUndoFilter);
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
