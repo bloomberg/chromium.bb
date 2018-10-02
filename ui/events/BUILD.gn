@@ -306,7 +306,7 @@ jumbo_component("events") {
       "fuchsia/input_event_dispatcher.h",
       "fuchsia/input_event_dispatcher_delegate.h",
     ]
-    public_deps += [ "//third_party/fuchsia-sdk:input" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
   }
 }
 
