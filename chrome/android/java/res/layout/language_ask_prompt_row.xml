@@ -16,6 +16,7 @@
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/explicit_ask_checkbox_end_padding"
         android:id="@+id/language_ask_checkbox"
         android:layout_alignBaseline="@+id/ui_language_representation" />
 

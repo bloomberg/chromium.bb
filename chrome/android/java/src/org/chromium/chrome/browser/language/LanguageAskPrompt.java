@@ -42,7 +42,8 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         }
     }
 
-    private class LanguageAskPromptRowViewHolder extends ViewHolder {
+    private class LanguageAskPromptRowViewHolder
+            extends ViewHolder implements View.OnClickListener {
         private TextView mLanguageNameTextView;
         private TextView mNativeNameTextView;
         private CheckBox mCheckbox;
@@ -51,6 +52,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
         LanguageAskPromptRowViewHolder(View view) {
             super(view);
+            view.setOnClickListener(this);
             mLanguageNameTextView =
                     ((TextView) itemView.findViewById(R.id.ui_language_representation));
             mNativeNameTextView =
@@ -66,6 +68,11 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
                     }
                 }
             });
+        }
+
+        @Override
+        public void onClick(View v) {
+            mCheckbox.setChecked(!mCheckbox.isChecked());
         }
 
         /**
