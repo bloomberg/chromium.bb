@@ -707,20 +707,64 @@ void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
 }
 
 void AXObjectCacheImpl::ChildrenChanged(Node* node) {
+  if (!node)
+    return;
+
+  if (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
+    if (!nodes_changed_during_layout_.Contains(&node->GetDocument())) {
+      HeapVector<Member<Node>> nodes;
+      nodes_changed_during_layout_.insert(&node->GetDocument(), nodes);
+    }
+    nodes_changed_during_layout_.at(&node->GetDocument()).push_back(node);
+  }
   ChildrenChanged(Get(node), node);
 }
 
 void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
-  if (layout_object) {
-    AXObject* object = Get(layout_object);
-    ChildrenChanged(object, layout_object->GetNode());
+  if (!layout_object)
+    return;
+  Node* node = layout_object->GetNode();
+  LayoutObject* parent = layout_object->Parent();
+  while (!node && parent) {
+    node = layout_object->GetNode();
+    parent = parent->Parent();
   }
+
+  if (!node)
+    return;
+
+  if (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
+    if (!nodes_changed_during_layout_.Contains(&node->GetDocument())) {
+      HeapVector<Member<Node>> nodes;
+      nodes_changed_during_layout_.insert(&node->GetDocument(), nodes);
+    }
+    nodes_changed_during_layout_.at(&node->GetDocument()).push_back(node);
+    return;
+  }
+
+  AXObject* object = Get(layout_object);
+  ChildrenChanged(object, layout_object->GetNode());
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
+  if (!accessible_node)
+    return;
   AXObject* object = Get(accessible_node);
-  if (object)
-    ChildrenChanged(object, object->GetNode());
+  if (!object)
+    return;
+  Node* node = object->GetNode();
+  if (node && node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
+    Document& document = node->GetDocument();
+    if (!accessible_nodes_changed_during_layout_.Contains(&document)) {
+      HeapVector<Member<AccessibleNode>> accessible_nodes;
+      accessible_nodes_changed_during_layout_.insert(&document,
+                                                     accessible_nodes);
+    }
+    accessible_nodes_changed_during_layout_.at(&document).push_back(
+        accessible_node);
+    return;
+  }
+  ChildrenChanged(object, object->GetNode());
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AXObject* obj, Node* optional_node) {
@@ -731,6 +775,25 @@ void AXObjectCacheImpl::ChildrenChanged(AXObject* obj, Node* optional_node) {
     ContainingTableRowsOrColsMaybeChanged(optional_node);
     relation_cache_->UpdateRelatedTree(optional_node);
   }
+}
+
+void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
+  if (document.Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
+    return;
+
+  if (nodes_changed_during_layout_.Contains(&document)) {
+    for (auto& node : nodes_changed_during_layout_.at(&document))
+      ChildrenChanged(node);
+  }
+  if (accessible_nodes_changed_during_layout_.Contains(&document)) {
+    for (auto& accessible_node :
+         accessible_nodes_changed_during_layout_.at(&document)) {
+      ChildrenChanged(accessible_node);
+    }
+  }
+
+  nodes_changed_during_layout_.erase(&document);
+  accessible_nodes_changed_during_layout_.erase(&document);
 }
 
 void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
@@ -935,8 +998,12 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
   if (!node)
     return;  // Virtual AOM node.
 
+  AXObject* obj = Get(node);
+  if (!obj && IsHTMLSelectElement(node))
+    obj = GetOrCreate(node);
+
   // Invalidate the current object and make the parent reconsider its children.
-  if (AXObject* obj = Get(node)) {
+  if (obj) {
     // Save parent for later use.
     AXObject* parent = obj->ParentObject();
 
@@ -1353,6 +1420,8 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
 
   visitor->Trace(objects_);
   visitor->Trace(notifications_to_post_);
+  visitor->Trace(nodes_changed_during_layout_);
+  visitor->Trace(accessible_nodes_changed_during_layout_);
 
   AXObjectCache::Trace(visitor);
 }
