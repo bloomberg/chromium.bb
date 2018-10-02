@@ -800,7 +800,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
 
   // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
   // without user activation.
-  bool is_user_gesture = Frame::HasTransientUserActivation(GetFrame());
+  bool is_user_gesture = LocalFrame::HasTransientUserActivation(GetFrame());
   if (!is_user_gesture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);

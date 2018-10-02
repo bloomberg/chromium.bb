@@ -147,7 +147,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
   }
 
-  if (!Frame::HasTransientUserActivation(window.GetFrame())) {
+  if (!LocalFrame::HasTransientUserActivation(window.GetFrame())) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

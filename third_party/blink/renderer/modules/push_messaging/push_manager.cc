@@ -80,13 +80,14 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                                "Document is detached from window."));
     PushController::ClientFrom(frame).Subscribe(
         registration_->WebRegistration(), web_options,
-        Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
+        LocalFrame::HasTransientUserActivation(frame,
+                                               true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     PushProvider()->Subscribe(
         registration_->WebRegistration(), web_options,
-        Frame::HasTransientUserActivation(nullptr,
-                                          true /* checkIfMainThread */),
+        LocalFrame::HasTransientUserActivation(nullptr,
+                                               true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   }
 

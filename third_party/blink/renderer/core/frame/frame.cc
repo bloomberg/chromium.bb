@@ -188,11 +188,6 @@ void Frame::NotifyUserActivationInLocalTree() {
     node->user_activation_state_.Activate();
 }
 
-void Frame::NotifyUserActivation() {
-  ToLocalFrame(this)->Client()->NotifyUserActivation();
-  NotifyUserActivationInLocalTree();
-}
-
 bool Frame::ConsumeTransientUserActivationInLocalTree() {
   bool was_active = user_activation_state_.IsActive();
 
@@ -204,57 +199,6 @@ bool Frame::ConsumeTransientUserActivationInLocalTree() {
     node->user_activation_state_.ConsumeIfActive();
 
   return was_active;
-}
-
-bool Frame::ConsumeTransientUserActivation(
-    UserActivationUpdateSource update_source) {
-  if (update_source == UserActivationUpdateSource::kRenderer)
-    ToLocalFrame(this)->Client()->ConsumeUserActivation();
-  return ConsumeTransientUserActivationInLocalTree();
-}
-
-// static
-std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
-    LocalFrame* frame,
-    UserGestureToken::Status status) {
-  if (frame)
-    frame->NotifyUserActivation();
-  return std::make_unique<UserGestureIndicator>(status);
-}
-
-// static
-std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
-    LocalFrame* frame,
-    UserGestureToken* token) {
-  if (frame)
-    frame->NotifyUserActivation();
-  return std::make_unique<UserGestureIndicator>(token);
-}
-
-// static
-bool Frame::HasTransientUserActivation(LocalFrame* frame,
-                                       bool checkIfMainThread) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    return frame ? frame->HasTransientUserActivation() : false;
-  }
-
-  return checkIfMainThread
-             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-             : UserGestureIndicator::ProcessingUserGesture();
-}
-
-// static
-bool Frame::ConsumeTransientUserActivation(
-    LocalFrame* frame,
-    bool checkIfMainThread,
-    UserActivationUpdateSource update_source) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
-  }
-
-  return checkIfMainThread
-             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-             : UserGestureIndicator::ConsumeUserGesture();
 }
 
 bool Frame::DeprecatedIsFeatureEnabled(

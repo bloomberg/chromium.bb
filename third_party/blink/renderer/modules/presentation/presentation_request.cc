@@ -155,7 +155,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
       context_settings->GetPresentationRequiresUserGesture();
 
   if (is_user_gesture_required &&
-      !Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr))
+      !LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr))
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

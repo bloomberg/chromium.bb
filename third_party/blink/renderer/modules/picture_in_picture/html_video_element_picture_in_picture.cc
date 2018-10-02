@@ -84,7 +84,7 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   // `kFrameDetached`.
   LocalFrame* frame = element.GetFrame();
   DCHECK(frame);
-  if (!Frame::ConsumeTransientUserActivation(frame)) {
+  if (!LocalFrame::ConsumeTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                            kUserGestureRequired));

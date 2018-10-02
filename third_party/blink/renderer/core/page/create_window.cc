@@ -318,7 +318,8 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
             network::mojom::RequestContextFrameType::kAuxiliary);
   probe::windowOpen(opener_frame.GetDocument(),
                     request.GetResourceRequest().Url(), request.FrameName(),
-                    features, Frame::HasTransientUserActivation(&opener_frame));
+                    features,
+                    LocalFrame::HasTransientUserActivation(&opener_frame));
   created = false;
 
   Frame* window =
@@ -419,7 +420,7 @@ DOMWindow* CreateWindow(const String& url_string,
   // Records HasUserGesture before the value is invalidated inside
   // createWindow(LocalFrame& openerFrame, ...).
   // This value will be set in ResourceRequest loaded in a new LocalFrame.
-  bool has_user_gesture = Frame::HasTransientUserActivation(&opener_frame);
+  bool has_user_gesture = LocalFrame::HasTransientUserActivation(&opener_frame);
 
   // We pass the opener frame for the lookupFrame in case the active frame is
   // different from the opener frame, and the name references a frame relative

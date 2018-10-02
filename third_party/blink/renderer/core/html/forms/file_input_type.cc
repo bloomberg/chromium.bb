@@ -149,7 +149,8 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
+  if (!LocalFrame::HasTransientUserActivation(
+          GetElement().GetDocument().GetFrame()))
     return;
 
   if (ChromeClient* chrome_client = GetChromeClient()) {

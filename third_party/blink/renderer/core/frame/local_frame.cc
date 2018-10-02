@@ -1040,7 +1040,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   // Navigating window.opener cross origin, without user activation. See
   // crbug.com/813643.
   if (Client()->Opener() == target_frame &&
-      !HasTransientUserActivation(this, false /* checkIfMainThread */) &&
+      !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(destination_url).get())) {
     UseCounter::Count(this, WebFeature::kOpenerNavigationWithoutGesture);
@@ -1121,7 +1121,7 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
       if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
           !GetSecurityContext()->IsSandboxed(
               kSandboxTopNavigationByUserActivation) &&
-          !Frame::HasTransientUserActivation(this)) {
+          !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
         reason =
@@ -1446,6 +1446,67 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 void LocalFrame::DeprecatedReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
   GetSecurityContext()->ReportFeaturePolicyViolation(feature);
+}
+
+// static
+std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
+    LocalFrame* frame,
+    UserGestureToken::Status status) {
+  if (frame)
+    frame->NotifyUserActivation();
+  return std::make_unique<UserGestureIndicator>(status);
+}
+
+// static
+std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
+    LocalFrame* frame,
+    UserGestureToken* token) {
+  DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
+  if (frame)
+    frame->NotifyUserActivation();
+  return std::make_unique<UserGestureIndicator>(token);
+}
+
+// static
+bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
+                                            bool check_if_main_thread) {
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    return frame ? frame->HasTransientUserActivation() : false;
+  }
+
+  return check_if_main_thread
+             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+             : UserGestureIndicator::ProcessingUserGesture();
+}
+
+// static
+bool LocalFrame::ConsumeTransientUserActivation(
+    LocalFrame* frame,
+    bool check_if_main_thread,
+    UserActivationUpdateSource update_source) {
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
+  }
+
+  return check_if_main_thread
+             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+             : UserGestureIndicator::ConsumeUserGesture();
+}
+
+void LocalFrame::NotifyUserActivation() {
+  Client()->NotifyUserActivation();
+  NotifyUserActivationInLocalTree();
+}
+
+bool LocalFrame::HasTransientUserActivation() {
+  return user_activation_state_.IsActive();
+}
+
+bool LocalFrame::ConsumeTransientUserActivation(
+    UserActivationUpdateSource update_source) {
+  if (update_source == UserActivationUpdateSource::kRenderer)
+    Client()->ConsumeUserActivation();
+  return ConsumeTransientUserActivationInLocalTree();
 }
 
 }  // namespace blink

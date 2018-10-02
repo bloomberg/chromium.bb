@@ -368,7 +368,7 @@ bool AudioContext::AreAutoplayRequirementsFulfilled() const {
       return true;
     case AutoplayPolicy::Type::kUserGestureRequired:
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      return Frame::HasTransientUserActivation(GetDocument()->GetFrame());
+      return LocalFrame::HasTransientUserActivation(GetDocument()->GetFrame());
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
   }

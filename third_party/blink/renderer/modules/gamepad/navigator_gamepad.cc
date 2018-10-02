@@ -216,7 +216,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
   // visible.
   if (RuntimeEnabledFeatures::UserActivationV2Enabled() && GetFrame() &&
       GetPage() && GetPage()->IsPageVisible() && HasUserActivation(gamepads_)) {
-    Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+    LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
   }
 
   return gamepads_.Get();

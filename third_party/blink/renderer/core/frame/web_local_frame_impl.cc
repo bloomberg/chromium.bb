@@ -1093,7 +1093,8 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
     plugin_lookup_context_node = ContextMenuNodeInner();
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
@@ -1108,7 +1109,8 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
   DCHECK(GetFrame());
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer();
@@ -2109,7 +2111,8 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
       static_cast<const KURL&>(url).GetString().Substring(
           strlen("javascript:")));
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame(),
+                                       UserGestureToken::kNewGesture);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
@@ -2223,7 +2226,7 @@ void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
 }
 
 void WebLocalFrameImpl::NotifyUserActivation() {
-  Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }
 
 void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
@@ -2296,7 +2299,7 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
   // gesture usage by chaining postMessages across multiple processes.
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && has_user_gesture) {
-    gesture_indicator = Frame::NotifyUserActivation(GetFrame());
+    gesture_indicator = LocalFrame::NotifyUserActivation(GetFrame());
     UserGestureIndicator::SetWasForwardedCrossProcess();
   }
 

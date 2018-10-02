@@ -568,8 +568,9 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   v8::Local<v8::Context> context =
       web_view_helper.LocalMainFrame()->MainWorldScriptContext();
 
-  std::unique_ptr<UserGestureIndicator> indicator = Frame::NotifyUserActivation(
-      main_frame->GetFrame(), UserGestureToken::kNewGesture);
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::NotifyUserActivation(main_frame->GetFrame(),
+                                       UserGestureToken::kNewGesture);
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
@@ -7328,7 +7329,7 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   frame_request.SetTriggeringEventInfo(
       WebTriggeringEventInfo::kFromTrustedEvent);
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   web_frame_client.IgnoreNavigations();
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
@@ -8137,7 +8138,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -8176,7 +8177,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -8245,7 +8246,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*document->documentElement());
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
@@ -8295,7 +8296,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
           ->GetFrame();
   Document* document = frame->GetDocument();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   web_view_impl->DidEnterFullscreen();
@@ -8337,7 +8338,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
 
   {
     std::unique_ptr<UserGestureIndicator> gesture =
-        Frame::NotifyUserActivation(top_doc->GetFrame());
+        LocalFrame::NotifyUserActivation(top_doc->GetFrame());
     Fullscreen::RequestFullscreen(*top_body);
   }
   web_view_impl->DidEnterFullscreen();
@@ -8345,7 +8346,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
 
   {
     std::unique_ptr<UserGestureIndicator> gesture =
-        Frame::NotifyUserActivation(iframe_doc->GetFrame());
+        LocalFrame::NotifyUserActivation(iframe_doc->GetFrame());
     Fullscreen::RequestFullscreen(*iframe_body);
   }
   web_view_impl->DidEnterFullscreen();
@@ -8391,7 +8392,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -8430,7 +8431,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
                           ->GetLayoutView();
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -8496,7 +8497,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   {
     LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
     std::unique_ptr<UserGestureIndicator> gesture =
-        Frame::NotifyUserActivation(frame);
+        LocalFrame::NotifyUserActivation(frame);
     Fullscreen::RequestFullscreen(*frame->GetDocument()->body());
   }
 
@@ -8559,7 +8560,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -8603,7 +8604,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   HTMLVideoElement* video =
       ToHTMLVideoElement(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
@@ -12153,8 +12154,8 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   // Simulate an input element focus leading to Element::focus() call with a
   // user gesture.
-  Frame::NotifyUserActivation(local_frame->GetFrame(),
-                              UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(local_frame->GetFrame(),
+                                   UserGestureToken::kNewGesture);
   local_frame->ExecuteScript(
       WebScriptSource("window.focus();"
                       "document.querySelector('input').focus();"));
@@ -13005,7 +13006,7 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
   Element* element = frame->GetDocument()->body();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   WebView().DidEnterFullscreen();
 

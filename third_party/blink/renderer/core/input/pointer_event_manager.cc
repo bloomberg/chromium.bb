@@ -554,7 +554,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   if (event.GetType() == WebInputEvent::kPointerUp &&
       !non_hovering_pointers_canceled_ && pointer_event_target.target_frame) {
     user_gesture_holder_ =
-        Frame::NotifyUserActivation(pointer_event_target.target_frame);
+        LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
   }
 
   WebInputEventResult result =

@@ -489,7 +489,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseDown:
         event_type = EventTypeNames::mousedown;
-        gesture_indicator = Frame::NotifyUserActivation(
+        gesture_indicator = LocalFrame::NotifyUserActivation(
             node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
         mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
         break;

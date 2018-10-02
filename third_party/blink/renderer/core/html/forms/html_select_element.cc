@@ -1065,7 +1065,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
 
   NotifyFormStateChanged();
 
-  if (Frame::HasTransientUserActivation(GetDocument().GetFrame()) &&
+  if (LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()) &&
       GetDocument().IsActive()) {
     GetDocument()
         .GetPage()

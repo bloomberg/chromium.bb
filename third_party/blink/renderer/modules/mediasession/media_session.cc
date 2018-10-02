@@ -219,7 +219,8 @@ void MediaSession::DidReceiveAction(
   DCHECK(GetExecutionContext()->IsDocument());
   Document* document = ToDocument(GetExecutionContext());
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
+      LocalFrame::NotifyUserActivation(document ? document->GetFrame()
+                                                : nullptr);
 
   auto iter = action_handlers_.find(MojomActionToActionName(action));
   if (iter == action_handlers_.end())
