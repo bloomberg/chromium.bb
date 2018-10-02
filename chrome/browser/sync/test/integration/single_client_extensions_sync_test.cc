@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -20,28 +20,11 @@ using extensions_helper::GetInstalledExtensions;
 using extensions_helper::InstallExtension;
 using extensions_helper::InstallExtensionForAllProfiles;
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class SingleClientExtensionsSyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncPseudoUSSExtensions);
-    } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncPseudoUSSExtensions);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class SingleClientExtensionsSyncTest : public UssSwitchToggler,
-                                       public SyncTest {
- public:
-  SingleClientExtensionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientExtensionsSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSExtensions),
+        SyncTest(SINGLE_CLIENT) {}
 
   ~SingleClientExtensionsSyncTest() override {}
 

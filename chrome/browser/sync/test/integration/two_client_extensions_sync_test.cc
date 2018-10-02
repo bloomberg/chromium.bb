@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -23,27 +23,13 @@ using extensions_helper::IncognitoEnableExtension;
 using extensions_helper::InstallExtension;
 using extensions_helper::UninstallExtension;
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class TwoClientExtensionsSyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncPseudoUSSExtensions);
-    } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncPseudoUSSExtensions);
-    }
+  TwoClientExtensionsSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSExtensions),
+        SyncTest(TWO_CLIENT) {
+    DisableVerifier();
   }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class TwoClientExtensionsSyncTest : public UssSwitchToggler, public SyncTest {
- public:
-  TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) { DisableVerifier(); }
 
   bool TestUsesSelfNotifications() override { return false; }
 

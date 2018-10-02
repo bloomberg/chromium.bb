@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -21,25 +21,10 @@ using themes_helper::UsingCustomTheme;
 using themes_helper::UsingDefaultTheme;
 using themes_helper::UsingSystemTheme;
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class TwoClientThemesSyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSThemes);
-    } else {
-      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSThemes);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class TwoClientThemesSyncTest : public UssSwitchToggler, public SyncTest {
- public:
-  TwoClientThemesSyncTest() : SyncTest(TWO_CLIENT) {}
+  TwoClientThemesSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSThemes), SyncTest(TWO_CLIENT) {}
   ~TwoClientThemesSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }

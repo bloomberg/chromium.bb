@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
@@ -49,22 +49,6 @@ using apps_helper::UninstallApp;
 
 namespace {
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSApps);
-    } else {
-      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSApps);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
 extensions::ExtensionRegistry* GetExtensionRegistry(Profile* profile) {
   return extensions::ExtensionRegistry::Get(profile);
 }
@@ -75,9 +59,10 @@ extensions::ExtensionService* GetExtensionService(Profile* profile) {
 
 }  // namespace
 
-class TwoClientAppsSyncTest : public UssSwitchToggler, public SyncTest {
+class TwoClientAppsSyncTest : public FeatureToggler, public SyncTest {
  public:
-  TwoClientAppsSyncTest() : SyncTest(TWO_CLIENT) {
+  TwoClientAppsSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSApps), SyncTest(TWO_CLIENT) {
     DisableVerifier();
   }
 

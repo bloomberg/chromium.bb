@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
@@ -25,25 +25,11 @@ using themes_helper::UsingSystemTheme;
 
 namespace {
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class SingleClientThemesSyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSThemes);
-    } else {
-      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSThemes);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class SingleClientThemesSyncTest : public UssSwitchToggler, public SyncTest {
- public:
-  SingleClientThemesSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientThemesSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSThemes),
+        SyncTest(SINGLE_CLIENT) {}
   ~SingleClientThemesSyncTest() override {}
 
  private:

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -16,25 +16,10 @@ using apps_helper::AllProfilesHaveSameApps;
 using apps_helper::InstallApp;
 using apps_helper::InstallPlatformApp;
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class SingleClientAppsSyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(switches::kSyncPseudoUSSApps);
-    } else {
-      override_features_.InitAndDisableFeature(switches::kSyncPseudoUSSApps);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class SingleClientAppsSyncTest : public UssSwitchToggler, public SyncTest {
- public:
-  SingleClientAppsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientAppsSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSApps), SyncTest(SINGLE_CLIENT) {}
 
   ~SingleClientAppsSyncTest() override {}
 

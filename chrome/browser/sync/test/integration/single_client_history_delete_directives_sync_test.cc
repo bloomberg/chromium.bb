@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
@@ -21,24 +21,6 @@
 namespace {
 
 using sync_pb::HistoryDeleteDirectiveSpecifics;
-
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncPseudoUSSHistoryDeleteDirectives);
-    } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncPseudoUSSHistoryDeleteDirectives);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
 
 // Allows to wait until the number of server-side entities is equal to a
 // expected number.
@@ -80,10 +62,12 @@ class HistoryDeleteDirectivesEqualityChecker
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesEqualityChecker);
 };
 
-class SingleClientHistoryDeleteDirectivesSyncTest : public UssSwitchToggler,
+class SingleClientHistoryDeleteDirectivesSyncTest : public FeatureToggler,
                                                     public SyncTest {
  public:
-  SingleClientHistoryDeleteDirectivesSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientHistoryDeleteDirectivesSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSHistoryDeleteDirectives),
+        SyncTest(SINGLE_CLIENT) {}
   ~SingleClientHistoryDeleteDirectivesSyncTest() override {}
 
   bool WaitForHistoryDeleteDirectives(size_t num_expected_directives) {
