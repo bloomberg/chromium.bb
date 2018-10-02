@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/mac/browsing_data_deletion.h"
+#include "device/fido/mac/credential_store.h"
 
 #include <string>
 
@@ -17,8 +17,6 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
 #include "device/base/features.h"
 #include "device/fido/mac/credential_metadata.h"
 #include "device/fido/mac/keychain.h"
@@ -53,7 +51,7 @@ void FilterKeychainItemsByCreationDate(
 }
 base::Optional<std::vector<base::ScopedCFTypeRef<CFDictionaryRef>>>
 QueryKeychainItemsForProfile(const std::string& keychain_access_group,
-                             const std::string& profile_metadata_secret,
+                             const std::string& metadata_secret,
                              base::Time created_not_before,
                              base::Time created_not_after)
     API_AVAILABLE(macosx(10.12.2)) {
@@ -117,7 +115,7 @@ QueryKeychainItemsForProfile(const std::string& keychain_access_group,
       continue;
     }
     base::Optional<std::string> opt_rp_id = CredentialMetadata::DecodeRpId(
-        profile_metadata_secret, base::SysCFStringRefToUTF8(sec_attr_label));
+        metadata_secret, base::SysCFStringRefToUTF8(sec_attr_label));
     if (!opt_rp_id) {
       DVLOG(1) << "key doesn't belong to this profile";
       continue;
@@ -133,15 +131,15 @@ QueryKeychainItemsForProfile(const std::string& keychain_access_group,
 }
 
 bool DoDeleteWebAuthnCredentials(const std::string& keychain_access_group,
-                                 const std::string& profile_metadata_secret,
+                                 const std::string& metadata_secret,
                                  base::Time created_not_before,
                                  base::Time created_not_after)
     API_AVAILABLE(macosx(10.12.2)) {
   bool result = true;
   base::Optional<std::vector<base::ScopedCFTypeRef<CFDictionaryRef>>>
-      keychain_items = QueryKeychainItemsForProfile(
-          keychain_access_group, profile_metadata_secret, created_not_before,
-          created_not_after);
+      keychain_items =
+          QueryKeychainItemsForProfile(keychain_access_group, metadata_secret,
+                                       created_not_before, created_not_after);
   if (!keychain_items) {
     return false;
   }
@@ -177,14 +175,14 @@ bool DoDeleteWebAuthnCredentials(const std::string& keychain_access_group,
 }
 
 size_t DoCountWebAuthnCredentials(const std::string& keychain_access_group,
-                                  const std::string& profile_metadata_secret,
+                                  const std::string& metadata_secret,
                                   base::Time created_not_before,
                                   base::Time created_not_after)
     API_AVAILABLE(macosx(10.12.2)) {
   base::Optional<std::vector<base::ScopedCFTypeRef<CFDictionaryRef>>>
-      keychain_items = QueryKeychainItemsForProfile(
-          keychain_access_group, profile_metadata_secret, created_not_before,
-          created_not_after);
+      keychain_items =
+          QueryKeychainItemsForProfile(keychain_access_group, metadata_secret,
+                                       created_not_before, created_not_after);
   if (!keychain_items) {
     DLOG(ERROR) << "Failed to query credentials in keychain";
     return 0;
@@ -194,37 +192,33 @@ size_t DoCountWebAuthnCredentials(const std::string& keychain_access_group,
 }
 }  // namespace
 
-bool DeleteWebAuthnCredentials(const std::string& keychain_access_group,
-                               const std::string& profile_metadata_secret,
-                               base::Time created_not_before,
-                               base::Time created_not_after) {
-#if defined(OS_MACOSX)
+TouchIdCredentialStore::TouchIdCredentialStore(AuthenticatorConfig config)
+    : config_(std::move(config)) {}
+TouchIdCredentialStore::~TouchIdCredentialStore() = default;
+
+bool TouchIdCredentialStore::DeleteCredentials(base::Time created_not_before,
+                                               base::Time created_not_after) {
   if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
     // Touch ID uses macOS APIs available in 10.12.2 or newer. No need to check
     // for credentials in lower OS versions.
     if (__builtin_available(macos 10.12.2, *)) {
-      return DoDeleteWebAuthnCredentials(keychain_access_group,
-                                         profile_metadata_secret,
+      return DoDeleteWebAuthnCredentials(config_.keychain_access_group,
+                                         config_.metadata_secret,
                                          created_not_before, created_not_after);
     }
   }
-#endif  // defined(OS_MACOSX)
   return true;
 }
 
-size_t CountWebAuthnCredentials(const std::string& keychain_access_group,
-                                const std::string& profile_metadata_secret,
-                                base::Time created_not_before,
-                                base::Time created_not_after) {
-#if defined(OS_MACOSX)
+size_t TouchIdCredentialStore::CountCredentials(base::Time created_not_before,
+                                                base::Time created_not_after) {
   if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
     if (__builtin_available(macos 10.12.2, *)) {
-      return DoCountWebAuthnCredentials(keychain_access_group,
-                                        profile_metadata_secret,
+      return DoCountWebAuthnCredentials(config_.keychain_access_group,
+                                        config_.metadata_secret,
                                         created_not_before, created_not_after);
     }
   }
-#endif  // defined(OS_MACOSX)
   return 0;
 }
 

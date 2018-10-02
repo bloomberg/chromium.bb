@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/mac/browsing_data_deletion.h"
+#include "device/fido/mac/credential_store.h"
 
 #include <Foundation/Foundation.h>
 #include <Security/Security.h>
@@ -17,6 +17,7 @@
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/mac/authenticator.h"
+#include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -149,14 +150,16 @@ class BrowsingDataDeletionTest : public testing::Test {
 
   bool DeleteCredentials() { return DeleteCredentials(kMetadataSecret); }
   bool DeleteCredentials(const std::string& metadata_secret) {
-    return DeleteWebAuthnCredentials(kKeychainAccessGroup, metadata_secret,
-                                     base::Time(), base::Time::Max());
+    return TouchIdCredentialStore(
+               AuthenticatorConfig{kKeychainAccessGroup, metadata_secret})
+        .DeleteCredentials(base::Time(), base::Time::Max());
   }
 
   size_t CountCredentials() { return CountCredentials(kMetadataSecret); }
   size_t CountCredentials(const std::string& metadata_secret) {
-    return CountWebAuthnCredentials(kKeychainAccessGroup, metadata_secret,
-                                    base::Time(), base::Time::Max());
+    return TouchIdCredentialStore(
+               AuthenticatorConfig{kKeychainAccessGroup, metadata_secret})
+        .CountCredentials(base::Time(), base::Time::Max());
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

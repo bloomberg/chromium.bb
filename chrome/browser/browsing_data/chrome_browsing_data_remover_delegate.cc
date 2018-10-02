@@ -139,7 +139,7 @@
 
 #if defined(OS_MACOSX)
 #include "components/os_crypt/os_crypt_pref_names_mac.h"
-#include "device/fido/mac/browsing_data_deletion.h"
+#include "device/fido/mac/credential_store.h"
 #endif  // defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -792,11 +792,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                              CreatePendingTaskCompletionClosureForMojo());
 
 #if defined(OS_MACOSX)
-    auto authenticator_config = ChromeAuthenticatorRequestDelegate::
-        TouchIdAuthenticatorConfigForProfile(profile_);
-    device::fido::mac::DeleteWebAuthnCredentials(
-        authenticator_config.keychain_access_group,
-        authenticator_config.metadata_secret, delete_begin_, delete_end_);
+    device::fido::mac::TouchIdCredentialStore(
+        ChromeAuthenticatorRequestDelegate::
+            TouchIdAuthenticatorConfigForProfile(profile_))
+        .DeleteCredentials(delete_begin_, delete_end_);
 
     // When clearing passwords for all time, reset preferences that are used to
     // prevent overwriting the encryption key in the Keychain.
