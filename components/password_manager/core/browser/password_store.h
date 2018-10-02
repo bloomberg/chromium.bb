@@ -252,7 +252,7 @@ class PasswordStore : protected PasswordStoreSync,
   bool ScheduleTask(base::OnceClosure task);
 
   // Returns true iff initialization was successful.
-  bool IsAbleToSavePasswords() const;
+  virtual bool IsAbleToSavePasswords() const;
 
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
 

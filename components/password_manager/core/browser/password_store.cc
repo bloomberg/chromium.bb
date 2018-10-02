@@ -619,7 +619,8 @@ void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
 void PasswordStore::OnInitCompleted(bool success) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   init_status_ = success ? InitStatus::kSuccess : InitStatus::kFailure;
-  // TODO(tsabolcec): Add UMA histogram to record the success rate.
+
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordStoreInitResult", success);
 }
 
 void PasswordStore::Schedule(
