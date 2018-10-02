@@ -71,6 +71,11 @@ void ProducerHost::OnTracingSetup() {
   producer_client_->OnTracingStart(std::move(shm));
 }
 
+void ProducerHost::SetupDataSource(perfetto::DataSourceInstanceID,
+                                   const perfetto::DataSourceConfig&) {
+  // TODO(primiano): plumb call through mojo.
+}
+
 void ProducerHost::StartDataSource(perfetto::DataSourceInstanceID id,
                                    const perfetto::DataSourceConfig& config) {
   // TODO(oysteine): Send full DataSourceConfig, not just the name/target_buffer
