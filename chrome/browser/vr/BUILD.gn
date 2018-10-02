@@ -245,8 +245,6 @@ component("vr_common") {
     "scheduler_delegate.h",
     "service/browser_xr_runtime.cc",
     "service/browser_xr_runtime.h",
-    "service/isolated_device_provider.cc",
-    "service/isolated_device_provider.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
     "service/xr_device_impl.cc",
@@ -291,6 +289,24 @@ component("vr_common") {
     "//ui/base",
     "//ui/display",
   ]
+
+  if (is_win) {
+    sources += [
+      "service/isolated_device_provider.cc",
+      "service/isolated_device_provider.h",
+      "win/simple_overlay_renderer_win.cc",
+      "win/simple_overlay_renderer_win.h",
+      "win/vr_browser_renderer_thread_win.cc",
+      "win/vr_browser_renderer_thread_win.h",
+      "win/vr_renderloop_host_win.cc",
+      "win/vr_renderloop_host_win.h",
+    ]
+
+    libs = [
+      "d3d11.lib",
+      "DXGI.lib",
+    ]
+  }
 
   defines = [
     "VR_IMPLEMENTATION",

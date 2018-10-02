@@ -5,6 +5,8 @@
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 
 #include "chrome/browser/vr/service/xr_device_impl.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "device/vr/vr_device.h"
 
 namespace vr {
@@ -45,6 +47,10 @@ void BrowserXRRuntime::StopImmersiveSession() {
   if (immersive_session_controller_) {
     immersive_session_controller_ = nullptr;
     presenting_renderer_device_ = nullptr;
+
+    for (BrowserXRRuntimeObserver& observer : observers_) {
+      observer.SetWebXRWebContents(nullptr);
+    }
   }
 }
 
@@ -120,6 +126,14 @@ void BrowserXRRuntime::OnRequestSessionResult(
     if (options->immersive) {
       presenting_renderer_device_ = device.get();
       immersive_session_controller_ = std::move(immersive_session_controller);
+      immersive_session_controller_.set_connection_error_handler(base::BindOnce(
+          &BrowserXRRuntime::OnImmersiveSessionError, base::Unretained(this)));
+
+      // Notify observers that we have started presentation.
+      content::WebContents* web_contents = device->GetWebContents();
+      for (BrowserXRRuntimeObserver& observer : observers_) {
+        observer.SetWebXRWebContents(web_contents);
+      }
     }
 
     std::move(callback).Run(std::move(session));
@@ -132,6 +146,10 @@ void BrowserXRRuntime::OnRequestSessionResult(
       StopImmersiveSession();
     }
   }
+}
+
+void BrowserXRRuntime::OnImmersiveSessionError() {
+  StopImmersiveSession();
 }
 
 void BrowserXRRuntime::UpdateListeningForActivate(XRDeviceImpl* device) {
