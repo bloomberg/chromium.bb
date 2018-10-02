@@ -1975,8 +1975,10 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
           ->GetDisplayNearestWindow(window1.get())
           .work_area();
   EXPECT_EQ(window2->GetBoundsInScreen(), work_area_bounds);
+  EXPECT_TRUE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
 
-  // 2.a. Drag the window a small amount of distance will maximize the window.
+  // 2.a. Drag the window a small amount of distance and release will maximize
+  // the window.
   DragWindowWithOffset(resizer.get(), 10, 10);
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   // Drag the window past the indicators threshold to show the indicators.
@@ -1985,11 +1987,13 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kDragArea);
   // The source window should also have been scaled.
   EXPECT_NE(window2->GetBoundsInScreen(), work_area_bounds);
+  EXPECT_FALSE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
   CompleteDrag(std::move(resizer));
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
   // The source window should have restored its bounds.
   EXPECT_EQ(window2->GetBoundsInScreen(), work_area_bounds);
+  EXPECT_TRUE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
 
   // 2.b. Drag the window long enough to snap the window. The source window will
   // snap to the other side of the splitscreen.
@@ -2003,6 +2007,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window2.get(), SplitViewController::LEFT));
+  EXPECT_FALSE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(0, 300));
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
   // The source window's bounds should be the same as the right snapped window
@@ -2010,6 +2015,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window2.get(), SplitViewController::RIGHT));
+  EXPECT_FALSE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
 
   resizer->CompleteDrag();
   EXPECT_EQ(window1->GetProperty(kTabDroppedWindowStateTypeKey),
@@ -2023,6 +2029,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(window1->GetProperty(ash::kCanAttachToAnotherWindowKey));
 
   EndSplitView();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
