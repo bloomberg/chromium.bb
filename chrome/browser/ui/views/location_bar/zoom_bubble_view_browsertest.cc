@@ -11,17 +11,13 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/zoom/zoom_controller.h"
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/extension_builder.h"
-#include "ui/base/ui_features.h"
 #include "ui/views/test/test_widget_observer.h"
-
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"

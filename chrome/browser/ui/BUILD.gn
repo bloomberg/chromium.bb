@@ -146,7 +146,6 @@ jumbo_split_static_library("ui") {
       # See crbug.com/590850
       "content_settings/content_setting_media_menu_model.cc",
       "content_settings/content_setting_media_menu_model.h",
-      "proximity_auth/proximity_auth_error_bubble_stub.cc",
     ]
   }
 
@@ -1942,12 +1941,7 @@ jumbo_split_static_library("ui") {
       "webui/signin/sync_confirmation_ui.h",
       "webui/signin/user_manager_screen_handler.cc",
       "webui/signin/user_manager_screen_handler.h",
-      "webui/welcome/nux_helper.cc",
-      "webui/welcome/nux_helper.h",
-      "webui/welcome/welcome_handler.cc",
-      "webui/welcome/welcome_handler.h",
-      "webui/welcome/welcome_ui.cc",
-      "webui/welcome/welcome_ui.h",
+
       # TODO(scottchen): nux/set_as_default_handler is here because it depends
       #     on settings_default_browser_handler, but that deps currently can't
       #     be added in nux/BUILD.gn due to circular dependency.
@@ -1955,6 +1949,12 @@ jumbo_split_static_library("ui") {
       #     a shareable location (e.g. ui/webui/settings/BUILD.gn).
       "webui/welcome/nux/set_as_default_handler.cc",
       "webui/welcome/nux/set_as_default_handler.h",
+      "webui/welcome/nux_helper.cc",
+      "webui/welcome/nux_helper.h",
+      "webui/welcome/welcome_handler.cc",
+      "webui/welcome/welcome_handler.h",
+      "webui/welcome/welcome_ui.cc",
+      "webui/welcome/welcome_ui.h",
     ]
 
     # TODO(scottchen): Remove if-check once nux files are non-exclusive
