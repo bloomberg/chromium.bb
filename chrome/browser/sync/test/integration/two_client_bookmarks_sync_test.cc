@@ -11,12 +11,12 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -78,22 +78,6 @@ const char kGenericFolderName[] = "Folder Name";
 const char kGenericSubfolderName[] = "Subfolder Name";
 const char kValidPassphrase[] = "passphrase!";
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(switches::kSyncUSSBookmarks);
-    } else {
-      override_features_.InitAndDisableFeature(switches::kSyncUSSBookmarks);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
   TwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT) {}
@@ -115,10 +99,11 @@ class TwoClientBookmarksSyncTest : public SyncTest {
 // TODO(crbug.com/516866): Merge the two fixtures into one when all tests are
 // passing for USS.
 class TwoClientBookmarksSyncTestIncludingUssTests
-    : public UssSwitchToggler,
+    : public FeatureToggler,
       public TwoClientBookmarksSyncTest {
  public:
-  TwoClientBookmarksSyncTestIncludingUssTests() {}
+  TwoClientBookmarksSyncTestIncludingUssTests()
+      : FeatureToggler(switches::kSyncUSSBookmarks) {}
   ~TwoClientBookmarksSyncTestIncludingUssTests() override {}
 
  private:

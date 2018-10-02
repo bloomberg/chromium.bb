@@ -4,8 +4,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -18,27 +18,11 @@ namespace {
 
 using spellcheck::kMaxSyncableDictionaryWords;
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
+class TwoClientDictionarySyncTest : public FeatureToggler, public SyncTest {
  public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncPseudoUSSDictionary);
-    } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncPseudoUSSDictionary);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class TwoClientDictionarySyncTest : public UssSwitchToggler, public SyncTest {
- public:
-  TwoClientDictionarySyncTest() : SyncTest(TWO_CLIENT) {}
+  TwoClientDictionarySyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSDictionary),
+        SyncTest(TWO_CLIENT) {}
   ~TwoClientDictionarySyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
