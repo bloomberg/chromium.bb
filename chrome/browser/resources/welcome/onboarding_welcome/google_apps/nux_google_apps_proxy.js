@@ -12,7 +12,7 @@ cr.define('nux', function() {
     addGoogleApps(selectedApps) {}
   }
 
-  /** @implements {NuxGoogleAppsProxy} */
+  /** @implements {nux.NuxGoogleAppsProxy} */
   class NuxGoogleAppsProxyImpl {
     /** @override */
     addGoogleApps(selectedApps) {

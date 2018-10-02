@@ -54,7 +54,7 @@ cr.define('welcome', function() {
 
   // Notifies all the elements that extended NavigationBehavior.
   function notifyObservers() {
-    const route = history.state.route;
+    const route = /** @type {!welcome.Routes} */ (history.state.route);
     const step = history.state.step;
     routeObservers.forEach((observer) => {
       observer.onRouteChange(route, step);
@@ -73,7 +73,9 @@ cr.define('welcome', function() {
 
       // history state was set when page loaded, so when the element first
       // attaches, call the route-change handler to initialize first.
-      this.onRouteChange(history.state.route, history.state.step);
+      this.onRouteChange(
+          /** @type {!welcome.Routes} */ (history.state.route),
+          history.state.step);
     },
 
     /** @override */
@@ -95,7 +97,7 @@ cr.define('welcome', function() {
     },
 
     /**
-     * @param {string} route
+     * @param {!welcome.Routes} route
      * @param {number} step
      */
     navigateTo: function(route, step) {

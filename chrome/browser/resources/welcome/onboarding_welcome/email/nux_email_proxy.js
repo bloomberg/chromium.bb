@@ -37,6 +37,15 @@ cr.define('nux', function() {
   const INTERACTION_METRIC_COUNT =
       Object.keys(NuxEmailProvidersInteractions).length;
 
+  /**
+   * @typedef {{
+   *    parentId: string,
+   *    title: string,
+   *    url: string,
+   * }}
+   */
+  let bookmarkData;
+
   /** @interface */
   class NuxEmailProxy {
     /** @param {string} id ID provided by callback when bookmark was added. */
@@ -74,8 +83,16 @@ cr.define('nux', function() {
     recordFinalize() {}
   }
 
-  /** @implements {NuxEmailProxy} */
+  /** @implements {nux.NuxEmailProxy} */
   class NuxEmailProxyImpl {
+    constructor() {
+      /** @private {string} */
+      this.firstPart = '';
+
+      /** @private {string} */
+      this.lastPart = '';
+    }
+
     /** @override */
     removeBookmark(id) {
       chrome.bookmarks.remove(id);

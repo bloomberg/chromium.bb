@@ -86,7 +86,10 @@ Polymer({
     this.hasAppsSelected = this.computeHasAppsSelected_();
   },
 
-  /** @private {boolean} */
+  /**
+   * @return {boolean}
+   * @private
+   */
   computeHasAppsSelected_: function() {
     return this.appList.some(a => a.selected);
   },

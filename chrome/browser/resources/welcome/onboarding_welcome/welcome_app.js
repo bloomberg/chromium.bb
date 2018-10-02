@@ -27,7 +27,7 @@ Polymer({
   },
 
   /**
-   * @param {string} route
+   * @param {welcome.Routes} route
    * @param {number} step
    * @private
    */
@@ -46,6 +46,7 @@ Polymer({
       this.$.viewManager.switchView('step-' + step);
   },
 
+  /** @param {!Array<string>} modules Array of valid DOM element names. */
   initializeModules: function(modules) {
     assert(this.currentRoute_);  // this.currentRoute_ should be set by now.
     if (this.currentRoute_ == welcome.Routes.LANDING)

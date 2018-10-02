@@ -8,11 +8,11 @@
 var nuxEmail = nuxEmail || {};
 
 /**
- * @typedef {{
+ * @typedef {?{
  *    name: string,
  *    icon: string,
  *    url: string,
- *    bookmarkId: {string|undefined},
+ *    bookmarkId: (string|undefined),
  * }}
  */
 nuxEmail.EmailProviderModel;
@@ -42,7 +42,7 @@ Polymer({
     },
   },
 
-  /** @private {NuxEmailProxy} */
+  /** @private {nux.NuxEmailProxy} */
   browserProxy_: null,
 
   /** @override */
@@ -110,7 +110,7 @@ Polymer({
   },
 
   /**
-   * @param {nuxEmail.EmailProviderModel=} newEmail
+   * @param {nuxEmail.EmailProviderModel=} emailProvider
    * @private
    */
   revertBookmark_: function(emailProvider) {

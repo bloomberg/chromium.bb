@@ -8,7 +8,7 @@ cr.define('nux', function() {
     setAsDefault() {}
   }
 
-  /** @implements {NuxSetAsDefaultProxy} */
+  /** @implements {nux.NuxSetAsDefaultProxy} */
   class NuxSetAsDefaultProxyImpl {
     /** @override */
     setAsDefault() {
