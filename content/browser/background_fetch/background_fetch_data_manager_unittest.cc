@@ -831,7 +831,8 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
     CreateRegistration(registration_id,
                        std::vector<ServiceWorkerFetchRequest>(),
                        BackgroundFetchOptions(), SkBitmap(), &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+    ASSERT_EQ(error,
+              blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
   }
 
   // The registration should also fail for the other Service Worker.
@@ -841,7 +842,8 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
     CreateRegistration(registration_id,
                        std::vector<ServiceWorkerFetchRequest>(),
                        BackgroundFetchOptions(), SkBitmap(), &error);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+    ASSERT_EQ(error,
+              blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
   }
 }
 

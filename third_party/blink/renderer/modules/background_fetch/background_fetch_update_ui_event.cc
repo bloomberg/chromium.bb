@@ -117,6 +117,7 @@ void BackgroundFetchUpdateUIEvent::DidUpdateUI(
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
     case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
       // Not applicable for this callback.
       break;
   }

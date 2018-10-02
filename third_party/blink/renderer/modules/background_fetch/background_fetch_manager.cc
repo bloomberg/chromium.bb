@@ -342,6 +342,11 @@ void BackgroundFetchManager::DidFetch(
       resolver->Reject(DOMException::Create(
           DOMExceptionCode::kQuotaExceededError, "Quota exceeded."));
       return;
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          script_state->GetIsolate(),
+          "There are too many active fetches for this origin."));
+      return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.
@@ -477,6 +482,7 @@ void BackgroundFetchManager::DidGetRegistration(
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
       // Not applicable for this callback.
       break;
   }
@@ -528,6 +534,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
       // Not applicable for this callback.
       break;
   }

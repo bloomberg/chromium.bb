@@ -156,8 +156,8 @@ void CreateMetadataTask::DidGetCanCreateRegistration(
 
   DCHECK_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   if (!can_create) {
-    // TODO(crbug.com/889401): Report a more descriptive storage error.
-    FinishWithError(blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+    FinishWithError(
+        blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
     return;
   }
 

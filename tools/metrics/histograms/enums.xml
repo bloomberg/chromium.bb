@@ -3209,6 +3209,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="Service Worker unavailable"/>
   <int value="6" label="Quota exceeded"/>
   <int value="7" label="Permission denied"/>
+  <int value="8" label="Registration Limit Exceeded"/>
 </enum>
 
 <enum name="BackgroundFetchEventDispatchResult">
