@@ -117,10 +117,7 @@ void BackgroundFetchScheduler::DidPopNextRequest(
   }
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    active_controller_->Finish(
-        blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE);
-    active_controller_ = nullptr;
-    ScheduleDownload();
+    // This fetch is being abandoned, after which something will be scheduled.
     return;
   }
 
@@ -154,11 +151,8 @@ void BackgroundFetchScheduler::DidMarkRequestAsComplete(
     return;
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
+    // This fetch is being abandoned, after which something will be scheduled.
     DCHECK_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-    active_controller_->Finish(
-        blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE);
-    active_controller_ = nullptr;
-    ScheduleDownload();
     return;
   }
 

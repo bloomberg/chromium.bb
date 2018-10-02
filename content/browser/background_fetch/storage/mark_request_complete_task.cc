@@ -305,8 +305,11 @@ void MarkRequestCompleteTask::DidStoreMetadata(
 
 void MarkRequestCompleteTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  if (HasStorageError())
+  if (HasStorageError()) {
     error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+    for (auto& observer : data_manager()->observers())
+      observer.OnFetchStorageError(registration_id_);
+  }
   ReportStorageError();
 
   std::move(callback_).Run(error);

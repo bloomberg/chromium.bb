@@ -574,6 +574,8 @@ class BackgroundFetchDataManagerTest
                void(int64_t service_worker_registration_id));
   MOCK_METHOD1(OnQuotaExceeded,
                void(const BackgroundFetchRegistrationId& registration_id));
+  MOCK_METHOD1(OnFetchStorageError,
+               void(const BackgroundFetchRegistrationId& registration_id));
 
  protected:
   void DidGetRegistration(base::OnceClosure quit_closure,
@@ -1183,6 +1185,48 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
+TEST_F(BackgroundFetchDataManagerTest, MarkRegistrationForDeletion) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id1(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id1, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Create a |developer_id| such that the other one is a substring.
+  std::string developer_id2 = std::string(kExampleDeveloperId) + "!";
+  BackgroundFetchRegistrationId registration_id2(sw_id, origin(), developer_id2,
+                                                 kAlternativeUniqueId);
+
+  CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Get all active registration mappings.
+  {
+    auto registrations = GetRegistrationUserDataByKeyPrefix(
+        sw_id, background_fetch::ActiveRegistrationUniqueIdKey(""));
+    EXPECT_EQ(registrations.size(), 2u);
+  }
+
+  // Deactivate the first registration.
+  MarkRegistrationForDeletion(registration_id1, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // The second registration should still exist.
+  {
+    auto registrations = GetRegistrationUserDataByKeyPrefix(
+        sw_id, background_fetch::ActiveRegistrationUniqueIdKey(""));
+    ASSERT_EQ(registrations.size(), 1u);
+    EXPECT_EQ(registrations[0], kAlternativeUniqueId);
+  }
+}
+
 TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
@@ -1774,12 +1818,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
 
   RestartDataManagerFromPersistentStorage();
 
-  // Pending Requests should be deleted after marking a registration for
-  // deletion.
-  EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(
-                    sw_id, background_fetch::kPendingRequestKeyPrefix)
-                    .size());
-  EXPECT_EQ(2u,  // Metadata proto + title.
+  EXPECT_EQ(4u,  // Metadata proto + UI options + remaining pending fetches.
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 
   // Cleanup should delete the registration.
