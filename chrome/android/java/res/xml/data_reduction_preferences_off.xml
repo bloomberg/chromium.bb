@@ -7,6 +7,8 @@
                   xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
+        android:title="@string/data_reduction_benefits_description" />
+    <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/data_reduction_description" />
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/safe_browsing_description" />
