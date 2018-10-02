@@ -677,7 +677,7 @@ const base::Feature kUsbguard{"USBGuard", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable running shill in a minijail sandbox on Chrome OS.
 const base::Feature kShillSandboxing{"ShillSandboxing",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 // Enable showing a tab-modal dialog while a Web Authentication API request is
