@@ -26,11 +26,10 @@ from chromite.lib import config_lib
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gs
 from chromite.lib import parallel
 from chromite.lib import retry_util
 from chromite.lib.paygen import download_cache
-from chromite.lib.paygen import dryrun_lib
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
@@ -312,7 +311,8 @@ class PaygenBuild(object):
     self._build = build
     self._work_dir = work_dir
     self._site_config = site_config
-    self._drm = dryrun_lib.DryRunMgr(dry_run)
+    self._dry_run = dry_run
+    self._ctx = gs.GSContext(dry_run=dry_run)
     self._skip_delta_payloads = skip_delta_payloads
     self._archive_board = None
     self._archive_build = None
@@ -681,7 +681,7 @@ class PaygenBuild(object):
     """
     payloads_args = [(payload,
                       isinstance(payload.tgt_image, gspaths.Image),
-                      bool(self._drm))
+                      self._dry_run)
                      for payload in payloads]
 
     parallel.RunTasksInProcessPool(_GenerateSinglePayload, payloads_args)
@@ -753,7 +753,7 @@ class PaygenBuild(object):
 
     # TODO(dgarrett): Remove if block after finishing crbug.com/523122
     stateful_uri = os.path.join(release_archive_uri, 'stateful.tgz')
-    if not urilib.Exists(stateful_uri):
+    if not self._ctx.Exists(stateful_uri):
       logging.error('%s does not exist.', stateful_uri)
       logging.error('Full test payload for source version (%s) exists, but '
                     'stateful.tgz does not. Control file not generated',
@@ -821,7 +821,7 @@ class PaygenBuild(object):
     # Upload the tarball, be sure to make it world-readable.
     upload_target = os.path.join(self._archive_build_uri, tarball_name)
     logging.info('Uploading autotest control tarball to %s', upload_target)
-    gslib.Copy(tarball_path, upload_target, acl='public-read')
+    self._ctx.Copy(tarball_path, upload_target, acl='public-read')
 
     # Do not run the suite for older builds whose suite staging logic is
     # broken.  We use the build's milestone number as a rough estimate to
@@ -847,11 +847,11 @@ class PaygenBuild(object):
     """Clean up any leaked temp files associated with this build in GS."""
     # Clean up any signer client files that leaked on this or previous
     # runs.
-    self._drm(gslib.Remove,
-              gspaths.ChromeosReleases.BuildPayloadsSigningUri(
-                  self._build.channel, self._build.board, self._build.version,
-                  bucket=self._build.bucket),
-              recurse=True, ignore_no_match=True)
+    self._ctx.Remove(
+        gspaths.ChromeosReleases.BuildPayloadsSigningUri(
+            self._build.channel, self._build.board, self._build.version,
+            bucket=self._build.bucket),
+        recursive=True, ignore_missing=True)
 
   def CreatePayloads(self):
     """Get lock on this build, and Process if we succeed.
@@ -868,7 +868,7 @@ class PaygenBuild(object):
     logging.info('Examining: %s', self._build)
 
     try:
-      with gslock.Lock(lock_uri, dry_run=bool(self._drm)):
+      with gslock.Lock(lock_uri, dry_run=self._dry_run):
         logging.info('Starting: %s', self._build)
 
         payloads, payload_tests = self._DiscoverRequiredPayloads()
@@ -913,7 +913,7 @@ class PaygenBuild(object):
         # We have a control file directory and all payloads have been
         # generated. Lets create the list of tests to conduct.
         logging.info('Uploading %d payload tests', len(payload_tests))
-        suite_name = self._drm(self._AutotestPayloads, payload_tests)
+        suite_name = self._AutotestPayloads(payload_tests)
 
     except gslock.LockNotAcquired as e:
       logging.info('Build already being processed: %s', e)
@@ -995,5 +995,6 @@ def _GetJson(uri):
   Returns:
     Valid JSON retrieved from given uri.
   """
-  downloaded_json = gslib.Cat(uri)
+  ctx = gs.GSContext()
+  downloaded_json = ctx.Cat(uri)
   return json.loads(downloaded_json)

@@ -14,10 +14,10 @@ import tarfile
 
 from chromite.lib import config_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import parallel
 
 from chromite.lib.paygen import gslock
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import paygen_build_lib
@@ -801,7 +801,7 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
 
   def testCleanupBuild(self):
     """Test PaygenBuild._CleanupBuild."""
-    removeMock = self.PatchObject(gslib, 'Remove')
+    removeMock = self.PatchObject(gs.GSContext, 'Remove')
 
     paygen = self._GetPaygenBuildInstance()
 
@@ -810,15 +810,13 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
     self.assertEqual(
         removeMock.call_args_list,
         [mock.call('gs://crt/foo-channel/foo-board/1.2.3/payloads/signing',
-                   recurse=True, ignore_no_match=True)])
+                   recursive=True, ignore_missing=True)])
 
 
 class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
   """Test CreatePayloads."""
   def setUp(self):
-    self.mockCreate = self.PatchObject(gslib, 'CreateWithContents')
-    self.mockExists = self.PatchObject(gslib, 'Exists')
-    self.mockRemove = self.PatchObject(gslib, 'Remove')
+    self.mockRemove = self.PatchObject(gs.GSContext, 'Remove')
     self.mockLock = self.PatchObject(gslock, 'Lock')
 
     self.mockDiscover = self.PatchObject(
@@ -844,7 +842,6 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
   def testCreatePayloadsBuildNotReady(self):
     """Test paygen_build_lib._GeneratePayloads if not all images are there."""
-    self.mockExists.return_value = False
     self.mockDiscover.side_effect = paygen_build_lib.BuildNotReady
 
     paygen = self._GetPaygenBuildInstance()
@@ -884,7 +881,6 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
         self.delta_payload_test,
     ]
 
-    self.mockExists.return_value = False
     self.mockDiscover.return_value = (payloads, payload_tests)
 
     paygen = self._GetPaygenBuildInstance()
@@ -927,7 +923,6 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
         self.delta_payload_test,
     ]
 
-    self.mockExists.return_value = False
     self.mockDiscover.return_value = (payloads, payload_tests)
 
     paygen = self._GetPaygenBuildInstance()
@@ -962,10 +957,10 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
         side_effect=lambda channel, version: ['%s_%s_uri' % (channel, version)])
 
     self.mockExists = self.PatchObject(
-        urilib, 'Exists',
+        gs.GSContext, 'Exists',
         side_effect=lambda uri: uri and uri.endswith('stateful.tgz'))
 
-    self.mockCopy = self.PatchObject(gslib, 'Copy')
+    self.mockCopy = self.PatchObject(gs.GSContext, 'Copy')
 
     # Our images have to exist, and have URIs for autotest.
     self.test_image.uri = 'test_image_uri'
