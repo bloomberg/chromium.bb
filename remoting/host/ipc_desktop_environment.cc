@@ -176,7 +176,7 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
     return;
   }
 
-  ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
+  auto i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     i->second->DetachFromDesktop();
     i->second->AttachToDesktop(desktop_pipe, session_id);
@@ -193,7 +193,7 @@ void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
     return;
   }
 
-  ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
+  auto i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     DesktopSessionProxy* desktop_session_proxy = i->second;
     active_connections_.erase(i);
