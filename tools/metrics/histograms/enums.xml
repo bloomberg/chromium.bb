@@ -42415,6 +42415,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="Input"/>
   <int value="19" label="Detached"/>
   <int value="20" label="Cleanup"/>
+  <int value="21" label="WebSchedulingUserInteraction"/>
+  <int value="22" label="WebSchedulingBestEffort"/>
 </enum>
 
 <enum name="RendererSchedulerTaskType">

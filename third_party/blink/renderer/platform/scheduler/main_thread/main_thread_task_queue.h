@@ -60,9 +60,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     kCleanup = 20,
 
+    kWebSchedulingUserInteraction = 21,
+    kWebSchedulingBestEffort = 22,
+
     // Used to group multiple types when calculating Expected Queueing Time.
-    kOther = 21,
-    kCount = 22
+    kOther = 23,
+    kCount = 24
   };
 
   // Returns name of the given queue type. Returned string has application
