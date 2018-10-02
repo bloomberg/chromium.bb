@@ -12,8 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
@@ -24,7 +26,7 @@ class AutofillAssistantUiDelegate {
     private final View mFullContainer;
     private final View mOverlay;
     private final LinearLayout mBottomBar;
-    private final ViewGroup mScriptsViewContainer;
+    private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
 
     /**
@@ -49,6 +51,20 @@ class AutofillAssistantUiDelegate {
          * @param scriptPath The path for the selected script.
          */
         void onScriptSelected(String scriptPath);
+
+        /**
+         * Called when an address has been selected.
+         *
+         * @param guid The GUID of the selected address.
+         */
+        void onAddressSelected(String guid);
+
+        /**
+         * Called when a credit card has been selected.
+         *
+         * @param guid The GUID of the selected card.
+         */
+        void onCardSelected(String guid);
     }
 
     /**
@@ -113,7 +129,7 @@ class AutofillAssistantUiDelegate {
                         // TODO(crbug.com/806868): Send feedback.
                     }
                 });
-        mScriptsViewContainer = mBottomBar.findViewById(R.id.carousel);
+        mChipsViewContainer = mBottomBar.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
 
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
@@ -125,33 +141,43 @@ class AutofillAssistantUiDelegate {
      * @param message Message to display.
      */
     public void showStatusMessage(@Nullable String message) {
-        if (!mFullContainer.isShown()) mFullContainer.setVisibility(View.VISIBLE);
+        ensureFullContainerIsShown();
 
         mStatusMessageView.setText(message);
+    }
+
+    private void ensureFullContainerIsShown() {
+        if (!mFullContainer.isShown()) mFullContainer.setVisibility(View.VISIBLE);
     }
 
     /**
      * Updates the list of scripts in the bar.
      *
-     * @param scripts List of scripts to show.
+     * @param scriptHandles List of scripts to show.
      */
-    public void updateScripts(List<ScriptHandle> scriptHandles) {
-        mScriptsViewContainer.removeAllViews();
+    public void updateScripts(ArrayList<ScriptHandle> scriptHandles) {
+        mChipsViewContainer.removeAllViews();
 
         if (scriptHandles.isEmpty()) {
             return;
         }
 
-        for (ScriptHandle scriptHandle : scriptHandles) {
-            TextView scriptView = (TextView) (LayoutInflater.from(mActivity).inflate(
-                    R.layout.autofill_assistant_chip, null));
-            scriptView.setText(scriptHandle.getName());
-            scriptView.setOnClickListener(
-                    (unusedView) -> { mClient.onScriptSelected(scriptHandle.getPath()); });
-            mScriptsViewContainer.addView(scriptView);
+        for (int i = 0; i < scriptHandles.size(); i++) {
+            ScriptHandle scriptHandle = scriptHandles.get(i);
+            TextView chipView = createChipView(scriptHandle.getName());
+            chipView.setOnClickListener(
+                    (unusedView) -> mClient.onScriptSelected(scriptHandle.getPath()));
+            mChipsViewContainer.addView(chipView);
         }
 
-        if (!mFullContainer.isShown()) mFullContainer.setVisibility(View.VISIBLE);
+        ensureFullContainerIsShown();
+    }
+
+    private TextView createChipView(String text) {
+        TextView chipView = (TextView) (LayoutInflater.from(mActivity).inflate(
+                R.layout.autofill_assistant_chip, null /* root */));
+        chipView.setText(text);
+        return chipView;
     }
 
     /** Called to show overlay. */
@@ -170,5 +196,48 @@ class AutofillAssistantUiDelegate {
     public void shutdown() {
         mFullContainer.setVisibility(View.GONE);
         mClient.onDismiss();
+    }
+
+    /**
+     * Show profiles in the bar.
+     *
+     * @param profiles List of profiles to show.
+     */
+    public void showProfiles(ArrayList<AutofillProfile> profiles) {
+        mChipsViewContainer.removeAllViews();
+
+        if (profiles.isEmpty()) return;
+
+        for (int i = 0; i < profiles.size(); i++) {
+            AutofillProfile profile = profiles.get(i);
+            // TODO(crbug.com/806868): Show more information than the street.
+            TextView chipView = createChipView(profile.getStreetAddress());
+            chipView.setOnClickListener(
+                    (unusedView) -> mClient.onAddressSelected(profile.getGUID()));
+            mChipsViewContainer.addView(chipView);
+        }
+
+        ensureFullContainerIsShown();
+    }
+
+    /**
+     * Show credit cards in the bar.
+     *
+     * @param cards List of cards to show.
+     */
+    public void showCards(ArrayList<CreditCard> cards) {
+        mChipsViewContainer.removeAllViews();
+
+        if (cards.isEmpty()) return;
+
+        for (int i = 0; i < cards.size(); i++) {
+            CreditCard card = cards.get(i);
+            // TODO(crbug.com/806868): Show more information than the card number.
+            TextView chipView = createChipView(card.getObfuscatedNumber());
+            chipView.setOnClickListener((unusedView) -> mClient.onCardSelected(card.getGUID()));
+            mChipsViewContainer.addView(chipView);
+        }
+
+        ensureFullContainerIsShown();
     }
 }
