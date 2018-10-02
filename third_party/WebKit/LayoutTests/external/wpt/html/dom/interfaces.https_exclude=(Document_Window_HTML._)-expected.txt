@@ -1176,9 +1176,9 @@ PASS SVGElement interface: attribute ontimeupdate
 PASS SVGElement interface: attribute ontoggle
 PASS SVGElement interface: attribute onvolumechange
 PASS SVGElement interface: attribute onwaiting
-FAIL SVGElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
-FAIL SVGElement interface: attribute oncut assert_own_property: expected property "oncut" missing
-FAIL SVGElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
+PASS SVGElement interface: attribute oncopy
+PASS SVGElement interface: attribute oncut
+PASS SVGElement interface: attribute onpaste
 PASS SVGElement interface: attribute dataset
 PASS SVGElement interface: attribute nonce
 PASS SVGElement interface: attribute tabIndex

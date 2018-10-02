@@ -51,6 +51,7 @@ blink_core_sources("dom") {
     "distributed_nodes.h",
     "document.cc",
     "document.h",
+    "document_and_element_event_handlers.h",
     "document_encoding_data.cc",
     "document_encoding_data.h",
     "document_fragment.cc",

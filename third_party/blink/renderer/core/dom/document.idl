@@ -209,10 +209,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
-    attribute EventHandler oncopy;
-    attribute EventHandler oncut;
     [RuntimeEnabled=PageLifecycle] attribute EventHandler onfreeze;
-    attribute EventHandler onpaste;
     [RuntimeEnabled=PageLifecycle] attribute EventHandler onresume;
     attribute EventHandler onsearch;
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
@@ -220,6 +217,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 };
 
 Document implements GlobalEventHandlers;
+Document implements DocumentAndElementEventHandlers;
 Document implements ParentNode;
 Document implements NonElementParentNode;
 Document implements DocumentOrShadowRoot;

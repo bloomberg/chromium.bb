@@ -1906,11 +1906,8 @@ interface Element : Node
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
-    getter oncopy
-    getter oncut
     getter onfullscreenchange
     getter onfullscreenerror
-    getter onpaste
     getter onsearch
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
@@ -2028,11 +2025,8 @@ interface Element : Node
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
-    setter oncopy
-    setter oncut
     setter onfullscreenchange
     setter onfullscreenerror
-    setter onpaste
     setter onsearch
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
@@ -2575,7 +2569,9 @@ interface HTMLElement : Element
     getter onclick
     getter onclose
     getter oncontextmenu
+    getter oncopy
     getter oncuechange
+    getter oncut
     getter ondblclick
     getter ondrag
     getter ondragend
@@ -2609,6 +2605,7 @@ interface HTMLElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onpaste
     getter onpause
     getter onplay
     getter onplaying
@@ -2675,7 +2672,9 @@ interface HTMLElement : Element
     setter onclick
     setter onclose
     setter oncontextmenu
+    setter oncopy
     setter oncuechange
+    setter oncut
     setter ondblclick
     setter ondrag
     setter ondragend
@@ -2709,6 +2708,7 @@ interface HTMLElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onpaste
     setter onpause
     setter onplay
     setter onplaying
@@ -5937,7 +5937,9 @@ interface SVGElement : Element
     getter onclick
     getter onclose
     getter oncontextmenu
+    getter oncopy
     getter oncuechange
+    getter oncut
     getter ondblclick
     getter ondrag
     getter ondragend
@@ -5971,6 +5973,7 @@ interface SVGElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onpaste
     getter onpause
     getter onplay
     getter onplaying
@@ -6024,7 +6027,9 @@ interface SVGElement : Element
     setter onclick
     setter onclose
     setter oncontextmenu
+    setter oncopy
     setter oncuechange
+    setter oncut
     setter ondblclick
     setter ondrag
     setter ondragend
@@ -6058,6 +6063,7 @@ interface SVGElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onpaste
     setter onpause
     setter onplay
     setter onplaying
