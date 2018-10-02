@@ -4,6 +4,8 @@
 
 module ash.mojom;
 
+import "ui/events/mojo/event_constants.mojom";
+
 // The previewed snap state for a window, corresponding to the use of a
 // PhantomWindowController.
 enum SnapDirection {
@@ -21,4 +23,8 @@ interface AshWindowManager {
   ShowSnapPreview(uint64 window_id, SnapDirection snap);
 
   CommitSnap(uint64 window_id, SnapDirection snap);
+
+  // Maximizes the window in response to a double click or tap on the HTCAPTION
+  // area.
+  MaximizeWindowByCaptionClick(uint64 window_id, ui.mojom.PointerKind pointer);
 };

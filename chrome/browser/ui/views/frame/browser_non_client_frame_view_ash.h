@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
@@ -87,6 +88,10 @@ class BrowserNonClientFrameViewAsh
   gfx::Size GetMinimumSize() const override;
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // BrowserFrameHeaderAsh::AppearanceProvider:
   SkColor GetTitleColor() override;
@@ -216,6 +221,8 @@ class BrowserNonClientFrameViewAsh
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
+  void OnWindowMoveDone(bool success);
+
   // Returns the top level aura::Window for this browser window.
   const aura::Window* GetFrameWindow() const;
   aura::Window* GetFrameWindow();
@@ -254,12 +261,16 @@ class BrowserNonClientFrameViewAsh
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
+  bool performing_window_move_ = false;
+
   // Maintains the current split view state.
   ash::mojom::SplitViewState split_view_state_ =
       ash::mojom::SplitViewState::NO_SNAP;
 
   // Only used in mash.
   ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
+
+  base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };
