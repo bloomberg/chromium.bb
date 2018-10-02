@@ -66,6 +66,9 @@
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
     [Replaceable] readonly attribute DOMString origin;
 
+    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+    void queueMicrotask(VoidFunction callback);
+
     // TODO(fserb): temporarly until we can enable the interface below.
     [RuntimeEnabled=OffscreenCanvasText] readonly attribute FontFaceSet fonts;
 

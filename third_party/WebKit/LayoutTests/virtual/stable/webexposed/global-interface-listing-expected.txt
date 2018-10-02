@@ -8728,6 +8728,7 @@ interface webkitURL
     method postMessage
     method print
     method prompt
+    method queueMicrotask
     method releaseEvents
     method requestAnimationFrame
     method requestIdleCallback

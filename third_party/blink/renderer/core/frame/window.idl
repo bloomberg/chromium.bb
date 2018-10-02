@@ -104,6 +104,9 @@
 
     [CrossOrigin, CallWith=CurrentWindow, RaisesException, RuntimeEnabled=PostMessageOptions] void postMessage(any message, optional WindowPostMessageOptions options);
 
+    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+    void queueMicrotask(VoidFunction callback);
+
     // Custom elements
     // https://w3c.github.io/webcomponents/spec/custom/#custom-elements-api
     [CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;

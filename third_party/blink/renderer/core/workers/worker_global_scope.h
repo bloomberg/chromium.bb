@@ -58,6 +58,7 @@ class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class OffscreenFontSelector;
+class V8VoidFunction;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -156,6 +157,9 @@ class CORE_EXPORT WorkerGlobalScope
   // TODO(fserb): This can be removed once we WorkerGlobalScope implements
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
+
+  // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+  void queueMicrotask(V8VoidFunction*);
 
   int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);
   void cancelAnimationFrame(int id);
