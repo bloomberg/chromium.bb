@@ -296,7 +296,8 @@ class BASE_EXPORT TaskQueueImpl {
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
   void PushOntoDelayedIncomingQueueFromMainThread(Task pending_task,
-                                                  TimeTicks now);
+                                                  TimeTicks now,
+                                                  bool notify_task_annotator);
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
