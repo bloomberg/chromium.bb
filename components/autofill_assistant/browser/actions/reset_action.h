@@ -11,7 +11,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
-
+// An action to reset Autofill Assistant state.
 class ResetAction : public Action {
  public:
   explicit ResetAction(const ActionProto& proto);
