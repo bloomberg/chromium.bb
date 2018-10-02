@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/disclosure_view.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
+#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"

@@ -41,7 +41,6 @@ source_set("ntp_controller") {
     "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui_util",
-    "//ios/chrome/browser/ui/ntp/recent_tabs",
     "//ios/public/provider/chrome/browser/voice",
     "//ui/base",
   ]

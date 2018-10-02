@@ -443,7 +443,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _incognitoTabsImageDataSource = incognitoTabsImageDataSource;
 }
 
-- (id<RecentTabsTableConsumer>)remoteTabsConsumer {
+- (id<RecentTabsConsumer>)remoteTabsConsumer {
   return self.remoteTabsViewController;
 }
 

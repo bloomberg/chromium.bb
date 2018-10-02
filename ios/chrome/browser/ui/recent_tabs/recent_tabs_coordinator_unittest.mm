@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/sessions_sync_user_state.h"
+#import "ios/chrome/browser/ui/recent_tabs/sessions_sync_user_state.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
