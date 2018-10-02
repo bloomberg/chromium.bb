@@ -3145,6 +3145,20 @@ EVENT_TYPE(COOKIE_STORE_COOKIE_REJECTED_SECURE)
 //  }
 EVENT_TYPE(COOKIE_STORE_COOKIE_REJECTED_HTTPONLY)
 
+// Event emitted on preservation of a cookie that would have been
+// overwritten, because cookie addition failed due to a conflict with a secure
+// cookie.
+//  {
+//    "name": <Name of the cookies>
+//    "domain": <Domain of the preserved and new cookies>
+//    "path": <Path of the preserved and new cookies>
+//    "securecookiedomain": <Domain of the secure cookie causing preservation>
+//    "securecookiepath": <Path of the secure cookie causing preservation>
+//    "preservedvalue": <Value of the preserved cookie>
+//    "discardedvalue": <Value of the new cookie whose addition failed>
+//  }
+EVENT_TYPE(COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE)
+
 // Event emitted on setting store session persistence
 //  {
 //    "persistence" : <Session persistence setting for the store>

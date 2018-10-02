@@ -2889,6 +2889,8 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   GURL http_url("http://www.foo.com");
   GURL http_superdomain_url("http://foo.com");
   GURL https_url("https://www.foo.com");
+  GURL https_foo_url("https://www.foo.com/foo");
+  GURL http_foo_url("http://www.foo.com/foo");
 
   // A non-secure cookie can be created from either a URL with a secure or
   // insecure scheme.
@@ -2931,6 +2933,36 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   EXPECT_TRUE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/your/path"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path"));
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "WITH_PATH=C; path=/my/path/sub"));
+
+  DeleteAll(cm.get());
+
+  // If a secure cookie is set on top of an existing insecure cookie but with a
+  // different path, both are retained.
+  EXPECT_TRUE(SetCookie(cm.get(), http_url, "A=B; path=/foo"));
+  EXPECT_TRUE(SetCookie(cm.get(), https_url, "A=C; Secure; path=/"));
+
+  // Querying from an insecure url gets only the insecure cookie, but querying
+  // from a secure url returns both.
+  EXPECT_EQ("A=B", GetCookies(cm.get(), http_foo_url));
+  EXPECT_THAT(GetCookies(cm.get(), https_foo_url), testing::HasSubstr("A=B"));
+  EXPECT_THAT(GetCookies(cm.get(), https_foo_url), testing::HasSubstr("A=C"));
+
+  // Attempting to set an insecure cookie (from an insecure scheme) that domain-
+  // matches and path-matches the secure cookie fails i.e. the secure cookie is
+  // left alone...
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/foo"));
+  EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; path=/"));
+  EXPECT_THAT(GetCookies(cm.get(), https_foo_url), testing::HasSubstr("A=C"));
+
+  // ...but the original insecure cookie is still retained.
+  EXPECT_THAT(GetCookies(cm.get(), https_foo_url), testing::HasSubstr("A=B"));
+  EXPECT_THAT(GetCookies(cm.get(), https_foo_url),
+              testing::Not(testing::HasSubstr("A=D")));
+
+  // Deleting the secure cookie leaves only the original insecure cookie.
+  EXPECT_TRUE(SetCookie(cm.get(), https_url,
+                        "A=C; path=/; Expires=Thu, 01-Jan-1970 00:00:01 GMT"));
+  EXPECT_EQ("A=B", GetCookies(cm.get(), https_foo_url));
 
   // If a non-secure cookie is created from a URL with an insecure scheme, and
   // a secure cookie with the same name already exists, if the domain strings
