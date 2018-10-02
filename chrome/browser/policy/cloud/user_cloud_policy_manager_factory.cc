@@ -20,6 +20,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 
 namespace policy {
 
@@ -143,10 +144,11 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
       context->GetPath().Append(kPolicy).Append(kComponentsDir);
 
   std::unique_ptr<UserCloudPolicyManager> manager;
-  manager.reset(
-      new UserCloudPolicyManager(std::move(store), component_policy_cache_dir,
-                                 std::unique_ptr<CloudExternalDataManager>(),
-                                 base::ThreadTaskRunnerHandle::Get()));
+  manager.reset(new UserCloudPolicyManager(
+      std::move(store), component_policy_cache_dir,
+      std::unique_ptr<CloudExternalDataManager>(),
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindRepeating(&content::GetNetworkConnectionTracker)));
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());

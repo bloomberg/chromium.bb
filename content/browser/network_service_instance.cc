@@ -157,6 +157,13 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
   return g_network_connection_tracker;
 }
 
+void GetNetworkConnectionTrackerFromUIThread(
+    base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
+}
+
 void SetNetworkConnectionTrackerForTesting(
     network::NetworkConnectionTracker* network_connection_tracker) {
   if (g_network_connection_tracker != network_connection_tracker) {
