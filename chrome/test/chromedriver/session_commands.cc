@@ -58,10 +58,6 @@ const int k2GThroughput = 250 * 1024;
 
 const char kWindowHandlePrefix[] = "CDwindow-";
 
-std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
-  return kWindowHandlePrefix + web_view_id;
-}
-
 bool WindowHandleToWebViewId(const std::string& window_handle,
                              std::string* web_view_id) {
   if (!base::StartsWith(window_handle, kWindowHandlePrefix,
@@ -85,6 +81,10 @@ Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
 }
 
 }  // namespace
+
+std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
+  return kWindowHandlePrefix + web_view_id;
+}
 
 InitSessionParams::InitSessionParams(
     scoped_refptr<URLRequestContextGetter> context_getter,
@@ -388,18 +388,6 @@ Status ExecuteGetSessionCapabilities(Session* session,
                                      const base::DictionaryValue& params,
                                      std::unique_ptr<base::Value>* value) {
   value->reset(session->capabilities->DeepCopy());
-  return Status(kOk);
-}
-
-Status ExecuteGetCurrentWindowHandle(Session* session,
-                                     const base::DictionaryValue& params,
-                                     std::unique_ptr<base::Value>* value) {
-  WebView* web_view = NULL;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-
-  value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
 }
 

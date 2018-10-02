@@ -365,4 +365,12 @@ Status ExecutePerformActions(Session* session,
 Status ProcessInputActionSequence(Session* session,
                                   const base::DictionaryValue* action_sequence,
                                   std::unique_ptr<base::ListValue>* result);
+
+// Retrieve the handle of the target window.
+Status ExecuteGetCurrentWindowHandle(Session* session,
+                                     WebView* web_view,
+                                     const base::DictionaryValue& params,
+                                     std::unique_ptr<base::Value>* value,
+                                     Timeout* timeout);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_
