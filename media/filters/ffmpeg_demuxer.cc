@@ -1757,8 +1757,15 @@ void FFmpegDemuxer::SeekOnVideoTrackChange(
     TrackChangeCB seek_completed_cb,
     DemuxerStream::Type stream_type,
     const std::vector<DemuxerStream*>& streams) {
-  DCHECK_EQ(streams.size(), 1u);
   DCHECK_EQ(stream_type, DemuxerStream::VIDEO);
+  if (streams.size() != 1u) {
+    // If FFmpegDemuxer::FindAndEnableProperTracks() was not able to find the
+    // selected streams in the ID->DemuxerStream map, then its possible for
+    // this vector to be empty. If that's the case, we don't want to bother
+    // with seeking, and just call the callback immediately.
+    std::move(seek_completed_cb).Run(stream_type, streams);
+    return;
+  }
   SeekInternal(seek_to_time,
                base::BindOnce(&FFmpegDemuxer::OnVideoSeekedForTrackChange,
                               weak_factory_.GetWeakPtr(), streams[0],
