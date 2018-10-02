@@ -17,6 +17,7 @@ interface Notification : EventTarget
 
 # web payments api not enabled in webiew, crbug.com/667069
 interface PaymentAddress
+interface PaymentMethodChangeEvent : PaymentRequestUpdateEvent
 interface PaymentRequest : EventTarget
 interface PaymentRequestUpdateEvent : Event
 interface PaymentResponse : EventTarget

@@ -933,6 +933,10 @@
       name: "PaymentApp",
       status: "experimental",
     },
+    {
+      name: "PaymentMethodChangeEvent",
+      status: "experimental",
+    },
     // PaymentRequest is enabled by default on Android
     {
       name: "PaymentRequest",
