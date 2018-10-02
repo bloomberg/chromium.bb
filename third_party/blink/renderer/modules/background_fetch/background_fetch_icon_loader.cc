@@ -168,13 +168,10 @@ void BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread(
   DCHECK(task_runner);
   DCHECK(data);
 
-  // Explicitly pass in the |icon_display_size_pixels_| to benefit from decoders
-  // that have optimizations for partial decoding.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       std::move(data), /* data_complete= */ true,
       ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
-      ColorBehavior::TransformToSRGB(),
-      {icon_display_size_pixels_.width, icon_display_size_pixels_.height});
+      ColorBehavior::TransformToSRGB());
 
   int64_t ideal_to_chosen_icon_size_times_hundred = -1;
   if (decoder) {
