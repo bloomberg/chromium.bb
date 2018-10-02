@@ -297,6 +297,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, Basic) {
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
 
+// Tests chrome.runtime.onInstalled fires for extension service workers.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/worker_based_background/events_on_installed"))
+      << message_;
+}
+
 // Class that dispatches an event to |extension_id| right after a
 // non-lazy listener to the event is added from the extension's Service Worker.
 class EarlyWorkerMessageSender : public EventRouter::Observer {

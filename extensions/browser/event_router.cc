@@ -513,13 +513,37 @@ void EventRouter::DispatchEventToExtension(const std::string& extension_id,
 void EventRouter::DispatchEventWithLazyListener(const std::string& extension_id,
                                                 std::unique_ptr<Event> event) {
   DCHECK(!extension_id.empty());
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  if (!extension)
+    return;
+  const bool is_service_worker_based_background =
+      BackgroundInfo::IsServiceWorkerBased(extension);
+
   std::string event_name = event->event_name;
-  bool has_listener = ExtensionHasEventListener(extension_id, event_name);
-  if (!has_listener)
-    AddLazyEventListener(event_name, extension_id);
+  const bool has_listener = ExtensionHasEventListener(extension_id, event_name);
+  if (!has_listener) {
+    if (is_service_worker_based_background) {
+      AddLazyServiceWorkerEventListener(
+          event_name, extension_id,
+          Extension::GetBaseURLFromExtensionId(extension_id));
+    } else {
+      AddLazyEventListener(event_name, extension_id);
+    }
+  }
+
   DispatchEventToExtension(extension_id, std::move(event));
-  if (!has_listener)
-    RemoveLazyEventListener(event_name, extension_id);
+
+  if (!has_listener) {
+    if (is_service_worker_based_background) {
+      RemoveLazyServiceWorkerEventListener(
+          event_name, extension_id,
+          Extension::GetBaseURLFromExtensionId(extension_id));
+    } else {
+      RemoveLazyEventListener(event_name, extension_id);
+    }
+  }
 }
 
 void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
