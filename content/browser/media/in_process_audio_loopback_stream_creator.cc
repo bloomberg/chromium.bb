@@ -70,7 +70,6 @@ InProcessAudioLoopbackStreamCreator::InProcessAudioLoopbackStreamCreator()
 
 InProcessAudioLoopbackStreamCreator::~InProcessAudioLoopbackStreamCreator() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  factory_.FrameDeleted(nullptr);
 }
 
 void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
