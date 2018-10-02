@@ -55,6 +55,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -471,6 +472,80 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
   }
 }
 
+bool BrowserNonClientFrameViewAsh::OnMousePressed(const ui::MouseEvent& event) {
+  if (!features::IsUsingWindowService())
+    return false;
+
+  if (event.IsOnlyLeftMouseButton()) {
+    if (event.flags() & ui::EF_IS_DOUBLE_CLICK) {
+      ash_window_manager_->MaximizeWindowByCaptionClick(
+          GetServerWindowId(), ui::mojom::PointerKind::MOUSE);
+    }
+
+    // Return true for single clicks to receive subsequent drag events.
+    return true;
+  }
+
+  return false;
+}
+
+bool BrowserNonClientFrameViewAsh::OnMouseDragged(const ui::MouseEvent& event) {
+  if (!features::IsUsingWindowService())
+    return false;
+
+  // The client may receive multiple drag events before Ash has taken over the
+  // window move. In this case, ignore the extras.
+  if (performing_window_move_)
+    return true;
+
+  aura::WindowTreeHostMus* window_tree_host_mus =
+      static_cast<aura::WindowTreeHostMus*>(
+          GetWidget()->GetNativeWindow()->GetHost());
+  performing_window_move_ = true;
+  window_tree_host_mus->PerformWindowMove(
+      ws::mojom::MoveLoopSource::MOUSE,
+      display::Screen::GetScreen()->GetCursorScreenPoint(),
+      base::BindRepeating(&BrowserNonClientFrameViewAsh::OnWindowMoveDone,
+                          weak_ptr_factory_.GetWeakPtr()));
+  return true;
+}
+
+void BrowserNonClientFrameViewAsh::OnMouseReleased(
+    const ui::MouseEvent& event) {
+  // If a window move has already been triggered and OnMouseReleased() is
+  // called, it means the mouse was released before the Ash asserted mouse
+  // capture, and the move should be cancelled. Note that if something else
+  // grabs mouse capture right after PerformWindowMove(), Ash may re-assert that
+  // capture instead of cancelling the move.
+  if (performing_window_move_) {
+    aura::WindowTreeHostMus* window_tree_host_mus =
+        static_cast<aura::WindowTreeHostMus*>(
+            GetWidget()->GetNativeWindow()->GetHost());
+    window_tree_host_mus->CancelWindowMove();
+  }
+}
+
+void BrowserNonClientFrameViewAsh::OnGestureEvent(ui::GestureEvent* event) {
+  if (!features::IsUsingWindowService())
+    return;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      if (event->details().tap_count() == 2) {
+        // TODO(estade): need to log TouchUMA for GESTURE_MAXIMIZE_DOUBLETAP and
+        // GESTURE_FRAMEVIEW_TAP, as in WorkspaceEventHandler.
+        ash_window_manager_->MaximizeWindowByCaptionClick(
+            GetServerWindowId(), ui::mojom::PointerKind::TOUCH);
+        event->StopPropagation();
+      }
+      break;
+
+    // TODO(estade): handle gestures that trigger drags.
+    default:
+      break;
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ash::BrowserFrameHeaderAsh::AppearanceProvider:
 
@@ -875,6 +950,10 @@ ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {
 
 bool BrowserNonClientFrameViewAsh::IsInOverviewMode() const {
   return GetFrameWindow()->GetProperty(ash::kIsShowingInOverviewKey);
+}
+
+void BrowserNonClientFrameViewAsh::OnWindowMoveDone(bool success) {
+  performing_window_move_ = false;
 }
 
 const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {
