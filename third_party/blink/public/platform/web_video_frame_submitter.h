@@ -38,7 +38,8 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
  public:
   static std::unique_ptr<WebVideoFrameSubmitter> Create(
       WebContextProviderCallback,
-      const cc::LayerTreeSettings&);
+      const cc::LayerTreeSettings&,
+      bool use_sync_primitives);
   ~WebVideoFrameSubmitter() override = default;
 
   // Intialize must be called before submissions occur, pulled out of

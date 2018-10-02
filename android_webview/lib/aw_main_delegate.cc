@@ -173,9 +173,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(*cl, media::kUseAndroidOverlay.name);
 
   // WebView doesn't support embedding CompositorFrameSinks which is needed for
-  // UseSurfaceLayerForVideo feature. https://crbug.com/853832
+  // UseSurfaceLayerForVideo[PIP] feature. https://crbug.com/853832
   CommandLineHelper::AddDisabledFeature(*cl,
                                         media::kUseSurfaceLayerForVideo.name);
+  CommandLineHelper::AddDisabledFeature(
+      *cl, media::kUseSurfaceLayerForVideoPIP.name);
 
   // WebView does not support EME persistent license yet, because it's not
   // clear on how user can remove persistent media licenses from UI.

@@ -306,13 +306,20 @@ const base::Feature kUseR16Texture{"use-r16-texture",
 const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use SurfaceLayer instead of VideoLayer.
+// If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
+// aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use SurfaceLayer instead of VideoLayer for MediaStream.
 const base::Feature kUseSurfaceLayerForVideoMS{
     "UseSurfaceLayerForVideoMS", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use SurfaceLayer instead of VideoLayer when entering Picture-in-Picture mode.
+// Does nothing if UseSurfaceLayerForVideo is enabled.  Does not affect
+// MediaStream playbacks.
+const base::Feature kUseSurfaceLayerForVideoPIP{
+    "UseSurfaceLayerForVideoPIP", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",

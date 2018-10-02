@@ -66,6 +66,18 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   // not the WebMediaPlayer!
   typedef base::Callback<int64_t(int64_t)> AdjustAllocatedMemoryCB;
 
+  // Describes when we use SurfaceLayer for video instead of VideoLayer.
+  enum class SurfaceLayerMode {
+    // Always use VideoLayer
+    kNever,
+
+    // Use SurfaceLayer only when we switch to Picture-in-Picture.
+    kOnDemand,
+
+    // Always use SurfaceLayer for video.
+    kAlways,
+  };
+
   // |defer_load_cb|, |audio_renderer_sink|, |compositor_task_runner|, and
   // |context_3d_cb| may be null.
   WebMediaPlayerParams(
@@ -88,7 +100,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       mojom::MediaMetricsProviderPtr metrics_provider,
       CreateSurfaceLayerBridgeCB bridge_callback,
       scoped_refptr<viz::ContextProvider> context_provider,
-      bool use_surface_layer_for_video);
+      SurfaceLayerMode use_surface_layer_for_video);
 
   ~WebMediaPlayerParams();
 
@@ -164,7 +176,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return context_provider_;
   }
 
-  bool use_surface_layer_for_video() const {
+  SurfaceLayerMode use_surface_layer_for_video() const {
     return use_surface_layer_for_video_;
   }
 
@@ -189,7 +201,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   mojom::MediaMetricsProviderPtr metrics_provider_;
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
-  bool use_surface_layer_for_video_;
+  SurfaceLayerMode use_surface_layer_for_video_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

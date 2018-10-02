@@ -591,6 +591,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Sets the UKM container name if needed.
   void MaybeSetContainerName();
 
+  // Switch to SurfaceLayer, either initially or from VideoLayer.
+  void ActivateSurfaceLayerForVideo();
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -879,7 +882,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether embedded media experience is currently enabled.
   bool embedded_media_experience_enabled_ = false;
 
-  // Whether the use of a surface layer instead of a video layer is enabled.
+  // When should we use SurfaceLayer for video?
+  WebMediaPlayerParams::SurfaceLayerMode surface_layer_mode_ =
+      WebMediaPlayerParams::SurfaceLayerMode::kNever;
+
+  // Whether surface layer is currently in use to display frames.
   bool surface_layer_for_video_enabled_ = false;
 
   CreateSurfaceLayerBridgeCB create_bridge_callback_;

@@ -256,7 +256,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
           params->embedded_media_experience_enabled()),
-      surface_layer_for_video_enabled_(params->use_surface_layer_for_video()),
+      surface_layer_mode_(params->use_surface_layer_for_video()),
       create_bridge_callback_(params->create_bridge_callback()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
@@ -803,6 +803,9 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
+  if (!surface_layer_for_video_enabled_)
+    ActivateSurfaceLayerForVideo();
+
   DCHECK(bridge_);
 
   const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
@@ -1649,7 +1652,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
         DisableOverlay();
     }
 
-    if (!surface_layer_for_video_enabled_) {
+    if (surface_layer_mode_ !=
+        WebMediaPlayerParams::SurfaceLayerMode::kAlways) {
       DCHECK(!video_layer_);
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
@@ -1657,35 +1661,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_layer_->SetContentsOpaque(opaque_);
       client_->SetCcLayer(video_layer_.get());
     } else {
-      DCHECK(!bridge_);
-
-      bridge_ = std::move(create_bridge_callback_)
-                    .Run(this, compositor_->GetUpdateSubmissionStateCallback());
-      bridge_->CreateSurfaceLayer();
-
-      vfc_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &VideoFrameCompositor::EnableSubmission,
-              base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
-              pipeline_metadata_.video_decoder_config.video_rotation(),
-              IsInPictureInPicture(), opaque_,
-              BindToCurrentLoop(base::BindRepeating(
-                  &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
-      bridge_->SetContentsOpaque(opaque_);
-
-      // If the element is already in Picture-in-Picture mode, it means that it
-      // was set in this mode prior to this load, with a different
-      // WebMediaPlayerImpl. The new player needs to send its id, size and
-      // surface id to the browser process to make sure the states are properly
-      // updated.
-      // TODO(872056): the surface should be activated but for some reasons, it
-      // does not. It is possible that this will no longer be neded after 872056
-      // is fixed.
-      if (client_->DisplayType() ==
-          WebMediaPlayer::DisplayType::kPictureInPicture) {
-        OnSurfaceIdUpdated(bridge_->GetSurfaceId());
-      }
+      ActivateSurfaceLayerForVideo();
     }
   }
 
@@ -1699,6 +1675,47 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   CreateVideoDecodeStatsReporter();
 
   UpdatePlayState();
+}
+
+void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
+  // Note that we might or might not already be in VideoLayer mode.
+  DCHECK(!bridge_);
+
+  surface_layer_for_video_enabled_ = true;
+
+  // If we're in VideoLayer mode, then get rid of the layer.
+  if (video_layer_) {
+    client_->SetCcLayer(nullptr);
+    video_layer_ = nullptr;
+  }
+
+  bridge_ = std::move(create_bridge_callback_)
+                .Run(this, compositor_->GetUpdateSubmissionStateCallback());
+  bridge_->CreateSurfaceLayer();
+
+  vfc_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &VideoFrameCompositor::EnableSubmission,
+          base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
+          pipeline_metadata_.video_decoder_config.video_rotation(),
+          IsInPictureInPicture(), opaque_,
+          BindToCurrentLoop(base::BindRepeating(
+              &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
+  bridge_->SetContentsOpaque(opaque_);
+
+  // If the element is already in Picture-in-Picture mode, it means that it
+  // was set in this mode prior to this load, with a different
+  // WebMediaPlayerImpl. The new player needs to send its id, size and
+  // surface id to the browser process to make sure the states are properly
+  // updated.
+  // TODO(872056): the surface should be activated but for some reasons, it
+  // does not. It is possible that this will no longer be needed after 872056
+  // is fixed.
+  if (client_->DisplayType() ==
+      WebMediaPlayer::DisplayType::kPictureInPicture) {
+    OnSurfaceIdUpdated(bridge_->GetSurfaceId());
+  }
 }
 
 void WebMediaPlayerImpl::OnFrameSinkDestroyed() {

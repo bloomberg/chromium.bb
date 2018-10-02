@@ -919,7 +919,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetPictureInPictureEnabled(
       prefs.picture_in_picture_enabled &&
-      MediaFactory::VideoSurfaceLayerEnabled());
+      MediaFactory::GetVideoSurfaceLayerMode() !=
+          media::WebMediaPlayerParams::SurfaceLayerMode::kNever);
 
   settings->SetDataSaverHoldbackWebApi(
       prefs.data_saver_holdback_web_api_enabled);
