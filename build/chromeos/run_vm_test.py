@@ -70,19 +70,7 @@ class RemoteTest(object):
           '--results-dest-dir', args.vm_logs_dir,
       ]
 
-    self._test_env = os.environ.copy()
-    # deploy_chrome needs a set of GN args used to build chrome to determine if
-    # certain libraries need to be pushed to the VM. It looks for the args via
-    # an env var. To trigger the default deploying behavior, give it a dummy set
-    # of args.
-    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
-    # line args.
-    if not self._test_env.get('GN_ARGS'):
-      self._test_env['GN_ARGS'] = 'is_chromeos = true'
-    if not self._test_env.get('USE'):
-      self._test_env['USE'] = 'highdpi'
-    self._test_env['PATH'] = (
-        self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
+    self._test_env = setup_env()
 
   @property
   def suite_name(self):
@@ -402,23 +390,12 @@ def host_cmd(args, unknown_args):
   if args.verbose:
     cros_run_vm_test_cmd.append('--debug')
 
-  test_env = os.environ.copy()
+  test_env = setup_env()
   if args.deploy_chrome:
     cros_run_vm_test_cmd += [
         '--deploy',
         '--build-dir', os.path.abspath(args.path_to_outdir),
     ]
-    # If we're deploying, push chromite/bin's deploy_chrome onto PATH.
-    test_env['PATH'] = (
-        test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
-    # deploy_chrome needs a set of GN args used to build chrome to determine if
-    # certain libraries need to be pushed to the VM. It looks for the args via
-    # an env var. To trigger the default deploying behavior, give it a dummy set
-    # of args.
-    # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
-    # line args.
-    if not test_env.get('GN_ARGS'):
-      test_env['GN_ARGS'] = 'is_chromeos = true'
 
   cros_run_vm_test_cmd += [
       '--host-cmd',
@@ -430,6 +407,24 @@ def host_cmd(args, unknown_args):
 
   return subprocess42.call(
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
+
+
+def setup_env():
+  """Returns a copy of the current env with some needed vars added."""
+  env = os.environ.copy()
+  # Some chromite scripts expect chromite/bin to be on PATH.
+  env['PATH'] = env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
+  # deploy_chrome needs a set of GN args used to build chrome to determine if
+  # certain libraries need to be pushed to the VM. It looks for the args via
+  # an env var. To trigger the default deploying behavior, give it a dummy set
+  # of args.
+  # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
+  # line args.
+  if not env.get('GN_ARGS'):
+    env['GN_ARGS'] = 'enable_nacl = true'
+  if not env.get('USE'):
+    env['USE'] = 'highdpi'
+  return env
 
 
 def add_common_args(parser):
