@@ -178,6 +178,7 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   if (webui_instances_.empty()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
+    ClearClientDownloadResponsesReceived();
     ClearPGEvents();
     ClearPGPings();
     ClearLogMessages();
