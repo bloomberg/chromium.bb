@@ -26,6 +26,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
@@ -68,10 +69,12 @@ std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
     Callback callback,
     const std::string catalog_version,
     const std::string country_code,
+    const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCatalogURL();
-  return base::WrapUnique(new ExploreSitesFetcher(
-      std::move(callback), url, catalog_version, country_code, loader_factory));
+  return base::WrapUnique(
+      new ExploreSitesFetcher(std::move(callback), url, catalog_version,
+                              country_code, accept_languages, loader_factory));
 }
 
 std::unique_ptr<ExploreSitesFetcher>
@@ -79,10 +82,12 @@ ExploreSitesFetcher::CreateForGetCategories(
     Callback callback,
     const std::string catalog_version,
     const std::string country_code,
+    const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCategoriesURL();
-  return base::WrapUnique(new ExploreSitesFetcher(
-      std::move(callback), url, catalog_version, country_code, loader_factory));
+  return base::WrapUnique(
+      new ExploreSitesFetcher(std::move(callback), url, catalog_version,
+                              country_code, accept_languages, loader_factory));
 }
 
 ExploreSitesFetcher::ExploreSitesFetcher(
@@ -90,6 +95,7 @@ ExploreSitesFetcher::ExploreSitesFetcher(
     const GURL& url,
     const std::string catalog_version,
     const std::string country_code,
+    const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : callback_(std::move(callback)),
       url_loader_factory_(loader_factory),
@@ -116,8 +122,12 @@ ExploreSitesFetcher::ExploreSitesFetcher(
                                           : google_apis::GetNonStableAPIKey();
   resource_request->headers.SetHeader("x-goog-api-key", api_key);
   resource_request->headers.SetHeader("X-Client-Version", client_version);
-  resource_request->headers.SetHeader("Content-Type", kRequestContentType);
-  // TODO(freedjm): Implement Accept-Language support.
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                      kRequestContentType);
+  if (!accept_languages.empty()) {
+    resource_request->headers.SetHeader(
+        net::HttpRequestHeaders::kAcceptLanguage, accept_languages);
+  }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);

@@ -34,7 +34,8 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void GetCatalog(CatalogCallback callback) override;
   void GetCategoryImage(int category_id, BitmapCallback callback) override;
   void GetSiteImage(int site_id, BitmapCallback callback) override;
-  void UpdateCatalogFromNetwork(BooleanCallback callback) override;
+  void UpdateCatalogFromNetwork(std::string accept_languages,
+                                BooleanCallback callback) override;
 
  private:
   // KeyedService implementation:

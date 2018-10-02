@@ -10,6 +10,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -22,6 +23,10 @@ using testing::_;
 using testing::DoAll;
 using testing::Eq;
 using testing::SaveArg;
+
+namespace {
+const char kAcceptLanguages[] = "en-US,en;q=0.5";
+}  // namespace
 
 namespace explore_sites {
 
@@ -156,6 +161,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     std::string* data_received) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
       ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "123", "KE",
+                                               kAcceptLanguages,
                                                test_shared_url_loader_factory_);
 
   std::move(respond_callback).Run();
@@ -221,6 +227,33 @@ TEST_F(ExploreSitesFetcherTest, Success) {
   EXPECT_EQ(last_resource_request.url.spec(),
             "https://exploresites-pa.googleapis.com/v1/"
             "getcatalog?country_code=KE&version_token=123");
+}
+
+TEST_F(ExploreSitesFetcherTest, TestHeaders) {
+  std::string data;
+  EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
+            RunFetcherWithData("Any data.", &data));
+
+  net::HttpRequestHeaders headers = last_resource_request.headers;
+  std::string content_type;
+  std::string languages;
+  bool success;
+
+  success = headers.HasHeader("x-goog-api-key");
+  EXPECT_TRUE(success);
+
+  success = headers.HasHeader("X-Client-Version");
+  EXPECT_TRUE(success);
+
+  success =
+      headers.GetHeader(net::HttpRequestHeaders::kContentType, &content_type);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(content_type, "application/x-protobuf");
+
+  success =
+      headers.GetHeader(net::HttpRequestHeaders::kAcceptLanguage, &languages);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(languages, kAcceptLanguages);
 }
 
 }  // namespace explore_sites

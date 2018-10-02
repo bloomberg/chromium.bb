@@ -69,6 +69,7 @@ void ExploreSitesServiceImpl::GetSiteImage(int site_id,
 }
 
 void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
+    std::string accept_languages,
     BooleanCallback callback) {
   if (!IsExploreSitesEnabled())
     return;
@@ -85,7 +86,7 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      catalog_version, country_code, url_loader_factory_);
+      catalog_version, country_code, accept_languages, url_loader_factory_);
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(

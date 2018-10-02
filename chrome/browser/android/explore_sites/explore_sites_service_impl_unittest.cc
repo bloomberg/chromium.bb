@@ -22,6 +22,7 @@ const char kSite1Url[] = "https://example.com/";
 const char kSite2Url[] = "https://sample.com/";
 const char kSite1Name[] = "example";
 const char kSite2Name[] = "sample";
+const char kAcceptLanguages[] = "en-US,en;q=0.5";
 }  // namespace
 
 namespace explore_sites {
@@ -154,6 +155,7 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
 
   service()->UpdateCatalogFromNetwork(
+      kAcceptLanguages,
       base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
                      base::Unretained(this)));
 
