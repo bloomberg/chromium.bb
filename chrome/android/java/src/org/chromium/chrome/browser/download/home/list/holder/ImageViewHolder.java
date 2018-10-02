@@ -35,7 +35,7 @@ public class ImageViewHolder extends ListItemViewHolder {
         mThumbnail = itemView.findViewById(R.id.thumbnail);
     }
 
-    // ThumbnailAwareViewHolder implementation.
+    // ListItemViewHolder implementation.
     @Override
     public void bind(PropertyModel properties, ListItem item) {
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;

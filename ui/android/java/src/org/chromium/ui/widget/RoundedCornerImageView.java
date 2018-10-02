@@ -155,31 +155,6 @@ public class RoundedCornerImageView extends ImageView {
 
         // Default to using the shader.
         mApplyShader = true;
-
-        // If the scale type would not scale up the image, and the image is smaller than the
-        // view bounds, then just draw it normally so the shader won't have adverse effects.
-        // CENTER does not do any scaling, and simply centers the image. In that case we need to
-        // check to see if the image is smaller than the view in either dimension, and don't apply
-        // the shaer if it is. CENTER_INSIDE will only scale down, so we need to calculate the
-        // scaled size of the image, and only apply the shader if it happens to match the size of
-        // the view.
-        // TODO: this won't work with a custom image matrix, but that's probably ok for now
-        ScaleType scaleType = getScaleType();
-        if (scaleType == ScaleType.CENTER || scaleType == ScaleType.CENTER_INSIDE) {
-            int viewWidth = getWidth() - getPaddingRight() - getPaddingLeft();
-            int viewHeight = getHeight() - getPaddingTop() - getPaddingBottom();
-            int drawableWidth = drawable.getIntrinsicWidth();
-            int drawableHeight = drawable.getIntrinsicHeight();
-            if (scaleType == ScaleType.CENTER_INSIDE) {
-                float scale = Math.min((float) viewWidth / (float) drawableWidth,
-                        (float) viewHeight / (float) drawableHeight);
-                drawableWidth = (int) ((scale * drawableWidth) + 0.5f);
-                drawableHeight = (int) ((scale * drawableHeight) + 0.5f);
-            }
-            if ((drawableWidth < viewWidth) || (drawableHeight < viewHeight)) {
-                mApplyShader = false;
-            }
-        }
     }
 
     @Override
