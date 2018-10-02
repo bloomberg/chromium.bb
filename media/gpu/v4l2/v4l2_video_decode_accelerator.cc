@@ -337,6 +337,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kAwaitingPictureBuffers);
+  DCHECK(output_queue_);
 
   if (IsDestroyPending())
     return;
@@ -1099,6 +1100,7 @@ bool V4L2VideoDecodeAccelerator::AppendToInputFrame(const void* data,
   // Try to get an available input buffer.
   if (!current_input_buffer_.IsValid()) {
     DCHECK(decoder_current_bitstream_buffer_ != NULL);
+    DCHECK(input_queue_);
 
     // See if we can get more free buffers from HW.
     if (input_queue_->FreeBuffersCount() == 0)
@@ -1176,6 +1178,8 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
+  DCHECK(input_queue_);
+  DCHECK(output_queue_);
   TRACE_EVENT0("media,gpu", "V4L2VDA::ServiceDeviceTask");
 
   if (IsDestroyPending())
@@ -1262,6 +1266,8 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
+  DCHECK(input_queue_);
+  DCHECK(output_queue_);
   TRACE_EVENT0("media,gpu", "V4L2VDA::Enqueue");
 
   // Drain the pipe of completed decode buffers.
@@ -1375,6 +1381,8 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
+  DCHECK(input_queue_);
+  DCHECK(output_queue_);
   TRACE_EVENT0("media,gpu", "V4L2VDA::Dequeue");
 
   while (input_queue_->QueuedBuffersCount() > 0) {
@@ -1390,6 +1398,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
 
 bool V4L2VideoDecodeAccelerator::DequeueInputBuffer() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(input_queue_);
   DCHECK_GT(input_queue_->QueuedBuffersCount(), 0u);
 
   // Dequeue a completed input (VIDEO_OUTPUT) buffer, and recycle to the free
@@ -1409,6 +1418,7 @@ bool V4L2VideoDecodeAccelerator::DequeueInputBuffer() {
 
 bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(output_queue_);
   DCHECK_GT(output_queue_->QueuedBuffersCount(), 0u);
   DCHECK(output_queue_->IsStreaming());
 
@@ -1494,6 +1504,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueInputRecord() {
 }
 
 bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
+  DCHECK(output_queue_);
   V4L2WritableBufferRef buffer = output_queue_->GetFreeBuffer();
   DCHECK(buffer.IsValid());
 
@@ -1630,6 +1641,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
 
 void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(input_queue_);
   if (!decoder_flushing_)
     return;
 
@@ -1902,7 +1914,7 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll() {
 
 bool V4L2VideoDecodeAccelerator::StopOutputStream() {
   VLOGF(2);
-  if (!output_queue_->IsStreaming())
+  if (!output_queue_ || !output_queue_->IsStreaming())
     return true;
 
   if (!output_queue_->Streamoff()) {
@@ -1928,7 +1940,7 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
 
 bool V4L2VideoDecodeAccelerator::StopInputStream() {
   VLOGF(2);
-  if (!input_queue_->IsStreaming())
+  if (!input_queue_ || !input_queue_->IsStreaming())
     return true;
 
   if (!input_queue_->Streamoff()) {
@@ -2180,6 +2192,7 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   // We always run this as we prepare to initialize.
   DCHECK_EQ(decoder_state_, kInitialized);
+  DCHECK(input_queue_);
 
   if (input_queue_->AllocateBuffers(kInputBufferCount, V4L2_MEMORY_MMAP) == 0) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -2431,6 +2444,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   VLOGF(2);
   DCHECK(decoder_state_ == kInitialized ||
          decoder_state_ == kChangingResolution);
+  DCHECK(output_queue_);
   DCHECK(!output_queue_->IsStreaming());
   DCHECK(output_buffer_map_.empty());
 
@@ -2480,6 +2494,9 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   DCHECK(!decoder_thread_.IsRunning() ||
          decoder_thread_.task_runner()->BelongsToCurrentThread());
 
+  if (!input_queue_)
+    return;
+
   input_queue_->DeallocateBuffers();
 }
 
@@ -2487,10 +2504,10 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   VLOGF(2);
   DCHECK(!decoder_thread_.IsRunning() ||
          decoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!output_queue_->IsStreaming());
+  DCHECK(!output_queue_ || !output_queue_->IsStreaming());
   bool success = true;
 
-  if (output_buffer_map_.empty())
+  if (!output_queue_ || output_buffer_map_.empty())
     return true;
 
   // Release all buffers waiting for an import buffer event
