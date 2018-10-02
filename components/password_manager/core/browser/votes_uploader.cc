@@ -236,6 +236,11 @@ bool VotesUploader::UploadPasswordVote(
   if (!has_autofill_vote && !has_password_generation_vote)
     return false;
 
+  if (form_to_upload.form_data.fields.empty()) {
+    // List of fields may be empty in tests.
+    return false;
+  }
+
   AutofillManager* autofill_manager = client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager || !autofill_manager->download_manager())
     return false;
@@ -245,10 +250,6 @@ bool VotesUploader::UploadPasswordVote(
   // credentials, the observed and pending forms are the same.
   FormStructure form_structure(form_to_upload.form_data);
   form_structure.set_submission_event(submitted_form.submission_event);
-  if (!autofill_manager->ShouldUploadForm(form_structure)) {
-    UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", false);
-    return false;
-  }
 
   ServerFieldTypeSet available_field_types;
   // A map from field names to field types.
@@ -335,10 +336,13 @@ void VotesUploader::UploadFirstLoginVotes(
   if (!autofill_manager || !autofill_manager->download_manager())
     return;
 
+  if (form_to_upload.form_data.fields.empty()) {
+    // List of fields may be empty in tests.
+    return;
+  }
+
   FormStructure form_structure(form_to_upload.form_data);
   form_structure.set_submission_event(form_to_upload.submission_event);
-  if (!autofill_manager->ShouldUploadForm(form_structure))
-    return;
 
   FieldTypeMap field_types = {
       {form_to_upload.username_element, autofill::USERNAME}};
@@ -377,7 +381,6 @@ void VotesUploader::SendSignInVote(
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form_data));
   form_structure->set_submission_event(submission_event);
   form_structure->set_is_signin_upload(true);
-  DCHECK(form_structure->ShouldBeUploaded());
   DCHECK_EQ(2u, form_structure->field_count());
   form_structure->field(1)->set_possible_types({autofill::PASSWORD});
   autofill_manager->MaybeStartVoteUploadProcess(std::move(form_structure),

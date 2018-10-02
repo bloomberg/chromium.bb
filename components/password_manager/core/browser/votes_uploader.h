@@ -136,7 +136,7 @@ class VotesUploader {
   };
 
   // Send a vote for sign-in forms with autofill types for a username field.
-  // TODO(https://crbug.com/831123): Remove this method.
+  // TODO(https://crbug.com/889472): Remove this method.
   void SendSignInVote(
       const autofill::FormData& form_data,
       const autofill::PasswordForm::SubmissionIndicatorEvent& submission_event);

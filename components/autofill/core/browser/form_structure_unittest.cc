@@ -5750,4 +5750,20 @@ TEST_F(FormStructureTest, AllowBigForms) {
   EXPECT_EQ(1u, encoded_signatures.size());
 }
 
+// Tests that an Autofill upload for password form with 1 field should not be
+// uploaded.
+TEST_F(FormStructureTest, OneFieldPasswordFormShouldNotBeUpload) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /* enabled features */ {kAutofillEnforceMinRequiredFieldsForUpload},
+      /* disabled features */ {kAutofillEnforceMinRequiredFieldsForQuery});
+  FormData form;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  EXPECT_FALSE(FormStructure(form).ShouldBeUploaded());
+}
+
 }  // namespace autofill

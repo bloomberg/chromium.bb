@@ -5802,11 +5802,6 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
     EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
   }
 
-  // Has two fields which are password fields.
-  test::CreateTestFormField("New Password", "new_pw", "", "password", &field);
-  form.fields.push_back(field);
-  EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
-
   // Autofill disabled.
   autofill_manager_->SetAutofillEnabled(false);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
@@ -6045,6 +6040,8 @@ TEST_F(AutofillManagerTest, FormWithLongOptionValuesIsAcceptable) {
 
 // Test that a sign-in form submission sends an upload with types matching the
 // fields.
+// TODO(https://crbug.com/889472): Remove this test together with sending
+// sign-in vote.
 TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   // Set up our form data (it's already filled out with user data).
   FormData form;
@@ -6082,16 +6079,11 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
 
   std::string signature = form_structure->FormSignatureAsStr();
 
-  ServerFieldTypeSet uploaded_available_types;
   EXPECT_CALL(*download_manager_,
               StartUploadRequest(_, false, _, std::string(), true))
-      .WillOnce(DoAll(SaveArg<2>(&uploaded_available_types), Return(true)));
+      .Times(0);
   autofill_manager_->MaybeStartVoteUploadProcess(std::move(form_structure),
                                                  base::TimeTicks::Now(), true);
-
-  EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
-  EXPECT_NE(uploaded_available_types.end(),
-            uploaded_available_types.find(autofill::PASSWORD));
 }
 
 // Test that with small form upload enabled but heuristics and query disabled
