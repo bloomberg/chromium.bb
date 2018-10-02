@@ -801,6 +801,10 @@ if (is_chromeos_chrome) {
     ]
   }
 
+  tast_test("chrome_all_tast_tests") {
+    tast_conditional = "(!informational && !disabled && (\"dep:chrome\" || \"dep:chrome_login\"))"
+  }
+
   group("cros_chrome_deploy") {
     # The following run-time dependencies are needed to deploy chrome to a
     # ChromeOS device. See the link for the full list:

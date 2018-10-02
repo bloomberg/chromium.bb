@@ -279,6 +279,10 @@
     "label": "//chrome:chrome",
     "type": "additional_compile_target",
   },
+  "chrome_all_tast_tests": {
+    "label": "//chromeos:chrome_all_tast_tests",
+    "type": "raw",
+  },
   "chrome_app_unittests": {
     "label": "//chrome/test:chrome_app_unittests",
     "type": "console_test_launcher",

@@ -430,6 +430,7 @@
 
     'chromeos_gtests_experimental': {
       'base_unittests': {},
+      'chrome_all_tast_tests': {},
       'chrome_login_tast_tests': {},
       'chromeos_unittests': {
         'args': [
