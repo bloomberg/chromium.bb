@@ -152,8 +152,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 
   if (is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
-              features::IsMDUIEnabled() ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
-                                        : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+              IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
 
     // Custom Backgrounds
     AddString(translated_strings.get(), "customizeBackground",
@@ -504,8 +503,6 @@ class LocalNtpSource::SearchConfigurationProvider
     config_data.SetBoolean("isAccessibleBrowser",
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
-
-    config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
 
     config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
 
