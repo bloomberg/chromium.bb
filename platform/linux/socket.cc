@@ -32,17 +32,17 @@ static_assert(IsPowerOf2(alignof(struct cmsghdr)),
 
 UdpSocketPtr CreateUdpSocketIPv4() {
   const int fd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
-  if (fd == -1) {
+  if (fd == -1)
     return nullptr;
-  }
+
   return new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV4};
 }
 
 UdpSocketPtr CreateUdpSocketIPv6() {
   const int fd = socket(AF_INET6, SOCK_DGRAM | SOCK_NONBLOCK, 0);
-  if (fd == -1) {
+  if (fd == -1)
     return nullptr;
-  }
+
   return new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV6};
 }
 
@@ -178,9 +178,9 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
     msg.msg_flags = 0;
 
     int64_t len = recvmsg(socket->fd, &msg, 0);
-    if (len < 0) {
+    if (len < 0)
       return len;
-    }
+
     src->address =
         IPAddress(IPAddress::Version::kV4,
                   reinterpret_cast<const uint8_t*>(&sa.sin_addr.s_addr));
@@ -195,9 +195,9 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
       if ((msg.msg_flags & MSG_CTRUNC) == 0) {
         for (struct cmsghdr* cmh = CMSG_FIRSTHDR(&msg); cmh;
              cmh = CMSG_NXTHDR(&msg, cmh)) {
-          if (cmh->cmsg_level != IPPROTO_IP || cmh->cmsg_type != IP_PKTINFO) {
+          if (cmh->cmsg_level != IPPROTO_IP || cmh->cmsg_type != IP_PKTINFO)
             continue;
-          }
+
           struct sockaddr_in addr;
           socklen_t len = sizeof(addr);
           if (getsockname(socket->fd, reinterpret_cast<struct sockaddr*>(&addr),
@@ -230,9 +230,9 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
     msg.msg_flags = 0;
 
     int64_t len = recvmsg(socket->fd, &msg, 0);
-    if (len < 0) {
+    if (len < 0)
       return len;
-    }
+
     src->address =
         IPAddress(IPAddress::Version::kV6,
                   reinterpret_cast<const uint8_t*>(&sa.sin6_addr.s6_addr));
@@ -281,8 +281,7 @@ int64_t SendUdp(UdpSocketPtr socket,
   DCHECK(socket->fd >= 0);
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     struct sockaddr_in sa = {
-        .sin_family = AF_INET,
-        .sin_port = htons(dest.port),
+        .sin_family = AF_INET, .sin_port = htons(dest.port),
     };
     dest.address.CopyToV4(reinterpret_cast<uint8_t*>(&sa.sin_addr.s_addr));
     struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};
@@ -297,8 +296,7 @@ int64_t SendUdp(UdpSocketPtr socket,
     return sendmsg(socket->fd, &msg, 0);
   } else {
     struct sockaddr_in6 sa = {
-        .sin6_family = AF_INET6,
-        .sin6_port = htons(dest.port),
+        .sin6_family = AF_INET6, .sin6_port = htons(dest.port),
     };
     dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
     struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};

@@ -65,24 +65,24 @@ bool ScreenPublisherImpl::StartAndSuspend() {
   return true;
 }
 bool ScreenPublisherImpl::Stop() {
-  if (state_ == State::kStopped || state_ == State::kStopping) {
+  if (state_ == State::kStopped || state_ == State::kStopping)
     return false;
-  }
+
   state_ = State::kStopping;
   delegate_->StopPublisher();
   return true;
 }
 bool ScreenPublisherImpl::Suspend() {
-  if (state_ != State::kRunning && state_ != State::kStarting) {
+  if (state_ != State::kRunning && state_ != State::kStarting)
     return false;
-  }
+
   delegate_->SuspendPublisher();
   return true;
 }
 bool ScreenPublisherImpl::Resume() {
-  if (state_ != State::kSuspended) {
+  if (state_ != State::kSuspended)
     return false;
-  }
+
   delegate_->ResumePublisher();
   return true;
 }

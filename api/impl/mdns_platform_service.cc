@@ -17,16 +17,17 @@ MdnsPlatformService::BoundInterface::~BoundInterface() = default;
 
 bool MdnsPlatformService::BoundInterface::operator==(
     const MdnsPlatformService::BoundInterface& other) const {
-  if (interface_info != other.interface_info) {
+  if (interface_info != other.interface_info)
     return false;
-  }
+
   if (subnet.address != other.subnet.address ||
       subnet.prefix_length != other.subnet.prefix_length) {
     return false;
   }
-  if (socket != other.socket) {
+
+  if (socket != other.socket)
     return false;
-  }
+
   return true;
 }
 

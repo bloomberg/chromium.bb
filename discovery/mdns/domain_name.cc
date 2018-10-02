@@ -58,9 +58,9 @@ bool DomainName::operator!=(const DomainName& other) const {
 }
 
 bool DomainName::EndsWithLocalDomain() const {
-  if (domain_name_.size() < kLocalDomain.domain_name_.size()) {
+  if (domain_name_.size() < kLocalDomain.domain_name_.size())
     return false;
-  }
+
   return std::equal(kLocalDomain.domain_name_.begin(),
                     kLocalDomain.domain_name_.end(),
                     domain_name_.end() - kLocalDomain.domain_name_.size());

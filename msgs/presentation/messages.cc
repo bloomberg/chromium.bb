@@ -27,9 +27,8 @@ constexpr char kUrlsKey[] = "urls";
     DCHECK_NE(error, CborErrorTooFewItems);                             \
     DCHECK_NE(error, CborErrorTooManyItems);                            \
     DCHECK_NE(error, CborErrorDataTooLarge);                            \
-    if (error != CborNoError && error != CborErrorOutOfMemory) {        \
+    if (error != CborNoError && error != CborErrorOutOfMemory)          \
       return what;                                                      \
-    }                                                                   \
   }
 #define CBOR_RETURN_ON_ERROR_INTERNAL(stmt) \
   CBOR_RETURN_WHAT_ON_ERROR(stmt, error)
@@ -43,9 +42,8 @@ CborError IsValidUtf8(const std::string& s) {
   while (buffer < end) {
     // TODO(btolsch): This is an implementation detail of tinycbor so we should
     // eventually replace this call with our own utf8 validation.
-    if (get_utf8(&buffer, end) == ~0u) {
+    if (get_utf8(&buffer, end) == ~0u)
       return CborErrorInvalidUtf8TextString;
-    }
   }
   return CborNoError;
 }
@@ -54,15 +52,15 @@ CborError ExpectKey(CborValue* it, const char* key, size_t key_length) {
   size_t observed_length = 0;
   CBOR_RETURN_ON_ERROR_INTERNAL(
       cbor_value_get_string_length(it, &observed_length));
-  if (observed_length != key_length) {
+  if (observed_length != key_length)
     return CborErrorImproperValue;
-  }
+
   std::string observed_key(key_length, 0);
   CBOR_RETURN_ON_ERROR_INTERNAL(cbor_value_copy_text_string(
       it, const_cast<char*>(observed_key.data()), &observed_length, nullptr));
-  if (observed_key != key) {
+  if (observed_key != key)
     return CborErrorImproperValue;
-  }
+
   CBOR_RETURN_ON_ERROR_INTERNAL(cbor_value_advance(it));
   return CborNoError;
 }
@@ -144,25 +142,24 @@ ssize_t DecodeUrlAvailabilityRequest(uint8_t* buffer,
   CBOR_RETURN_ON_ERROR(cbor_parser_init(buffer, length, 0, &parser, &it));
   // TODO(btolsch): In the future, we will read the tag first and switch on it
   // to choose a parsing function.
-  if (cbor_value_get_type(&it) != CborTagType) {
+  if (cbor_value_get_type(&it) != CborTagType)
     return -1;
-  }
+
   uint64_t tag = 0;
   cbor_value_get_tag(&it, &tag);
-  if (tag != static_cast<uint64_t>(Tag::kUrlAvailabilityRequest)) {
+  if (tag != static_cast<uint64_t>(Tag::kUrlAvailabilityRequest))
     return -1;
-  }
+
   CBOR_RETURN_ON_ERROR(cbor_value_advance_fixed(&it));
-  if (cbor_value_get_type(&it) != CborMapType) {
+  if (cbor_value_get_type(&it) != CborMapType)
     return -1;
-  }
 
   CborValue map;
   size_t map_length = 0;
   CBOR_RETURN_ON_ERROR(cbor_value_get_map_length(&it, &map_length));
-  if (map_length != 2) {
+  if (map_length != 2)
     return -1;
-  }
+
   CBOR_RETURN_ON_ERROR(cbor_value_enter_container(&it, &map));
   CBOR_RETURN_ON_ERROR(EXPECT_KEY_CONSTANT(&map, kRequestIdKey));
   CBOR_RETURN_ON_ERROR(cbor_value_get_uint64(&map, &request->request_id));

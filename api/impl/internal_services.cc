@@ -106,9 +106,8 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
                   interface.info.index) == interface_index_whitelist.end()) {
       continue;
     }
-    if (!interface.addresses.empty()) {
+    if (!interface.addresses.empty())
       index_list.push_back(interface.info.index);
-    }
   }
 
   // Listen on all interfaces
@@ -122,9 +121,9 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
     auto* socket = addr.addresses.front().address.IsV4()
                        ? platform::CreateUdpSocketIPv4()
                        : platform::CreateUdpSocketIPv6();
-    if (!SetupMulticastSocket(socket, index)) {
+    if (!SetupMulticastSocket(socket, index))
       continue;
-    }
+
     // Pick any address for the given interface.
     result.emplace_back(addr.info, addr.addresses.front(), socket);
   }
@@ -147,17 +146,17 @@ InternalServices::InternalServices() = default;
 InternalServices::~InternalServices() = default;
 
 void InternalServices::EnsureInternalServiceEventWaiterCreated() {
-  if (internal_service_waiter_) {
+  if (internal_service_waiter_)
     return;
-  }
+
   internal_service_waiter_ = platform::CreateEventWaiter();
 }
 
 void InternalServices::EnsureMdnsServiceCreated() {
   EnsureInternalServiceEventWaiterCreated();
-  if (mdns_service_) {
+  if (mdns_service_)
     return;
-  }
+
   auto mdns_responder_factory = MakeUnique<MdnsResponderAdapterImplFactory>();
   auto platform = MakeUnique<InternalPlatformLinkage>(this);
   mdns_service_ = MakeUnique<MdnsResponderService>(

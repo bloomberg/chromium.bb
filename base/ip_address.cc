@@ -60,9 +60,9 @@ IPAddress::IPAddress(const IPAddress& o) = default;
 IPAddress& IPAddress::operator=(const IPAddress& o) = default;
 
 bool IPAddress::operator==(const IPAddress& o) const {
-  if (version_ != o.version_) {
+  if (version_ != o.version_)
     return false;
-  }
+
   if (version_ == Version::kV4) {
     return bytes_[0] == o.bytes_[0] && bytes_[1] == o.bytes_[1] &&
            bytes_[2] == o.bytes_[2] && bytes_[3] == o.bytes_[3];
@@ -75,9 +75,9 @@ bool IPAddress::operator!=(const IPAddress& o) const {
 }
 
 IPAddress::operator bool() const {
-  if (version_ == Version::kV4) {
+  if (version_ == Version::kV4)
     return bytes_[0] | bytes_[1] | bytes_[2] | bytes_[3];
-  }
+
   for (const auto& byte : bytes_)
     if (byte)
       return true;
@@ -97,9 +97,9 @@ void IPAddress::CopyToV6(uint8_t x[16]) const {
 
 // static
 bool IPAddress::ParseV4(const std::string& s, IPAddress* address) {
-  if (s.size() > 0 && s[0] == '.') {
+  if (s.size() > 0 && s[0] == '.')
     return false;
-  }
+
   uint16_t next_octet = 0;
   int i = 0;
   bool previous_dot = false;
@@ -111,26 +111,25 @@ bool IPAddress::ParseV4(const std::string& s, IPAddress* address) {
       address->bytes_[i++] = static_cast<uint8_t>(next_octet);
       next_octet = 0;
       previous_dot = true;
-      if (i > 3) {
+      if (i > 3)
         return false;
-      }
+
       continue;
     }
     previous_dot = false;
-    if (!std::isdigit(c)) {
+    if (!std::isdigit(c))
       return false;
-    }
+
     next_octet = next_octet * 10 + (c - '0');
-    if (next_octet > 255) {
+    if (next_octet > 255)
       return false;
-    }
   }
-  if (previous_dot) {
+  if (previous_dot)
     return false;
-  }
-  if (i != 3) {
+
+  if (i != 3)
     return false;
-  }
+
   address->bytes_[i] = static_cast<uint8_t>(next_octet);
   address->version_ = Version::kV4;
   return true;
@@ -138,9 +137,9 @@ bool IPAddress::ParseV4(const std::string& s, IPAddress* address) {
 
 // static
 bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
-  if (s.size() > 1 && s[0] == ':' && s[1] != ':') {
+  if (s.size() > 1 && s[0] == ':' && s[1] != ':')
     return false;
-  }
+
   uint16_t next_value = 0;
   uint8_t values[16];
   int i = 0;
@@ -180,12 +179,12 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
       }
     }
   }
-  if (num_previous_colons == 1) {
+  if (num_previous_colons == 1)
     return false;
-  }
-  if (i >= 15) {
+
+  if (i >= 15)
     return false;
-  }
+
   values[i++] = static_cast<uint8_t>(next_value >> 8);
   values[i] = static_cast<uint8_t>(next_value & 0xff);
   if (!((i == 15 && double_colon_index == -1) ||

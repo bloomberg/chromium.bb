@@ -15,9 +15,8 @@ LogMessage::LogMessage(LogLevel level,
 
 LogMessage::~LogMessage() {
   LogWithLevel(level_, verbose_level_, file_, line_, stream_.str().c_str());
-  if (level_ == LogLevel::kFatal) {
+  if (level_ == LogLevel::kFatal)
     Break();
-  }
 }
 
 std::string LogLevelToString(LogLevel level) {

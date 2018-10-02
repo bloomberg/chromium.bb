@@ -31,9 +31,9 @@ CombinedLogLevel g_log_level{LogLevel::kInfo, 0};
 
 std::ostream& operator<<(std::ostream& os, const CombinedLogLevel& level) {
   os << LogLevelToString(level.level);
-  if (level.level == LogLevel::kVerbose) {
+  if (level.level == LogLevel::kVerbose)
     os << "(" << level.verbose_level << ")";
-  }
+
   return os;
 }
 
@@ -48,9 +48,9 @@ void LogWithLevel(LogLevel level,
                   const char* file,
                   int line,
                   const char* msg) {
-  if (CombinedLogLevel{level, verbose_level} < g_log_level) {
+  if (CombinedLogLevel{level, verbose_level} < g_log_level)
     return;
-  }
+
   std::cout << "[" << CombinedLogLevel{level, verbose_level} << ":" << file
             << ":" << line << "] " << msg << std::endl;
 }

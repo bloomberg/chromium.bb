@@ -65,9 +65,9 @@ void MdnsResponderService::HandleNewEvents(
 }
 
 void MdnsResponderService::StartListener() {
-  if (!mdns_responder_) {
+  if (!mdns_responder_)
     mdns_responder_ = mdns_responder_factory_->Create();
-  }
+
   StartListening();
   ScreenListenerImpl::Delegate::SetState(ScreenListener::State::kRunning);
 }
@@ -106,9 +106,9 @@ void MdnsResponderService::SearchNow(ScreenListener::State from) {
 }
 
 void MdnsResponderService::StartPublisher() {
-  if (!mdns_responder_) {
+  if (!mdns_responder_)
     mdns_responder_ = mdns_responder_factory_->Create();
-  }
+
   StartService();
   ScreenPublisherImpl::Delegate::SetState(ScreenPublisher::State::kRunning);
 }
@@ -171,9 +171,9 @@ void MdnsResponderService::HandleMdnsEvents() {
     for (const auto& aaaa_event : mdns_responder_->TakeAaaaResponses()) {
       events_possible = HandleAaaaEvent(aaaa_event) || events_possible;
     }
-    if (events_possible) {
+    if (events_possible)
       mdns_responder_->RunTasks();
-    }
+
   } while (events_possible);
 }
 
@@ -305,9 +305,9 @@ void MdnsResponderService::MaybePushScreenInfo(
     return;
   }
   auto entry = hostname_watchers_.find(instance_info.domain_name);
-  if (entry == hostname_watchers_.end()) {
+  if (entry == hostname_watchers_.end())
     return;
-  }
+
   PushScreenInfo(service_instance, instance_info, entry->second.address);
 }
 
@@ -315,9 +315,8 @@ void MdnsResponderService::MaybePushScreenInfo(
     const mdns::DomainName& domain_name,
     const IPAddress& address) {
   for (auto& entry : services_) {
-    if (entry.second->domain_name == domain_name) {
+    if (entry.second->domain_name == domain_name)
       PushScreenInfo(entry.first, *entry.second, address);
-    }
   }
 }
 
@@ -334,18 +333,16 @@ void MdnsResponderService::RemoveScreenInfo(
 void MdnsResponderService::RemoveScreenInfoByDomain(
     const mdns::DomainName& domain_name) {
   for (const auto& entry : services_) {
-    if (entry.second->domain_name == domain_name) {
+    if (entry.second->domain_name == domain_name)
       RemoveScreenInfo(entry.first);
-    }
   }
 }
 
 void MdnsResponderService::RemoveAllScreens() {
   bool had_screens = !screen_info_.empty();
   screen_info_.clear();
-  if (had_screens) {
+  if (had_screens)
     listener_->OnAllScreensRemoved();
-  }
 }
 
 bool MdnsResponderService::HandlePtrEvent(const mdns::PtrEvent& ptr_event) {

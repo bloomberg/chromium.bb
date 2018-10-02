@@ -25,14 +25,14 @@ struct DomainName {
   static bool FromLabels(It first, It last, DomainName* result) {
     size_t total_length = 1;
     for (auto label = first; label != last; ++label) {
-      if (label->size() > kDomainNameMaxLabelLength) {
+      if (label->size() > kDomainNameMaxLabelLength)
         return false;
-      }
+
       total_length += label->size() + 1;
     }
-    if (total_length > kDomainNameMaxLength) {
+    if (total_length > kDomainNameMaxLength)
       return false;
-    }
+
     result->domain_name_.resize(total_length);
     auto result_it = result->domain_name_.begin();
     for (auto label = first; label != last; ++label) {

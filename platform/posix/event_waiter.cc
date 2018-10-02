@@ -19,9 +19,8 @@ namespace {
 template <typename T>
 bool WatchUdpSocket(std::vector<T>* watched_sockets, T socket) {
   for (const auto* s : *watched_sockets) {
-    if (s->fd == socket->fd) {
+    if (s->fd == socket->fd)
       return false;
-    }
   }
   watched_sockets->push_back(socket);
   return true;
@@ -31,9 +30,9 @@ template <typename T>
 bool StopWatchingUdpSocket(std::vector<T>* watched_sockets, T socket) {
   const auto it = std::find_if(watched_sockets->begin(), watched_sockets->end(),
                                [socket](T s) { return s->fd == socket->fd; });
-  if (it == watched_sockets->end()) {
+  if (it == watched_sockets->end())
     return false;
-  }
+
   watched_sockets->erase(it);
   return true;
 }
@@ -95,24 +94,21 @@ int WaitForEvents(EventWaiterPtr waiter, Events* events) {
     FD_SET(write_socket->fd, &writefds);
     nfds = std::max(nfds, write_socket->fd);
   }
-  if (nfds == -1) {
+  if (nfds == -1)
     return 0;
-  }
 
   struct timeval tv = {};
   const int rv = select(nfds, &readfds, &writefds, nullptr, &tv);
-  if (rv == -1 || rv == 0) {
+  if (rv == -1 || rv == 0)
     return rv;
-  }
+
   for (auto* read_socket : waiter->read_sockets) {
-    if (FD_ISSET(read_socket->fd, &readfds)) {
+    if (FD_ISSET(read_socket->fd, &readfds))
       events->udp_readable_events.push_back({read_socket});
-    }
   }
   for (auto* write_socket : waiter->write_sockets) {
-    if (FD_ISSET(write_socket->fd, &writefds)) {
+    if (FD_ISSET(write_socket->fd, &writefds))
       events->udp_writable_events.push_back({write_socket});
-    }
   }
   return rv;
 }

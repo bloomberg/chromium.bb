@@ -19,9 +19,9 @@ bool ScreenList::OnScreenChanged(const ScreenInfo& info) {
   auto existing_info = std::find_if(
       screens_.begin(), screens_.end(),
       [&info](const ScreenInfo& x) { return x.screen_id == info.screen_id; });
-  if (existing_info == screens_.end()) {
+  if (existing_info == screens_.end())
     return false;
-  }
+
   *existing_info = info;
   return true;
 }
@@ -30,6 +30,7 @@ bool ScreenList::OnScreenRemoved(const ScreenInfo& info) {
   const auto it = std::remove(screens_.begin(), screens_.end(), info);
   if (it == screens_.end())
     return false;
+
   screens_.erase(it, screens_.end());
   return true;
 }

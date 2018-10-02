@@ -67,9 +67,9 @@ std::vector<std::string> SplitByDot(const std::string& domain_part) {
       copy_it = it + 1;
     }
   }
-  if (copy_it != domain_part.end()) {
+  if (copy_it != domain_part.end())
     result.emplace_back(copy_it, domain_part.end());
-  }
+
   return result;
 }
 
@@ -122,9 +122,8 @@ std::vector<platform::UdpSocketPtr> RegisterInterfaces(
     mdns::MdnsResponderAdapter* mdns_adapter) {
   std::vector<int> index_list;
   for (const auto& interface : addrinfo) {
-    if (!interface.addresses.empty()) {
+    if (!interface.addresses.empty())
       index_list.push_back(interface.info.index);
-    }
   }
 
   auto sockets = SetupMulticastSockets(index_list);
@@ -176,17 +175,17 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         // and friends) so this simple logic is actually broken, but I don't
         // want to do a better design or pointer hell for just a demo.
         LOG_WARN << "ptr-remove: " << ptr_event.service_instance;
-        if (it != g_services.end()) {
+        if (it != g_services.end())
           g_services.erase(it);
-        }
+
         break;
     }
   }
   for (auto& srv_event : mdns_adapter->TakeSrvResponses()) {
     auto it = g_services.find(srv_event.service_instance);
-    if (it == g_services.end()) {
+    if (it == g_services.end())
       continue;
-    }
+
     switch (srv_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
@@ -203,9 +202,9 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
   }
   for (auto& txt_event : mdns_adapter->TakeTxtResponses()) {
     auto it = g_services.find(txt_event.service_instance);
-    if (it == g_services.end()) {
+    if (it == g_services.end())
       continue;
-    }
+
     switch (txt_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
@@ -226,9 +225,9 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
                      [&a_event](const std::pair<mdns::DomainName, Service>& s) {
                        return s.second.domain_name == a_event.domain_name;
                      });
-    if (it == g_services.end()) {
+    if (it == g_services.end())
       continue;
-    }
+
     switch (a_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
@@ -311,21 +310,19 @@ int main(int argc, char** argv) {
                                     0);
   std::string service_instance;
   std::string service_type("_openscreen._udp");
-  if (argc >= 2) {
+  if (argc >= 2)
     service_type = argv[1];
-  }
-  if (argc >= 3) {
+
+  if (argc >= 3)
     service_instance = argv[2];
-  }
 
-  if (service_type.size() && service_type[0] == '.') {
+  if (service_type.size() && service_type[0] == '.')
     return 1;
-  }
+
   auto labels = openscreen::SplitByDot(service_type);
-  if (labels.size() != 2) {
+  if (labels.size() != 2)
     return 1;
-  }
-  openscreen::BrowseDemo(labels[0], labels[1], service_instance);
 
+  openscreen::BrowseDemo(labels[0], labels[1], service_instance);
   return 0;
 }

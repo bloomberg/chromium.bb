@@ -40,9 +40,8 @@ mStatus mDNSPlatformSendUDP(const mDNS* m,
       reinterpret_cast<openscreen::platform::UdpSocketPtr>(InterfaceID);
   const auto socket_it =
       std::find(m->p->sockets.begin(), m->p->sockets.end(), socket);
-  if (socket_it == m->p->sockets.end()) {
+  if (socket_it == m->p->sockets.end())
     return mStatus_BadInterfaceErr;
-  }
 
   openscreen::IPEndpoint dest{
       openscreen::IPAddress{dst->type == mDNSAddrType_IPv4

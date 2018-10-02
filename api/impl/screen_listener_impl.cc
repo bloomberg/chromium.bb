@@ -107,9 +107,9 @@ bool ScreenListenerImpl::StartAndSuspend() {
 }
 
 bool ScreenListenerImpl::Stop() {
-  if (state_ == State::kStopped || state_ == State::kStopping) {
+  if (state_ == State::kStopped || state_ == State::kStopping)
     return false;
-  }
+
   state_ = State::kStopping;
   delegate_->StopListener();
   return true;
@@ -125,17 +125,17 @@ bool ScreenListenerImpl::Suspend() {
 }
 
 bool ScreenListenerImpl::Resume() {
-  if (state_ != State::kSuspended && state_ != State::kSearching) {
+  if (state_ != State::kSuspended && state_ != State::kSearching)
     return false;
-  }
+
   delegate_->ResumeListener();
   return true;
 }
 
 bool ScreenListenerImpl::SearchNow() {
-  if (state_ != State::kRunning && state_ != State::kSuspended) {
+  if (state_ != State::kRunning && state_ != State::kSuspended)
     return false;
-  }
+
   delegate_->SearchNow(state_);
   return true;
 }

@@ -112,33 +112,28 @@ void AddEventsForNewService(FakeMdnsResponderAdapter* mdns_responder,
 FakeMdnsResponderAdapter::~FakeMdnsResponderAdapter() = default;
 
 void FakeMdnsResponderAdapter::AddPtrEvent(mdns::PtrEvent&& ptr_event) {
-  if (running_) {
+  if (running_)
     ptr_events_.push_back(std::move(ptr_event));
-  }
 }
 
 void FakeMdnsResponderAdapter::AddSrvEvent(mdns::SrvEvent&& srv_event) {
-  if (running_) {
+  if (running_)
     srv_events_.push_back(std::move(srv_event));
-  }
 }
 
 void FakeMdnsResponderAdapter::AddTxtEvent(mdns::TxtEvent&& txt_event) {
-  if (running_) {
+  if (running_)
     txt_events_.push_back(std::move(txt_event));
-  }
 }
 
 void FakeMdnsResponderAdapter::AddAEvent(mdns::AEvent&& a_event) {
-  if (running_) {
+  if (running_)
     a_events_.push_back(std::move(a_event));
-  }
 }
 
 void FakeMdnsResponderAdapter::AddAaaaEvent(mdns::AaaaEvent&& aaaa_event) {
-  if (running_) {
+  if (running_)
     aaaa_events_.push_back(std::move(aaaa_event));
-  }
 }
 
 bool FakeMdnsResponderAdapter::Init() {
@@ -169,9 +164,9 @@ bool FakeMdnsResponderAdapter::RegisterInterface(
     const platform::InterfaceInfo& interface_info,
     const platform::IPSubnet& interface_address,
     platform::UdpSocketPtr socket) {
-  if (!running_) {
+  if (!running_)
     return false;
-  }
+
   if (std::find_if(registered_interfaces_.begin(), registered_interfaces_.end(),
                    [&socket](const RegisteredInterface& interface) {
                      return interface.socket == socket;
@@ -189,9 +184,9 @@ bool FakeMdnsResponderAdapter::DeregisterInterface(
                    [&socket](const RegisteredInterface& interface) {
                      return interface.socket == socket;
                    });
-  if (it == registered_interfaces_.end()) {
+  if (it == registered_interfaces_.end())
     return false;
-  }
+
   registered_interfaces_.erase(it);
   return true;
 }
@@ -213,9 +208,8 @@ std::vector<mdns::AEvent> FakeMdnsResponderAdapter::TakeAResponses() {
   const auto query_it = std::stable_partition(
       a_events_.begin(), a_events_.end(), [this](const mdns::AEvent& a_event) {
         for (const auto& query : a_queries_) {
-          if (a_event.domain_name == query) {
+          if (a_event.domain_name == query)
             return false;
-          }
         }
         return true;
       });
@@ -233,9 +227,8 @@ std::vector<mdns::AaaaEvent> FakeMdnsResponderAdapter::TakeAaaaResponses() {
       std::stable_partition(aaaa_events_.begin(), aaaa_events_.end(),
                             [this](const mdns::AaaaEvent& aaaa_event) {
                               for (const auto& query : aaaa_queries_) {
-                                if (aaaa_event.domain_name == query) {
+                                if (aaaa_event.domain_name == query)
                                   return false;
-                                }
                               }
                               return true;
                             });
@@ -277,9 +270,8 @@ std::vector<mdns::SrvEvent> FakeMdnsResponderAdapter::TakeSrvResponses() {
       std::stable_partition(srv_events_.begin(), srv_events_.end(),
                             [this](const mdns::SrvEvent& srv_event) {
                               for (const auto& query : srv_queries_) {
-                                if (srv_event.service_instance == query) {
+                                if (srv_event.service_instance == query)
                                   return false;
-                                }
                               }
                               return true;
                             });
@@ -297,9 +289,8 @@ std::vector<mdns::TxtEvent> FakeMdnsResponderAdapter::TakeTxtResponses() {
       std::stable_partition(txt_events_.begin(), txt_events_.end(),
                             [this](const mdns::TxtEvent& txt_event) {
                               for (const auto& query : txt_queries_) {
-                                if (txt_event.service_instance == query) {
+                                if (txt_event.service_instance == query)
                                   return false;
-                                }
                               }
                               return true;
                             });
@@ -314,9 +305,9 @@ std::vector<mdns::TxtEvent> FakeMdnsResponderAdapter::TakeTxtResponses() {
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
     const mdns::DomainName& domain_name) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto maybe_inserted = a_queries_.insert(domain_name);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
@@ -327,9 +318,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
     const mdns::DomainName& domain_name) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto maybe_inserted = aaaa_queries_.insert(domain_name);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
@@ -340,13 +331,13 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
     const mdns::DomainName& service_type) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto canonical_service_type = service_type;
-  if (!canonical_service_type.EndsWithLocalDomain()) {
+  if (!canonical_service_type.EndsWithLocalDomain())
     CHECK(canonical_service_type.Append(mdns::DomainName::kLocalDomain));
-  }
+
   auto maybe_inserted = ptr_queries_.insert(canonical_service_type);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
@@ -357,9 +348,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
     const mdns::DomainName& service_instance) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto maybe_inserted = srv_queries_.insert(service_instance);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
@@ -370,9 +361,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
     const mdns::DomainName& service_instance) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto maybe_inserted = txt_queries_.insert(service_instance);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
@@ -384,9 +375,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
     const mdns::DomainName& domain_name) {
   auto it = a_queries_.find(domain_name);
-  if (it == a_queries_.end()) {
+  if (it == a_queries_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   a_queries_.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
@@ -394,9 +385,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAaaaQuery(
     const mdns::DomainName& domain_name) {
   auto it = aaaa_queries_.find(domain_name);
-  if (it == aaaa_queries_.end()) {
+  if (it == aaaa_queries_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   aaaa_queries_.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
@@ -404,13 +395,13 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAaaaQuery(
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
     const mdns::DomainName& service_type) {
   auto canonical_service_type = service_type;
-  if (!canonical_service_type.EndsWithLocalDomain()) {
+  if (!canonical_service_type.EndsWithLocalDomain())
     CHECK(canonical_service_type.Append(mdns::DomainName::kLocalDomain));
-  }
+
   auto it = ptr_queries_.find(canonical_service_type);
-  if (it == ptr_queries_.end()) {
+  if (it == ptr_queries_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   ptr_queries_.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
@@ -418,9 +409,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopSrvQuery(
     const mdns::DomainName& service_instance) {
   auto it = srv_queries_.find(service_instance);
-  if (it == srv_queries_.end()) {
+  if (it == srv_queries_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   srv_queries_.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
@@ -428,9 +419,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopSrvQuery(
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopTxtQuery(
     const mdns::DomainName& service_instance) {
   auto it = txt_queries_.find(service_instance);
-  if (it == txt_queries_.end()) {
+  if (it == txt_queries_.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   txt_queries_.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
@@ -442,9 +433,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::RegisterService(
     const mdns::DomainName& target_host,
     uint16_t target_port,
     const std::vector<std::string>& lines) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   if (std::find_if(registered_services_.begin(), registered_services_.end(),
                    [&service_instance, &service_name,
                     &service_protocol](const RegisteredService& service) {
@@ -464,9 +455,9 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::DeregisterService(
     const std::string& service_instance,
     const std::string& service_name,
     const std::string& service_protocol) {
-  if (!running_) {
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
-  }
+
   auto it =
       std::find_if(registered_services_.begin(), registered_services_.end(),
                    [&service_instance, &service_name,

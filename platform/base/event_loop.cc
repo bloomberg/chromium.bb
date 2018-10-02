@@ -37,18 +37,17 @@ std::vector<ReceivedData> HandleUdpSocketReadEvents(const Events& events) {
   std::vector<ReceivedData> data;
   for (const auto& read_event : events.udp_readable_events) {
     ReceivedData next_data;
-    if (ReceiveDataFromEvent(read_event, &next_data)) {
+    if (ReceiveDataFromEvent(read_event, &next_data))
       data.emplace_back(std::move(next_data));
-    }
   }
   return data;
 }
 
 std::vector<ReceivedData> OnePlatformLoopIteration(EventWaiterPtr waiter) {
   Events events;
-  if (!WaitForEvents(waiter, &events)) {
+  if (!WaitForEvents(waiter, &events))
     return {};
-  }
+
   return HandleUdpSocketReadEvents(events);
 }
 

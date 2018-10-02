@@ -105,9 +105,9 @@ InterfaceAddresses* GetAddressesForIndex(
   const auto info_it = std::find_if(
       info_list.begin(), info_list.end(),
       [index](const InterfaceInfo& info) { return info.index == index; });
-  if (info_it == info_list.end()) {
+  if (info_it == info_list.end())
     return nullptr;
-  }
+
   auto addr_it = std::find_if(address_list->begin(), address_list->end(),
                               [index](const InterfaceAddresses& addresses) {
                                 return addresses.info.index == index;
