@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/font_face_set_worker.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
@@ -58,6 +59,7 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -491,6 +493,12 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
                           TaskType::kNetworking),
                       FROM_HERE,
                       CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+}
+
+void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
+  Microtask::EnqueueMicrotask(WTF::Bind(
+      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
+      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
 }
 
 int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,

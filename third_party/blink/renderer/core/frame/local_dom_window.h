@@ -73,6 +73,7 @@ class TrustedTypePolicyFactory;
 class USVStringOrTrustedURL;
 class V8FrameRequestCallback;
 class V8IdleRequestCallback;
+class V8VoidFunction;
 
 enum PageshowEventPersistence {
   kPageshowEventNotPersisted = 0,
@@ -223,6 +224,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   int requestAnimationFrame(V8FrameRequestCallback*);
   int webkitRequestAnimationFrame(V8FrameRequestCallback*);
   void cancelAnimationFrame(int id);
+
+  // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+  void queueMicrotask(V8VoidFunction*);
 
   // Idle callback extensions
   int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions&);
