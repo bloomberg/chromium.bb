@@ -15,6 +15,10 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator_config.h"
+#endif
+
 namespace device {
 class FidoAuthenticator;
 }
@@ -80,18 +84,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual bool IsFocused();
 
 #if defined(OS_MACOSX)
-  struct TouchIdAuthenticatorConfig {
-    // The keychain-access-group value used for WebAuthn credentials
-    // stored in the macOS keychain by the built-in Touch ID
-    // authenticator. For more information on this, refer to
-    // |device::fido::TouchIdAuthenticator|.
-    std::string keychain_access_group;
-    // The secret used to derive key material when encrypting WebAuthn
-    // credential metadata for storage in the macOS keychain. Chrome returns
-    // different secrets for each user profile in order to logically separate
-    // credentials per profile.
-    std::string metadata_secret;
-  };
+  using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
   // Returns configuration data for the built-in Touch ID platform
   // authenticator. May return nullopt if the authenticator is not used or not
