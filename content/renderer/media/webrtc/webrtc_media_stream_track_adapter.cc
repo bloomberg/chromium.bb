@@ -72,6 +72,21 @@ WebRtcMediaStreamTrackAdapter::WebRtcMediaStreamTrackAdapter(
 WebRtcMediaStreamTrackAdapter::~WebRtcMediaStreamTrackAdapter() {
   DCHECK(!remote_track_can_complete_initialization_.IsSignaled());
   DCHECK(is_disposed_);
+  // Ensured by destructor traits.
+  DCHECK(main_thread_->BelongsToCurrentThread());
+}
+
+// static
+void WebRtcMediaStreamTrackAdapterTraits::Destruct(
+    const WebRtcMediaStreamTrackAdapter* adapter) {
+  if (!adapter->main_thread_->BelongsToCurrentThread()) {
+    adapter->main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WebRtcMediaStreamTrackAdapterTraits::Destruct,
+                       base::Unretained(adapter)));
+    return;
+  }
+  delete adapter;
 }
 
 void WebRtcMediaStreamTrackAdapter::Dispose() {
