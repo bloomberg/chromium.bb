@@ -38,8 +38,8 @@
 
 namespace {
 
-// The rate in milliseconds at which we will poll CUPS for print job updates.
-const int kPollRate = 1000;
+// The rate at which we will poll CUPS for print job updates.
+constexpr base::TimeDelta kPollRate = base::TimeDelta::FromMilliseconds(1000);
 
 // Threshold for giving up on communicating with CUPS.
 const int kRetryMax = 6;
@@ -374,8 +374,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
   // Schedule a query of CUPS for print job status with a delay of |delay|.
   void ScheduleQuery(int attempt_count = 1) {
-    const int delay_ms = kPollRate * attempt_count;
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+    timer_.Start(FROM_HERE, kPollRate * attempt_count,
                  base::Bind(&CupsPrintJobManagerImpl::PostQuery,
                             weak_ptr_factory_.GetWeakPtr()));
   }
