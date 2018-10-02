@@ -53,7 +53,7 @@ base::FilePath GetTestDataPath() {
 
 std::string GetURLQueryString(const base::StringPairs& query_params) {
   std::string query = "";
-  base::StringPairs::const_iterator itr = query_params.begin();
+  auto itr = query_params.begin();
   for (; itr != query_params.end(); ++itr) {
     if (itr != query_params.begin())
       query.append("&");

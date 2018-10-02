@@ -922,7 +922,7 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
   // in DPB afterwards would at least be equal to max_num_reorder_frames.
   // If the outputted picture is not a reference picture, it doesn't have
   // to remain in the DPB and can be removed.
-  H264Picture::Vector::iterator output_candidate = not_outputted.begin();
+  auto output_candidate = not_outputted.begin();
   size_t num_remaining = not_outputted.size();
   while (num_remaining > max_num_reorder_frames_ ||
          // If the condition below is used, this is an invalid stream. We should

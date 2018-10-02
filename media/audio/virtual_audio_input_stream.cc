@@ -41,8 +41,7 @@ VirtualAudioInputStream::~VirtualAudioInputStream() {
   // output streams be removed before VirtualAudioInputStream is destroyed.
   DCHECK_EQ(0, num_attached_output_streams_);
 
-  for (AudioConvertersMap::iterator it = converters_.begin();
-       it != converters_.end(); ++it) {
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     delete it->second;
   }
 }
@@ -72,7 +71,7 @@ void VirtualAudioInputStream::AddInputProvider(
 
   base::AutoLock scoped_lock(converter_network_lock_);
 
-  AudioConvertersMap::iterator converter = converters_.find(params);
+  auto converter = converters_.find(params);
   if (converter == converters_.end()) {
     std::pair<AudioConvertersMap::iterator, bool> result =
         converters_.insert(std::make_pair(

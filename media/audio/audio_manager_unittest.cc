@@ -294,7 +294,7 @@ class AudioManagerTest : public ::testing::Test {
       const AudioDeviceDescriptions& device_descriptions) {
     DVLOG(2) << "Got " << device_descriptions.size() << " audio devices.";
     if (!device_descriptions.empty()) {
-      AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
+      auto it = device_descriptions.begin();
 
       // The first device in the list should always be the default device.
       EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),

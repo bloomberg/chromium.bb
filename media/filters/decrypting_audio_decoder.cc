@@ -348,8 +348,7 @@ void DecryptingAudioDecoder::DoReset() {
 
 void DecryptingAudioDecoder::ProcessDecodedFrames(
     const Decryptor::AudioFrames& frames) {
-  for (Decryptor::AudioFrames::const_iterator iter = frames.begin();
-       iter != frames.end(); ++iter) {
+  for (auto iter = frames.begin(); iter != frames.end(); ++iter) {
     scoped_refptr<AudioBuffer> frame = *iter;
 
     DCHECK(!frame->end_of_stream()) << "EOS frame returned.";

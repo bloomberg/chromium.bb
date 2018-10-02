@@ -582,7 +582,7 @@ void GpuVideoDecoder::DismissPictureBuffer(int32_t id) {
   DVLOG(3) << "DismissPictureBuffer(" << id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  PictureBufferMap::iterator it = assigned_picture_buffers_.find(id);
+  auto it = assigned_picture_buffers_.find(id);
   if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << id;
     return;
@@ -607,8 +607,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DVLOG(3) << "PictureReady()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  PictureBufferMap::iterator it =
-      assigned_picture_buffers_.find(picture.picture_buffer_id());
+  auto it = assigned_picture_buffers_.find(picture.picture_buffer_id());
   if (it == assigned_picture_buffers_.end()) {
     DLOG(ERROR) << "Missing picture buffer: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
@@ -799,8 +798,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   DVLOG(3) << "NotifyEndOfBitstreamBuffer(" << id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32_t, PendingDecoderBuffer>::iterator it =
-      bitstream_buffers_in_decoder_.find(id);
+  auto it = bitstream_buffers_in_decoder_.find(id);
   if (it == bitstream_buffers_in_decoder_.end()) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     NOTREACHED() << "Missing bitstream buffer: " << id;
@@ -827,8 +825,7 @@ GpuVideoDecoder::~GpuVideoDecoder() {
     std::move(request_overlay_info_cb_).Run(false, ProvideOverlayInfoCB());
   }
 
-  for (std::map<int32_t, PendingDecoderBuffer>::iterator it =
-           bitstream_buffers_in_decoder_.begin();
+  for (auto it = bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
     it->second.done_cb.Run(DecodeStatus::ABORTED);
   }

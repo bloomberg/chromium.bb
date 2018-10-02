@@ -409,8 +409,7 @@ void MimeUtil::SplitCodecsToVector(const std::string& codecs,
     return;
 
   // Strip everything past the first '.'
-  for (std::vector<std::string>::iterator it = codecs_out->begin();
-       it != codecs_out->end(); ++it) {
+  for (auto it = codecs_out->begin(); it != codecs_out->end(); ++it) {
     size_t found = it->find_first_of('.');
     if (found != std::string::npos)
       it->resize(found);
@@ -685,8 +684,7 @@ bool MimeUtil::ParseCodecStrings(
   DCHECK(out_results);
 
   // Reject unrecognized mime types.
-  MediaFormatMappings::const_iterator it_media_format_map =
-      media_format_map_.find(mime_type_lower_case);
+  auto it_media_format_map = media_format_map_.find(mime_type_lower_case);
   if (it_media_format_map == media_format_map_.end()) {
     DVLOG(3) << __func__ << " Unrecognized mime type: " << mime_type_lower_case;
     return false;
@@ -764,8 +762,7 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
   *out_result = MakeDefaultParsedCodecResult();
 
   // Simple codecs can be found in the codec map.
-  base::flat_map<std::string, Codec>::const_iterator itr =
-      GetStringToCodecMap().find(codec_id);
+  auto itr = GetStringToCodecMap().find(codec_id);
   if (itr != GetStringToCodecMap().end()) {
     out_result->codec = itr->second;
 
