@@ -479,12 +479,9 @@ void LayerTreeView::CompositeAndReadbackAsync(
   }
 }
 
-void LayerTreeView::SynchronouslyCompositeNoRasterForTesting() {
-  SynchronouslyComposite(false /* raster */, nullptr /* swap_promise */);
-}
-
-void LayerTreeView::CompositeWithRasterForTesting() {
-  SynchronouslyComposite(true /* raster */, nullptr /* swap_promise */);
+void LayerTreeView::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  SynchronouslyComposite(do_raster, nullptr /* swap_promise */);
 }
 
 void LayerTreeView::SynchronouslyComposite(

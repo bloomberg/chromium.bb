@@ -103,12 +103,10 @@ class WebWidget {
   virtual void UpdateLifecycle(
       LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
 
-  // Performs the complete set of document lifecycle phases, including updates
-  // to the compositor state except rasterization.
-  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() {}
-
-  // Synchronously rasterizes and composites a frame.
-  virtual void CompositeWithRasterForTesting() {}
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state, optionally including
+  // rasterization.
+  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
 
   // Called to paint the rectangular region within the WebWidget
   // onto the specified canvas at (viewPort.x,viewPort.y).

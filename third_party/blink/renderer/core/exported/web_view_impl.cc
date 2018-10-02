@@ -1623,14 +1623,11 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   }
 }
 
-void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (layer_tree_view_)
-    layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
-}
-
-void WebViewImpl::CompositeWithRasterForTesting() {
-  // This should not be called directly on WebViewImpl.
-  NOTREACHED();
+void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  if (layer_tree_view_) {
+    layer_tree_view_->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
+  }
 }
 
 void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {

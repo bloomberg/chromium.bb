@@ -193,6 +193,23 @@ base::OnceClosure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
                          blink::MainThreadIsolate(), callback)));
 }
 
+void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite() {
+  // Note, this is executed synchronously. Wrap in setTimeout() to run
+  // asynchronously.
+  blink::WebWidget* widget =
+      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
+  widget->UpdateAllLifecyclePhasesAndCompositeForTesting(/* raster = */ true);
+}
+
+void TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndCompositeThen(
+    v8::Local<v8::Function> callback) {
+  // Note, this is executed synchronously. Wrap in setTimeout() to run
+  // asynchronously.
+  TestRunnerForSpecificView::UpdateAllLifecyclePhasesAndComposite();
+  InvokeV8Callback(
+      v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(), callback));
+}
+
 void TestRunnerForSpecificView::LayoutAndPaintAsync() {
   // TODO(lfg, lukasza): TestRunnerForSpecificView assumes that there's a single
   // WebWidget for the entire view, but with out-of-process iframes there may be

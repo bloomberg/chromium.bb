@@ -137,8 +137,10 @@ class CONTENT_EXPORT LayerTreeView
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void SynchronouslyCompositeNoRasterForTesting() override;
-  void CompositeWithRasterForTesting() override;
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state, optionally including
+  // rasterization.
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
