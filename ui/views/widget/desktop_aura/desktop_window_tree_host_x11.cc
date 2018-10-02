@@ -1004,7 +1004,6 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;
   is_fullscreen_ = fullscreen;
-  OnFullscreenStateChanged();
   if (is_fullscreen_)
     delayed_resize_task_.Cancel();
 
@@ -1370,10 +1369,6 @@ void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
   }
 }
 
-void DesktopWindowTreeHostX11::OnMaximizedStateChanged() {}
-
-void DesktopWindowTreeHostX11::OnFullscreenStateChanged() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
@@ -1675,12 +1670,10 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
 void DesktopWindowTreeHostX11::UpdateWindowProperties(
     const base::flat_set<XAtom>& new_window_properties) {
   bool was_minimized = IsMinimized();
-  bool was_maximized = IsMaximized();
 
   window_properties_ = new_window_properties;
 
   bool is_minimized = IsMinimized();
-  bool is_maximized = IsMaximized();
 
   // Propagate the window minimization information to the content window, so
   // the render side can update its visibility properly. OnWMStateUpdated() is
@@ -1726,9 +1719,6 @@ void DesktopWindowTreeHostX11::UpdateWindowProperties(
 
   is_always_on_top_ = ui::HasWMSpecProperty(
       window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
-
-  if (was_maximized != is_maximized)
-    OnMaximizedStateChanged();
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is

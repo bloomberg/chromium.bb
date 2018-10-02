@@ -89,8 +89,6 @@ BrowserActionsContainer::BrowserActionsContainer(
 
     if (GetSeparatorAreaWidth() > 0) {
       separator_ = new views::Separator();
-      separator_->SetSize(gfx::Size(views::Separator::kThickness,
-                                    GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
       AddChildView(separator_);
     }
   }
@@ -450,6 +448,8 @@ void BrowserActionsContainer::Layout() {
     }
   }
   if (separator_) {
+    separator_->SetSize(gfx::Size(views::Separator::kThickness,
+                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
     if (width() < GetResizeAreaWidth() + GetSeparatorAreaWidth()) {
       separator_->SetVisible(false);
     } else {

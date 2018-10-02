@@ -71,8 +71,6 @@ void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   UpdateMinimumSize();
 }
 
-void BrowserNonClientFrameView::OnMaximizedStateChanged() {}
-
 void BrowserNonClientFrameView::OnFullscreenStateChanged() {}
 
 bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {

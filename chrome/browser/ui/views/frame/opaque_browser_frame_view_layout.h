@@ -147,6 +147,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
+  // views::LayoutManager:
+  void Layout(views::View* host) override;
+
   bool has_trailing_buttons() const { return has_trailing_buttons_; }
 
   virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
@@ -189,7 +192,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void SetView(int id, views::View* view);
 
   // views::LayoutManager:
-  void Layout(views::View* host) override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
   void ViewAdded(views::View* host, views::View* view) override;
   void ViewRemoved(views::View* host, views::View* view) override;

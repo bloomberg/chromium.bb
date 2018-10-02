@@ -49,9 +49,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   ~OpaqueBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
-  void OnBrowserViewInitViewsComplete() override;
-  void OnMaximizedStateChanged() override;
-  void OnFullscreenStateChanged() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
@@ -76,7 +73,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -126,10 +122,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool ShouldPaintAsThemed() const override;
 
   OpaqueBrowserFrameViewLayout* layout() { return layout_; }
-
-  // If native window frame buttons are enabled, redraws the image resources
-  // associated with |{minimize,maximize,restore,close}_button_|.
-  virtual void MaybeRedrawFrameButtons();
 
  private:
   friend class HostedAppOpaqueBrowserFrameViewTest;

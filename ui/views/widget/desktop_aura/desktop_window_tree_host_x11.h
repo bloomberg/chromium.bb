@@ -184,12 +184,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // Called after the window is maximized or restored.
-  virtual void OnMaximizedStateChanged();
-
-  // Called after the window is fullscreened or unfullscreened.
-  virtual void OnFullscreenStateChanged();
-
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
