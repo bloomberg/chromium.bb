@@ -160,6 +160,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_create_script_callback.h",
   "$bindings_core_v8_output_dir/v8_create_url_callback.cc",
   "$bindings_core_v8_output_dir/v8_create_url_callback.h",
+  "$bindings_core_v8_output_dir/v8_task_queue_post_callback.cc",
+  "$bindings_core_v8_output_dir/v8_task_queue_post_callback.h",
   "$bindings_core_v8_output_dir/v8_void_function.cc",
   "$bindings_core_v8_output_dir/v8_void_function.h",
 ]

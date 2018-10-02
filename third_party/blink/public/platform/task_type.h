@@ -127,6 +127,10 @@ enum class TaskType : unsigned {
   // Tasks used for DedicatedWorker's requestAnimationFrame.
   kWorkerAnimation = 51,
 
+  // For tasks started with the experimental Scheduling API
+  kExperimentalWebSchedulingUserInteraction = 53,
+  kExperimentalWebSchedulingBestEffort = 54,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -198,7 +202,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 53,
+  kCount = 55,
 };
 
 }  // namespace blink

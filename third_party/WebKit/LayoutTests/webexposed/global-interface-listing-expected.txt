@@ -6907,6 +6907,14 @@ interface ScriptProcessorNode : AudioNode
     getter onaudioprocess
     method constructor
     setter onaudioprocess
+interface ScriptedTaskQueue
+    attribute @@toStringTag
+    method constructor
+    method postTask
+interface ScriptedTaskQueueController
+    attribute @@toStringTag
+    method constructor
+    method default
 interface ScrollTimeline : AnimationTimeline
     attribute @@toStringTag
     getter endScrollOffset
@@ -10497,6 +10505,7 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
+    getter TaskQueue
     getter TrustedTypes
     getter applicationCache
     getter caches
@@ -10700,6 +10709,7 @@ interface webkitURL
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL
+    setter TaskQueue
     setter clientInformation
     setter cookieStore
     setter defaultStatus
