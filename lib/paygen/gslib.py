@@ -66,10 +66,6 @@ class CopyFail(GSLibError):
   """Raised if Copy fails in any way."""
 
 
-class CatFail(GSLibError):
-  """Raised if Cat fails in any way."""
-
-
 class URIError(GSLibError):
   """Raised when URI does not behave as expected."""
 
@@ -261,23 +257,6 @@ def Copy(src_path, dest_path, acl=None, **kwargs):
     args += ['-a', acl]
   args += [src_path, dest_path]
   RunGsutilCommand(args, failed_exception=CopyFail, **kwargs)
-
-
-@RetryGSLib
-def Cat(gs_uri, **kwargs):
-  """Return the contents of a file at the given GS URI
-
-  Args:
-    gs_uri: The URI of a file on Google Storage.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    CatFail: If the cat fails for any reason.
-  """
-  args = ['cat', gs_uri]
-  result = RunGsutilCommand(args, failed_exception=CatFail, **kwargs)
-  return result.output
 
 
 @RetryGSLib

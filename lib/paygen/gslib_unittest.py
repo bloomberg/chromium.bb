@@ -145,67 +145,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.CopyFail, gslib.Copy, src_path, dest_path)
     self.mox.VerifyAll()
 
-  def testCat(self):
-    path = 'gs://bucket/some/gs/path'
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'cat', path]
-    result = cros_test_lib.EasyAttr(error='', output='TheContent')
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(result)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    result = gslib.Cat(path)
-    self.assertEquals('TheContent', result)
-    self.mox.VerifyAll()
-
-  def testCatFail(self):
-    path = 'gs://bucket/some/gs/path'
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'cat', path]
-    for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
-      cros_build_lib.RunCommand(
-          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
-              self.cmd_error)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertRaises(gslib.CatFail, gslib.Cat, path)
-    self.mox.VerifyAll()
-
-  def _TestCatWithHeaders(self, gs_uri, cmd_output, cmd_error):
-    # Set up the test replay script.
-    # Run 1, versioning not enabled in bucket, one line of output.
-    cmd = ['gsutil', '-d', 'cat', gs_uri]
-    cmd_result = cros_test_lib.EasyAttr(output=cmd_output,
-                                        error=cmd_error,
-                                        cmdstr=' '.join(cmd))
-    cmd[0] = mox.IsA(str)
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(cmd_result)
-    self.mox.ReplayAll()
-
-  def testCatWithHeaders(self):
-    gs_uri = '%s/%s' % (self.bucket_uri, 'some/file/path')
-    generation = 123454321
-    metageneration = 2
-    error = '\n'.join([
-        'header: x-goog-generation: %d' % generation,
-        'header: x-goog-metageneration: %d' % metageneration,
-    ])
-    expected_output = 'foo'
-    self._TestCatWithHeaders(gs_uri, expected_output, error)
-
-    # Run the test verification.
-    headers = {}
-    result = gslib.Cat(gs_uri, headers=headers)
-    self.assertEqual(generation, int(headers['generation']))
-    self.assertEqual(metageneration, int(headers['metageneration']))
-    self.assertEqual(result, expected_output)
-    self.mox.VerifyAll()
-
   def testListFiles(self):
     files = [
         '%s/some/path' % self.bucket_uri,
