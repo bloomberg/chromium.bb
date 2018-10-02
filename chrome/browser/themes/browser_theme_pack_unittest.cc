@@ -376,25 +376,25 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 100%.
   const gfx::ImageSkiaRep& rep1 = image_skia->GetRepresentation(1.0f);
   ASSERT_FALSE(rep1.is_null());
-  EXPECT_EQ(80, rep1.sk_bitmap().width());
+  EXPECT_EQ(80, rep1.GetBitmap().width());
   // Bitmap height will be cropped at 60 - kTallestTabHeight + 19.
-  EXPECT_EQ(60, rep1.sk_bitmap().height());
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(4, 4));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(8, 8));
-  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(16, 16));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(24, 24));
-  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(32, 32));
+  EXPECT_EQ(60, rep1.GetBitmap().height());
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(4, 4));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(8, 8));
+  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.GetBitmap().getColor(16, 16));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(24, 24));
+  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.GetBitmap().getColor(32, 32));
   // Scale 200%.
   const gfx::ImageSkiaRep& rep2 = image_skia->GetRepresentation(2.0f);
   ASSERT_FALSE(rep2.is_null());
-  EXPECT_EQ(160, rep2.sk_bitmap().width());
+  EXPECT_EQ(160, rep2.GetBitmap().width());
   // Cropped height will be 2 * 60.
-  EXPECT_EQ(120, rep2.sk_bitmap().height());
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(4, 4));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(8, 8));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(16, 16));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(24, 24));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(32, 32));
+  EXPECT_EQ(120, rep2.GetBitmap().height());
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.GetBitmap().getColor(4, 4));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(8, 8));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(16, 16));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(24, 24));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.GetBitmap().getColor(32, 32));
 
   // TODO(sschmitz): I plan to remove the following (to the end of the fct)
   // Reason: this test may be brittle. It depends on details of how we scale
@@ -414,18 +414,18 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 100%.
   const gfx::ImageSkiaRep& rep3 = image_skia->GetRepresentation(1.0f);
   ASSERT_FALSE(rep3.is_null());
-  EXPECT_EQ(80, rep3.sk_bitmap().width());
+  EXPECT_EQ(80, rep3.GetBitmap().width());
   // Bitmap height will be cropped at 60 - kTallestTabHeight + 19.
-  EXPECT_EQ(60, rep3.sk_bitmap().height());
+  EXPECT_EQ(60, rep3.GetBitmap().height());
   // We take samples of colors and locations along the diagonal whenever
   // the color changes. Note these colors are slightly different from
   // the input PNG file due to input processing.
   std::vector<std::pair<int, SkColor>> normal;
   int xy = 0;
-  SkColor color = rep3.sk_bitmap().getColor(xy, xy);
+  SkColor color = rep3.GetBitmap().getColor(xy, xy);
   normal.push_back(std::make_pair(xy, color));
   for (int xy = 0; xy < 40; ++xy) {
-    SkColor next_color = rep3.sk_bitmap().getColor(xy, xy);
+    SkColor next_color = rep3.GetBitmap().getColor(xy, xy);
     if (next_color != color) {
       color = next_color;
       normal.push_back(std::make_pair(xy, color));
@@ -435,15 +435,15 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 200%.
   const gfx::ImageSkiaRep& rep4 = image_skia->GetRepresentation(2.0f);
   ASSERT_FALSE(rep4.is_null());
-  EXPECT_EQ(160, rep4.sk_bitmap().width());
+  EXPECT_EQ(160, rep4.GetBitmap().width());
   // Cropped height will be 2 * 60.
-  EXPECT_EQ(120, rep4.sk_bitmap().height());
+  EXPECT_EQ(120, rep4.GetBitmap().height());
   // We expect the same colors and at locations scaled by 2
   // since this bitmap was scaled by 2.
   for (size_t i = 0; i < normal.size(); ++i) {
     int xy = 2 * normal[i].first;
     SkColor color = normal[i].second;
-    EXPECT_EQ(color, rep4.sk_bitmap().getColor(xy, xy));
+    EXPECT_EQ(color, rep4.GetBitmap().getColor(xy, xy));
   }
 }
 

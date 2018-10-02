@@ -64,8 +64,8 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
   const gfx::ImageSkia& image = is_app ?
       extensions::util::GetDefaultAppIcon() :
       extensions::util::GetDefaultExtensionIcon();
-  return image.GetRepresentation(
-      gfx::ImageSkia::GetMaxSupportedScale()).sk_bitmap();
+  return image.GetRepresentation(gfx::ImageSkia::GetMaxSupportedScale())
+      .GetBitmap();
 }
 
 // If auto confirm is enabled then posts a task to proceed with or cancel the

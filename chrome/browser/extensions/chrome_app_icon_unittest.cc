@@ -162,8 +162,8 @@ bool AreAllImageRepresentationsDifferent(const gfx::ImageSkia& image1,
   for (size_t i = 0; i < image1_reps.size(); ++i) {
     const float scale = image1_reps[i].scale();
     const gfx::ImageSkiaRep& image_rep2 = image2.GetRepresentation(scale);
-    if (gfx::test::AreBitmapsClose(image1_reps[i].sk_bitmap(),
-                                   image_rep2.sk_bitmap(), 0)) {
+    if (gfx::test::AreBitmapsClose(image1_reps[i].GetBitmap(),
+                                   image_rep2.GetBitmap(), 0)) {
       return false;
     }
   }

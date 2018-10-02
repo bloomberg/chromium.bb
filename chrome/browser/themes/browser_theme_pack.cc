@@ -380,8 +380,7 @@ class ThemeImageSource: public gfx::ImageSkiaSource {
       return source_.GetRepresentation(scale);
     const gfx::ImageSkiaRep& rep_100p = source_.GetRepresentation(1.0f);
     SkBitmap scaled_bitmap = CreateLowQualityResizedBitmap(
-        rep_100p.sk_bitmap(),
-        ui::SCALE_FACTOR_100P,
+        rep_100p.GetBitmap(), ui::SCALE_FACTOR_100P,
         ui::GetSupportedScaleFactor(scale));
     return gfx::ImageSkiaRep(scaled_bitmap, scale);
   }
@@ -1604,7 +1603,7 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
     for (ImageSkiaReps::iterator rep_it = image_reps.begin();
          rep_it != image_reps.end(); ++rep_it) {
       std::vector<unsigned char> bitmap_data;
-      if (!gfx::PNGCodec::EncodeBGRASkBitmap(rep_it->sk_bitmap(), false,
+      if (!gfx::PNGCodec::EncodeBGRASkBitmap(rep_it->GetBitmap(), false,
                                              &bitmap_data)) {
         NOTREACHED() << "Image file for resource " << it->first
                      << " could not be encoded.";

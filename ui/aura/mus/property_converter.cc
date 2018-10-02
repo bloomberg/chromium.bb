@@ -180,7 +180,7 @@ bool PropertyConverter::ConvertPropertyForTransport(
     const gfx::ImageSkia* value = window->GetProperty(image_key);
     if (value) {
       // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
-      SkBitmap bitmap = value->GetRepresentation(1.f).sk_bitmap();
+      SkBitmap bitmap = value->GetRepresentation(1.f).GetBitmap();
       *transport_value = std::make_unique<std::vector<uint8_t>>(
           mojo::ConvertTo<std::vector<uint8_t>>(bitmap));
     } else {

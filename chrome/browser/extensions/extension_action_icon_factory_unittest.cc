@@ -42,7 +42,7 @@ namespace {
 bool ImageRepsAreEqual(const gfx::ImageSkiaRep& image_rep1,
                        const gfx::ImageSkiaRep& image_rep2) {
   return image_rep1.scale() == image_rep2.scale() &&
-         gfx::BitmapsAreEqual(image_rep1.sk_bitmap(), image_rep2.sk_bitmap());
+         gfx::BitmapsAreEqual(image_rep1.GetBitmap(), image_rep2.GetBitmap());
 }
 
 gfx::Image EnsureImageSize(const gfx::Image& original, int size) {

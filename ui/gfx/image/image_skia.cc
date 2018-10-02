@@ -63,11 +63,11 @@ ImageSkiaRep ScaleImageSkiaRep(const ImageSkiaRep& rep, float target_scale) {
 
   gfx::Size scaled_size =
       gfx::ScaleToCeiledSize(rep.pixel_size(), target_scale / rep.scale());
-  return ImageSkiaRep(skia::ImageOperations::Resize(
-      rep.sk_bitmap(),
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      scaled_size.width(),
-      scaled_size.height()), target_scale);
+  return ImageSkiaRep(
+      skia::ImageOperations::Resize(rep.GetBitmap(),
+                                    skia::ImageOperations::RESIZE_LANCZOS3,
+                                    scaled_size.width(), scaled_size.height()),
+      target_scale);
 }
 
 }  // namespace
@@ -499,7 +499,7 @@ void ImageSkia::RemoveUnsupportedRepresentationsForScale(float scale) {
 }
 
 void ImageSkia::Init(const ImageSkiaRep& image_rep) {
-  if (image_rep.sk_bitmap().drawsNothing()) {
+  if (image_rep.GetBitmap().drawsNothing()) {
     storage_ = NULL;
     return;
   }
@@ -512,7 +512,7 @@ const SkBitmap& ImageSkia::GetBitmap() const {
   if (isNull()) {
     // Callers expect a ImageSkiaRep even if it is |isNull()|.
     // TODO(pkotwicz): Fix this.
-    return NullImageRep().sk_bitmap();
+    return NullImageRep().GetBitmap();
   }
 
   // TODO(oshima): This made a few tests flaky on Windows.
@@ -523,8 +523,8 @@ const SkBitmap& ImageSkia::GetBitmap() const {
 
   ImageSkiaReps::iterator it = storage_->FindRepresentation(1.0f, true);
   if (it != storage_->image_reps().end())
-    return it->sk_bitmap();
-  return NullImageRep().sk_bitmap();
+    return it->GetBitmap();
+  return NullImageRep().GetBitmap();
 }
 
 bool ImageSkia::CanRead() const {

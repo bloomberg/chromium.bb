@@ -341,8 +341,10 @@ bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
 void DownloadFileIconExtractorImpl::OnIconLoadComplete(
     float scale, const IconURLCallback& callback, gfx::Image* icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback.Run(!icon ? std::string() : webui::GetBitmapDataUrl(
-      icon->ToImageSkia()->GetRepresentation(scale).sk_bitmap()));
+  callback.Run(
+      !icon ? std::string()
+            : webui::GetBitmapDataUrl(
+                  icon->ToImageSkia()->GetRepresentation(scale).GetBitmap()));
 }
 
 IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {

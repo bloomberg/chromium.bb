@@ -60,7 +60,7 @@ class GFX_EXPORT ImageSkiaRep {
   void SetScaled();
 
   // Returns backing bitmap.
-  const SkBitmap& sk_bitmap() const { return bitmap_; }
+  const SkBitmap& GetBitmap() const { return bitmap_; }
 
 #if !defined(OS_IOS)
   const cc::PaintImage& paint_image() const { return paint_image_; }

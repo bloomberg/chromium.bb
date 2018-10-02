@@ -33,7 +33,7 @@ gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
                                     float target_scale) {
   int width_px = target_width_dp * target_scale;
   return gfx::ImageSkiaRep(
-      skia::ImageOperations::Resize(rep.sk_bitmap(),
+      skia::ImageOperations::Resize(rep.GetBitmap(),
                                     skia::ImageOperations::RESIZE_BEST,
                                     width_px, width_px),
       target_scale);

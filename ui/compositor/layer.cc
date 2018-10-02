@@ -848,7 +848,7 @@ void Layer::UpdateNinePatchLayerImage(const gfx::ImageSkia& image) {
   // we don't need/want to, but we should address this in the future if it
   // becomes an issue.
   nine_patch_layer_->SetBitmap(
-      image.GetRepresentation(device_scale_factor_).sk_bitmap());
+      image.GetRepresentation(device_scale_factor_).GetBitmap());
 }
 
 void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {

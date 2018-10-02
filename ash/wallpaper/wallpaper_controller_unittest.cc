@@ -501,7 +501,7 @@ class WallpaperControllerTest : public AshTestBase {
   SkColor GetWallpaperColor() {
     const gfx::ImageSkiaRep& representation =
         controller_->GetWallpaper().GetRepresentation(1.0f);
-    return representation.sk_bitmap().getColor(0, 0);
+    return representation.GetBitmap().getColor(0, 0);
   }
 
   // Wrapper for private ShouldCalculateColors().
