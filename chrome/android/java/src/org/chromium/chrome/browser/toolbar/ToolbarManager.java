@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -147,9 +146,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
     private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
             new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
-
-    /** The amount of time to show the Duet help bubble for. */
-    private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 6000;
 
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
@@ -692,7 +688,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     new ToolbarButtonSlotData(createSearchAccelerator());
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
                     mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator),
-                    firstButtonSlot, secondButtonSlot);
+                    firstButtonSlot, secondButtonSlot, mActivity.getActivityTabProvider());
             if (mAppMenuButtonHelper != null) mAppMenuButtonHelper.setMenuShowsFromBottom(true);
         }
     }
@@ -923,9 +919,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                                 wrapBottomToolbarClickListenerForIPH(newTabClickHandler)),
                         tabModelSelector.getCurrentModel().isIncognito());
 
-                Tab currentTab = tabModelSelector.getCurrentTab();
-                maybeShowDuetHelpBubble(currentTab);
-
                 // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
                 ApiCompatibilityUtils.setAccessibilityTraversalBefore(
                         mLocationBar.getContainerView(), R.id.bottom_toolbar);
@@ -934,34 +927,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             onNativeLibraryReady();
             mInitializedWithNative = true;
         });
-    }
-
-    /**
-     * Maybe show the IPH bubble for Chrome Duet.
-     * @param tab The active tab.
-     */
-    private void maybeShowDuetHelpBubble(Tab tab) {
-        if (tab == null) return;
-        assert mToolbar != null;
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
-        if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) {
-            TextBubble bubble;
-            // If on the NTP, there is no toolbar. Place the bubble in the space where the toolbar
-            // would be.
-            if (NewTabPage.isNTPUrl(tab.getUrl())) {
-                bubble = new TextBubble(mToolbar.getContext(), mToolbar,
-                        R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, false,
-                        new Rect(0, 0, mToolbar.getWidth(), 0));
-            } else {
-                bubble = new TextBubble(mToolbar.getContext(), mToolbar,
-                        R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, true,
-                        new ViewRectProvider(mToolbar));
-            }
-            bubble.setAutoDismissTimeout(DUET_IPH_BUBBLE_SHOW_DURATION_MS);
-            bubble.addOnDismissListener(
-                    () -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE));
-            bubble.show();
-        }
     }
 
     /**

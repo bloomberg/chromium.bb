@@ -13,12 +13,16 @@ import android.view.ViewStub;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonData;
@@ -62,7 +66,8 @@ public class BottomToolbarCoordinator {
      * @param secondSlotData The data required to fill in the second bottom toolbar button slot.
      */
     public BottomToolbarCoordinator(ChromeFullscreenManager fullscreenManager, ViewGroup root,
-            ToolbarButtonSlotData firstSlotData, ToolbarButtonSlotData secondSlotData) {
+            ToolbarButtonSlotData firstSlotData, ToolbarButtonSlotData secondSlotData,
+            final ActivityTabProvider tabProvider) {
         BottomToolbarModel model = new BottomToolbarModel();
 
         int shadowHeight =
@@ -92,6 +97,16 @@ public class BottomToolbarCoordinator {
 
         mMediator = new BottomToolbarMediator(model, fullscreenManager, root.getResources(),
                 firstSlotData, secondSlotData, mNormalPrimaryColor);
+
+        final View iphAnchor = toolbarRoot.findViewById(R.id.bottom_toolbar_container);
+        tabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
+            @Override
+            public void onActivityTabChanged(Tab tab) {
+                if (tab == null) return;
+                mMediator.showIPH(iphAnchor, TrackerFactory.getTrackerForProfile(tab.getProfile()));
+                tabProvider.removeObserver(this);
+            }
+        });
     }
 
     /**
