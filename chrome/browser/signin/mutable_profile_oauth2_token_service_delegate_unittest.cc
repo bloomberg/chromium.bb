@@ -79,7 +79,8 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
 class MutableProfileOAuth2TokenServiceDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenService::Observer {
+      public OAuth2TokenService::Observer,
+      public WebDataServiceConsumer {
  public:
   MutableProfileOAuth2TokenServiceDelegateTest()
       : signin_error_controller_(
@@ -156,6 +157,16 @@ class MutableProfileOAuth2TokenServiceDelegateTest
                             const std::string& value) {
     if (token_web_data_)
       token_web_data_->SetTokenForService(service, value);
+  }
+
+  // WebDataServiceConsumer implementation
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle h,
+      std::unique_ptr<WDTypedResult> result) override {
+    DCHECK(!token_web_data_result_);
+    DCHECK_EQ(TOKEN_RESULT, result->GetType());
+    token_web_data_result_.reset(
+        static_cast<WDResult<TokenResult>*>(result.release()));
   }
 
   // OAuth2AccessTokenConusmer implementation
@@ -235,6 +246,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_service_;
   scoped_refptr<TokenWebData> token_web_data_;
+  std::unique_ptr<WDResult<TokenResult>> token_web_data_result_;
   int access_token_success_count_;
   int access_token_failure_count_;
   GoogleServiceAuthError access_token_failure_;
@@ -246,6 +258,32 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   int auth_error_changed_count_;
   bool revoke_all_tokens_on_load_;
 };
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadCredentialsClearsTokenDBWhenNoPrimaryAccount_DiceDisabled) {
+  // Populate DB with 2 valid tokens.
+  AddAuthTokenManually("AccountId-12345", "refresh_token");
+  AddAuthTokenManually("AccountId-67890", "refresh_token");
+
+  CreateOAuth2ServiceDelegate(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
+  oauth2_service_delegate_->LoadCredentials(/*primary_account_id=*/"");
+  base::RunLoop().RunUntilIdle();
+
+  // No tokens were loaded.
+  EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(0, token_available_count_);
+  EXPECT_EQ(2, token_revoked_count_);
+  EXPECT_EQ(1, end_batch_changes_);
+  EXPECT_EQ(0U, oauth2_service_delegate_->refresh_tokens_.size());
+
+  // Handle to the request reading tokens from database.
+  token_web_data_->GetAllTokens(this);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(token_web_data_result_.get());
+  ASSERT_EQ(0u, token_web_data_result_->GetValue().tokens.size());
+}
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceDBUpgrade) {
   CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
@@ -365,6 +403,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
             oauth2_service_delegate_->GetLoadCredentialsState());
   oauth2_service_delegate_->LoadCredentials("");
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             oauth2_service_delegate_->GetLoadCredentialsState());
 }

@@ -491,14 +491,6 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   }
 
   load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
-  if (primary_account_id.empty() &&
-      (account_consistency_ ==
-           signin::AccountConsistencyMethod::kDiceFixAuthErrors ||
-       account_consistency_ == signin::AccountConsistencyMethod::kDisabled)) {
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
-    FinishLoadingCredentials();
-    return;
-  }
 
   if (!primary_account_id.empty())
     ValidateAccountId(primary_account_id);
@@ -515,15 +507,13 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     return;
   }
 
-  if (!primary_account_id.empty()) {
-    // If the account_id is an email address, then canonicalize it.  This
-    // is to support legacy account_ids, and will not be needed after
-    // switching to gaia-ids.
-    if (primary_account_id.find('@') != std::string::npos) {
-      loading_primary_account_id_ = gaia::CanonicalizeEmail(primary_account_id);
-    } else {
-      loading_primary_account_id_ = primary_account_id;
-    }
+  // If |account_id| is an email address, then canonicalize it. This is needed
+  // to support legacy account IDs, and will not be needed after switching to
+  // gaia IDs.
+  if (primary_account_id.find('@') != std::string::npos) {
+    loading_primary_account_id_ = gaia::CanonicalizeEmail(primary_account_id);
+  } else {
+    loading_primary_account_id_ = primary_account_id;
   }
 
   web_data_service_request_ = token_web_data_->GetAllTokens(this);
@@ -553,11 +543,6 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // Make sure that we have an entry for |loading_primary_account_id_| in the
   // map.  The entry could be missing if there is a corruption in the token DB
   // while this profile is connected to an account.
-  DCHECK(!loading_primary_account_id_.empty() ||
-         account_consistency_ == signin::AccountConsistencyMethod::kMirror ||
-         signin::DiceMethodGreaterOrEqual(
-             account_consistency_,
-             signin::AccountConsistencyMethod::kDiceMigration));
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
     if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
