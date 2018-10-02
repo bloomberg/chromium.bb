@@ -77,7 +77,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   void SetMigrationIsPending(bool is_pending);
   void ShowCloseButton();
   void UpdateDialogToPendingView();
-  const std::vector<std::string> GetSelectedCardGuids();
+  const std::vector<std::string> GetSelectedCardGuids() const;
 
   LocalCardMigrationDialogController* controller_;
 

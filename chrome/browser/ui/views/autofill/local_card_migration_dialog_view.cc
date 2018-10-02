@@ -94,7 +94,7 @@ void LocalCardMigrationDialogView::OnMigrationFinished() {
 }
 
 const std::vector<std::string>
-LocalCardMigrationDialogView::GetSelectedCardGuids() {
+LocalCardMigrationDialogView::GetSelectedCardGuids() const {
   std::vector<std::string> selected_cards;
   for (int index = 0; index < card_list_view_->child_count(); ++index) {
     MigratableCardView* card =
@@ -142,7 +142,14 @@ base::string16 LocalCardMigrationDialogView::GetDialogButtonLabel(
 bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   // The buttons will be disabled when card uploading is in progress.
-  return !migration_pending_;
+  if (migration_pending_)
+    return false;
+
+  // If all checkboxes are unchecked, disable the save button.
+  if (button == ui::DIALOG_BUTTON_OK)
+    return !GetSelectedCardGuids().empty();
+
+  return true;
 }
 
 bool LocalCardMigrationDialogView::Accept() {
@@ -182,6 +189,11 @@ void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
   // dialog.
   if (sender == close_migration_dialog_button_) {
     CloseDialog();
+  } else {
+    // Otherwise it is a checkbox just clicked. Enable/disable the save
+    // button if needed.
+    DCHECK_EQ(sender->GetClassName(), views::Checkbox::kViewClassName);
+    DialogModelChanged();
   }
 }
 
