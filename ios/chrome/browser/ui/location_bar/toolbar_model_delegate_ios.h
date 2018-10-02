@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
+#ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
+#define IOS_CHROME_BROWSER_UI_LOCATION_BAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
 
 #include "base/macros.h"
 #include "components/toolbar/toolbar_model_delegate.h"
@@ -13,10 +13,10 @@ class WebStateList;
 namespace web {
 class NavigationItem;
 class WebState;
-}
+}  // namespace web
 
 // Implementation of ToolbarModelDelegate which uses an instance of
-// TabModel in order to fulfil its duties.
+// TabModel in order to fulfill its duties.
 class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
  public:
   // |web_state_list| must outlive this ToolbarModelDelegateIOS object.
@@ -49,4 +49,4 @@ class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(ToolbarModelDelegateIOS);
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
+#endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
