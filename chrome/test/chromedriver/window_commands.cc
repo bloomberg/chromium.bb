@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/test/chromedriver/window_commands.h"
+#include "chrome/test/chromedriver/session_commands.h"
 
 #include <stddef.h>
 
@@ -1579,4 +1580,13 @@ Status ExecuteTakeHeapSnapshot(Session* session,
                                std::unique_ptr<base::Value>* value,
                                Timeout* timeout) {
   return web_view->TakeHeapSnapshot(value);
+}
+
+Status ExecuteGetCurrentWindowHandle(Session* session,
+                                     WebView* web_view,
+                                     const base::DictionaryValue& params,
+                                     std::unique_ptr<base::Value>* value,
+                                     Timeout* timeout) {
+  value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
+  return Status(kOk);
 }
