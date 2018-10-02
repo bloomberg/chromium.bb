@@ -84,6 +84,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -275,9 +276,18 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   return true;
 }
 
-// Return true if the feature flag for recommend app screen is on.
+// Return false if the logged in user is a managed or child account. Otherwise,
+// return true if the feature flag for recommend app screen is on.
 bool ShouldShowRecommendAppsScreen() {
-  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  DCHECK(user_manager->IsUserLoggedIn());
+  bool is_managed_account =
+      policy::ProfilePolicyConnectorFactory::IsProfileManaged(
+          ProfileManager::GetActiveUserProfile());
+  bool is_child_account = user_manager->IsLoggedInAsChildUser();
+  return !is_managed_account && !is_child_account &&
+         base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
