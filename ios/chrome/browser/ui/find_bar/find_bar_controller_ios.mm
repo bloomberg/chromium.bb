@@ -112,8 +112,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 #pragma mark View Setup & Teardown
 
-// TODO(crbug.com/879136): Remove code of legacy view and unnecessary args once
-// UIRefreshPhase1 is 100% enabled.
 - (UIView*)constructFindBarView {
   UIView* findBarBackground = nil;
 
@@ -234,12 +232,8 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.findBarView.previousButton.enabled = enabled;
 }
 
-// TODO(crbug.com/879136): Remove code of legacy view and unnecessary args once
-// UIRefreshPhase1 is 100% enabled.
 - (void)addFindBarViewToParentView:(UIView*)parentView
                   usingToolbarView:(UIView*)toolbarView
-                    alignWithFrame:(CGRect)alignmentFrame
-                             frame:(CGRect)findBarFrame
                         selectText:(BOOL)selectText
                           animated:(BOOL)animated {
   // If already showing find bar, update the height constraint only for iOS 10
