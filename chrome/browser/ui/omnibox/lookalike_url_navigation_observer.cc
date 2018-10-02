@@ -14,10 +14,13 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/idn_spoof_checker.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
 
@@ -80,14 +83,17 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
     return;
 
   std::string matched_domain;
+  MatchType match_type;
   if (result.matching_top_domain.empty()) {
     matched_domain = GetMatchingSiteEngagementDomain(service, url);
     if (matched_domain.empty())
       return;
     RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+    match_type = MatchType::kSiteEngagement;
   } else {
     matched_domain = result.matching_top_domain;
     RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+    match_type = MatchType::kTopSite;
   }
 
   DCHECK(!matched_domain.empty());
@@ -95,6 +101,14 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
   GURL::Replacements replace_host;
   replace_host.SetHostStr(matched_domain);
   const GURL suggested_url = url.ReplaceComponents(replace_host);
+
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  CHECK(ukm_recorder);
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents());
+  ukm::builders::LookalikeUrl_NavigationSuggestion(source_id)
+      .SetMatchType(static_cast<int>(match_type))
+      .Record(ukm_recorder);
 
   if (kMetricsOnly.Get().empty()) {
     RecordEvent(NavigationSuggestionEvent::kInfobarShown);

@@ -134,6 +134,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
         PageLoad::kDocumentTiming_NavigationToLoadEventFiredName, 500);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kNet_HttpResponseCodeName, 200);
     EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(),
         PageLoad::
