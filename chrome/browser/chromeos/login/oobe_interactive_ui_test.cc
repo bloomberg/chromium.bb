@@ -264,7 +264,8 @@ class OobeInteractiveUITest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 
-IN_PROC_BROWSER_TEST_F(OobeInteractiveUITest, SimpleEndToEnd) {
+// crbug.com/891484
+IN_PROC_BROWSER_TEST_F(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
   WaitForOobeWelcomeScreen();
   RunWelcomeScreenChecks();
   TapWelcomeNext();
