@@ -56,6 +56,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
 
     @SuppressLint("StaticFieldLeak")
     private static OfflineIndicatorController sInstance;
+    private static int sTimeToWaitForStableOfflineForTesting;
 
     private boolean mIsShowingOfflineIndicator;
     // Set to true if the offline indicator has been shown once since the activity has resumed.
@@ -266,9 +267,14 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
     }
 
     int getTimeToWaitForStableOffline() {
-        int seconds = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.OFFLINE_INDICATOR, PARAM_STABLE_OFFLINE_WAIT_SECONDS,
-                STABLE_OFFLINE_DEFAULT_WAIT_SECONDS);
+        int seconds;
+        if (sTimeToWaitForStableOfflineForTesting != 0) {
+            seconds = sTimeToWaitForStableOfflineForTesting;
+        } else {
+            seconds = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.OFFLINE_INDICATOR, PARAM_STABLE_OFFLINE_WAIT_SECONDS,
+                    STABLE_OFFLINE_DEFAULT_WAIT_SECONDS);
+        }
         return seconds * 1000;
     }
 
@@ -277,6 +283,11 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         boolean useBottomSnackbar = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.OFFLINE_INDICATOR, PARAM_BOTTOM_OFFLINE_INDICATOR_ENABLED, false);
         return !useBottomSnackbar;
+    }
+
+    @VisibleForTesting
+    static void setTimeToWaitForStableOfflineForTesting(int waitSeconds) {
+        sTimeToWaitForStableOfflineForTesting = waitSeconds;
     }
 
     @VisibleForTesting

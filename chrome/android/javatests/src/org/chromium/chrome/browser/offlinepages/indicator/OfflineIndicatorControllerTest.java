@@ -34,6 +34,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -47,11 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Unit tests for offline indicator interacting with chrome activity. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.OFFLINE_INDICATOR + "<FakeStudy",
-        "force-fieldtrials=FakeStudy/FakeGroup",
-        "force-fieldtrial-params=FakeStudy.FakeGroup:"
-                + OfflineIndicatorController.PARAM_STABLE_OFFLINE_WAIT_SECONDS + "/1"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 // TODO(jianli): Add test for disabled feature.
 public class OfflineIndicatorControllerTest {
     @Rule
@@ -67,6 +64,10 @@ public class OfflineIndicatorControllerTest {
 
     @Before
     public void setUp() throws Exception {
+        // ChromeActivityTestRule disables offline indicator feature. We want to enable it to do
+        // our own testing.
+        Features.getInstance().enable(ChromeFeatureList.OFFLINE_INDICATOR);
+        OfflineIndicatorController.setTimeToWaitForStableOfflineForTesting(1);
         ConnectivityDetector.skipSystemCheckForTesting();
         ConnectivityDetector.skipHttpProbeForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
