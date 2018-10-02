@@ -29,7 +29,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -53,6 +52,7 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 enum class ReportOptions { kReportOnFailure, kDoNotReport };
 
 namespace mojom {
+enum class FeaturePolicyFeature : int32_t;
 enum class IPAddressSpace : int32_t;
 }
 
