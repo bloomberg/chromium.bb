@@ -291,43 +291,6 @@ def Size(uri):
   raise NotSupportedForType(uri_type)
 
 
-def Exists(uri, as_dir=False):
-  """Return True if file exists at given URI.
-
-  If URI is a directory and as_dir is False then this will return False.
-
-  Args:
-    uri: URI to consider
-    as_dir: If True then check URI as a directory, otherwise check as a file.
-
-  Returns:
-    True if file (or directory) exists at URI, False otherwise.
-  """
-  uri_type = GetUriType(uri)
-
-  if TYPE_GS == uri_type:
-    if as_dir:
-      # GS does not contain directories.
-      return False
-
-    return gslib.Exists(uri)
-
-  if TYPE_LOCAL == uri_type:
-    return filelib.Exists(uri, as_dir=as_dir)
-
-  if TYPE_HTTP == uri_type or TYPE_HTTPS == uri_type:
-    if as_dir:
-      raise NotSupportedForType(uri_type, extra_msg='with as_dir=True')
-
-    try:
-      response = urllib2.urlopen(uri)
-      return response.getcode() == 200
-    except urllib2.HTTPError:
-      return False
-
-  raise NotSupportedForType(uri_type)
-
-
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
   """Return list of file paths under given root path.
 

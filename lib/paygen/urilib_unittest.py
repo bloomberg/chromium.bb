@@ -61,6 +61,7 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     # other things (including tempfiles by gsutil/etc...).
     self.filesdir = os.path.join(self.tempdir, 'unittest-cache')
     osutils.SafeMakedirs(self.filesdir)
+    self.ctx = gs.GSContext()
 
   def _SetUpDirs(self, uri):
     self.gs_dir = uri
@@ -96,15 +97,15 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     """Run integration test under |uri|."""
     self._SetUpDirs(uri)
 
-    self.assertTrue(urilib.Exists(self.filesdir, as_dir=True))
-    self.assertTrue(urilib.Exists(self.file1_local))
-    self.assertTrue(urilib.Exists(self.file2_local))
-    self.assertTrue(urilib.Exists(self.subfile_local))
-    self.assertTrue(urilib.Exists(self.subdir_local, as_dir=True))
+    self.assertTrue(self.ctx.Exists(self.filesdir, as_dir=True))
+    self.assertTrue(self.ctx.Exists(self.file1_local))
+    self.assertTrue(self.ctx.Exists(self.file2_local))
+    self.assertTrue(self.ctx.Exists(self.subfile_local))
+    self.assertTrue(self.ctx.Exists(self.subdir_local, as_dir=True))
 
-    self.assertFalse(urilib.Exists(self.file1_gs))
-    self.assertFalse(urilib.Exists(self.file2_gs))
-    self.assertFalse(urilib.Exists(self.subfile_gs))
+    self.assertFalse(self.ctx.Exists(self.file1_gs))
+    self.assertFalse(self.ctx.Exists(self.file2_gs))
+    self.assertFalse(self.ctx.Exists(self.subfile_gs))
 
     shallow_local_files = [self.file1_local, self.file2_local]
     deep_local_files = shallow_local_files + [self.subfile_local]
@@ -314,47 +315,6 @@ index %s..%s 100644
     self.assertEquals(result, urilib.Size(gs_path))
     self.assertEquals(result, urilib.Size(http_path))
     self.assertRaises(urilib.NotSupportedForType, urilib.Size, ftp_path)
-    self.mox.VerifyAll()
-
-  def testExists(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-    ftp_path = 'ftp://host.domain/some/path'
-
-    result = 'TheResult'
-
-    self.mox.StubOutWithMock(gslib, 'Exists')
-    self.mox.StubOutWithMock(filelib, 'Exists')
-    self.mox.StubOutWithMock(urilib.urllib2, 'urlopen')
-
-    # Set up the test replay script.
-    # Run 1, local, as_dir=False
-    filelib.Exists(local_path, as_dir=False).AndReturn(result)
-    # Run 2, GS, as_dir=False.
-    gslib.Exists(gs_path).AndReturn(result)
-    # Run 3, GS, as_dir=True.
-    # Run 6, HTTP, as_dir=False, code=200.
-    urilib.urllib2.urlopen(http_path).AndReturn(FakeHttpResponse(200))
-    # Run 7, HTTP, as_dir=False, code=404.
-    urilib.urllib2.urlopen(http_path).AndReturn(FakeHttpResponse(404))
-    # Run 8, HTTP, as_dir=False, HTTPError.
-    urilib.urllib2.urlopen(http_path).AndRaise(
-        urilib.urllib2.HTTPError('url', 404, 'msg', None, None))
-    # Run 9, HTTP, as_dir=True.
-    # Run 10, FTP, as_dir=False.
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEquals(result, urilib.Exists(local_path))
-    self.assertEquals(result, urilib.Exists(gs_path))
-    self.assertEquals(False, urilib.Exists(gs_path, as_dir=True))
-    self.assertTrue(urilib.Exists(http_path))
-    self.assertFalse(urilib.Exists(http_path))
-    self.assertFalse(urilib.Exists(http_path))
-    self.assertRaises(urilib.NotSupportedForType,
-                      urilib.Exists, http_path, as_dir=True)
-    self.assertRaises(urilib.NotSupportedForType, urilib.Exists, ftp_path)
     self.mox.VerifyAll()
 
   def testListFiles(self):

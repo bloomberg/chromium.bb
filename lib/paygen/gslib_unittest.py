@@ -501,45 +501,6 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
       self.assertEqual(gs_md5, local_md5)
 
   @cros_test_lib.NetworkTest()
-  def testExists(self):
-    with gs.TemporaryURL('chromite.gslib.exists') as tempuri:
-      self.populateUri(tempuri)
-      self.assertTrue(gslib.Exists(tempuri))
-
-    bogus_gs_path = 'gs://chromeos-releases-test/bogus/non-existent-url'
-    self.assertFalse(gslib.Exists(bogus_gs_path))
-
-  @cros_test_lib.NetworkTest()
-  def testExistsFalse(self):
-    """Test Exists logic with non-standard output from gsutil."""
-    expected_output = ('GSResponseError: status=404, code=NoSuchKey,'
-                       ' reason="Not Found",'
-                       ' message="The specified key does not exist."')
-    err1 = gslib.StatFail(expected_output)
-    err2 = gslib.StatFail('You are using a deprecated alias, "getacl",'
-                          'for the "acl" command.\n' +
-                          expected_output)
-
-    uri = 'gs://any/fake/uri/will/do'
-    cmd = ['stat', uri]
-
-    self.mox.StubOutWithMock(gslib, 'RunGsutilCommand')
-
-    # Set up the test replay script.
-    # Run 1, normal.
-    gslib.RunGsutilCommand(cmd, failed_exception=gslib.StatFail,
-                           get_headers_from_stdout=True).AndRaise(err1)
-    # Run 2, extra output.
-    gslib.RunGsutilCommand(cmd, failed_exception=gslib.StatFail,
-                           get_headers_from_stdout=True).AndRaise(err2)
-    self.mox.ReplayAll()
-
-    # Run the test verification
-    self.assertFalse(gslib.Exists(uri))
-    self.assertFalse(gslib.Exists(uri))
-    self.mox.VerifyAll()
-
-  @cros_test_lib.NetworkTest()
   def testMD5SumBadPath(self):
     """Higher-level functional test.  Test MD5Sum bad path:
 

@@ -478,27 +478,6 @@ def FileSize(gs_uri, **kwargs):
   return int(size_str)
 
 
-def Exists(gs_uri, **kwargs):
-  """Return True if object exists at given GS URI.
-
-  Args:
-    gs_uri: Google Storage URI.  Must be a fully-specified URI with
-      no glob expression.  Even if a glob expression matches this
-      method will return False.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Returns:
-    True if gs_uri points to an existing object, and False otherwise.
-  """
-  try:
-    Stat(gs_uri, **kwargs)
-  except StatFail:
-    return False
-
-  return True
-
-
 @RetryGSLib
 def List(root_uri, recurse=False, filepattern=None, sort=False):
   """Return list of file and directory paths under given root URI.

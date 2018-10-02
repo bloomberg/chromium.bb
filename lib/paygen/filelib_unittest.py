@@ -64,12 +64,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
       dir2_top_files = [dir2_file1, dir2_file2]
       dir2_deep_files = dir2_top_files + [dir2_subfile]
 
-      # Test Exists.
-      for dir1_path in dir1_deep_files:
-        self.assertTrue(filelib.Exists(dir1_path))
-      for dir2_path in dir2_deep_files:
-        self.assertFalse(filelib.Exists(dir2_path))
-
       # Test ListFiles with various options.
       self.assertEqual(set(dir1_top_files),
                        set(filelib.ListFiles(dir1)))
@@ -84,7 +78,7 @@ class TestFileManipulation(cros_test_lib.TestCase):
       self.assertEqual(set(dir2_deep_files),
                        set(filelib.CopyFiles(dir1, dir2)))
       for dir2_path in dir2_deep_files:
-        self.assertTrue(filelib.Exists(dir2_path))
+        self.assertExists(dir2_path)
 
       # Test Cmp.
       self.assertTrue(filelib.Cmp(dir1_file1, dir2_file1))
@@ -169,16 +163,16 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     path2 = '/other/local/path'
     relative_path = 'relative.bin'
 
-    self.mox.StubOutWithMock(filelib, 'Exists')
+    self.mox.StubOutWithMock(filelib.os.path, 'isdir')
     self.mox.StubOutWithMock(osutils, 'SafeMakedirs')
     self.mox.StubOutWithMock(filelib.shutil, 'copy2')
 
     # Set up the test replay script.
     # Run 1, path2 directory exists.
-    filelib.Exists(os.path.dirname(path2), as_dir=True).AndReturn(True)
+    filelib.os.path.isdir(os.path.dirname(path2)).AndReturn(True)
     filelib.shutil.copy2(path1, path2)
     # Run 2, path2 directory does not exist.
-    filelib.Exists(os.path.dirname(path2), as_dir=True).AndReturn(False)
+    filelib.os.path.isdir(os.path.dirname(path2)).AndReturn(False)
     osutils.SafeMakedirs(os.path.dirname(path2))
     filelib.shutil.copy2(path1, path2)
 
@@ -210,25 +204,6 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     # Run the test verification.
     self.assertEqual(size, filelib.Size(path))
     self.assertRaises(filelib.MissingFileError, filelib.Size, path)
-    self.mox.VerifyAll()
-
-  def testExists(self):
-    path = '/some/local/path'
-    result = 'TheResult'
-
-    self.mox.StubOutWithMock(filelib.os.path, 'isdir')
-    self.mox.StubOutWithMock(filelib.os.path, 'isfile')
-
-    # Set up the test replay script.
-    # Run 1, as file.
-    filelib.os.path.isfile(path).AndReturn(result)
-    # Run 2, as dir.
-    filelib.os.path.isdir(path).AndReturn(result)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEqual(result, filelib.Exists(path))
-    self.assertEqual(result, filelib.Exists(path, as_dir=True))
     self.mox.VerifyAll()
 
   def _CreateSimpleFile(self, *args):

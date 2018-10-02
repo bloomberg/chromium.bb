@@ -51,7 +51,7 @@ def Copy(src_path, dest_path):
     dest_path: Path to local file to copy to.
   """
   dest_dir = os.path.dirname(dest_path)
-  if dest_dir and not Exists(dest_dir, as_dir=True):
+  if dest_dir and not os.path.isdir(dest_dir):
     osutils.SafeMakedirs(dest_dir)
 
   shutil.copy2(src_path, dest_path)
@@ -73,24 +73,6 @@ def Size(path):
     return os.stat(path).st_size
 
   raise MissingFileError('No file at %r.' % path)
-
-
-def Exists(path, as_dir=False):
-  """Return True if file exists at given path.
-
-  If path is a directory and as_dir is False then this will return False.
-
-  Args:
-    path: Path to a local file.
-    as_dir: If True then check path as a directory, otherwise check as a file.
-
-  Returns:
-    True if file (or directory) exists at path, False otherwise.
-  """
-  if as_dir:
-    return os.path.isdir(path)
-  else:
-    return os.path.isfile(path)
 
 
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
