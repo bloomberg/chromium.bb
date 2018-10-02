@@ -518,7 +518,7 @@ void VrGLThread::RemoveAllTabs() {
 
 void VrGLThread::ReportUiOperationResultForTesting(
     const UiTestOperationType& action_type,
-    const VrUiTestActivityResult& result) {
+    const UiTestOperationResult& result) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::ReportUiOperationResultForTesting,

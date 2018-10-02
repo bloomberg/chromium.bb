@@ -57,7 +57,7 @@ class VrInputConnection;
 class VrShellDelegate;
 class VrWebContentsObserver;
 enum class UiTestOperationType;
-enum class VrUiTestActivityResult;
+enum class UiTestOperationResult;
 struct Assets;
 struct AutocompleteRequest;
 
@@ -286,8 +286,14 @@ class VrShell : device::GvrGamepadDataProvider,
       const base::android::JavaParamRef<jobject>& obj,
       jstring filepath_base);
 
+  void WatchElementForVisibilityChangeForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint element_name,
+      jint timeout_ms);
+
   void ReportUiOperationResultForTesting(UiTestOperationType action_type,
-                                         VrUiTestActivityResult result);
+                                         UiTestOperationResult result);
 
   void PerformControllerActionForTesting(
       JNIEnv* env,

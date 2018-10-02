@@ -1252,7 +1252,7 @@ public class VrShell extends GvrLayout
     }
 
     public void registerUiOperationCallbackForTesting(
-            int actionType, Runnable resultCallback, int quiescenceTimeoutMs) {
+            int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
         assert actionType < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES;
         // Fill the ArrayLists if this is the first time the method has been called.
         if (mUiOperationResults == null) {
@@ -1265,16 +1265,15 @@ public class VrShell extends GvrLayout
                 mUiOperationResultCallbacks.add(null);
             }
         }
-        // We currently have two callback types, and only one of them actually cares about the
-        // value given to the callback, so we can blindly set the default here. If more are added,
-        // their defaults will have to be properly set here.
-        mUiOperationResults.set(actionType, VrUiTestActivityResult.UNREPORTED);
+        mUiOperationResults.set(actionType, UiTestOperationResult.UNREPORTED);
         mUiOperationResultCallbacks.set(actionType, resultCallback);
 
         // In the case of the UI activity quiescence callback type, we need to let the native UI
         // know how long to wait before timing out.
         if (actionType == UiTestOperationType.UI_ACTIVITY_RESULT) {
-            nativeSetUiExpectingActivityForTesting(mNativeVrShell, quiescenceTimeoutMs);
+            nativeSetUiExpectingActivityForTesting(mNativeVrShell, timeoutMs);
+        } else if (actionType == UiTestOperationType.ELEMENT_VISIBILITY_CHANGE) {
+            nativeWatchElementForVisibilityChangeForTesting(mNativeVrShell, elementName, timeoutMs);
         }
     }
 
@@ -1344,6 +1343,8 @@ public class VrShell extends GvrLayout
             long nativeVrShell, int quiescenceTimeoutMs);
     private native void nativeSaveNextFrameBufferToDiskForTesting(
             long nativeVrShell, String filepathBase);
+    private native void nativeWatchElementForVisibilityChangeForTesting(
+            long nativeVrShell, int elementName, int timeoutMs);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }

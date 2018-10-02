@@ -15,12 +15,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
+import org.chromium.chrome.browser.vr.UiTestOperationResult;
 import org.chromium.chrome.browser.vr.UiTestOperationType;
 import org.chromium.chrome.browser.vr.UserFriendlyElementName;
 import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
 import org.chromium.chrome.browser.vr.VrShell;
-import org.chromium.chrome.browser.vr.VrUiTestActivityResult;
 import org.chromium.chrome.browser.vr.VrViewContainer;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -139,8 +139,10 @@ public class NativeUiUtils {
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(UiTestOperationType.UI_ACTIVITY_RESULT,
-                    () -> { resultLatch.countDown(); }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS);
+            instance.registerUiOperationCallbackForTesting(
+                    UiTestOperationType.UI_ACTIVITY_RESULT, () -> {
+                        resultLatch.countDown();
+                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, 0 /* unused */);
         });
         action.run();
 
@@ -149,8 +151,37 @@ public class NativeUiUtils {
         int uiResult =
                 instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
         Assert.assertEquals("UI reported non-quiescent result '"
-                        + vrUiTestActivityResultToString(uiResult) + "'",
-                VrUiTestActivityResult.QUIESCENT, uiResult);
+                        + uiTestOperationResultToString(uiResult) + "'",
+                UiTestOperationResult.QUIESCENT, uiResult);
+    }
+
+    /**
+     * Runs the given Runnable and waits until the specified element changes its visibility.
+     *
+     * @param elementName The UserFriendlyElementName to wait on to change visibility.
+     * @param action A Runnable containing the action to perform.
+     */
+    public static void performActionAndWaitForVisibilityChange(
+            final int elementName, Runnable action) throws InterruptedException {
+        final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        // Run on the UI thread to prevent issues with registering a new callback before
+        // ReportUiOperationResultForTesting has finished.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            instance.registerUiOperationCallbackForTesting(
+                    UiTestOperationType.ELEMENT_VISIBILITY_CHANGE, () -> {
+                        resultLatch.countDown();
+                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, elementName);
+        });
+        action.run();
+
+        // Wait for the result to be reported.
+        resultLatch.await();
+        int result = instance.getLastUiOperationResultForTesting(
+                UiTestOperationType.ELEMENT_VISIBILITY_CHANGE);
+        Assert.assertEquals("UI reported non-visibility-changed result '"
+                        + uiTestOperationResultToString(result) + "'",
+                UiTestOperationResult.VISIBILITY_CHANGE, result);
     }
 
     /**
@@ -197,7 +228,7 @@ public class NativeUiUtils {
         // ReportUiOperationResultForTesting has finished.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             instance.registerUiOperationCallbackForTesting(UiTestOperationType.FRAME_BUFFER_DUMPED,
-                    () -> { resultLatch.countDown(); }, 0 /* unused */);
+                    () -> { resultLatch.countDown(); }, 0 /* unused */, 0 /* unused */);
         });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();
@@ -244,16 +275,20 @@ public class NativeUiUtils {
         clickElementAndWaitForUiQuiescence(UserFriendlyElementName.BROWSING_DIALOG, buttonCenter);
     }
 
-    private static String vrUiTestActivityResultToString(int result) {
+    private static String uiTestOperationResultToString(int result) {
         switch (result) {
-            case VrUiTestActivityResult.UNREPORTED:
+            case UiTestOperationResult.UNREPORTED:
                 return "Unreported";
-            case VrUiTestActivityResult.QUIESCENT:
+            case UiTestOperationResult.QUIESCENT:
                 return "Quiescent";
-            case VrUiTestActivityResult.TIMEOUT_NO_START:
+            case UiTestOperationResult.TIMEOUT_NO_START:
                 return "Timeout (UI activity not started)";
-            case VrUiTestActivityResult.TIMEOUT_NO_END:
+            case UiTestOperationResult.TIMEOUT_NO_END:
                 return "Timeout (UI activity not stopped)";
+            case UiTestOperationResult.VISIBILITY_CHANGE:
+                return "Visibility change";
+            case UiTestOperationResult.TIMEOUT_NO_CHANGE:
+                return "Timeout (Element visibility did not change)";
             default:
                 return "Unknown result";
         }
