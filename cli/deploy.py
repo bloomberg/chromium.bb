@@ -799,7 +799,7 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
     try:
       cros_build_lib.RunCommand(
           ['strip_package', '--sysroot', sysroot] +
-          [os.path.join(cpv.category, str(cpv.pv)) for cpv in cpvs])
+          [cpv.cpf for cpv in cpvs])
       packages_dir = _STRIPPED_PACKAGES_DIR
     except cros_build_lib.RunCommandError:
       logging.error('Cannot strip packages %s',

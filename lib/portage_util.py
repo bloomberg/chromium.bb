@@ -38,8 +38,10 @@ _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 # Define data structures for holding PV and CPV objects.
 _PV_FIELDS = ['pv', 'package', 'version', 'version_no_rev', 'rev']
 PV = collections.namedtuple('PV', _PV_FIELDS)
-# Note: the cpv field, as per the spec, is category/package-version_no_rev.
-CPV = collections.namedtuple('CPV', ['category', 'cp', 'cpv'] + _PV_FIELDS)
+# See ebuild(5) man page for the field specs these fields are based on.
+# Notably, cpv does not include the revision, cpf does.
+_CPV_FIELDS = ['category', 'cp', 'cpv', 'cpf'] + _PV_FIELDS
+CPV = collections.namedtuple('CPV', _CPV_FIELDS)
 
 # Package matching regexp, as dictated by package manager specification:
 # https://www.gentoo.org/proj/en/qa/pms.xml
@@ -1634,13 +1636,17 @@ def SplitCPV(cpv, strict=True):
   if strict and (category is None or m is None):
     return None
 
+  # Gather parts and build each field. See ebuild(5) man page for spec.
   cp_fields = (category, m.package)
-  # cpv = category/package-version_no_rev as per spec, rather than version
-  # (which includes the revision).
-  cpv_fields = cp_fields + (m.version_no_rev,)
-  use_cp = '%s/%s' % cp_fields if all(cp_fields) else None
-  use_cpv = '%s/%s-%s' % cpv_fields if all(cpv_fields) else None
-  return CPV(category=category, cp=use_cp, cpv=use_cpv, **m._asdict())
+  cp = '%s/%s' % cp_fields if all(cp_fields) else None
+
+  cpv_fields = (cp, m.version_no_rev)
+  real_cpv = '%s-%s' % cpv_fields if all(cpv_fields) else None
+
+  cpf_fields = (real_cpv, m.rev)
+  cpf = '%s-%s' % cpf_fields if all(cpf_fields) else real_cpv
+
+  return CPV(category=category, cp=cp, cpv=real_cpv, cpf=cpf, **m._asdict())
 
 def FindWorkonProjects(packages):
   """Find the projects associated with the specified cros_workon packages.

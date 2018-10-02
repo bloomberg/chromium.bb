@@ -1133,7 +1133,7 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     """Test splitting CPV into components."""
     # Test 1: Valid input.
     cpv = 'foo/bar-4.5.6_alpha-r6'
-    cp, ver, _ = cpv.split('-')
+    cp, ver, rev = cpv.split('-')
     cat, pv = cpv.split('/', 1)
 
     split_pv = portage_util.SplitPV(pv)
@@ -1142,6 +1142,7 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     self.assertEquals(split_cpv.category, cat)
     self.assertEqual(cp, split_cpv.cp)
     self.assertEqual('%s-%s' % (cp, ver), split_cpv.cpv)
+    self.assertEqual('%s-%s-%s' % (cp, ver, rev), split_cpv.cpf)
     for k, v in split_pv._asdict().iteritems():
       self.assertEquals(getattr(split_cpv, k), v)
 
@@ -1157,6 +1158,7 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     self.assertIsNone(split_cpv_ns.category)
     self.assertIsNone(split_cpv_ns.cp)
     self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
 
     # Test 3: No version or revision, valid cp.
     cpv = 'cat-foo/bar-pkg'
@@ -1171,6 +1173,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     self.assertEqual('bar-pkg', split_cpv_ns.package)
     # The cp should just have category/package. In this case it's valid.
     self.assertEqual('cat-foo/bar-pkg', split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
 
     # Test 4: No version - skipped to valid revision.
     cpv = 'cat-foo/bar-pkg-r5'
@@ -1186,6 +1190,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     # The cp should just have category/package. Invalid in this case, but
     # meeting expectations.
     self.assertEqual('cat-foo/bar-pkg-r5', split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
 
     cpv = 'invalid/format/package'
     with self.assertRaises(ValueError):

@@ -2698,19 +2698,18 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
     packages = portage_util.FindPackageNameMatches(pattern, board,
                                                    buildroot=buildroot)
     for cpv in packages:
-      pkg = '%s/%s' % (cpv.category, cpv.pv)
-      cmd = ['strip_package', '--board', board, pkg]
+      cmd = ['strip_package', '--board', board, cpv.cpf]
       cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
       # Find the stripped package.
-      files = glob.glob(os.path.join(stripped_pkg_dir, pkg) + '.*')
+      files = glob.glob(os.path.join(stripped_pkg_dir, cpv.cpf) + '.*')
       if not files:
         raise AssertionError('Silent failure to strip binary %s? '
                              'Failed to find stripped files at %s.' %
-                             (pkg, os.path.join(stripped_pkg_dir, pkg)))
+                             (cpv.cpf, os.path.join(stripped_pkg_dir, cpv.cpf)))
       if len(files) > 1:
         logging.PrintBuildbotStepWarnings()
         logging.warning('Expected one stripped package for %s, found %d',
-                        pkg, len(files))
+                        cpv.cpf, len(files))
 
       tarball = sorted(files)[-1]
       tarball_paths.append(os.path.abspath(tarball))
