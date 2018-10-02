@@ -685,7 +685,8 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage() ||
+  if (!client_->GetPasswordStore()->IsAbleToSavePasswords() ||
+      !client_->IsSavingAndFillingEnabledForCurrentPage() ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(password_form) ||
       !client_->GetStoreResultFilter()->ShouldSave(password_form))
     return;
@@ -1071,6 +1072,13 @@ void PasswordManager::OnLoginSuccessful() {
   }
 
   DCHECK(provisional_save_manager_->submitted_form());
+
+  bool able_to_save_passwords =
+      client_->GetPasswordStore()->IsAbleToSavePasswords();
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.AbleToSavePasswordsOnSuccessfulLogin",
+                        able_to_save_passwords);
+  if (!able_to_save_passwords)
+    return;
 
   MaybeSavePasswordHash();
 
