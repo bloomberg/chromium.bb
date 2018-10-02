@@ -40,7 +40,8 @@ class BlinkPlatformWithTaskEnvironment : public blink::Platform {
  public:
   BlinkPlatformWithTaskEnvironment()
       : main_thread_scheduler_(
-            blink::scheduler::CreateWebMainThreadSchedulerForTests()) {}
+            blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler()) {
+  }
 
   ~BlinkPlatformWithTaskEnvironment() override {
     main_thread_scheduler_->Shutdown();
