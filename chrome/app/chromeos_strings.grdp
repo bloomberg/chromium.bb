@@ -5499,4 +5499,7 @@
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN" desc="Text in the fingerprint setup screen telling users what to scan their finger again.">
     Try again.
   </message>
+  <message name="IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION" desc="The text displayed in the files app Add New Services menu for the option that allows users to mount a new SMB file share.">
+    SMB file share
+  </message>
 </grit-part>
