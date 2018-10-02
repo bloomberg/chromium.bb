@@ -36,6 +36,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Variation url parameter name. */
     private static final String URL_PARAMETER_NAME = "url";
 
+    /** Special parameter that enables the feature. */
+    private static final String PARAMETER_ENABLED = "ENABLED";
+
     private final long mUiControllerAndroid;
     private final AutofillAssistantUiDelegate mUiDelegate;
 
@@ -44,9 +47,10 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      *
      * @return True if a controller can be constructed.
      */
-    public static boolean isConfigured() {
-        return !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
-                        .isEmpty();
+    public static boolean isConfigured(Bundle intentExtras) {
+        return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
+                && !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
+                            .isEmpty();
     }
 
     /**
@@ -59,10 +63,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         // nativeInit already.
         mUiDelegate = new AutofillAssistantUiDelegate(activity, this);
 
-        // TODO(crbug.com/806868): Treat parameter
-        // org.chromium.chrome.browser.autofill_assistant.ENABLED specially, and disable autofill
-        // assistant if it is false or unset.
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
+        parameters.remove(PARAMETER_ENABLED);
+
         Tab activityTab = activity.getActivityTab();
         mUiControllerAndroid = nativeInit(activityTab.getWebContents(),
                 parameters.keySet().toArray(new String[parameters.size()]),
@@ -103,6 +106,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @Override
     public void onScriptSelected(String scriptPath) {
         nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
+    }
+
+    /** Return the value if the given boolean parameter from the extras. */
+    private static boolean getBooleanParameter(Bundle extras, String parameterName) {
+        return extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
     }
 
     /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
