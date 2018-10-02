@@ -379,7 +379,13 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
   // work.
   v8::Local<v8::Value> stream_handle =
       stream_.NewLocal(script_state_->GetIsolate());
-  CHECK(!stream_handle.IsEmpty());
+  if (stream_handle.IsEmpty()) {
+    stream_broken_ = true;
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Body stream has suffered a fatal error and cannot be disturbed");
+    return;
+  }
 
   base::Optional<bool> is_readable = IsStreamReadable(exception_state);
   if (exception_state.HadException())
