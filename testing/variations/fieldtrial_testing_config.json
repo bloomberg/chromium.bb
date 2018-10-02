@@ -643,7 +643,13 @@
     ],
     "AutofillPreviewStyleExperiment": [
         {
-            "platforms": [],
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
             "experiments": [
                 {
                     "name": "Enabled_BlackOnGoogleBlue050_V2",
@@ -663,6 +669,36 @@
                     },
                     "enable_features": [
                         "AutofillPreviewStyleExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillPrimaryInfoStyleExperiment": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_medium",
+                    "params": {
+                        "font_weight": "medium"
+                    },
+                    "enable_features": [
+                        "AutofillPrimaryInfoStyleExperiment"
+                    ]
+                },
+                {
+                    "name": "Enabled_bold",
+                    "params": {
+                        "font_weight": "bold"
+                    },
+                    "enable_features": [
+                        "AutofillPrimaryInfoStyleExperiment"
                     ]
                 }
             ]
