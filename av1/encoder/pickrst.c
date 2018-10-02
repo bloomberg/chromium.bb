@@ -401,12 +401,112 @@ static int64_t finer_search_pixel_proj_error(
   return err;
 }
 
+#if CONFIG_INTEGERIZE_SGR
+static int64_t signed_rounded_divide(int64_t dividend, int64_t divisor) {
+  if (dividend < 0)
+    return (dividend - divisor / 2) / divisor;
+  else
+    return (dividend + divisor / 2) / divisor;
+}
+#endif  // CONFIG_INTEGERIZE_SGR
+
 static void get_proj_subspace(const uint8_t *src8, int width, int height,
                               int src_stride, const uint8_t *dat8,
                               int dat_stride, int use_highbitdepth,
                               int32_t *flt0, int flt0_stride, int32_t *flt1,
                               int flt1_stride, int *xq,
                               const sgr_params_type *params) {
+#if CONFIG_INTEGERIZE_SGR
+  int i, j;
+  int64_t H[2][2] = { { 0, 0 }, { 0, 0 } };
+  int64_t C[2] = { 0, 0 };
+  const int size = width * height;
+
+  // Default values to be returned if the problem becomes ill-posed
+  xq[0] = 0;
+  xq[1] = 0;
+
+  if (!use_highbitdepth) {
+    const uint8_t *src = src8;
+    const uint8_t *dat = dat8;
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const int32_t u =
+            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const int32_t s =
+            (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+        const int32_t f1 =
+            (params->r[0] > 0) ? (int32_t)flt0[i * flt0_stride + j] - u : 0;
+        const int32_t f2 =
+            (params->r[1] > 0) ? (int32_t)flt1[i * flt1_stride + j] - u : 0;
+        H[0][0] += (int64_t)f1 * f1;
+        H[1][1] += (int64_t)f2 * f2;
+        H[0][1] += (int64_t)f1 * f2;
+        C[0] += (int64_t)f1 * s;
+        C[1] += (int64_t)f2 * s;
+      }
+    }
+  } else {
+    const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const int32_t u =
+            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const int32_t s =
+            (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+        const int32_t f1 =
+            (params->r[0] > 0) ? (int32_t)flt0[i * flt0_stride + j] - u : 0;
+        const int32_t f2 =
+            (params->r[1] > 0) ? (int32_t)flt1[i * flt1_stride + j] - u : 0;
+        H[0][0] += (int64_t)f1 * f1;
+        H[1][1] += (int64_t)f2 * f2;
+        H[0][1] += (int64_t)f1 * f2;
+        C[0] += (int64_t)f1 * s;
+        C[1] += (int64_t)f2 * s;
+      }
+    }
+  }
+  H[0][0] /= size;
+  H[0][1] /= size;
+  H[1][1] /= size;
+  H[1][0] = H[0][1];
+  C[0] /= size;
+  C[1] /= size;
+  if (params->r[0] == 0) {
+    // H matrix is now only the scalar H[1][1]
+    // C vector is now only the scalar C[1]
+    const int64_t Det = H[1][1];
+    if (Det == 0) return;  // ill-posed, return default values
+    xq[0] = 0;
+    xq[1] = (int)signed_rounded_divide(C[1] * (1 << SGRPROJ_PRJ_BITS), Det);
+  } else if (params->r[1] == 0) {
+    // H matrix is now only the scalar H[0][0]
+    // C vector is now only the scalar C[0]
+    const int64_t Det = H[0][0];
+    if (Det == 0) return;  // ill-posed, return default values
+    xq[0] = (int)signed_rounded_divide(C[0] * (1 << SGRPROJ_PRJ_BITS), Det);
+    xq[1] = 0;
+  } else {
+    const int64_t Det = H[0][0] * H[1][1] - H[0][1] * H[1][0];
+    if (Det == 0) return;  // ill-posed, return default values
+
+    // If scaling up dividend would overflow, instead scale down the divisor
+    const int64_t div1 = H[1][1] * C[0] - H[0][1] * C[1];
+    if ((div1 > 0 && INT64_MAX / (1 << SGRPROJ_PRJ_BITS) < div1) ||
+        (div1 < 0 && INT64_MIN / (1 << SGRPROJ_PRJ_BITS) > div1))
+      xq[0] = (int)signed_rounded_divide(div1, Det / (1 << SGRPROJ_PRJ_BITS));
+    else
+      xq[0] = (int)signed_rounded_divide(div1 * (1 << SGRPROJ_PRJ_BITS), Det);
+
+    const int64_t div2 = H[0][0] * C[1] - H[1][0] * C[0];
+    if ((div2 > 0 && INT64_MAX / (1 << SGRPROJ_PRJ_BITS) < div2) ||
+        (div2 < 0 && INT64_MIN / (1 << SGRPROJ_PRJ_BITS) > div2))
+      xq[1] = (int)signed_rounded_divide(div2, Det / (1 << SGRPROJ_PRJ_BITS));
+    else
+      xq[1] = (int)signed_rounded_divide(div2 * (1 << SGRPROJ_PRJ_BITS), Det);
+  }
+#else   // CONFIG_INTEGERIZE_SGR
   int i, j;
   double H[2][2] = { { 0, 0 }, { 0, 0 } };
   double C[2] = { 0, 0 };
@@ -493,6 +593,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
     xq[0] = (int)rint(x[0] * (1 << SGRPROJ_PRJ_BITS));
     xq[1] = (int)rint(x[1] * (1 << SGRPROJ_PRJ_BITS));
   }
+#endif  // CONFIG_INTEGERIZE_SGR
 }
 
 void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
