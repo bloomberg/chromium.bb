@@ -17,8 +17,15 @@
     <style include="print-preview-shared action-link cr-hidden-style">
       :host {
         align-items: center;
-        margin: 4px 0;
+        cursor: default;
+        display: flex;
+        font-size: calc(12/13 * 1em);
+        min-height: 28px;
         opacity: .87;
+        padding-bottom: 2px;
+        padding-inline-end: 2px;
+        padding-inline-start: 14px;
+        padding-top: 2px;
         vertical-align: middle;
       }
 
@@ -35,10 +42,11 @@
 
       iron-icon {
         fill: var(--google-grey-600);
+        flex: 0;
         height: 20px;
         margin-inline-end: 12px;
+        min-width: 20px;
         transition: opacity 150ms;
-        width: 20px;
       }
 
       .name {
