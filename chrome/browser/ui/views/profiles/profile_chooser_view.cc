@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -70,6 +71,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -1429,16 +1431,17 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
-  std::string primary_account =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
-  DCHECK(!primary_account.empty());
-  CreateAccountButton(layout, primary_account, true,
-                      error_account_id == primary_account, menu_width_);
-  for (const std::string& account :
-       profiles::GetSecondaryAccountsForSignedInProfile(profile)) {
-    CreateAccountButton(layout, account, false, error_account_id == account,
-                        menu_width_);
-  }
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->HasPrimaryAccount());
+  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+
+  CreateAccountButton(layout, primary_account.account_id, true,
+                      error_account_id == primary_account.account_id,
+                      menu_width_);
+  for (const AccountInfo& account :
+       profiles::GetSecondaryAccountsForSignedInProfile(profile))
+    CreateAccountButton(layout, account.account_id, false,
+                        error_account_id == account.account_id, menu_width_);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing =
