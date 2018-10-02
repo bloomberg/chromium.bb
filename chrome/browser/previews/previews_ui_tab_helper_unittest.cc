@@ -37,7 +37,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -81,7 +81,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     data_reduction_proxy_settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
         drp_test_context_->request_context_getter(),
-        nullptr /* url_loader_factory */,
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
         base::WrapUnique(new data_reduction_proxy::DataStore()),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
