@@ -304,6 +304,40 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
       << message_;
 }
 
+// Listens for "runtime.onStartup" event early so that tests can wait for the
+// event on startup (and not miss it).
+class ServiceWorkerOnStartupTest : public ServiceWorkerBasedBackgroundTest {
+ public:
+  ServiceWorkerOnStartupTest() = default;
+  ~ServiceWorkerOnStartupTest() override = default;
+
+  bool WaitForOnStartupEvent() { return listener_->WaitUntilSatisfied(); }
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* main_parts) override {
+    // At this point, the notification service is initialized but the profile
+    // and extensions have not.
+    listener_ = std::make_unique<ExtensionTestMessageListener>(
+        "onStartup event", false);
+    ServiceWorkerBasedBackgroundTest::CreatedBrowserMainParts(main_parts);
+  }
+
+ private:
+  std::unique_ptr<ExtensionTestMessageListener> listener_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerOnStartupTest);
+};
+
+// Tests "runtime.onStartup" for extension SW.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupTest, PRE_Event) {
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/worker_based_background/on_startup_event"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerOnStartupTest, Event) {
+  EXPECT_TRUE(WaitForOnStartupEvent());
+}
+
 // Class that dispatches an event to |extension_id| right after a
 // non-lazy listener to the event is added from the extension's Service Worker.
 class EarlyWorkerMessageSender : public EventRouter::Observer {
@@ -1417,6 +1451,12 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
                         ::testing::Values(NATIVE_BINDINGS));
 INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
                         ServiceWorkerBasedBackgroundTest,
+                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
+                        ServiceWorkerOnStartupTest,
+                        ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
+                        ServiceWorkerOnStartupTest,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace extensions
