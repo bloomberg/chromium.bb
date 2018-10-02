@@ -72,6 +72,13 @@ std::unique_ptr<TracedValue> InspectorParseHtmlEndData(unsigned end_line) {
   return value;
 }
 
+std::unique_ptr<TracedValue> GetNavigationTracingData(Document* document) {
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+
+  data->SetString("navigationId",
+                  IdentifiersFactory::LoaderId(document->Loader()));
+  return data;
+}
 }  //  namespace
 
 String ToHexString(const void* p) {
@@ -204,9 +211,10 @@ void InspectorTraceEvents::Did(const probe::CallFunction& probe) {
 void InspectorTraceEvents::PaintTiming(Document* document,
                                        const char* name,
                                        double timestamp) {
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("loading,rail,devtools.timeline", name,
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading,rail,devtools.timeline", name,
                                    TraceEvent::ToTraceTimestamp(timestamp),
-                                   "frame", ToTraceValue(document->GetFrame()));
+                                   "frame", ToTraceValue(document->GetFrame()),
+                                   "data", GetNavigationTracingData(document));
 }
 
 void InspectorTraceEvents::FrameStartedLoading(LocalFrame* frame) {
