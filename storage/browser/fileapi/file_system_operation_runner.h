@@ -109,9 +109,15 @@ class STORAGE_EXPORT FileSystemOperationRunner {
                      bool recursive,
                      StatusCallback callback);
 
-  // Writes contents of |blob_url| to |url| at |offset|.
+  // Writes contents of |blob| to |url| at |offset|.
   OperationID Write(const FileSystemURL& url,
                     std::unique_ptr<storage::BlobDataHandle> blob,
+                    int64_t offset,
+                    const WriteCallback& callback);
+
+  // Writes contents of |data_pipe| to |url| at |offset|.
+  OperationID Write(const FileSystemURL& url,
+                    mojo::ScopedDataPipeConsumerHandle data_pipe,
                     int64_t offset,
                     const WriteCallback& callback);
 

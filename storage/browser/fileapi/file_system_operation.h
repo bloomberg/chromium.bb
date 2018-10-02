@@ -320,9 +320,15 @@ class FileSystemOperation {
                       StatusCallback callback) = 0;
 
   // Writes the data read from |blob_reader| using |writer_delegate|.
+  virtual void WriteBlob(const FileSystemURL& url,
+                         std::unique_ptr<FileWriterDelegate> writer_delegate,
+                         std::unique_ptr<BlobReader> blob_reader,
+                         const WriteCallback& callback) = 0;
+
+  // Writes the data read from |data_pipe| using |writer_delegate|.
   virtual void Write(const FileSystemURL& url,
                      std::unique_ptr<FileWriterDelegate> writer_delegate,
-                     std::unique_ptr<BlobReader> blob_reader,
+                     mojo::ScopedDataPipeConsumerHandle data_pipe,
                      const WriteCallback& callback) = 0;
 
   // Truncates a file at |path| to |length|. If |length| is larger than
