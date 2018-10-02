@@ -28,7 +28,6 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/views/widget/widget_delegate.h"
 #endif
 
 using extensions::AutomationEventRouter;
@@ -238,27 +237,9 @@ void AutomationManagerAura::PerformHitTest(
 
   // Check for a AX node tree in a remote process (e.g. renderer, mojo app).
   ui::AXTreeID child_ax_tree_id;
-  if (ash::Shell::HasRemoteClient(window)) {
-    // For remote mojo apps, the |window| is a DesktopNativeWidgetAura, so the
-    // parent is the widget and the widget's contents view has the child tree.
-    CHECK(window->parent());
-    views::Widget* widget =
-        views::Widget::GetWidgetForNativeWindow(window->parent());
-    CHECK(widget);
-    ui::AXNodeData node_data;
-    widget->widget_delegate()->GetContentsView()->GetAccessibleNodeData(
-        &node_data);
-    child_ax_tree_id = ui::AXTreeID::FromString(
-        node_data.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
-    DCHECK_NE(child_ax_tree_id, ui::AXTreeIDUnknown());
-    DCHECK_NE(child_ax_tree_id, ui::DesktopAXTreeID());
-  } else {
-    // For normal windows the (optional) child tree is an aura window property.
-    ui::AXTreeID* child_ax_tree_id_ptr =
-        window->GetProperty(ui::kChildAXTreeID);
-    if (child_ax_tree_id_ptr)
-      child_ax_tree_id = *child_ax_tree_id_ptr;
-  }
+  std::string* child_ax_tree_id_ptr = window->GetProperty(ui::kChildAXTreeID);
+  if (child_ax_tree_id_ptr)
+    child_ax_tree_id = ui::AXTreeID::FromString(*child_ax_tree_id_ptr);
 
   // If the window has a child AX tree ID, forward the action to the
   // associated AXHostDelegate or RenderFrameHost.

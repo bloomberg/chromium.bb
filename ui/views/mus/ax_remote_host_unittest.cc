@@ -5,9 +5,11 @@
 #include "ui/views/mus/ax_remote_host.h"
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
@@ -20,6 +22,13 @@
 
 namespace views {
 namespace {
+
+// Returns a well-known tree ID for the test widget.
+const ui::AXTreeID& TestAXTreeID() {
+  static const base::NoDestructor<ui::AXTreeID> test_ax_tree_id(
+      ui::AXTreeID::FromString("123"));
+  return *test_ax_tree_id;
+}
 
 // Simulates the AXHostService in the browser.
 class TestAXHostService : public ax::mojom::AXHost {
@@ -46,8 +55,7 @@ class TestAXHostService : public ax::mojom::AXHost {
   void SetRemoteHost(ax::mojom::AXRemoteHostPtr client,
                      SetRemoteHostCallback cb) override {
     ++add_client_count_;
-    const ui::AXTreeID tree_id = ui::AXTreeID::FromString("123");
-    std::move(cb).Run(tree_id, automation_enabled_);
+    std::move(cb).Run(TestAXTreeID(), automation_enabled_);
     client.FlushForTesting();
   }
   void HandleAccessibilityEvent(const ui::AXTreeID& tree_id,
@@ -138,7 +146,15 @@ TEST_F(AXRemoteHostTest, AutomationEnabled) {
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 
+  // Tree ID is assigned.
+  std::string* tree_id_ptr =
+      widget->GetNativeWindow()->GetProperty(ui::kChildAXTreeID);
+  ASSERT_TRUE(tree_id_ptr);
+  ui::AXTreeID tree_id = ui::AXTreeID::FromString(*tree_id_ptr);
+  EXPECT_EQ(TestAXTreeID(), tree_id);
+
   // Event was sent with initial hierarchy.
+  EXPECT_EQ(TestAXTreeID(), service.last_tree_id_);
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
   EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
                 widget->widget_delegate()->GetContentsView()),

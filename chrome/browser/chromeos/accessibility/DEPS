@@ -7,11 +7,6 @@ specific_include_rules = {
     # TODO(mash): Fix. https://crbug.com/647781
     "+ash/sticky_keys/sticky_keys_controller.h",
   ],
-  "ax_host_service\.cc": [
-    # TODO(mash): Fix. https://crbug.com/888145
-    "+ash/accessibility/accessibility_controller.h",
-    "+ash/shell.h",
-  ],
   "magnification_manager\.cc": [
     # TODO(mash): Fix. https://crbug.com/817157
     "+ash/magnifier/magnification_controller.h",

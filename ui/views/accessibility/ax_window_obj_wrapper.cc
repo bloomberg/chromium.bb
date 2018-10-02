@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/client/focus_client.h"
@@ -96,8 +97,9 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (!window_->IsVisible())
     out_node_data->AddState(ax::mojom::State::kInvisible);
   out_node_data->location = gfx::RectF(window_->GetBoundsInScreen());
-  ui::AXTreeID* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
-  if (child_ax_tree_id_ptr && *child_ax_tree_id_ptr != ui::AXTreeIDUnknown()) {
+  std::string* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
+  if (child_ax_tree_id_ptr && ui::AXTreeID::FromString(*child_ax_tree_id_ptr) !=
+                                  ui::AXTreeIDUnknown()) {
     // Most often, child AX trees are parented to Views. We need to handle
     // the case where they're not here, but we don't want the same AX tree
     // to be a child of two different parents.

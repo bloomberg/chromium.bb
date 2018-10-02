@@ -4,7 +4,6 @@
 
 #include "ash/wm/non_client_frame_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -20,6 +19,7 @@
 #include "services/ws/test_window_tree_client.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -226,17 +226,16 @@ TEST_F(NonClientFrameControllerTest, WindowTitle) {
 }
 
 TEST_F(NonClientFrameControllerTest, ExposesChildTreeIdToAccessibility) {
-  const ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString("123");
-  Shell::Get()->accessibility_controller()->set_remote_ax_tree_id(ax_tree_id);
   std::unique_ptr<aura::Window> window = CreateTestWindow();
+  const std::string ax_tree_id = "123";
+  window->SetProperty(ui::kChildAXTreeID, new std::string(ax_tree_id));
   NonClientFrameController* non_client_frame_controller =
       NonClientFrameController::Get(window.get());
   views::View* contents_view = non_client_frame_controller->GetContentsView();
   ui::AXNodeData ax_node_data;
   contents_view->GetAccessibleNodeData(&ax_node_data);
-  EXPECT_EQ(ax_tree_id,
-            ui::AXTreeID::FromString(ax_node_data.GetStringAttribute(
-                ax::mojom::StringAttribute::kChildTreeId)));
+  EXPECT_EQ(ax_tree_id, ax_node_data.GetStringAttribute(
+                            ax::mojom::StringAttribute::kChildTreeId));
   EXPECT_EQ(ax::mojom::Role::kClient, ax_node_data.role);
 }
 

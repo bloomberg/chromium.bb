@@ -5,6 +5,7 @@
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 
 #include "ash/public/cpp/window_properties.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/wm/core/window_properties.h"
 
@@ -104,6 +105,8 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kImmersiveWindowType) {
     root_window->SetProperty(kImmersiveWindowType,
                              window->GetProperty(kImmersiveWindowType));
+  } else if (key == ui::kChildAXTreeID) {
+    MirrorOwnedProperty(window, root_window, ui::kChildAXTreeID);
   } else if (key == wm::kWindowVisibilityAnimationDurationKey) {
     root_window->SetProperty(
         wm::kWindowVisibilityAnimationDurationKey,

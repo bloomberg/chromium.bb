@@ -14,6 +14,7 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/unguessable_token.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
@@ -52,6 +53,8 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterStringProperty(
+      ui::kChildAXTreeID, ws::mojom::WindowManager::kChildAXTreeID_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameActiveColorKey,
       ws::mojom::WindowManager::kFrameActiveColor_Property,

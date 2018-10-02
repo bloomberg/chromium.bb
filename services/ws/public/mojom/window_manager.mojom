@@ -78,6 +78,11 @@ interface WindowManager {
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
 
+  // The accessibility ui::AXTreeID for a views::Widget.
+  // TODO(dmazzoni): Convert to base::UnguessableToken. https://crbug.com/881986
+  // Type: mojom::String
+  const string kChildAXTreeID_Property = "prop:child-ax-tree-id";
+
   // The modal parent of a child modal window. Type: window Id.
   const string kChildModalParent_Property = "prop:child-modal-parent";
 
