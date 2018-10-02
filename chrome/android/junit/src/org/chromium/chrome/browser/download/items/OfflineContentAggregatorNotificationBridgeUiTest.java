@@ -30,7 +30,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -165,8 +164,7 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
                 .notifyDownloadInterrupted(argThat(new DownloadInfoIdMatcher(items.get(4).id)),
                         ArgumentMatchers.anyBoolean(), eq(PendingState.NOT_PENDING));
         verify(mNotifier, times(1))
-                .notifyDownloadFailed(argThat(new DownloadInfoIdMatcher(items.get(5).id)),
-                        eq(FailState.NO_FAILURE));
+                .notifyDownloadFailed(argThat(new DownloadInfoIdMatcher(items.get(5).id)));
         verify(mNotifier, times(1))
                 .notifyDownloadPaused(argThat(new DownloadInfoIdMatcher(items.get(6).id)));
 

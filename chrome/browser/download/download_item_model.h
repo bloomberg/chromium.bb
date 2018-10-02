@@ -71,12 +71,12 @@ class DownloadItemModel : public DownloadUIModel,
   void Resume() override;
   void Remove() override;
   void SetOpenWhenComplete(bool open) override;
-  download::DownloadInterruptReason GetLastReason() const override;
   base::FilePath GetFullPath() const override;
   bool CanResume() const override;
   bool AllDataSaved() const override;
   bool GetFileExternallyRemoved() const override;
   GURL GetURL() const override;
+  offline_items_collection::FailState GetLastFailState() const override;
 
 #if !defined(OS_ANDROID)
   bool IsCommandEnabled(const DownloadCommands* download_commands,

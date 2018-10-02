@@ -498,7 +498,7 @@ public class DownloadManagerService
                 break;
             case DownloadStatus.FAILED:
                 // TODO(cmsy): Use correct FailState.
-                mDownloadNotifier.notifyDownloadFailed(info, FailState.CANNOT_DOWNLOAD);
+                mDownloadNotifier.notifyDownloadFailed(info);
                 Log.w(TAG, "Download failed: " + info.getFilePath());
                 onDownloadFailed(item, DownloadManager.ERROR_UNKNOWN);
                 break;
@@ -555,8 +555,10 @@ public class DownloadManagerService
                             info, result.first, result.second, isSupportedMimeType);
                     broadcastDownloadSuccessful(info);
                 } else {
-                    // TODO(cmsy): Use correct FailState.
-                    mDownloadNotifier.notifyDownloadFailed(info, FailState.CANNOT_DOWNLOAD);
+                    info = DownloadInfo.Builder.fromDownloadInfo(info)
+                                   .setFailState(FailState.CANNOT_DOWNLOAD)
+                                   .build();
+                    mDownloadNotifier.notifyDownloadFailed(info);
                     // TODO(qinmin): get the failure message from native.
                     onDownloadFailed(item, DownloadManager.ERROR_UNKNOWN);
                 }
@@ -1138,10 +1140,10 @@ public class DownloadManagerService
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {
-        // TODO(cmsy): Use correct FailState.
-        mDownloadNotifier.notifyDownloadFailed(
-                new DownloadInfo.Builder().setDownloadGuid(downloadGuid).build(),
-                FailState.CANNOT_DOWNLOAD);
+        mDownloadNotifier.notifyDownloadFailed(new DownloadInfo.Builder()
+                                                       .setDownloadGuid(downloadGuid)
+                                                       .setFailState(FailState.CANNOT_DOWNLOAD)
+                                                       .build());
         removeDownloadProgress(downloadGuid);
         recordDownloadResumption(UmaDownloadResumption.FAILED);
         recordDownloadFinishedUMA(DownloadStatus.FAILED, downloadGuid, 0);

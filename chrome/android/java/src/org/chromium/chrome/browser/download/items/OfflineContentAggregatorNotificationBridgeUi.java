@@ -172,7 +172,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
                 mUi.notifyDownloadPaused(info);
                 break;
             case OfflineItemState.FAILED:
-                mUi.notifyDownloadFailed(info, item.failState);
+                mUi.notifyDownloadFailed(info);
                 break;
             case OfflineItemState.PENDING:
                 mUi.notifyDownloadPaused(info);

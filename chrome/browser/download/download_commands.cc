@@ -187,7 +187,7 @@ GURL DownloadCommands::GetLearnMoreURLForInterruptedDownload() const {
       learn_more_url, g_browser_process->GetApplicationLocale());
   return net::AppendQueryParameter(
       learn_more_url, "ctx",
-      base::IntToString(static_cast<int>(model_->GetLastReason())));
+      base::IntToString(static_cast<int>(model_->download()->GetLastReason())));
 }
 
 gfx::Image DownloadCommands::GetCommandIcon(Command command) {

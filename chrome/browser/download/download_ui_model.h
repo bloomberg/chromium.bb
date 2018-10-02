@@ -257,10 +257,6 @@ class DownloadUIModel {
   // Marks the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open);
 
-  // Returns the most recent interrupt reason for this download. Returns
-  // |DOWNLOAD_INTERRUPT_REASON_NONE| if there is no previous interrupt reason.
-  virtual download::DownloadInterruptReason GetLastReason() const;
-
   // Returns the full path to the downloaded or downloading file. This is the
   // path to the physical file, if one exists.
   virtual base::FilePath GetFullPath() const;
@@ -277,6 +273,10 @@ class DownloadUIModel {
 
   // Returns the URL represented by this download.
   virtual GURL GetURL() const;
+
+  // Returns the most recent failure reason for this download. Returns
+  // |FailState::NO_FAILURE| if there is no previous failure reason.
+  virtual offline_items_collection::FailState GetLastFailState() const;
 
 #if !defined(OS_ANDROID)
   // Methods related to DownloadCommands.

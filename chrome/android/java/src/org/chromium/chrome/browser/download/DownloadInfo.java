@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -56,6 +57,8 @@ public final class DownloadInfo {
     private final Bitmap mIcon;
     @PendingState
     private final int mPendingState;
+    @FailState
+    private final int mFailState;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -93,6 +96,7 @@ public final class DownloadInfo {
         mIsParallelDownload = builder.mIsParallelDownload;
         mIcon = builder.mIcon;
         mPendingState = builder.mPendingState;
+        mFailState = builder.mFailState;
     }
 
     public String getUrl() {
@@ -218,6 +222,10 @@ public final class DownloadInfo {
         return mPendingState;
     }
 
+    public @FailState int getFailState() {
+        return mFailState;
+    }
+
     /**
      * Helper method to build a {@link DownloadInfo} from an {@link OfflineItem}.
      * @param item The {@link OfflineItem} to mimic.
@@ -270,6 +278,7 @@ public final class DownloadInfo {
                 .setIsParallelDownload(item.isAccelerated)
                 .setIcon(visuals == null ? null : visuals.icon)
                 .setPendingState(item.pendingState)
+                .setFailState(item.failState)
                 .build();
     }
 
@@ -296,6 +305,7 @@ public final class DownloadInfo {
         offlineItem.mimeType = downloadInfo.getMimeType();
         offlineItem.progress = downloadInfo.getProgress();
         offlineItem.isDangerous = downloadInfo.getIsDangerous();
+        offlineItem.failState = downloadInfo.getFailState();
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED
@@ -377,6 +387,8 @@ public final class DownloadInfo {
         private Bitmap mIcon;
         @PendingState
         private int mPendingState;
+        @FailState
+        private int mFailState;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -528,6 +540,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setFailState(@FailState int failState) {
+            mFailState = failState;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -566,7 +583,8 @@ public final class DownloadInfo {
                     .setIsTransient(downloadInfo.getIsTransient())
                     .setIsParallelDownload(downloadInfo.getIsParallelDownload())
                     .setIcon(downloadInfo.getIcon())
-                    .setPendingState(downloadInfo.getPendingState());
+                    .setPendingState(downloadInfo.getPendingState())
+                    .setFailState(downloadInfo.getFailState());
             return builder;
         }
     }
@@ -577,7 +595,7 @@ public final class DownloadInfo {
             boolean isIncognito, int state, int percentCompleted, boolean isPaused,
             boolean hasUserGesture, boolean isResumable, boolean isParallelDownload,
             String originalUrl, String referrerUrl, long timeRemainingInMs, long lastAccessTime,
-            boolean isDangerous) {
+            boolean isDangerous, @FailState int failState) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
 
@@ -605,6 +623,7 @@ public final class DownloadInfo {
                 .setLastAccessTime(lastAccessTime)
                 .setIsDangerous(isDangerous)
                 .setUrl(url)
+                .setFailState(failState)
                 .build();
     }
 }

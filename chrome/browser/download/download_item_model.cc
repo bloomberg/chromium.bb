@@ -465,10 +465,6 @@ void DownloadItemModel::SetOpenWhenComplete(bool open) {
   download_->SetOpenWhenComplete(open);
 }
 
-download::DownloadInterruptReason DownloadItemModel::GetLastReason() const {
-  return download_->GetLastReason();
-}
-
 base::FilePath DownloadItemModel::GetFullPath() const {
   return download_->GetFullPath();
 }
@@ -683,6 +679,12 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
   }
 }
 #endif
+
+offline_items_collection::FailState DownloadItemModel::GetLastFailState()
+    const {
+  return OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
+      download_->GetLastReason());
+}
 
 std::string DownloadItemModel::GetMimeType() const {
   return download_->GetMimeType();
