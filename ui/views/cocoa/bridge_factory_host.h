@@ -22,7 +22,9 @@ class VIEWS_EXPORT BridgeFactoryHost {
     ~Observer() override {}
   };
 
-  BridgeFactoryHost(views_bridge_mac::mojom::BridgeFactoryRequest* request);
+  BridgeFactoryHost(
+      uint64_t host_id,
+      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest* request);
   ~BridgeFactoryHost();
 
   // Return an id for the host process. This can be used to look up other
@@ -36,7 +38,7 @@ class VIEWS_EXPORT BridgeFactoryHost {
 
  private:
   const uint64_t host_id_;
-  views_bridge_mac::mojom::BridgeFactoryPtr bridge_factory_ptr_;
+  views_bridge_mac::mojom::BridgeFactoryAssociatedPtr bridge_factory_ptr_;
   base::ObserverList<Observer> observers_;
 };
 

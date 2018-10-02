@@ -133,7 +133,7 @@ class AppShimController : public chrome::mojom::AppShim {
   // chrome::mojom::AppShim implementation.
   void LaunchAppDone(apps::AppShimLaunchResult result) override;
   void CreateViewsBridgeFactory(
-      views_bridge_mac::mojom::BridgeFactoryRequest request) override;
+      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) override;
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override;
   void Hide() override;
@@ -224,7 +224,8 @@ void AppShimController::CreateChannelAndSendLaunchApp(
       chrome::mojom::AppShimHostPtrInfo(std::move(message_pipe), 0));
 
   chrome::mojom::AppShimPtr app_shim_ptr;
-  shim_binding_.Bind(mojo::MakeRequest(&app_shim_ptr));
+  shim_binding_.Bind(mojo::MakeRequest(&app_shim_ptr),
+                     ui::WindowResizeHelperMac::Get()->task_runner());
   shim_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimController::ChannelError, base::Unretained(this)));
 
@@ -314,7 +315,7 @@ void AppShimController::LaunchAppDone(apps::AppShimLaunchResult result) {
 }
 
 void AppShimController::CreateViewsBridgeFactory(
-    views_bridge_mac::mojom::BridgeFactoryRequest request) {
+    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) {
   views_bridge_mac::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
 }
 

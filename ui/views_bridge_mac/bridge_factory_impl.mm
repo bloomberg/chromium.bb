@@ -5,6 +5,7 @@
 #include "ui/views_bridge_mac/bridge_factory_impl.h"
 
 #include "base/no_destructor.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
@@ -18,14 +19,21 @@ namespace {
 class Bridge : public BridgedNativeWidgetHostHelper {
  public:
   Bridge(uint64_t bridge_id,
-         mojom::BridgedNativeWidgetHostPtr host_ptr,
-         mojom::BridgedNativeWidgetRequest bridge_request) {
-    host_ptr_ = std::move(host_ptr);
+         mojom::BridgedNativeWidgetHostAssociatedPtrInfo host_ptr,
+         mojom::BridgedNativeWidgetAssociatedRequest bridge_request) {
+    host_ptr_.Bind(std::move(host_ptr),
+                   ui::WindowResizeHelperMac::Get()->task_runner());
     bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(
         bridge_id, host_ptr_.get(), this);
-    bridge_impl_->BindRequest(std::move(bridge_request));
+    bridge_impl_->BindRequest(
+        std::move(bridge_request),
+        base::BindOnce(&Bridge::OnConnectionError, base::Unretained(this)));
   }
+
+ private:
   ~Bridge() override {}
+
+  void OnConnectionError() { delete this; }
 
   // BridgedNativeWidgetHostHelper:
   NSView* GetNativeViewAccessible() override { return nil; }
@@ -45,14 +53,9 @@ class Bridge : public BridgedNativeWidgetHostHelper {
     return nullptr;
   }
 
-  mojom::BridgedNativeWidgetHostPtr host_ptr_;
+  mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr_;
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
 };
-
-std::map<uint64_t, std::unique_ptr<Bridge>>& GetBridgeMap() {
-  static base::NoDestructor<std::map<uint64_t, std::unique_ptr<Bridge>>> map;
-  return *map;
-}
 
 }  // namespace
 
@@ -62,20 +65,18 @@ BridgeFactoryImpl* BridgeFactoryImpl::Get() {
   return factory.get();
 }
 
-void BridgeFactoryImpl::BindRequest(mojom::BridgeFactoryRequest request) {
+void BridgeFactoryImpl::BindRequest(
+    mojom::BridgeFactoryAssociatedRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void BridgeFactoryImpl::CreateBridge(
+void BridgeFactoryImpl::CreateBridgedNativeWidget(
     uint64_t bridge_id,
-    mojom::BridgedNativeWidgetRequest bridge_request,
-    mojom::BridgedNativeWidgetHostPtr host_ptr) {
-  GetBridgeMap()[bridge_id] = std::make_unique<Bridge>(
-      bridge_id, std::move(host_ptr), std::move(bridge_request));
-}
-
-void BridgeFactoryImpl::DestroyBridge(uint64_t bridge_id) {
-  GetBridgeMap().erase(bridge_id);
+    mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
+    mojom::BridgedNativeWidgetHostAssociatedPtrInfo host) {
+  // The resulting object will be destroyed when its message pipe is closed.
+  ignore_result(
+      new Bridge(bridge_id, std::move(host), std::move(bridge_request)));
 }
 
 BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}

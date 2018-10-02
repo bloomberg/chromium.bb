@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -312,7 +312,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.
-  views_bridge_mac::mojom::BridgedNativeWidgetPtr bridge_ptr_;
+  views_bridge_mac::mojom::BridgedNativeWidgetAssociatedPtr bridge_ptr_;
 
   // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
   // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
@@ -353,7 +353,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Contains NativeViewHost->gfx::NativeView associations.
   std::map<const views::View*, NSView*> associated_views_;
 
-  mojo::Binding<views_bridge_mac::mojom::BridgedNativeWidgetHost>
+  mojo::AssociatedBinding<views_bridge_mac::mojom::BridgedNativeWidgetHost>
       host_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetHostImpl);
 };

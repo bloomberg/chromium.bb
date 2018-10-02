@@ -47,7 +47,8 @@ class TestingAppShim : public chrome::mojom::AppShim {
     launch_done_result_ = result;
   }
   void CreateViewsBridgeFactory(
-      views_bridge_mac::mojom::BridgeFactoryRequest request) override {}
+      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request)
+      override {}
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
   void Hide() override {}

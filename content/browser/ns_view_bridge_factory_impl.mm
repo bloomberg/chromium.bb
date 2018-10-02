@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "content/browser/renderer_host/render_widget_host_ns_view_bridge_local.h"
 #include "content/browser/web_contents/web_contents_ns_view_bridge.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 
 namespace content {
 
@@ -21,7 +22,8 @@ NSViewBridgeFactoryImpl* NSViewBridgeFactoryImpl::Get() {
 
 void NSViewBridgeFactoryImpl::BindRequest(
     mojom::NSViewBridgeFactoryAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 void NSViewBridgeFactoryImpl::CreateRenderWidgetHostNSViewBridge(

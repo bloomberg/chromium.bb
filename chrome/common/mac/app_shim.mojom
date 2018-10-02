@@ -25,7 +25,7 @@ interface AppShim {
   // Create the interface through which BridgedNativeWidget instances may be
   // created (for views::Widgets whose NSWindows exist in the app shim process).
   CreateViewsBridgeFactory(
-      views_bridge_mac.mojom.BridgeFactory& views_bridge_factory);
+      associated views_bridge_mac.mojom.BridgeFactory& views_bridge_factory);
 
   // Create the interface through which a content structure
   // (RenderWidgetHostView or WebContentsView) may create an NSView that exists

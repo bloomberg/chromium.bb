@@ -8,14 +8,10 @@
 
 namespace views {
 
-namespace {
-// Start the ids at something far from zero to help in debugging.
-uint64_t g_next_bridge_factory_host_id_ = 0x1000;
-}  // namespace
-
 BridgeFactoryHost::BridgeFactoryHost(
-    views_bridge_mac::mojom::BridgeFactoryRequest* request)
-    : host_id_(g_next_bridge_factory_host_id_++) {
+    uint64_t host_id,
+    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest* request)
+    : host_id_(host_id) {
   *request = mojo::MakeRequest(&bridge_factory_ptr_);
 }
 

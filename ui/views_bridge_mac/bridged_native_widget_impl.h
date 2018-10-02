@@ -13,7 +13,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/cocoa/ns_view_ids.h"
@@ -84,7 +84,13 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                           BridgedNativeWidgetHost* host,
                           BridgedNativeWidgetHostHelper* host_helper);
   ~BridgedNativeWidgetImpl() override;
-  void BindRequest(views_bridge_mac::mojom::BridgedNativeWidgetRequest request);
+
+  // Bind |bridge_mojo_binding_| to |request|, and set the connection error
+  // callback for |bridge_mojo_binding_| to |connection_closed_callback| (which
+  // will delete |this| when the connection is closed).
+  void BindRequest(
+      views_bridge_mac::mojom::BridgedNativeWidgetAssociatedRequest request,
+      base::OnceClosure connection_closed_callback);
 
   // Initialize the NSWindow by taking ownership of the specified object.
   // TODO(ccameron): When a BridgedNativeWidgetImpl is allocated across a
@@ -341,7 +347,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
 
-  mojo::Binding<views_bridge_mac::mojom::BridgedNativeWidget>
+  mojo::AssociatedBinding<views_bridge_mac::mojom::BridgedNativeWidget>
       bridge_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
 };

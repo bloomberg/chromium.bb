@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
 #define UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/views/views_export.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
@@ -20,20 +20,20 @@ namespace views_bridge_mac {
 class VIEWS_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
  public:
   static BridgeFactoryImpl* Get();
-  void BindRequest(mojom::BridgeFactoryRequest request);
+  void BindRequest(mojom::BridgeFactoryAssociatedRequest request);
 
   // mojom::BridgeFactory:
-  void CreateBridge(uint64_t bridge_id,
-                    mojom::BridgedNativeWidgetRequest bridge_request,
-                    mojom::BridgedNativeWidgetHostPtr host) override;
-  void DestroyBridge(uint64_t bridge_id) override;
+  void CreateBridgedNativeWidget(
+      uint64_t bridge_id,
+      mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
+      mojom::BridgedNativeWidgetHostAssociatedPtrInfo host) override;
 
  private:
   friend class base::NoDestructor<BridgeFactoryImpl>;
   BridgeFactoryImpl();
   ~BridgeFactoryImpl() override;
 
-  mojo::Binding<mojom::BridgeFactory> binding_;
+  mojo::AssociatedBinding<mojom::BridgeFactory> binding_;
 };
 
 }  // namespace views_bridge_mac
