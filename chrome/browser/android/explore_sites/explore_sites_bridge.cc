@@ -16,6 +16,8 @@
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "jni/ExploreSitesBridge_jni.h"
 #include "jni/ExploreSitesCategory_jni.h"
 #include "jni/ExploreSitesSite_jni.h"
@@ -152,8 +154,18 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
     return;
   }
 
-  service->UpdateCatalogFromNetwork(base::BindOnce(
-      &UpdateCatalogDone, ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+  // TODO(petewil): It might be better to move the PrefService work inside
+  // ExploreSitesService.
+  std::string accept_languages;
+  PrefService* pref_service = profile->GetPrefs();
+  if (pref_service != nullptr) {
+    accept_languages = pref_service->GetString(prefs::kAcceptLanguages);
+  }
+
+  service->UpdateCatalogFromNetwork(
+      accept_languages,
+      base::BindOnce(&UpdateCatalogDone,
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 // static

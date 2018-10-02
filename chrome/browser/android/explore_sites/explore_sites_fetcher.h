@@ -34,6 +34,7 @@ class ExploreSitesFetcher {
       Callback callback,
       const std::string catalog_version,
       const std::string country_code,
+      const std::string accept_languages,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   // Creates a fetcher for the GetCategories RPC.
@@ -41,6 +42,7 @@ class ExploreSitesFetcher {
       Callback callback,
       const std::string catalog_version,
       const std::string country_code,
+      const std::string accept_languages,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   ~ExploreSitesFetcher();
@@ -51,6 +53,7 @@ class ExploreSitesFetcher {
       const GURL& url,
       const std::string catalog_version,
       const std::string country_code,
+      const std::string accept_languages,
       scoped_refptr<network ::SharedURLLoaderFactory> loader_factory);
 
   // Invoked from SimpleURLLoader after download is complete.
