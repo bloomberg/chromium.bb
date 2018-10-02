@@ -209,7 +209,6 @@ const char* const kPersistentPrefNames[] = {
 // audited, checked with owners, and removed or transfered to
 // |kPersistentPrefNames|.
 const char* const kTemporaryIncognitoWhitelist[] = {
-    prefs::kMediaDeviceIdSalt,
     prefs::kClearPluginLSODataEnabled,
 };
 
