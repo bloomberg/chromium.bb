@@ -537,7 +537,6 @@ const char* IconLabelBubbleView::GetClassName() const {
 void IconLabelBubbleView::SetUpForInOutAnimation() {
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  image_->EnableCanvasFlippingForRTLUI(true);
   label_->SetElideBehavior(gfx::NO_ELIDE);
   label_->SetVisible(false);
   slide_animation_.SetSlideDuration(GetSlideDurationTime());

@@ -33,6 +33,7 @@ ContentSettingImageView::ContentSettingImageView(
       bubble_view_(nullptr) {
   DCHECK(delegate_);
   SetUpForInOutAnimation();
+  image()->EnableCanvasFlippingForRTLUI(true);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
