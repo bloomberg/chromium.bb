@@ -8,29 +8,12 @@
 from __future__ import print_function
 
 import base64
-import filecmp
 import fnmatch
 import hashlib
 import os
 import shutil
 
 from chromite.lib import osutils
-
-
-def Cmp(path1, path2):
-  """Return True if paths hold identical files.
-
-  If either file is missing then always return False.
-
-  Args:
-    path1: Path to a local file.
-    path2: Path to a local file.
-
-  Returns:
-    True if files are the same, False otherwise.
-  """
-  return (os.path.exists(path1) and os.path.exists(path2) and
-          filecmp.cmp(path1, path2))
 
 
 def Copy(src_path, dest_path):

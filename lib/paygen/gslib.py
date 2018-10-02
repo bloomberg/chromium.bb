@@ -16,7 +16,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib.paygen import filelib
 from chromite.lib.paygen import utils
 
 
@@ -307,32 +306,6 @@ def MD5Sum(gs_uri):
 
   # This means there was some actual failure in the command.
   raise GSLibError('Unable to determine MD5Sum for %r' % gs_uri)
-
-
-@RetryGSLib
-def Cmp(path1, path2):
-  """Return True if paths hold identical files, according to MD5 sum.
-
-  Note that this function relies on MD5Sum, which means it also can only
-  promise eventual consistency.  A recently uploaded file in Google Storage
-  may behave badly in this comparison function.
-
-  If either file is missing then always return False.
-
-  Args:
-    path1: URI to a file.  Local paths also supported.
-    path2: URI to a file.  Local paths also supported.
-
-  Returns:
-    True if files are the same, False otherwise.
-  """
-  md5_1 = MD5Sum(path1) if IsGsURI(path1) else filelib.MD5Sum(path1)
-  if not md5_1:
-    return False
-
-  md5_2 = MD5Sum(path2) if IsGsURI(path2) else filelib.MD5Sum(path2)
-
-  return md5_1 == md5_2
 
 
 @RetryGSLib

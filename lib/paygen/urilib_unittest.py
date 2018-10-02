@@ -108,10 +108,6 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     self.assertEquals(set(deep_gs_files),
                       set(urilib.ListFiles(self.gs_dir, recurse=True)))
 
-    # Test Cmp between some files.
-    self.assertTrue(urilib.Cmp(self.file1_local, self.file1_gs))
-    self.assertFalse(urilib.Cmp(self.file2_local, self.file1_gs))
-
     # Test CopyFiles, from GS to local.
     self.assertEquals(set(deep_local_files),
                       set(urilib.CopyFiles(self.gs_dir, self.filesdir)))
@@ -170,34 +166,6 @@ class TestUrilib(cros_test_lib.MoxTempDirTestCase):
     self.assertEquals('TheResult', urilib.MD5Sum(gs_path))
     self.assertEquals('TheResult', urilib.MD5Sum(local_path))
     self.assertRaises(urilib.NotSupportedForType, urilib.MD5Sum, http_path)
-    self.mox.VerifyAll()
-
-  def testCmp(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-
-    result = 'TheResult'
-
-    self.mox.StubOutWithMock(gslib, 'Cmp')
-    self.mox.StubOutWithMock(filelib, 'Cmp')
-
-    # Set up the test replay script.
-    # Run 1, two local files.
-    filelib.Cmp(local_path, local_path + '.1').AndReturn(result)
-    # Run 2, local and GS.
-    gslib.Cmp(local_path, gs_path).AndReturn(result)
-    # Run 4, GS and GS
-    gslib.Cmp(gs_path, gs_path + '.1').AndReturn(result)
-    # Run 7, local and HTTP
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEquals(result, urilib.Cmp(local_path, local_path + '.1'))
-    self.assertEquals(result, urilib.Cmp(local_path, gs_path))
-    self.assertEquals(result, urilib.Cmp(gs_path, gs_path + '.1'))
-    self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Cmp,
-                      local_path, http_path)
     self.mox.VerifyAll()
 
   @cros_test_lib.NetworkTest()

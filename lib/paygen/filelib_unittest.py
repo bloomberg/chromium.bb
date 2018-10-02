@@ -80,11 +80,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
       for dir2_path in dir2_deep_files:
         self.assertExists(dir2_path)
 
-      # Test Cmp.
-      self.assertTrue(filelib.Cmp(dir1_file1, dir2_file1))
-      self.assertTrue(filelib.Cmp(dir2_file2, dir1_file2))
-      self.assertFalse(filelib.Cmp(dir1_file2, dir2_file1))
-
     finally:
       for d in (dir1, dir2):
         if d and os.path.isdir(d):
@@ -130,33 +125,6 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     sha1, sha256 = filelib.ShaSums(file_path)
     self.assertEqual(expected_sha1, sha1)
     self.assertEqual(expected_sha256, sha256)
-
-  def testCmp(self):
-    path1 = '/some/local/path'
-    path2 = '/other/local/path'
-
-    self.mox.StubOutWithMock(filelib.os.path, 'exists')
-    self.mox.StubOutWithMock(filelib.filecmp, 'cmp')
-
-    # Set up the test replay script.
-    # Run 1, both exist, are different.
-    filelib.os.path.exists(path1).AndReturn(True)
-    filelib.os.path.exists(path2).AndReturn(True)
-    filelib.filecmp.cmp(path1, path2).AndReturn(True)
-    # Run 2, both exist, are different.
-    filelib.os.path.exists(path1).AndReturn(True)
-    filelib.os.path.exists(path2).AndReturn(True)
-    filelib.filecmp.cmp(path1, path2).AndReturn(False)
-    # Run 3, second file missing.
-    filelib.os.path.exists(path1).AndReturn(True)
-    filelib.os.path.exists(path2).AndReturn(False)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertTrue(filelib.Cmp(path1, path2))
-    self.assertFalse(filelib.Cmp(path1, path2))
-    self.assertFalse(filelib.Cmp(path1, path2))
-    self.mox.VerifyAll()
 
   def testCopy(self):
     path1 = '/some/local/path'

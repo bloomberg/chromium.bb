@@ -154,37 +154,6 @@ def MD5Sum(uri):
   raise NotSupportedForType(uri_type)
 
 
-def Cmp(uri1, uri2):
-  """Return True if paths hold identical files.
-
-  If either file is missing then always return False.
-
-  Args:
-    uri1: URI to a file.
-    uri2: URI to a file.
-
-  Returns:
-    True if files are the same, False otherwise.
-
-  Raises:
-    NotSupportedBetweenTypes if Cmp cannot be done between the two
-      URIs provided.
-  """
-  uri_type1 = GetUriType(uri1)
-  uri_type2 = GetUriType(uri2)
-  uri_types = set([uri_type1, uri_type2])
-
-  if TYPE_GS in uri_types:
-    # GS only supported between other GS files or local files.
-    if len(uri_types) == 1 or TYPE_LOCAL in uri_types:
-      return gslib.Cmp(uri1, uri2)
-
-  if TYPE_LOCAL in uri_types and len(uri_types) == 1:
-    return filelib.Cmp(uri1, uri2)
-
-  raise NotSupportedBetweenTypes(uri_type1, uri_type2)
-
-
 class URLopener(urllib.FancyURLopener):
   """URLopener that will actually complain when download fails."""
   # The urllib.urlretrieve function, which seems like a good fit for this,

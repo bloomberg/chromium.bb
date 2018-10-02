@@ -17,6 +17,7 @@ from chromite.lib import cros_test_lib
 
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
 
 
@@ -327,43 +328,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
                       self.bucket_uri, recurse=True)
     self.mox.VerifyAll()
 
-  def testCmp(self):
-    uri1 = 'gs://some/gs/path'
-    uri2 = 'gs://some/other/path'
-    local_path = '/some/local/path'
-    md5 = 'TheMD5Sum'
-
-    self.mox.StubOutWithMock(gslib, 'MD5Sum')
-    self.mox.StubOutWithMock(gslib.filelib, 'MD5Sum')
-
-    # Set up the test replay script.
-    # Run 1, same md5, both GS.
-    gslib.MD5Sum(uri1).AndReturn(md5)
-    gslib.MD5Sum(uri2).AndReturn(md5)
-    # Run 2, different md5, both GS.
-    gslib.MD5Sum(uri1).AndReturn(md5)
-    gslib.MD5Sum(uri2).AndReturn('Other' + md5)
-    # Run 3, same md5, one GS on local.
-    gslib.MD5Sum(uri1).AndReturn(md5)
-    gslib.filelib.MD5Sum(local_path).AndReturn(md5)
-    # Run 4, different md5, one GS on local.
-    gslib.MD5Sum(uri1).AndReturn(md5)
-    gslib.filelib.MD5Sum(local_path).AndReturn('Other' + md5)
-    # Run 5, missing file, both GS.
-    gslib.MD5Sum(uri1).AndReturn(None)
-    # Run 6, args are None.
-    gslib.filelib.MD5Sum(None).AndReturn(None)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertTrue(gslib.Cmp(uri1, uri2))
-    self.assertFalse(gslib.Cmp(uri1, uri2))
-    self.assertTrue(gslib.Cmp(uri1, local_path))
-    self.assertFalse(gslib.Cmp(uri1, local_path))
-    self.assertFalse(gslib.Cmp(uri1, uri2))
-    self.assertFalse(gslib.Cmp(None, None))
-    self.mox.VerifyAll()
-
   def testMD5SumAccessError(self):
     gs_uri = 'gs://bucket/foo/bar/somefile'
     crc32c = 'c96fd51e'
@@ -459,7 +423,7 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
     """Higher-level functional test. Test MD5Sum OK."""
     with gs.TemporaryURL('chromite.gslib.md5') as tempuri:
       local_path = self.populateUri(tempuri)
-      local_md5 = gslib.filelib.MD5Sum(local_path)
+      local_md5 = filelib.MD5Sum(local_path)
       gs_md5 = gslib.MD5Sum(tempuri)
       self.assertEqual(gs_md5, local_md5)
 
