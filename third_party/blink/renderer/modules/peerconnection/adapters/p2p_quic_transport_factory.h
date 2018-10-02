@@ -33,7 +33,7 @@ struct P2PQuicTransportConfig final {
   P2PQuicTransportConfig(const P2PQuicTransportConfig&) = delete;
   P2PQuicTransportConfig& operator=(const P2PQuicTransportConfig&) = delete;
   P2PQuicTransportConfig(P2PQuicTransportConfig&&) = default;
-  P2PQuicTransportConfig& operator=(P2PQuicTransportConfig&&) = default;
+  P2PQuicTransportConfig& operator=(P2PQuicTransportConfig&&) = delete;
   ~P2PQuicTransportConfig() = default;
 
   //  The standard case is an ICE transport. It's lifetime will be managed by
