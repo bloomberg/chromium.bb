@@ -1451,6 +1451,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaScreenCaptureName,
      flag_descriptions::kMediaScreenCaptureDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kUserMediaScreenCapturing)},
+    {"enable-surfacecontrol", flag_descriptions::kAndroidSurfaceControl,
+     flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAndroidSurfaceControl)},
 #endif  // OS_ANDROID
 // Native client is compiled out if ENABLE_NACL is not set.
 #if BUILDFLAG(ENABLE_NACL)

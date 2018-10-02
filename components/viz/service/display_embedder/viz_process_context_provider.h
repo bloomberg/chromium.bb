@@ -73,6 +73,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   void SetUpdateVSyncParametersCallback(
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback);
+  bool UseRGB565PixelFormat() const;
 
  private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;

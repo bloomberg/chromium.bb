@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_AHARDWAREBUFFER_H_
 #define UI_GL_GL_IMAGE_AHARDWAREBUFFER_H_
 
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/macros.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
@@ -18,6 +19,9 @@ class GL_EXPORT GLImageAHardwareBuffer : public GLImageEGL {
 
   // Create an EGLImage from a given Android hardware buffer.
   bool Initialize(AHardwareBuffer* buffer, bool preserved);
+  const base::android::ScopedHardwareBufferHandle& handle() const {
+    return handle_;
+  }
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;
@@ -37,11 +41,17 @@ class GL_EXPORT GLImageAHardwareBuffer : public GLImageEGL {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
+  Type GetType() const override;
+
+  // Downcasts from |image|. Returns |nullptr| on failure.
+  static GLImageAHardwareBuffer* FromGLImage(GLImage* image);
 
  protected:
   ~GLImageAHardwareBuffer() override;
 
  private:
+  base::android::ScopedHardwareBufferHandle handle_;
+
   DISALLOW_COPY_AND_ASSIGN(GLImageAHardwareBuffer);
 };
 

@@ -51,6 +51,8 @@ jumbo_component("gl") {
   output_name = "gl_wrapper"  # Avoid colliding with OS X"s libGL.dylib.
 
   sources = [
+    "android/android_surface_composer_compat.cc",
+    "android/android_surface_composer_compat.h",
     "android/scoped_java_surface.cc",
     "android/scoped_java_surface.h",
     "android/surface_texture.cc",
@@ -195,6 +197,8 @@ jumbo_component("gl") {
       sources += [
         "gl_image_ahardwarebuffer.cc",
         "gl_image_ahardwarebuffer.h",
+        "gl_surface_egl_surface_control.cc",
+        "gl_surface_egl_surface_control.h",
       ]
 
       if (use_static_angle) {

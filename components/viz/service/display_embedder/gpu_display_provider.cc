@@ -36,6 +36,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
+#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -169,6 +170,13 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           std::move(context_provider), surface_handle,
           synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           renderer_settings.allow_overlays);
+#elif defined(OS_ANDROID)
+      // TODO(khushalsagar): Use RGB_565 if specified by context provider.
+      auto buffer_format = gfx::BufferFormat::RGBA_8888;
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
+          std::move(context_provider), surface_handle,
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
+          buffer_format);
 #else
       NOTREACHED();
 #endif
