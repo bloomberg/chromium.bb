@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL form margin quirk assert_equals: marginRight expected "16px" but got "0px"
-Harness: the test ran to completion.
-
