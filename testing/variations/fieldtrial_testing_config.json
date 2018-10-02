@@ -1047,25 +1047,6 @@
             ]
         }
     ],
-    "BundledConnectionHelp": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "HTTPHelpCenterEnabled",
-                    "enable_features": [
-                        "BundledConnectionHelp"
-                    ]
-                }
-            ]
-        }
-    ],
     "CCTModule": [
         {
             "platforms": [
