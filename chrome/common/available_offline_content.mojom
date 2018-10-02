@@ -7,8 +7,11 @@ module chrome.mojom;
 import "url/mojom/url.mojom";
 
 // Categorizes suggested content for metrics reporting.
-// This enum is backed by a UMA histogram therefore its entries should not be
-// deleted or re-ordered and new ones should only be appended.
+// This enum duplicates the values from the NetErrorOfflineSuggestionType
+// metrics enum in enums.xml therefore its entries should not be deleted
+// or re-ordered and new ones should only be appended. Furthermore, changes
+// to this enum might effect the presentation logic in
+// components/neterror/resources/neterror.js.
 enum AvailableContentType {
   // The offline page is prefetched suggested content.
   kPrefetchedUnopenedPage = 0,

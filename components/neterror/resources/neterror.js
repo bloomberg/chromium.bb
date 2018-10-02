@@ -164,30 +164,6 @@ function toggleErrorInformationPopup() {
       .classList.toggle(HIDDEN_CLASS);
 }
 
-function getSuggestedContentDiv(item) {
-  var visual = '';
-    if (item.thumbnail_data_uri) {
-      // html_inline.py will try to replace src attributes with data URIs using
-      // a simple regex. The following is obfuscated slightly to avoid that.
-      var src = 'src';
-      visual = `<img ${src}="${item.thumbnail_data_uri}">`;
-    }
-    return `
-<div class="offline-content-suggestion"
-  onclick="launchOfflineItem('${item.ID}', '${item.name_space}')">
-  <div class="offline-content-suggestion-image">${visual}</div>
-  <div>
-    <div class="offline-content-suggestion-title">${item.title}</div>
-    <span class="offline-content-suggestion-attribution">${
-                                                           item.attribution
-                                                         }</span>
-    <span class="offline-content-suggestion-freshness">${
-                                                         item.date_modified
-                                                       }</span>
-  </div>
-</div>`;
-}
-
 function launchOfflineItem(itemID, name_space) {
   errorPageController.launchOfflineItem(itemID, name_space);
 }
@@ -204,28 +180,80 @@ function offlineContentSummaryAvailable(summary) {
   document.getElementById('offline-content-summary').hidden = false;
 }
 
+function getIconForSuggestedItem(item) {
+  // Note: |item.content_type| contains the enum values from
+  // chrome::mojom::AvailableContentType.
+  switch (item.content_type) {
+    case 1:  // kVideo
+      return 'image-video';
+    case 2:  // kAudio
+      return 'image-music-note';
+    case 0:  // kPrefetchedUnopenedPage
+    case 3:  // kOtherPage
+      return 'image-earth';
+  }
+  return 'image-file';
+}
+
+function getSuggestedContentDiv(item) {
+  // Note: See AvailableContentToValue in available_offline_content_helper.cc
+  // for the data contained in an |item|.
+  var visual = '';
+  var extraContainerClasses = [];
+  // html_inline.py will try to replace src attributes with data URIs using a
+  // simple regex. The following is obfuscated slightly to avoid that.
+  var src = 'src';
+  if (item.thumbnail_data_uri) {
+    extraContainerClasses.push('suggestion-with-image');
+    visual = `<img ${src}="${item.thumbnail_data_uri}">`;
+  } else {
+    extraContainerClasses.push('suggestion-with-icon');
+    iconClass = getIconForSuggestedItem(item);
+    visual = `<div><img class="${iconClass}"></div>`;
+  }
+
+  if (!item.attribution)
+    extraContainerClasses.push('no-attribution');
+
+  return `
+  <div class="offline-content-suggestion ${extraContainerClasses.join(' ')}"
+    onclick="launchOfflineItem('${item.ID}', '${item.name_space}')">
+      <div class="offline-content-suggestion-texts">
+        <div class="offline-content-suggestion-title">
+          ${item.title}
+        </div>
+        <div class="offline-content-suggestion-attribution-freshness">
+          <div class="offline-content-suggestion-attribution">
+            ${item.attribution}
+          </div>
+          <div class="offline-content-suggestion-freshness">
+            ${item.date_modified}
+          </div>
+          <div class="offline-content-suggestion-pin-spacer"></div>
+          <div class="offline-content-suggestion-pin"></div>
+        </div>
+      </div>
+      <div class="offline-content-suggestion-visual">
+        ${visual}
+      </div>
+  </div>`;
+}
+
 // Populates a list of suggested offline content.
-// TODO(https://crbug.com/852872): Finish implementing offline content list UI.
-function offlineContentAvailable(content) {
-  if (!content || !loadTimeData.valueExists('offlineContentList'))
+function offlineContentAvailable(suggestions) {
+  if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
     return;
 
-  var contentTitle = loadTimeData.getValue('offlineContentList').title;
-  var contentOpenAllButton =
-      loadTimeData.getValue('offlineContentList').actionText;
   var suggestionsHTML = [];
-  suggestionsHTML.push(`<p style="text-align: center;">${contentTitle}</p>`);
-  for (var c of content)
-    suggestionsHTML.push(getSuggestedContentDiv(c));
-  suggestionsHTML.push(`
-<div>
-  <a class="link-button" onclick="launchDownloadsPage()">${
-                                                           contentOpenAllButton
-                                                         }</a>
-</div>`);
-  var offlineContentDiv = document.getElementById('offline-content-list');
-  offlineContentDiv.innerHTML = suggestionsHTML.join('\n');
-  offlineContentDiv.hidden = false;
+  for (var item of suggestions)
+    suggestionsHTML.push(getSuggestedContentDiv(item));
+  document.getElementById('offline-content-suggestions').innerHTML =
+      suggestionsHTML.join('\n');
+
+  var contentListElement = document.getElementById('offline-content-list')
+  contentListElement.hidden = false;
+  if (document.dir == 'rtl')
+    contentListElement.classList.add('is-rtl');
 }
 
 function onDocumentLoad() {
