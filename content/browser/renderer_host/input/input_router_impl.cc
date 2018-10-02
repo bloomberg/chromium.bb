@@ -182,10 +182,10 @@ void InputRouterImpl::SendGestureEvent(
 
 void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
-  TouchEventWithLatencyInfo updatd_touch_event = touch_event;
-  SetMovementXYForTouchPoints(&updatd_touch_event.event);
-  input_stream_validator_.Validate(updatd_touch_event.event);
-  touch_event_queue_.QueueEvent(updatd_touch_event);
+  TouchEventWithLatencyInfo updated_touch_event = touch_event;
+  SetMovementXYForTouchPoints(&updated_touch_event.event);
+  input_stream_validator_.Validate(updated_touch_event.event);
+  touch_event_queue_.QueueEvent(updated_touch_event);
 }
 
 void InputRouterImpl::NotifySiteIsMobileOptimized(bool is_mobile_optimized) {
