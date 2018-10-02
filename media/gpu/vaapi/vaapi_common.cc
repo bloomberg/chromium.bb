@@ -33,8 +33,4 @@ VaapiVP9Picture* VaapiVP9Picture::AsVaapiVP9Picture() {
   return this;
 }
 
-scoped_refptr<VP9Picture> VaapiVP9Picture::CreateDuplicate() {
-  return new VaapiVP9Picture(va_surface_);
-}
-
 }  // namespace media
