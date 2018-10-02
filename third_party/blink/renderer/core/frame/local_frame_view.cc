@@ -936,8 +936,10 @@ void LocalFrameView::UpdateLayout() {
 
     if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
       const KURL& url = document->Url();
-      if (url.IsValid() && !url.IsAboutBlankURL())
+      if (url.IsValid() && !url.IsAboutBlankURL()) {
         cache->HandleLayoutComplete(document);
+        cache->ProcessUpdatesAfterLayout(*document);
+      }
     }
     UpdateDocumentAnnotatedRegions();
     CheckDoesNotNeedLayout();
@@ -3034,6 +3036,9 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
 
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
+
+  if (AXObjectCache* cache = GetFrame().GetDocument()->ExistingAXObjectCache())
+    cache->ProcessUpdatesAfterLayout(*GetFrame().GetDocument());
 
   // Ensure that we become visually non-empty eventually.
   // TODO(esprehn): This should check isRenderingReady() instead.

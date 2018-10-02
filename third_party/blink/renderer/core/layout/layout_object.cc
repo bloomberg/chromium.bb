@@ -2131,8 +2131,12 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
     if (visibility_changed || style_->ZIndex() != new_style.ZIndex() ||
         style_->IsStackingContext() != new_style.IsStackingContext()) {
       GetDocument().SetAnnotatedRegionsDirty(true);
-      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-        cache->ChildrenChanged(Parent());
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+        if (GetNode())
+          cache->ChildrenChanged(GetNode()->parentNode());
+        else
+          cache->ChildrenChanged(Parent());
+      }
     }
 
     if (diff.TransformChanged()) {
