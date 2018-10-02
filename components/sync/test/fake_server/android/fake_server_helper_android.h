@@ -70,6 +70,14 @@ class FakeServerHelperAndroid {
       const base::android::JavaParamRef<jbyteArray>&
           serialized_entity_specifics);
 
+  // Sets the Wallet card and address data to be served in following GetUpdates
+  // requests.
+  void SetWalletData(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong fake_server,
+      const base::android::JavaParamRef<jbyteArray>& serialized_entity);
+
   // Modifies the entity with |id| on |fake_server|.
   void ModifyEntitySpecifics(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
@@ -136,6 +144,11 @@ class FakeServerHelperAndroid {
 
  private:
   virtual ~FakeServerHelperAndroid();
+
+  // Deserializes |serialized_entity| into |entity|.
+  void DeserializeEntity(JNIEnv* env,
+                         jbyteArray serialized_entity,
+                         sync_pb::SyncEntity* entity);
 
   // Deserializes |serialized_entity_specifics| into |entity_specifics|.
   void DeserializeEntitySpecifics(JNIEnv* env,
