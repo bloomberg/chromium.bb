@@ -91,10 +91,12 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                 'googlestorage_ndk_acl.txt')
     self.acls = {
         'ARM': self.arm_acl,
+        'ARM64': self.arm_acl,
         'X86': self.x86_acl,
         'X86_NDK_TRANSLATION': self.ndk_acl,
         'X86_INTERNAL': self.internal_acl,
         'X86_64': self.x86_acl,
+        'ARM64_USERDEBUG': self.arm_acl,
         'X86_USERDEBUG': self.x86_acl,
         'X86_NDK_TRANSLATION_USERDEBUG': self.ndk_acl,
         'X86_64_USERDEBUG': self.x86_acl,
@@ -128,10 +130,18 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.targets['X86_NDK_TRANSLATION_USERDEBUG'] = \
         constants.ANDROID_PI_BUILD_TARGETS['X86_NDK_TRANSLATION_USERDEBUG']
 
+    # Add ARM64 coverage since it isn't in NYC.
+    self.targets['ARM64'] = constants.ANDROID_MST_BUILD_TARGETS['ARM64']
+    self.targets['ARM64_USERDEBUG'] = \
+        constants.ANDROID_MST_BUILD_TARGETS['ARM64_USERDEBUG']
+
     builds = {
         'ARM': [
             self.old_version, self.old2_version, self.new_version,
             self.partial_new_version
+        ],
+        'ARM64': [
+            self.old_version, self.old2_version, self.new_version,
         ],
         'X86': [self.old_version, self.old2_version, self.new_version],
         'X86_NDK_TRANSLATION': [
@@ -139,6 +149,9 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         ],
         'X86_INTERNAL': [self.old_version, self.old2_version, self.new_version],
         'X86_64': [self.old_version, self.old2_version, self.new_version],
+        'ARM64_USERDEBUG': [
+            self.old_version, self.old2_version, self.new_version,
+        ],
         'X86_USERDEBUG': [
             self.old_version, self.old2_version, self.new_version
         ],
@@ -172,10 +185,12 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         self.setupMockBuild(key, version)
     self.new_subpaths = {
         'ARM': 'linux-cheets_arm-user100',
+        'ARM64': 'linux-cheets_arm64-user100',
         'X86': 'linux-cheets_x86-user100',
         'X86_NDK_TRANSLATION': 'linux-cheets_x86_ndk_translation-user100',
         'X86_INTERNAL': 'linux-cheets_x86-user-internal100',
         'X86_64': 'linux-cheets_x86_64-user100',
+        'ARM64_USERDEBUG': 'linux-cheets_arm64-userdebug100',
         'X86_USERDEBUG': 'linux-cheets_x86-userdebug100',
         'X86_NDK_TRANSLATION_USERDEBUG':
         'linux-cheets_x86_ndk_translation-userdebug100',
@@ -188,11 +203,14 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     }
 
     self.setupMockBuild('ARM', self.partial_new_version)
+    self.setupMockBuild('ARM64', self.partial_new_version, valid=False)
     self.setupMockBuild('X86', self.partial_new_version, valid=False)
     self.setupMockBuild('X86_NDK_TRANSLATION', self.partial_new_version,
                         valid=False)
     self.setupMockBuild('X86_INTERNAL', self.partial_new_version, valid=False)
     self.setupMockBuild('X86_64', self.partial_new_version, valid=False)
+    self.setupMockBuild('ARM64_USERDEBUG', self.partial_new_version,
+                        valid=False)
     self.setupMockBuild('X86_USERDEBUG', self.partial_new_version, valid=False)
     self.setupMockBuild('X86_NDK_TRANSLATION_USERDEBUG',
                         self.partial_new_version, valid=False)
@@ -225,10 +243,13 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       # Show files.
       mock_file_template_list = {
           'ARM': ['file-%(version)s.zip', 'adb', 'sepolicy.zip'],
+          'ARM64': ['cheets_arm64-file-%(version)s.zip', 'sepolicy.zip'],
           'X86': ['file-%(version)s.zip', 'file.zip.internal'],
           'X86_NDK_TRANSLATION': ['file_ndk_translation-%(version)s.zip'],
           'X86_INTERNAL': ['file.zip.internal', 'file-%(version)s.zip'],
           'X86_64': ['file-%(version)s.zip'],
+          'ARM64_USERDEBUG': ['cheets_arm64-file-%(version)s.zip', 'adb',
+                              'sepolicy.zip'],
           'X86_USERDEBUG': ['cheets_x86-file-%(version)s.zip', 'sepolicy.zip'],
           'X86_NDK_TRANSLATION_USERDEBUG': [
               'cheets_x86_ndk_translation-file-%(version)s.zip', 'sepolicy.zip'
@@ -256,6 +277,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       # Show files.
       mock_file_template_list = {
           'ARM': ['file-%(version)s.zip', 'adb', 'sepolicy.zip'],
+          'ARM64': ['cheets_arm64-file-%(version)s.zip', 'sepolicy.zip'],
           # Skip internal files.
           'X86': ['file-%(version)s.zip'],
           'X86_NDK_TRANSLATION': [
@@ -264,6 +286,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
           # Internal files only.
           'X86_INTERNAL': ['file.zip.internal'],
           'X86_64': ['file-%(version)s.zip'],
+          'ARM64_USERDEBUG': ['cheets_arm64_userdebug-file-%(version)s.zip',
+                              'adb', 'sepolicy.zip'],
           'X86_USERDEBUG':
               ['cheets_x86_userdebug-file-%(version)s.zip', 'sepolicy.zip'],
           'X86_NDK_TRANSLATION_USERDEBUG': [
@@ -324,14 +348,17 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.old_version,
                                                           self.targets)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 12)
+    self.assertEquals(len(subpaths), 14)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user25')
+    self.assertEquals(subpaths['ARM64'], 'linux-cheets_arm64-user25')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user25')
     self.assertEquals(subpaths['X86_NDK_TRANSLATION'],
                       'linux-cheets_x86_ndk_translation-user25')
     self.assertEquals(subpaths['X86_INTERNAL'],
                       'linux-cheets_x86-user-internal25')
     self.assertEquals(subpaths['X86_64'], 'linux-cheets_x86_64-user25')
+    self.assertEquals(subpaths['ARM64_USERDEBUG'],
+                      'linux-cheets_arm64-userdebug25')
     self.assertEquals(subpaths['X86_USERDEBUG'],
                       'linux-cheets_x86-userdebug25')
     self.assertEquals(subpaths['X86_NDK_TRANSLATION_USERDEBUG'],
@@ -380,12 +407,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         self.bucket_url, self.build_branch, self.targets)
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 12)
+    self.assertEquals(len(subpaths), 14)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user100')
+    self.assertEquals(subpaths['ARM64'], 'linux-cheets_arm64-user100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user100')
     self.assertEquals(subpaths['X86_INTERNAL'],
                       'linux-cheets_x86-user-internal100')
     self.assertEquals(subpaths['X86_64'], 'linux-cheets_x86_64-user100')
+    self.assertEquals(subpaths['ARM64_USERDEBUG'],
+                      'linux-cheets_arm64-userdebug100')
     self.assertEquals(subpaths['X86_USERDEBUG'],
                       'linux-cheets_x86-userdebug100')
     self.assertEquals(subpaths['X86_64_USERDEBUG'],
@@ -406,7 +436,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   def testGetArcBasenameNoRename(self):
     """Test build targets that don't require renaming."""
     default_bn = 'do_not_rename_basename'
-    no_rename_build_targets = ['ARM', 'X86', 'SDK_TOOLS', 'XTS']
+    no_rename_build_targets = ['ARM', 'ARM64', 'X86', 'SDK_TOOLS', 'XTS']
     for build in no_rename_build_targets:
       self.assertEquals(self._AuxGetArcBasename(build, default_bn), default_bn)
 
@@ -504,6 +534,11 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     acls = cros_mark_android_as_stable.MakeAclDict(self.mock_android_dir)
     self.assertEquals(acls['ARM'], os.path.join(self.mock_android_dir,
                                                 'googlestorage_acl_arm.txt'))
+    self.assertEquals(acls['ARM64'], os.path.join(self.mock_android_dir,
+                                                  'googlestorage_acl_arm.txt'))
+    self.assertEquals(acls['ARM64_USERDEBUG'],
+                      os.path.join(self.mock_android_dir,
+                                   'googlestorage_acl_arm.txt'))
     self.assertEquals(acls['X86'], os.path.join(self.mock_android_dir,
                                                 'googlestorage_acl_x86.txt'))
     self.assertEquals(acls['X86_INTERNAL'],
