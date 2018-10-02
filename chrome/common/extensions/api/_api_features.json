@@ -570,10 +570,6 @@
     "channel": "stable",
     "contexts": ["blessed_extension"]
   },
-  "mediaGalleries": {
-    "dependencies": ["permission:mediaGalleries"],
-    "contexts": ["blessed_extension"]
-  },
   "mediaPlayerPrivate": {
     "dependencies": ["permission:mediaPlayerPrivate"],
     "contexts": ["blessed_extension"]

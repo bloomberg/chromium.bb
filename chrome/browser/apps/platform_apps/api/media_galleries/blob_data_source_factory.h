@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_
 
 #include <memory>
 #include <string>
@@ -16,7 +16,8 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 // Factory to provide media data source for extension media gallery API.
 // Internally it will read media data from a blob in browser process.
@@ -40,6 +41,7 @@ class BlobDataSourceFactory
   DISALLOW_COPY_AND_ASSIGN(BlobDataSourceFactory);
 };
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_BLOB_DATA_SOURCE_FACTORY_H_

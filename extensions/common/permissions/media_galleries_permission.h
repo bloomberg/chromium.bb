@@ -25,6 +25,7 @@ namespace extensions {
 //   {"mediaGalleries": "read delete"},
 // We also allow a permission without any sub-permissions:
 //   "mediaGalleries",
+// TODO(devlin): Move this class to chrome/common/apps/platform_apps.
 class MediaGalleriesPermission
   : public SetDisjunctionPermission<MediaGalleriesPermissionData,
                                     MediaGalleriesPermission> {

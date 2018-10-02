@@ -5,8 +5,8 @@
 // Defines the Chrome Extensions Media Galleries API functions for accessing
 // user's media files, as specified in the extension API IDL.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/apps/platform_apps/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "components/storage_monitor/media_storage_util.h"
@@ -28,19 +28,18 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
-namespace MediaGalleries = extensions::api::media_galleries;
-
 namespace content {
 class BlobHandle;
 }
 
 class SafeMediaMetadataParser;
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 // The profile-keyed service that manages the media galleries extension API.
 // Created at the same time as the Profile. This is also the event router.
-class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
+class MediaGalleriesEventRouter : public extensions::BrowserContextKeyedAPI,
                                   public GalleryWatchManagerObserver,
                                   public extensions::EventRouter::Observer {
  public:
@@ -48,8 +47,8 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
-  static BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
-      GetFactoryInstance();
+  static extensions::BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
+  GetFactoryInstance();
 
   // Convenience method to get the MediaGalleriesAPI for a profile.
   static MediaGalleriesEventRouter* Get(content::BrowserContext* context);
@@ -57,20 +56,20 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
   bool ExtensionHasGalleryChangeListener(const std::string& extension_id) const;
 
  private:
-  friend class BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>;
+  friend class extensions::BrowserContextKeyedAPIFactory<
+      MediaGalleriesEventRouter>;
 
-  void DispatchEventToExtension(const std::string& extension_id,
-                                events::HistogramValue histogram_value,
-                                const std::string& event_name,
-                                std::unique_ptr<base::ListValue> event_args);
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      std::unique_ptr<base::ListValue> event_args);
 
   explicit MediaGalleriesEventRouter(content::BrowserContext* context);
   ~MediaGalleriesEventRouter() override;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "MediaGalleriesAPI";
-  }
+  static const char* service_name() { return "MediaGalleriesAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
   // GalleryWatchManagerObserver
@@ -80,7 +79,7 @@ class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
                              MediaGalleryPrefId gallery_id) override;
 
   // extensions::EventRouter::Observer implementation.
-  void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const extensions::EventListenerInfo& details) override;
 
   // Current profile.
   Profile* profile_;
@@ -103,7 +102,7 @@ class MediaGalleriesGetMediaFileSystemsFunction
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
   void OnPreferencesInit(
-      MediaGalleries::GetMediaFileSystemsInteractivity interactive);
+      media_galleries::GetMediaFileSystemsInteractivity interactive);
 
   // Always show the dialog.
   void AlwaysShowDialog(const std::vector<MediaFileSystemInfo>& filesystems);
@@ -171,10 +170,10 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
 
  private:
   // Bottom half for RunAsync, invoked after the preferences is initialized.
-  void OnPreferencesInit(MediaGalleries::GetMetadataType metadata_type,
+  void OnPreferencesInit(media_galleries::GetMetadataType metadata_type,
                          const std::string& blob_uuid);
 
-  void GetMetadata(MediaGalleries::GetMetadataType metadata_type,
+  void GetMetadata(media_galleries::GetMetadataType metadata_type,
                    const std::string& blob_uuid,
                    std::unique_ptr<std::string> blob_header,
                    int64_t total_blob_length);
@@ -223,6 +222,7 @@ class MediaGalleriesRemoveGalleryWatchFunction
   void OnPreferencesInit(const std::string& pref_id);
 };
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_

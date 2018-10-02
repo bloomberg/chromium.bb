@@ -4,7 +4,7 @@
 
 // Implements the Chrome Extensions Media Galleries API.
 
-#include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api.h"
 
 #include <stddef.h>
 
@@ -23,9 +23,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/blob_data_source_factory.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/media_galleries/blob_data_source_factory.h"
-#include "chrome/browser/extensions/api/media_galleries/media_galleries_api_util.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -36,7 +36,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/apps/platform_apps/api/media_galleries.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/media_gallery_util/public/cpp/safe_media_metadata_parser.h"
@@ -70,9 +70,10 @@ using content::WebContents;
 using storage_monitor::MediaStorageUtil;
 using storage_monitor::StorageInfo;
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
-namespace MediaGalleries = api::media_galleries;
+namespace MediaGalleries = media_galleries;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 namespace AddGalleryWatch = MediaGalleries::AddGalleryWatch;
 namespace RemoveGalleryWatch = MediaGalleries::RemoveGalleryWatch;
@@ -112,8 +113,8 @@ GalleryWatchManager* gallery_watch_manager() {
 // initializes the MediaGalleriesPreferences
 bool Setup(Profile* profile, std::string* error, base::Closure callback) {
   if (!ChromeSelectFilePolicy::FileSelectDialogsAllowed()) {
-    *error = std::string(kDisallowedByPolicy) +
-        prefs::kAllowFileSelectionDialogs;
+    *error =
+        std::string(kDisallowedByPolicy) + prefs::kAllowFileSelectionDialogs;
     return false;
   }
 
@@ -127,7 +128,7 @@ bool Setup(Profile* profile, std::string* error, base::Closure callback) {
 // |gallery_id| is valid and returns false otherwise.
 bool GetGalleryFilePathAndId(const std::string& gallery_id,
                              Profile* profile,
-                             const Extension* extension,
+                             const extensions::Extension* extension,
                              base::FilePath* gallery_file_path,
                              MediaGalleryPrefId* gallery_pref_id) {
   MediaGalleryPrefId pref_id;
@@ -146,24 +147,25 @@ bool GetGalleryFilePathAndId(const std::string& gallery_id,
 
 base::ListValue* ConstructFileSystemList(
     content::RenderFrameHost* rfh,
-    const Extension* extension,
+    const extensions::Extension* extension,
     const std::vector<MediaFileSystemInfo>& filesystems) {
   if (!rfh)
     return NULL;
 
-  MediaGalleriesPermission::CheckParam read_param(
-      MediaGalleriesPermission::kReadPermission);
-  const PermissionsData* permissions_data = extension->permissions_data();
+  extensions::MediaGalleriesPermission::CheckParam read_param(
+      extensions::MediaGalleriesPermission::kReadPermission);
+  const extensions::PermissionsData* permissions_data =
+      extension->permissions_data();
   bool has_read_permission = permissions_data->CheckAPIPermissionWithParam(
-      APIPermission::kMediaGalleries, &read_param);
-  MediaGalleriesPermission::CheckParam copy_to_param(
-      MediaGalleriesPermission::kCopyToPermission);
+      extensions::APIPermission::kMediaGalleries, &read_param);
+  extensions::MediaGalleriesPermission::CheckParam copy_to_param(
+      extensions::MediaGalleriesPermission::kCopyToPermission);
   bool has_copy_to_permission = permissions_data->CheckAPIPermissionWithParam(
-      APIPermission::kMediaGalleries, &copy_to_param);
-  MediaGalleriesPermission::CheckParam delete_param(
-      MediaGalleriesPermission::kDeletePermission);
+      extensions::APIPermission::kMediaGalleries, &copy_to_param);
+  extensions::MediaGalleriesPermission::CheckParam delete_param(
+      extensions::MediaGalleriesPermission::kDeletePermission);
   bool has_delete_permission = permissions_data->CheckAPIPermissionWithParam(
-      APIPermission::kMediaGalleries, &delete_param);
+      extensions::APIPermission::kMediaGalleries, &delete_param);
 
   const int child_id = rfh->GetProcess()->GetID();
   std::unique_ptr<base::ListValue> list(new base::ListValue());
@@ -217,8 +219,7 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
   typedef base::Callback<void(const base::FilePath&)> Callback;
 
   SelectDirectoryDialog(WebContents* web_contents, const Callback& callback)
-      : web_contents_(web_contents),
-        callback_(callback) {
+      : web_contents_(web_contents), callback_(callback) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   }
@@ -226,14 +227,10 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
   void Show(const base::FilePath& default_path) {
     AddRef();  // Balanced in the two reachable listener outcomes.
     select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_FOLDER,
-      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
-      default_path,
-      NULL,
-      0,
-      base::FilePath::StringType(),
-      platform_util::GetTopLevel(web_contents_->GetNativeView()),
-      NULL);
+        ui::SelectFileDialog::SELECT_FOLDER,
+        l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
+        default_path, NULL, 0, base::FilePath::StringType(),
+        platform_util::GetTopLevel(web_contents_->GetNativeView()), NULL);
   }
 
   // ui::SelectFileDialog::Listener implementation.
@@ -281,8 +278,9 @@ content::WebContents* GetWebContentsForPrompt(
   // Otherwise, check for the current app window for the app (app windows
   // support modal dialogs).
   if (!app_id.empty()) {
-    AppWindow* window = AppWindowRegistry::Get(browser_context)
-                            ->GetCurrentAppWindowForApp(app_id);
+    extensions::AppWindow* window =
+        extensions::AppWindowRegistry::Get(browser_context)
+            ->GetCurrentAppWindowForApp(app_id);
     if (window)
       return window->web_contents();
   }
@@ -297,30 +295,29 @@ MediaGalleriesEventRouter::MediaGalleriesEventRouter(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
-  EventRouter::Get(profile_)->RegisterObserver(
+  extensions::EventRouter::Get(profile_)->RegisterObserver(
       this, MediaGalleries::OnGalleryChanged::kEventName);
 
   gallery_watch_manager()->AddObserver(profile_, this);
 }
 
-MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {
-}
+MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {}
 
 void MediaGalleriesEventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  EventRouter::Get(profile_)->UnregisterObserver(this);
+  extensions::EventRouter::Get(profile_)->UnregisterObserver(this);
 
   gallery_watch_manager()->RemoveObserver(profile_);
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>>::DestructorAtExit
+static base::LazyInstance<extensions::BrowserContextKeyedAPIFactory<
+    MediaGalleriesEventRouter>>::DestructorAtExit
     g_media_galleries_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
+extensions::BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
 MediaGalleriesEventRouter::GetFactoryInstance() {
   return g_media_galleries_api_factory.Pointer();
 }
@@ -331,23 +328,24 @@ MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(
   DCHECK(media_file_system_registry()
              ->GetPreferences(Profile::FromBrowserContext(context))
              ->IsInitialized());
-  return BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>::Get(context);
+  return extensions::BrowserContextKeyedAPIFactory<
+      MediaGalleriesEventRouter>::Get(context);
 }
 
 bool MediaGalleriesEventRouter::ExtensionHasGalleryChangeListener(
     const std::string& extension_id) const {
-  return EventRouter::Get(profile_)->ExtensionHasEventListener(
+  return extensions::EventRouter::Get(profile_)->ExtensionHasEventListener(
       extension_id, MediaGalleries::OnGalleryChanged::kEventName);
 }
 
 void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
-    events::HistogramValue histogram_value,
+    extensions::events::HistogramValue histogram_value,
     const std::string& event_name,
     std::unique_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  EventRouter* router = EventRouter::Get(profile_);
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 
@@ -357,29 +355,31 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
 }
 
 void MediaGalleriesEventRouter::OnGalleryChanged(
-    const std::string& extension_id, MediaGalleryPrefId gallery_id) {
+    const std::string& extension_id,
+    MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
   details.gallery_id = base::NumberToString(gallery_id);
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
-                           MediaGalleries::OnGalleryChanged::kEventName,
-                           MediaGalleries::OnGalleryChanged::Create(details));
+  DispatchEventToExtension(
+      extension_id, extensions::events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
+      MediaGalleries::OnGalleryChanged::kEventName,
+      MediaGalleries::OnGalleryChanged::Create(details));
 }
 
 void MediaGalleriesEventRouter::OnGalleryWatchDropped(
-    const std::string& extension_id, MediaGalleryPrefId gallery_id) {
+    const std::string& extension_id,
+    MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_WATCH_DROPPED;
   details.gallery_id = gallery_id;
-  DispatchEventToExtension(extension_id,
-                           events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
-                           MediaGalleries::OnGalleryChanged::kEventName,
-                           MediaGalleries::OnGalleryChanged::Create(details));
+  DispatchEventToExtension(
+      extension_id, extensions::events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
+      MediaGalleries::OnGalleryChanged::kEventName,
+      MediaGalleries::OnGalleryChanged::Create(details));
 }
 
 void MediaGalleriesEventRouter::OnListenerRemoved(
-    const EventListenerInfo& details) {
+    const extensions::EventListenerInfo& details) {
   if (details.event_name == MediaGalleries::OnGalleryChanged::kEventName &&
       !ExtensionHasGalleryChangeListener(details.extension_id)) {
     gallery_watch_manager()->RemoveAllWatches(profile_, details.extension_id);
@@ -393,20 +393,22 @@ MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
 bool MediaGalleriesGetMediaFileSystemsFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::GET_MEDIA_FILE_SYSTEMS);
+  ::media_galleries::UsageCount(::media_galleries::GET_MEDIA_FILE_SYSTEMS);
   std::unique_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   MediaGalleries::GetMediaFileSystemsInteractivity interactive =
       MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO;
-  if (params->details.get() && params->details->interactive != MediaGalleries::
-         GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
+  if (params->details.get() &&
+      params->details->interactive !=
+          MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
     interactive = params->details->interactive;
   }
 
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit, this,
-      interactive));
+  return Setup(
+      GetProfile(), &error_,
+      base::Bind(&MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit,
+                 this, interactive));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
@@ -470,11 +472,9 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
-  media_galleries::UsageCount(media_galleries::SHOW_DIALOG);
-  WebContents* contents =
-      GetWebContentsForPrompt(GetSenderWebContents(),
-                              browser_context(),
-                              extension()->id());
+  ::media_galleries::UsageCount(::media_galleries::SHOW_DIALOG);
+  WebContents* contents = GetWebContentsForPrompt(
+      GetSenderWebContents(), browser_context(), extension()->id());
   if (!contents) {
     SendResponse(false);
     return;
@@ -505,17 +505,18 @@ MediaGalleriesAddUserSelectedFolderFunction::
     ~MediaGalleriesAddUserSelectedFolderFunction() {}
 
 bool MediaGalleriesAddUserSelectedFolderFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::ADD_USER_SELECTED_FOLDER);
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit, this));
+  ::media_galleries::UsageCount(::media_galleries::ADD_USER_SELECTED_FOLDER);
+  return Setup(
+      GetProfile(), &error_,
+      base::Bind(
+          &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit,
+          this));
 }
 
 void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
   const std::string& app_id = extension()->id();
-  WebContents* contents =
-      GetWebContentsForPrompt(GetSenderWebContents(),
-                              browser_context(),
-                              app_id);
+  WebContents* contents = GetWebContentsForPrompt(GetSenderWebContents(),
+                                                  browser_context(), app_id);
   if (!contents) {
     SendResponse(false);
     return;
@@ -542,26 +543,22 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected(
     // User cancelled case.
     GetMediaFileSystemsForExtension(base::Bind(
         &MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId,
-        this,
-        kInvalidMediaGalleryPrefId));
+        this, kInvalidMediaGalleryPrefId));
     return;
   }
 
   extensions::file_system_api::SetLastChooseEntryDirectory(
-      extensions::ExtensionPrefs::Get(GetProfile()),
-      extension()->id(),
+      extensions::ExtensionPrefs::Get(GetProfile()), extension()->id(),
       selected_directory);
 
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
-  MediaGalleryPrefId pref_id =
-      preferences->AddGalleryByPath(selected_directory,
-                                    MediaGalleryPrefInfo::kUserAdded);
+  MediaGalleryPrefId pref_id = preferences->AddGalleryByPath(
+      selected_directory, MediaGalleryPrefInfo::kUserAdded);
   preferences->SetGalleryPermissionForExtension(*extension(), pref_id, true);
 
   GetMediaFileSystemsForExtension(base::Bind(
-      &MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId,
-      this,
+      &MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId, this,
       pref_id));
 }
 
@@ -591,9 +588,8 @@ void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
   SendResponse(true);
 }
 
-void
-MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
-    const MediaFileSystemsCallback& cb) {
+void MediaGalleriesAddUserSelectedFolderFunction::
+    GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb) {
   if (!render_frame_host()) {
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
@@ -610,7 +606,7 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
 bool MediaGalleriesGetMetadataFunction::RunAsync() {
-  media_galleries::UsageCount(media_galleries::GET_METADATA);
+  ::media_galleries::UsageCount(::media_galleries::GET_METADATA);
   std::string blob_uuid;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &blob_uuid));
 
@@ -622,9 +618,9 @@ bool MediaGalleriesGetMetadataFunction::RunAsync() {
   if (!options)
     return false;
 
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesGetMetadataFunction::OnPreferencesInit, this,
-      options->metadata_type, blob_uuid));
+  return Setup(GetProfile(), &error_,
+               base::Bind(&MediaGalleriesGetMetadataFunction::OnPreferencesInit,
+                          this, options->metadata_type, blob_uuid));
 }
 
 void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
@@ -633,11 +629,10 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // BlobReader is self-deleting.
-  BlobReader* reader = new BlobReader(
-      GetProfile(),
-      blob_uuid,
-      base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata, this,
-                 metadata_type, blob_uuid));
+  BlobReader* reader =
+      new BlobReader(GetProfile(), blob_uuid,
+                     base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
+                                this, metadata_type, blob_uuid));
   reader->SetByteRange(0, net::kMaxBytesToSniff);
   reader->Start();
 }
@@ -791,8 +786,7 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
 //              MediaGalleriesAddGalleryWatchFunction                        //
 ///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesAddGalleryWatchFunction::
-    ~MediaGalleriesAddGalleryWatchFunction() {
-}
+    ~MediaGalleriesAddGalleryWatchFunction() {}
 
 bool MediaGalleriesAddGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -809,8 +803,7 @@ bool MediaGalleriesAddGalleryWatchFunction::RunAsync() {
           GetProfile());
   preferences->EnsureInitialized(
       base::Bind(&MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit,
-                 this,
-                 params->gallery_id));
+                 this, params->gallery_id));
 
   return true;
 }
@@ -819,11 +812,8 @@ void MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = kInvalidMediaGalleryPrefId;
-  if (!GetGalleryFilePathAndId(pref_id,
-                               GetProfile(),
-                               extension(),
-                               &gallery_file_path,
-                               &gallery_pref_id)) {
+  if (!GetGalleryFilePathAndId(pref_id, GetProfile(), extension(),
+                               &gallery_file_path, &gallery_pref_id)) {
     api::media_galleries::AddGalleryWatchResult result;
     error_ = kInvalidGalleryIdMsg;
     result.gallery_id = kInvalidGalleryId;
@@ -834,11 +824,8 @@ void MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit(
   }
 
   gallery_watch_manager()->AddWatch(
-      GetProfile(),
-      extension(),
-      gallery_pref_id,
-      base::Bind(&MediaGalleriesAddGalleryWatchFunction::HandleResponse,
-                 this,
+      GetProfile(), extension(), gallery_pref_id,
+      base::Bind(&MediaGalleriesAddGalleryWatchFunction::HandleResponse, this,
                  gallery_pref_id));
 }
 
@@ -876,8 +863,7 @@ void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaGalleriesRemoveGalleryWatchFunction::
-    ~MediaGalleriesRemoveGalleryWatchFunction() {
-}
+    ~MediaGalleriesRemoveGalleryWatchFunction() {}
 
 bool MediaGalleriesRemoveGalleryWatchFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -893,8 +879,7 @@ bool MediaGalleriesRemoveGalleryWatchFunction::RunAsync() {
           GetProfile());
   preferences->EnsureInitialized(
       base::Bind(&MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit,
-                 this,
-                 params->gallery_id));
+                 this, params->gallery_id));
   return true;
 }
 
@@ -902,19 +887,17 @@ void MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = 0;
-  if (!GetGalleryFilePathAndId(pref_id,
-                               GetProfile(),
-                               extension(),
-                               &gallery_file_path,
-                               &gallery_pref_id)) {
+  if (!GetGalleryFilePathAndId(pref_id, GetProfile(), extension(),
+                               &gallery_file_path, &gallery_pref_id)) {
     error_ = kInvalidGalleryIdMsg;
     SendResponse(false);
     return;
   }
 
-  gallery_watch_manager()->RemoveWatch(
-      GetProfile(), extension_id(), gallery_pref_id);
+  gallery_watch_manager()->RemoveWatch(GetProfile(), extension_id(),
+                                       gallery_pref_id);
   SendResponse(true);
 }
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps

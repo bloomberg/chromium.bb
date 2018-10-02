@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/media_galleries/blob_data_source_factory.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/blob_data_source_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/blob_reader.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 namespace {
 
 // Media data source that reads data from a blob in browser process.
@@ -80,4 +81,5 @@ BlobDataSourceFactory::CreateMediaDataSource(
                                                blob_uuid_, media_data_callback);
 }
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps

@@ -48,7 +48,6 @@ schema_sources_ = [
   "instance_id.json",
   "language_settings_private.idl",
   "manifest_types.json",
-  "media_galleries.idl",
   "notifications.idl",
   "omnibox.json",
   "page_capture.json",
