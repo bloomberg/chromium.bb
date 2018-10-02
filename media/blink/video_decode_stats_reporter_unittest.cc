@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "ui/gfx/geometry/rect.h"
 
 using ::testing::Invoke;
@@ -186,8 +185,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
         std::move(recorder_ptr),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),
-        MakeDefaultVideoConfig(),
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+        MakeDefaultVideoConfig(), task_runner_,
         task_runner_->GetMockTickClock());
   }
 
