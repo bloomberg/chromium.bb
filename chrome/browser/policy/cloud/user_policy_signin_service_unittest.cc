@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -169,7 +170,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     // instances) so we have to inject our testing factory via a special
     // API before creating the profile.
     UserCloudPolicyManagerFactory::GetInstance()->RegisterTestingFactory(
-        BuildCloudPolicyManager);
+        base::BindRepeating(&BuildCloudPolicyManager));
     TestingProfile::Builder builder;
     builder.SetPrefService(
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(

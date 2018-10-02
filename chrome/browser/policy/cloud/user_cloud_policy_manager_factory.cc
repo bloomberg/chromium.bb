@@ -74,7 +74,7 @@ UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
   UserCloudPolicyManagerFactory* factory = GetInstance();
   // If there's a testing factory set, don't bother creating a new one.
-  if (factory->testing_factory_ != NULL)
+  if (factory->testing_factory_)
     return std::unique_ptr<UserCloudPolicyManager>();
   return factory->CreateManagerForOriginalBrowserContext(
       context, force_immediate_load, background_task_runner);
@@ -90,24 +90,23 @@ UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
 }
 
 void UserCloudPolicyManagerFactory::RegisterTestingFactory(
-    TestingFactoryFunction factory) {
+    TestingFactory factory) {
   // Can't set a testing factory when a testing factory has already been
   // created, or after UCPMs have already been built.
   DCHECK(!testing_factory_);
   DCHECK(factory);
   DCHECK(manager_wrappers_.empty());
-  testing_factory_ = factory;
+  testing_factory_ = std::move(factory);
 }
 
 void UserCloudPolicyManagerFactory::ClearTestingFactory() {
-  testing_factory_ = NULL;
+  testing_factory_ = TestingFactory();
 }
 
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
     : BrowserContextKeyedBaseFactory(
-        "UserCloudPolicyManager",
-        BrowserContextDependencyManager::GetInstance()),
-      testing_factory_(NULL) {
+          "UserCloudPolicyManager",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SchemaRegistryServiceFactory::GetInstance());
 }
 
@@ -191,19 +190,20 @@ void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(
 
 bool UserCloudPolicyManagerFactory::HasTestingFactory(
     content::BrowserContext* context) {
-  return testing_factory_ != NULL;
+  return !testing_factory_.is_null();
 }
 
 // If there's a TestingFactory set, then create a service during BrowserContext
 // initialization.
 bool UserCloudPolicyManagerFactory::ServiceIsCreatedWithBrowserContext() const {
-  return testing_factory_ != NULL;
+  return !testing_factory_.is_null();
 }
 
 void UserCloudPolicyManagerFactory::CreateServiceNow(
     content::BrowserContext* context) {
   DCHECK(testing_factory_);
-  manager_wrappers_[context] = new ManagerWrapper(testing_factory_(context));
+  manager_wrappers_[context] =
+      new ManagerWrapper(testing_factory_.Run(context));
 }
 
 }  // namespace policy
