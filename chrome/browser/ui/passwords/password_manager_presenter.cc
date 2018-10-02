@@ -55,8 +55,7 @@ void RemoveDuplicates(const autofill::PasswordForm& form,
   std::pair<password_manager::DuplicatesMap::iterator,
             password_manager::DuplicatesMap::iterator>
       dups = duplicates->equal_range(key);
-  for (password_manager::DuplicatesMap::iterator it = dups.first;
-       it != dups.second; ++it)
+  for (auto it = dups.first; it != dups.second; ++it)
     store->RemoveLogin(*it->second);
   duplicates->erase(key);
 }

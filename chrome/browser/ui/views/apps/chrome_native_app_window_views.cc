@@ -172,9 +172,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   CHECK(!is_kiosk_app_mode ||
         zoom::ZoomController::FromWebContents(web_view()->GetWebContents()));
 
-  for (std::map<ui::Accelerator, int>::const_iterator iter =
-           accelerator_table.begin();
-       iter != accelerator_table.end(); ++iter) {
+  for (auto iter = accelerator_table.begin(); iter != accelerator_table.end();
+       ++iter) {
     if (is_kiosk_app_mode && !chrome::IsCommandAllowedInAppMode(iter->second))
       continue;
 
@@ -277,8 +276,7 @@ bool ChromeNativeAppWindowViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   const std::map<ui::Accelerator, int>& accelerator_table =
       GetAcceleratorTable();
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table.find(accelerator);
+  auto iter = accelerator_table.find(accelerator);
   DCHECK(iter != accelerator_table.end());
   int command_id = iter->second;
   switch (command_id) {

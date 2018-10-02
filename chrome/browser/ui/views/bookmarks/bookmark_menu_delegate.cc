@@ -145,7 +145,7 @@ void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
 base::string16 BookmarkMenuDelegate::GetTooltipText(
     int id,
     const gfx::Point& screen_loc) const {
-  MenuIDToNodeMap::const_iterator i = menu_id_to_node_map_.find(id);
+  auto i = menu_id_to_node_map_.find(id);
   // When removing bookmarks it may be possible to end up here without a node.
   if (i == menu_id_to_node_map_.end()) {
     DCHECK(is_mutating_model_);
@@ -372,7 +372,7 @@ void BookmarkMenuDelegate::BookmarkModelChanged() {
 void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  NodeToMenuMap::iterator menu_pair = node_to_menu_map_.find(node);
+  auto menu_pair = node_to_menu_map_.find(node);
   if (menu_pair == node_to_menu_map_.end())
     return;  // We're not showing a menu item for the node.
 
@@ -396,9 +396,8 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
 
   // Remove the menu items.
   std::set<MenuItemView*> changed_parent_menus;
-  for (std::vector<const BookmarkNode*>::const_iterator i(bookmarks.begin());
-       i != bookmarks.end(); ++i) {
-    NodeToMenuMap::iterator node_to_menu = node_to_menu_map_.find(*i);
+  for (auto i(bookmarks.begin()); i != bookmarks.end(); ++i) {
+    auto node_to_menu = node_to_menu_map_.find(*i);
     if (node_to_menu != node_to_menu_map_.end()) {
       MenuItemView* menu = node_to_menu->second;
       MenuItemView* parent = menu->GetParentMenuItem();
@@ -420,11 +419,9 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
   DCHECK_LE(changed_parent_menus.size(), 1U);
 
   // Remove any descendants of the removed nodes in |node_to_menu_map_|.
-  for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());
-       i != node_to_menu_map_.end(); ) {
+  for (auto i(node_to_menu_map_.begin()); i != node_to_menu_map_.end();) {
     bool ancestor_removed = false;
-    for (std::vector<const BookmarkNode*>::const_iterator j(bookmarks.begin());
-         j != bookmarks.end(); ++j) {
+    for (auto j(bookmarks.begin()); j != bookmarks.end(); ++j) {
       if (i->first->HasAncestor(*j)) {
         ancestor_removed = true;
         break;
@@ -438,8 +435,8 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
     }
   }
 
-  for (std::set<MenuItemView*>::const_iterator i(changed_parent_menus.begin());
-       i != changed_parent_menus.end(); ++i)
+  for (auto i(changed_parent_menus.begin()); i != changed_parent_menus.end();
+       ++i)
     (*i)->ChildrenChanged();
 }
 

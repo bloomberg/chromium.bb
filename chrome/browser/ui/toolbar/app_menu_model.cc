@@ -877,8 +877,7 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   bool menu_items_added = false;
-  for (GlobalErrorService::GlobalErrorList::const_iterator it = errors.begin();
-       it != errors.end(); ++it) {
+  for (auto it = errors.begin(); it != errors.end(); ++it) {
     GlobalError* error = *it;
     DCHECK(error);
     if (error->HasMenuItem()) {

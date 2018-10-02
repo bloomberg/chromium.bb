@@ -636,7 +636,7 @@ void ToolbarActionsBar::OnToolbarActionLoadFailed() {
 }
 
 void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
-  ToolbarActions::iterator iter = toolbar_actions_.begin();
+  auto iter = toolbar_actions_.begin();
   while (iter != toolbar_actions_.end() && (*iter)->GetId() != action_id)
     ++iter;
 

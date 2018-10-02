@@ -621,8 +621,8 @@ bool BrowserView::GetAccelerator(int cmd_id,
     return true;
 #endif
   // Else, we retrieve the accelerator information from the accelerator table.
-  for (std::map<ui::Accelerator, int>::const_iterator it =
-           accelerator_table_.begin(); it != accelerator_table_.end(); ++it) {
+  for (auto it = accelerator_table_.begin(); it != accelerator_table_.end();
+       ++it) {
     if (it->second == cmd_id) {
       *accelerator = it->first;
       return true;
@@ -2984,8 +2984,7 @@ void BrowserView::ActivateAppModalDialog() const {
 bool BrowserView::FindCommandIdForAccelerator(
     const ui::Accelerator& accelerator,
     int* command_id) const {
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
+  auto iter = accelerator_table_.find(accelerator);
   if (iter == accelerator_table_.end())
     return false;
 

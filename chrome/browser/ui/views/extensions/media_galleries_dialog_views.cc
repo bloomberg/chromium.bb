@@ -189,7 +189,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     const MediaGalleriesDialogController::Entry& gallery,
     views::View* container,
     int trailing_vertical_space) {
-  CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_info.pref_id);
+  auto iter = checkbox_map_.find(gallery.pref_info.pref_id);
   if (iter != checkbox_map_.end()) {
     views::Checkbox* checkbox = iter->second->checkbox();
     checkbox->SetChecked(gallery.selected);

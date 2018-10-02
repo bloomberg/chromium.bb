@@ -243,8 +243,8 @@ void FastUnloadController::CancelWindowClose() {
   DCHECK(is_attempting_to_close_browser_);
   tabs_needing_before_unload_.clear();
   CancelTabNeedingBeforeUnloadAck();
-  for (WebContentsSet::iterator it = tabs_needing_unload_.begin();
-       it != tabs_needing_unload_.end(); it++) {
+  for (auto it = tabs_needing_unload_.begin(); it != tabs_needing_unload_.end();
+       it++) {
     content::WebContents* contents = *it;
 
     CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
@@ -403,7 +403,7 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
                                   tabs_needing_before_unload_.end());
       tabs_needing_before_unload_.clear();
     } else {
-      WebContentsSet::iterator it = tabs_needing_before_unload_.begin();
+      auto it = tabs_needing_before_unload_.begin();
       content::WebContents* contents = *it;
       tabs_needing_before_unload_.erase(it);
       // Null check render_view_host here as this gets called on a PostTask and
@@ -445,9 +445,9 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
     browser_->OnWindowClosing();
 
     // Run unload handlers detached since no more interaction is possible.
-    WebContentsSet::iterator it = tabs_needing_unload_.begin();
+    auto it = tabs_needing_unload_.begin();
     while (it != tabs_needing_unload_.end()) {
-      WebContentsSet::iterator current = it++;
+      auto current = it++;
       content::WebContents* contents = *current;
       tabs_needing_unload_.erase(current);
       // Null check render_view_host here as this gets called on a PostTask
