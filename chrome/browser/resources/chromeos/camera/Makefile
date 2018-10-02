@@ -90,7 +90,6 @@ SRC_RESOURCES= \
         src/images/camera_shutter_recording_start_hover.svg \
         src/images/camera_shutter_recording_stop.svg \
         src/images/camera_shutter_recording_stop_hover.svg \
-	src/images/no_camera.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/main.js \

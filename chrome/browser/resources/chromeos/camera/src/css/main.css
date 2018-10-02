@@ -159,16 +159,10 @@ body {
   z-index: 1;
 }
 
-#error .icon {
-  background: center center no-repeat url(../images/no_camera.svg);
-  height: 60px;
-  margin-bottom: 20px;
-  width: 90px;
-}
-
 #error #error-msg,
 #error #error-msg-hint {
   text-align: center;
+  padding: 2px 0;
 }
 
 #error #error-msg-hint {
