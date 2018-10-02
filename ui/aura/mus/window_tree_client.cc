@@ -290,51 +290,10 @@ void WindowTreeClient::UnregisterFrameSinkId(WindowMus* window) {
   tree_->UnattachFrameSinkId(window->server_id());
 }
 
-void WindowTreeClient::Embed(Window* window,
-                             ws::mojom::WindowTreeClientPtr client,
-                             uint32_t flags,
-                             ws::mojom::WindowTree::EmbedCallback callback) {
-  DCHECK(tree_);
-  // Window::Init() must be called before Embed() (otherwise the server hasn't
-  // been told about the window).
-  DCHECK(window->layer());
-  if (!window->children().empty()) {
-    // The window server removes all children before embedding. In other words,
-    // it's generally an error to Embed() with existing children. So, fail
-    // early.
-    std::move(callback).Run(false);
-    return;
-  }
-
-  tree_->Embed(WindowMus::Get(window)->server_id(), std::move(client), flags,
-               std::move(callback));
-}
-
 void WindowTreeClient::ScheduleEmbed(
     ws::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
   tree_->ScheduleEmbed(std::move(client), std::move(callback));
-}
-
-void WindowTreeClient::EmbedUsingToken(
-    Window* window,
-    const base::UnguessableToken& token,
-    uint32_t flags,
-    ws::mojom::WindowTree::EmbedCallback callback) {
-  DCHECK(tree_);
-  // Window::Init() must be called before Embed() (otherwise the server hasn't
-  // been told about the window).
-  DCHECK(window->layer());
-  if (!window->children().empty()) {
-    // The window server removes all children before embedding. In other words,
-    // it's generally an error to Embed() with existing children. So, fail
-    // early.
-    std::move(callback).Run(false);
-    return;
-  }
-
-  tree_->EmbedUsingToken(WindowMus::Get(window)->server_id(), token, flags,
-                         std::move(callback));
 }
 
 void WindowTreeClient::AttachCompositorFrameSink(
@@ -736,16 +695,17 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
           this, window, old_bounds, window->GetLocalSurfaceId()));
   base::Optional<viz::LocalSurfaceId> local_surface_id;
-  if (window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
+  if (window->GetWindow()->IsEmbeddingClient() ||
       window->HasLocalLayerTreeFrameSink()) {
     // Do not use ConvertRectToPixel, enclosing rects cause problems.
     const gfx::Size size = gfx::ScaleToCeiledSize(
         new_bounds.size(), window->GetDeviceScaleFactor());
     local_surface_id = window->GetOrAllocateLocalSurfaceId(size);
     // |window_tree_host| may be null if this is called during creation of
-    // the window associated with the WindowTreeHostMus.
+    // the window associated with the WindowTreeHostMus, or if there is an
+    // embedding.
     WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
-    if (window_tree_host)
+    if (window_tree_host && window_tree_host->window() == window->GetWindow())
       window_tree_host->compositor()->OnChildResizing();
   }
   tree_->SetWindowBounds(change_id, window->server_id(), new_bounds,

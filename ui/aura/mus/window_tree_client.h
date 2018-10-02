@@ -145,19 +145,6 @@ class AURA_EXPORT WindowTreeClient
                            const viz::FrameSinkId& child_frame_sink_id);
   void UnregisterFrameSinkId(WindowMus* window);
 
-  // Embeds a new client in |window|. |flags| is a bitmask of the values defined
-  // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate
-  // whether the embedding succeeded or failed and may be called immediately if
-  // the embedding is known to fail.
-  void Embed(Window* window,
-             ws::mojom::WindowTreeClientPtr client,
-             uint32_t flags,
-             ws::mojom::WindowTree::EmbedCallback callback);
-  void EmbedUsingToken(Window* window,
-                       const base::UnguessableToken& token,
-                       uint32_t flags,
-                       ws::mojom::WindowTree::EmbedCallback callback);
-
   // Schedules an embed of a client. See
   // ws::mojom::WindowTreeClient::ScheduleEmbed() for details.
   void ScheduleEmbed(

@@ -45,7 +45,6 @@ namespace aura {
 class ClientSurfaceEmbedder;
 class PropertyConverter;
 class Window;
-class WindowPortMusTest;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
 class WindowTreeHostMus;
@@ -106,7 +105,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::FrameSinkId GenerateFrameSinkIdFromServerId() const;
 
  private:
-  friend class WindowPortMusTest;
+  friend class WindowPortMusTestHelper;
   friend class WindowTreeClient;
   friend class WindowTreeClientPrivate;
   friend class WindowTreeHostMus;
@@ -221,6 +220,16 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges::iterator FindChangeByTypeAndData(const ServerChangeType type,
                                                   const ServerChangeData& data);
 
+  // Called to setup state necessary for an embedding. Returns false if an
+  // embedding is not allowed in this window.
+  bool PrepareForEmbed();
+
+  // Called from OnEmbed() with the result of the embedding. |real_callback| is
+  // the callback supplied to the embed call.
+  static void OnEmbedAck(base::WeakPtr<WindowPortMus> window,
+                         ws::mojom::WindowTree::EmbedCallback real_callback,
+                         bool result);
+
   PropertyConverter* GetPropertyConverter();
 
   // WindowMus:
@@ -316,6 +325,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // See description in single place that changes the value for details.
   bool should_restack_transient_children_ = true;
+
+  // True if this window has an embedding.
+  bool has_embedding_ = false;
 
   // When a frame sink is created
   // for a local aura::Window, we need keep a weak ptr of it, so we can update

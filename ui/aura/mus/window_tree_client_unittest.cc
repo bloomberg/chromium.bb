@@ -39,6 +39,7 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/window_port_mus_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -273,11 +274,8 @@ TEST_F(WindowTreeClientTest, SetBoundsFailed) {
 // reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   const gfx::Rect original_bounds(window.bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
@@ -299,70 +297,26 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTreeClientTestSurfaceSync,
                         ::testing::Bool());
 
-// Verifies that a ClientSurfaceEmbedder is created for a window once it has
-// a bounds, and a valid FrameSinkId.
-TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderOnValidEmbedding) {
+// Verifies that windows with an embedding create a ClientSurfaceEmbedder.
+TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
   Window window(nullptr);
-  // EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds when their sizes
-  // change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // The window will allocate a viz::LocalSurfaceId once it has a bounds.
-  WindowMus* window_mus = WindowMus::Get(&window);
-  ASSERT_NE(nullptr, window_mus);
-  EXPECT_FALSE(window_mus->GetLocalSurfaceId().is_valid());
+  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
+  ASSERT_NE(nullptr, window_port_mus);
+  EXPECT_FALSE(WindowMus::Get(&window)->GetLocalSurfaceId().is_valid());
+  // A ClientSurfaceEmbedder is only created once there is bounds and a
+  // FrameSinkId.
+  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
   gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, window.bounds());
   window.SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, window.bounds());
-  EXPECT_TRUE(window_mus->GetLocalSurfaceId().is_valid());
+  EXPECT_TRUE(WindowMus::Get(&window)->GetLocalSurfaceId().is_valid());
 
-  // An ClientSurfaceEmbedder isn't created UNTIL the window has a bounds and
-  // a valid FrameSinkId.
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Now that the window has a valid FrameSinkId, it can embed the client in a
-  // CompositorFrame.
-  window_tree_client()->OnFrameSinkIdAllocated(server_id(&window),
-                                               viz::FrameSinkId(1, 1));
-  ClientSurfaceEmbedder* client_surface_embedder =
-      window_port_mus->client_surface_embedder();
-  ASSERT_NE(nullptr, client_surface_embedder);
-}
-
-// Verifies that EMBED_IN_OWNER windows do not gutter.
-TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
-  Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
-  window.Init(ui::LAYER_NOT_DRAWN);
-
-  // The window will allocate a viz::LocalSurfaceId once it has a bounds.
-  WindowMus* window_mus = WindowMus::Get(&window);
-  ASSERT_NE(nullptr, window_mus);
-  EXPECT_FALSE(window_mus->GetLocalSurfaceId().is_valid());
-  gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
-  ASSERT_NE(new_bounds, window.bounds());
-  window.SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, window.bounds());
-  EXPECT_TRUE(window_mus->GetLocalSurfaceId().is_valid());
-
-  // An ClientSurfaceEmbedder isn't created UNTIL the window has a bounds and
-  // a valid FrameSinkId.
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Now that the window has a valid FrameSinkId, it can embed the client in a
-  // CompositorFrame.
-  window_tree_client()->OnFrameSinkIdAllocated(server_id(&window),
-                                               viz::FrameSinkId(1, 1));
+  // Once the bounds have been set, the ClientSurfaceEmbedder should be created.
   ClientSurfaceEmbedder* client_surface_embedder =
       window_port_mus->client_surface_embedder();
   ASSERT_NE(nullptr, client_surface_embedder);
@@ -376,11 +330,8 @@ TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
 TEST_P(WindowTreeClientTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
   ASSERT_EQ(base::nullopt, window_tree()->last_local_surface_id());
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // Resize the window and verify that we've allocated a viz::LocalSurfaceId.
   const gfx::Rect new_bounds(0, 0, 100, 100);

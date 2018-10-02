@@ -98,16 +98,28 @@ void WindowPortMus::SetHitTestInsets(const gfx::Insets& mouse,
 void WindowPortMus::Embed(ws::mojom::WindowTreeClientPtr client,
                           uint32_t flags,
                           ws::mojom::WindowTree::EmbedCallback callback) {
-  window_tree_client_->Embed(window_, std::move(client), flags,
-                             std::move(callback));
+  if (!PrepareForEmbed()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  window_tree_client_->tree_->Embed(
+      server_id(), std::move(client), flags,
+      base::BindOnce(&WindowPortMus::OnEmbedAck, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void WindowPortMus::EmbedUsingToken(
     const base::UnguessableToken& token,
     uint32_t flags,
     ws::mojom::WindowTree::EmbedCallback callback) {
-  window_tree_client_->EmbedUsingToken(window_, token, flags,
-                                       std::move(callback));
+  if (!PrepareForEmbed()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  window_tree_client_->tree_->EmbedUsingToken(
+      server_id(), token, flags,
+      base::BindOnce(&WindowPortMus::OnEmbedAck, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
@@ -219,6 +231,43 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
   return iter;
 }
 
+bool WindowPortMus::PrepareForEmbed() {
+  // Window::Init() must be called before Embed() (otherwise the server hasn't
+  // been told about the window).
+  DCHECK(window_->layer());
+
+  // The window server removes all children before embedding. In other words,
+  // it's generally an error to Embed() with existing children. So, fail early.
+  if (!window_->children().empty())
+    return false;
+
+  // Can only embed in windows created by this client.
+  if (window_mus_type() != WindowMusType::LOCAL)
+    return false;
+
+  // Don't allow an embed when one exists. This could be handled, if the
+  // callback was converted to OnChangeCompleted(). To attempt to handle it
+  // without routing the callback over the WindowTreeClient pipe would result
+  // in problemcs because of ordering. The ordering problem is because there is
+  // the Embed() request, the callback, and OnEmbeddedAppDisconnected() (which
+  // originates from the server side).
+  if (has_embedding_)
+    return false;
+
+  has_embedding_ = true;
+  return true;
+}
+
+// static
+void WindowPortMus::OnEmbedAck(
+    base::WeakPtr<WindowPortMus> window,
+    ws::mojom::WindowTree::EmbedCallback real_callback,
+    bool result) {
+  if (window && !result)
+    window->has_embedding_ = false;
+  std::move(real_callback).Run(window && result);
+}
+
 PropertyConverter* WindowPortMus::GetPropertyConverter() {
   return window_tree_client_->delegate_->GetPropertyConverter();
 }
@@ -311,7 +360,6 @@ void WindowPortMus::SetPropertyFromServer(
 
 void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
-  DCHECK(window_mus_type() == WindowMusType::EMBED_IN_OWNER);
   embed_frame_sink_id_ = frame_sink_id;
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
   UpdatePrimarySurfaceId();
@@ -449,6 +497,7 @@ void WindowPortMus::PrepareForDestroy() {
 }
 
 void WindowPortMus::NotifyEmbeddedAppDisconnected() {
+  has_embedding_ = false;
   for (WindowObserver& observer : *GetObservers(window_))
     observer.OnEmbeddedAppDisconnected(window_);
 }
@@ -603,10 +652,8 @@ void WindowPortMus::UnregisterFrameSinkId(
 }
 
 void WindowPortMus::UpdatePrimarySurfaceId() {
-  if (window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
-      window_mus_type() != WindowMusType::LOCAL) {
+  if (window_mus_type() != WindowMusType::LOCAL)
     return;
-  }
 
   if (!window_->IsEmbeddingClient() || !local_surface_id_.is_valid())
     return;
@@ -617,10 +664,8 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {
-  if (window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
-      window_mus_type() != WindowMusType::LOCAL) {
+  if (!window_->IsEmbeddingClient())
     return;
-  }
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(

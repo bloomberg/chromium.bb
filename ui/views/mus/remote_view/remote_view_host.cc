@@ -43,8 +43,6 @@ void RemoteViewHost::CreateEmbeddingRoot() {
   embedding_root_->set_owned_by_parent(false);
 
   embedding_root_->SetName("RemoteViewHostWindow");
-  embedding_root_->SetProperty(aura::client::kEmbedType,
-                               aura::client::WindowEmbedType::EMBED_IN_OWNER);
   embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   embedding_root_->Init(ui::LAYER_NOT_DRAWN);
 
