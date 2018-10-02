@@ -166,8 +166,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#define SK_LEGACY_COLORSPACE_XFORM_STEPS_IMPL
-
 #define SK_LEGACY_MAKE_COLOR_SPACE_IMPL
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
