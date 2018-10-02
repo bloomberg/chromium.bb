@@ -20,6 +20,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -124,8 +125,6 @@ TEST_F(AshServiceTest, OpenWindow) {
       aura::CreateInitParamsForTopLevel(client.get(), std::move(properties)));
   window_tree_host_mus.InitHost();
   aura::Window* child_window = new aura::Window(nullptr);
-  child_window->SetProperty(aura::client::kEmbedType,
-                            aura::client::WindowEmbedType::EMBED_IN_OWNER);
   child_window->Init(ui::LAYER_NOT_DRAWN);
   window_tree_host_mus.window()->AddChild(child_window);
 
@@ -133,8 +132,8 @@ TEST_F(AshServiceTest, OpenWindow) {
   // |child_window|. This blocks until it succeeds.
   ws::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = MakeRequest(&tree_client);
-  client->Embed(child_window, std::move(tree_client), 0u,
-                base::BindOnce(&OnEmbed));
+  aura::WindowPortMus::Get(child_window)
+      ->Embed(std::move(tree_client), 0u, base::BindOnce(&OnEmbed));
   std::unique_ptr<aura::WindowTreeClient> child_client =
       aura::WindowTreeClient::CreateForEmbedding(
           connector(), &window_tree_delegate, std::move(tree_client_request),

@@ -7,26 +7,15 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/client_surface_embedder.h"
+#include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/mus/window_port_mus_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 
 namespace aura {
 
-class WindowPortMusTest : public test::AuraTestBase {
- public:
-  WindowPortMusTest() { EnableMusWithTestWindowTree(); }
-
-  ~WindowPortMusTest() override = default;
-
-  base::WeakPtr<cc::LayerTreeFrameSink> GetFrameSinkFor(Window* window) {
-    auto* window_mus = WindowPortMus::Get(window);
-    return window_mus->local_layer_tree_frame_sink_;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowPortMusTest);
-};
+using WindowPortMusTest = test::AuraMusClientTestBase;
 
 // TODO(sadrul): https://crbug.com/842361.
 TEST_F(WindowPortMusTest,
@@ -45,7 +34,7 @@ TEST_F(WindowPortMusTest,
       window.CreateLayerTreeFrameSink());
   EXPECT_TRUE(frame_sink.get());
 
-  auto mus_frame_sink = GetFrameSinkFor(&window);
+  auto mus_frame_sink = WindowPortMusTestHelper(&window).GetFrameSink();
   ASSERT_TRUE(mus_frame_sink);
   auto frame_sink_local_surface_id =
       static_cast<cc::mojo_embedder::AsyncLayerTreeFrameSink*>(

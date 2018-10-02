@@ -23,11 +23,6 @@ namespace aura {
 namespace client {
 class FocusClient;
 
-enum class WindowEmbedType {
-  NONE,
-  EMBED_IN_OWNER,
-};
-
 // Alphabetical sort.
 
 // A property key to store whether accessibility focus falls back to widget or
@@ -154,9 +149,6 @@ AURA_EXPORT extern const WindowProperty<int>* const kTopViewInset;
 
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
-
-// Indicates the type of embedding within the given window.
-AURA_EXPORT extern const WindowProperty<WindowEmbedType>* const kEmbedType;
 
 // The corner radius of a window in DIPs. Currently only used for shadows.
 // Default is -1, meaning "unspecified". 0 Ensures corners are square.

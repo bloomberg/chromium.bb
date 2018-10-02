@@ -113,19 +113,8 @@ std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
     return std::make_unique<WindowPortForShutdown>();
 
   DCHECK(window_tree_client_);
-  WindowMusType window_mus_type;
-  switch (window->GetProperty(aura::client::kEmbedType)) {
-    case aura::client::WindowEmbedType::NONE:
-      window_mus_type = WindowMusType::LOCAL;
-      break;
-    case aura::client::WindowEmbedType::EMBED_IN_OWNER:
-      window_mus_type = WindowMusType::EMBED_IN_OWNER;
-      break;
-    default:
-      NOTREACHED();
-  }
-  // Use LOCAL as all other cases are created by WindowTreeClient explicitly.
-  return std::make_unique<WindowPortMus>(window_tree_client_, window_mus_type);
+  return std::make_unique<WindowPortMus>(window_tree_client_,
+                                         WindowMusType::LOCAL);
 }
 
 void Env::AddObserver(EnvObserver* observer) {
