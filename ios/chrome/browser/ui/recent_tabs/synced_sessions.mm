@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
+#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 
 #include <functional>
 #include <memory>

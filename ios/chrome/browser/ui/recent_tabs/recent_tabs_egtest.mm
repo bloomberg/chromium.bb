@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -62,10 +62,10 @@ id<GREYMatcher> TitleOfTestPage() {
 }  // namespace
 
 // Earl grey integration tests for Recent Tabs Panel Controller.
-@interface RecentTabsTableTestCase : ChromeTestCase
+@interface RecentTabsTestCase : ChromeTestCase
 @end
 
-@implementation RecentTabsTableTestCase
+@implementation RecentTabsTestCase
 
 - (void)setUp {
   [ChromeEarlGrey clearBrowsingHistory];
