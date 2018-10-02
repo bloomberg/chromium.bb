@@ -27,7 +27,7 @@ NonMainThreadTaskQueue::NonMainThreadTaskQueue(
 NonMainThreadTaskQueue::~NonMainThreadTaskQueue() = default;
 
 void NonMainThreadTaskQueue::OnTaskCompleted(
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   // |non_main_thread_scheduler_| can be nullptr in tests.
   if (non_main_thread_scheduler_) {

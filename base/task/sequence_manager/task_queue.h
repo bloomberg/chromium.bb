@@ -128,19 +128,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     bool should_notify_observers;
   };
 
-  // Interface to inspect task type by a scheduler controlling SequenceManager.
-  // TODO(kraynov): Merge with TaskQueueImpl::Task (keeping enqueue order
-  // private with friend classes) and move to tasks.(h|cc).
-  class BASE_EXPORT Task : public PendingTask {
-   public:
-    Task(internal::PostedTask posted_task, TimeTicks desired_run_time);
-
-    int task_type() const { return task_type_; }
-
-   private:
-    int task_type_;
-  };
-
   // Information about task execution.
   //
   // Wall-time related methods (start_time, end_time, wall_duration) can be

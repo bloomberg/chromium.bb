@@ -6,6 +6,25 @@
 
 namespace base {
 namespace sequence_manager {
+
+Task::Task(internal::PostedTask posted_task,
+           TimeTicks desired_run_time,
+           internal::EnqueueOrder sequence_order,
+           internal::EnqueueOrder enqueue_order)
+    : PendingTask(posted_task.location,
+                  std::move(posted_task.callback),
+                  desired_run_time,
+                  posted_task.nestable),
+      task_type(posted_task.task_type),
+      enqueue_order_(enqueue_order) {
+  // We use |sequence_num| in DelayedWakeUp for ordering purposes and it
+  // may wrap around to a negative number during the static cast, hence,
+  // the relevant code is especially sensitive to a potential change of
+  // |PendingTask::sequence_num|'s type.
+  static_assert(std::is_same<decltype(sequence_num), int>::value, "");
+  sequence_num = static_cast<int>(sequence_order);
+}
+
 namespace internal {
 
 PostedTask::PostedTask(OnceClosure callback,

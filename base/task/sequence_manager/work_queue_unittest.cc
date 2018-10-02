@@ -47,27 +47,26 @@ class WorkQueueTest : public testing::Test {
   void TearDown() override { work_queue_sets_->RemoveQueue(work_queue_.get()); }
 
  protected:
-  TaskQueueImpl::Task FakeCancelableTaskWithEnqueueOrder(
-      int enqueue_order,
-      WeakPtr<Cancelable> weak_ptr) {
-    TaskQueueImpl::Task fake_task(
+  Task FakeCancelableTaskWithEnqueueOrder(int enqueue_order,
+                                          WeakPtr<Cancelable> weak_ptr) {
+    Task fake_task(
         PostedTask(BindOnce(&Cancelable::NopTask, weak_ptr), FROM_HERE),
         TimeTicks(), EnqueueOrder(),
         EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
-  TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
-    TaskQueueImpl::Task fake_task(
-        PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), EnqueueOrder(),
-        EnqueueOrder::FromIntForTesting(enqueue_order));
+  Task FakeTaskWithEnqueueOrder(int enqueue_order) {
+    Task fake_task(PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
+                   EnqueueOrder(),
+                   EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
-  TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
-    TaskQueueImpl::Task fake_task(
-        PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), EnqueueOrder(),
-        EnqueueOrder::FromIntForTesting(enqueue_order));
+  Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
+    Task fake_task(PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
+                   EnqueueOrder(),
+                   EnqueueOrder::FromIntForTesting(enqueue_order));
     fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }

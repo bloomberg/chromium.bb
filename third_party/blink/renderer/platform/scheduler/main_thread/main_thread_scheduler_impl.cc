@@ -2483,7 +2483,7 @@ void MainThreadSchedulerImpl::BroadcastIntervention(
 
 void MainThreadSchedulerImpl::OnTaskStarted(
     MainThreadTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   main_thread_only().running_queues.push(queue);
   queueing_time_estimator_.OnExecutionStarted(task_timing.start_time(), queue);
@@ -2492,7 +2492,7 @@ void MainThreadSchedulerImpl::OnTaskStarted(
 
   main_thread_only().current_task_start_time = task_timing.start_time();
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
-      static_cast<TaskType>(task.task_type()),
+      static_cast<TaskType>(task.task_type),
       queue
           ? base::Optional<MainThreadTaskQueue::QueueType>(queue->queue_type())
           : base::nullopt};
@@ -2505,7 +2505,7 @@ void MainThreadSchedulerImpl::OnTaskStarted(
 
 void MainThreadSchedulerImpl::OnTaskCompleted(
     MainThreadTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   DCHECK_LE(task_timing.start_time(), task_timing.end_time());
   DCHECK(!main_thread_only().running_queues.empty());
@@ -2534,7 +2534,7 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
 void MainThreadSchedulerImpl::RecordTaskUkm(
     MainThreadTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
@@ -2560,7 +2560,7 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
 
 UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
     MainThreadTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing,
     FrameSchedulerImpl* frame_scheduler,
     bool precise_attribution) {
@@ -2586,7 +2586,7 @@ UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
   builder.SetRendererAudible(main_thread_only().is_audio_playing);
   builder.SetUseCase(
       static_cast<int>(main_thread_only().current_use_case.get()));
-  builder.SetTaskType(task.task_type());
+  builder.SetTaskType(task.task_type);
   builder.SetQueueType(static_cast<int>(
       queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kDetached));
   builder.SetFrameStatus(static_cast<int>(

@@ -55,20 +55,20 @@ class BASE_EXPORT WorkQueue {
 
   // Returns the first task in this queue or null if the queue is empty. This
   // method ignores any fences.
-  const TaskQueueImpl::Task* GetFrontTask() const;
+  const Task* GetFrontTask() const;
 
   // Returns the last task in this queue or null if the queue is empty. This
   // method ignores any fences.
-  const TaskQueueImpl::Task* GetBackTask() const;
+  const Task* GetBackTask() const;
 
   // Pushes the task onto the |tasks_| and if a fence hasn't been reached
   // it informs the WorkQueueSets if the head changed.
-  void Push(TaskQueueImpl::Task task);
+  void Push(Task task);
 
   // Pushes the task onto the front of the |tasks_| and if it's before any
   // fence it informs the WorkQueueSets the head changed. Use with caution this
   // API can easily lead to task starvation if misused.
-  void PushNonNestableTaskToFront(TaskQueueImpl::Task task);
+  void PushNonNestableTaskToFront(Task task);
 
   // Reloads the empty |tasks_| with
   // |task_queue_->TakeImmediateIncomingQueue| and if a fence hasn't been
@@ -82,7 +82,7 @@ class BASE_EXPORT WorkQueue {
   // Pulls a task off the |tasks_| and informs the WorkQueueSets.  If the
   // task removed had an enqueue order >= the current fence then WorkQueue
   // pretends to be empty as far as the WorkQueueSets is concerned.
-  TaskQueueImpl::Task TakeTaskFromWorkQueue();
+  Task TakeTaskFromWorkQueue();
 
   // Removes all canceled tasks from the head of the list. Returns true if any
   // tasks were removed.

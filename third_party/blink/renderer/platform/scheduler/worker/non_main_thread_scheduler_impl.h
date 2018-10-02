@@ -42,7 +42,7 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
 
   virtual void OnTaskCompleted(
       NonMainThreadTaskQueue* worker_task_queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing) = 0;
 
   // ThreadSchedulerImpl:

@@ -364,12 +364,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void OnTaskStarted(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnTaskCompleted(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   bool IsAudioPlaying() const;
@@ -726,12 +726,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // a particular Page, otherwise it's attributed to all Pages in the process.
   void RecordTaskUkm(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   UkmRecordingStatus RecordTaskUkmImpl(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
       FrameSchedulerImpl* frame_scheduler,
       bool precise_attribution);
