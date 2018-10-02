@@ -495,6 +495,17 @@ var ENTRIES = {
     typeText: 'Plain text',
   }),
 
+  tallHtml: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'tall.html',
+    targetPath: 'tall.html',
+    mimeType: 'text/html',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'tall.html',
+    sizeText: '51 bytes',
+    typeText: 'HTML document',
+  }),
+
   pinned: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
@@ -668,7 +679,6 @@ var ENTRIES = {
     },
   }),
 
-
   // Read-only and write-restricted entries.
   // TODO(sashab): Generate all combinations of capabilities inside the test, to
   // ensure maximum coverage.
@@ -764,6 +774,7 @@ var ENTRIES = {
       canShare: true
     },
   }),
+
   directoryMovies: new TestEntryInfo({
     type: EntryType.DIRECTORY,
     targetPath: 'Movies',
@@ -779,6 +790,7 @@ var ENTRIES = {
       canShare: true
     },
   }),
+
   directoryMusic: new TestEntryInfo({
     type: EntryType.DIRECTORY,
     targetPath: 'Music',
@@ -794,6 +806,7 @@ var ENTRIES = {
       canShare: true
     },
   }),
+
   directoryPictures: new TestEntryInfo({
     type: EntryType.DIRECTORY,
     targetPath: 'Pictures',
