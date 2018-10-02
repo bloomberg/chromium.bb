@@ -50,7 +50,6 @@
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_event_details.h"
-#include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
@@ -897,9 +896,6 @@ ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
 
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
     : request_time_tracker_(new ExtensionWebRequestTimeTracker) {
-  DCHECK(ExtensionsAPIClient::Get());
-  web_request_event_router_delegate_ =
-      ExtensionsAPIClient::Get()->CreateWebRequestEventRouterDelegate();
 }
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
@@ -1743,9 +1739,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
               request->initiator);
 
       if (access != PermissionsData::PageAccess::kAllowed) {
-        if (access == PermissionsData::PageAccess::kWithheld &&
-            web_request_event_router_delegate_) {
-          web_request_event_router_delegate_->NotifyWebRequestWithheld(
+        if (access == PermissionsData::PageAccess::kWithheld) {
+          DCHECK(ExtensionsAPIClient::Get());
+          ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
               request->render_process_id, request->frame_id,
               listener->id.extension_id);
         }

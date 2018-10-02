@@ -64,7 +64,6 @@ enum class WebRequestResourceType : uint8_t;
 
 class InfoMap;
 class WebRequestEventDetails;
-class WebRequestEventRouterDelegate;
 struct WebRequestInfo;
 class WebRequestRulesRegistry;
 
@@ -704,9 +703,6 @@ class ExtensionWebRequestEventRouter {
   // respective rules registry.
   std::map<RulesRegistryKey,
       scoped_refptr<extensions::WebRequestRulesRegistry> > rules_registries_;
-
-  std::unique_ptr<extensions::WebRequestEventRouterDelegate>
-      web_request_event_router_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
