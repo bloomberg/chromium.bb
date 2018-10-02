@@ -259,7 +259,7 @@
   return view;
 }
 
-#pragma mark - MDCAppBar support
+#pragma mark - MDCAppBarViewController support
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
   return self.appBarViewController;
