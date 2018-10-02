@@ -53,6 +53,8 @@ source_set("dns") {
       "host_cache.cc",
       "host_resolver.cc",
       "host_resolver_impl.cc",
+      "host_resolver_mdns_task.cc",
+      "host_resolver_mdns_task.h",
       "host_resolver_proc.cc",
       "host_resolver_proc.h",
       "host_resolver_source.h",
@@ -459,8 +461,14 @@ source_set("test_support") {
   ]
 
   if (enable_mdns) {
-    sources += [ "mock_mdns_socket_factory.cc" ]
-    public += [ "mock_mdns_socket_factory.h" ]
+    sources += [
+      "mock_mdns_client.cc",
+      "mock_mdns_socket_factory.cc",
+    ]
+    public += [
+      "mock_mdns_client.h",
+      "mock_mdns_socket_factory.h",
+    ]
   }
 
   deps = [

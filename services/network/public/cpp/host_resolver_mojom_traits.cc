@@ -52,6 +52,8 @@ EnumTraits<ResolveHostParameters::Source, net::HostResolverSource>::ToMojom(
       return ResolveHostParameters::Source::SYSTEM;
     case net::HostResolverSource::DNS:
       return ResolveHostParameters::Source::DNS;
+    case net::HostResolverSource::MULTICAST_DNS:
+      return ResolveHostParameters::Source::MULTICAST_DNS;
   }
 }
 
@@ -68,6 +70,9 @@ bool EnumTraits<ResolveHostParameters::Source, net::HostResolverSource>::
       return true;
     case ResolveHostParameters::Source::DNS:
       *output = net::HostResolverSource::DNS;
+      return true;
+    case ResolveHostParameters::Source::MULTICAST_DNS:
+      *output = net::HostResolverSource::MULTICAST_DNS;
       return true;
   }
 }

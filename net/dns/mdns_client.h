@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_query.h"
@@ -32,6 +33,8 @@ class RecordParsed;
 // time out after a reasonable number of seconds.
 class NET_EXPORT MDnsTransaction {
  public:
+  static const base::TimeDelta kTransactionTimeout;
+
   // Used to signify what type of result the transaction has received.
   enum Result {
     // Passed whenever a record is found.
