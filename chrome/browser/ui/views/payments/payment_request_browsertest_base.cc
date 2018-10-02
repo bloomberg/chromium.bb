@@ -638,13 +638,10 @@ void PaymentRequestBrowserTestBase::PayWithCreditCard(
 }
 
 void PaymentRequestBrowserTestBase::RetryPaymentRequest(
-    const std::string& validation_errors,
-    PaymentRequestDialogView* dialog_view) {
-  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->size());
-  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_HIDDEN,
-                               DialogEvent::SPEC_DONE_UPDATING,
-                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
-                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION});
+    const std::string& validation_errors) {
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED});
 
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
                                      "retry(" + validation_errors + ");"));
@@ -654,13 +651,11 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
 
 void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const std::string& validation_errors,
-    const DialogEvent& dialog_event,
-    PaymentRequestDialogView* dialog_view) {
-  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->size());
+    const DialogEvent& dialog_event) {
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
-       DialogEvent::PROCESSING_SPINNER_HIDDEN,
-       DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION, dialog_event});
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED,
+       dialog_event});
 
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
                                      "retry(" + validation_errors + ");"));
