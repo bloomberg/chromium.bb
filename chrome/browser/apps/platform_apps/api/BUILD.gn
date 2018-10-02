@@ -27,15 +27,28 @@ source_set("api") {
     "browser/browser_api.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
+    "media_galleries/blob_data_source_factory.cc",
+    "media_galleries/blob_data_source_factory.h",
+    "media_galleries/media_galleries_api.cc",
+    "media_galleries/media_galleries_api.h",
+    "media_galleries/media_galleries_api_util.cc",
+    "media_galleries/media_galleries_api_util.h",
   ]
 
   deps = [
+    "//chrome/app:generated_resources_grit",
+
     # TODO(https://crbug.com/883570): It'd be nice to have more APIs here
     # extracted into their own BUILD files (so they are easy to audit, add, or
     # remove), but any that depend on //chrome/browser:browser can't.
     "//chrome/browser/apps/platform_apps/api/music_manager_private",
     "//chrome/browser/extensions",
+    "//chrome/browser/ui",
+    "//chrome/common",
     "//chrome/common/apps/platform_apps/api",
+    "//chrome/services/media_gallery_util/public/cpp",
+    "//components/storage_monitor",
+    "//components/web_modal",
     "//extensions/browser",
   ]
 
@@ -52,7 +65,6 @@ source_set("api") {
     deps += [
       "//chrome:strings",
       "//chrome/browser/chromeos",
-      "//chrome/browser/ui",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
       "//components/account_id",

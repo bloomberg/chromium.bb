@@ -18,9 +18,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
@@ -156,8 +156,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     MediaGalleriesPreferences* preferences = GetAndInitializePreferences();
 
     // Make a copy, as the iterator would be invalidated otherwise.
-    const MediaGalleriesPrefInfoMap galleries =
-        preferences->known_galleries();
+    const MediaGalleriesPrefInfoMap galleries = preferences->known_galleries();
     for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
          it != galleries.end(); ++it) {
       preferences->ForgetGalleryById(it->first);
@@ -178,15 +177,11 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     ASSERT_FALSE(preferences->LookUpGalleryByPath(
         fake_gallery_temp_dir_.GetPath(), &gallery_info));
     MediaGalleryPrefId id = preferences->AddGallery(
-        gallery_info.device_id,
-        gallery_info.path,
-        MediaGalleryPrefInfo::kAutoDetected,
-        gallery_info.volume_label,
-        gallery_info.vendor_name,
-        gallery_info.model_name,
-        gallery_info.total_size_in_bytes,
-        gallery_info.last_attach_time,
-        0, 0, 0);
+        gallery_info.device_id, gallery_info.path,
+        MediaGalleryPrefInfo::kAutoDetected, gallery_info.volume_label,
+        gallery_info.vendor_name, gallery_info.model_name,
+        gallery_info.total_size_in_bytes, gallery_info.last_attach_time, 0, 0,
+        0);
     if (pref_id)
       *pref_id = id;
 
@@ -210,8 +205,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
   base::FilePath GetCommonDataDir() const {
     return test_data_dir_.AppendASCII("api_test")
-                         .AppendASCII("media_galleries")
-                         .AppendASCII("common");
+        .AppendASCII("media_galleries")
+        .AppendASCII("common");
   }
 
   int num_galleries() const {
@@ -256,15 +251,13 @@ class MediaGalleriesPlatformAppPpapiTest
 
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
     app_dir_ = app_dir_.AppendASCII("ppapi")
-                       .AppendASCII("tests")
-                       .AppendASCII("extensions")
-                       .AppendASCII("media_galleries")
-                       .AppendASCII("newlib");
+                   .AppendASCII("tests")
+                   .AppendASCII("extensions")
+                   .AppendASCII("media_galleries")
+                   .AppendASCII("newlib");
   }
 
-  const base::FilePath& app_dir() const {
-    return app_dir_;
-  }
+  const base::FilePath& app_dir() const { return app_dir_; }
 
  private:
   base::FilePath app_dir_;

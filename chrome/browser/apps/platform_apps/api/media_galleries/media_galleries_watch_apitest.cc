@@ -151,18 +151,12 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
     MediaGalleryPrefInfo gallery_info;
     ASSERT_FALSE(preferences->LookUpGalleryByPath(test_gallery_.GetPath(),
                                                   &gallery_info));
-    MediaGalleryPrefId id =
-        preferences->AddGallery(gallery_info.device_id,
-                                gallery_info.path,
-                                MediaGalleryPrefInfo::kAutoDetected,
-                                gallery_info.volume_label,
-                                gallery_info.vendor_name,
-                                gallery_info.model_name,
-                                gallery_info.total_size_in_bytes,
-                                gallery_info.last_attach_time,
-                                0,
-                                0,
-                                0);
+    MediaGalleryPrefId id = preferences->AddGallery(
+        gallery_info.device_id, gallery_info.path,
+        MediaGalleryPrefInfo::kAutoDetected, gallery_info.volume_label,
+        gallery_info.vendor_name, gallery_info.model_name,
+        gallery_info.total_size_in_bytes, gallery_info.last_attach_time, 0, 0,
+        0);
 
     preferences->SetGalleryPermissionForExtension(*extension_, id, true);
   }
@@ -220,10 +214,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
                           kAddGalleryChangedListenerOK);
   SetupGalleryWatches();
 
-
   // Modify gallery contents; expect correct details.
-  ExtensionTestMessageListener got_correct_details(
-      kOnGalleryChangedCheckingOK, false);
+  ExtensionTestMessageListener got_correct_details(kOnGalleryChangedCheckingOK,
+                                                   false);
   ASSERT_TRUE(AddNewFileInTestGallery());
   EXPECT_TRUE(got_correct_details.WaitUntilSatisfied());
 }
@@ -287,6 +280,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
   ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
   // Set up a invalid gallery watch.
-  ExecuteCmdAndCheckReply(
-      kSetupWatchOnInvalidGalleryCmd, kAddGalleryWatchRequestFailed);
+  ExecuteCmdAndCheckReply(kSetupWatchOnInvalidGalleryCmd,
+                          kAddGalleryWatchRequestFailed);
 }

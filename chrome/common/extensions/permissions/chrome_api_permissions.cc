@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
 
@@ -205,9 +204,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     // Platform-app permissions.
 
     {APIPermission::kFileSystemProvider, "fileSystemProvider"},
-    {APIPermission::kMediaGalleries, "mediaGalleries",
-     APIPermissionInfo::kFlagNone,
-     &CreateAPIPermission<MediaGalleriesPermission>},
     {APIPermission::kPointerLock, "pointerLock"},
     {APIPermission::kCastStreaming, "cast.streaming"},
     {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},

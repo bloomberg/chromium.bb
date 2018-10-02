@@ -7,7 +7,10 @@ import("//chrome/common/features.gni")
 
 assert(enable_extensions)
 
-chrome_apps_api_schema_files_ = [ "browser.idl" ]
+chrome_apps_api_schema_files_ = [
+  "browser.idl",
+  "media_galleries.idl",
+]
 
 if (is_chromeos) {
   chrome_apps_api_schema_files_ += [ "easy_unlock_private.idl" ]

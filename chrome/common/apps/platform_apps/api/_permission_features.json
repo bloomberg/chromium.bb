@@ -17,6 +17,32 @@
     "location": "component",
     "platforms": ["chromeos"]
   },
+  "mediaGalleries": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  // TODO(devlin): These all specify the same permissions. There's no need for
+  // child features.
+  "mediaGalleries.allAutoDetected": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.scan": {
+    "channel": "dev",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.read": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.copyTo": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.delete": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
   "musicManagerPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/media_galleries/media_galleries_api_util.h"
+#include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api_util.h"
 
 #include "base/logging.h"
-#include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/apps/platform_apps/api/media_galleries.h"
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 template <class T>
 void SetValueScopedPtr(T value, std::unique_ptr<T>* destination) {
@@ -27,7 +28,7 @@ void SetValueScopedPtr(std::string value,
 std::unique_ptr<base::DictionaryValue> SerializeMediaMetadata(
     chrome::mojom::MediaMetadataPtr metadata) {
   DCHECK(metadata);
-  extensions::api::media_galleries::MediaMetadata extension_metadata;
+  media_galleries::MediaMetadata extension_metadata;
   extension_metadata.mime_type = std::move(metadata->mime_type);
   if (metadata->height >= 0 && metadata->width >= 0) {
     extension_metadata.height.reset(new int(metadata->height));
@@ -49,7 +50,7 @@ std::unique_ptr<base::DictionaryValue> SerializeMediaMetadata(
   SetValueScopedPtr(metadata->track, &extension_metadata.track);
 
   for (const chrome::mojom::MediaStreamInfoPtr& info : metadata->raw_tags) {
-    extensions::api::media_galleries::StreamInfo stream_info;
+    media_galleries::StreamInfo stream_info;
     stream_info.type = std::move(info->type);
     base::DictionaryValue* dict_value;
     info->additional_properties.GetAsDictionary(&dict_value);
@@ -60,4 +61,5 @@ std::unique_ptr<base::DictionaryValue> SerializeMediaMetadata(
   return extension_metadata.ToValue();
 }
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
