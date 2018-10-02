@@ -106,6 +106,8 @@ Runner.config = {
   ACCELERATION: 0.001,
   BG_CLOUD_SPEED: 0.2,
   BOTTOM_PAD: 10,
+  // Scroll Y threshold at which the game can be activated.
+  CANVAS_IN_VIEW_OFFSET: -10,
   CLEAR_TIME: 3000,
   CLOUD_FREQUENCY: 0.5,
   GAMEOVER_CLEAR_TIME: 750,
@@ -518,6 +520,16 @@ Runner.prototype = {
   },
 
   /**
+   * Checks whether the canvas area is in the viewport of the browser
+   * through the current scroll position.
+   * @return boolean.
+   */
+  isCanvasInView: function() {
+    return this.containerEl.getBoundingClientRect().top >
+        Runner.config.CANVAS_IN_VIEW_OFFSET;
+  },
+
+  /**
    * Update the game frame and schedules the next one.
    */
   update: function() {
@@ -664,41 +676,43 @@ Runner.prototype = {
       e.preventDefault();
     }
 
-    if (!this.crashed && !this.paused) {
-      if (Runner.keycodes.JUMP[e.keyCode] ||
-          e.type == Runner.events.TOUCHSTART) {
-        e.preventDefault();
-        // Starting the game for the first time.
-        if (!this.playing) {
-          // Started by touch so create a touch controller.
-          if (!this.touchController && e.type == Runner.events.TOUCHSTART) {
-            this.createTouchController();
+    if (this.isCanvasInView()) {
+      if (!this.crashed && !this.paused) {
+        if (Runner.keycodes.JUMP[e.keyCode] ||
+            e.type == Runner.events.TOUCHSTART) {
+          e.preventDefault();
+          // Starting the game for the first time.
+          if (!this.playing) {
+            // Started by touch so create a touch controller.
+            if (!this.touchController && e.type == Runner.events.TOUCHSTART) {
+              this.createTouchController();
+            }
+            this.loadSounds();
+            this.setPlayStatus(true);
+            this.update();
+            if (window.errorPageController) {
+              errorPageController.trackEasterEgg();
+            }
           }
-          this.loadSounds();
-          this.setPlayStatus(true);
-          this.update();
-          if (window.errorPageController) {
-            errorPageController.trackEasterEgg();
+          // Start jump.
+          if (!this.tRex.jumping && !this.tRex.ducking) {
+            this.playSound(this.soundFx.BUTTON_PRESS);
+            this.tRex.startJump(this.currentSpeed);
+          }
+        } else if (this.playing && Runner.keycodes.DUCK[e.keyCode]) {
+          e.preventDefault();
+          if (this.tRex.jumping) {
+            // Speed drop, activated only when jump key is not pressed.
+            this.tRex.setSpeedDrop();
+          } else if (!this.tRex.jumping && !this.tRex.ducking) {
+            // Duck.
+            this.tRex.setDuck(true);
           }
         }
-        // Start jump.
-        if (!this.tRex.jumping && !this.tRex.ducking) {
-          this.playSound(this.soundFx.BUTTON_PRESS);
-          this.tRex.startJump(this.currentSpeed);
-        }
-      } else if (this.playing && Runner.keycodes.DUCK[e.keyCode]) {
-        e.preventDefault();
-        if (this.tRex.jumping) {
-          // Speed drop, activated only when jump key is not pressed.
-          this.tRex.setSpeedDrop();
-        } else if (!this.tRex.jumping && !this.tRex.ducking) {
-          // Duck.
-          this.tRex.setDuck(true);
-        }
+      } else if (this.crashed && e.type == Runner.events.TOUCHSTART &&
+          e.currentTarget == this.containerEl) {
+        this.restart();
       }
-    } else if (this.crashed && e.type == Runner.events.TOUCHSTART &&
-        e.currentTarget == this.containerEl) {
-      this.restart();
     }
   },
 
@@ -722,9 +736,10 @@ Runner.prototype = {
       // Check that enough time has elapsed before allowing jump key to restart.
       var deltaTime = getTimeStamp() - this.time;
 
-      if (Runner.keycodes.RESTART[keyCode] || this.isLeftClickOnCanvas(e) ||
+      if (this.isCanvasInView() &&
+          (Runner.keycodes.RESTART[keyCode] || this.isLeftClickOnCanvas(e) ||
           (deltaTime >= this.config.GAMEOVER_CLEAR_TIME &&
-          Runner.keycodes.JUMP[keyCode])) {
+          Runner.keycodes.JUMP[keyCode]))) {
         this.restart();
       }
     } else if (this.paused && isjumpKey) {
