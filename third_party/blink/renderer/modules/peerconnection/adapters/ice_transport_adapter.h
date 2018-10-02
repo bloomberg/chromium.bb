@@ -47,6 +47,12 @@ class IceTransportAdapter {
 
     // Called asynchronously when the ICE connection state has changed.
     virtual void OnStateChanged(cricket::IceTransportState new_state) {}
+
+    // Called asynchronously when the ICE agent selects a different candidate
+    // pair for the active connection.
+    virtual void OnSelectedCandidatePairChanged(
+        const std::pair<cricket::Candidate, cricket::Candidate>&
+            selected_candidate_pair) {}
   };
 
   virtual ~IceTransportAdapter() = default;

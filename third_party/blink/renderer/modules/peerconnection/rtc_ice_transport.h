@@ -99,6 +99,7 @@ class MODULES_EXPORT RTCIceTransport final
                           ExceptionState& exception_state);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectedcandidatepairchange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate);
 
   // EventTarget overrides.
@@ -125,6 +126,9 @@ class MODULES_EXPORT RTCIceTransport final
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;
   void OnStateChanged(cricket::IceTransportState new_state) override;
+  void OnSelectedCandidatePairChanged(
+      const std::pair<cricket::Candidate, cricket::Candidate>&
+          selected_candidate_pair) override;
 
   // Fills in |local_parameters_| with a random usernameFragment and a random
   // password.

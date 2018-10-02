@@ -380,6 +380,7 @@ void RTCIceTransport::stop() {
   // Stopping the consumer should cause it to disconnect.
   DCHECK(!HasConsumer());
   state_ = RTCIceTransportState::kClosed;
+  selected_candidate_pair_ = base::nullopt;
   proxy_.reset();
 }
 
@@ -455,7 +456,23 @@ void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
     return;
   }
   state_ = local_new_state;
+  if (state_ == RTCIceTransportState::kFailed) {
+    selected_candidate_pair_ = base::nullopt;
+  }
   DispatchEvent(*Event::Create(EventTypeNames::statechange));
+}
+
+void RTCIceTransport::OnSelectedCandidatePairChanged(
+    const std::pair<cricket::Candidate, cricket::Candidate>&
+        selected_candidate_pair) {
+  RTCIceCandidate* local =
+      ConvertToRtcIceCandidate(selected_candidate_pair.first);
+  RTCIceCandidate* remote =
+      ConvertToRtcIceCandidate(selected_candidate_pair.second);
+  selected_candidate_pair_ = RTCIceCandidatePair();
+  selected_candidate_pair_->setLocal(local);
+  selected_candidate_pair_->setRemote(remote);
+  DispatchEvent(*Event::Create(EventTypeNames::selectedcandidatepairchange));
 }
 
 bool RTCIceTransport::RaiseExceptionIfClosed(
