@@ -487,7 +487,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
       FloatRect mapped_dirty_rect =
           MapRect(dirty_rect_, src_rect, content_rect);
       if (context_->IsComposited()) {
-        // Accelerated 2D canvases need the dirty rect to be expressed relative
+        // Composited 2D canvases need the dirty rect to be expressed relative
         // to the content box, as opposed to the layout box.
         mapped_dirty_rect.MoveBy(-content_rect.Location());
       }
@@ -1110,13 +1110,15 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   return canvas2d_bridge_.get();
 }
 
-void HTMLCanvasElement::SetCanvas2DLayerBridgeForTesting(
+void HTMLCanvasElement::SetResourceProviderForTesting(
+    std::unique_ptr<CanvasResourceProvider> resource_provider,
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
   DiscardResourceProvider();
   SetIntegralAttribute(widthAttr, size.Width());
   SetIntegralAttribute(heightAttr, size.Height());
   SetCanvas2DLayerBridgeInternal(std::move(bridge));
+  ReplaceResourceProvider(std::move(resource_provider));
 }
 
 void HTMLCanvasElement::DiscardResourceProvider() {
@@ -1393,9 +1395,12 @@ FontSelector* HTMLCanvasElement::GetFontSelector() {
 void HTMLCanvasElement::UpdateMemoryUsage() {
   int non_gpu_buffer_count = 0;
   int gpu_buffer_count = 0;
-  if (Is2d() && canvas2d_bridge_) {
+
+  if (!Is2d() && !Is3d())
+    return;
+  if (ResourceProvider()) {
     non_gpu_buffer_count++;
-    if (canvas2d_bridge_->IsAccelerated()) {
+    if (IsAccelerated()) {
       // The number of internal GPU buffers vary between one (stable
       // non-displayed state) and three (triple-buffered animations).
       // Adding 2 is a pessimistic but relevant estimate.
@@ -1404,14 +1409,8 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
     }
   }
 
-  if (Is3d()) {
-    if (ResourceProvider()) {
-      non_gpu_buffer_count++;
-      if (ResourceProvider()->IsAccelerated())
-        gpu_buffer_count += 2;
-    }
+  if (Is3d())
     non_gpu_buffer_count += context_->ExternallyAllocatedBufferCountPerPixel();
-  }
 
   const int bytes_per_pixel = ColorParams().BytesPerPixel();
 
