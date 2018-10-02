@@ -23,8 +23,11 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -224,6 +227,32 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   //       and /etc/passwd fails the CanCommitURL check.
   GURL file_url("filesystem:file:///etc/passwd");
   EXPECT_FALSE(FetchResource(file_url));
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+                       SimpleUrlLoader_NoAuthWhenNoWebContents) {
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = embedded_test_server()->GetURL("/auth-basic?password=");
+  auto loader = network::SimpleURLLoader::Create(std::move(request),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto loader_factory = BrowserContext::GetDefaultStoragePartition(
+                            shell()->web_contents()->GetBrowserContext())
+                            ->GetURLLoaderFactoryForBrowserProcess();
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  base::RunLoop loop;
+  loader->DownloadHeadersOnly(
+      loader_factory.get(),
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             scoped_refptr<net::HttpResponseHeaders>* rh_out,
+             scoped_refptr<net::HttpResponseHeaders> rh_in) {
+            *rh_out = rh_in;
+            std::move(quit_closure).Run();
+          },
+          loop.QuitClosure(), &headers));
+  loop.Run();
+  ASSERT_TRUE(headers.get());
+  ASSERT_EQ(headers->response_code(), 401);
 }
 
 #if defined(OS_ANDROID)
