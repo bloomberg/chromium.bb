@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/delete_directive_handler.h"
+#include "components/history/core/browser/sync/delete_directive_handler.h"
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -127,13 +130,13 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
         delete_directives_(delete_directive),
         post_processing_action_(post_processing_action) {}
 
+  ~DeleteDirectiveTask() override {}
+
   // Implements HistoryDBTask.
   bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override;
   void DoneRunOnMainThread() override;
 
  private:
-  ~DeleteDirectiveTask() override {}
-
   // Process a list of global Id directives. Delete all visits to a URL in
   // time ranges of directives if the timestamp of one visit matches with one
   // global id.
@@ -286,8 +289,7 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::
   }
 }
 
-DeleteDirectiveHandler::DeleteDirectiveHandler() : weak_ptr_factory_(this) {
-}
+DeleteDirectiveHandler::DeleteDirectiveHandler() : weak_ptr_factory_(this) {}
 
 DeleteDirectiveHandler::~DeleteDirectiveHandler() {
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -303,9 +305,9 @@ void DeleteDirectiveHandler::Start(
     // Drop processed delete directives during startup.
     history_service->ScheduleDBTask(
         FROM_HERE,
-        std::unique_ptr<HistoryDBTask>(
-            new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
-                                    initial_sync_data, DROP_AFTER_PROCESSING)),
+        std::make_unique<DeleteDirectiveTask>(weak_ptr_factory_.GetWeakPtr(),
+                                              initial_sync_data,
+                                              DROP_AFTER_PROCESSING),
         &internal_tracker_);
   }
 }
@@ -409,9 +411,9 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     // in one chrome session.
     history_service->ScheduleDBTask(
         FROM_HERE,
-        std::unique_ptr<HistoryDBTask>(
-            new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
-                                    delete_directives, KEEP_AFTER_PROCESSING)),
+        std::make_unique<DeleteDirectiveTask>(weak_ptr_factory_.GetWeakPtr(),
+                                              delete_directives,
+                                              KEEP_AFTER_PROCESSING),
         &internal_tracker_);
   }
   return syncer::SyncError();

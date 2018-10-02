@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/history_delete_directives_data_type_controller.h"
+#include "components/history/core/browser/sync/history_delete_directives_data_type_controller.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/driver/sync_client.h"
@@ -21,8 +21,7 @@ HistoryDeleteDirectivesDataTypeController::
       sync_client_(sync_client) {}
 
 HistoryDeleteDirectivesDataTypeController::
-    ~HistoryDeleteDirectivesDataTypeController() {
-}
+    ~HistoryDeleteDirectivesDataTypeController() {}
 
 bool HistoryDeleteDirectivesDataTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
@@ -58,11 +57,9 @@ bool HistoryDeleteDirectivesDataTypeController::DisableTypeIfNecessary() {
 
   if (sync_client_->GetSyncService()->HasObserver(this))
     sync_client_->GetSyncService()->RemoveObserver(this);
-  syncer::SyncError error(
-      FROM_HERE,
-      syncer::SyncError::DATATYPE_POLICY_ERROR,
-      "Delete directives not supported with encryption.",
-      type());
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
+                          "Delete directives not supported with encryption.",
+                          type());
   CreateErrorHandler()->OnUnrecoverableError(error);
   return true;
 }

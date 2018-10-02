@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/typed_url_sync_bridge.h"
+#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 
 #include <memory>
 
@@ -94,8 +94,7 @@ TypedURLSyncBridge::TypedURLSyncBridge(
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-TypedURLSyncBridge::~TypedURLSyncBridge() {
-}
+TypedURLSyncBridge::~TypedURLSyncBridge() {}
 
 std::unique_ptr<MetadataChangeList>
 TypedURLSyncBridge::CreateMetadataChangeList() {
@@ -515,7 +514,7 @@ bool TypedURLSyncBridge::WriteToTypedUrlSpecifics(
     // the history DB has an inaccurate count for some reason (there's been
     // bugs in the history code in the past which has left users in the wild
     // with incorrect counts - http://crbug.com/84258).
-    DCHECK(typed_count > 0);
+    DCHECK_GT(typed_count, 0);
 
     if (typed_count > kMaxTypedUrlVisits) {
       only_typed = true;
@@ -772,7 +771,7 @@ void TypedURLSyncBridge::MergeURLWithSync(
     URLRows* new_synced_urls,
     TypedURLVisitVector* new_synced_visits,
     URLRows* updated_synced_urls) {
-  DCHECK(server_typed_url.visits_size() != 0);
+  DCHECK_NE(0, server_typed_url.visits_size());
   DCHECK_EQ(server_typed_url.visits_size(),
             server_typed_url.visit_transitions_size());
 
@@ -878,7 +877,7 @@ void TypedURLSyncBridge::MergeURLWithSync(
         // Should never be possible to delete all the items, since the
         // visit vector contains newer local visits it will keep and/or the
         // visits in typed_url.visits newer than older local visits.
-        DCHECK(visits.size() > 0);
+        DCHECK_GT(visits.size(), 0U);
       }
       DCHECK_EQ(new_url.last_visit().ToInternalValue(),
                 visits.back().visit_time.ToInternalValue());
