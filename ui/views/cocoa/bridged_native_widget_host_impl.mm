@@ -89,7 +89,8 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   if (bridge_factory_host_) {
-    bridge_factory_host_->GetFactory()->DestroyBridge(widget_id_);
+    bridge_ptr_.reset();
+    host_mojo_binding_.Unbind();
     bridge_factory_host_->RemoveObserver(this);
     bridge_factory_host_ = nullptr;
   }
@@ -147,11 +148,11 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   [local_window_ setBridgedNativeWidgetId:widget_id_];
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
-  views_bridge_mac::mojom::BridgedNativeWidgetHostPtr host_ptr;
+  views_bridge_mac::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
                           ui::WindowResizeHelperMac::Get()->task_runner());
-  bridge_factory_host_->GetFactory()->CreateBridge(
-      widget_id_, mojo::MakeRequest(&bridge_ptr_), std::move(host_ptr));
+  bridge_factory_host_->GetFactory()->CreateBridgedNativeWidget(
+      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
   bridge()->CreateWindow(std::move(window_create_params), parent_bridge_id);

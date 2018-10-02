@@ -17,6 +17,13 @@
 #include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
+namespace {
+
+// Start counting host ids at 1000 to help in debugging.
+uint64_t g_next_host_id = 1000;
+
+}  // namespace
+
 AppShimHost::AppShimHost()
     : host_binding_(this), initial_launch_finished_(false) {}
 
@@ -69,11 +76,14 @@ void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
 
   app_shim_ = std::move(app_shim_ptr);
   if (features::HostWindowsInAppShimProcess()) {
+    uint64_t host_id = g_next_host_id++;
+
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
-    views_bridge_mac::mojom::BridgeFactoryRequest views_bridge_factory_request;
+    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest
+        views_bridge_factory_request;
     views_bridge_factory_host_ = std::make_unique<views::BridgeFactoryHost>(
-        &views_bridge_factory_request);
+        host_id, &views_bridge_factory_request);
     app_shim_->CreateViewsBridgeFactory(
         std::move(views_bridge_factory_request));
 
@@ -83,8 +93,7 @@ void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
         content_bridge_factory_request;
     content_bridge_factory_ =
         std::make_unique<content::NSViewBridgeFactoryHost>(
-            &content_bridge_factory_request,
-            views_bridge_factory_host_->GetHostId());
+            &content_bridge_factory_request, host_id);
     app_shim_->CreateContentNSViewBridgeFactory(
         std::move(content_bridge_factory_request));
   }

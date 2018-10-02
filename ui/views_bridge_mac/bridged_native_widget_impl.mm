@@ -282,9 +282,12 @@ BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
 }
 
 void BridgedNativeWidgetImpl::BindRequest(
-    views_bridge_mac::mojom::BridgedNativeWidgetRequest request) {
+    views_bridge_mac::mojom::BridgedNativeWidgetAssociatedRequest request,
+    base::OnceClosure connection_closed_callback) {
   bridge_mojo_binding_.Bind(std::move(request),
                             ui::WindowResizeHelperMac::Get()->task_runner());
+  bridge_mojo_binding_.set_connection_error_handler(
+      std::move(connection_closed_callback));
 }
 
 void BridgedNativeWidgetImpl::SetWindow(

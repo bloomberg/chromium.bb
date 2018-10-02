@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_ns_view_client_helper.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/display/screen.h"
@@ -28,7 +29,8 @@ RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
     mojom::RenderWidgetHostNSViewClientAssociatedPtr client,
     mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request)
     : remote_client_(std::move(client)), binding_(this) {
-  binding_.Bind(std::move(bridge_request));
+  binding_.Bind(std::move(bridge_request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
   // This object will be destroyed when its connection is closed.
   binding_.set_connection_error_handler(
       base::BindOnce(&RenderWidgetHostNSViewBridgeLocal::OnConnectionError,

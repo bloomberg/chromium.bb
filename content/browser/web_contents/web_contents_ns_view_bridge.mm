@@ -4,6 +4,8 @@
 
 #include "content/browser/web_contents/web_contents_ns_view_bridge.h"
 
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+
 namespace content {
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
@@ -11,7 +13,8 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
     mojom::WebContentsNSViewClientAssociatedPtr client,
     mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request)
     : client_(std::move(client)), binding_(this) {
-  binding_.Bind(std::move(bridge_request));
+  binding_.Bind(std::move(bridge_request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
   // This object will be destroyed when its connection is closed.
   binding_.set_connection_error_handler(base::BindOnce(
       &WebContentsNSViewBridge::OnConnectionError, base::Unretained(this)));
