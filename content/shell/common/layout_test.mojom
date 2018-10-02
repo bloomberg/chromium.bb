@@ -51,7 +51,7 @@ struct LayoutTestDump {
 interface LayoutTestControl {
   CaptureDump() => (LayoutTestDump result);
 
-  [Sync] CompositeWithRaster() => ();
+  CompositeWithRaster() => ();
 
   // Dumps the frame's contents into a string.
   DumpFrameLayout() => (string frame_layout_dump);

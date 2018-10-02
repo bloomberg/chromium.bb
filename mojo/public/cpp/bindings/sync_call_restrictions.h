@@ -21,10 +21,6 @@ namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
-namespace content {
-class BlinkTestController;
-}
-
 namespace leveldb {
 class LevelDBMojoProxy;
 }
@@ -96,8 +92,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // For destroying the GL context/surface that draw to a platform window before
   // the platform window is destroyed.
   friend class viz::HostFrameSinkManager;
-  // Allow for layout test pixel dumps.
-  friend class content::BlinkTestController;
   // For preventing frame swaps of wrong size during resize on Windows.
   // (https://crbug.com/811945)
   friend class ui::HostContextFactoryPrivate;
