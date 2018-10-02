@@ -44,6 +44,10 @@ bool AccountReconcilorDelegate::ReorderChromeAccountsForReconcileIfNeeded(
   return false;
 }
 
+bool AccountReconcilorDelegate::ShouldUpdateAccountsOrderInCookies() const {
+  return true;
+}
+
 AccountReconcilorDelegate::RevokeTokenOption
 AccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
