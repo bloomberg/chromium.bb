@@ -44,8 +44,9 @@ base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
 
 WaylandBufferManager::Buffer::Buffer() = default;
 WaylandBufferManager::Buffer::Buffer(uint32_t id,
-                                     zwp_linux_buffer_params_v1* zwp_params)
-    : buffer_id(id), params(zwp_params) {}
+                                     zwp_linux_buffer_params_v1* zwp_params,
+                                     const gfx::Size& buffer_size)
+    : buffer_id(id), size(buffer_size), params(zwp_params) {}
 WaylandBufferManager::Buffer::~Buffer() = default;
 
 WaylandBufferManager::WaylandBufferManager(
@@ -97,7 +98,8 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   struct zwp_linux_buffer_params_v1* params =
       zwp_linux_dmabuf_v1_create_params(zwp_linux_dmabuf_.get());
 
-  std::unique_ptr<Buffer> buffer = std::make_unique<Buffer>(buffer_id, params);
+  std::unique_ptr<Buffer> buffer =
+      std::make_unique<Buffer>(buffer_id, params, gfx::Size(width, height));
   buffers_.insert(std::pair<uint32_t, std::unique_ptr<Buffer>>(
       buffer_id, std::move(buffer)));
 
@@ -188,9 +190,16 @@ bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
     return false;
   }
 
-  wl_surface_damage(window->surface(), buffer->damage_region.x(),
-                    buffer->damage_region.y(), buffer->damage_region.width(),
-                    buffer->damage_region.height());
+  gfx::Rect damage_region = buffer->damage_region;
+  // If the size of the damage region is empty, wl_surface_damage must be
+  // supplied with the actual size of the buffer, which is going to be
+  // committed.
+  if (damage_region.size().IsEmpty())
+    damage_region.set_size(buffer->size);
+
+  wl_surface_damage_buffer(window->surface(), damage_region.x(),
+                           damage_region.y(), damage_region.width(),
+                           damage_region.height());
   wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
 
   static const wl_callback_listener frame_listener = {
