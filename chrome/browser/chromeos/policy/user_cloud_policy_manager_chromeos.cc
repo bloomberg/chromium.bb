@@ -51,6 +51,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -119,10 +120,12 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     base::OnceClosure fatal_error_callback,
     const AccountId& account_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : CloudPolicyManager(dm_protocol::kChromeUserPolicyType,
-                         std::string(),
-                         store.get(),
-                         task_runner),
+    : CloudPolicyManager(
+          dm_protocol::kChromeUserPolicyType,
+          std::string(),
+          store.get(),
+          task_runner,
+          base::BindRepeating(content::GetNetworkConnectionTracker)),
       profile_(profile),
       store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),

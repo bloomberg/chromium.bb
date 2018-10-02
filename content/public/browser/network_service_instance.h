@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NETWORK_SERVICE_INSTANCE_H_
 #define CONTENT_PUBLIC_BROWSER_NETWORK_SERVICE_INSTANCE_H_
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace network {
@@ -51,6 +52,14 @@ CONTENT_EXPORT void FlushNetworkServiceInstanceForTesting();
 // network change events.
 // Must only be called on the UI thread.
 CONTENT_EXPORT network::NetworkConnectionTracker* GetNetworkConnectionTracker();
+
+// Asynchronously calls the given callback with a NetworkConnectionTracker that
+// can be used to subscribe to network change events.
+//
+// This is a helper method for classes that can't easily call
+// GetNetworkConnectionTracker from the UI thread.
+CONTENT_EXPORT void GetNetworkConnectionTrackerFromUIThread(
+    base::OnceCallback<void(network::NetworkConnectionTracker*)> callback);
 
 // Sets the NetworkConnectionTracker instance to use. For testing only.
 // Must be called on the UI thread. Must be called before the first call to

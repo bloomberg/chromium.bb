@@ -4,13 +4,22 @@
 
 #include "services/network/test/test_network_connection_tracker.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace network {
 
 static TestNetworkConnectionTracker* g_test_network_connection_tracker_instance;
+
+namespace {
+
+NetworkConnectionTracker* GetNonTestInstance() {
+  return TestNetworkConnectionTracker::GetInstance();
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<TestNetworkConnectionTracker>
@@ -22,6 +31,11 @@ TestNetworkConnectionTracker::CreateInstance() {
 TestNetworkConnectionTracker* TestNetworkConnectionTracker::GetInstance() {
   DCHECK(g_test_network_connection_tracker_instance);
   return g_test_network_connection_tracker_instance;
+}
+
+// static
+NetworkConnectionTrackerGetter TestNetworkConnectionTracker::CreateGetter() {
+  return base::BindRepeating(&GetNonTestInstance);
 }
 
 TestNetworkConnectionTracker::TestNetworkConnectionTracker() {

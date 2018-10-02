@@ -25,6 +25,10 @@ class TestNetworkConnectionTracker : public NetworkConnectionTracker {
   // CreateInstance() must have been called before calling this.
   static TestNetworkConnectionTracker* GetInstance();
 
+  // Creates a NetworkConnectionTrackerGetter that will return the active
+  // TestNetworkConnectionTracker instance when called.
+  static NetworkConnectionTrackerGetter CreateGetter();
+
   ~TestNetworkConnectionTracker() override;
 
   bool GetConnectionType(network::mojom::ConnectionType* type,

@@ -21,6 +21,12 @@
 
 namespace network {
 
+// Defines the type of a callback that will return a NetworkConnectionTracker
+// instance.
+class NetworkConnectionTracker;
+using NetworkConnectionTrackerGetter =
+    base::RepeatingCallback<NetworkConnectionTracker*()>;
+
 // This class subscribes to network change events from
 // network::mojom::NetworkChangeManager and propogates these notifications to
 // its NetworkConnectionObservers registered through
