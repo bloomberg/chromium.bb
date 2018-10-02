@@ -229,15 +229,8 @@ void DownloadMediaParser::OnVideoFrameDecoded(
 
 void DownloadMediaParser::RenderVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
-  media::Context3D context;
-  gpu::ContextSupport* context_support = nullptr;
   auto context_provider =
       gpu_factories_ ? gpu_factories_->GetMediaContextProvider() : nullptr;
-  if (context_provider) {
-    context = media::Context3D(context_provider->ContextGL(),
-                               context_provider->GrContext());
-    context_support = context_provider->ContextSupport();
-  }
 
   media::PaintCanvasVideoRenderer renderer;
   SkBitmap bitmap;
@@ -246,7 +239,11 @@ void DownloadMediaParser::RenderVideoFrame(
 
   // Draw the video frame to |bitmap|.
   cc::SkiaPaintCanvas canvas(bitmap);
-  renderer.Copy(video_frame, &canvas, context, context_support);
+  media::Context3D context =
+      context_provider ? media::Context3D(context_provider->ContextGL(),
+                                          context_provider->GrContext())
+                       : media::Context3D();
+  renderer.Copy(video_frame, &canvas, context);
 
   NotifyComplete(std::move(bitmap));
 }
