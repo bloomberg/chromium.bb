@@ -37,7 +37,7 @@ function openQuickViewSteps(appId, name) {
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
       repeatUntil(function() {
-        const elements = ['#quick-view', '#dialog'];
+        const elements = ['#quick-view', '#dialog[open]'];
         return remoteCall
             .callRemoteTestUtil(
                 'deepQueryAllElements', appId, [elements, ['display']])
@@ -75,7 +75,7 @@ function closeQuickViewSteps(appId) {
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       repeatUntil(function() {
-        const elements = ['#quick-view', '#dialog'];
+        const elements = ['#quick-view', '#dialog:not([open])'];
         return remoteCall
             .callRemoteTestUtil(
                 'deepQueryAllElements', appId, [elements, ['display']])
