@@ -233,14 +233,10 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
 
   std::string job_unique_id = fetch_description->job_unique_id;
   DCHECK(!job_details_map_.count(job_unique_id));
-  auto emplace_result = job_details_map_.emplace(
+  job_details_map_.emplace(
       job_unique_id,
       JobDetails(std::move(fetch_description), provider_namespace_,
                  profile_->IsOffTheRecord()));
-
-  const JobDetails& details = emplace_result.first->second;
-  for (auto* observer : observers_)
-    observer->OnItemsAdded({details.offline_item});
 }
 
 void BackgroundFetchDelegateImpl::DownloadUrl(
@@ -251,7 +247,6 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const net::HttpRequestHeaders& headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   DCHECK(job_details_map_.count(job_unique_id));
   DCHECK(!download_job_unique_id_map_.count(download_guid));
 
@@ -269,6 +264,14 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
+
+  if (!job_details.started) {
+    // Create a notification.
+    for (auto* observer : observers_)
+      observer->OnItemsAdded({job_details.offline_item});
+    job_details.started = true;
+  }
+
   if (job_details.paused) {
     job_details.on_resume =
         base::BindOnce(&BackgroundFetchDelegateImpl::StartDownload,
@@ -634,8 +637,14 @@ bool BackgroundFetchDelegateImpl::IsGuidOutstanding(
 std::set<std::string> BackgroundFetchDelegateImpl::TakeOutstandingGuids() {
   std::set<std::string> outstanding_guids;
   for (auto& job_id_details : job_details_map_) {
+    auto& job_details = job_id_details.second;
+
+    // If the job is loaded at this point, then it already started
+    // in a previous session.
+    job_details.started = true;
+
     std::vector<std::string>& job_outstanding_guids =
-        job_id_details.second.fetch_description->outstanding_guids;
+        job_details.fetch_description->outstanding_guids;
     for (std::string& outstanding_guid : job_outstanding_guids)
       outstanding_guids.insert(std::move(outstanding_guid));
     job_outstanding_guids.clear();

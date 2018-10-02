@@ -144,6 +144,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       int64_t service_worker_registration_id) override;
   void OnQuotaExceeded(
       const BackgroundFetchRegistrationId& registration_id) override;
+  void OnFetchStorageError(
+      const BackgroundFetchRegistrationId& registration_id) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,

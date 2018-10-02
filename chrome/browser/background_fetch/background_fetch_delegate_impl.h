@@ -128,6 +128,7 @@ class BackgroundFetchDelegateImpl
 
     void UpdateOfflineItem();
 
+    bool started = false;
     bool cancelled = false;
     bool paused = false;
 

@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
@@ -122,6 +123,10 @@ void StartNextPendingRequestTask::DidDeletePendingRequest(
 
 void StartNextPendingRequestTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  if (HasStorageError()) {
+    for (auto& observer : data_manager()->observers())
+      observer.OnFetchStorageError(registration_id_);
+  }
   ReportStorageError();
 
   std::move(callback_).Run(error, std::move(next_request_));

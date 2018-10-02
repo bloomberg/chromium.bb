@@ -357,6 +357,15 @@ void BackgroundFetchContext::OnStorageWiped() {
   AbandonFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
 }
 
+void BackgroundFetchContext::OnFetchStorageError(
+    const BackgroundFetchRegistrationId& registration_id) {
+  auto controllers_iter = job_controllers_.find(registration_id.unique_id());
+  if (controllers_iter == job_controllers_.end())
+    return;
+
+  controllers_iter->second->Abort(FailureReason::SERVICE_WORKER_UNAVAILABLE);
+}
+
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRegistration& registration,

@@ -44,6 +44,11 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnQuotaExceeded(
       const BackgroundFetchRegistrationId& registration_id) = 0;
 
+  // Called if a database task encountered a storage error in the context of a
+  // fetch workflow, such as preparing a request or storing a response.
+  virtual void OnFetchStorageError(
+      const BackgroundFetchRegistrationId& registration_id) = 0;
+
   virtual ~BackgroundFetchDataManagerObserver() {}
 };
 
