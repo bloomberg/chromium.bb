@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
@@ -55,24 +56,24 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
   FILE2_CONTENTS = 'Once upon a time in a galaxy far far away.'
   SUBFILE_CONTENTS = 'Five little monkeys jumped on the bed.'
 
-  GS_DIR = 'gs://chromeos-releases-public/unittest'
-
   def setUp(self):
     # Use a subdir specifically for the cache so we can use the tempdir for
     # other things (including tempfiles by gsutil/etc...).
     self.filesdir = os.path.join(self.tempdir, 'unittest-cache')
     osutils.SafeMakedirs(self.filesdir)
 
-  def _SetUpDirs(self):
+  def _SetUpDirs(self, uri):
+    self.gs_dir = uri
+
     self.file1_local = os.path.join(self.filesdir, self.FILE1)
     self.file2_local = os.path.join(self.filesdir, self.FILE2)
     self.subdir_local = os.path.join(self.filesdir, self.SUBDIR)
     self.subfile_local = os.path.join(self.filesdir, self.SUBFILE)
 
-    self.file1_gs = os.path.join(self.GS_DIR, self.FILE1)
-    self.file2_gs = os.path.join(self.GS_DIR, self.FILE2)
-    self.subdir_gs = os.path.join(self.GS_DIR, self.SUBDIR)
-    self.subfile_gs = os.path.join(self.GS_DIR, self.SUBFILE)
+    self.file1_gs = os.path.join(self.gs_dir, self.FILE1)
+    self.file2_gs = os.path.join(self.gs_dir, self.FILE2)
+    self.subdir_gs = os.path.join(self.gs_dir, self.SUBDIR)
+    self.subfile_gs = os.path.join(self.gs_dir, self.SUBFILE)
 
     # Pre-populate local dir with contents.
     with open(self.file1_local, 'w') as out1:
@@ -86,13 +87,14 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     with open(self.subfile_local, 'w') as out3:
       out3.write(self.SUBFILE_CONTENTS)
 
-    # Make sure gs:// directory is ready (empty).
-    gslib.Remove(os.path.join(self.GS_DIR, '*'), recurse=True,
-                 ignore_no_match=True)
-
   @cros_test_lib.NetworkTest()
   def testIntegration(self):
-    self._SetUpDirs()
+    with gs.TemporaryURL('urilib_unittest') as uri:
+      self._runIntegrationTest(uri)
+
+  def _runIntegrationTest(self, uri):
+    """Run integration test under |uri|."""
+    self._SetUpDirs(uri)
 
     self.assertTrue(urilib.Exists(self.filesdir, as_dir=True))
     self.assertTrue(urilib.Exists(self.file1_local))
@@ -117,13 +119,13 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
 
     # Test CopyFiles, from local to GS.
     self.assertEquals(set(deep_gs_files),
-                      set(urilib.CopyFiles(self.filesdir, self.GS_DIR)))
+                      set(urilib.CopyFiles(self.filesdir, self.gs_dir)))
 
     # Test ListFiles, GS version.
     self.assertEquals(set(shallow_gs_files),
-                      set(urilib.ListFiles(self.GS_DIR)))
+                      set(urilib.ListFiles(self.gs_dir)))
     self.assertEquals(set(deep_gs_files),
-                      set(urilib.ListFiles(self.GS_DIR, recurse=True)))
+                      set(urilib.ListFiles(self.gs_dir, recurse=True)))
 
     # Test Cmp between some files.
     self.assertTrue(urilib.Cmp(self.file1_local, self.file1_gs))
@@ -135,11 +137,11 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
 
     # Test CopyFiles, from GS to local.
     self.assertEquals(set(deep_local_files),
-                      set(urilib.CopyFiles(self.GS_DIR, self.filesdir)))
+                      set(urilib.CopyFiles(self.gs_dir, self.filesdir)))
 
     # Test RemoveDirContents, GS version.
-    urilib.RemoveDirContents(self.GS_DIR)
-    self.assertFalse(urilib.ListFiles(self.GS_DIR))
+    urilib.RemoveDirContents(self.gs_dir)
+    self.assertFalse(urilib.ListFiles(self.gs_dir))
 
 
 class TestUrilib(cros_test_lib.MoxTempDirTestCase):
