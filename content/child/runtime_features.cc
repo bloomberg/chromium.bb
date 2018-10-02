@@ -499,6 +499,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
       base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
+
+  WebRuntimeFeatures::EnableNoHoverDuringScroll(
+      base::FeatureList::IsEnabled(features::kNoHoverDuringScroll));
 }
 
 }  // namespace content
