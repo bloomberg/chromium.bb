@@ -71,23 +71,29 @@ bool AutofillWalletDataTypeController::StartModels() {
 void AutofillWalletDataTypeController::StopModels() {
   DCHECK(CalledOnValidThread());
 
-  // This function is called when shutting down (nothing is changing), when
-  // sync is disabled completely, or when wallet sync is disabled. In the
-  // cases where wallet sync or sync in general is disabled, clear wallet cards
-  // and addresses copied from the server. This is different than other sync
-  // cases since this type of data reflects what's on the server rather than
-  // syncing local data between clients, so this extra step is required.
-  syncer::SyncService* service = sync_client_->GetSyncService();
+  // This controller is used by two data types, we need to clear the data only
+  // once. (In particular, if AUTOFILL_WALLET_DATA is on USS (and thus doesn't
+  // use this controller), we *don't* want any ClearAllServerData call).
+  if (type() == syncer::AUTOFILL_WALLET_DATA) {
+    // This function is called when shutting down (nothing is changing), when
+    // sync is disabled completely, or when wallet sync is disabled. In the
+    // cases where wallet sync or sync in general is disabled, clear wallet
+    // cards and addresses copied from the server. This is different than other
+    // sync cases since this type of data reflects what's on the server rather
+    // than syncing local data between clients, so this extra step is required.
+    syncer::SyncService* service = sync_client_->GetSyncService();
 
-  // CanSyncFeatureStart indicates if sync is currently enabled at all. The
-  // preferred data type indicates if wallet sync data/metadata is enabled, and
-  // currently_enabled_ indicates if the other prefs are enabled. All of these
-  // have to be enabled to sync wallet data/metadata.
-  if (!service->CanSyncFeatureStart() ||
-      !service->GetPreferredDataTypes().Has(type()) || !currently_enabled_) {
-    autofill::PersonalDataManager* pdm = sync_client_->GetPersonalDataManager();
-    if (pdm)
-      pdm->ClearAllServerData();
+    // CanSyncFeatureStart indicates if sync is currently enabled at all. The
+    // preferred data type indicates if wallet sync data is enabled, and
+    // currently_enabled_ indicates if the other prefs are enabled. All of these
+    // have to be enabled to sync wallet data.
+    if (!service->CanSyncFeatureStart() ||
+        !service->GetPreferredDataTypes().Has(type()) || !currently_enabled_) {
+      autofill::PersonalDataManager* pdm =
+          sync_client_->GetPersonalDataManager();
+      if (pdm)
+        pdm->ClearAllServerData();
+    }
   }
 }
 
