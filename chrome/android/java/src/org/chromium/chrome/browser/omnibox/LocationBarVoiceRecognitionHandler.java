@@ -107,11 +107,14 @@ public class LocationBarVoiceRecognitionHandler {
         ToolbarDataProvider getToolbarDataProvider();
 
         /**
-         * Grabs a reference to the autocomplete controller from the location bar.
-         * @return The {@link AutocompleteController} currently in use by the
+         * Grabs a reference to the autocomplete coordinator from the location bar.
+         * @return The {@link AutocompleteCoordinator} currently in use by the
          *         {@link LocationBarLayout}.
          */
-        AutocompleteController getAutocompleteController();
+        // TODO(tedchoc): Limit the visibility of what is passed in here.  This does not need the
+        //                full coordinator.  It simply needs a way to pass voice suggestions to the
+        //                AutocompleteController.
+        AutocompleteCoordinator getAutocompleteCoordinator();
 
         /**
          * @return The current {@link WindowAndroid}.
@@ -185,12 +188,13 @@ public class LocationBarVoiceRecognitionHandler {
                 return;
             }
 
-            AutocompleteController autocompleteController = mDelegate.getAutocompleteController();
-            assert autocompleteController != null;
+            AutocompleteCoordinator autocompleteCoordinator =
+                    mDelegate.getAutocompleteCoordinator();
+            assert autocompleteCoordinator != null;
 
             recordVoiceSearchFinishEventSource(mSource);
 
-            VoiceResult topResult = autocompleteController.onVoiceResults(data.getExtras());
+            VoiceResult topResult = autocompleteCoordinator.onVoiceResults(data.getExtras());
             if (topResult == null) {
                 recordVoiceSearchResult(false);
                 return;

@@ -191,7 +191,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             }
         });
         Assert.assertEquals("Should not have any zero suggest requests yet", 0,
@@ -232,7 +232,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
                 urlBar.setText("g");
             }
         });
@@ -277,7 +277,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
                 urlBar.setText("g");
                 urlBar.setSelection(1);
             }
@@ -307,7 +307,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             TestAutocompleteController controller = new TestAutocompleteController(locationBar,
                     sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.setAutocompleteController(controller);
+            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             locationBar.onWindowFocusChanged(false);
             locationBar.onWindowFocusChanged(true);
             Assert.assertEquals("Zero suggest not triggered when URL focused but unchanged", 1,
@@ -319,7 +319,7 @@ public class OmniboxTest {
 
             TestAutocompleteController controller = new TestAutocompleteController(locationBar,
                     sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.setAutocompleteController(controller);
+            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             locationBar.onWindowFocusChanged(false);
             locationBar.onWindowFocusChanged(true);
             Assert.assertEquals("Zero suggest not triggered when URL focused but empty", 1,
@@ -331,7 +331,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             urlBar.setText("cows");
 
-            locationBar.setAutocompleteController(controller);
+            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             locationBar.onWindowFocusChanged(false);
             locationBar.onWindowFocusChanged(true);
             Assert.assertEquals("Zero suggest incorrectly triggered when URL has changed", 0,
@@ -563,7 +563,8 @@ public class OmniboxTest {
             public void onSuggestionsReceived(
                     List<OmniboxSuggestion> suggestions,
                     String inlineAutocompleteText) {
-                locationBar.onSuggestionsReceived(suggestions, inlineAutocompleteText);
+                locationBar.getAutocompleteCoordinator().onSuggestionsReceived(
+                        suggestions, inlineAutocompleteText);
                 synchronized (suggestionsProcessedSignal) {
                     int remaining = suggestionsLeft.decrementAndGet();
                     if (remaining == 0) {
@@ -580,7 +581,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             }
         });
 
@@ -883,12 +884,12 @@ public class OmniboxTest {
                                 .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
                                         "fac", null)));
         final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, locationBar, suggestionsMap);
+                locationBar, locationBar.getAutocompleteCoordinator(), suggestionsMap);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             }
         });
 
@@ -923,7 +924,8 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                OmniboxSuggestionsList suggestionsList = locationBar.getSuggestionList();
+                OmniboxSuggestionsList suggestionsList =
+                        locationBar.getAutocompleteCoordinator().getSuggestionList();
                 Assert.assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
                 for (int i = 0; i < suggestionsList.getChildCount(); i++) {
                     SuggestionView suggestionView = (SuggestionView) suggestionsList.getChildAt(i);

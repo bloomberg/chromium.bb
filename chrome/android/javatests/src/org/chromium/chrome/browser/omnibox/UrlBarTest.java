@@ -129,8 +129,8 @@ public class UrlBarTest {
                 LocationBarLayout locationBar =
                         (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                                 R.id.location_bar);
-                locationBar.cancelPendingAutocompleteStart();
-                locationBar.setAutocompleteController(controller);
+                locationBar.getAutocompleteCoordinator().cancelPendingAutocompleteStart();
+                locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
             }
         });
     }
