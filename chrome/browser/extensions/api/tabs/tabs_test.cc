@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -2074,6 +2075,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  bool load_success =
+      pdf_extension_test_util::EnsurePDFHasLoaded(second_web_contents);
+  EXPECT_TRUE(load_success);
+
+  // The actual PDF page coordinates that this click goes to is (346, 333),
+  // after several space transformations, not (400, 400). This clicks on a link
+  // to "http://www.facebook.com:83".
+  content::SimulateMouseClickAt(second_web_contents, 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(400, 400));
+
   EXPECT_TRUE(navigation_manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->ActivateTabAt(0, true);
