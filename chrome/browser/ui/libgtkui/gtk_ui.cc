@@ -476,7 +476,7 @@ bool GtkUi::GetColor(int id, SkColor* color, PrefService* pref_service) const {
        {colors_, pref_service->GetBoolean(prefs::kUseCustomChromeFrame)
                      ? custom_frame_colors_
                      : native_frame_colors_}) {
-    ColorMap::const_iterator it = color_map.find(id);
+    auto it = color_map.find(id);
     if (it != color_map.end()) {
       *color = it->second;
       return true;

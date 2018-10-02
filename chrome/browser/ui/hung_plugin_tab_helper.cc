@@ -122,8 +122,7 @@ void HungPluginTabHelper::PluginCrashed(const base::FilePath& plugin_path,
 
   // For now, just do a brute-force search to see if we have this plugin. Since
   // we'll normally have 0 or 1, this is fast.
-  for (PluginStateMap::iterator i = hung_plugins_.begin();
-       i != hung_plugins_.end(); ++i) {
+  for (auto i = hung_plugins_.begin(); i != hung_plugins_.end(); ++i) {
     if (i->second->path == plugin_path) {
       if (i->second->infobar)
         infobar_service->RemoveInfoBar(i->second->infobar);
@@ -144,7 +143,7 @@ void HungPluginTabHelper::PluginHungStatusChanged(
   if (!infobar_observer_.IsObserving(infobar_service))
     infobar_observer_.Add(infobar_service);
 
-  PluginStateMap::iterator found = hung_plugins_.find(plugin_child_id);
+  auto found = hung_plugins_.find(plugin_child_id);
   if (found != hung_plugins_.end()) {
     if (!is_hung) {
       // Hung plugin became un-hung, close the infobar and delete our info.
@@ -191,7 +190,7 @@ void HungPluginTabHelper::OnManagerShuttingDown(
 }
 
 void HungPluginTabHelper::KillPlugin(int child_id) {
-  PluginStateMap::iterator found = hung_plugins_.find(child_id);
+  auto found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
@@ -202,7 +201,7 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
 void HungPluginTabHelper::OnReshowTimer(int child_id) {
   // The timer should have been cancelled if the record isn't in our map
   // anymore.
-  PluginStateMap::iterator found = hung_plugins_.find(child_id);
+  auto found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
   DCHECK(!found->second->infobar);
   ShowBar(child_id, found->second.get());

@@ -176,7 +176,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     // Check that browsers have been opened for all the launched profiles.
     // Note that browsers opened for profiles that were not added as launched
     // profiles are simply ignored.
-    std::set<const Profile*>::const_iterator i = launched_profiles_.begin();
+    auto i = launched_profiles_.begin();
     for (; i != launched_profiles_.end(); ++i) {
       if (opened_profiles_.find(*i) == opened_profiles_.end())
         return;
@@ -807,14 +807,14 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
   size_t DEBUG_num_profiles_at_loop_start = std::numeric_limits<size_t>::max();
   base::debug::Alias(&DEBUG_num_profiles_at_loop_start);
 
-  Profiles::const_iterator DEBUG_it_begin = last_opened_profiles.begin();
+  auto DEBUG_it_begin = last_opened_profiles.begin();
   base::debug::Alias(&DEBUG_it_begin);
-  Profiles::const_iterator DEBUG_it_end = last_opened_profiles.end();
+  auto DEBUG_it_end = last_opened_profiles.end();
   base::debug::Alias(&DEBUG_it_end);
 
   // Launch the profiles in the order they became active.
-  for (Profiles::const_iterator it = last_opened_profiles.begin();
-       it != last_opened_profiles.end(); ++it, ++DEBUG_loop_counter) {
+  for (auto it = last_opened_profiles.begin(); it != last_opened_profiles.end();
+       ++it, ++DEBUG_loop_counter) {
     DEBUG_num_profiles_at_loop_start = last_opened_profiles.size();
     DCHECK(!(*it)->IsGuestSession());
 

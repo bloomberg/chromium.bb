@@ -1917,7 +1917,7 @@ TabDragController* TabStrip::ReleaseDragController() {
 TabStrip::FindClosingTabResult TabStrip::FindClosingTab(const Tab* tab) {
   DCHECK(tab->closing());
   for (auto i = tabs_closing_map_.begin(); i != tabs_closing_map_.end(); ++i) {
-    Tabs::iterator j = std::find(i->second.begin(), i->second.end(), tab);
+    auto j = std::find(i->second.begin(), i->second.end(), tab);
     if (j != i->second.end())
       return FindClosingTabResult(i, j);
   }

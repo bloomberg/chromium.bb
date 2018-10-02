@@ -208,8 +208,8 @@ void UnloadController::CancelWindowClose() {
   // Closing of window can be canceled from a beforeunload handler.
   DCHECK(is_attempting_to_close_browser_);
   tabs_needing_before_unload_fired_.clear();
-  for (UnloadListenerSet::iterator it = tabs_needing_unload_fired_.begin();
-      it != tabs_needing_unload_fired_.end(); ++it) {
+  for (auto it = tabs_needing_unload_fired_.begin();
+       it != tabs_needing_unload_fired_.end(); ++it) {
     DevToolsWindow::OnPageCloseCanceled(*it);
   }
   tabs_needing_unload_fired_.clear();
@@ -372,8 +372,7 @@ bool UnloadController::RemoveFromSet(UnloadListenerSet* set,
                                      content::WebContents* web_contents) {
   DCHECK(is_attempting_to_close_browser_);
 
-  UnloadListenerSet::iterator iter =
-      std::find(set->begin(), set->end(), web_contents);
+  auto iter = std::find(set->begin(), set->end(), web_contents);
   if (iter != set->end()) {
     set->erase(iter);
     return true;
