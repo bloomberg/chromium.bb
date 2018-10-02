@@ -232,6 +232,10 @@
 # Flaky tests. crbug.com/880584
 -UnifiedAutoplaySettingBrowserTest.*
 
+# This seems to timeout only on the msan bot, but I suspect it could equally
+# occur on the non-msan bots. https://crbug.com/891383
+-UserAddingScreenTest.AddingSeveralUsers
+
 # Window Open API tests.  https://crbug.com/815379
 -WindowOpenApiTest.OpenLockedFullscreenWindow
 -WindowOpenApiTest.RemoveLockedFullscreenFromWindow
