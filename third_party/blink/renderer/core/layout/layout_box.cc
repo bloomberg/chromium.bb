@@ -872,21 +872,6 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
   }
 }
 
-IntRect LayoutBox::AbsoluteContentBox() const {
-  // This is wrong with transforms and flipped writing modes.
-  IntRect rect = PixelSnappedIntRect(PhysicalContentBoxRect());
-  FloatPoint abs_pos = LocalToAbsolute();
-  rect.Move(abs_pos.X(), abs_pos.Y());
-  return rect;
-}
-
-IntSize LayoutBox::AbsoluteContentBoxOffset() const {
-  IntPoint offset = RoundedIntPoint(PhysicalContentBoxOffset());
-  FloatPoint abs_pos = LocalToAbsolute();
-  offset.Move(abs_pos.X(), abs_pos.Y());
-  return ToIntSize(offset);
-}
-
 FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
   LayoutRect rect = PhysicalContentBoxRect();
   return LocalToAbsoluteQuad(FloatRect(rect), flags);
@@ -1890,7 +1875,8 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
 
 ResourcePriority LayoutBox::ComputeResourcePriority() const {
   LayoutRect view_bounds = ViewRect();
-  LayoutRect object_bounds = LayoutRect(AbsoluteContentBox());
+  LayoutRect object_bounds = PhysicalContentBoxRect();
+  object_bounds.MoveBy(LayoutPoint(LocalToAbsolute()));
 
   // The object bounds might be empty right now, so intersects will fail since
   // it doesn't deal with empty rects. Use LayoutRect::contains in that case.
