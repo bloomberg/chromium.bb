@@ -303,7 +303,7 @@ void DataTypeManagerImpl::Restart() {
   // If we're performing a "catch up", first stop the model types to ensure the
   // call to Initialize triggers model association.
   if (catch_up_in_progress_)
-    model_association_manager_.Stop(STOP_SYNC);
+    model_association_manager_.Stop(KEEP_METADATA);
   download_started_ = false;
   model_association_manager_.Initialize(
       /*desired_types=*/last_enabled_types_,
@@ -794,9 +794,21 @@ void DataTypeManagerImpl::StopImpl(ShutdownReason reason) {
   // Invalidate weak pointer to drop download callbacks.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  // Leave metadata If we do not disable sync completely.
+  SyncStopMetadataFate metadata_fate = KEEP_METADATA;
+  switch (reason) {
+    case STOP_SYNC:
+      break;
+    case DISABLE_SYNC:
+      metadata_fate = CLEAR_METADATA;
+      break;
+    case BROWSER_SHUTDOWN:
+      break;
+  }
+
   // Stop all data types. This may trigger association callback but the
   // callback will do nothing because state is set to STOPPING above.
-  model_association_manager_.Stop(reason);
+  model_association_manager_.Stop(metadata_fate);
 
   // Individual data type controllers might still be STOPPING, but we don't
   // reflect that in |state_| because, for all practical matters, the manager is

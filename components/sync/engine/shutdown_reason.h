@@ -14,8 +14,6 @@ enum ShutdownReason {
   BROWSER_SHUTDOWN,  // Browser is closed.
 };
 
-const char* ShutdownReasonToString(ShutdownReason reason);
-
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_ENGINE_SHUTDOWN_REASON_H_

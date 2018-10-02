@@ -120,7 +120,7 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::ASSOCIATING);
-  model_association_manager.Stop(STOP_SYNC);
+  model_association_manager.Stop(KEEP_METADATA);
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
   EXPECT_EQ(
@@ -148,7 +148,7 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
             DataTypeController::ASSOCIATING);
   GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
 
-  model_association_manager.Stop(STOP_SYNC);
+  model_association_manager.Stop(KEEP_METADATA);
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
   EXPECT_EQ(
@@ -572,7 +572,7 @@ TEST_F(SyncModelAssociationManagerTest, StopClearMetadata) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
 
-  model_association_manager.Stop(DISABLE_SYNC);
+  model_association_manager.Stop(CLEAR_METADATA);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);

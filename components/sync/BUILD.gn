@@ -215,7 +215,6 @@ jumbo_static_library("sync") {
     "engine/polling_constants.h",
     "engine/sequenced_model_worker.cc",
     "engine/sequenced_model_worker.h",
-    "engine/shutdown_reason.cc",
     "engine/shutdown_reason.h",
     "engine/sync_auth_provider.h",
     "engine/sync_backend_registrar.cc",

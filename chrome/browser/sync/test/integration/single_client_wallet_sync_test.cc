@@ -496,51 +496,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
   // Make sure the card is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-
-  // Turn off sync, the card should be gone.
-  GetSyncService(0)->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
-
-  ASSERT_EQ(0uL, pdm->GetCreditCards().size());
-
-  // Turn sync on again, the card should come back.
-  GetSyncService(0)->RequestStart();
-  // RequestStop(CLEAR_DATA) also clears the "first setup complete" flag, so
-  // set it again.
-  GetSyncService(0)->SetFirstSetupComplete();
-  // Wait until Sync restores the card and it arrives at PDM.
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
-
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-}
-
-// Wallet data should get cleared from the database when sync is (temporarily)
-// stopped, e.g. due to the Sync feature toggle in Android settings.
-IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnStopSync) {
-  InitWithDefaultFeatures();
-  GetFakeServer()->SetWalletData(
-      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
-  ASSERT_TRUE(SetupSync());
-
-  // Make sure the card is in the DB.
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_NE(nullptr, pdm);
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
 
   // Turn off sync, the card should be gone.
-  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
-
-  ASSERT_EQ(0uL, pdm->GetCreditCards().size());
-
-  // Turn sync on again, the card should come back.
-  GetSyncService(0)->RequestStart();
-  // Wait until Sync restores the card and it arrives at PDM.
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
-
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_TRUE(GetClient(0)->DisableSyncForAllDatatypes());
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(0uL, cards.size());
 }
 
 // ChromeOS does not sign out, so the test below does not apply.
@@ -559,7 +521,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnSignOut) {
 
   // Turn off sync, the card should be gone.
   GetClient(0)->SignOutPrimaryAccount();
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
 
   ASSERT_EQ(0uL, pdm->GetCreditCards().size());
 }
@@ -675,8 +636,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
 
   // Turn off autofill sync, the card should be gone.
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
-
   cards = pdm->GetCreditCards();
   ASSERT_EQ(0uL, cards.size());
 }
