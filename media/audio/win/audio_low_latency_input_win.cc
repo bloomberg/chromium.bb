@@ -532,38 +532,44 @@ void WASAPIAudioInputStream::SetOutputDeviceForAec(
 
   output_device_id_for_aec_ = output_device_id;
 
-  // Set devices.
-  Microsoft::WRL::ComPtr<IPropertyStore> ps;
-  HRESULT hr = voice_capture_dmo_->QueryInterface(IID_IPropertyStore, &ps);
-  if (FAILED(hr) || !ps) {
-    log_callback_.Run(base::StringPrintf(
-        "WASAPIAIS:SetOutputDeviceForAec: Getting DMO property store failed."));
-    return;
+  if (opened_) {
+    // Set devices.
+    Microsoft::WRL::ComPtr<IPropertyStore> ps;
+    HRESULT hr = voice_capture_dmo_->QueryInterface(IID_IPropertyStore, &ps);
+    if (FAILED(hr) || !ps) {
+      log_callback_.Run(
+          base::StringPrintf("WASAPIAIS:SetOutputDeviceForAec: Getting DMO "
+                             "property store failed."));
+      return;
+    }
+
+    if (!SetDmoDevices(ps.Get())) {
+      log_callback_.Run(
+          "WASAPIAIS:SetOutputDeviceForAec: Setting device indices failed.");
+      return;
+    }
   }
 
-  if (!SetDmoDevices(ps.Get())) {
-    log_callback_.Run(
-        "WASAPIAIS:SetOutputDeviceForAec: Setting device indices failed.");
-    return;
-  }
+  if (started_) {
+    DCHECK(opened_);
+    // Recreate the dummy render client on the new output.
+    HRESULT hr = audio_client_for_render_->Stop();
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to stop output streaming.";
+    }
 
-  // Recreate the dummy render client on the new output.
-  hr = audio_client_for_render_->Stop();
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to stop output streaming.";
-  }
+    CreateDummyRenderClientsForDmo();
 
-  CreateDummyRenderClientsForDmo();
+    if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
+            audio_client_for_render_.Get(), audio_render_client_.Get())) {
+      DLOG(WARNING) << "Failed to pre-fill render buffer with silence.";
+    }
 
-  if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
-          audio_client_for_render_.Get(), audio_render_client_.Get())) {
-    DLOG(WARNING) << "Failed to pre-fill render buffer with silence.";
-  }
-
-  hr = audio_client_for_render_->Start();
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr
-                << ", proceeding without rendering.";
+    hr = audio_client_for_render_->Start();
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr
+                  << ", proceeding without rendering.";
+    }
   }
 
   log_callback_.Run(base::StringPrintf(
