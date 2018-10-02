@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-from contextlib import contextmanager
 import os
 import tempfile
 
@@ -112,32 +111,3 @@ class RestrictedAttrDict(dict):
     """
     if self[key] == default:
       self[key] = None
-
-
-def PathPrepend(new_dir, curr_path=None):
-  """Prepends a directory to a given path (or system path, if none provided)."""
-  if curr_path is None:
-    curr_path = os.environ.get('PATH')
-  return '%s:%s' % (new_dir, curr_path) if curr_path else new_dir
-
-
-@contextmanager
-def CheckedOpen(name, mode=None, buffering=None):
-  """A context for opening/closing a file iff an actual name is provided."""
-  # Open the file, as necessary.
-  f = None
-  if name:
-    dargs = {'name': name}
-    if mode is not None:
-      dargs['mode'] = mode
-    if buffering is not None:
-      dargs['buffering'] = buffering
-    f = open(**dargs)
-
-  try:
-    # Yield to the wait-statement body.
-    yield f
-  finally:
-    # If an actual file was opened, close it.
-    if f:
-      f.close()
