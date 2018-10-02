@@ -42,6 +42,7 @@
 #import "ui/views_bridge_mac/bridged_content_view.h"
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
+#include "ui/views_bridge_mac/widget_owner_nswindow_adapter.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
 // original implementation, then quits a nested run loop.
@@ -159,6 +160,7 @@ class NativeWidgetMacTest : public WidgetTest {
 
   // Make a native NSWindow with the given |style_mask| to use as a parent.
   TestNativeParentWindow* MakeNativeParentWithStyle(int style_mask) {
+    WidgetOwnerNSWindowAdapter::AllowForTesting();
     native_parent_.reset([[TestNativeParentWindow alloc]
         initWithContentRect:ParentRect()
                   styleMask:style_mask

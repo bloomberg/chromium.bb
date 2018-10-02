@@ -7,6 +7,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#import "ui/views/views_export.h"
 #import "ui/views_bridge_mac/bridged_native_widget_owner.h"
 
 @class NSView;
@@ -19,6 +20,12 @@ namespace views {
 // backed by another BridgedNativeWidgetImpl.
 class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
  public:
+  // This class appears to be unused outside of NativeWidgetMacTest. This class
+  // will crash on instantiation unless AllowForTesting is called. If no crashes
+  // are reported in the wild, then this class may be removed.
+  // https://832676
+  static VIEWS_EXPORT void AllowForTesting();
+
   // Create an adapter that will own |child|, tying its lifetime with the
   // NSWindow containing |anchor_view|. The object is self-deleting, via a call
   // to RemoveChildWindow() made in child->OnWindowWillClose().

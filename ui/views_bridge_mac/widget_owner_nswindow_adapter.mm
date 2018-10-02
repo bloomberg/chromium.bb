@@ -44,6 +44,15 @@
 
 namespace views {
 
+namespace {
+bool g_allow_widget_owner_ns_window_adapter = false;
+}
+
+// static
+void WidgetOwnerNSWindowAdapter::AllowForTesting() {
+  g_allow_widget_owner_ns_window_adapter = true;
+}
+
 WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
     BridgedNativeWidgetImpl* child,
     NSView* anchor_view)
@@ -51,6 +60,7 @@ WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
       anchor_view_([anchor_view retain]),
       observer_bridge_(
           [[WidgetOwnerNSWindowAdapterBridge alloc] initWithAdapter:this]) {
+  CHECK(g_allow_widget_owner_ns_window_adapter);
   // Although the |anchor_view| must be in an NSWindow when the child dialog is
   // created, it's permitted for the |anchor_view| to be removed from its view
   // hierarchy before the child dialog window is fully removed from screen. When
