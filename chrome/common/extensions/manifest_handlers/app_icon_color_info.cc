@@ -19,7 +19,7 @@ namespace errors = manifest_errors;
 
 namespace {
 
-const AppIconColorInfo& GetInfo(const Extension* extension) {
+const AppIconColorInfo& GetAppIconColorInfo(const Extension* extension) {
   CR_DEFINE_STATIC_LOCAL(const AppIconColorInfo, fallback, ());
 
   AppIconColorInfo* info = static_cast<AppIconColorInfo*>(
@@ -37,13 +37,13 @@ AppIconColorInfo::~AppIconColorInfo() {
 
 // static
 SkColor AppIconColorInfo::GetIconColor(const Extension* extension) {
-  return GetInfo(extension).icon_color_;
+  return GetAppIconColorInfo(extension).icon_color_;
 }
 
 // static
 const std::string& AppIconColorInfo::GetIconColorString(
     const Extension* extension) {
-  return GetInfo(extension).icon_color_string_;
+  return GetAppIconColorInfo(extension).icon_color_string_;
 }
 
 AppIconColorHandler::AppIconColorHandler() {
