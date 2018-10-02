@@ -28,6 +28,11 @@
 #include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 #endif
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_ui_util.h"
+#endif
+
 // A helper function to display the size of cache in units of MB or higher.
 // We need this, as 1 MB is the lowest nonzero cache size displayed by the
 // counter.
@@ -45,16 +50,14 @@ bool ShouldShowCookieException(Profile* profile) {
     auto* signin_manager = SigninManagerFactory::GetForProfile(profile);
     return signin_manager->IsAuthenticated();
   }
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-    auto* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    std::vector<std::string> accounts = token_service->GetAccounts();
-    bool has_valid_token = std::any_of(
-        accounts.begin(), accounts.end(), [&](std::string account_id) {
-          return !token_service->RefreshTokenHasError(account_id);
-        });
-    return has_valid_token;
+    sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
+        profile, ProfileSyncServiceFactory::GetForProfile(profile),
+        *SigninManagerFactory::GetForProfile(profile));
+    return sync_status == sync_ui_util::SYNCED;
   }
+#endif
   return false;
 }
 
