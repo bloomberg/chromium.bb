@@ -67,7 +67,7 @@ ChromeDataUseAscriber::~ChromeDataUseAscriber() {
 
 ChromeDataUseRecorder* ChromeDataUseAscriber::GetOrCreateDataUseRecorder(
     net::URLRequest* request) {
-  DataUseRecorderEntry entry = GetOrCreateDataUseRecorderEntry(request);
+  auto entry = GetOrCreateDataUseRecorderEntry(request);
   return entry == data_use_recorders_.end() ? nullptr : &(*entry);
 }
 
@@ -109,7 +109,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   DataUseUserData* service = static_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (service) {
-    DataUseRecorderEntry entry =
+    auto entry =
         CreateNewDataUseRecorder(request, DataUse::TrafficType::SERVICES);
     entry->data_use().set_description(
         DataUseUserData::GetServiceNameAsString(service->service_name()));
@@ -124,7 +124,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   if (!request_info ||
       request_info->GetGlobalRequestID() == content::GlobalRequestID()) {
     // Create a new DataUseRecorder for all non-content initiated requests.
-    DataUseRecorderEntry entry =
+    auto entry =
         CreateNewDataUseRecorder(request, DataUse::TrafficType::UNKNOWN);
     DataUse& data_use = entry->data_use();
     data_use.set_url(request->url());
@@ -132,7 +132,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   }
 
   if (request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
-    DataUseRecorderEntry new_entry =
+    auto new_entry =
         CreateNewDataUseRecorder(request, DataUse::TrafficType::USER_TRAFFIC);
     new_entry->set_main_frame_request_id(request_info->GetGlobalRequestID());
     pending_navigation_data_use_map_.insert(
@@ -170,7 +170,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   }
 
   // Create a new DataUseRecorder for all other requests.
-  DataUseRecorderEntry entry = CreateNewDataUseRecorder(
+  auto entry = CreateNewDataUseRecorder(
       request,
       content::ResourceRequestInfo::OriginatedFromServiceWorker(request)
           ? DataUse::TrafficType::SERVICE_WORKER
@@ -320,7 +320,7 @@ void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
         std::make_pair(render_frame, render_frame));
     DCHECK(main_render_frame_entry_map_.find(render_frame) ==
            main_render_frame_entry_map_.end());
-    DataUseRecorderEntry entry =
+    auto entry =
         CreateNewDataUseRecorder(nullptr, DataUse::TrafficType::USER_TRAFFIC);
     entry->set_main_frame_id(render_frame);
     main_render_frame_entry_map_.emplace(std::piecewise_construct,
@@ -344,7 +344,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
     auto main_frame_it = main_render_frame_entry_map_.find(key);
 
     if (main_render_frame_entry_map_.end() != main_frame_it) {
-      DataUseRecorderEntry entry = main_frame_it->second.data_use_recorder;
+      auto entry = main_frame_it->second.data_use_recorder;
 
       // Stop tracking requests for the old frame.
       std::vector<net::URLRequest*> pending_url_requests;
@@ -473,8 +473,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
     }
     return;
   }
-  DataUseRecorderEntry old_frame_entry =
-      main_frame_it->second.data_use_recorder;
+  auto old_frame_entry = main_frame_it->second.data_use_recorder;
   old_frame_entry->set_page_transition(page_transition);
 
   if (old_frame_entry == entry)
@@ -554,7 +553,7 @@ void ChromeDataUseAscriber::DidFinishLoad(int render_process_id,
     return;
 
   // Check that the DataUse entry has a committed URL.
-  DataUseRecorderEntry entry = main_frame_it->second.data_use_recorder;
+  auto entry = main_frame_it->second.data_use_recorder;
   DataUse& data_use = entry->data_use();
   if (data_use.url().is_valid()) {
     NotifyDidFinishLoad(entry);
@@ -586,7 +585,7 @@ ChromeDataUseAscriber::DataUseRecorderEntry
 ChromeDataUseAscriber::CreateNewDataUseRecorder(
     net::URLRequest* request,
     DataUse::TrafficType traffic_type) {
-  DataUseRecorderEntry entry =
+  auto entry =
       data_use_recorders_.emplace(data_use_recorders_.end(), traffic_type);
   if (request)
     AscribeRecorderWithRequest(request, entry);

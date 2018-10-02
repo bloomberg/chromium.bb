@@ -199,9 +199,7 @@ bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
   }
 
   // Do not migrate if some accounts are not valid.
-  for (std::map<std::string, std::string>::const_iterator iter =
-           db_tokens.begin();
-       iter != db_tokens.end(); ++iter) {
+  for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
     const std::string& prefixed_account_id = iter->first;
     std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
     AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
@@ -450,7 +448,7 @@ bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
 
 std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const std::string& account_id) const {
-  AccountStatusMap::const_iterator iter = refresh_tokens_.find(account_id);
+  auto iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end()) {
     const std::string refresh_token = iter->second->refresh_token();
     DCHECK(!refresh_token.empty());
@@ -581,9 +579,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             << db_tokens.size() << " Credential(s).";
     AccountTrackerService::AccountIdMigrationState migration_state =
         account_tracker_service_->GetMigrationState();
-    for (std::map<std::string, std::string>::const_iterator iter =
-             db_tokens.begin();
-         iter != db_tokens.end(); ++iter) {
+    for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
       std::string prefixed_account_id = iter->first;
       std::string refresh_token = iter->second;
 

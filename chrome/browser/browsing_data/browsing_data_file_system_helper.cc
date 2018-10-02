@@ -122,9 +122,10 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
         continue;  // Non-websafe state is not considered browsing data.
       int64_t usage = quota_util->GetOriginUsageOnFileTaskRunner(
           filesystem_context_.get(), current, type);
-      OriginInfoMap::iterator inserted =
-          file_system_info_map.insert(
-              std::make_pair(current, FileSystemInfo(current))).first;
+      auto inserted =
+          file_system_info_map
+              .insert(std::make_pair(current, FileSystemInfo(current)))
+              .first;
       inserted->second.usage_map[type] = usage;
     }
   }

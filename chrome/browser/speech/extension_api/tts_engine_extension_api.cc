@@ -127,8 +127,7 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
       result_voice.remote = voice.remote;
       result_voice.extension_id = extension->id();
 
-      for (std::set<std::string>::const_iterator iter =
-               voice.event_types.begin();
+      for (auto iter = voice.event_types.begin();
            iter != voice.event_types.end(); ++iter) {
         result_voice.events.insert(TtsEventTypeFromString(*iter));
       }

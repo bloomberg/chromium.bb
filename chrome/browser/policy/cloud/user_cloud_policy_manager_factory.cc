@@ -171,7 +171,7 @@ void UserCloudPolicyManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   if (context->IsOffTheRecord())
     return;
-  ManagerWrapperMap::iterator it = manager_wrappers_.find(context);
+  auto it = manager_wrappers_.find(context);
   // E.g. for a TestingProfile there might not be a manager created.
   if (it != manager_wrappers_.end())
     it->second->Shutdown();
@@ -179,7 +179,7 @@ void UserCloudPolicyManagerFactory::BrowserContextShutdown(
 
 void UserCloudPolicyManagerFactory::BrowserContextDestroyed(
     content::BrowserContext* context) {
-  ManagerWrapperMap::iterator it = manager_wrappers_.find(context);
+  auto it = manager_wrappers_.find(context);
   if (it != manager_wrappers_.end()) {
     // The manager is not owned by the factory, so it's not deleted here.
     delete it->second;

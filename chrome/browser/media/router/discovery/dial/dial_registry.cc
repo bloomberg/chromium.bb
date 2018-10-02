@@ -222,7 +222,7 @@ void DialRegistry::StopPeriodicDiscovery() {
 bool DialRegistry::PruneExpiredDevices() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool pruned_device = false;
-  DeviceByLabelMap::iterator it = device_by_label_map_.begin();
+  auto it = device_by_label_map_.begin();
   while (it != device_by_label_map_.end()) {
     auto* device = it->second;
     if (IsDeviceExpired(*device)) {
@@ -311,8 +311,7 @@ void DialRegistry::OnDeviceDiscovered(DialService* service,
   DCHECK(device_data->label().empty());
 
   bool did_modify_list = false;
-  DeviceByIdMap::iterator lookup_result =
-      device_by_id_map_.find(device_data->device_id());
+  auto lookup_result = device_by_id_map_.find(device_data->device_id());
 
   if (lookup_result != device_by_id_map_.end()) {
     VLOG(2) << "Found device " << device_data->device_id() << ", merging";

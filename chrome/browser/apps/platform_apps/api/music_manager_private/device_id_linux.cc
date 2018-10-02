@@ -71,7 +71,7 @@ std::string GetDiskUuid() {
   // Look for first device name matching an entry of |kDeviceNames|.
   std::string result;
   for (size_t i = 0; i < arraysize(kDeviceNames); i++) {
-    DiskEntries::iterator it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
+    auto it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
     if (it != disk_uuids.end()) {
       DVLOG(1) << "Returning uuid: \"" << it->second.value()
                << "\" for device \"" << it->first.value() << "\"";
@@ -85,8 +85,7 @@ std::string GetDiskUuid() {
   if (result.empty() && !error_logged) {
     error_logged = true;
     LOG(ERROR) << "Could not find appropriate disk uuid.";
-    for (DiskEntries::iterator it = disk_uuids.begin(); it != disk_uuids.end();
-         ++it) {
+    for (auto it = disk_uuids.begin(); it != disk_uuids.end(); ++it) {
       LOG(ERROR) << "  DeviceID=" << it->first.value()
                  << ", uuid=" << it->second.value();
     }

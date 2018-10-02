@@ -145,9 +145,8 @@ class CapturedSitesPasswordManagerBrowserTest
     }
 
     const std::vector<autofill::PasswordForm>& passwords_vector = found->second;
-    for (std::vector<autofill::PasswordForm>::const_iterator it =
-             passwords_vector.begin();
-         it != passwords_vector.end(); ++it) {
+    for (auto it = passwords_vector.begin(); it != passwords_vector.end();
+         ++it) {
       if (base::ASCIIToUTF16(username) == it->username_value &&
           base::ASCIIToUTF16(password) == it->password_value) {
         return true;

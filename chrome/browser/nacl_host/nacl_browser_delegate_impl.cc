@@ -145,8 +145,8 @@ bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
     return true;
   }
   bool matches = false;
-  for (std::vector<URLPattern>::iterator iter = debug_patterns_.begin();
-       iter != debug_patterns_.end(); ++iter) {
+  for (auto iter = debug_patterns_.begin(); iter != debug_patterns_.end();
+       ++iter) {
     if (iter->MatchesURL(manifest_url)) {
       matches = true;
       break;

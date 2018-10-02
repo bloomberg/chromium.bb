@@ -83,7 +83,7 @@ void RenderProcessProbeImpl::
 
   StartMemoryMeasurement(collection_start_time);
 
-  RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
+  auto iter = render_process_info_map_.begin();
   while (iter != render_process_info_map_.end()) {
     auto& render_process_info = iter->second;
 

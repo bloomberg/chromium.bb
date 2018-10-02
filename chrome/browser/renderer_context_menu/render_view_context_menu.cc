@@ -680,9 +680,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<base::string16> sorted_menu_titles;
   std::map<base::string16, std::vector<const Extension*>>
       title_to_extensions_map;
-  for (std::set<MenuItem::ExtensionKey>::iterator iter = ids.begin();
-       iter != ids.end();
-       ++iter) {
+  for (auto iter = ids.begin(); iter != ids.end(); ++iter) {
     const Extension* extension =
         service->GetExtensionById(iter->extension_id, false);
     // Platform apps have their context menus created directly in

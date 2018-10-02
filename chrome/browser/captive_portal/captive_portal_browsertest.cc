@@ -245,8 +245,7 @@ void MultiNavigationObserver::WaitForNavigations(
 
 int MultiNavigationObserver::NumNavigationsForTab(
     WebContents* web_contents) const {
-  TabNavigationMap::const_iterator tab_navigations =
-      tab_navigation_map_.find(web_contents);
+  auto tab_navigations = tab_navigation_map_.find(web_contents);
   if (tab_navigations == tab_navigation_map_.end())
     return 0;
   return tab_navigations->second;

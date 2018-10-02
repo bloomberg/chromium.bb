@@ -181,8 +181,7 @@ bool TtsPlatformImplLinux::Speak(
   float pitch = params.pitch > 3 ? 3 : params.pitch;
   pitch = params.pitch < 0.334 ? 0.334 : pitch;
 
-  std::map<std::string, SPDChromeVoice>::iterator it =
-      all_native_voices_->find(voice.name);
+  auto it = all_native_voices_->find(voice.name);
   if (it != all_native_voices_->end()) {
     libspeechd_loader_.spd_set_output_module(conn_, it->second.module.c_str());
     libspeechd_loader_.spd_set_synthesis_voice(conn_, it->second.name.c_str());
@@ -267,10 +266,8 @@ void TtsPlatformImplLinux::GetVoices(
     }
   }
 
-  for (std::map<std::string, SPDChromeVoice>::iterator it =
-           all_native_voices_->begin();
-       it != all_native_voices_->end();
-       it++) {
+  for (auto it = all_native_voices_->begin(); it != all_native_voices_->end();
+       ++it) {
     out_voices->push_back(VoiceData());
     VoiceData& voice = out_voices->back();
     voice.native = true;

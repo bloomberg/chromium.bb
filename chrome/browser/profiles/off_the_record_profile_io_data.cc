@@ -114,8 +114,7 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
 
   // Keep a map of request context getters, one per requested app ID.
   StoragePartitionDescriptor descriptor(partition_path, in_memory);
-  ChromeURLRequestContextGetterMap::iterator iter =
-      app_request_context_getter_map_.find(descriptor);
+  auto iter = app_request_context_getter_map_.find(descriptor);
   CHECK(iter != app_request_context_getter_map_.end());
   return iter->second;
 }
@@ -189,8 +188,7 @@ std::unique_ptr<ProfileIOData::ChromeURLRequestContextGetterVector>
 OffTheRecordProfileIOData::Handle::GetAllContextGetters() {
   std::unique_ptr<ChromeURLRequestContextGetterVector> context_getters(
       new ChromeURLRequestContextGetterVector());
-  ChromeURLRequestContextGetterMap::iterator iter =
-      app_request_context_getter_map_.begin();
+  auto iter = app_request_context_getter_map_.begin();
   for (; iter != app_request_context_getter_map_.end(); ++iter)
     context_getters->push_back(iter->second);
 

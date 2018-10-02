@@ -466,8 +466,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 
   base::Value::ListStorage& action_list = action_list_container->GetList();
 
-  for (base::ListValue::iterator it_action = action_list.begin();
-       it_action != action_list.end(); ++it_action) {
+  for (auto it_action = action_list.begin(); it_action != action_list.end();
+       ++it_action) {
     base::DictionaryValue* action;
     if (!it_action->GetAsDictionary(&action)) {
       ADD_FAILURE()
@@ -727,7 +727,7 @@ bool TestRecipeReplayer::ExecuteRunCommandAction(
 
   const base::Value::ListStorage& commands_list =
       commands_list_container->GetList();
-  for (base::ListValue::const_iterator it_command = commands_list.begin();
+  for (auto it_command = commands_list.begin();
        it_command != commands_list.end(); ++it_command) {
     if (base::Value::Type::STRING != it_command->type()) {
       ADD_FAILURE() << "command is not a string!";
@@ -1429,7 +1429,7 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
 
   const base::Value::ListStorage& profile_entries_list =
       saved_autofill_profile_container.GetList();
-  for (base::ListValue::const_iterator it_entry = profile_entries_list.begin();
+  for (auto it_entry = profile_entries_list.begin();
        it_entry != profile_entries_list.end(); ++it_entry) {
     const base::DictionaryValue* entry;
     if (!it_entry->GetAsDictionary(&entry)) {
@@ -1468,8 +1468,7 @@ bool TestRecipeReplayer::SetupSavedPasswords(
 
   const base::Value::ListStorage& saved_password_list =
       saved_password_list_container.GetList();
-  for (base::ListValue::const_iterator it_password =
-           saved_password_list.begin();
+  for (auto it_password = saved_password_list.begin();
        it_password != saved_password_list.end(); ++it_password) {
     const base::DictionaryValue* cred;
     if (!it_password->GetAsDictionary(&cred)) {

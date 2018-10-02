@@ -165,7 +165,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
     PrerenderData* prerender_data = FindPrerenderData(url, nullptr);
     if (!prerender_data)
       return nullptr;
-    PrerenderDataVector::iterator to_erase =
+    auto to_erase =
         FindIteratorForPrerenderContents(prerender_data->contents());
     CHECK(to_erase != active_prerenders_.end());
     std::unique_ptr<PrerenderContents> prerender_contents =
@@ -215,8 +215,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   PrerenderContents* GetPrerenderContentsForRoute(int child_id,
                                                   int route_id) const override {
     // Overridden for the PrerenderLinkManager's pending prerender logic.
-    PrerenderContentsMap::const_iterator it =
-        prerender_contents_map_.find(std::make_pair(child_id, route_id));
+    auto it = prerender_contents_map_.find(std::make_pair(child_id, route_id));
     return it != prerender_contents_map_.end() ? it->second : nullptr;
   }
 

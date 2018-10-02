@@ -63,7 +63,7 @@ namespace {
 // Returns the first match in |matches| with |allowed_to_be_default_match|
 // set to true.
 ACMatches::const_iterator FindDefaultMatch(const ACMatches& matches) {
-  ACMatches::const_iterator it = matches.begin();
+  auto it = matches.begin();
   while ((it != matches.end()) && !it->allowed_to_be_default_match)
     ++it;
   return it;
@@ -477,8 +477,8 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
 
 bool SearchProviderTest::FindMatchWithContents(const base::string16& contents,
                                                AutocompleteMatch* match) {
-  for (ACMatches::const_iterator i = provider_->matches().begin();
-       i != provider_->matches().end(); ++i) {
+  for (auto i = provider_->matches().begin(); i != provider_->matches().end();
+       ++i) {
     if (i->contents == contents) {
       *match = *i;
       return true;
@@ -489,8 +489,8 @@ bool SearchProviderTest::FindMatchWithContents(const base::string16& contents,
 
 bool SearchProviderTest::FindMatchWithDestination(const GURL& url,
                                                   AutocompleteMatch* match) {
-  for (ACMatches::const_iterator i = provider_->matches().begin();
-       i != provider_->matches().end(); ++i) {
+  for (auto i = provider_->matches().begin(); i != provider_->matches().end();
+       ++i) {
     if (i->destination_url == url) {
       *match = *i;
       return true;
@@ -1970,7 +1970,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     ASSERT_FALSE(matches.empty());
     // Find the first match that's allowed to be the default match and check
     // its inline_autocompletion.
-    ACMatches::const_iterator it = FindDefaultMatch(matches);
+    auto it = FindDefaultMatch(matches);
     ASSERT_NE(matches.end(), it);
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               it->inline_autocompletion);

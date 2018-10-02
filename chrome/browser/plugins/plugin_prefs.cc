@@ -277,8 +277,7 @@ void PluginPrefs::OnUpdatePreferences(
   }
 
   // Add the plugin groups.
-  for (std::set<base::string16>::const_iterator it = group_names.begin();
-      it != group_names.end(); ++it) {
+  for (auto it = group_names.begin(); it != group_names.end(); ++it) {
     std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
     summary->SetString("name", *it);
     plugins_list->Append(std::move(summary));

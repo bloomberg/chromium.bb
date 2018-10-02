@@ -208,8 +208,7 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
 
   std::vector<base::string16> builtins;
 
-  for (std::vector<std::string>::iterator i(chrome_builtins.begin());
-       i != chrome_builtins.end(); ++i)
+  for (auto i(chrome_builtins.begin()); i != chrome_builtins.end(); ++i)
     builtins.push_back(base::ASCIIToUTF16(*i));
 
 #if !defined(OS_ANDROID)

@@ -199,7 +199,7 @@ void SessionService::TabClosed(const SessionID& window_id,
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  IdToRange::iterator i = tab_to_available_range_.find(tab_id);
+  auto i = tab_to_available_range_.find(tab_id);
   if (i != tab_to_available_range_.end())
     tab_to_available_range_.erase(i);
 
@@ -790,13 +790,13 @@ void SessionService::ScheduleCommand(
 }
 
 void SessionService::CommitPendingCloses() {
-  for (PendingTabCloseIDs::iterator i = pending_tab_close_ids_.begin();
+  for (auto i = pending_tab_close_ids_.begin();
        i != pending_tab_close_ids_.end(); ++i) {
     ScheduleCommand(sessions::CreateTabClosedCommand(*i));
   }
   pending_tab_close_ids_.clear();
 
-  for (PendingWindowCloseIDs::iterator i = pending_window_close_ids_.begin();
+  for (auto i = pending_window_close_ids_.begin();
        i != pending_window_close_ids_.end(); ++i) {
     ScheduleCommand(sessions::CreateWindowClosedCommand(*i));
   }

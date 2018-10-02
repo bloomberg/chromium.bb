@@ -143,8 +143,7 @@ std::map<int, SkColor> BrowserThemePackTest::GetDefaultColorMap() {
 
 void BrowserThemePackTest::VerifyColorMap(
     const std::map<int, SkColor>& color_map) {
-  for (std::map<int, SkColor>::const_iterator it = color_map.begin();
-       it != color_map.end(); ++it) {
+  for (auto it = color_map.begin(); it != color_map.end(); ++it) {
     SkColor color;
     if (!theme_pack_->GetColor(it->first, &color))
       color = GetDefaultColor(it->first);

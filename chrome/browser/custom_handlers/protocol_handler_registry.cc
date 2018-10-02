@@ -39,8 +39,7 @@ namespace {
 const ProtocolHandler& LookupHandler(
     const ProtocolHandlerRegistry::ProtocolHandlerMap& handler_map,
     const std::string& scheme) {
-  ProtocolHandlerRegistry::ProtocolHandlerMap::const_iterator p =
-      handler_map.find(scheme);
+  auto p = handler_map.find(scheme);
 
   if (p != handler_map.end())
     return p->second;
@@ -330,8 +329,7 @@ bool ProtocolHandlerRegistry::AttemptReplace(const ProtocolHandler& handler) {
   ProtocolHandlerList to_replace(GetReplacedHandlers(handler));
   if (to_replace.empty())
     return false;
-  for (ProtocolHandlerList::iterator p = to_replace.begin();
-       p != to_replace.end(); ++p) {
+  for (auto p = to_replace.begin(); p != to_replace.end(); ++p) {
     RemoveHandler(*p);
   }
   if (make_new_handler_default) {
@@ -350,8 +348,7 @@ ProtocolHandlerRegistry::GetReplacedHandlers(
   const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
   if (!handlers)
     return replaced_handlers;
-  for (ProtocolHandlerList::const_iterator p = handlers->begin();
-       p != handlers->end(); p++) {
+  for (auto p = handlers->begin(); p != handlers->end(); ++p) {
     if (handler.IsSameOrigin(*p)) {
       replaced_handlers.push_back(*p);
     }
@@ -448,7 +445,7 @@ ProtocolHandlerRegistry::ProtocolHandlerList
 ProtocolHandlerRegistry::GetHandlersFor(
     const std::string& scheme) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
+  auto p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     return ProtocolHandlerList();
   }
@@ -618,7 +615,7 @@ void ProtocolHandlerRegistry::RemoveHandler(
     if (!HandlerExists(handler, &policy_protocol_handlers_))
       EraseHandler(handler, &protocol_handlers_);
   }
-  ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
+  auto q = default_handlers_.find(handler.protocol());
   if (erase_success && q != default_handlers_.end() && q->second == handler) {
     // Make the new top handler in the list the default.
     if (!handlers.empty()) {
@@ -715,8 +712,7 @@ ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
 void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsRegistered(handler));
-  ProtocolHandlerMultiMap::iterator p =
-      protocol_handlers_.find(handler.protocol());
+  auto p = protocol_handlers_.find(handler.protocol());
   ProtocolHandlerList& list = p->second;
   list.erase(std::find(list.begin(), list.end(), handler));
   list.insert(list.begin(), handler);
@@ -744,7 +740,7 @@ const ProtocolHandlerRegistry::ProtocolHandlerList*
 ProtocolHandlerRegistry::GetHandlerList(
     const std::string& scheme) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
+  auto p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     return NULL;
   }
@@ -769,8 +765,7 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ProtocolHandlerMultiMap::iterator p =
-      protocol_handlers_.find(handler.protocol());
+  auto p = protocol_handlers_.find(handler.protocol());
 
   if (p != protocol_handlers_.end()) {
     p->second.push_back(handler);
@@ -785,11 +780,9 @@ void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
 base::Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* protocol_handlers = new base::ListValue();
-  for (ProtocolHandlerMultiMap::iterator i = user_protocol_handlers_.begin();
-       i != user_protocol_handlers_.end();
-       ++i) {
-    for (ProtocolHandlerList::iterator j = i->second.begin();
-         j != i->second.end(); ++j) {
+  for (auto i = user_protocol_handlers_.begin();
+       i != user_protocol_handlers_.end(); ++i) {
+    for (auto j = i->second.begin(); j != i->second.end(); ++j) {
       std::unique_ptr<base::DictionaryValue> encoded = j->Encode();
       if (IsDefault(*j)) {
         encoded->Set("default", std::make_unique<base::Value>(true));
@@ -803,10 +796,8 @@ base::Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
 base::Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* handlers = new base::ListValue();
-  for (ProtocolHandlerList::iterator i =
-           user_ignored_protocol_handlers_.begin();
-       i != user_ignored_protocol_handlers_.end();
-       ++i) {
+  for (auto i = user_ignored_protocol_handlers_.begin();
+       i != user_ignored_protocol_handlers_.end(); ++i) {
     handlers->Append(i->Encode());
   }
   return handlers;

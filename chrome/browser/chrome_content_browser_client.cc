@@ -1960,8 +1960,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetList(prefs::kEnableDeprecatedWebPlatformFeatures);
       if (switches) {
         // Enable any deprecated features that have been re-enabled by policy.
-        for (base::ListValue::const_iterator it = switches->begin();
-             it != switches->end(); ++it) {
+        for (auto it = switches->begin(); it != switches->end(); ++it) {
           std::string switch_to_enable;
           if (it->GetAsString(&switch_to_enable))
             command_line->AppendSwitch(switch_to_enable);

@@ -93,7 +93,7 @@ void PrivetNotificationsListener::DeviceChanged(
     const std::string& name,
     const DeviceDescription& description) {
   ReportPrivetUmaEvent(PRIVET_DEVICE_CHANGED);
-  DeviceContextMap::iterator it = devices_seen_.find(name);
+  auto it = devices_seen_.find(name);
   if (it != devices_seen_.end()) {
     if (!description.id.empty() &&  // Device is registered
         it->second->notification_may_be_active) {
@@ -127,7 +127,7 @@ void PrivetNotificationsListener::CreateInfoOperation(
     return;
 
   std::string name = http_client->GetName();
-  DeviceContextMap::iterator it = devices_seen_.find(name);
+  auto it = devices_seen_.find(name);
   if (it == devices_seen_.end())
     return;
 
@@ -158,7 +158,7 @@ void PrivetNotificationsListener::OnPrivetInfoDone(
 }
 
 void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
-  DeviceContextMap::iterator it = devices_seen_.find(name);
+  auto it = devices_seen_.find(name);
   if (it == devices_seen_.end())
     return;
 

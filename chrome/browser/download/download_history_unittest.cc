@@ -97,8 +97,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void RemoveDownloads(const IdSet& ids) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    for (IdSet::const_iterator it = ids.begin();
-         it != ids.end(); ++it) {
+    for (auto it = ids.begin(); it != ids.end(); ++it) {
       remove_downloads_.insert(*it);
     }
   }
@@ -158,8 +157,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
-    for (IdSet::const_iterator different = differences.begin();
-         different != differences.end(); ++different) {
+    for (auto different = differences.begin(); different != differences.end();
+         ++different) {
       EXPECT_TRUE(false) << *different;
     }
     remove_downloads_.clear();

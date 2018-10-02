@@ -157,8 +157,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
     // Make a copy, as the iterator would be invalidated otherwise.
     const MediaGalleriesPrefInfoMap galleries = preferences->known_galleries();
-    for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
-         it != galleries.end(); ++it) {
+    for (auto it = galleries.begin(); it != galleries.end(); ++it) {
       preferences->ForgetGalleryById(it->first);
     }
   }
