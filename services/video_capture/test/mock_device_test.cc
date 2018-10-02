@@ -31,8 +31,9 @@ void MockDeviceTest::SetUp() {
       std::move(mock_device_factory));
   mock_device_factory_adapter_ =
       std::make_unique<DeviceFactoryMediaToMojoAdapter>(
-          ref_factory_.CreateRef(), std::move(video_capture_system),
-          base::DoNothing(), base::ThreadTaskRunnerHandle::Get());
+          std::move(video_capture_system), base::DoNothing(),
+          base::ThreadTaskRunnerHandle::Get());
+  mock_device_factory_adapter_->SetServiceRef(ref_factory_.CreateRef());
 
   mock_factory_binding_ = std::make_unique<mojo::Binding<mojom::DeviceFactory>>(
       mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));
