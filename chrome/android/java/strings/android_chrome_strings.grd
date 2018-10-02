@@ -1304,12 +1304,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_USAGE_RESET_STATISTICS_CONFIRMATION_BUTTON" desc="Text to be displayed on the confirmation button to proceed with resetting the Data Reduction statistics.">
         Reset
       </message>
-      <message name="IDS_SAFE_BROWSING_DESCRIPTION" desc="Description text for safe browsing">
-        Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware, and harmful downloads.
-      </message>
-      <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
-        This feature may interfere with access to premium data services provided by your carrier.
-      </message>
 
       <!-- Data Saver Promo and FRE card -->
       <message name="IDS_DATA_REDUCTION_PROMO_TITLE" desc="The title for the promo inviting users to enable Data Saver" >
