@@ -51,8 +51,7 @@
 
 namespace {
 
-// A BrowserContextKeyedServiceFactory::TestingFactoryFunction that creates a
-// HistoryService for a TestingProfile.
+// A testing factory that creates a HistoryService for a TestingProfile.
 std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
   TestingProfile* profile = static_cast<TestingProfile*>(context);
