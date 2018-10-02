@@ -13,6 +13,13 @@ namespace gfx {
 // Returns the smallest Rect that encloses the given RectF.
 GFX_EXPORT Rect ToEnclosingRect(const RectF& rect);
 
+// Similar to ToEnclosingRect(), but for each edge, if the distance between the
+// edge and the nearest integer grid is smaller than |error|, the edge is
+// snapped to the integer grid. Unlike ToNearestRect() which only accepts
+// integer rect with or without floating point error, this function also accepts
+// non-integer rect.
+GFX_EXPORT Rect ToEnclosingRectIgnoringError(const RectF& rect, float error);
+
 // Returns the largest Rect that is enclosed by the given RectF.
 GFX_EXPORT Rect ToEnclosedRect(const RectF& rect);
 
