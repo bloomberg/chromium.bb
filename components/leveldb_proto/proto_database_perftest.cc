@@ -608,23 +608,55 @@ TEST_F(ProtoDBPerfTest, DistributionTestSmall_FewEntries_Multi) {
                                 kFewEntriesDistributionTestParams, false);
 }
 
-TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Single) {
+// Times out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_DistributionTestSmall_ManyEntries_Single \
+  DISABLED_DistributionTestSmall_ManyEntries_Single
+#else
+#define MAYBE_DistributionTestSmall_ManyEntries_Single \
+  DistributionTestSmall_ManyEntries_Single
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Single) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries", "Single",
                                 kManyEntriesDistributionTestParams, true);
 }
 
-TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Multi) {
+// Times out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_DistributionTestSmall_ManyEntries_Multi \
+  DISABLED_DistributionTestSmall_ManyEntries_Multi
+#else
+#define MAYBE_DistributionTestSmall_ManyEntries_Multi \
+  DistributionTestSmall_ManyEntries_Multi
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Multi) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries", "Multi",
                                 kManyEntriesDistributionTestParams, false);
 }
 
-TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Batch_Single) {
+// Times out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Single \
+  DISABLED_DistributionTestSmall_ManyEntries_Batch_Single
+#else
+#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Single \
+  DistributionTestSmall_ManyEntries_Batch_Single
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Batch_Single) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries_Batch",
                                 "Single", kManyEntriesDistributionTestParams,
                                 true);
 }
 
-TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Batch_Multi) {
+// Times out on Win.  http://crbug.com/879922
+#if defined(OS_WIN)
+#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi \
+  DISABLED_DistributionTestSmall_ManyEntries_Batch_Multi
+#else
+#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi \
+  DistributionTestSmall_ManyEntries_Batch_Multi
+#endif
+TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries_Batch",
                                 "Multi", kManyEntriesDistributionTestParams,
                                 false);
