@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
+#ifndef CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
+#define CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
 
 #include <memory>
 
@@ -11,6 +11,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/chromeos_export.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace policy {
@@ -18,7 +19,7 @@ namespace policy {
 // WeeklyTime class contains day of week and time. Day of week is number from 1
 // to 7 (1 = Monday, 2 = Tuesday, etc.) Time is in milliseconds from the
 // beginning of the day.
-class WeeklyTime {
+class CHROMEOS_EXPORT WeeklyTime {
  public:
   WeeklyTime(int day_of_week,
              int milliseconds,
@@ -100,4 +101,4 @@ class WeeklyTime {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
+#endif  // CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_

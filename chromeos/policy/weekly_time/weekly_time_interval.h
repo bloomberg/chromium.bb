@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
+#ifndef CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
+#define CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
 
 #include <memory>
 
 #include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/policy/weekly_time/weekly_time.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace policy {
@@ -18,7 +19,7 @@ namespace policy {
 // Interval can be wrapped across the end of the week.
 // Interval is empty if start = end. Empty intervals aren't allowed.
 // Both WeeklyTimes need to have the same timezone_offset.
-class WeeklyTimeInterval {
+class CHROMEOS_EXPORT WeeklyTimeInterval {
  public:
   WeeklyTimeInterval(const WeeklyTime& start, const WeeklyTime& end);
 
@@ -70,4 +71,4 @@ class WeeklyTimeInterval {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
+#endif  // CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_INTERVAL_H_
