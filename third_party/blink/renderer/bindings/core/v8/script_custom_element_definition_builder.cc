@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -23,13 +22,11 @@ namespace blink {
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* script_state,
     CustomElementRegistry* registry,
-    CSSStyleSheet* default_style_sheet,
     V8CustomElementConstructor* constructor,
     ExceptionState& exception_state)
     : script_state_(script_state),
       exception_state_(exception_state),
       registry_(registry),
-      default_style_sheet_(default_style_sheet),
       constructor_(constructor) {}
 
 bool ScriptCustomElementDefinitionBuilder::CheckConstructorIntrinsics() {
@@ -135,8 +132,7 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
   return ScriptCustomElementDefinition::Create(
       script_state_, registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
-      attribute_changed_callback_, std::move(observed_attributes_),
-      default_style_sheet_);
+      attribute_changed_callback_, std::move(observed_attributes_));
 }
 
 }  // namespace blink

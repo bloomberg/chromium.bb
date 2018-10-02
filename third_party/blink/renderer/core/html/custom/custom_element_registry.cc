@@ -109,12 +109,8 @@ CustomElementDefinition* CustomElementRegistry::define(
     V8CustomElementConstructor* constructor,
     const ElementDefinitionOptions& options,
     ExceptionState& exception_state) {
-  CSSStyleSheet* style_sheet = nullptr;
-  if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
-      options.hasStyle())
-    style_sheet = options.style();
-  ScriptCustomElementDefinitionBuilder builder(script_state, this, style_sheet,
-                                               constructor, exception_state);
+  ScriptCustomElementDefinitionBuilder builder(script_state, this, constructor,
+                                               exception_state);
   return DefineInternal(script_state, name, builder, options, exception_state);
 }
 
@@ -215,6 +211,9 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   CustomElementDefinition* definition = builder.Build(descriptor, id);
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
+  if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
+      options.hasStyle())
+    definition->SetDefaultStyleSheet(*options.style());
   definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
@@ -230,6 +229,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
     entry->value->Resolve();
     when_defined_promise_map_.erase(entry);
   }
+
   return definition;
 }
 

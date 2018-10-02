@@ -79,12 +79,11 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     V8Function* disconnected_callback,
     V8Function* adopted_callback,
     V8Function* attribute_changed_callback,
-    HashSet<AtomicString>&& observed_attributes,
-    CSSStyleSheet* default_style_sheet) {
+    HashSet<AtomicString>&& observed_attributes) {
   ScriptCustomElementDefinition* definition = new ScriptCustomElementDefinition(
       script_state, descriptor, constructor, connected_callback,
       disconnected_callback, adopted_callback, attribute_changed_callback,
-      std::move(observed_attributes), default_style_sheet);
+      std::move(observed_attributes));
 
   // Tag the JavaScript constructor object with its ID.
   v8::Local<v8::Value> id_value =
@@ -106,11 +105,8 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     V8Function* disconnected_callback,
     V8Function* adopted_callback,
     V8Function* attribute_changed_callback,
-    HashSet<AtomicString>&& observed_attributes,
-    CSSStyleSheet* default_style_sheet)
-    : CustomElementDefinition(descriptor,
-                              default_style_sheet,
-                              std::move(observed_attributes)),
+    HashSet<AtomicString>&& observed_attributes)
+    : CustomElementDefinition(descriptor, std::move(observed_attributes)),
       script_state_(script_state),
       constructor_(constructor),
       connected_callback_(connected_callback),

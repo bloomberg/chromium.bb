@@ -19,7 +19,6 @@
 
 namespace blink {
 
-class CSSStyleSheet;
 class CustomElementRegistry;
 class ExceptionState;
 class ScriptState;
@@ -34,7 +33,6 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
  public:
   ScriptCustomElementDefinitionBuilder(ScriptState*,
                                        CustomElementRegistry*,
-                                       CSSStyleSheet*,
                                        V8CustomElementConstructor* constructor,
                                        ExceptionState&);
   ~ScriptCustomElementDefinitionBuilder() = default;
@@ -49,7 +47,6 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   Member<ScriptState> script_state_;
   ExceptionState& exception_state_;
   Member<CustomElementRegistry> registry_;
-  const Member<CSSStyleSheet> default_style_sheet_;
   const Member<V8CustomElementConstructor> constructor_;
   // These v8::Local handles on stack make the function objects alive until we
   // finish building the CustomElementDefinition and wrapper-tracing on it gets
