@@ -179,17 +179,17 @@ const base::UnguessableToken& ForwardingAudioStreamFactory::GetGroupID() {
 void ForwardingAudioStreamFactory::FrameDeleted(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
   CleanupStreamsBelongingTo(render_frame_host);
 }
 
 void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(render_frame_host);
 
-  const int process_id =
-      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1;
-  const int frame_id =
-      render_frame_host ? render_frame_host->GetRoutingID() : -1;
+  const int process_id = render_frame_host->GetProcess()->GetID();
+  const int frame_id = render_frame_host->GetRoutingID();
 
   TRACE_EVENT_BEGIN2("audio", "CleanupStreamsBelongingTo", "group",
                      group_id_.GetLowForSerialization(), "process id",
