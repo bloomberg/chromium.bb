@@ -92,14 +92,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.CopyFail, FailCount, [3], gslib.CopyFail)
     self.assertRaises(gslib.CopyFail, FailCount, [4], gslib.CopyFail)
 
-  def testIsGsURI(self):
-    self.assertTrue(gslib.IsGsURI('gs://bucket/foo/bar'))
-    self.assertTrue(gslib.IsGsURI('gs://bucket'))
-    self.assertTrue(gslib.IsGsURI('gs://'))
-
-    self.assertFalse(gslib.IsGsURI('file://foo/bar'))
-    self.assertFalse(gslib.IsGsURI('/foo/bar'))
-
   def testRunGsutilCommand(self):
     args = ['TheCommand', 'Arg1', 'Arg2']
     cmd = [self.gsutil] + args
@@ -151,19 +143,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     # Run the test verification.
     gslib.Copy(src_path, dest_path)
     self.assertRaises(gslib.CopyFail, gslib.Copy, src_path, dest_path)
-    self.mox.VerifyAll()
-
-  def testMove(self):
-    src_path = 'gs://bucket/some/gs/path'
-    dest_path = '/some/other/path'
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'mv', src_path, dest_path]
-    cros_build_lib.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    gslib.Move(src_path, dest_path)
     self.mox.VerifyAll()
 
   def testCreateWithContents(self):

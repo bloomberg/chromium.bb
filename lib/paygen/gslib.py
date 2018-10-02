@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import errno
 import os
-import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -20,7 +19,6 @@ from chromite.lib.paygen import utils
 
 PROTOCOL = 'gs'
 RETRY_ATTEMPTS = 2
-GS_LS_STATUS_RE = re.compile(r'status=(\d+)')
 
 # Gsutil is filled in by "FindGsUtil" on first invocation.
 GSUTIL = None
@@ -69,10 +67,6 @@ class CopyFail(GSLibError):
   """Raised if Copy fails in any way."""
 
 
-class MoveFail(GSLibError):
-  """Raised if Move fails in any way."""
-
-
 class CatFail(GSLibError):
   """Raised if Cat fails in any way."""
 
@@ -83,10 +77,6 @@ class StatFail(GSLibError):
 
 class URIError(GSLibError):
   """Raised when URI does not behave as expected."""
-
-
-class ValidateGsutilFailure(GSLibError):
-  """We are unable to validate that gsutil is working correctly."""
 
 
 def RetryGSLib(func):
@@ -251,24 +241,6 @@ def RunGsutilCommand(args,
   return result
 
 
-def ValidateGsutilWorking(bucket):
-  """Validate that gsutil is working correctly.
-
-  There is a failure mode for gsutil in which all operations fail, and this
-  is indistinguishable from all gsutil ls operations matching nothing. We
-  check that there is at least one file in the root of the bucket.
-
-  Args:
-    bucket: bucket we are about to test.
-
-  Raises:
-    ValidateGsutilFailure: If we are unable to find any files in the bucket.
-  """
-  url = 'gs://%s/' % bucket
-  if not List(url):
-    raise ValidateGsutilFailure('Unable to find anything in: %s' % url)
-
-
 @RetryGSLib
 def Copy(src_path, dest_path, acl=None, **kwargs):
   """Run gsutil cp src_path dest_path supporting GS globs.
@@ -294,25 +266,6 @@ def Copy(src_path, dest_path, acl=None, **kwargs):
     args += ['-a', acl]
   args += [src_path, dest_path]
   RunGsutilCommand(args, failed_exception=CopyFail, **kwargs)
-
-
-@RetryGSLib
-def Move(src_path, dest_path, **kwargs):
-  """Run gsutil mv src_path dest_path supporting GS globs.
-
-  Note that the created time is changed to now for the moved object(s).
-
-  Args:
-    src_path: The src of the path to move, either a /unix/path or gs:// uri.
-    dest_path: The dest of the path to move, either a /unix/path or gs:// uri.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    MoveFail: If the move fails for any reason.
-  """
-  args = ['mv', src_path, dest_path]
-  RunGsutilCommand(args, failed_exception=MoveFail, **kwargs)
 
 
 def CreateWithContents(gs_uri, contents, **kwargs):
@@ -366,19 +319,6 @@ def Stat(gs_uri, **kwargs):
   # output and stripping of sensitive information.
   RunGsutilCommand(args, failed_exception=StatFail,
                    get_headers_from_stdout=True, **kwargs)
-
-
-def IsGsURI(path):
-  """Returns true if the path begins with gs://
-
-  Args:
-    path: An absolute Google Storage URI.
-
-  Returns:
-    True if path is really a google storage uri that begins with gs://
-    False otherwise.
-  """
-  return path and path.startswith(PROTOCOL + '://')
 
 
 @RetryGSLib
