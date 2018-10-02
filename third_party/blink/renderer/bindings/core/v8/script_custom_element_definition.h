@@ -40,8 +40,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       V8Function* disconnected_callback,
       V8Function* adopted_callback,
       V8Function* attribute_changed_callback,
-      HashSet<AtomicString>&& observed_attributes,
-      CSSStyleSheet*);
+      HashSet<AtomicString>&& observed_attributes);
 
   ~ScriptCustomElementDefinition() override = default;
 
@@ -74,8 +73,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                 V8Function* disconnected_callback,
                                 V8Function* adopted_callback,
                                 V8Function* attribute_changed_callback,
-                                HashSet<AtomicString>&& observed_attributes,
-                                CSSStyleSheet*);
+                                HashSet<AtomicString>&& observed_attributes);
 
   // Implementations of |CustomElementDefinition|
   ScriptValue GetConstructorForScript() final;
