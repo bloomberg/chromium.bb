@@ -120,6 +120,18 @@ class Separator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(Separator);
 };
 
+views::View* CreateAddUserErrorView(const base::string16& message) {
+  auto* label = new views::Label(message);
+  label->SetEnabledColor(kUnifiedMenuTextColor);
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetSubpixelRenderingEnabled(false);
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kUnifiedTopShortcutSpacing)));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  return label;
+}
+
 }  // namespace
 
 views::View* CreateUserAvatarView(int user_index) {
@@ -257,9 +269,24 @@ UserChooserView::UserChooserView(UnifiedSystemTrayController* controller) {
     AddChildView(button);
     AddChildView(new Separator(i < num_users - 1));
   }
-  if (Shell::Get()->session_controller()->GetAddUserPolicy() ==
-      AddUserSessionPolicy::ALLOWED) {
-    AddChildView(new AddUserButton(controller));
+
+  switch (Shell::Get()->session_controller()->GetAddUserPolicy()) {
+    case AddUserSessionPolicy::ALLOWED:
+      AddChildView(new AddUserButton(controller));
+      break;
+    case AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER:
+      AddChildView(CreateAddUserErrorView(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER)));
+      break;
+    case AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED:
+      AddChildView(CreateAddUserErrorView(l10n_util::GetStringFUTF16Int(
+          IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER,
+          session_manager::kMaximumNumberOfUserSessions)));
+      break;
+    case AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS:
+      AddChildView(CreateAddUserErrorView(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS)));
+      break;
   }
 
   Shell::Get()->media_controller()->AddObserver(this);
