@@ -272,6 +272,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_MEDIA_ROUTER_BINDINGS_JS);
   source_map->RegisterSource("mojo/public/mojom/base/time.mojom",
                              IDR_MOJO_TIME_MOJOM_JS);
+  source_map->RegisterSource("mojo/public/mojom/base/unguessable_token.mojom",
+                             IDR_MOJO_UNGUESSABLE_TOKEN_MOJOM_JS);
   source_map->RegisterSource("net/interfaces/ip_address.mojom",
                              IDR_MOJO_IP_ADDRESS_MOJOM_JS);
   source_map->RegisterSource("net/interfaces/ip_endpoint.mojom",
