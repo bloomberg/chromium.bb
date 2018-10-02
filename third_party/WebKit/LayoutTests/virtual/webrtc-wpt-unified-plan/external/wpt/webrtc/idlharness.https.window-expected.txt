@@ -338,7 +338,7 @@ PASS RTCIceTransport interface: operation getLocalParameters()
 PASS RTCIceTransport interface: operation getRemoteParameters()
 PASS RTCIceTransport interface: attribute onstatechange
 PASS RTCIceTransport interface: attribute ongatheringstatechange
-PASS RTCIceTransport interface: attribute onselectedcandidatepairchange
+FAIL RTCIceTransport interface: attribute onselectedcandidatepairchange assert_true: The prototype object must have a property "onselectedcandidatepairchange" expected true got false
 FAIL RTCIceTransport must be primary interface of idlTestObjects.iceTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of idlTestObjects.iceTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit property "role" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

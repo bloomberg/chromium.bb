@@ -79,13 +79,6 @@ struct CrossThreadCopier<std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>>
   STATIC_ONLY(CrossThreadCopier);
 };
 
-template <>
-struct CrossThreadCopier<std::pair<cricket::Candidate, cricket::Candidate>>
-    : public CrossThreadCopierPassThrough<
-          std::pair<cricket::Candidate, cricket::Candidate>> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_WEB_RTC_CROSS_THREAD_COPIER_H_

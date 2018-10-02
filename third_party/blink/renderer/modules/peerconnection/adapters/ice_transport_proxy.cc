@@ -140,11 +140,4 @@ void IceTransportProxy::OnStateChanged(cricket::IceTransportState new_state) {
   delegate_->OnStateChanged(new_state);
 }
 
-void IceTransportProxy::OnSelectedCandidatePairChanged(
-    const std::pair<cricket::Candidate, cricket::Candidate>&
-        selected_candidate_pair) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  delegate_->OnSelectedCandidatePairChanged(selected_candidate_pair);
-}
-
 }  // namespace blink
