@@ -46,7 +46,8 @@ class BuilderTest(LoggingTestCase):
     def test_results_url_with_build_number(self):
         self.assertEqual(
             BuildBot().results_url('Test Builder', 10),
-            'https://test-results.appspot.com/data/layout_results/Test_Builder/10/layout-test-results')
+            'https://test-results.appspot.com/data/layout_results/Test_Builder/'
+            '10/webkit_layout_tests (with patch)/layout-test-results')
 
     def test_results_url_with_non_numeric_build_number(self):
         with self.assertRaisesRegexp(AssertionError, 'expected numeric build number'):

@@ -61,6 +61,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 help=('Comma-separated-list of builders to pull new baselines '
                       'from (can also be provided multiple times).')),
             optparse.make_option(
+                '--step-name', default='webkit_layout_tests (with patch)',
+                help=('Layout test step name to fetch results from. Defaults '
+                      ' to \'webkit_layout_tests (with patch)\'.')),
+            optparse.make_option(
                 '--patchset', default=None,
                 help='Patchset number to fetch new baselines from.'),
             self.no_optimize_option,
@@ -106,7 +110,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             self.trigger_try_jobs(builders_with_no_jobs)
             return 1
 
-        jobs_to_results = self._fetch_results(jobs)
+        jobs_to_results = self._fetch_results(jobs, options.step_name)
 
         builders_with_results = {b.builder_name for b in jobs_to_results}
         builders_without_results = set(self.selected_try_bots) - builders_with_results
@@ -210,7 +214,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         for builder in sorted(builders):
             _log.info('  %s', builder)
 
-    def _fetch_results(self, jobs):
+    def _fetch_results(self, jobs, step_name):
         """Fetches results for all of the given builds.
 
         There should be a one-to-one correspondence between Builds, supported
@@ -221,6 +225,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         Args:
             jobs: A dict mapping Build objects to TryJobStatus objects.
+            step_name: The step name to fetch when retrieving test results.
 
         Returns:
             A dict mapping Build to LayoutTestResults for all completed jobs.
@@ -237,7 +242,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 # Only completed failed builds will contain actual failed
                 # layout tests to download baselines for.
                 continue
-            results_url = buildbot.results_url(build.builder_name, build.build_number)
+            results_url = buildbot.results_url(
+                build.builder_name, build.build_number, step_name)
             layout_test_results = buildbot.fetch_results(build)
             if layout_test_results is None:
                 _log.info('Failed to fetch results for "%s".', build.builder_name)
