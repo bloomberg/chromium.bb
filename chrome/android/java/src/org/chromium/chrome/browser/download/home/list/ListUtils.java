@@ -26,7 +26,8 @@ public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.CUSTOM_VIEW, ViewType.PREFETCH, ViewType.SECTION_HEADER,
-            ViewType.SEPARATOR_DATE, ViewType.SEPARATOR_SECTION, ViewType.IN_PROGRESS_VIDEO})
+            ViewType.SEPARATOR_DATE, ViewType.SEPARATOR_SECTION, ViewType.IN_PROGRESS_VIDEO,
+            ViewType.IN_PROGRESS_IMAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -40,6 +41,7 @@ public class ListUtils {
         int SEPARATOR_DATE = 8;
         int SEPARATOR_SECTION = 9;
         int IN_PROGRESS_VIDEO = 10;
+        int IN_PROGRESS_IMAGE = 11;
     }
 
     /** Converts a given list of {@link ListItem}s to a list of {@link OfflineItem}s. */
@@ -84,7 +86,7 @@ public class ListUtils {
                     case OfflineItemFilter.FILTER_VIDEO:
                         return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
                     case OfflineItemFilter.FILTER_IMAGE:
-                        return inProgress ? ViewType.IN_PROGRESS : ViewType.IMAGE;
+                        return inProgress ? ViewType.IN_PROGRESS_IMAGE : ViewType.IMAGE;
                     // case OfflineItemFilter.FILTER_PAGE:
                     // case OfflineItemFilter.FILTER_AUDIO:
                     // case OfflineItemFilter.FILTER_OTHER:
@@ -137,6 +139,12 @@ public class ListUtils {
             return spanCount;
         }
 
-        return getViewTypeForItem(item) == ViewType.IMAGE ? 1 : spanCount;
+        switch (getViewTypeForItem(item)) {
+            case ViewType.IMAGE: // Intentional fallthrough.
+            case ViewType.IN_PROGRESS_IMAGE:
+                return 1;
+            default:
+                return spanCount;
+        }
     }
 }

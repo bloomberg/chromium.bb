@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.list.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 import org.chromium.base.Callback;
@@ -36,13 +37,15 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         Runnable get(Callback<Drawable> consumer, int widthPx, int heightPx);
     }
 
-    private final Drawable mUnavailableDrawable;
-    private final Drawable mWaitingDrawable;
+    private Drawable mUnavailableDrawable;
+    private Drawable mWaitingDrawable;
 
     private Factory mFactory;
 
     private Runnable mCancelable;
     private boolean mWaitingForResponse;
+
+    private @Nullable Object mIdentifier;
 
     /** Creates an {@link AsyncImageDrawable instance. */
     public AsyncImageView(Context context) {
@@ -74,15 +77,42 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
      * Starts loading a {@link Drawable} from {@code factory}.  This will automatically clear out
      * any outstanding request state and start a new one.
      *
-     * @param factory The {@link Factory} to use that will provide the {@link Drawable}.
+     * @param factory    The {@link Factory} to use that will provide the {@link Drawable}.
+     * @param identifier An identification for this particular request. Subsequent calls with the
+     *                   same {@link Object} will be ignored until either {@code null} or a
+     *                   different {@link Object} are passed in.  This lets us ignore redundant
+     *                   calls.
      */
-    public void setAsyncImageDrawable(Factory factory) {
+    public void setAsyncImageDrawable(Factory factory, @Nullable Object identifier) {
+        if (mIdentifier != null && identifier != null && mIdentifier.equals(identifier)) return;
+        mIdentifier = identifier;
+
         // This will clear out any outstanding request.
         setImageDrawable(null);
         setForegroundDrawableCompat(mWaitingDrawable);
 
         mFactory = factory;
         retrieveDrawableIfNeeded();
+    }
+
+    /**
+     * @param unavailableDrawable Sets the {@link Drawable} to use when there is no thumbnail
+     *                            available.
+     */
+    public void setUnavailableDrawable(Drawable unavailableDrawable) {
+        boolean showUnavailable =
+                getForegroundDrawableCompat() == mUnavailableDrawable && !mWaitingForResponse;
+        mUnavailableDrawable = AutoAnimatorDrawable.wrap(unavailableDrawable);
+        if (showUnavailable) setForegroundDrawableCompat(mUnavailableDrawable);
+    }
+
+    /**
+     * @param waitingDrawable Sets the {@link Drawable} to use when waiting for an outstanding
+     *                        asynchronous thumbnail request.
+     */
+    public void setWaitingDrawable(Drawable waitingDrawable) {
+        mWaitingDrawable = AutoAnimatorDrawable.wrap(waitingDrawable);
+        if (mWaitingForResponse) setForegroundDrawableCompat(mWaitingDrawable);
     }
 
     // RoundedCornerImageView implementation.
@@ -104,7 +134,12 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         retrieveDrawableIfNeeded();
     }
 
-    private void setAsyncImageDrawableResponse(Drawable drawable) {
+    private void setAsyncImageDrawableResponse(Drawable drawable, Object identifier) {
+        // If we ended up swapping out the identifier and somehow this request didn't cancel ignore
+        // the response.  This does a direct == comparison instead of .equals() because any new
+        // request should have canceled this one (we'll leave null alone though).
+        if (mIdentifier != identifier) return;
+
         mCancelable = null;
         mWaitingForResponse = false;
         setForegroundDrawableCompat(drawable == null ? mUnavailableDrawable : null);
@@ -129,8 +164,11 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         if (mFactory != null) {
             // Start to retrieve the drawable.
             mWaitingForResponse = true;
-            mCancelable =
-                    mFactory.get(this ::setAsyncImageDrawableResponse, getWidth(), getHeight());
+
+            Object localIdentifier = mIdentifier;
+            mCancelable = mFactory.get(d
+                    -> setAsyncImageDrawableResponse(d, localIdentifier),
+                    getWidth(), getHeight());
 
             // If setAsyncImageDrawableResponse is called synchronously, clear mCancelable.
             if (!mWaitingForResponse) mCancelable = null;

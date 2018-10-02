@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.chromium.chrome.download.R;
 import org.chromium.ui.widget.RoundedCornerImageView;
@@ -48,6 +49,19 @@ public class ForegroundRoundedCornerImageView extends RoundedCornerImageView {
     /** Sets the foreground drawable of this {@link View} to {@code drawable}. */
     public void setForegroundDrawableCompat(Drawable drawable) {
         mForegroundHelper.setDrawable(drawable);
+    }
+
+    /** @return The current foreground {@link Drawable}. */
+    public Drawable getForegroundDrawableCompat() {
+        return mForegroundHelper.getDrawable();
+    }
+
+    /**
+     * @param scaleType Sets the {@link ImageView.ScaleType} to use for the foreground
+     *                  {@link Drawable}.
+     */
+    public void setForegroundScaleTypeCompat(ImageView.ScaleType scaleType) {
+        mForegroundHelper.setScaleType(scaleType);
     }
 
     // RoundedCornerImageView implementation.

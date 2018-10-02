@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 class DateOrderedListView {
     private final DecoratedListItemModel mModel;
 
-    private final int mImageWidthPx;
+    private final int mIdealImageWidthPx;
     private final int mImagePaddingPx;
     private final int mPrefetchVerticalPaddingPx;
     private final int mPrefetchHorizontalPaddingPx;
@@ -66,8 +66,8 @@ class DateOrderedListView {
             DateOrderedListObserver dateOrderedListObserver) {
         mModel = model;
 
-        mImageWidthPx =
-                context.getResources().getDimensionPixelSize(R.dimen.download_manager_image_width);
+        mIdealImageWidthPx = context.getResources().getDimensionPixelSize(
+                R.dimen.download_manager_ideal_image_width);
         mImagePaddingPx = context.getResources().getDimensionPixelOffset(
                 R.dimen.download_manager_image_padding);
         mPrefetchHorizontalPaddingPx = context.getResources().getDimensionPixelSize(
@@ -116,7 +116,7 @@ class DateOrderedListView {
             assert getOrientation() == VERTICAL;
 
             int availableWidth = getWidth() - mImagePaddingPx;
-            int columnWidth = mImageWidthPx - mImagePaddingPx;
+            int columnWidth = mIdealImageWidthPx - mImagePaddingPx;
 
             int easyFitSpan = availableWidth / columnWidth;
             double remaining =
@@ -145,6 +145,7 @@ class DateOrderedListView {
 
             switch (ListUtils.getViewTypeForItem(mModel.get(position))) {
                 case ListUtils.ViewType.IMAGE:
+                case ListUtils.ViewType.IN_PROGRESS_IMAGE:
                     outRect.left = mImagePaddingPx;
                     outRect.right = mImagePaddingPx;
                     outRect.top = mImagePaddingPx;
