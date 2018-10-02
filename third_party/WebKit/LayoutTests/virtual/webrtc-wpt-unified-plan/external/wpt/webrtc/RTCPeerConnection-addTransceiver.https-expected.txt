@@ -20,28 +20,6 @@ FAIL addTransceiver() with rid longer than 16 characters should throw TypeError 
         }]
       })" did not throw
 PASS addTransceiver() with valid rid value should succeed
-FAIL addTransceiver() with readonly ssrc set should throw InvalidAccessError assert_throws: function "() =>
-      pc.addTransceiver('audio', {
-        sendEncodings: [{
-          ssrc: 2
-        }]
-      })" did not throw
-FAIL addTransceiver() with readonly rtx set should throw InvalidAccessError assert_throws: function "() =>
-      pc.addTransceiver('audio', {
-        sendEncodings: [{
-          rtx: {
-            ssrc: 2
-          }
-        }]
-      })" did not throw
-FAIL addTransceiver() with readonly fec set should throw InvalidAccessError assert_throws: function "() =>
-      pc.addTransceiver('audio', {
-        sendEncodings: [{
-          fec: {
-            ssrc: 2
-          }
-        }]
-      })" did not throw
 PASS addTransceiver() with valid sendEncodings should succeed
 Harness: the test ran to completion.
 
