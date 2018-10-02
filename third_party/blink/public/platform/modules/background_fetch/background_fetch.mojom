@@ -19,7 +19,8 @@ enum BackgroundFetchError {
   STORAGE_ERROR,
   SERVICE_WORKER_UNAVAILABLE,
   QUOTA_EXCEEDED,
-  PERMISSION_DENIED
+  PERMISSION_DENIED,
+  REGISTRATION_LIMIT_EXCEEDED
 };
 
 // Struct representing completed Background Fetch requests, along with their

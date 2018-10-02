@@ -275,6 +275,7 @@ void BackgroundFetchRegistration::DidAbort(
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+    case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
       // Not applicable for this callback.
       break;
   }
