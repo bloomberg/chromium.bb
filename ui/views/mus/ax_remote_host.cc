@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -59,6 +60,10 @@ void AXRemoteHost::StartMonitoringWidget(Widget* widget) {
 
   widget_ = widget;
   widget_->AddObserver(this);
+
+  DCHECK_NE(tree_id_, ui::AXTreeIDUnknown());
+  widget_->GetNativeWindow()->SetProperty(ui::kChildAXTreeID,
+                                          new std::string(tree_id_.ToString()));
 
   // The cache needs to track the root window to follow focus changes.
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
@@ -190,7 +195,7 @@ void AXRemoteHost::SetRemoteHostCallback(const ui::AXTreeID& tree_id,
 
 void AXRemoteHost::Enable() {
   // Don't early-exit if already enabled. AXRemoteHost can start up in the
-  // "enabled" state even if ChromeVox is on at the moment the app launches.
+  // "enabled" state even if ChromeVox is off at the moment the app launches.
   // Turning on ChromeVox later will generate another OnAutomationEnabled()
   // call and we need to serialize the node tree again. This is similar to
   // AutomationManagerAura's behavior. https://crbug.com/876407

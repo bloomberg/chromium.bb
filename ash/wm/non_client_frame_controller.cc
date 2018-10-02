@@ -29,6 +29,7 @@
 #include "services/ws/window_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
@@ -150,9 +151,14 @@ class ContentsViewMus : public views::View {
   // views::View:
   const char* GetClassName() const override { return "ContentsViewMus"; }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kChildTreeId,
-        Shell::Get()->accessibility_controller()->remote_ax_tree_id());
+    std::string* tree_id =
+        GetWidget()->GetNativeWindow()->GetProperty(ui::kChildAXTreeID);
+    // Property may not be available immediately, but focus is eventually
+    // consistent.
+    if (!tree_id)
+      return;
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                  *tree_id);
     node_data->role = ax::mojom::Role::kClient;
   }
 

@@ -21,6 +21,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ws/window_service.h"
+#include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -79,6 +81,9 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
   if (window_service && ws::WindowService::HasRemoteClient(window))
     *out << " remote_id=" << window_service->GetIdForDebugging(window);
+  std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
+  if (tree_id)
+    *out << " ax_tree_id=" << *tree_id;
   *out << '\n';
 
   for (aura::Window* child : window->children()) {

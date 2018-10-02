@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -22,13 +20,6 @@ bool AXHostService::automation_enabled_ = false;
 AXHostService::AXHostService() {
   // AX tree ID is automatically assigned.
   DCHECK_NE(tree_id(), ui::AXTreeIDUnknown());
-
-  // ash::Shell may not exist in tests.
-  if (ash::Shell::HasInstance()) {
-    // TODO(jamescook): Eliminate this when tree ID assignment is handed in ash.
-    ash::Shell::Get()->accessibility_controller()->set_remote_ax_tree_id(
-        tree_id());
-  }
 
   DCHECK(!instance_);
   instance_ = this;
