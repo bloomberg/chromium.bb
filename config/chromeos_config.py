@@ -575,6 +575,7 @@ _x86_internal_release_boards = frozenset([
     'guado_moblab',
     'heli',
     'jecht',
+    'kalista',
     'kefka',
     'kip',
     'lakitu',
@@ -2492,6 +2493,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve-campfire', # contact:yueherngl@
       'grunt',
       'rammus', # contact:zhuohao@
+      'kalista', # contact:zhuohao@
   ])
 
   # Paladin configs that exist and should stay as experimental until further
