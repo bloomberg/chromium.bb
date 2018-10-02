@@ -1443,16 +1443,6 @@ def GeneralTemplates(site_config, ge_build_config):
                                   warn_only=True)],
   )
 
-  site_config.AddTemplate(
-      'cheets_release',
-      site_config.templates.release,
-      description='Cheets release builders',
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE),
-          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                  warn_only=True)],
-  )
-
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
 
