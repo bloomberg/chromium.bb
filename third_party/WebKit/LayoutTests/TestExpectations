@@ -2776,11 +2776,6 @@ crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Fa
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeout ]
 crbug.com/800898 external/wpt/workers/worker-from-blob-url.window.html [ Timeout ]
 
-crbug.com/854474 external/wpt/console/console-label-conversion.any.html [ Skip ]
-crbug.com/854474 external/wpt/console/console-label-conversion.any.worker.html [ Skip ]
-crbug.com/854474 external/wpt/console/idlharness.any.html [ Skip ]
-crbug.com/854474 external/wpt/console/idlharness.any.worker.html [ Skip ]
-
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
