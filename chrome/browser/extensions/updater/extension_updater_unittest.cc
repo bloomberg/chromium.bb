@@ -647,8 +647,7 @@ static void VerifyQueryAndExtractParameters(
   std::map<std::string, std::string> expected;
   ExtractParameters(omaha_params, &expected);
 
-  for (std::map<std::string, std::string>::iterator it = expected.begin();
-       it != expected.end(); ++it) {
+  for (auto it = expected.begin(); it != expected.end(); ++it) {
     EXPECT_EQ(it->second, params[it->first]);
   }
 

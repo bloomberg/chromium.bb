@@ -271,8 +271,7 @@ void ComponentLoader::Remove(const base::FilePath& root_directory) {
 }
 
 void ComponentLoader::Remove(const std::string& id) {
-  for (RegisteredComponentExtensions::iterator it =
-           component_extensions_.begin();
+  for (auto it = component_extensions_.begin();
        it != component_extensions_.end(); ++it) {
     if (it->extension_id == id) {
       UnloadComponent(&(*it));

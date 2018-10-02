@@ -324,9 +324,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
 
   // For each file read the json description & build the proper
   // associated prefs.
-  for (std::set<base::FilePath>::const_iterator it = candidates.begin();
-       it != candidates.end();
-       ++it) {
+  for (auto it = candidates.begin(); it != candidates.end(); ++it) {
     base::FilePath extension_candidate_path = base_path_.Append(*it);
 
     std::string id =

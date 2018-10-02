@@ -34,7 +34,7 @@ bool ExtensionCacheFake::GetExtension(const std::string& id,
                                       const std::string& expected_hash,
                                       base::FilePath* file_path,
                                       std::string* version) {
-  Map::iterator it = cache_.find(id);
+  auto it = cache_.find(id);
   if (it == cache_.end()) {
     return false;
   } else {

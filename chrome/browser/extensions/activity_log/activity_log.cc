@@ -177,8 +177,7 @@ class ApiInfoDatabase {
   // pointer to the record, or NULL if no such record was found.
   const ApiInfo* Lookup(Action::ActionType action_type,
                         const std::string& api_name) const {
-    std::map<std::string, const ApiInfo*>::const_iterator i =
-        api_database_.find(api_name);
+    auto i = api_database_.find(api_name);
     if (i == api_database_.end())
       return NULL;
     if (i->second->action_type != action_type)
@@ -751,8 +750,7 @@ void ActivityLog::OnScriptsExecuted(
   if (!is_active_)
     return;
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-  for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
-       it != extension_ids.end(); ++it) {
+  for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
     const Extension* extension =
         registry->GetExtensionById(it->first, ExtensionRegistry::ENABLED);
     if (!extension || ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
@@ -777,9 +775,7 @@ void ActivityLog::OnScriptsExecuted(
       if (prerender_manager &&
           prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
-      for (std::set<std::string>::const_iterator it2 = it->second.begin();
-           it2 != it->second.end();
-           ++it2) {
+      for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
         action->mutable_args()->AppendString(*it2);
       }
       LogAction(action);
@@ -823,8 +819,7 @@ void ActivityLog::RemoveURLs(const std::set<GURL>& restrict_urls) {
     return;
 
   std::vector<GURL> urls;
-  for (std::set<GURL>::const_iterator it = restrict_urls.begin();
-       it != restrict_urls.end(); ++it) {
+  for (auto it = restrict_urls.begin(); it != restrict_urls.end(); ++it) {
     urls.push_back(*it);
   }
   database_policy_->RemoveURLs(urls);

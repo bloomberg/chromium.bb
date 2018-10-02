@@ -195,8 +195,7 @@ void ExtensionAction::UndoDeclarativeSetIcon(int tab_id,
                                              int priority,
                                              const gfx::Image& icon) {
   std::vector<gfx::Image>& icons = declarative_icon_[tab_id][priority];
-  for (std::vector<gfx::Image>::iterator it = icons.begin(); it != icons.end();
-       ++it) {
+  for (auto it = icons.begin(); it != icons.end(); ++it) {
     if (it->AsImageSkia().BackedBySameObjectAs(icon.AsImageSkia())) {
       icons.erase(it);
       return;

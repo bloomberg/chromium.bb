@@ -193,7 +193,7 @@ enum UpdateBehavior {
 bool UpdateOverridesList(base::ListValue* overrides_list,
                          const std::string& override_url,
                          UpdateBehavior behavior) {
-  base::ListValue::iterator iter = std::find_if(
+  auto iter = std::find_if(
       overrides_list->begin(), overrides_list->end(),
       [&override_url](const base::Value& value) {
         std::string entry;
@@ -440,8 +440,8 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     if (!dict_iter.value().GetAsList(&url_list))
       continue;
 
-    for (base::ListValue::const_iterator list_iter = url_list->begin();
-         list_iter != url_list->end(); ++list_iter) {
+    for (auto list_iter = url_list->begin(); list_iter != url_list->end();
+         ++list_iter) {
       const base::DictionaryValue* dict = nullptr;
       if (!list_iter->GetAsDictionary(&dict))
         continue;

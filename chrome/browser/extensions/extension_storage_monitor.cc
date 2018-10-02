@@ -532,8 +532,7 @@ void ExtensionStorageMonitor::StopMonitoringStorage(
 
 void ExtensionStorageMonitor::RemoveNotificationForExtension(
     const std::string& extension_id) {
-  std::set<std::string>::iterator ext_id =
-      notified_extension_ids_.find(extension_id);
+  auto ext_id = notified_extension_ids_.find(extension_id);
   if (ext_id == notified_extension_ids_.end())
     return;
 

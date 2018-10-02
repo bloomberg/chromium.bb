@@ -340,16 +340,16 @@ void ExtensionManagement::Refresh() {
   ExtensionId id;
 
   if (allowed_list_pref) {
-    for (base::ListValue::const_iterator it = allowed_list_pref->begin();
-         it != allowed_list_pref->end(); ++it) {
+    for (auto it = allowed_list_pref->begin(); it != allowed_list_pref->end();
+         ++it) {
       if (it->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
         AccessById(id)->installation_mode = INSTALLATION_ALLOWED;
     }
   }
 
   if (denied_list_pref) {
-    for (base::ListValue::const_iterator it = denied_list_pref->begin();
-         it != denied_list_pref->end(); ++it) {
+    for (auto it = denied_list_pref->begin(); it != denied_list_pref->end();
+         ++it) {
       if (it->GetAsString(&id) && crx_file::id_util::IdIsValid(id))
         AccessById(id)->installation_mode = INSTALLATION_BLOCKED;
     }
@@ -360,7 +360,7 @@ void ExtensionManagement::Refresh() {
 
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;
-    for (base::ListValue::const_iterator it = install_sources_pref->begin();
+    for (auto it = install_sources_pref->begin();
          it != install_sources_pref->end(); ++it) {
       std::string url_pattern;
       if (it->GetAsString(&url_pattern)) {
@@ -378,8 +378,8 @@ void ExtensionManagement::Refresh() {
 
   if (allowed_types_pref) {
     global_settings_->has_restricted_allowed_types = true;
-    for (base::ListValue::const_iterator it = allowed_types_pref->begin();
-         it != allowed_types_pref->end(); ++it) {
+    for (auto it = allowed_types_pref->begin(); it != allowed_types_pref->end();
+         ++it) {
       int int_value;
       std::string string_value;
       if (it->GetAsInteger(&int_value) && int_value >= 0 &&

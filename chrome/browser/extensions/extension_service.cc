@@ -1804,9 +1804,7 @@ void ExtensionService::Observe(int type,
         // extensions could be referencing a shared module which is waiting for
         // idle to update.  Check all imports of these extensions, too.
         std::set<std::string> import_ids;
-        for (std::set<std::string>::const_iterator it = extension_ids.begin();
-             it != extension_ids.end();
-             ++it) {
+        for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
           const Extension* extension = GetExtensionById(*it, true);
           if (!extension)
             continue;
@@ -1820,8 +1818,7 @@ void ExtensionService::Observe(int type,
         }
         extension_ids.insert(import_ids.begin(), import_ids.end());
 
-        for (std::set<std::string>::const_iterator it = extension_ids.begin();
-             it != extension_ids.end(); ++it) {
+        for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
           if (delayed_installs_.Contains(*it)) {
             base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
                 FROM_HERE,
@@ -2051,8 +2048,8 @@ void ExtensionService::UpdateBlacklistedExtensions(
   Partition(registry_->blacklisted_extensions().GetIDs(), blacklisted,
             unchanged, &no_longer_blocked, &not_yet_blocked);
 
-  for (ExtensionIdSet::iterator it = no_longer_blocked.begin();
-       it != no_longer_blocked.end(); ++it) {
+  for (auto it = no_longer_blocked.begin(); it != no_longer_blocked.end();
+       ++it) {
     scoped_refptr<const Extension> extension =
         registry_->blacklisted_extensions().GetByID(*it);
     if (!extension.get()) {
@@ -2069,8 +2066,7 @@ void ExtensionService::UpdateBlacklistedExtensions(
                               Manifest::NUM_LOCATIONS);
   }
 
-  for (ExtensionIdSet::iterator it = not_yet_blocked.begin();
-       it != not_yet_blocked.end(); ++it) {
+  for (auto it = not_yet_blocked.begin(); it != not_yet_blocked.end(); ++it) {
     scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " needs to be "
@@ -2096,8 +2092,8 @@ void ExtensionService::UpdateGreylistedExtensions(
             greylist, unchanged,
             &no_longer_greylisted, &not_yet_greylisted);
 
-  for (ExtensionIdSet::iterator it = no_longer_greylisted.begin();
-       it != no_longer_greylisted.end(); ++it) {
+  for (auto it = no_longer_greylisted.begin(); it != no_longer_greylisted.end();
+       ++it) {
     scoped_refptr<const Extension> extension = greylist_.GetByID(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " no longer greylisted, "
@@ -2113,8 +2109,8 @@ void ExtensionService::UpdateGreylistedExtensions(
       EnableExtension(*it);
   }
 
-  for (ExtensionIdSet::iterator it = not_yet_greylisted.begin();
-       it != not_yet_greylisted.end(); ++it) {
+  for (auto it = not_yet_greylisted.begin(); it != not_yet_greylisted.end();
+       ++it) {
     scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " needs to be "
@@ -2168,9 +2164,7 @@ void ExtensionService::UnloadAllExtensionsInternal() {
 
 void ExtensionService::OnProfileDestructionStarted() {
   ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
-  for (ExtensionIdSet::iterator it = ids_to_unload.begin();
-       it != ids_to_unload.end();
-       ++it) {
+  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it) {
     UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
   }
 }
