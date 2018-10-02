@@ -111,6 +111,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void PaintChildren(const views::PaintInfo& paint_info) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
