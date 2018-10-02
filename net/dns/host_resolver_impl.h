@@ -19,7 +19,7 @@
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/dns_config_service.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"

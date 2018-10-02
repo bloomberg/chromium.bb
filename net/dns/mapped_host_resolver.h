@@ -12,6 +12,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_export.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/host_resolver.h"
 
 namespace net {

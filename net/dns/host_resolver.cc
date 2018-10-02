@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
-#include "net/dns/dns_config_service.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_impl.h"
 
