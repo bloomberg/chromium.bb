@@ -264,6 +264,17 @@ void XRDeviceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
   }
 }
 
+content::WebContents* XRDeviceImpl::GetWebContents() {
+  if (render_frame_host_ != nullptr) {
+    return content::WebContents::FromRenderFrameHost(render_frame_host_);
+  }
+
+  // We should only have a null render_frame_host_ for some unittests, for which
+  // we don't actually expect to get here.
+  NOTREACHED();
+  return nullptr;
+}
+
 bool XRDeviceImpl::IsSecureContextRequirementSatisfied() {
   // We require secure connections unless both the webvr flag and the
   // http flag are enabled.
