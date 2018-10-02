@@ -58,12 +58,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
       dir1_top_files = [dir1_file1, dir1_file2]
       dir1_deep_files = dir1_top_files + [dir1_subfile]
 
-      dir2_file1 = os.path.join(dir2, self.FILE1)
-      dir2_file2 = os.path.join(dir2, self.FILE2)
-      dir2_subfile = os.path.join(dir2, self.SUBFILE)
-      dir2_top_files = [dir2_file1, dir2_file2]
-      dir2_deep_files = dir2_top_files + [dir2_subfile]
-
       # Test ListFiles with various options.
       self.assertEqual(set(dir1_top_files),
                        set(filelib.ListFiles(dir1)))
@@ -74,11 +68,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
       self.assertEqual(set([dir1_file1, dir1_subfile]),
                        set(filelib.ListFiles(dir1, recurse=True,
                                              filepattern=self.FILE_GLOB)))
-      # Test CopyFiles from dir1 to dir2.
-      self.assertEqual(set(dir2_deep_files),
-                       set(filelib.CopyFiles(dir1, dir2)))
-      for dir2_path in dir2_deep_files:
-        self.assertExists(dir2_path)
 
     finally:
       for d in (dir1, dir2):

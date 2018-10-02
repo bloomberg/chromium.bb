@@ -249,26 +249,3 @@ def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
                              filepattern=filepattern, sort=sort)
 
   raise NotSupportedForType(uri_type)
-
-
-def CopyFiles(src_dir, dst_dir):
-  """Recursively copy all files from src_dir into dst_dir
-
-  This leverages the Copy method, so the restrictions there for what
-  copies are supported apply here.
-
-  Args:
-    src_dir: A local, CNS, or GS directory to copy from.
-    dst_dir: A local, CNS, or GS directory to copy into.
-
-  Returns:
-    A list of absolute path files for all copied files.
-  """
-  dst_paths = []
-  src_paths = ListFiles(src_dir, recurse=True)
-  for src_path in src_paths:
-    dst_path = src_path.replace(src_dir, dst_dir)
-    Copy(src_path, dst_path)
-    dst_paths.append(dst_path)
-
-  return dst_paths

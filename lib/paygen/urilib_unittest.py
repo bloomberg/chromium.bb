@@ -98,19 +98,14 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     self.assertEquals(set(deep_local_files),
                       set(urilib.ListFiles(self.filesdir, recurse=True)))
 
-    # Test CopyFiles, from local to GS.
-    self.assertEquals(set(deep_gs_files),
-                      set(urilib.CopyFiles(self.filesdir, self.gs_dir)))
-
     # Test ListFiles, GS version.
+    urilib.Copy(self.file1_local, self.gs_dir + '/')
+    urilib.Copy(self.file2_local, self.gs_dir + '/')
+    urilib.Copy(self.subfile_local, self.gs_dir + '/%s/' % self.SUBDIR)
     self.assertEquals(set(shallow_gs_files),
                       set(urilib.ListFiles(self.gs_dir)))
     self.assertEquals(set(deep_gs_files),
                       set(urilib.ListFiles(self.gs_dir, recurse=True)))
-
-    # Test CopyFiles, from GS to local.
-    self.assertEquals(set(deep_local_files),
-                      set(urilib.CopyFiles(self.gs_dir, self.filesdir)))
 
 
 class TestUrilib(cros_test_lib.MoxTempDirTestCase):
