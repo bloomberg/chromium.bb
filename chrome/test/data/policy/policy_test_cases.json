@@ -1884,6 +1884,21 @@
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
+  "WebUsbAllowDevicesForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": {
+      "WebUsbAllowDevicesForUrls": [
+        {
+          "devices": [{"vendor_id": 1234, "product_id": 5678}],
+          "url_patterns": ["[*.]google.com", "[*.]youtube.com"]
+        }
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "profile.managed_web_usb_allow_devices_for_urls" }
+    ]
+  },
+
   "WebUsbAskForUrls": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "WebUsbAskForUrls": ["[*.]google.com"] },
