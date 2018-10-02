@@ -337,7 +337,95 @@ testcase.openQuickViewScrollText = function() {
           .then(checkQuickViewTextScrollY);
       }).then(this.next);
     },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests opening Quick View and scrolling its <webview> which contains a tall
+ * html document.
+ */
+testcase.openQuickViewScrollHtml = function() {
+  const caller = getCaller();
+  let appId;
+
+  /**
+   * The <webview> resides in the <files-safe-media type="html"> shadow DOM,
+   * which is a child of the #quick-view shadow DOM.
+   */
+  const webView = ['#quick-view', 'files-safe-media[type="html"]', 'webview'];
+
+  function scrollQuickViewHtmlBy(y) {
+    const doScrollBy = `window.scrollBy(0,${y})`;
+    return remoteCall
+        .callRemoteTestUtil(
+            'deepExecuteScriptInWebView', appId, [webView, doScrollBy]);
+  }
+
+  function checkQuickViewHtmlScrollY(scrollY) {
+    if (!scrollY || Number(scrollY.toString()) <= 200) {
+      console.log('checkQuickViewHtmlScrollY: scrollY '.concat(scrollY));
+      return scrollQuickViewHtmlBy(100).then(() => {
+        return pending(caller, 'Waiting for Quick View to scroll.');
+      });
+    }
+  }
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.tallHtml.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.tallHtml], []);
+    },
+    // Open the file in Quick View.
     function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.tallHtml.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Wait for the Quick View <webview> to load and display its content.
+    function() {
+      function checkWebViewHtmlLoaded(elements) {
+        let haveElements = Array.isArray(elements) && elements.length === 1;
+        if (haveElements)
+          haveElements = elements[0].styles.display.includes('block');
+        if (!haveElements || elements[0].attributes.loaded !== '')
+          return pending(caller, 'Waiting for <webview> to load.');
+        return;
+      }
+      repeatUntil(function() {
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepQueryAllElements', appId, [webView, ['display']])
+            .then(checkWebViewHtmlLoaded);
+      }).then(this.next);
+    },
+    // Get the Quick View <webview> scrollY.
+    function() {
+      const getScrollY = 'window.scrollY';
+      remoteCall
+          .callRemoteTestUtil(
+              'deepExecuteScriptInWebView', appId, [webView, getScrollY])
+          .then(this.next);
+    },
+    // Check: the initial <webview> scrollY should be 0.
+    function(scrollY) {
+      chrome.test.assertEq('0', scrollY.toString());
+      this.next();
+    },
+    // Scroll the <webview> and verify that it scrolled.
+    function() {
+      repeatUntil(function() {
+        const getScrollY = 'window.scrollY';
+        return remoteCall
+          .callRemoteTestUtil(
+              'deepExecuteScriptInWebView', appId, [webView, getScrollY])
+          .then(checkQuickViewHtmlScrollY);
+      }).then(this.next);
+    },
+    function() {
       checkIfNoErrorsOccured(this.next);
     },
   ]);
