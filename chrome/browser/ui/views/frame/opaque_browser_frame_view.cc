@@ -191,28 +191,6 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
-void OpaqueBrowserFrameView::OnBrowserViewInitViewsComplete() {
-  BrowserNonClientFrameView::OnBrowserViewInitViewsComplete();
-
-  // After views are initialized, we know the top area height for the
-  // first time, so redraw the frame buttons at the appropriate size.
-  MaybeRedrawFrameButtons();
-}
-
-void OpaqueBrowserFrameView::OnMaximizedStateChanged() {
-  BrowserNonClientFrameView::OnMaximizedStateChanged();
-
-  // The top area height can change depending on the maximized state.
-  MaybeRedrawFrameButtons();
-}
-
-void OpaqueBrowserFrameView::OnFullscreenStateChanged() {
-  BrowserNonClientFrameView::OnFullscreenStateChanged();
-
-  // The top area height is 0 when the window is fullscreened.
-  MaybeRedrawFrameButtons();
-}
-
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
@@ -357,7 +335,6 @@ void OpaqueBrowserFrameView::ActivationChanged(bool active) {
   BrowserNonClientFrameView::ActivationChanged(active);
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(active);
-  MaybeRedrawFrameButtons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -375,11 +352,6 @@ void OpaqueBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
 
 void OpaqueBrowserFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTitleBar;
-}
-
-void OpaqueBrowserFrameView::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
-  MaybeRedrawFrameButtons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -573,8 +545,6 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
   return browser_view()->IsBrowserTypeNormal() ||
          platform_observer_->IsUsingSystemTheme();
 }
-
-void OpaqueBrowserFrameView::MaybeRedrawFrameButtons() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, private:
