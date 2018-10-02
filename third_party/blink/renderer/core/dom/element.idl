@@ -141,9 +141,6 @@ interface Element : Node {
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
-    attribute EventHandler oncopy;
-    attribute EventHandler oncut;
-    attribute EventHandler onpaste;
     attribute EventHandler onsearch;
 };
 

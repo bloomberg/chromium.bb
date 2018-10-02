@@ -160,9 +160,9 @@ PASS HTMLElement interface: attribute ontimeupdate
 PASS HTMLElement interface: attribute ontoggle
 PASS HTMLElement interface: attribute onvolumechange
 PASS HTMLElement interface: attribute onwaiting
-FAIL HTMLElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
-FAIL HTMLElement interface: attribute oncut assert_own_property: expected property "oncut" missing
-FAIL HTMLElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
+PASS HTMLElement interface: attribute oncopy
+PASS HTMLElement interface: attribute oncut
+PASS HTMLElement interface: attribute onpaste
 PASS HTMLElement interface: attribute contentEditable
 PASS HTMLElement interface: attribute isContentEditable
 PASS HTMLElement interface: attribute inputMode
