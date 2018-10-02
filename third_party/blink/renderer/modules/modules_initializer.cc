@@ -239,7 +239,7 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   NavigatorGamepad::From(document);
   NavigatorServiceWorker::From(document);
   DOMWindowStorageController::From(document);
-  if (RuntimeEnabledFeatures::WebVREnabled())
+  if (OriginTrials::WebVREnabled(document.GetExecutionContext()))
     NavigatorVR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&
       settings.GetPresentationReceiver()) {
