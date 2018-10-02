@@ -185,16 +185,19 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
         // For commit-only types, no updates are expected and hence we can
         // consider initial_sync_done().
         model_type_state_.set_initial_sync_done(commit_only_);
+        // Notify the bridge sync is starting to simulate an enable event.
+        bridge_->OnSyncStarting(activation_request_);
         break;
       case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
         // Model not ready to sync, so wait until the bridge calls
         // ModelReadyToSync().
         DCHECK(!model_ready_to_sync_);
-        break;
+        // Notify the bridge sync is starting to simulate an enable event.
+        bridge_->OnSyncStarting(activation_request_);
+        // Return early to avoid replying to OnSyncStarting() immediately. This
+        // will be handled in ModelReadyToSync().
+        return;
     }
-
-    // Notify the bridge sync is starting to simulate an enable event.
-    bridge_->OnSyncStarting(activation_request_);
   }
 
   // Cache GUID verification guarantees the user is the same.
@@ -1176,6 +1179,10 @@ size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
 
 bool ClientTagBasedModelTypeProcessor::HasLocalChangesForTest() const {
   return HasLocalChanges();
+}
+
+bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
+  return model_ready_to_sync_;
 }
 
 void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(

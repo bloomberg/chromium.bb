@@ -98,6 +98,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   bool HasLocalChangesForTest() const;
 
+  bool IsModelReadyToSyncForTest() const;
+
  private:
   friend class ModelTypeDebugInfo;
   friend class ClientTagBasedModelTypeProcessorTest;
