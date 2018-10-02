@@ -233,6 +233,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time,
     SignedExchangeDevToolsProxy* devtools_proxy) {
+  SCOPED_UMA_HISTOGRAM_TIMER("SignedExchange.Time.SignatureVerify");
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeSignatureVerifier::Verify");
 
