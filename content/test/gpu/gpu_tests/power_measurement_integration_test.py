@@ -6,6 +6,21 @@
 to be installed on the machine before this script works. The software can be
 downloaded from:
   https://software.intel.com/en-us/articles/intel-power-gadget-20
+
+To run this test on a target machine without Chromium workspace checked out:
+1) inside Chromium workspace, run
+   python tools/mb/mb.py zip out/Release
+       telemetry_gpu_integration_test_scripts_only out/myfilename.zip
+   This zip doesn't include a chrome executable. The intent is to run with
+   one of the stable/beta/canary/dev channels installed on the target machine.
+2) copy the zip file to the target machine, unzip
+3) python content/test/gpu/run_gpu_integration_test.py power --browser=canary
+   (plus options listed through --help)
+
+This script is tested and works fine with the following video sites:
+  * https://www.youtube.com
+  * https://www.vimeo.com
+  * https://www.pond5.com
 """
 
 from gpu_tests import gpu_integration_test
@@ -32,14 +47,16 @@ fullscreen_script = r"""
     return rt;
   }
 
+  // Return true if video has started playing.
   function setupVideoElement() {
     var video = locateElement("video");
     if (video) {
-      video.volume = 0;
+      video.muted = true;
       video.loop = true;
       video.autoplay = true;
-      video.play();
+      return video.currentTime > 0;
     }
+    return false;
   }
 
   function isVideoPlaying() {
@@ -52,17 +69,30 @@ fullscreen_script = r"""
     return false;
   }
 
-  function locateButton(url) {
-    var lower_url = url.toLowerCase();
-    var button_class = '';
-    if (lower_url.indexOf('youtube') != -1)
-      button_class = 'ytp-fullscreen-button';
-    if (button_class == '')
-      return null;
-    var buttons = document.getElementsByClassName(button_class);
-    if (buttons.length == 0)
-      return null;
-    return buttons[0];
+  function locateButton(texts) {
+    var buttons = document.getElementsByTagName("button");
+    for (var ii = 0; ii < buttons.length; ++ii) {
+      var label = buttons[ii].textContent.toLowerCase();
+      for (var jj = 0; jj < texts.length; ++jj) {
+        if (label.indexOf(texts[jj]) != -1) {
+          return buttons[ii];
+        }
+      }
+      label = buttons[ii].getAttribute("title") ||
+              buttons[ii].getAttribute("data-tooltip-content");
+      if (label) {
+        label = label.toLowerCase();
+        for (var jj = 0; jj < texts.length; ++jj) {
+          if (label.indexOf(texts[jj]) != -1)
+            return buttons[ii];
+        }
+      }
+    }
+    return null;
+  }
+
+  function locateFullscreenButton() {
+    return locateButton(["full screen", "fullscreen"]);
   }
 """
 
@@ -150,15 +180,20 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       if test_path:
         self.tab.action_runner.Navigate(test_path, fullscreen_script)
         self.tab.WaitForDocumentReadyStateToBeComplete()
-        self.tab.action_runner.ExecuteJavaScript('setupVideoElement()')
+        if not self.tab.action_runner.EvaluateJavaScript('setupVideoElement()'):
+          # autoplay doesn't work for vimeo.
+          # action_runner.PlayMedia doesn't work for vimeo.
+          self.tab.action_runner.TapElement(element_function=(
+              'locateElement("video")'))
         self.tab.action_runner.WaitForJavaScriptCondition(
             'isVideoPlaying()', timeout=10)
 
       if fullscreen:
-        # TODO(zmo): Switch to use click instead of tap once Telemetry's click
-        # is implemented through DevTools.
+        if self.tab.action_runner.EvaluateJavaScript(
+               'locateFullscreenButton() == null'):
+          self.fail("Fullscreen button not located, --fullscreen won't work")
         self.tab.action_runner.TapElement(element_function=(
-            'locateButton("%s")' % test_path))
+            'locateFullscreenButton()'))
 
       logfile = None
       if ipg_logdir:
