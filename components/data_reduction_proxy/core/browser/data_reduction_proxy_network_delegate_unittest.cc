@@ -1711,6 +1711,32 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
 }
 
+// Test that Brotli is not added to the accept-encoding header when
+// kDataReductionProxyBrotliHoldback feature is enabled.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisement_BrotliHoldbackEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyBrotliHoldback);
+
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
+
+  ReadBrotliFile();
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
+  response_headers += "\r\n";
+
+  // Use secure sockets when fetching the request since Brotli is only enabled
+  // for secure connections.
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
+}
+
 // Test that Brotli is not added to the accept-encoding header when the request
 // is fetched from an insecure proxy.
 TEST_F(DataReductionProxyNetworkDelegateTest,
