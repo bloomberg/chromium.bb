@@ -148,6 +148,8 @@ class AppListSyncableService : public syncer::SyncableService,
     return oem_folder_name_;
   }
 
+  void InstallDefaultPageBreaksForTest();
+
   const SyncItemMap& sync_items() const { return sync_items_; }
 
   // syncer::SyncableService
@@ -262,6 +264,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // Remove leading, trailing and duplicate "page break" items in sorted top
   // level item list.
   void PruneRedundantPageBreakItems();
+
+  // Installs the default page break items. This is only called for first time
+  // users.
+  void InstallDefaultPageBreaks();
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;

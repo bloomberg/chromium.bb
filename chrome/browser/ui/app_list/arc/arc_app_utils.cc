@@ -181,6 +181,9 @@ int64_t GetValidDisplayId(int64_t display_id) {
 
 }  // namespace
 
+const char kGoogleDuo[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
+const char kInfinitePainter[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
+const char kLightRoom[] = "fpegfnbgomakooccabncdaelhfppceni";
 const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
 const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";

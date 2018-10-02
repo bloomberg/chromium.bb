@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -23,6 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/ui/app_list/page_break_constants.h"
 #endif
 
 namespace extensions {
@@ -583,6 +585,15 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
     default_ordinals_[extension_id].page_ordinal = page_ordinal;
     default_ordinals_[extension_id].app_launch_ordinal = app_launch_ordinal;
     app_launch_ordinal = app_launch_ordinal.CreateAfter();
+#if defined(OS_CHROMEOS)
+    // Default page breaks are installed by default for first-time users so that
+    // we can make default apps span multiple pages in the Launcher without
+    // fully filling those pages. If |extension_id| is of a default page break,
+    // then apps that follow it in the order should have an incremented page
+    // ordinal.
+    if (app_list::IsDefaultPageBreakItem(extension_id))
+      page_ordinal = page_ordinal.CreateAfter();
+#endif  // defined(OS_CHROMEOS)
   }
 }
 
