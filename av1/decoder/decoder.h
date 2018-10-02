@@ -293,6 +293,9 @@ static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
                                       BufferPool *const pool) {
   if (idx >= 0) {
     --frame_bufs[idx].ref_count;
+    // Reference counts should never become negative. If this assertion fails,
+    // there is a bug in our reference count management.
+    assert(frame_bufs[idx].ref_count >= 0);
     // A worker may only get a free framebuffer index when calling get_free_fb.
     // But the private buffer is not set up until finish decoding header.
     // So any error happens during decoding header, the frame_bufs will not
