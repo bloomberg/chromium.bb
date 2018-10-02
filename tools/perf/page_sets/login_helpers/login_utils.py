@@ -54,10 +54,14 @@ def InputWithSelector(action_runner, input_text, input_selector):
       possible exceptions.
   """
   action_runner.WaitForElement(selector=input_selector)
+  action_runner.Wait(0.5)
   # Focus the requested element first and then enter text using single
   # Keyboard events to bypass certain restrictions on websites.
   action_runner.ExecuteJavaScript(
       'document.querySelector({{selector}}).focus()', selector=input_selector)
+  # Wait a bit to make sure the focus is properly set, otherwise we'll end up
+  # losing some characters.
+  action_runner.Wait(0.5)
   action_runner.EnterText(input_text)
 
 def InputForm(action_runner, input_text, input_id, form_id=None):
