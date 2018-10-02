@@ -856,7 +856,10 @@ class DriveFsTestVolume : public DriveTestVolume {
         base::FilePath(entry.target_path).BaseName().value(), entry.pinned,
         entry.shared_option == AddEntriesMessage::SharedOption::SHARED ||
             entry.shared_option ==
-                AddEntriesMessage::SharedOption::SHARED_WITH_ME);
+                AddEntriesMessage::SharedOption::SHARED_WITH_ME,
+        {entry.capabilities.can_share, entry.capabilities.can_copy,
+         entry.capabilities.can_delete, entry.capabilities.can_rename,
+         entry.capabilities.can_add_children});
 
     switch (entry.type) {
       case AddEntriesMessage::FILE: {
@@ -1401,7 +1404,8 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
                                    kPredefinedProfileSalt);
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
-    if (!IsIncognitoModeTest()) {
+    if (!IsIncognitoModeTest() &&
+        profile->GetPath().BaseName().value() == "user") {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(base::IgnoreResult(&LocalTestVolume::Mount),

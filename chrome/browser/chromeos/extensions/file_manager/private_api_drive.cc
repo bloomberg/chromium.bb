@@ -707,6 +707,8 @@ class SingleEntryPropertiesGetterForDriveFs {
     if (metadata->type != drivefs::mojom::FileMetadata::Type::kDirectory) {
       properties_->thumbnail_url = std::make_unique<std::string>(
           base::StrCat({"drivefs:", file_system_url_.ToGURL().spec()}));
+      properties_->cropped_thumbnail_url =
+          std::make_unique<std::string>(*properties_->thumbnail_url);
     }
 
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);

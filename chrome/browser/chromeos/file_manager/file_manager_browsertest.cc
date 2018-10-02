@@ -180,6 +180,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayDrive"),
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive").EnableDriveFs(),
+        TestCase("fileDisplayDrive").TabletMode().EnableDriveFs(),
         TestCase("fileDisplayDriveOffline").Offline().EnableDriveFs(),
         TestCase("fileDisplayDriveOnline").EnableDriveFs(),
         TestCase("fileDisplayDriveOnline"),
@@ -321,6 +322,48 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("checkPasteEnabledForReadWriteFolderInTree"),
                       TestCase("checkPasteDisabledForReadOnlyFolderInTree"),
                       TestCase("checkContextMenuForTeamDriveRoot")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    ContextMenu2, /* context_menu.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("checkDeleteEnabledForReadWriteFile").EnableDriveFs(),
+        TestCase("checkDeleteDisabledForReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkDeleteDisabledForReadOnlyFile").EnableDriveFs(),
+        TestCase("checkDeleteDisabledForReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkRenameEnabledForReadWriteFile").EnableDriveFs(),
+        TestCase("checkRenameDisabledForReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkRenameDisabledForReadOnlyFile").EnableDriveFs(),
+        TestCase("checkRenameDisabledForReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkShareEnabledForReadWriteFile").EnableDriveFs(),
+        TestCase("checkShareEnabledForReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkShareDisabledForStrictReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkShareEnabledForReadOnlyFile").EnableDriveFs(),
+        TestCase("checkShareEnabledForReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadWriteFile").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkCopyDisabledForStrictReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadOnlyFile").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkCutEnabledForReadWriteFile").EnableDriveFs(),
+        TestCase("checkCutDisabledForReadOnlyDocument").EnableDriveFs(),
+        TestCase("checkCutDisabledForReadOnlyFile").EnableDriveFs(),
+        TestCase("checkCutDisabledForReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkPasteIntoFolderEnabledForReadWriteFolder")
+            .EnableDriveFs(),
+        TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
+            .EnableDriveFs(),
+        TestCase("checkNewFolderEnabledInsideReadWriteFolder").EnableDriveFs(),
+        TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),
+        TestCase("checkPasteDisabledInsideReadOnlyFolder").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadWriteFolderInTree").EnableDriveFs(),
+        TestCase("checkCopyEnabledForReadOnlyFolderInTree").EnableDriveFs(),
+        TestCase("checkCutEnabledForReadWriteFolderInTree").EnableDriveFs(),
+        TestCase("checkCutDisabledForReadOnlyFolderInTree").EnableDriveFs(),
+        TestCase("checkPasteEnabledForReadWriteFolderInTree").EnableDriveFs(),
+        TestCase("checkPasteDisabledForReadOnlyFolderInTree").EnableDriveFs(),
+        TestCase("checkContextMenuForTeamDriveRoot").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */
@@ -481,7 +524,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FolderShortcuts, /* folder_shortcuts.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("traverseFolderShortcuts"),
-                      TestCase("addRemoveFolderShortcuts")));
+                      TestCase("traverseFolderShortcuts").EnableDriveFs(),
+                      TestCase("addRemoveFolderShortcuts"),
+                      TestCase("addRemoveFolderShortcuts").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SortColumns, /* sort_columns.js */
@@ -627,8 +672,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("metadataDownloads"),
                       TestCase("metadataDrive"),
+                      TestCase("metadataDrive").EnableDriveFs(),
                       TestCase("metadataTeamDrives"),
-                      TestCase("metadataLargeDrive")));
+                      TestCase("metadataTeamDrives").EnableDriveFs(),
+                      TestCase("metadataLargeDrive"),
+                      TestCase("metadataLargeDrive").EnableDriveFs()));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
