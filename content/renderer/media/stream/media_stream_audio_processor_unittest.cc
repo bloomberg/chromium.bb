@@ -117,13 +117,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       // |audio_processor| does nothing when the audio processing is off in
       // the processor.
       webrtc::AudioProcessing* ap = audio_processor->audio_processing_.get();
-#if defined(OS_ANDROID)
-      const bool is_aec_enabled = ap && ap->echo_control_mobile()->is_enabled();
-      // AEC should be turned off for mobiles.
-      DCHECK(!ap || !ap->echo_cancellation()->is_enabled());
-#else
-      const bool is_aec_enabled = ap && ap->echo_cancellation()->is_enabled();
-#endif
+      const bool is_aec_enabled = ap && ap->GetConfig().echo_canceller.enabled;
       if (is_aec_enabled) {
         if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
           for (int i = 0; i < kMaxNumberOfPlayoutDataChannels; ++i) {
@@ -159,22 +153,15 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
   void VerifyDefaultComponents(MediaStreamAudioProcessor* audio_processor) {
     webrtc::AudioProcessing* audio_processing =
         audio_processor->audio_processing_.get();
-    const webrtc::AudioProcessing::Config apm_config =
+    const webrtc::AudioProcessing::Config config =
         audio_processing->GetConfig();
-    EXPECT_TRUE(apm_config.high_pass_filter.enabled);
+    EXPECT_TRUE(config.echo_canceller.enabled);
 #if defined(OS_ANDROID)
-    EXPECT_TRUE(audio_processing->echo_control_mobile()->is_enabled());
-    EXPECT_TRUE(audio_processing->echo_control_mobile()->routing_mode() ==
-        webrtc::EchoControlMobile::kSpeakerphone);
-    EXPECT_FALSE(audio_processing->echo_cancellation()->is_enabled());
+    EXPECT_TRUE(config.echo_canceller.mobile_mode);
 #else
-    EXPECT_TRUE(audio_processing->echo_cancellation()->is_enabled());
-    EXPECT_TRUE(audio_processing->echo_cancellation()->suppression_level() ==
-        webrtc::EchoCancellation::kHighSuppression);
-    EXPECT_TRUE(audio_processing->echo_cancellation()->are_metrics_enabled());
-    EXPECT_TRUE(
-        audio_processing->echo_cancellation()->is_delay_logging_enabled());
+    EXPECT_FALSE(config.echo_canceller.mobile_mode);
 #endif
+    EXPECT_TRUE(config.high_pass_filter.enabled);
 
     EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
     EXPECT_TRUE(audio_processing->noise_suppression()->level() ==

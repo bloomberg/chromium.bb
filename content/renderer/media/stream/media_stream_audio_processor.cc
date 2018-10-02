@@ -471,11 +471,6 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int sample_rate,
                                               int audio_delay_milliseconds) {
   DCHECK(render_thread_checker_.CalledOnValidThread());
-#if defined(OS_ANDROID)
-  DCHECK(!audio_processing_->echo_cancellation()->is_enabled());
-#else
-  DCHECK(!audio_processing_->echo_control_mobile()->is_enabled());
-#endif
   DCHECK_GE(audio_bus->channels(), 1);
   DCHECK_LE(audio_bus->channels(), 2);
   int frames_per_10_ms = sample_rate / 100;
@@ -792,7 +787,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
 void MediaStreamAudioProcessor::UpdateAecStats() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (echo_information_)
-    echo_information_->UpdateAecStats(audio_processing_->echo_cancellation());
+    echo_information_->UpdateAecStats(
+        audio_processing_->GetStatistics(true /* has_remote_tracks */));
 }
 
 }  // namespace content
