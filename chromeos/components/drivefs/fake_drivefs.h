@@ -34,7 +34,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                    const std::string& mime_type,
                    const std::string& original_name,
                    bool pinned,
-                   bool shared);
+                   bool shared,
+                   const mojom::Capabilities& capabilities);
 
   const base::FilePath& mount_path() { return mount_path_; }
 
