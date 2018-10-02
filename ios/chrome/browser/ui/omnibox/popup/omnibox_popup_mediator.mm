@@ -87,8 +87,6 @@
 
   if (self.open) {
     [self.presenter updateHeightAndAnimateAppearanceIfNecessary];
-  } else {
-    [self.presenter animateCollapse];
   }
 }
 

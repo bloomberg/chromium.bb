@@ -4,16 +4,20 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 
+#include "base/feature_list.h"
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -89,6 +93,25 @@
 
 - (BOOL)isOpen {
   return self.mediator.isOpen;
+}
+
+- (void)openPopup {
+  // Show shortcuts when the feature is enabled. Don't show them on NTP as they
+  // are already part of the NTP.
+  if (!IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState()) &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+    self.popupViewController.shortcutsEnabled = YES;
+  }
+
+  [self.mediator.presenter updateHeightAndAnimateAppearanceIfNecessary];
+  self.mediator.open = YES;
+}
+
+- (void)closePopup {
+  self.mediator.open = NO;
+  self.popupViewController.shortcutsEnabled = NO;
+  [self.mediator.presenter animateCollapse];
 }
 
 #pragma mark - Property accessor
