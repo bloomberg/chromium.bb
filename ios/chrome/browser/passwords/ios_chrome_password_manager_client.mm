@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/no_destructor.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -15,6 +16,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "ios/chrome/browser/application_context.h"
@@ -62,6 +64,9 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
+  static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
+      *saving_passwords_enabled_, this, GetSyncService(delegate_.browserState),
+      GetSigninManager(delegate_.browserState), GetPrefs());
   log_manager_ = password_manager::LogManager::Create(
       ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
           delegate_.browserState),
