@@ -24,6 +24,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/range/range.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace arc {
 
@@ -526,6 +528,20 @@ bool ArcImeService::UpdateCursorRect(const gfx::Rect& rect,
     converted.Offset(focused_arc_window_->GetToplevelWindow()
                          ->GetBoundsInScreen()
                          .OffsetFromOrigin());
+  } else if (focused_arc_window_) {
+    auto* window = focused_arc_window_->GetToplevelWindow();
+    auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+    // Check fullscreen window as well because it's possible for ARC to request
+    // frame regardless of window state.
+    bool covers_display =
+        widget && (widget->IsMaximized() || widget->IsFullscreen());
+    if (covers_display) {
+      auto* frame_view = widget->non_client_view()->frame_view();
+      // The frame height will be subtracted from client bounds.
+      gfx::Rect bounds =
+          frame_view->GetWindowBoundsForClientBounds(gfx::Rect());
+      converted.Offset(0, -bounds.y());
+    }
   }
 
   if (cursor_rect_ == converted)
