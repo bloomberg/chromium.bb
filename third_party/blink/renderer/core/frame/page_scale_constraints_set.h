@@ -38,20 +38,24 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
+class Page;
+
 // This class harmonizes the viewport (particularly page scale) constraints from
 // the meta viewport tag and other sources.
-class CORE_EXPORT PageScaleConstraintsSet {
-  USING_FAST_MALLOC(PageScaleConstraintsSet);
-
+class CORE_EXPORT PageScaleConstraintsSet
+    : public GarbageCollected<PageScaleConstraintsSet> {
  public:
-  static std::unique_ptr<PageScaleConstraintsSet> Create() {
-    return base::WrapUnique(new PageScaleConstraintsSet);
+  static PageScaleConstraintsSet* Create(Page* page) {
+    return new PageScaleConstraintsSet(page);
   }
+
+  void Trace(blink::Visitor*);
 
   void SetDefaultConstraints(const PageScaleConstraints&);
   const PageScaleConstraints& DefaultConstraints() const;
@@ -91,12 +95,9 @@ class CORE_EXPORT PageScaleConstraintsSet {
     return final_constraints_;
   }
   void ComputeFinalConstraints();
-  void AdjustFinalConstraintsToContentsSize(
-      IntSize contents_size,
-      int non_overlay_scrollbar_width,
-      bool shrinks_viewport_content_to_fit);
-
-  void DidChangeContentsSize(IntSize contents_size, float page_scale_factor);
+  void DidChangeContentsSize(IntSize contents_size,
+                             int vertical_scrollbar_width,
+                             float page_scale_factor);
 
   // This should be set to true on each page load to note that the page scale
   // factor needs to be reset to its initial value.
@@ -112,9 +113,11 @@ class CORE_EXPORT PageScaleConstraintsSet {
   IntSize InitialViewportSize() const { return icb_size_; }
 
  private:
-  PageScaleConstraintsSet();
+  PageScaleConstraintsSet(Page* page);
 
   PageScaleConstraints ComputeConstraintsStack() const;
+
+  void AdjustFinalConstraintsToContentsSize();
 
   PageScaleConstraints default_constraints_;
   PageScaleConstraints page_defined_constraints_;
@@ -122,7 +125,10 @@ class CORE_EXPORT PageScaleConstraintsSet {
   PageScaleConstraints fullscreen_constraints_;
   PageScaleConstraints final_constraints_;
 
+  Member<Page> page_;
+
   int last_contents_width_;
+  int last_vertical_scrollbar_width_;
   IntSize icb_size_;
 
   bool needs_reset_;

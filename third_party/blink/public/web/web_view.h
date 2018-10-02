@@ -230,6 +230,11 @@ class WebView : protected WebWidget {
   // Scales the page without affecting layout by using the visual viewport.
   virtual void SetPageScaleFactor(float) = 0;
 
+  // Minimum and Maximum as computed as a combination of default, page defined,
+  // UA, etc. constraints.
+  virtual float MinimumPageScaleFactor() const = 0;
+  virtual float MaximumPageScaleFactor() const = 0;
+
   // Sets the offset of the visual viewport within the main frame, in
   // partial CSS pixels. The offset will be clamped so the visual viewport
   // stays within the frame's bounds.

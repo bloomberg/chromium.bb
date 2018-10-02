@@ -186,6 +186,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float TextZoomFactor() override;
   float SetTextZoomFactor(float) override;
   float PageScaleFactor() const override;
+  float MinimumPageScaleFactor() const override;
+  float MaximumPageScaleFactor() const override;
   void SetDefaultPageScaleLimits(float min_scale, float max_scale) override;
   void SetInitialPageScaleOverride(float) override;
   void SetMaximumLegibleScale(float) override;
@@ -236,8 +238,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;
-  float MinimumPageScaleFactor() const;
-  float MaximumPageScaleFactor() const;
   float ClampPageScaleFactorToLimits(float) const;
   void ResetScaleStateImmediately();
 
@@ -460,7 +460,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
 
   float MaximumLegiblePageScale() const;
-  void RefreshPageScaleFactorAfterLayout();
+  void RefreshPageScaleFactor();
   IntSize ContentsSize() const;
 
   void UpdateICBAndResizeViewport();

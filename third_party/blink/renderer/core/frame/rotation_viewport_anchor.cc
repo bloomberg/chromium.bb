@@ -104,7 +104,7 @@ RotationViewportAnchor::RotationViewportAnchor(
     : root_frame_view_(&root_frame_view),
       visual_viewport_(&visual_viewport),
       anchor_in_inner_view_coords_(anchor_in_inner_view_coords),
-      page_scale_constraints_set_(page_scale_constraints_set) {
+      page_scale_constraints_set_(&page_scale_constraints_set) {
   SetAnchor();
 }
 
@@ -119,7 +119,7 @@ void RotationViewportAnchor::SetAnchor() {
 
   old_page_scale_factor_ = visual_viewport_->Scale();
   old_minimum_page_scale_factor_ =
-      page_scale_constraints_set_.FinalConstraints().minimum_scale;
+      page_scale_constraints_set_->FinalConstraints().minimum_scale;
 
   // Save the absolute location in case we won't find the anchor node, we'll
   // fall back to that.
@@ -178,9 +178,9 @@ void RotationViewportAnchor::SetAnchor() {
 void RotationViewportAnchor::RestoreToAnchor() {
   float new_page_scale_factor =
       old_page_scale_factor_ / old_minimum_page_scale_factor_ *
-      page_scale_constraints_set_.FinalConstraints().minimum_scale;
+      page_scale_constraints_set_->FinalConstraints().minimum_scale;
   new_page_scale_factor =
-      page_scale_constraints_set_.FinalConstraints().ClampToConstraints(
+      page_scale_constraints_set_->FinalConstraints().ClampToConstraints(
           new_page_scale_factor);
 
   FloatSize visual_viewport_size(visual_viewport_->Size());

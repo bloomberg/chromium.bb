@@ -555,6 +555,14 @@
       invalidate: "ViewportDescription",
     },
 
+    // When true, Blink will use the content width and viewport size to set the
+    // minimum scale factor such that the user can't zoom out into the area
+    // beyond the content.
+    {
+      name: "shrinksViewportContentToFit",
+      initial: false,
+    },
+
     {
       name: "dnsPrefetchingEnabled",
       initial: false,

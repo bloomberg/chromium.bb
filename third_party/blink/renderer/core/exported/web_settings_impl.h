@@ -256,7 +256,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   bool auto_zoom_focused_node_to_legible_scale_;
   bool per_tile_painting_enabled_;
   bool support_deprecated_target_density_dpi_;
-  bool shrinks_viewport_content_to_fit_;
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this
   // can be removed any time after 2015. See http://crbug.com/277369.

@@ -47,7 +47,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
       render_v_sync_notification_enabled_(false),
       auto_zoom_focused_node_to_legible_scale_(false),
       support_deprecated_target_density_dpi_(false),
-      shrinks_viewport_content_to_fit_(false),
       viewport_meta_layout_size_quirk_(false),
       viewport_meta_non_user_scalable_quirk_(false),
       clobber_user_agent_initial_scale_quirk_(false) {
@@ -301,7 +300,7 @@ void WebSettingsImpl::SetDOMPasteAllowed(bool enabled) {
 
 void WebSettingsImpl::SetShrinksViewportContentToFit(
     bool shrink_viewport_content) {
-  shrinks_viewport_content_to_fit_ = shrink_viewport_content;
+  settings_->SetShrinksViewportContentToFit(shrink_viewport_content);
 }
 
 void WebSettingsImpl::SetSpatialNavigationEnabled(bool enabled) {
@@ -606,7 +605,7 @@ bool WebSettingsImpl::MockGestureTapHighlightsEnabled() const {
 }
 
 bool WebSettingsImpl::ShrinksViewportContentToFit() const {
-  return shrinks_viewport_content_to_fit_;
+  return settings_->GetShrinksViewportContentToFit();
 }
 
 void WebSettingsImpl::SetShouldRespectImageOrientation(bool enabled) {
