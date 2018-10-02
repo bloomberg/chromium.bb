@@ -3990,10 +3990,6 @@ crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.h
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash Pass ]
 
-# ====== Tests from enabling .any.js/.worker.js tests end here ========
-
-crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass Timeout Crash ]
-
 # ====== Begin of display: contents tests ======
 
 crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Failure ]
