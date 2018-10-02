@@ -57,6 +57,8 @@ class LocalCardMigrationDialogControllerImpl
 
   LocalCardMigrationDialog* local_card_migration_dialog_;
 
+  PrefService* pref_service_;
+
   LocalCardMigrationDialogState view_state_;
 
   LegalMessageLines legal_message_lines_;

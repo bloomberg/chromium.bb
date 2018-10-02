@@ -15,17 +15,25 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
+#include "chrome/browser/ui/browser.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_prefs.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 
 namespace autofill {
 
 LocalCardMigrationDialogControllerImpl::LocalCardMigrationDialogControllerImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), local_card_migration_dialog_(nullptr) {}
+    : web_contents_(web_contents),
+      local_card_migration_dialog_(nullptr),
+      pref_service_(
+          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())) {}
 
 LocalCardMigrationDialogControllerImpl::
     ~LocalCardMigrationDialogControllerImpl() {
@@ -91,6 +99,8 @@ void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
       migratable_credit_cards_.size(),
       AutofillMetrics::
           LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED);
+
+  prefs::SetLocalCardMigrationPromptPreviouslyCancelled(pref_service_, true);
 
   start_migrating_cards_callback_.Reset();
 }
