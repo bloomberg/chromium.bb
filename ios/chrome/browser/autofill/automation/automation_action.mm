@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 
 #include "base/guid.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -98,6 +99,19 @@ using web::test::ElementSelector;
 @interface AutomationActionValidateField : AutomationAction
 @end
 
+// An action that selects a given option from a dropdown selector.
+// Checks are not made to confirm that given item is a dropdown.
+// We assume this action has a format resembling:
+// {
+//   "selectorType": "xpath",
+//   "selector": "//*[@id=\"shipping-user-lookup-options\"]",
+//   "context": [],
+//   "index": 1,
+//   "type": "select"
+// }
+@interface AutomationActionSelectDropdown : AutomationAction
+@end
+
 @implementation AutomationAction
 
 + (instancetype)actionWithValueDictionary:
@@ -119,6 +133,7 @@ using web::test::ElementSelector;
     @"waitFor" : [AutomationActionWaitFor class],
     @"autofill" : [AutomationActionAutofill class],
     @"validateField" : [AutomationActionValidateField class],
+    @"select" : [AutomationActionSelectDropdown class],
     // More to come.
   };
 
@@ -181,6 +196,46 @@ using web::test::ElementSelector;
   return expectedType;
 }
 
+// Returns an int corrensponding to the given key in the action
+// dictionary. Will raise a test failure if the key is missing or the value is
+// empty.
+- (int)getIntFromDictionaryWithKey:(std::string)key {
+  const base::Value* expectedTypeValue(
+      self.actionDictionary->FindKeyOfType(key, base::Value::Type::INTEGER));
+  GREYAssert(expectedTypeValue, @"%s is missing in action.", key.c_str());
+
+  return expectedTypeValue->GetInt();
+}
+
+// Runs the JS code passed in against the target element specified by the
+// selector passed in. The target element is passed in to the JS function
+// by the name "target", so example JS code is like:
+// return target.value
+- (id)executeJavascript:(std::string)function
+               onTarget:(web::test::ElementSelector)selector {
+  NSError* error;
+
+  id result = chrome_test_util::ExecuteJavaScript(
+      [NSString
+          stringWithFormat:@"    (function() {"
+                            "      try {"
+                            "        return function(target){%@}(%@);"
+                            "      } catch (ex) {return 'Exception encountered "
+                            "' + ex.message;}"
+                            "     "
+                            "    })();",
+                           base::SysUTF8ToNSString(function),
+                           base::SysUTF8ToNSString(
+                               selector.GetSelectorScript())],
+      &error);
+
+  if (error) {
+    GREYAssert(NO, @"Javascript execution error: %@", result);
+    return nil;
+  }
+  return result;
+}
+
 @end
 
 @implementation AutomationActionClick
@@ -227,16 +282,17 @@ using web::test::ElementSelector;
     NSError* error;
     NSString* assertionString = base::SysUTF8ToNSString(assertion);
 
-    id result = chrome_test_util::ExecuteJavaScript(
-        [NSString stringWithFormat:@""
-                                    "    (function() {"
-                                    "      try {"
-                                    "        %@"
-                                    "      } catch (ex) {}"
-                                    "      return false;"
-                                    "    })();",
-                                   assertionString],
-        &error);
+    NSNumber* result =
+        base::mac::ObjCCastStrict<NSNumber>(chrome_test_util::ExecuteJavaScript(
+            [NSString stringWithFormat:@""
+                                        "    (function() {"
+                                        "      try {"
+                                        "        %@"
+                                        "      } catch (ex) {}"
+                                        "      return false;"
+                                        "    })();",
+                                       assertionString],
+            &error));
 
     if (![result boolValue] || error) {
       return assertionString;
@@ -348,12 +404,12 @@ static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
   NSString* expectedValue = base::SysUTF8ToNSString(
       [self getStringFromDictionaryWithKey:"expectedValue"]);
 
-  NSString* predictionType =
-      [self executeJavascript:"return target.getAttribute('placeholder');"
-                     onTarget:[self selectorForTarget]];
+  NSString* predictionType = base::mac::ObjCCastStrict<NSString>([self
+      executeJavascript:"return target.getAttribute('placeholder');"
+               onTarget:[self selectorForTarget]]);
 
-  NSString* autofilledValue = [self executeJavascript:"return target.value;"
-                                             onTarget:[self selectorForTarget]];
+  NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>(
+      [self executeJavascript:"return target.value;" onTarget:selector]);
 
   GREYAssertEqualObjects(predictionType, expectedType,
                          @"Expected prediction type %@ but got %@",
@@ -363,33 +419,23 @@ static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
                          expectedValue, autofilledValue);
 }
 
-// Runs the JS code passed in against the target element specified by the
-// selector passed in. The target element is passed in to the JS function
-// by the name "target", so example JS code is like:
-// return target.value
-- (NSString*)executeJavascript:(std::string)function
-                      onTarget:(web::test::ElementSelector)selector {
-  NSError* error;
+@end
 
-  NSString* result = chrome_test_util::ExecuteJavaScript(
-      [NSString
-          stringWithFormat:@"    (function() {"
-                            "      try {"
-                            "        return function(target){%@}(%@);"
-                            "      } catch (ex) {return 'Exception encountered "
-                            "' + ex.message;}"
-                            "     "
-                            "    })();",
-                           base::SysUTF8ToNSString(function),
-                           base::SysUTF8ToNSString(
-                               selector.GetSelectorScript())],
-      &error);
+@implementation AutomationActionSelectDropdown
 
-  if (error) {
-    GREYAssert(NO, @"Javascript execution error: %@", result);
-    return nil;
-  }
-  return result;
+- (void)execute {
+  web::test::ElementSelector selector = [self selectorForTarget];
+
+  // Wait for the element to be visible on the page.
+  [ChromeEarlGrey waitForWebViewContainingElement:selector];
+
+  int selectedIndex = [self getIntFromDictionaryWithKey:"index"];
+  [self executeJavascript:
+            base::SysNSStringToUTF8([NSString
+                stringWithFormat:@"target.options.selectedIndex = %d; "
+                                 @"triggerOnChangeEventOnElement(target);",
+                                 selectedIndex])
+                 onTarget:selector];
 }
 
 @end

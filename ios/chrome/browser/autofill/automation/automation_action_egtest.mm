@@ -74,4 +74,23 @@ const char kTestPageUrl[] =
   [waitForAction execute];
 }
 
+- (void)testAutomationActionSelectDropdown {
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kTestPageUrl)];
+
+  base::DictionaryValue selectDict = base::DictionaryValue();
+  selectDict.SetKey("type", base::Value("select"));
+  selectDict.SetKey("selector", base::Value("//*[@id=\"test_dropdown\"]"));
+  selectDict.SetKey("index", base::Value(1));
+  AutomationAction* selectAction =
+      [AutomationAction actionWithValueDictionary:selectDict];
+  [selectAction execute];
+
+  NSError* error;
+  id result = chrome_test_util::ExecuteJavaScript(
+      @"document.getElementById(\"test_dropdown\").value == \"dropdown_2\"",
+      &error);
+  GREYAssert([result boolValue] && !error,
+             @"Select automation action did not change the dropdown.");
+}
+
 @end
