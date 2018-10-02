@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -40,7 +41,7 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
                        const base::FilePath& symlink_path,
                        const base::FilePath& version_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Delete in reverse order of creation.
   if (!version_path.empty())
@@ -95,7 +96,7 @@ AppShimHostManager::~AppShimHostManager() {
 }
 
 void AppShimHostManager::InitOnBackgroundThread() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
