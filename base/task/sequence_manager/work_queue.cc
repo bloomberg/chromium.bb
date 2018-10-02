@@ -67,7 +67,7 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
 #endif
 
   // Make sure the |enqueue_order()| is monotonically increasing.
-  DCHECK(was_empty || tasks_.rbegin()->enqueue_order() < task.enqueue_order());
+  DCHECK(was_empty || tasks_.back().enqueue_order() < task.enqueue_order());
 
   // Amoritized O(1).
   tasks_.push_back(std::move(task));
@@ -133,9 +133,16 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   TaskQueueImpl::Task pending_task = std::move(tasks_.front());
   tasks_.pop_front();
   // NB immediate tasks have a different pipeline to delayed ones.
-  if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
-    // Short-circuit the queue reload so that OnPopQueue does the right thing.
-    task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+  if (tasks_.empty()) {
+    // NB delayed tasks are inserted via Push, no don't need to reload those.
+    if (queue_type_ == QueueType::kImmediate) {
+      // Short-circuit the queue reload so that OnPopQueue does the right
+      // thing.
+      task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+    }
+    // Since the queue is empty, now is a good time to consider reducing it's
+    // capacity if we're wasting memory.
+    tasks_.MaybeShrinkQueue();
   }
 
   // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
@@ -154,10 +161,16 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
     task_removed = true;
   }
   if (task_removed) {
-    // NB immediate tasks have a different pipeline to delayed ones.
-    if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
-      // Short-circuit the queue reload so that OnPopQueue does the right thing.
-      task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+    if (tasks_.empty()) {
+      // NB delayed tasks are inserted via Push, no don't need to reload those.
+      if (queue_type_ == QueueType::kImmediate) {
+        // Short-circuit the queue reload so that OnPopQueue does the right
+        // thing.
+        task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+      }
+      // Since the queue is empty, now is a good time to consider reducing it's
+      // capacity if we're wasting memory.
+      tasks_.MaybeShrinkQueue();
     }
     work_queue_sets_->OnPopQueue(this);
     task_queue_->TraceQueueSize();
@@ -229,6 +242,10 @@ void WorkQueue::PopTaskForTesting() {
   if (tasks_.empty())
     return;
   tasks_.pop_front();
+}
+
+void WorkQueue::MaybeShrinkQueue() {
+  tasks_.MaybeShrinkQueue();
 }
 
 }  // namespace internal
