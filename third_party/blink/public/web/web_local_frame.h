@@ -421,9 +421,6 @@ class WebLocalFrame : public WebFrame {
   virtual void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                                      const WebString&) = 0;
 
-  // Calls window.gc() if it is defined.
-  virtual void CollectGarbage() = 0;
-
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.

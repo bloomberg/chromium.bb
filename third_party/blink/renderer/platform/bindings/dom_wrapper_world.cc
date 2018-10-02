@@ -85,7 +85,6 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
       break;
     case WorldType::kIsolated:
     case WorldType::kInspectorIsolated:
-    case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
     case WorldType::kForV8ContextSnapshotNonMain:
@@ -284,7 +283,6 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
         return WorldId::kInvalidWorldId;
       return next_devtools_isolated_world_id++;
     }
-    case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
     case WorldType::kForV8ContextSnapshotNonMain:

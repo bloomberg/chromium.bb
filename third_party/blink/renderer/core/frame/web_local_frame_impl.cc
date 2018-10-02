@@ -791,12 +791,12 @@ WebString WebLocalFrameImpl::Prompt(const WebString& message,
   return GetFrame()->DomWindow()->prompt(script_state, message, default_value);
 }
 
-void WebLocalFrameImpl::CollectGarbage() {
+void WebLocalFrameImpl::CollectGarbageForTesting() {
   if (!GetFrame())
     return;
   if (!GetFrame()->GetSettings()->GetScriptEnabled())
     return;
-  V8GCController::CollectGarbage(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
 }
 
 v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
