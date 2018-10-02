@@ -89,8 +89,7 @@ bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
   relative_path = relative_path.Append(resource_path);
   relative_path = relative_path.NormalizePathSeparators();
 
-  std::map<base::FilePath, int>::const_iterator entry =
-      path_to_resource_id_.find(relative_path);
+  auto entry = path_to_resource_id_.find(relative_path);
   if (entry != path_to_resource_id_.end())
     *resource_id = entry->second;
 

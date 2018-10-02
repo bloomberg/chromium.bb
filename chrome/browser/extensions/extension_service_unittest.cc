@@ -732,8 +732,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     msg += extension_id + " " + pref_path;
 
     auto list_value = std::make_unique<base::ListValue>();
-    for (std::set<std::string>::const_iterator iter = value.begin();
-         iter != value.end(); ++iter)
+    for (auto iter = value.begin(); iter != value.end(); ++iter)
       list_value->AppendString(*iter);
 
     SetPref(extension_id, pref_path, std::move(list_value), msg);

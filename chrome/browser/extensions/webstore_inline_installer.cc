@@ -95,7 +95,7 @@ bool WebstoreInlineInstaller::IsRequestorPermitted(
       *error = kInvalidWebstoreResponseError;
       return false;
     }
-    for (base::ListValue::const_iterator it = verified_sites->begin();
+    for (auto it = verified_sites->begin();
          it != verified_sites->end() && !requestor_is_ok; ++it) {
       std::string verified_site;
       if (!it->GetAsString(&verified_site)) {

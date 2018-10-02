@@ -496,8 +496,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     VLOG(1) << "Errors follow:";
     const std::vector<base::string16>* errors =
         LoadErrorReporter::GetInstance()->GetErrors();
-    for (std::vector<base::string16>::const_iterator iter = errors->begin();
-         iter != errors->end(); ++iter)
+    for (auto iter = errors->begin(); iter != errors->end(); ++iter)
       VLOG(1) << *iter;
 
     return NULL;

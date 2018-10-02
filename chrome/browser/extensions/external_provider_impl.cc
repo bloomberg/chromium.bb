@@ -409,7 +409,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     }
   }
 
-  for (std::set<std::string>::iterator it = unsupported_extensions.begin();
+  for (auto it = unsupported_extensions.begin();
        it != unsupported_extensions.end(); ++it) {
     // Remove extension for the list of know external extensions. The extension
     // will be uninstalled later because provider doesn't provide it anymore.

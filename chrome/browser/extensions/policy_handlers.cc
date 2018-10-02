@@ -96,7 +96,7 @@ bool ExtensionInstallListPolicyHandler::ParseList(
     return false;
   }
 
-  for (base::ListValue::const_iterator entry(policy_list_value->begin());
+  for (auto entry(policy_list_value->begin());
        entry != policy_list_value->end(); ++entry) {
     std::string entry_string;
     if (!entry->GetAsString(&entry_string)) {
@@ -183,8 +183,7 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
   }
 
   // Check that the list contains valid URLPattern strings only.
-  for (base::ListValue::const_iterator entry(list_value->begin());
-       entry != list_value->end(); ++entry) {
+  for (auto entry(list_value->begin()); entry != list_value->end(); ++entry) {
     std::string url_pattern_string;
     if (!entry->GetAsString(&url_pattern_string)) {
       errors->AddError(policy_name(), entry - list_value->begin(),

@@ -455,8 +455,7 @@ base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
       pattern.SetMatchSubdomains(true);
 
       const URLPatternSet& patterns = extension_->web_extent();
-      for (URLPatternSet::const_iterator i = patterns.begin();
-           i != patterns.end(); ++i) {
+      for (auto i = patterns.begin(); i != patterns.end(); ++i) {
         if (!pattern.MatchesHost(i->host())) {
           return CrxInstallError(
               CrxInstallErrorType::OTHER,
