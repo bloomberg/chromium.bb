@@ -268,4 +268,9 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueRedirectType) {
   CheckHeaders(web_response);
 }
 
+TEST_F(FetchResponseDataTest, DefaultResponseTime) {
+  FetchResponseData* internal_response = CreateInternalResponse();
+  EXPECT_FALSE(internal_response->ResponseTime().is_null());
+}
+
 }  // namespace blink
