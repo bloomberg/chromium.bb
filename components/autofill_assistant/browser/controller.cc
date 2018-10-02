@@ -207,7 +207,10 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
   // TODO(crbug.com/806868): Find a better time to get and update assistant
   // scripts.
-  GetOrCheckScripts(validated_url);
+
+  // validated_url might not be the page URL. Ignore it and always check the
+  // last committed url.
+  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
 void Controller::WebContentsDestroyed() {
