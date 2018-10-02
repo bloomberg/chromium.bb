@@ -144,6 +144,11 @@ std::vector<std::string> FakeRtpSender::stream_ids() const {
   return stream_ids_;
 }
 
+std::vector<webrtc::RtpEncodingParameters> FakeRtpSender::init_send_encodings()
+    const {
+  return {};
+}
+
 webrtc::RtpParameters FakeRtpSender::GetParameters() {
   NOTIMPLEMENTED();
   return webrtc::RtpParameters();
