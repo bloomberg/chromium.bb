@@ -39,10 +39,12 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
@@ -52,6 +54,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "components/variations/variations_switches.h"
@@ -1021,4 +1024,50 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
   // Dismiss the Sync confirmation UI.
   EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
       browser(), base::TimeDelta::FromSeconds(30)));
+}
+
+// Tests that turning off Dice via preferences works.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, PRE_TurnOffDice) {
+  // Sign the profile in.
+  SetupSignedInAccounts();
+  syncer::SyncPrefs(browser()->profile()->GetPrefs()).SetFirstSetupComplete();
+
+  EXPECT_TRUE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
+      browser()->profile()));
+
+  EXPECT_FALSE(GetSigninManager()->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_FALSE(GetAccountTrackerService()->GetAccounts().empty());
+
+  // Turn off Dice for this profile.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSigninAllowedOnNextStartup, false);
+}
+
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
+  // Check that Dice is disabled.
+  EXPECT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSigninAllowedOnNextStartup));
+  EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
+      browser()->profile()));
+
+  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
+  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  // TODO(msarda): We still load the old primary account from prefs, so the
+  // AccountTrackerService is non-empty.
+  // EXPECT_TRUE(GetAccountTrackerService()->GetAccounts().empty());
+}
+
+// Checks that Dice is disabled in incognito mode.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Incognito) {
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+
+  // Check that Dice is disabled.
+  EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
+      incognito_browser->profile()));
 }
