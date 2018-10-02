@@ -80,8 +80,6 @@ public class ForegroundDrawableCompat
     private boolean mOnBoundsChanged;
     private Drawable mDrawable;
 
-    // TODO(dtrainor): Add support for more scale types.
-    // Right now the only two supported types are FIT_* tyes.
     private ImageView.ScaleType mScaleType = ImageView.ScaleType.FIT_CENTER;
 
     /**
@@ -137,6 +135,10 @@ public class ForegroundDrawableCompat
 
     /**
      * Determines how the foreground {@code Drawable} will be drawn in front of the {@link View}.
+     * Right now the only supported types are FIT_* types and the CENTER type.
+     *
+     * TODO(dtrainor): Add support for more scale types.
+     *
      * @param type The type of scale to apply to the {@Drawable} (see {@link ImageView.ScaleType}).
      */
     public void setScaleType(ImageView.ScaleType type) {
@@ -241,6 +243,10 @@ public class ForegroundDrawableCompat
             mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
         } else if (mScaleType == ImageView.ScaleType.FIT_END) {
             mDrawMatrix.setRectToRect(mTempSrc, mTempDst, ScaleToFit.END);
+            mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
+        } else if (mScaleType == ImageView.ScaleType.CENTER) {
+            mDrawMatrix.setTranslate(Math.round((viewWidth - drawableWidth) * 0.5f),
+                    Math.round((viewHeight - drawableHeight) * 0.5f));
             mDrawable.setBounds(0, 0, drawableWidth, drawableHeight);
         } else {
             mDrawable.setBounds(0, 0, viewWidth, viewHeight);

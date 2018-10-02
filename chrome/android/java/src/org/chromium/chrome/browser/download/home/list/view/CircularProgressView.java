@@ -103,8 +103,10 @@ public class CircularProgressView extends AppCompatImageButton {
         if (progress == INDETERMINATE) {
             mForegroundHelper.setDrawable(mIndeterminateProgress);
         } else {
-            progress = MathUtils.clamp(progress, 0, 100);
-            mDeterminateProgress.setLevel(progress * MAX_LEVEL / 100);
+            if (mDeterminateProgress != null) {
+                progress = MathUtils.clamp(progress, 0, 100);
+                mDeterminateProgress.setLevel(progress * MAX_LEVEL / 100);
+            }
             mForegroundHelper.setDrawable(mDeterminateProgress);
         }
     }

@@ -71,7 +71,7 @@ public class ThumbnailRequestGlue implements ThumbnailRequest {
     @Override
     public boolean getThumbnail(Callback<Bitmap> callback) {
         return mProvider.getVisualsForItem(mItem.id, (id, visuals) -> {
-            if (visuals == null) {
+            if (visuals == null || visuals.icon == null) {
                 callback.onResult(null);
             } else {
                 callback.onResult(Bitmap.createScaledBitmap(

@@ -288,7 +288,7 @@ class DateOrderedListMediator {
 
     private Runnable getVisuals(
             OfflineItem item, int iconWidthPx, int iconHeightPx, VisualsCallback callback) {
-        if (!UiUtils.canHaveThumbnails(item)) {
+        if (!UiUtils.canHaveThumbnails(item) || iconWidthPx == 0 || iconHeightPx == 0) {
             mHandler.post(() -> callback.onVisualsAvailable(item.id, null));
             return () -> {};
         }

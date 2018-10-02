@@ -15,6 +15,7 @@
     app:columnCount="2"
     app:rowCount="3">
 
+    <!-- Set the src attribute in Java to wrap the drawable properly. -->
     <org.chromium.chrome.browser.download.home.list.view.ForegroundRoundedCornerImageView
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
