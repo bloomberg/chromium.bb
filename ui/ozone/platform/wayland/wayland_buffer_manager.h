@@ -82,11 +82,16 @@ class WaylandBufferManager {
   // to this Buffer object on run-time.
   struct Buffer {
     Buffer();
-    Buffer(uint32_t id, zwp_linux_buffer_params_v1* zwp_params);
+    Buffer(uint32_t id,
+           zwp_linux_buffer_params_v1* zwp_params,
+           const gfx::Size& buffer_size);
     ~Buffer();
 
     // GPU GbmPixmapWayland corresponding buffer id.
     uint32_t buffer_id = 0;
+
+    // Actual buffer size.
+    const gfx::Size size;
 
     // Widget to attached/being attach WaylandWindow.
     gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
