@@ -82,6 +82,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
     // WebRequest logic that cares, e.g. some permission checking to determine
     // when to filter certain kinds of requests.
     info_->type.reset();
+    info_->web_request_type = WebRequestResourceType::OTHER;
   }
 
   auto continuation =
