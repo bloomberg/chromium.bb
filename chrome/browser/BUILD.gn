@@ -4406,6 +4406,8 @@ jumbo_split_static_library("browser") {
       "supervised_user/supervised_user_site_list.h",
       "supervised_user/supervised_user_sync_data_type_controller.cc",
       "supervised_user/supervised_user_sync_data_type_controller.h",
+      "supervised_user/supervised_user_sync_model_type_controller.cc",
+      "supervised_user/supervised_user_sync_model_type_controller.h",
       "supervised_user/supervised_user_url_filter.cc",
       "supervised_user/supervised_user_url_filter.h",
       "supervised_user/supervised_user_whitelist_service.cc",

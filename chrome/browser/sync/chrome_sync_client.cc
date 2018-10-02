@@ -106,6 +106,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_model_type_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
@@ -290,10 +291,22 @@ ChromeSyncClient::CreateDataTypeControllers(
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  controllers.push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
-  controllers.push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
+  if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSupervisedUsers)) {
+    controllers.push_back(
+        std::make_unique<SupervisedUserSyncModelTypeController>(
+            syncer::SUPERVISED_USER_SETTINGS, profile_, this));
+    controllers.push_back(
+        std::make_unique<SupervisedUserSyncModelTypeController>(
+            syncer::SUPERVISED_USER_WHITELISTS, profile_, this));
+  } else {
+    controllers.push_back(
+        std::make_unique<SupervisedUserSyncDataTypeController>(
+            syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
+    controllers.push_back(
+        std::make_unique<SupervisedUserSyncDataTypeController>(
+            syncer::SUPERVISED_USER_WHITELISTS, error_callback, this,
+            profile_));
+  }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
