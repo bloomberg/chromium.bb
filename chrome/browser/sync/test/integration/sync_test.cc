@@ -79,6 +79,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
@@ -182,7 +183,8 @@ std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
   Profile* profile = static_cast<Profile*>(context);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<invalidation::P2PInvalidationService>(
-          profile->GetRequestContext(), notification_target),
+          profile->GetRequestContext(), content::GetNetworkConnectionTracker(),
+          notification_target),
       std::make_unique<invalidation::ProfileIdentityProvider>(
           IdentityManagerFactory::GetForProfile(profile)));
 }
