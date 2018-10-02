@@ -153,10 +153,9 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       return script;
     }
-    case v8::ScriptCompiler::kProduceCodeCache:
-    case v8::ScriptCompiler::kProduceFullCodeCache:
-    case v8::ScriptCompiler::kProduceParserCache:
-    case v8::ScriptCompiler::kConsumeParserCache:
+    // TODO(v8:8252): Remove the default case once deprecated options are
+    // removed from v8::ScriptCompiler::CompileOptions.
+    default:
       NOTREACHED();
       break;
   }
