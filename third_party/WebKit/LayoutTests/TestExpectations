@@ -2826,7 +2826,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_lt_50_size_gt_maximum_size.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/viewportanchor_y_50_percent.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-masking/mask-svg-content/mask-text-001.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-backgrounds/border-image-width-008.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/generic/only-valid-whitespaces-are-allowed.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/referrer-policy/css-integration/svg/internal-stylesheet.html [ Timeout ]
