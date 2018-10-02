@@ -15,8 +15,13 @@ import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge.ContextualSuggestionsResult;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -68,6 +73,7 @@ class ContextualSuggestionsMediator
     private final EnabledStateMonitor mEnabledStateMonitor;
     private final Handler mHandler = new Handler();
     private final Provider<ContextualSuggestionsSource> mSuggestionSourceProvider;
+    private @Nullable final OverviewModeBehavior mOverviewModeBehavior;
 
     private ContextualSuggestionsCoordinator mCoordinator;
     private View mIphParentView;
@@ -95,15 +101,18 @@ class ContextualSuggestionsMediator
      *         events.
      * @param model The {@link ContextualSuggestionsModel} for the component.
      * @param toolbarManager The {@link ToolbarManager} for the containing activity.
+     * @param layoutManager The {@link LayoutManager} used to retrieve the
+     *         {@link OverviewModeBehavior} if it exists.
      * @param enabledStateMonitor The state monitor that will alert the mediator if the enabled
      *         state for contextual suggestions changes.
-     * @param suggestionSourceProvider The provider of {@link ContextualSuggestionsSource} instances.
+     * @param suggestionSourceProvider The provider of {@link ContextualSuggestionsSource}
+     *         instances.
      */
     @Inject
     ContextualSuggestionsMediator(@Named(LAST_USED_PROFILE) Profile profile,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             ContextualSuggestionsModel model, ToolbarManager toolbarManager,
-            EnabledStateMonitor enabledStateMonitor,
+            LayoutManager layoutManager, EnabledStateMonitor enabledStateMonitor,
             Provider<ContextualSuggestionsSource> suggestionSourceProvider) {
         mProfile = profile.getOriginalProfile();
         mTabModelSelector = tabModelSelector;
@@ -135,6 +144,18 @@ class ContextualSuggestionsMediator
             @Override
             public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
         });
+
+        if (layoutManager instanceof LayoutManagerChrome) {
+            mOverviewModeBehavior = (LayoutManagerChrome) layoutManager;
+            mOverviewModeBehavior.addOverviewModeObserver(new EmptyOverviewModeObserver() {
+                @Override
+                public void onOverviewModeFinishedHiding() {
+                    reportToolbarButtonShown();
+                }
+            });
+        } else {
+            mOverviewModeBehavior = null;
+        }
     }
 
     /**
@@ -243,6 +264,8 @@ class ContextualSuggestionsMediator
                     view -> onToolbarButtonClicked(),
                     R.drawable.contextual_suggestions,
                     R.string.contextual_suggestions_button_description);
+            RecordHistogram.recordBooleanHistogram(
+                    "ContextualSuggestions.ResultsReturnedInOverviewMode", isOverviewModeVisible());
             reportToolbarButtonShown();
         });
     }
@@ -281,7 +304,7 @@ class ContextualSuggestionsMediator
     }
 
     private void reportToolbarButtonShown() {
-        if (mHasRecordedButtonShownForTab || areBrowserControlsHidden()
+        if (mHasRecordedButtonShownForTab || areBrowserControlsHidden() || isOverviewModeVisible()
                 || mSuggestionsSource == null || !mModel.hasSuggestions()) {
             return;
         }
@@ -481,6 +504,10 @@ class ContextualSuggestionsMediator
         }
 
         mSuggestionsSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), event);
+    }
+
+    private boolean isOverviewModeVisible() {
+        return mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
     }
 
     @VisibleForTesting
