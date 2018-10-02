@@ -5,6 +5,12 @@
 const Crostini = {};
 
 /**
+ * Set from cmd line flag 'crostini-files'.
+ * @type {boolean}
+ */
+Crostini.IS_CROSTINI_FILES_ENABLED = false;
+
+/**
  * Maintains a list of paths shared with the crostini container.
  * Keyed by VolumeManagerCommon.RootType, with boolean set values
  * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
@@ -74,4 +80,17 @@ Crostini.isPathShared = function(entry, volumeManager) {
 Crostini.isCrostiniEntry = function(entry, volumeManager) {
   return volumeManager.getLocationInfo(entry).rootType ===
       VolumeManagerCommon.RootType.CROSTINI;
+};
+
+/**
+ * Returns true if entry can be shared with Crostini.
+ * @param {!Entry} entry
+ * @param {!VolumeManager} volumeManager
+ */
+Crostini.canSharePath = function(entry, volumeManager) {
+  // Do not allow root, or non-directories in root.
+  return Crostini.IS_CROSTINI_FILES_ENABLED && entry.fullPath !== '/' &&
+      (entry.isDirectory || entry.fullPath.split('/').length > 2) &&
+      volumeManager.getLocationInfo(entry).rootType ===
+      VolumeManagerCommon.RootType.DOWNLOADS;
 };

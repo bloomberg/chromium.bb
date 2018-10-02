@@ -440,24 +440,6 @@ FileTasks.isOpenTask = function(task) {
 };
 
 /**
- * @param {string} taskId Task identifier.
- * @return {boolean} True if the task ID is for crostini.
- * @private
- */
-FileTasks.isCrostiniTask_ = function(taskId) {
-  return taskId.split('|', 2)[1] === 'crostini';
-};
-
-/**
- * @return {boolean} True if all entries are crostini.
- * @private
- */
-FileTasks.prototype.allCrostiniEntries_ = function() {
-  return this.entries_.every(
-      entry => Crostini.isCrostiniEntry(entry, this.volumeManager_));
-};
-
-/**
  * Annotates tasks returned from the API.
  *
  * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks Input tasks from
@@ -562,6 +544,102 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
   }
 
   return result;
+};
+
+/**
+ * Checks if task is a crostini task and all entries are accessible to crostini.
+ * If entries can be shared with crostini, share dialog is shown.  Otherwise if
+ * entries cannot be shared, the Unable to Open dialog is shown.
+ * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
+ * @return {boolean} True if crostini task and dialog is shown.
+ * @private
+ */
+FileTasks.prototype.maybeShowCrostiniShareDialog_ = function(task) {
+  // Check if this is a crostini task.
+  if (task.taskId.split('|', 2)[1] !== 'crostini' || this.entries_.length < 1)
+    return false;
+
+  let showUnableToOpen = false;
+  let showShareBeforeOpen = false;
+  let notSharedCount = 0;
+  let firstEntryNotShared;
+  for (let i = 0; i < this.entries_.length; i++) {
+    const entry = this.entries_[i];
+    if (Crostini.isCrostiniEntry(entry, this.volumeManager_) ||
+        Crostini.isPathShared(entry, this.volumeManager_)) {
+      continue;
+    }
+    if (!Crostini.canSharePath(entry, this.volumeManager_)) {
+      showUnableToOpen = true;
+      break;
+    }
+    notSharedCount++;
+    // Share before open.  Ensure all entries are in the same directory.
+    showShareBeforeOpen = true;
+    if (!firstEntryNotShared) {
+      firstEntryNotShared = entry;
+    } else if (!util.isSiblingEntry(entry, firstEntryNotShared)) {
+      showUnableToOpen = true;
+      break;
+    }
+  }
+
+  // Show unable to open alert dialog.
+  if (showUnableToOpen) {
+    this.ui_.alertDialog.showHtml(
+        strf('UNABLE_TO_OPEN_CROSTINI_TITLE', task.title),
+        strf('UNABLE_TO_OPEN_CROSTINI', task.title));
+    return true;
+  }
+
+  // Show share before open confirm dialog.
+  if (showShareBeforeOpen) {
+    const parts = firstEntryNotShared.fullPath.split('/');
+    const parentName = parts[parts.length - 2];
+    this.ui_.confirmDialog.showHtml(
+        strf('SHARE_BEFORE_OPEN_CROSTINI_TITLE', task.title),
+        notSharedCount > 1 ?
+            strf('SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE', notSharedCount) :
+            strf(
+                'SHARE_BEFORE_OPEN_CROSTINI_SINGLE',
+                `<b>${firstEntryNotShared.name}</b>`),
+        this.sharePathWithCrostiniAndExecute_.bind(this, task), () => {});
+    return true;
+  }
+
+  // No dialogs.
+  return false;
+};
+
+/**
+ * Share paths from entries and execute task.
+ * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
+ */
+FileTasks.prototype.sharePathWithCrostiniAndExecute_ = function(task) {
+  const entry = this.entries_[0];
+  entry.getParent(
+      (/** @type {!DirectoryEntry} */ dir) => {
+        chrome.fileManagerPrivate.sharePathWithCrostini(dir, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'Error sharing with linux to execute: ' +
+                chrome.runtime.lastError.message);
+          } else {
+            // Register path as shared, and execute. This will be the 2nd
+            // time we have gone through executeInternal_().  The first time,
+            // we showed the share dialog, and did not execute, now we
+            // should detect that paths are already shared, and it is OK to
+            // execute.
+            Crostini.registerSharedPath(dir, this.volumeManager_);
+            this.executeInternal_(task);
+          }
+        });
+      },
+      (fileError) => {
+        console.error(
+            'Error getting parent for ' + entry.fullPath + '.  ' +
+            util.getFileErrorString(fileError.name));
+      });
 };
 
 /**
@@ -723,11 +801,8 @@ FileTasks.prototype.executeInternal_ = function(task) {
     this.taskHistory_.recordTaskExecuted(task.taskId);
     if (FileTasks.isInternalTask_(task.taskId)) {
       this.executeInternalTask_(task.taskId);
-    } else if (
-        FileTasks.isCrostiniTask_(task.taskId) && !this.allCrostiniEntries_()) {
-      this.ui_.alertDialog.showHtml(
-          strf('UNABLE_TO_OPEN_CROSTINI_TITLE', task.title),
-          strf('UNABLE_TO_OPEN_CROSTINI', task.title));
+    } else if (this.maybeShowCrostiniShareDialog_(task)) {
+      // Nothing to do, dialog will be shown.
     } else {
       FileTasks.recordZipHandlerUMA_(task.taskId);
       chrome.fileManagerPrivate.executeTask(
