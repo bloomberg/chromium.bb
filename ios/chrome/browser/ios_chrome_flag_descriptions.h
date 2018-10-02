@@ -167,8 +167,8 @@ extern const char kNewPasswordFormParsingDescription[];
 
 // Title and description for the flag to show most visited sites and collection
 // shortcuts in the omnibox popup instead of ZeroSuggest.
-extern const char kOmniboxPopupShortcutsName[];
-extern const char kOmniboxPopupShortcutsDescription[];
+extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
+extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
 
 // Title and description for the flag to enable elision of the URL path, query,
 // and ref in omnibox URL suggestions.
