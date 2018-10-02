@@ -230,7 +230,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_ZipFiles DISABLED_ZipFiles
 #else
-#define MAYBE_ZipFiles ZipFiles
+// ZipFiles tests are flaking consistently: http://crbug.com/891116
+#define MAYBE_ZipFiles DISABLED_ZipFiles
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_ZipFiles, /* zip_files.js */
