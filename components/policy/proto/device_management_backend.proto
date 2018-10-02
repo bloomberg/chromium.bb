@@ -1271,6 +1271,9 @@ message DeviceInitialEnrollmentStateResponse {
     INITIAL_ENROLLMENT_MODE_NONE = 0;
     // Enterprise enrollment is enforced and cannot be skipped.
     INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED = 1;
+    // Zero-Touch (attestation-based) enrollment is enforced and cannot be
+    // skipped.
+    INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED = 2;
   };
   // The server-indicated initial enrollment mode.
   optional InitialEnrollmentMode initial_enrollment_mode = 1
