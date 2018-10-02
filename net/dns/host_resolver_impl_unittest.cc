@@ -36,6 +36,8 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/mock_mdns_client.h"
+#include "net/dns/mock_mdns_socket_factory.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
@@ -47,7 +49,11 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using ::testing::_;
+using ::testing::Between;
+using ::testing::ByMove;
 using ::testing::NotNull;
+using ::testing::Return;
 
 namespace net {
 
@@ -3011,6 +3017,274 @@ TEST_F(HostResolverImplTest, IsSpeculative_ResolveHost) {
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No increase.
 }
+
+#if BUILDFLAG(ENABLE_MDNS)
+const uint8_t kMdnsResponseA[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x01,              // TYPE is A.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x10,  // TTL is 16 (seconds)
+    0x00, 0x04,              // RDLENGTH is 4 bytes.
+    0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
+};
+
+const uint8_t kMdnsResponseAAAA[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x1C,              // TYPE is AAAA.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x10,  // TTL is 16 (seconds)
+    0x00, 0x10,              // RDLENGTH is 16 bytes.
+
+    // 000a:0000:0000:0000:0001:0002:0003:0004
+    0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02,
+    0x00, 0x03, 0x00, 0x04,
+};
+
+// An MDNS response indicating that the responder owns the hostname, but the
+// specific requested type (AAAA) does not exist because the responder only has
+// A addresses.
+const uint8_t kMdnsResponseNsec[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x2f,              // TYPE is NSEC.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x10,  // TTL is 16 (seconds)
+    0x00, 0x06,              // RDLENGTH is 6 bytes.
+    0xc0, 0x0c,  // Next Domain Name (always pointer back to name in MDNS)
+    0x00,        // Bitmap block number (always 0 in MDNS)
+    0x02,        // Bitmap length is 2
+    0x00, 0x08   // A type only
+};
+
+TEST_F(HostResolverImplTest, Mdns) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(4);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseA, sizeof(kMdnsResponseA));
+  socket_factory_ptr->SimulateReceive(kMdnsResponseAAAA,
+                                      sizeof(kMdnsResponseAAAA));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(
+      response.request()->GetAddressResults().value().endpoints(),
+      testing::UnorderedElementsAre(
+          CreateExpected("1.2.3.4", 80),
+          CreateExpected("000a:0000:0000:0000:0001:0002:0003:0004", 80)));
+}
+
+TEST_F(HostResolverImplTest, Mdns_AaaaOnly) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseAAAA,
+                                      sizeof(kMdnsResponseAAAA));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected(
+                  "000a:0000:0000:0000:0001:0002:0003:0004", 80)));
+}
+
+// Test multicast DNS handling of NSEC responses (used for explicit negative
+// response).
+TEST_F(HostResolverImplTest, Mdns_Nsec) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseNsec,
+                                      sizeof(kMdnsResponseNsec));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+}
+
+TEST_F(HostResolverImplTest, Mdns_NoResponse) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(4);
+
+  // Add a little bit of extra fudge to the delay to allow reasonable
+  // flexibility for time > vs >= etc.  We don't need to fail the test if we
+  // timeout at t=6001 instead of t=6000.
+  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+
+  // Override the current thread task runner, so we can simulate the passage of
+  // time to trigger the timeout.
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_override_scoped_cleanup =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  ASSERT_TRUE(test_task_runner->HasPendingTask());
+  test_task_runner->FastForwardBy(MDnsTransaction::kTransactionTimeout +
+                                  kSleepFudgeFactor);
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+
+  test_task_runner->FastForwardUntilNoTasksRemain();
+}
+
+// Test for a request for both A and AAAA results where results only exist for
+// one type.
+TEST_F(HostResolverImplTest, Mdns_PartialResults) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(4);
+
+  // Add a little bit of extra fudge to the delay to allow reasonable
+  // flexibility for time > vs >= etc.  We don't need to fail the test if we
+  // timeout at t=6001 instead of t=6000.
+  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+
+  // Override the current thread task runner, so we can simulate the passage of
+  // time to trigger the timeout.
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_override_scoped_cleanup =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  ASSERT_TRUE(test_task_runner->HasPendingTask());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseA, sizeof(kMdnsResponseA));
+  test_task_runner->FastForwardBy(MDnsTransaction::kTransactionTimeout +
+                                  kSleepFudgeFactor);
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("1.2.3.4", 80)));
+
+  test_task_runner->FastForwardUntilNoTasksRemain();
+}
+
+TEST_F(HostResolverImplTest, Mdns_Cancel) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(4);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  response.CancelRequest();
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseA, sizeof(kMdnsResponseA));
+  socket_factory_ptr->SimulateReceive(kMdnsResponseAAAA,
+                                      sizeof(kMdnsResponseAAAA));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(response.complete());
+}
+
+// Test for a two-transaction query where the first fails to start. The second
+// should be cancelled.
+TEST_F(HostResolverImplTest, Mdns_PartialFailure) {
+  // Setup a mock MDnsClient where the first transaction will always return
+  // |false| immediately on Start(). Second transaction may or may not be
+  // created, but if it is, Start() not expected to be called because the
+  // overall request should immediately fail.
+  auto transaction1 = std::make_unique<MockMDnsTransaction>();
+  EXPECT_CALL(*transaction1, Start()).WillOnce(Return(false));
+  auto transaction2 = std::make_unique<MockMDnsTransaction>();
+  EXPECT_CALL(*transaction2, Start()).Times(0);
+
+  auto client = std::make_unique<MockMDnsClient>();
+  EXPECT_CALL(*client, CreateTransaction(_, _, _, _))
+      .Times(Between(1, 2))  // Second transaction optionally created.
+      .WillOnce(Return(ByMove(std::move(transaction1))))
+      .WillOnce(Return(ByMove(std::move(transaction2))));
+  EXPECT_CALL(*client, IsListening()).WillRepeatedly(Return(true));
+  resolver_->SetMdnsClientForTesting(std::move(client));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+}
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
 DnsConfig CreateValidDnsConfig() {
   IPAddress dns_ip(192, 168, 1, 0);

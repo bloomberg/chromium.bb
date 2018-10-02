@@ -35,6 +35,8 @@ namespace net {
 class AddressList;
 class DnsClient;
 class IPAddress;
+class MDnsClient;
+class MDnsSocketFactory;
 class NetLog;
 class NetLogWithSource;
 
@@ -186,6 +188,10 @@ class NET_EXPORT HostResolverImpl
   // Configures maximum number of Jobs in the queue. Exposed for testing.
   // Only allowed when the queue is empty.
   void SetMaxQueuedJobsForTesting(size_t value);
+
+  void SetMdnsSocketFactoryForTesting(
+      std::unique_ptr<MDnsSocketFactory> socket_factory);
+  void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
@@ -345,6 +351,8 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
+  MDnsClient* GetOrCreateMdnsClient();
+
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -354,6 +362,11 @@ class NET_EXPORT HostResolverImpl
 
   // Cache of host resolution results.
   std::unique_ptr<HostCache> cache_;
+
+  // Used for multicast DNS tasks. Created on first use using
+  // GetOrCreateMndsClient().
+  std::unique_ptr<MDnsSocketFactory> mdns_socket_factory_;
+  std::unique_ptr<MDnsClient> mdns_client_;
 
   // Map from HostCache::Key to a Job.
   JobMap jobs_;

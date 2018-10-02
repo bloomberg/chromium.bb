@@ -31,7 +31,6 @@ namespace net {
 
 namespace {
 
-const unsigned MDnsTransactionTimeoutSeconds = 3;
 // The fractions of the record's original TTL after which an active listener
 // (one that had |SetActiveRefresh(true)| called) will send a query to refresh
 // its cache. This happens both at 85% of the original TTL and again at 95% of
@@ -48,7 +47,7 @@ void MDnsSocketFactoryImpl::CreateSockets(
     DCHECK(interfaces[i].second == ADDRESS_FAMILY_IPV4 ||
            interfaces[i].second == ADDRESS_FAMILY_IPV6);
     std::unique_ptr<DatagramServerSocket> socket(CreateAndBindMDnsSocket(
-        interfaces[i].second, interfaces[i].first, nullptr));
+        interfaces[i].second, interfaces[i].first, net_log_));
     if (socket)
       sockets->push_back(std::move(socket));
   }
@@ -723,8 +722,7 @@ bool MDnsTransactionImpl::QueryAndListen() {
   timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
                             AsWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, timeout_.callback(),
-      base::TimeDelta::FromSeconds(MDnsTransactionTimeoutSeconds));
+      FROM_HERE, timeout_.callback(), kTransactionTimeout);
 
   return true;
 }

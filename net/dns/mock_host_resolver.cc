@@ -331,6 +331,8 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
   rules_map_[HostResolverSource::ANY] = CreateCatchAllHostResolverProc();
   rules_map_[HostResolverSource::SYSTEM] = CreateCatchAllHostResolverProc();
   rules_map_[HostResolverSource::DNS] = CreateCatchAllHostResolverProc();
+  rules_map_[HostResolverSource::MULTICAST_DNS] =
+      CreateCatchAllHostResolverProc();
 
   if (use_caching) {
     cache_.reset(new HostCache(kMaxCacheEntries));
