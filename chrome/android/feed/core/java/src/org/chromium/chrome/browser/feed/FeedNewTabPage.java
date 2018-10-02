@@ -120,7 +120,6 @@ public class FeedNewTabPage extends NewTabPage {
         private final Resources mResources;
         private final UiConfig mUiConfig;
         private final int mCornerRadius;
-        private final Drawable mCardBackground;
         private final int mCardMargin;
         private final int mCardWideMargin;
 
@@ -129,8 +128,6 @@ public class FeedNewTabPage extends NewTabPage {
             mUiConfig = uiConfig;
             mCornerRadius = mResources.getDimensionPixelSize(
                     R.dimen.content_suggestions_card_modern_corner_radius);
-            mCardBackground = ApiCompatibilityUtils.getDrawable(
-                    mResources, R.drawable.content_card_modern_background);
             mCardMargin = mResources.getDimensionPixelSize(
                     R.dimen.content_suggestions_card_modern_margin);
             mCardWideMargin =
@@ -144,7 +141,8 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public Drawable getCardBackground() {
-            return mCardBackground;
+            return ApiCompatibilityUtils.getDrawable(
+                    mResources, R.drawable.content_card_modern_background);
         }
 
         @Override
