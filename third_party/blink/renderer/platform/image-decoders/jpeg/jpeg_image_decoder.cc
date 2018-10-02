@@ -38,11 +38,8 @@
 #include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
 #include <memory>
-#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 
 extern "C" {
@@ -82,24 +79,6 @@ const int exifMarker = JPEG_APP0 + 1;
 
 // JPEG only supports a denominator of 8.
 const unsigned g_scale_denomiator = 8;
-
-// Configuration for the JPEG image area histogram. See RecordJpegImageArea().
-const char* kImageAreaHistogramName = "Blink.ImageDecoders.Jpeg.Area";
-constexpr base::HistogramBase::Sample kImageAreaHistogramMin = 1;
-constexpr base::HistogramBase::Sample kImageAreaHistogramMax = 8192 * 8192;
-constexpr int32_t kImageAreaHistogramBucketCount = 100;
-
-// Records the area (total number of pixels) of a JPEG image as a UMA.
-void RecordJpegImageArea(const blink::IntSize& size) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      blink::CustomCountHistogram, image_area_histogram,
-      (kImageAreaHistogramName, kImageAreaHistogramMin, kImageAreaHistogramMax,
-       kImageAreaHistogramBucketCount));
-  // A base::HistogramBase::Sample may not fit |size.Area()|. Hence the use of
-  // saturated_cast.
-  image_area_histogram.Count(
-      base::saturated_cast<base::HistogramBase::Sample>(size.Area()));
-}
 
 // Extracts the JPEG color space of an image for UMA purposes given |info| which
 // is assumed to have gone through a jpeg_read_header(). When the color space is
@@ -711,7 +690,7 @@ class JPEGImageReader final {
 
       case JPEG_DONE:
         // Finish decompression.
-        RecordJpegImageArea(decoder_->Size());
+        BitmapImageMetrics::CountJpegArea(decoder_->Size());
         BitmapImageMetrics::CountJpegColorSpace(
             ExtractUMAJpegColorSpace(info_));
         return jpeg_finish_decompress(&info_);

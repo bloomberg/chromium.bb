@@ -14,6 +14,8 @@ struct skcms_ICCProfile;
 
 namespace blink {
 
+class IntSize;
+
 class PLATFORM_EXPORT BitmapImageMetrics {
   STATIC_ONLY(BitmapImageMetrics);
 
@@ -77,6 +79,7 @@ class PLATFORM_EXPORT BitmapImageMetrics {
   static void CountImageJpegDensity(int image_min_side,
                                     int64_t density_centi_bpp);
   static void CountImageGammaAndGamut(const skcms_ICCProfile*);
+  static void CountJpegArea(const IntSize& size);
   static void CountJpegColorSpace(JpegColorSpace color_space);
 
  private:
