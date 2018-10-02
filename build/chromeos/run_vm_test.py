@@ -260,26 +260,7 @@ class GTestTest(RemoteTest):
       test_invocation += ' --test-launcher-summary-output=%s' % vm_result_file
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
-    vm_test_script_contents += [
-        test_invocation,
-        'test_retcode=$?',
-    ]
-
-    # Clear out directories that persist logs and crash dumps. These can
-    # accumulate over a VM's lifetime and consume disk space, so remove any
-    # that the test generated.
-    # TODO(crbug.com/878526): Remove this once cros_run_vm_test handles it.
-    vm_test_script_contents += [
-        # We run tests as chronos, but need to be root to rm the files. So pass
-        # in the public plaintext root password to sudo via stdin.
-        'echo "test0000" | '
-        'sudo -S find /var/spool/crash/ -type f -print -delete',
-        'echo "test0000" | '
-        'sudo -S find /var/log/chrome/ -type f -print -delete',
-        # Make sure the exit code is that of the test, and not the post-test
-        # cleanup.
-        'exit $test_retcode',
-    ]
+    vm_test_script_contents.append(test_invocation)
 
     logging.info('Running the following command in the VM:')
     logging.info('\n' + '\n'.join(vm_test_script_contents))
