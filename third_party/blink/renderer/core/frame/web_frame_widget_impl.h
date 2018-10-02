@@ -84,7 +84,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(

@@ -411,14 +411,11 @@ void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
       *page_, *page_->DeprecatedLocalMainFrame(), requested_update);
 }
 
-void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (layer_tree_view_)
-    layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
-}
-
-void WebPagePopupImpl::CompositeWithRasterForTesting() {
-  if (layer_tree_view_)
-    layer_tree_view_->CompositeWithRasterForTesting();
+void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  if (layer_tree_view_) {
+    layer_tree_view_->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
+  }
 }
 
 void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,

@@ -71,10 +71,6 @@ void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update) {
   web_view_->UpdateLifecycle(requested_update);
 }
 
-void WebViewFrameWidget::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  web_view_->UpdateAllLifecyclePhasesAndCompositeForTesting();
-}
-
 void WebViewFrameWidget::PaintContent(cc::PaintCanvas* canvas,
                                       const WebRect& view_port) {
   web_view_->PaintContent(canvas, view_port);

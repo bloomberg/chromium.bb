@@ -201,6 +201,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
   void GetManifestThen(v8::Local<v8::Function> callback);
   void InsertStyleSheet(const std::string& source_code);
+  void UpdateAllLifecyclePhasesAndComposite();
+  void UpdateAllLifecyclePhasesAndCompositeThen(
+      v8::Local<v8::Function> callback);
+  void SetAnimationRequiresRaster(bool do_raster);
   void LayoutAndPaintAsync();
   void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
   void LogToStderr(const std::string& output);
@@ -488,6 +492,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
       .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
       .SetMethod("keepWebHistory", &TestRunnerBindings::NotImplemented)
+      .SetMethod("updateAllLifecyclePhasesAndComposite",
+                 &TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite)
+      .SetMethod("updateAllLifecyclePhasesAndCompositeThen",
+                 &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
+      .SetMethod("setAnimationRequiresRaster",
+                 &TestRunnerBindings::SetAnimationRequiresRaster)
       .SetMethod("layoutAndPaintAsync",
                  &TestRunnerBindings::LayoutAndPaintAsync)
       .SetMethod("layoutAndPaintAsyncThen",
@@ -1343,6 +1353,23 @@ void TestRunnerBindings::RemoveWebPageOverlay() {
     view_runner_->RemoveWebPageOverlay();
 }
 
+void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
+  if (view_runner_)
+    view_runner_->UpdateAllLifecyclePhasesAndComposite();
+}
+
+void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
+    v8::Local<v8::Function> callback) {
+  if (view_runner_)
+    view_runner_->UpdateAllLifecyclePhasesAndCompositeThen(callback);
+}
+
+void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
+  if (!runner_)
+    return;
+  runner_->SetAnimationRequiresRaster(do_raster);
+}
+
 void TestRunnerBindings::LayoutAndPaintAsync() {
   if (view_runner_)
     view_runner_->LayoutAndPaintAsync();
@@ -1518,6 +1545,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       chooser_count_(0),
       previously_focused_view_(nullptr),
       is_web_platform_tests_mode_(false),
+      animation_requires_raster_(false),
       effective_connection_type_(
           blink::WebEffectiveConnectionType::kTypeUnknown),
       weak_factory_(this) {}
@@ -1579,6 +1607,7 @@ void TestRunner::Reset() {
   test_repaint_ = false;
   sweep_horizontally_ = false;
   midi_accessor_result_ = midi::mojom::Result::OK;
+  animation_requires_raster_ = false;
 
   http_headers_to_clear_.clear();
 
@@ -2560,6 +2589,10 @@ void TestRunner::SimulateWebNotificationClick(
 void TestRunner::SimulateWebNotificationClose(const std::string& title,
                                               bool by_user) {
   delegate_->SimulateWebNotificationClose(title, by_user);
+}
+
+void TestRunner::SetAnimationRequiresRaster(bool do_raster) {
+  animation_requires_raster_ = do_raster;
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {

@@ -67,6 +67,13 @@ WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
   return local_root_;
 }
 
+void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
+    layer_tree_view->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
+  }
+}
+
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const WebDragData& web_drag_data,
     const WebFloatPoint& point_in_viewport,
@@ -185,11 +192,6 @@ void WebFrameWidgetBase::DragSourceEndedAt(
 
 void WebFrameWidgetBase::DragSourceSystemDragEnded() {
   CancelDrag();
-}
-
-void WebFrameWidgetBase::CompositeWithRasterForTesting() {
-  if (auto* layer_tree_view = GetLayerTreeView())
-    layer_tree_view->CompositeWithRasterForTesting();
 }
 
 void WebFrameWidgetBase::CancelDrag() {

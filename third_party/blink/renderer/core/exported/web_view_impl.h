@@ -119,8 +119,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
 
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
-  void CompositeWithRasterForTesting() override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void PaintContentIgnoringCompositing(cc::PaintCanvas*,
                                        const WebRect&) override;
