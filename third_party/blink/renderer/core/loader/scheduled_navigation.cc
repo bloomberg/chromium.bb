@@ -22,7 +22,7 @@ ScheduledNavigation::ScheduledNavigation(Reason reason,
       origin_document_(origin_document),
       replaces_current_item_(replaces_current_item),
       is_location_change_(is_location_change) {
-  if (Frame::HasTransientUserActivation(
+  if (LocalFrame::HasTransientUserActivation(
           origin_document ? origin_document->GetFrame() : nullptr))
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
 }

@@ -82,8 +82,8 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = ToDocumentOrNull(context);
 
-  if (require_gesture_ &&
-      !Frame::ConsumeTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+  if (require_gesture_ && !LocalFrame::ConsumeTransientUserActivation(
+                              doc ? doc->GetFrame() : nullptr)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

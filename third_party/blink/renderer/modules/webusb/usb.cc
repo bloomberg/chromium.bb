@@ -149,7 +149,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
 
   EnsureServiceConnection();
 
-  if (!Frame::HasTransientUserActivation(frame)) {
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

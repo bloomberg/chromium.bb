@@ -87,7 +87,8 @@ PositionError* CreatePositionError(
 
 static void ReportGeolocationViolation(ExecutionContext* context) {
   Document* doc = ToDocumentOrNull(context);
-  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+  if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                  : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
@@ -464,7 +465,7 @@ void Geolocation::UpdateGeolocationConnection() {
                                                   invalidator);
   geolocation_service_->CreateGeolocation(
       MakeRequest(&geolocation_, invalidator),
-      Frame::HasTransientUserActivation(GetFrame()));
+      LocalFrame::HasTransientUserActivation(GetFrame()));
 
   geolocation_.set_connection_error_handler(WTF::Bind(
       &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this)));

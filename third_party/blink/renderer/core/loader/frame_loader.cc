@@ -228,7 +228,7 @@ void FrameLoader::Init() {
       ClientRedirectPolicy::kNotClientRedirect,
       base::UnguessableToken::Create(), nullptr /* navigation_params */,
       nullptr /* extra_data */);
-  if (Frame::HasTransientUserActivation(frame_))
+  if (LocalFrame::HasTransientUserActivation(frame_))
     provisional_document_loader_->SetHadTransientUserActivation();
   provisional_document_loader_->StartLoading();
 
@@ -780,7 +780,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   const KURL& url = resource_request.Url();
   Document* origin_document = request.OriginDocument();
 
-  resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(frame_));
+  resource_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(frame_));
 
   if (!PrepareRequestForThisFrame(request))
     return;
@@ -897,14 +898,15 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
-  bool has_transient_activation = Frame::HasTransientUserActivation(frame_);
+  bool has_transient_activation =
+      LocalFrame::HasTransientUserActivation(frame_);
   // TODO(csharrison): In M71 when UserActivation v2 should ship, we can remove
   // the check that the pages are equal, because consumption should not be
   // shared across pages. After that, we can also get rid of consumption call
   // in RenderFrameImpl::OpenURL.
   if (frame_->IsMainFrame() && origin_document &&
       frame_->GetPage() == origin_document->GetPage()) {
-    Frame::ConsumeTransientUserActivation(frame_);
+    LocalFrame::ConsumeTransientUserActivation(frame_);
   }
 
   policy = Client()->DecidePolicyForNavigation(
@@ -995,7 +997,8 @@ void FrameLoader::CommitNavigation(
 
   FrameLoadRequest request(passed_request);
   ResourceRequest& resource_request = request.GetResourceRequest();
-  resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(frame_));
+  resource_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(frame_));
 
   if (frame_load_type == WebFrameLoadType::kStandard)
     frame_load_type = DetermineFrameLoadType(request);

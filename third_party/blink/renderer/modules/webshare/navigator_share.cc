@@ -120,7 +120,8 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::Reject(script_state, error);
   }
 
-  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+  if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                  : nullptr)) {
     DOMException* error = DOMException::Create(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");

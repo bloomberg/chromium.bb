@@ -631,7 +631,7 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
     return;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
 
   XRInputSourceEvent* event =
       CreateInputSourceEvent(EventTypeNames::selectend, input_source);

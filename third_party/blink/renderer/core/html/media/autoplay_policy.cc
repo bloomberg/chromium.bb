@@ -299,7 +299,8 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
 }
 
 base::Optional<DOMExceptionCode> AutoplayPolicy::RequestPlay() {
-  if (!Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
+  if (!LocalFrame::HasTransientUserActivation(
+          element_->GetDocument().GetFrame())) {
     autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
     if (IsGestureNeededForPlayback()) {
       autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
@@ -350,8 +351,8 @@ bool AutoplayPolicy::IsLockedPendingUserGesture() const {
 }
 
 void AutoplayPolicy::TryUnlockingUserGesture() {
-  if (IsLockedPendingUserGesture() &&
-      Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
+  if (IsLockedPendingUserGesture() && LocalFrame::HasTransientUserActivation(
+                                          element_->GetDocument().GetFrame())) {
     UnlockUserGesture();
   }
 }

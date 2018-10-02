@@ -117,7 +117,7 @@ ScriptPromise XRDevice::requestSession(
 
   // TODO(ijamardo): Should we just exit if there is not document?
   bool has_user_activation =
-      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr);
+      LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr);
 
   // Check if the current page state prevents the requested session from being
   // created.

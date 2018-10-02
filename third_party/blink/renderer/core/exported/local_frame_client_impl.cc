@@ -672,7 +672,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
 
   bool has_user_gesture =
-      Frame::HasTransientUserActivation(web_frame_->GetFrame());
+      LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
   webview->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
   return true;
 }

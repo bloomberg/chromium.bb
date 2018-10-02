@@ -2347,7 +2347,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Element* element = frame->GetDocument()->documentElement();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -2377,7 +2377,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   Element* element = frame->GetDocument()->getElementById("fullscreenElement");
   ASSERT_TRUE(element);
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();

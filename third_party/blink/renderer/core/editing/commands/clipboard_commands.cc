@@ -74,7 +74,7 @@ bool ClipboardCommands::CanWriteClipboard(LocalFrame& frame,
   Settings* const settings = frame.GetSettings();
   const bool default_value =
       (settings && settings->GetJavaScriptCanAccessClipboard()) ||
-      Frame::HasTransientUserActivation(&frame);
+      LocalFrame::HasTransientUserActivation(&frame);
   if (!frame.GetContentSettingsClient())
     return default_value;
   return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);

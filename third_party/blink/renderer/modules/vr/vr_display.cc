@@ -398,7 +398,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // allowed outside a user gesture so that the presented content may be
   // updated.
   if (first_present) {
-    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+    if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                    : nullptr)) {
       DOMException* exception =
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                "API can only be initiated by a user gesture.");
@@ -934,7 +935,7 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
-    gesture_indicator = Frame::NotifyUserActivation(doc->GetFrame());
+    gesture_indicator = LocalFrame::NotifyUserActivation(doc->GetFrame());
 
   base::AutoReset<bool> in_activate(&in_display_activate_, true);
 

@@ -231,8 +231,9 @@ void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      Frame::NotifyUserActivation(document ? document->GetFrame() : nullptr,
-                                  UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(
+          document ? document->GetFrame() : nullptr,
+          UserGestureToken::kNewGesture);
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(*Event::Create(EventTypeNames::click));
 
@@ -418,7 +419,8 @@ ScriptPromise Notification::requestPermission(
   Document* doc = ToDocumentOrNull(context);
 
   probe::breakableLocation(context, "Notification.requestPermission");
-  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+  if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                  : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request notification permission in response to a user gesture.",
