@@ -403,8 +403,6 @@ jumbo_static_library("extensions") {
     "api/web_navigation/web_navigation_api_constants.h",
     "api/web_navigation/web_navigation_api_helpers.cc",
     "api/web_navigation/web_navigation_api_helpers.h",
-    "api/web_request/chrome_extension_web_request_event_router_delegate.cc",
-    "api/web_request/chrome_extension_web_request_event_router_delegate.h",
     "api/web_view/chrome_web_view_internal_api.cc",
     "api/web_view/chrome_web_view_internal_api.h",
     "api/webrtc_audio_private/webrtc_audio_private_api.cc",

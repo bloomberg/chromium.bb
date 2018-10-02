@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
@@ -23,8 +24,8 @@
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
-#include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/chrome_guest_view_manager_delegate.h"
@@ -39,9 +40,13 @@
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -139,6 +144,53 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
   return is_sensitive_request;
 }
 
+void ChromeExtensionsAPIClient::NotifyWebRequestWithheld(
+    int render_process_id,
+    int render_frame_id,
+    const ExtensionId& extension_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  auto notify_web_request_withheld_on_ui = [](int render_process_id,
+                                              int render_frame_id,
+                                              const ExtensionId& extension_id) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // Track down the ExtensionActionRunner and the extension. Since this is
+    // asynchronous, we could hit a null anywhere along the path.
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    if (!rfh)
+      return;
+    // We don't count subframe blocked actions as yet, since there's no way to
+    // surface this to the user. Ignore these (which is also what we do for
+    // content scripts).
+    if (rfh->GetParent())
+      return;
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(rfh);
+    if (!web_contents)
+      return;
+    extensions::ExtensionActionRunner* runner =
+        extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+    if (!runner)
+      return;
+
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())
+            ->enabled_extensions()
+            .GetByID(extension_id);
+    if (!extension)
+      return;
+
+    runner->OnWebRequestBlocked(extension);
+  };
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(std::move(notify_web_request_withheld_on_ui),
+                     render_process_id, render_frame_id, extension_id));
+}
+
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ChromeAppViewGuestDelegate();
@@ -171,11 +223,6 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
     CreateWebViewPermissionHelperDelegate(
         WebViewPermissionHelper* web_view_permission_helper) const {
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
-}
-
-std::unique_ptr<WebRequestEventRouterDelegate>
-ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return std::make_unique<ChromeExtensionWebRequestEventRouterDelegate>();
 }
 
 scoped_refptr<ContentRulesRegistry>
