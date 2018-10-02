@@ -17,12 +17,3 @@ BrowserWindow* BrowserWindow::CreateBrowserWindowCocoa(Browser* browser,
       [[BrowserWindowController alloc] initWithBrowser:browser];
   return [controller browserWindow];
 }
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-// Cocoa-only builds always use Cocoa browser windows.
-// static
-BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser,
-                                                  bool user_gesture) {
-  return CreateBrowserWindowCocoa(browser, user_gesture);
-}
-#endif

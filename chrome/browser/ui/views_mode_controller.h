@@ -7,9 +7,8 @@
 
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "ui/base/ui_features.h"
 
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+#if defined(OS_MACOSX)
 
 namespace views_mode_controller {
 
