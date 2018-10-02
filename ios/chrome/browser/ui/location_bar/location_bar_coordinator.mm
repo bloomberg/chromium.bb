@@ -143,6 +143,7 @@ const int kLocationAuthorizationStatusCount = 4;
   self.omniboxPopupCoordinator =
       [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
   self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
+  self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
   self.mediator =
@@ -265,11 +266,13 @@ const int kLocationAuthorizationStatusCount = 4;
     [self.viewController.dispatcher focusFakebox];
   } else {
     [self.omniboxCoordinator focusOmnibox];
+    [self.omniboxPopupCoordinator openPopup];
   }
 }
 
 - (void)cancelOmniboxEdit {
   [self.omniboxCoordinator endEditing];
+  [self.omniboxPopupCoordinator closePopup];
 }
 
 #pragma mark - LocationBarDelegate
