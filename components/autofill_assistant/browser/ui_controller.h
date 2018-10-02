@@ -43,12 +43,16 @@ class UiController {
   // Show UI to ask user to choose an address in personal data manager. GUID of
   // the chosen address will be returned through callback, otherwise empty
   // string if the user chose to continue manually.
+  // TODO(806868): Return full address object instead of GUID (the GUID can
+  // change after synchronization with the server).
   virtual void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Show UI to ask user to choose a card in personal data manager. GUID of the
   // chosen card will be returned through callback, otherwise empty string if
   // the user chose to continue manually.
+  // TODO(806868): Return full card object instead of GUID (the GUID can change
+  // after synchronization with the server).
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 

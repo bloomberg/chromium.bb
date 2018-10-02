@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -19,7 +20,6 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,6 +108,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
 
+    @Override
+    public void onAddressSelected(String guid) {
+        nativeOnAddressSelected(mUiControllerAndroid, guid);
+    }
+
+    @Override
+    public void onCardSelected(String guid) {
+        nativeOnCardSelected(mUiControllerAndroid, guid);
+    }
+
     /** Return the value if the given boolean parameter from the extras. */
     private static boolean getBooleanParameter(Bundle extras, String parameterName) {
         return extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
@@ -151,7 +161,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onUpdateScripts(String[] scriptNames, String[] scriptPaths) {
-        List<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
+        ArrayList<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
         // Note that scriptNames and scriptPaths are one-on-one matched by index.
         for (int i = 0; i < scriptNames.length; i++) {
             scriptHandles.add(
@@ -160,9 +170,23 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mUiDelegate.updateScripts(scriptHandles);
     }
 
+    @CalledByNative
+    private void onChooseAddress() {
+        mUiDelegate.showProfiles(PersonalDataManager.getInstance().getProfilesToSuggest(
+                true /* includeNameInLabel */));
+    }
+
+    @CalledByNative
+    private void onChooseCard() {
+        mUiDelegate.showCards(PersonalDataManager.getInstance().getCreditCardsToSuggest(
+                true /* includeServerCards */));
+    }
+
     // native methods.
     private native long nativeInit(
             WebContents webContents, String[] parameterNames, String[] parameterValues);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
+    private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
+    private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
 }

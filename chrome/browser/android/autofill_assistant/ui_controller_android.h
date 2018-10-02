@@ -49,6 +49,13 @@ class UiControllerAndroid : public UiController, public Client {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jscript_path);
+  void OnAddressSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jaddress_guid);
+  void OnCardSelected(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jcaller,
+                      const base::android::JavaParamRef<jstring>& jcard_guid);
 
  private:
   // Java-side AutofillAssistantUiController object.
@@ -56,6 +63,8 @@ class UiControllerAndroid : public UiController, public Client {
       java_autofill_assistant_ui_controller_;
 
   UiDelegate* ui_delegate_;
+
+  base::OnceCallback<void(const std::string&)> address_or_card_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

@@ -124,16 +124,42 @@ void UiControllerAndroid::OnScriptSelected(
   ui_delegate_->OnScriptSelected(script_path);
 }
 
+void UiControllerAndroid::OnAddressSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jaddress_guid) {
+  DCHECK(address_or_card_callback_);
+  std::string guid;
+  base::android::ConvertJavaStringToUTF8(env, jaddress_guid, &guid);
+  std::move(address_or_card_callback_).Run(guid);
+}
+
+void UiControllerAndroid::OnCardSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jcard_guid) {
+  DCHECK(address_or_card_callback_);
+  std::string guid;
+  base::android::ConvertJavaStringToUTF8(env, jcard_guid, &guid);
+  std::move(address_or_card_callback_).Run(guid);
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
-  // TODO(crbug.com/806868): Implement ChooseAddress.
-  std::move(callback).Run("");
+  DCHECK(!address_or_card_callback_);
+  address_or_card_callback_ = std::move(callback);
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onChooseAddress(
+      env, java_autofill_assistant_ui_controller_);
 }
 
 void UiControllerAndroid::ChooseCard(
     base::OnceCallback<void(const std::string&)> callback) {
-  // TODO(crbug.com/806868): Implement ChooseCard.
-  std::move(callback).Run("");
+  DCHECK(!address_or_card_callback_);
+  address_or_card_callback_ = std::move(callback);
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onChooseCard(
+      env, java_autofill_assistant_ui_controller_);
 }
 
 std::string UiControllerAndroid::GetApiKey() {
