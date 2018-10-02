@@ -36,6 +36,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
@@ -61,18 +62,21 @@ class UtilitySandboxedProcessLauncherDelegate
  public:
   UtilitySandboxedProcessLauncherDelegate(
       service_manager::SandboxType sandbox_type,
-      const base::EnvironmentMap& env)
+      const base::EnvironmentMap& env,
+      const base::CommandLine& cmd_line)
       :
 #if defined(OS_POSIX)
         env_(env),
 #endif
-        sandbox_type_(sandbox_type) {
+        sandbox_type_(sandbox_type),
+        cmd_line_(cmd_line) {
 #if DCHECK_IS_ON()
     bool supported_sandbox_type =
         sandbox_type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX ||
 #if defined(OS_WIN)
         sandbox_type_ ==
             service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_XRCOMPOSITING ||
 #endif
         sandbox_type_ == service_manager::SANDBOX_TYPE_UTILITY ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
@@ -88,6 +92,20 @@ class UtilitySandboxedProcessLauncherDelegate
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
+  bool GetAppContainerId(std::string* appcontainer_id) override {
+    if (sandbox_type_ == service_manager::SANDBOX_TYPE_XRCOMPOSITING &&
+        base::FeatureList::IsEnabled(service_manager::features::kXRSandbox)) {
+      *appcontainer_id = base::WideToUTF8(cmd_line_.GetProgram().value());
+      return true;
+    }
+    return false;
+  }
+
+  bool DisableDefaultPolicy() override {
+    return sandbox_type_ == service_manager::SANDBOX_TYPE_XRCOMPOSITING &&
+           base::FeatureList::IsEnabled(service_manager::features::kXRSandbox);
+  }
+
   bool ShouldLaunchElevated() override {
     return sandbox_type_ ==
            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
@@ -100,6 +118,32 @@ class UtilitySandboxedProcessLauncherDelegate
     if (sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO)
       return audio::AudioPreSpawnTarget(policy);
 
+    if (sandbox_type_ == service_manager::SANDBOX_TYPE_XRCOMPOSITING &&
+        base::FeatureList::IsEnabled(service_manager::features::kXRSandbox)) {
+      // There were issues with some mitigations, causing an inability
+      // to load OpenVR and Oculus APIs.
+      // TODO(https://crbug.com/881919): Try to harden the XR Compositor sandbox
+      // to use mitigations and restrict the token.
+      policy->SetProcessMitigations(0);
+      policy->SetDelayedProcessMitigations(0);
+
+      std::string appcontainer_id;
+      if (!GetAppContainerId(&appcontainer_id)) {
+        return false;
+      }
+      sandbox::ResultCode result =
+          service_manager::SandboxWin::AddAppContainerProfileToPolicy(
+              cmd_line_, sandbox_type_, appcontainer_id, policy);
+      if (result != sandbox::SBOX_ALL_OK) {
+        return false;
+      }
+
+      // Unprotected token/job.
+      policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                            sandbox::USER_UNPROTECTED);
+      service_manager::SandboxWin::SetJobLevel(
+          cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+    }
     return true;
   }
 #endif  // OS_WIN
@@ -128,6 +172,7 @@ class UtilitySandboxedProcessLauncherDelegate
   base::EnvironmentMap env_;
 #endif  // OS_WIN
   service_manager::SandboxType sandbox_type_;
+  base::CommandLine cmd_line_;
 };
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
@@ -332,6 +377,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kForceWaveAudio,
       switches::kTrySupportedChannelLayouts,
       switches::kWaveOutBuffers,
+      service_manager::switches::kAddXrAppContainerCaps,
 #endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
@@ -353,9 +399,10 @@ bool UtilityProcessHost::StartProcess() {
           *service_identity_, cmd_line.get());
     }
 
-    process_->Launch(std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
-                         sandbox_type_, env_),
-                     std::move(cmd_line), true);
+    std::unique_ptr<UtilitySandboxedProcessLauncherDelegate> delegate =
+        std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
+            sandbox_type_, env_, *cmd_line);
+    process_->Launch(std::move(delegate), std::move(cmd_line), true);
   }
 
   return true;
