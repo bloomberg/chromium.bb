@@ -19,6 +19,8 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "content/public/common/web_contents_ns_view_bridge.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #import "ui/base/cocoa/base_view.h"
 #import "ui/base/cocoa/views_hostable.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,10 +37,6 @@ class WebContentsViewMac;
 
 namespace gfx {
 class Vector2d;
-}
-
-namespace ui {
-class Layer;
 }
 
 CONTENT_EXPORT
@@ -76,6 +74,7 @@ namespace content {
 class WebContentsViewMac : public WebContentsView,
                            public RenderViewHostDelegateView,
                            public PopupMenuHelper::Delegate,
+                           public mojom::WebContentsNSViewClient,
                            public ui::ViewsHostableView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
@@ -142,6 +141,9 @@ class WebContentsViewMac : public WebContentsView,
   // ViewsHostableView:
   void OnViewsHostableAttached(ViewsHostableView::Host* host) override;
   void OnViewsHostableDetached() override;
+  void OnViewsHostableShow(const gfx::Rect& bounds_in_window) override;
+  void OnViewsHostableHide() override;
+  void OnViewsHostableMakeFirstResponder() override;
 
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
@@ -158,7 +160,9 @@ class WebContentsViewMac : public WebContentsView,
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
-  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+  // Return the list of child RenderWidgetHostViewMacs. This will remove any
+  // destroyed instances before returning.
+  std::list<RenderWidgetHostViewMac*> GetChildViews();
 
   // Returns the fullscreen view, if one exists; otherwise, returns the content
   // native view. This ensures that the view currently attached to a NSWindow is
@@ -185,6 +189,14 @@ class WebContentsViewMac : public WebContentsView,
   ViewsHostableView::Host* views_host_ = nullptr;
 
   std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
+
+  // The id that may be used to look up this NSView.
+  const uint64_t ns_view_id_;
+
+  // Mojo bindings for an out of process instance of this NSView.
+  mojom::WebContentsNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
+  mojo::AssociatedBinding<mojom::WebContentsNSViewClient>
+      ns_view_client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

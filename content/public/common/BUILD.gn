@@ -363,7 +363,10 @@ mojom("interfaces") {
   }
 
   if (is_mac) {
-    sources += [ "ns_view_bridge_factory.mojom" ]
+    sources += [
+      "ns_view_bridge_factory.mojom",
+      "web_contents_ns_view_bridge.mojom",
+    ]
   }
 
   public_deps = [

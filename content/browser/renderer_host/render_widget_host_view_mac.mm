@@ -152,8 +152,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
-      ns_view_bridge_factory_host_id_(
-          NSViewBridgeFactoryHost::kLocalDirectHostId),
       ns_view_client_binding_(this),
       is_loading_(false),
       is_guest_view_hack_(is_guest_view_hack),
@@ -232,50 +230,41 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   }
 }
 
-void RenderWidgetHostViewMac::MigrateNSViewBridge(uint64_t factory_host_id) {
-  if (factory_host_id == ns_view_bridge_factory_host_id_)
-    return;
-
-  // Look up the NSViewBridgeFactoryHost, if any, for this id.
-  NSViewBridgeFactoryHost* factory_host = nullptr;
-  if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
-    factory_host = NSViewBridgeFactoryHost::GetFromHostId(factory_host_id);
-    if (!factory_host) {
-      DLOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
-      return;
-    }
-  }
-  ns_view_bridge_factory_host_id_ = factory_host_id;
-
+void RenderWidgetHostViewMac::MigrateNSViewBridge(
+    NSViewBridgeFactoryHost* bridge_factory_host,
+    uint64_t parent_ns_view_id) {
   // Disconnect from the previous bridge (this will have the effect of
   // destroying the associated bridge), and close the binding (to allow it
   // to be re-bound). Note that |ns_view_bridge_local_| remains valid.
   ns_view_client_binding_.Close();
   ns_view_bridge_remote_.reset();
 
-  if (factory_host) {
-    mojom::RenderWidgetHostNSViewClientAssociatedPtr client;
-    ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
-    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request =
-        mojo::MakeRequest(&ns_view_bridge_remote_);
-
-    // Cast from mojom::RenderWidgetHostNSViewClientPtr and
-    // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
-    // accepted by the factory.
-    // TODO(ccameron): Remove the need for this cast.
-    // https://crbug.com/888290
-    mojo::AssociatedInterfacePtrInfo<mojom::StubInterface> stub_client(
-        client.PassInterface().PassHandle(), 0);
-    mojom::StubInterfaceAssociatedRequest stub_bridge_request(
-        bridge_request.PassHandle());
-
-    factory_host->GetFactory()->CreateRenderWidgetHostNSViewBridge(
-        std::move(stub_client), std::move(stub_bridge_request));
-
-    ns_view_bridge_ = ns_view_bridge_remote_.get();
-  } else {
+  // If no host is specified, then use the locally hosted NSView.
+  if (!bridge_factory_host) {
     ns_view_bridge_ = ns_view_bridge_local_.get();
+    return;
   }
+
+  mojom::RenderWidgetHostNSViewClientAssociatedPtr client;
+  ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
+  mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request =
+      mojo::MakeRequest(&ns_view_bridge_remote_);
+
+  // Cast from mojom::RenderWidgetHostNSViewClientPtr and
+  // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
+  // accepted by the factory.
+  // TODO(ccameron): Remove the need for this cast.
+  // https://crbug.com/888290
+  mojo::AssociatedInterfacePtrInfo<mojom::StubInterface> stub_client(
+      client.PassInterface().PassHandle(), 0);
+  mojom::StubInterfaceAssociatedRequest stub_bridge_request(
+      bridge_request.PassHandle());
+
+  bridge_factory_host->GetFactory()->CreateRenderWidgetHostNSViewBridge(
+      std::move(stub_client), std::move(stub_bridge_request));
+
+  ns_view_bridge_ = ns_view_bridge_remote_.get();
+  ns_view_bridge_remote_->SetParentWebContentsNSView(parent_ns_view_id);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {

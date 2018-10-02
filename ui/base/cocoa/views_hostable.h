@@ -25,6 +25,15 @@ class ViewsHostableView {
     // Query the ui::Layer of the host.
     virtual ui::Layer* GetUiLayer() const = 0;
 
+    // Return the id for the process in which the host NSView exists. Used to
+    // migrate the content::WebContentsView and content::RenderWidgetHostview
+    // to that process.
+    virtual uint64_t GetViewsFactoryHostId() const = 0;
+
+    // The id for the views::View's NSView. Used to add the
+    // content::WebContentsView's NSView as a child view.
+    virtual uint64_t GetNSViewId() const = 0;
+
     // Query the parent accessibility element of the host.
     virtual id GetAccessibilityElement() const = 0;
 
@@ -40,10 +49,20 @@ class ViewsHostableView {
   //   the WebContentsView.
   // - Stitching together any app-shim-side NSViews.
   virtual void OnViewsHostableAttached(Host* host) = 0;
+
   // Called when the WebContentsView's NSView has been removed from the
   // views::View's NSView. This is responsible for un-doing all of the actions
   // taken when attaching.
   virtual void OnViewsHostableDetached() = 0;
+
+  // Called when the WebContentsView's NSView is to be shown or resized.
+  virtual void OnViewsHostableShow(const gfx::Rect& bounds_in_window) = 0;
+
+  // Called when the WebContentsView's NSView is to be hidden.
+  virtual void OnViewsHostableHide() = 0;
+
+  // Called when the WebContentsView's NSView is to be made a first responder.
+  virtual void OnViewsHostableMakeFirstResponder() = 0;
 };
 
 }  // namespace ui
