@@ -30,6 +30,8 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
+#include "chrome/browser/ui/app_list/page_break_app_item.h"
+#include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -743,6 +745,10 @@ void AppListSyncableService::PruneEmptySyncFolders() {
 
 // AppListSyncableService syncer::SyncableService
 
+void AppListSyncableService::InstallDefaultPageBreaksForTest() {
+  InstallDefaultPageBreaks();
+}
+
 syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -751,6 +757,16 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
+
+  const bool first_time_user = initial_sync_data.empty();
+  if (first_time_user) {
+    // Post a task to avoid adding the default page break items which can cause
+    // sync changes during sync startup.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppListSyncableService::InstallDefaultPageBreaks,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 
   HandleUpdateStarted();
 
@@ -983,12 +999,12 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK: {
-      std::unique_ptr<ChromeAppListItem> page_break_item =
-          std::make_unique<ChromeAppListItem>(profile_, sync_item->item_id,
-                                              model_updater_.get());
-      page_break_item->SetPosition(sync_item->item_ordinal);
-      page_break_item->SetIsPageBreak(true);
-      model_updater_->AddItem(std::move(page_break_item));
+      // This is can be either a default page break item that was installed by
+      // default for new users, or a non-default page-break item that was added
+      // by the user. the ctor of PageBreakAppItem will update the newly-created
+      // item from its |sync_item|.
+      model_updater_->AddItem(std::make_unique<PageBreakAppItem>(
+          profile_, model_updater_.get(), sync_item, sync_item->item_id));
       return;
     }
   }
@@ -1189,6 +1205,25 @@ void AppListSyncableService::PruneRedundantPageBreakItems() {
 
     LOG(ERROR) << "Delete a page break item in folder: " << sync_item->item_id;
     DeleteSyncItem(sync_item->item_id);
+  }
+}
+
+void AppListSyncableService::InstallDefaultPageBreaks() {
+  for (size_t i = 0; i < app_list::kDefaultPageBreakAppIdsLength; ++i) {
+    auto* const id = app_list::kDefaultPageBreakAppIds[i];
+    auto* sync_item = GetSyncItem(id);
+    if (sync_item) {
+      // The user may have cleared their sync from
+      // https://chrome.google.com/sync, so it may appear here that it's a new
+      // user, while in fact on this device, it's not. We don't want to recreate
+      // and re-add an already existing default page break item.
+      continue;
+    }
+
+    auto page_break_item = std::make_unique<PageBreakAppItem>(
+        profile(), model_updater_.get(), nullptr /* sync_item */, id);
+    page_break_item->SetName("__default_page_break__");
+    AddItem(std::move(page_break_item));
   }
 }
 
