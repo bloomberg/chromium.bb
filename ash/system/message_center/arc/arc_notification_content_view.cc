@@ -414,11 +414,6 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
-  // Set the flag to change the visibility of the snapshot on the background
-  // when the surface is set or unset. The surface sets while the window on
-  // Android side is visible.
-  bool need_to_update_snapshot = (surface_ == nullptr || surface == nullptr);
-
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
 
@@ -453,10 +448,6 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
       AttachSurface();
     }
   }
-
-  // Schedules to draw the background (snapshot or a blank).
-  if (need_to_update_snapshot)
-    SchedulePaint();
 }
 
 void ArcNotificationContentView::UpdatePreferredSize() {
@@ -814,8 +805,9 @@ void ArcNotificationContentView::OnWindowDestroying(aura::Window* window) {
 }
 
 void ArcNotificationContentView::OnWidgetClosing(views::Widget* widget) {
-  // Show copied surface, since the mask doesn't work correctly with closing
-  // animation (fade-out): https://crbug.com/811634.
+  // Actually this code doesn't show copied surface. Since it looks it doesn't
+  // work during closing. This just hides the surface and revails hidden
+  // snapshot: https://crbug.com/890701.
   ShowCopiedSurface();
 
   if (attached_widget_) {
