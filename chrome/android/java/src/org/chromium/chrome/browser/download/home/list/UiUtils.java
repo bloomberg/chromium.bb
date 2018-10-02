@@ -117,9 +117,7 @@ public final class UiUtils {
     public static boolean canHaveThumbnails(OfflineItem item) {
         switch (item.filter) {
             case OfflineItemFilter.FILTER_PAGE:
-            // TODO(shaktisahu, xingliu): Remove this after video thumbnail generation pipeline is
-            // done.
-            // case OfflineItemFilter.FILTER_VIDEO:
+            case OfflineItemFilter.FILTER_VIDEO:
             case OfflineItemFilter.FILTER_IMAGE:
                 return true;
             default:

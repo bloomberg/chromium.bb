@@ -34,9 +34,9 @@ class SkBitmap;
 // Parse local media files, including media metadata and thumbnails.
 // Metadata is always parsed in utility process for both audio and video files.
 //
-// For video file, the thumbnail may be poster image in metadata or extracted
-// video frame. The frame extraction always happens in utility process. The
-// decoding may happen in utility or GPU process based on video codec.
+// For video file, the thumbnail will be the a video key frame. The frame
+// extraction always happens in utility process. The decoding may happen in
+// utility or GPU process based on video codec.
 class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
  public:
   using ParseCompleteCB =
@@ -44,19 +44,19 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
                               chrome::mojom::MediaMetadataPtr media_metadata,
                               SkBitmap bitmap)>;
 
-  DownloadMediaParser(int64_t size,
-                      const std::string& mime_type,
-                      const base::FilePath& file_path,
-                      ParseCompleteCB parse_complete_cb);
+  DownloadMediaParser(const std::string& mime_type,
+                      const base::FilePath& file_path);
   ~DownloadMediaParser() override;
 
-  // Parse media metadata in a local file. All file IO will run on
+  // Parse media metadata and thumbnail in a local file. All file IO will run on
   // |file_task_runner|. The metadata is parsed in an utility process safely.
   // The thumbnail is retrieved from GPU process or utility process based on
   // different codec.
-  void Start();
+  void Start(ParseCompleteCB parse_complete_cb);
 
  private:
+  void OnReadFileSize(int64_t file_size);
+
   // MediaParserProvider implementation:
   void OnMediaParserCreated() override;
   void OnConnectionError() override;

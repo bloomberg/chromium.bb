@@ -179,6 +179,11 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
+    public String getMimeType() {
+        return mItem == null ? null : mItem.getMimeType();
+    }
+
+    @Override
     public @Nullable String getContentId() {
         return mItem == null ? "" : mItem.getId();
     }

@@ -19,7 +19,7 @@
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:scaleType="centerInside"
+        android:scaleType="centerCrop"
         android:adjustViewBounds="true"
         app:layout_column="0"
         app:layout_row="0"
