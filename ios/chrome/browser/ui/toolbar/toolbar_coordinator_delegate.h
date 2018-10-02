@@ -21,9 +21,6 @@ class ToolbarModel;
 - (void)locationBarBeganEdit;
 // Returns the toolbar model.
 - (ToolbarModel*)toolbarModel;
-// Whether the hint text should be displayed in the location bar.
-// TODO(crbug.com/800266): This is not needed with the adaptive toolbar.
-- (BOOL)shouldDisplayHintText;
 
 @end
 

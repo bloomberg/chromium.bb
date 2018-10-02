@@ -52,10 +52,6 @@ using variations::VariationsHttpHeaderProvider;
   return _model.get();
 }
 
-- (BOOL)shouldDisplayHintText {
-  return NO;
-}
-
 @end
 
 namespace {

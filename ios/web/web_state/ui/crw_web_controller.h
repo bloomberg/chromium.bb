@@ -191,9 +191,6 @@ class WebStateImpl;
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 
-// Returns |YES| if the current page should should the location bar hint text.
-- (BOOL)wantsLocationBarHintText;
-
 // Adds |recognizer| as a gesture recognizer to the web view.
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer;
 // Removes |recognizer| from the web view.

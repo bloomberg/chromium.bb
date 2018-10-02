@@ -25,6 +25,7 @@ class LocationBarController : public WebOmniboxEditController {
   virtual void HideKeyboardAndEndEditing() = 0;
 
   // Tells the omnibox if it can show the hint text or not.
+  // TODO(crbug.com/889400): Remove this method.
   virtual void SetShouldShowHintText(bool show_hint_text) = 0;
 
   // Returns a pointer to the text entry view.

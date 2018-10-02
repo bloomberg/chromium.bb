@@ -194,8 +194,6 @@ const int kLocationAuthorizationStatusCount = 4;
 - (void)updateOmniboxState {
   if (!_locationBarController)
     return;
-  _locationBarController->SetShouldShowHintText(
-      [self.delegate shouldDisplayHintText]);
   _locationBarController->OnToolbarUpdated();
 }
 
