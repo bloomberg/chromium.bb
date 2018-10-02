@@ -55,6 +55,9 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -73,6 +76,7 @@ constexpr struct {
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
+    {&kUseLocalBlacklistsV2, true},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

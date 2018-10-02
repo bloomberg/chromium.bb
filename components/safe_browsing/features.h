@@ -58,6 +58,9 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 
+// Controls whether Chrome on Android uses locally cached blacklists.
+extern const base::Feature kUseLocalBlacklistsV2;
+
 base::ListValue GetFeatureStatusList();
 
 }  // namespace safe_browsing
