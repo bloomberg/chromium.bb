@@ -6,11 +6,6 @@ module gfx.mojom;
 
 // gfx::BufferFormat
 enum BufferFormat {
-  ATC,
-  ATCIA,
-  DXT1,
-  DXT5,
-  ETC1,
   R_8,
   R_16,
   RG_88,

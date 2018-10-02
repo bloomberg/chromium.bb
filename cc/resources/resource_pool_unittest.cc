@@ -668,7 +668,7 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
 
   // These values are all non-default values so we can tell they are propagated.
   gfx::Size size(100, 101);
-  viz::ResourceFormat format = viz::ETC1;
+  viz::ResourceFormat format = viz::RGBA_4444;
   EXPECT_NE(gfx::BufferFormat::RGBA_8888, viz::BufferFormat(format));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t target = 5;
