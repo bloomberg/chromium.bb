@@ -13,6 +13,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 
 using chromeos::CrasAudioHandler;
@@ -176,7 +177,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   bubble_view_->set_color(SK_ColorTRANSPARENT);
   bubble_view_->layer()->SetFillsBoundsOpaquely(false);
   bubble_view_->set_anchor_view_insets(
-      tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
+      UnifiedSystemTrayBubble::GetAdjustedAnchorInsets(tray_, bubble_view_));
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
 

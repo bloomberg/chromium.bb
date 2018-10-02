@@ -60,6 +60,24 @@ class ContainerView : public views::View {
 
 }  // namespace
 
+// static
+gfx::Insets UnifiedSystemTrayBubble::GetAdjustedAnchorInsets(
+    UnifiedSystemTray* tray,
+    TrayBubbleView* bubble_view) {
+  gfx::Insets anchor_insets =
+      tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets();
+  gfx::Insets bubble_insets = bubble_view->GetBorderInsets();
+  if (tray->shelf()->IsHorizontalAlignment()) {
+    anchor_insets -=
+        gfx::Insets(kUnifiedMenuVerticalPadding - bubble_insets.bottom(), 0, 0,
+                    bubble_insets.right() + anchor_insets.right());
+  } else {
+    anchor_insets -=
+        gfx::Insets(0, 0, bubble_insets.bottom() + anchor_insets.bottom(), 0);
+  }
+  return anchor_insets;
+}
+
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
     : controller_(
@@ -93,19 +111,8 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
-  gfx::Insets anchor_insets =
-      tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets();
-  gfx::Insets bubble_insets = bubble_view_->GetBorderInsets();
-  if (tray_->shelf()->IsHorizontalAlignment()) {
-    anchor_insets -=
-        gfx::Insets(kUnifiedMenuVerticalPadding - bubble_insets.bottom(), 0, 0,
-                    bubble_insets.right() + anchor_insets.right());
-  } else {
-    anchor_insets -=
-        gfx::Insets(0, 0, bubble_insets.bottom() + anchor_insets.bottom(), 0);
-  }
-
-  bubble_view_->set_anchor_view_insets(anchor_insets);
+  bubble_view_->set_anchor_view_insets(
+      GetAdjustedAnchorInsets(tray, bubble_view_));
   bubble_view_->set_color(SK_ColorTRANSPARENT);
   bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
