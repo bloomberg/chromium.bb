@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
+#include "chrome/browser/browsing_data/counters/signin_data_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -189,6 +190,44 @@ base::string16 GetChromeCounterTextFromResult(
         nullptr);
   }
 #endif
+
+  if (pref_name == browsing_data::prefs::kDeletePasswords) {
+    const browsing_data::SigninDataCounter::SigninDataResult*
+        passwords_and_signin_data_result = static_cast<
+            const browsing_data::SigninDataCounter::SigninDataResult*>(result);
+
+    browsing_data::BrowsingDataCounter::ResultInt password_count =
+        passwords_and_signin_data_result->Value();
+    browsing_data::BrowsingDataCounter::ResultInt signin_data_count =
+        passwords_and_signin_data_result->WebAuthnCredentialsValue();
+
+    std::vector<base::string16> counts;
+    if (password_count) {
+      counts.emplace_back(l10n_util::GetPluralStringFUTF16(
+          passwords_and_signin_data_result->is_sync_enabled()
+              ? IDS_DEL_PASSWORDS_COUNTER_SYNCED
+              : IDS_DEL_PASSWORDS_COUNTER,
+          password_count));
+    }
+    if (signin_data_count) {
+      counts.emplace_back(l10n_util::GetPluralStringFUTF16(
+          IDS_DEL_SIGNIN_DATA_COUNTER, signin_data_count));
+    }
+    switch (counts.size()) {
+      case 0:
+        return l10n_util::GetStringUTF16(
+            IDS_DEL_PASSWORDS_AND_SIGNIN_DATA_COUNTER_NONE);
+      case 1:
+        return counts[0];
+      case 2:
+        return l10n_util::GetStringFUTF16(
+            IDS_DEL_PASSWORDS_AND_SIGNIN_DATA_COUNTER_COMBINATION, counts[0],
+            counts[1]);
+      default:
+        NOTREACHED();
+    }
+    NOTREACHED();
+  }
 
   return browsing_data::GetCounterTextFromResult(result);
 }
