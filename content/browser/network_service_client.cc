@@ -340,8 +340,7 @@ void NetworkServiceClient::OnAuthRequired(
                  : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
 
   if (!web_contents_getter.Run()) {
-    std::move(auth_challenge_responder)
-        ->OnAuthCredentials(net::AuthCredentials());
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
     return;
   }
 
