@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media/cast_mirroring_service_host.h"
 
-#include "base/callback.h"
+#include <algorithm>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -131,7 +133,7 @@ void CastMirroringServiceHost::GetForTab(
     const content::DesktopMediaID media_id =
         BuildMediaIdForWebContents(target_contents);
     mojo::MakeStrongBinding(
-        std::make_unique<mirroring::CastMirroringServiceHost>(media_id),
+        std::make_unique<CastMirroringServiceHost>(media_id),
         std::move(request));
   }
 }
@@ -152,7 +154,7 @@ void CastMirroringServiceHost::GetForDesktop(
             initiator_contents->GetVisibleURL().GetOrigin(),
             &original_extension_name, content::kRegistryStreamTypeDesktop);
     mojo::MakeStrongBinding(
-        std::make_unique<mirroring::CastMirroringServiceHost>(media_id),
+        std::make_unique<CastMirroringServiceHost>(media_id),
         std::move(request));
   }
 }
@@ -164,8 +166,8 @@ void CastMirroringServiceHost::GetForOffscreenTab(
     const std::string& presentation_id,
     mojom::MirroringServiceHostRequest request) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  auto host = std::make_unique<mirroring::CastMirroringServiceHost>(
-      content::DesktopMediaID());
+  auto host =
+      std::make_unique<CastMirroringServiceHost>(content::DesktopMediaID());
   host->OpenOffscreenTab(context, presentation_url, presentation_id);
   mojo::MakeStrongBinding(std::move(host), std::move(request));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -261,7 +263,7 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
     media::mojom::RemoterPtr remoter,
     media::mojom::RemotingSourceRequest request) {
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
-    content::WebContents* const source_contents = web_contents();
+    content::WebContents* source_contents = web_contents();
     if (source_contents) {
       CastRemotingConnector::Get(source_contents)
           ->ConnectWithMediaRemoter(std::move(remoter), std::move(request));
