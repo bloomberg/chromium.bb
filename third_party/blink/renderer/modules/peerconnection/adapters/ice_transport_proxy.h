@@ -50,6 +50,9 @@ class IceTransportProxy final {
     }
     virtual void OnCandidateGathered(const cricket::Candidate& candidate) {}
     virtual void OnStateChanged(cricket::IceTransportState new_state) {}
+    virtual void OnSelectedCandidatePairChanged(
+        const std::pair<cricket::Candidate, cricket::Candidate>&
+            selected_candidate_pair) {}
   };
 
   // Construct a Proxy with the underlying ICE implementation running on the
@@ -94,6 +97,9 @@ class IceTransportProxy final {
   void OnGatheringStateChanged(cricket::IceGatheringState new_state);
   void OnCandidateGathered(const cricket::Candidate& candidate);
   void OnStateChanged(cricket::IceTransportState new_state);
+  void OnSelectedCandidatePairChanged(
+      const std::pair<cricket::Candidate, cricket::Candidate>&
+          selected_candidate_pair);
 
   const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
