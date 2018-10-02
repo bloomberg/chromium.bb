@@ -48,6 +48,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void SetHasPendingSelection();
   void Commit();
 
+  SelectionInDOMTree ComputeLayoutSelection() const;
   IntRect AbsoluteSelectionBounds();
   void InvalidatePaintForSelection();
 

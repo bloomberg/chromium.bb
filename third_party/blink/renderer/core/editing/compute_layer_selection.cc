@@ -246,10 +246,8 @@ cc::LayerSelection ComputeLayerSelection(
   if (!frame_selection.IsHandleVisible() || frame_selection.IsHidden())
     return {};
 
-  // TODO(yoichio): Compute SelectionInDOMTree w/o VS canonicalization.
-  // crbug.com/789870 for detail.
   const SelectionInDOMTree& selection =
-      frame_selection.ComputeVisibleSelectionInDOMTree().AsSelection();
+      frame_selection.ComputeLayoutSelection();
   if (selection.IsNone())
     return {};
   // Non-editable caret selections lack any kind of UI affordance, and
