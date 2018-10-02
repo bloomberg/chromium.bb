@@ -236,6 +236,11 @@ test.ENTRIES = {
       test.EntryType.FILE, 'text.txt', 'hello.mhtml', 'text/html',
       test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.mhtml',
       '51 bytes', 'HTML document'),
+
+  helloInA: new test.TestEntryInfo(
+      test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'A/hello.txt',
+      '51 bytes', 'Plain text'),
 };
 
 /**
@@ -492,10 +497,17 @@ test.waitForFiles = function(expected, opt_options) {
  * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
+ * @param {Array<!test.TestEntryInfo>=} opt_downloads Entries for downloads.
+ * @param {Array<!test.TestEntryInfo>=} opt_drive Entries for drive.
+ * @param {Array<!test.TestEntryInfo>=} opt_crostini Entries for crostini.
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
-test.setupAndWaitUntilReady = function() {
+test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
+  const entriesDownloads = opt_downloads || test.BASIC_LOCAL_ENTRY_SET;
+  const entriesDrive = opt_drive || test.BASIC_DRIVE_ENTRY_SET;
+  const entriesCrostini = opt_crostini || test.BASIC_CROSTINI_ENTRY_SET;
+
   // Copy some functions from test.util.sync and bind to main window.
   test.fakeMouseClick = test.util.sync.fakeMouseClick.bind(null, window);
   test.fakeMouseDoubleClick =
@@ -510,9 +522,7 @@ test.setupAndWaitUntilReady = function() {
 
   return test.loadData()
       .then(() => {
-        test.addEntries(
-            test.BASIC_LOCAL_ENTRY_SET, test.BASIC_DRIVE_ENTRY_SET,
-            test.BASIC_CROSTINI_ENTRY_SET);
+        test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
         return test.waitForElement(
             '#directory-tree [volume-type-icon="downloads"]');
       })
@@ -523,7 +533,7 @@ test.setupAndWaitUntilReady = function() {
                 '#refresh-button' :
                 '#directory-tree [volume-type-icon="downloads"]'));
         return test.waitForFiles(
-            test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
+            test.TestEntryInfo.getExpectedRows(entriesDownloads));
       });
 };
 

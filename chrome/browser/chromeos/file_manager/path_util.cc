@@ -182,14 +182,29 @@ std::vector<std::string> GetCrostiniMountOptions(
 std::string ConvertFileSystemURLToPathInsideCrostini(
     Profile* profile,
     const storage::FileSystemURL& file_system_url) {
+  std::string id(file_system_url.mount_filesystem_id());
+  std::string mount_point_name_crostini = GetCrostiniMountPointName(profile);
+  std::string mount_point_name_downloads = GetDownloadsMountPointName(profile);
   DCHECK(file_system_url.mount_type() == storage::kFileSystemTypeExternal);
   DCHECK(file_system_url.type() == storage::kFileSystemTypeNativeLocal);
+  DCHECK(id == mount_point_name_crostini || id == mount_point_name_downloads);
 
-  // Reformat virtual_path()
-  // from <mount_label>/path/to/file
-  // to   /<home-directory>/path/to/file
-  base::FilePath folder(util::GetCrostiniMountPointName(profile));
-  base::FilePath result = HomeDirectoryForProfile(profile);
+  // Reformat virtual_path() from:
+  //   <mount_label>/path/to/file
+  // To either:
+  //   /<home-directory>/path/to/file     (path is already in crostini volume)
+  //   /ChromeOS/<volume_id>/path/to/file (path is shared with crostini)
+  base::FilePath result;
+  base::FilePath folder;
+  if (id == mount_point_name_crostini) {
+    folder = base::FilePath(mount_point_name_crostini);
+    result = ContainerHomeDirectoryForProfile(profile);
+  } else if (id == mount_point_name_downloads) {
+    folder = base::FilePath(mount_point_name_downloads);
+    result = ContainerChromeOSBaseDirectory().Append(kDownloadsFolderName);
+  } else {
+    NOTREACHED();
+  }
   bool success =
       folder.AppendRelativePath(file_system_url.virtual_path(), &result);
   DCHECK(success);
