@@ -4,94 +4,69 @@
 
 import("//build/config/chrome_build.gni")
 
-if (is_win && is_chrome_branded) {
-  static_library("set_as_default_feature") {
-    sources = [
-      "set_as_default_handler.cc",
-      "set_as_default_handler.h",
-    ]
+source_set("constants") {
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
 
-    public_deps = [
-      "//base",
-      "//net",
-      "//url",
-    ]
+  public_deps = [
+    "//base",
+  ]
+}
 
-    deps = [
-      "//chrome/app:generated_resources",
-      "//chrome/browser:resources",
-      "//components/resources",
-      "//components/strings",
-      "//components/variations",
-      "//content/public/browser",
-      "//ui/base",
-    ]
-  }
+static_library("email_feature") {
+  sources = [
+    "email_handler.cc",
+    "email_handler.h",
+  ]
 
-  source_set("constants") {
-    sources = [
-      "constants.cc",
-      "constants.h",
-    ]
+  public_deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
 
-    public_deps = [
-      "//base",
-    ]
-  }
+  deps = [
+    "//chrome/app:generated_resources",
+    "//chrome/browser:resources",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/common",
+    "//components/favicon/core",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/resources",
+    "//components/strings",
+    "//components/variations",
+    "//content/public/browser",
+    "//ui/base",
+  ]
+}
 
-  static_library("email_feature") {
-    sources = [
-      "email_handler.cc",
-      "email_handler.h",
-    ]
+static_library("google_apps_feature") {
+  sources = [
+    "google_apps_handler.cc",
+    "google_apps_handler.h",
+  ]
 
-    public_deps = [
-      "//base",
-      "//net",
-      "//url",
-    ]
+  public_deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
 
-    deps = [
-      "//chrome/app:generated_resources",
-      "//chrome/browser:resources",
-      "//components/bookmarks/browser",
-      "//components/bookmarks/common",
-      "//components/favicon/core",
-      "//components/pref_registry",
-      "//components/prefs",
-      "//components/resources",
-      "//components/strings",
-      "//components/variations",
-      "//content/public/browser",
-      "//ui/base",
-    ]
-  }
-
-  static_library("google_apps_feature") {
-    sources = [
-      "google_apps_handler.cc",
-      "google_apps_handler.h",
-    ]
-
-    public_deps = [
-      "//base",
-      "//net",
-      "//url",
-    ]
-
-    deps = [
-      "//chrome/app:generated_resources",
-      "//chrome/browser:resources",
-      "//components/bookmarks/browser",
-      "//components/bookmarks/common",
-      "//components/favicon/core",
-      "//components/pref_registry",
-      "//components/prefs",
-      "//components/resources",
-      "//components/strings",
-      "//components/variations",
-      "//content/public/browser",
-      "//ui/base",
-    ]
-  }
+  deps = [
+    "//chrome/app:generated_resources",
+    "//chrome/browser:resources",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/common",
+    "//components/favicon/core",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/resources",
+    "//components/strings",
+    "//components/variations",
+    "//content/public/browser",
+    "//ui/base",
+  ]
 }

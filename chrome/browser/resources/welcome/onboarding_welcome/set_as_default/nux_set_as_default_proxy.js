@@ -4,10 +4,17 @@
 
 cr.define('nux', function() {
   /** @interface */
-  class NuxSetAsDefaultProxy {}
+  class NuxSetAsDefaultProxy {
+    setAsDefault() {}
+  }
 
   /** @implements {NuxSetAsDefaultProxy} */
-  class NuxSetAsDefaultProxyImpl {}
+  class NuxSetAsDefaultProxyImpl {
+    /** @override */
+    setAsDefault() {
+      chrome.send('setAsDefaultBrowser');
+    }
+  }
 
   cr.addSingletonGetter(NuxSetAsDefaultProxyImpl);
 

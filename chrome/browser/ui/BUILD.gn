@@ -1948,6 +1948,13 @@ jumbo_split_static_library("ui") {
       "webui/welcome/welcome_handler.h",
       "webui/welcome/welcome_ui.cc",
       "webui/welcome/welcome_ui.h",
+      # TODO(scottchen): nux/set_as_default_handler is here because it depends
+      #     on settings_default_browser_handler, but that deps currently can't
+      #     be added in nux/BUILD.gn due to circular dependency.
+      #     Should move back to nux/BUILD.gn once settings's build config is in
+      #     a shareable location (e.g. ui/webui/settings/BUILD.gn).
+      "webui/welcome/nux/set_as_default_handler.cc",
+      "webui/welcome/nux/set_as_default_handler.h",
     ]
 
     # TODO(scottchen): Remove if-check once nux files are non-exclusive
@@ -1957,7 +1964,6 @@ jumbo_split_static_library("ui") {
         "//chrome/browser/ui/webui/welcome/nux:constants",
         "//chrome/browser/ui/webui/welcome/nux:email_feature",
         "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",
-        "//chrome/browser/ui/webui/welcome/nux:set_as_default_feature",
       ]
     }
 

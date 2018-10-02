@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_SET_AS_DEFAULT_HANDLER_H_
 
 #include "base/macros.h"
-#include "base/values.h"
-#include "content/public/browser/web_ui_message_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 
 namespace content {
 class WebUIDataSource;
@@ -15,16 +14,16 @@ class WebUIDataSource;
 
 namespace nux {
 
-class SetAsDefaultHandler : public content::WebUIMessageHandler {
+class SetAsDefaultHandler : public settings::DefaultBrowserHandler {
  public:
   SetAsDefaultHandler();
   ~SetAsDefaultHandler() override;
 
-  // WebUIMessageHandler:
-  void RegisterMessages() override;
-
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source);
+
+ protected:
+  void RecordSetAsDefaultUMA() override;
 
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultHandler);
 };

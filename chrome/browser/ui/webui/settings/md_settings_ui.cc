@@ -244,7 +244,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::InternetHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<TtsHandler>());
 #else
-  AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>(web_ui));
+  AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SystemHandler>());
 #endif
