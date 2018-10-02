@@ -8,6 +8,7 @@ import argparse
 import json
 import logging
 import os
+import pipes
 import re
 import signal
 import sys
@@ -159,6 +160,7 @@ class TastTest(RemoteTest):
 
     self._suite_name = args.suite_name
     self._tests = args.tests
+    self._conditional = args.conditional
 
   @property
   def suite_name(self):
@@ -177,7 +179,10 @@ class TastTest(RemoteTest):
         '--',
         'local_test_runner',
     ]
-    self._vm_test_cmd.extend(self._tests)
+    if self._conditional:
+      self._vm_test_cmd.append(pipes.quote(self._conditional))
+    else:
+      self._vm_test_cmd.extend(self._tests)
 
 
 class GTestTest(RemoteTest):
@@ -521,7 +526,11 @@ def main():
       '--test-launcher-summary-output', type=str,
       help='Generates a simple GTest-style JSON result file for the test run.')
   tast_test_parser.add_argument(
-      '--test', '-t', action='append', dest='tests', required=True,
+      '--conditional', type=str,
+      help='A conditional whose matching tests will run '
+           '(eg: ("dep:chrome" || "dep:chrome_login")).')
+  tast_test_parser.add_argument(
+      '--test', '-t', action='append', dest='tests',
       help='A Tast test to run in the VM (eg: "ui.ChromeLogin").')
 
   add_common_args(gtest_parser)
