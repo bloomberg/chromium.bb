@@ -15,8 +15,6 @@
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "url/origin.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
-
 namespace {
 // Unprovision MediaDrm in IO thread.
 void ClearMediaDrmLicensesBlocking(
