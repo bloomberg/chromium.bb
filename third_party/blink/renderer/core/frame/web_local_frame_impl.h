@@ -122,7 +122,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString Prompt(const WebString& message,
                    const WebString& default_value) override;
 
-  void CollectGarbage() override;
+  void CollectGarbageForTesting();
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       const WebScriptSource&) override;
   void RequestExecuteScriptAndReturnValue(const WebScriptSource&,

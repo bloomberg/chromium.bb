@@ -10527,7 +10527,7 @@ TEST_F(WebFrameTest, MaxFramesDetach) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "max-frames-detach.html");
-  web_view_impl->MainFrameImpl()->CollectGarbage();
+  web_view_impl->MainFrameImpl()->CollectGarbageForTesting();
 }
 
 TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {

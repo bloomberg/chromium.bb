@@ -37,11 +37,11 @@ Vector<scoped_refptr<DOMWrapperWorld>> CreateWorlds(v8::Isolate* isolate) {
       DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker));
   worlds.push_back(
       DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker));
-  worlds.push_back(DOMWrapperWorld::Create(
-      isolate, DOMWrapperWorld::WorldType::kGarbageCollector));
+  worlds.push_back(
+      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker));
   EXPECT_TRUE(worlds[0]->IsWorkerWorld());
   EXPECT_TRUE(worlds[1]->IsWorkerWorld());
-  EXPECT_FALSE(worlds[2]->IsWorkerWorld());
+  EXPECT_TRUE(worlds[2]->IsWorkerWorld());
 
   // World ids should be unique.
   HashSet<int> world_ids;
@@ -69,11 +69,6 @@ void WorkerThreadFunc(
   DOMWrapperWorld::AllWorldsInCurrentThread(retrieved_worlds);
   EXPECT_EQ(worlds.size(), retrieved_worlds.size());
   retrieved_worlds.clear();
-
-  // Dispose of the last world.
-  worlds.pop_back();
-  DOMWrapperWorld::AllWorldsInCurrentThread(retrieved_worlds);
-  EXPECT_EQ(worlds.size(), retrieved_worlds.size());
 
   // Dispose of remaining worlds.
   for (scoped_refptr<DOMWrapperWorld>& world : worlds) {

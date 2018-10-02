@@ -75,6 +75,8 @@ Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   return node;
 }
 
+namespace {
+
 bool IsDOMWrapperClassId(uint16_t class_id) {
   return class_id == WrapperTypeInfo::kNodeClassId ||
          class_id == WrapperTypeInfo::kObjectClassId ||
@@ -134,13 +136,11 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
   v8::Isolate* isolate_;
 };
 
-static unsigned long long UsedHeapSize(v8::Isolate* isolate) {
+size_t UsedHeapSize(v8::Isolate* isolate) {
   v8::HeapStatistics heap_statistics;
   isolate->GetHeapStatistics(&heap_statistics);
   return heap_statistics.used_heap_size();
 }
-
-namespace {
 
 void VisitWeakHandlesForMinorGC(v8::Isolate* isolate) {
   MinorGCUnmodifiedWrapperVisitor visitor(isolate);
@@ -303,24 +303,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorUpdateCountersEvent::Data());
-}
-
-void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
-  v8::HandleScope handle_scope(isolate);
-  ScriptState* script_state = ScriptState::Create(
-      v8::Context::New(isolate),
-      DOMWrapperWorld::Create(isolate,
-                              DOMWrapperWorld::WorldType::kGarbageCollector));
-  ScriptState::Scope scope(script_state);
-  StringBuilder builder;
-  builder.Append("if (gc) gc(");
-  builder.Append(only_minor_gc ? "true" : "false");
-  builder.Append(");");
-  V8ScriptRunner::CompileAndRunInternalScript(
-      isolate, script_state,
-      ScriptSourceCode(builder.ToString(), ScriptSourceLocationType::kInternal,
-                       nullptr, KURL(), TextPosition()));
-  script_state->DisposePerContextData();
 }
 
 void V8GCController::CollectAllGarbageForTesting(

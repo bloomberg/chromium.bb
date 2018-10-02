@@ -71,7 +71,6 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kMain,
     kIsolated,
     kInspectorIsolated,
-    kGarbageCollector,
     kRegExp,
     kTesting,
     kForV8ContextSnapshotNonMain,

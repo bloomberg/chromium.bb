@@ -184,7 +184,7 @@ class PrerenderingTest : public testing::Test {
   }
 
   void Close() {
-    web_view_helper_.LocalMainFrame()->CollectGarbage();
+    web_view_helper_.LocalMainFrame()->CollectGarbageForTesting();
     web_view_helper_.Reset();
 
     WebCache::Clear();
