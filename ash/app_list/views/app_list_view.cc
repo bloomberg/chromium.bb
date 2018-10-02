@@ -1099,7 +1099,9 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       if (event->location().y() < kAppListHomeLaucherGesturesThreshold) {
         if (delegate_->ProcessHomeLauncherGesture(event->type(),
                                                   gfx::Point())) {
+          SetIsInDrag(false);
           event->SetHandled();
+          HandleClickOrTap(event);
           return;
         }
       }
@@ -1122,6 +1124,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       views::View::ConvertPointToScreen(this, &location_in_screen);
       if (delegate_->ProcessHomeLauncherGesture(event->type(),
                                                 location_in_screen)) {
+        SetIsInDrag(true);
         event->SetHandled();
         return;
       }
@@ -1140,6 +1143,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       views::View::ConvertPointToScreen(this, &location_in_screen);
       if (delegate_->ProcessHomeLauncherGesture(event->type(),
                                                 location_in_screen)) {
+        SetIsInDrag(false);
         event->SetHandled();
         return;
       }
