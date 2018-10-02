@@ -64,12 +64,10 @@ Polymer({
         return;
 
       const entry = assert(entries[0]);
-      const fullHeight = entry.contentRect.height;
-      // Setting maxHeight to 0 freezes the UI when re-rendering the dialog.
-      if (fullHeight > 0) {
-        this.$.list.style.maxHeight = `${fullHeight}px`;
-        this.forceIronResize();
-      }
+      // Don't set maxHeight below the minimum height.
+      const fullHeight = Math.max(entry.contentRect.height, 84);
+      this.$.list.style.maxHeight = `${fullHeight}px`;
+      this.forceIronResize();
     });
     this.resizeObserver_.observe(this.$.listContainer);
   },
