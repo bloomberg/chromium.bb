@@ -108,18 +108,6 @@ void ShowSSLClientCertificateSelectorCocoa(
   [selector displayForWebContents:contents clientCerts:std::move(client_certs)];
 }
 
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-void ShowSSLClientCertificateSelector(
-    content::WebContents* contents,
-    net::SSLCertRequestInfo* cert_request_info,
-    net::ClientCertIdentityList client_certs,
-    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
-  return ShowSSLClientCertificateSelectorCocoa(contents, cert_request_info,
-                                               std::move(client_certs),
-                                               std::move(delegate));
-}
-#endif
-
 }  // namespace chrome
 
 namespace {

@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -44,10 +45,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
-
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#endif
 
 namespace {
 

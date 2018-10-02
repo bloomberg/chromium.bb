@@ -31,7 +31,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/ui_features.h"
 #include "ui/views/window/dialog_client_view.h"
 
 using net::test_server::BasicHttpResponse;
@@ -380,12 +379,5 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSigninNoFocus) {
   ui_test_utils::BrowserActivationWaiter waiter(browser());
   waiter.WaitForActivation();
 
-// Sign-in dialogs opened for inactive browser windows do not auto-close on
-// MacOS. This matches existing Cocoa bubble behavior.
-// TODO(varkha): Remove the limitation as part of http://crbug/671916 .
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   EXPECT_FALSE(IsBubbleShowing());
-#else
-  EXPECT_TRUE(IsBubbleShowing());
-#endif
 }

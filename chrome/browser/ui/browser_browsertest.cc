@@ -2640,15 +2640,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(ASCIIToUTF16("fullscreen"), app_contents);
 }
 
+#if defined(OS_MACOSX)
+// The size computation on popups is wrong in MacViews, https://crbug.com/834908
+#define MAYBE_TestPopupBounds DISABLED_TestPopupBounds
+#else
+#define MAYBE_TestPopupBounds TestPopupBounds
+#endif
+
 // Test to ensure the bounds of popup, devtool, and app windows are properly
 // restored.
-IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  // The size computation on popups is wrong in MacViews:
-  // https://crbug.com/834908.
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return;
-#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestPopupBounds) {
   // TODO(tdanderson|pkasting): Change this to verify that the contents bounds
   // set by params.initial_bounds are the same as the contents bounds in the
   // initialized window. See crbug.com/585856.
