@@ -1077,3 +1077,10 @@ class TwitterScrollDesktopStory(_InfiniteScrollStory):
   URL = 'https://twitter.com/taylorswift13'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
+
+
+class TwitterScrollDesktopStory2018(_InfiniteScrollStory):
+  NAME = 'browse:social:twitter_infinite_scroll:2018'
+  URL = 'https://twitter.com/NASA'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2018]
