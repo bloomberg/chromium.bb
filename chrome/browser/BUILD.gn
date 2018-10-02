@@ -108,6 +108,8 @@ jumbo_split_static_library("browser") {
     "autocomplete/shortcuts_backend_factory.h",
     "autofill/address_normalizer_factory.cc",
     "autofill/address_normalizer_factory.h",
+    "autofill/autofill_profile_validator_factory.cc",
+    "autofill/autofill_profile_validator_factory.h",
     "autofill/personal_data_manager_factory.cc",
     "autofill/personal_data_manager_factory.h",
     "autofill/risk_util.cc",

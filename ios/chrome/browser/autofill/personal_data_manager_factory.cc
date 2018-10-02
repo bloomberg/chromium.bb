@@ -13,6 +13,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/autofill_profile_validator_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -55,6 +56,7 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
   service->Init(
       autofill_db, nullptr, chrome_browser_state->GetPrefs(),
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
+      AutofillProfileValidatorFactory::GetInstance(),
       chrome_browser_state->IsOffTheRecord());
   return service;
 }

@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/test_sync_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -177,7 +178,8 @@ class PersonalDataManagerTestBase {
         use_account_server_storage
             ? scoped_refptr<AutofillWebDataService>(account_database_service_)
             : nullptr,
-        prefs_.get(), identity_test_env_.identity_manager(), is_incognito);
+        prefs_.get(), identity_test_env_.identity_manager(),
+        TestAutofillProfileValidator::GetInstance(), is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
     personal_data_->OnSyncServiceInitialized(&sync_service_);
@@ -6782,6 +6784,159 @@ TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
       personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
   ASSERT_FALSE(validities.empty());
   EXPECT_EQ(validities.at(EMAIL_ADDRESS), AutofillProfile::VALID);
+}
+
+// Use the client side validation API to validate three PDM profiles. This one
+// doesn't test the upload process or saving to the database.
+TEST_F(PersonalDataManagerTest, UpdateClientValidityStates) {
+  // Create three profiles and add them to personal_data_.
+  AutofillProfile valid_profile(test::GetFullValidProfileForCanada());
+  valid_profile.set_guid("00000000-0000-0000-0000-000000000001");
+  personal_data_->AddProfile(valid_profile);
+
+  AutofillProfile profile_invalid_phone_email(
+      test::GetFullValidProfileForChina());
+  profile_invalid_phone_email.SetRawInfo(
+      PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("invalid phone number!"));
+  profile_invalid_phone_email.SetRawInfo(EMAIL_ADDRESS,
+                                         base::UTF8ToUTF16("invalid email!"));
+  profile_invalid_phone_email.set_guid("00000000-0000-0000-0000-000000000002");
+  personal_data_->AddProfile(profile_invalid_phone_email);
+
+  AutofillProfile profile_invalid_province(base::GenerateGUID(),
+                                           test::kEmptyOrigin);
+  test::SetProfileInfo(&profile_invalid_province, "Alice", "", "Munro",
+                       "alice@munro.ca", "Fox", "123 Zoo St", "unit 5",
+                       "Montreal", "CA", "H3C 2A3", "CA", "15142343254");
+  profile_invalid_province.set_guid("00000000-0000-0000-0000-000000000003");
+  personal_data_->AddProfile(profile_invalid_province);
+
+  WaitForOnPersonalDataChanged();
+  ASSERT_EQ(3U, personal_data_->GetProfiles().size());
+
+  // Validate the profiles through the client validation API.
+  auto profiles = personal_data_->GetProfiles();
+  for (auto* profile : profiles)
+    ASSERT_FALSE(profile->is_client_validity_states_updated());
+  personal_data_->UpdateClientValidityStates(profiles);
+
+  ASSERT_EQ(3U, profiles.size());
+  // The profiles are ordered according to their guid.
+  // valid_profile:
+  ASSERT_EQ(valid_profile.guid(), profiles[0]->guid());
+  EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[0]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profiles[0]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[0]->GetValidityState(ADDRESS_HOME_CITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::EMPTY,
+            profiles[0]->GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[0]->GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                          AutofillProfile::CLIENT));
+
+  // profile_invalid_phone_email:
+  ASSERT_EQ(profile_invalid_phone_email.guid(), profiles[1]->guid());
+  EXPECT_TRUE(profiles[1]->is_client_validity_states_updated());
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profiles[1]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_CITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[1]->GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profiles[1]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::INVALID,
+            profiles[1]->GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                          AutofillProfile::CLIENT));
+
+  ASSERT_EQ(profile_invalid_province.guid(), profiles[2]->guid());
+  EXPECT_TRUE(profiles[2]->is_client_validity_states_updated());
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[2]->GetValidityState(ADDRESS_HOME_COUNTRY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::INVALID,
+            profiles[2]->GetValidityState(ADDRESS_HOME_STATE,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profiles[2]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[2]->GetValidityState(ADDRESS_HOME_CITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::EMPTY,
+            profiles[2]->GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                          AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profiles[2]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profiles[2]->GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                          AutofillProfile::CLIENT));
+}
+
+// Check the validity update status for AutofillProfiles.
+TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_UpdatedFlag) {
+  // Create two profiles and add them to personal_data_.
+  AutofillProfile profile1(test::GetFullValidProfileForCanada());
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(test::GetFullValidProfileForChina());
+  personal_data_->AddProfile(profile2);
+
+  WaitForOnPersonalDataChanged();
+  ASSERT_EQ(2U, personal_data_->GetProfiles().size());
+
+  // Validate the profiles through the client validation API.
+  auto profiles = personal_data_->GetProfiles();
+  ASSERT_FALSE(profiles[0]->is_client_validity_states_updated());
+  ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());
+
+  personal_data_->UpdateClientValidityStates(profiles);
+  ASSERT_EQ(2U, profiles.size());
+  EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
+  EXPECT_TRUE(profiles[1]->is_client_validity_states_updated());
+
+  *profiles[1] = *profiles[0];
+  ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
+  ASSERT_TRUE(profiles[1]->is_client_validity_states_updated());
+
+  profiles[1]->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16(""));
+  ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
+  ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());
+
+  personal_data_->UpdateClientValidityStates(profiles);
+  ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
+  ASSERT_TRUE(profiles[1]->is_client_validity_states_updated());
+
+  profiles[1]->MergeDataFrom(*profiles[0], "en");
+  ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
+  ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());
+
+  profiles[0]->SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Goli Boli"));
+  ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
 }
 
 TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {

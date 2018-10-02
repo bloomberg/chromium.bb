@@ -280,6 +280,8 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   server_id_ = profile.server_id();
   has_converted_ = profile.has_converted();
+  is_client_validity_states_updated_ =
+      profile.is_client_validity_states_updated();
   SetClientValidityFromBitfieldValue(profile.GetClientValidityBitfieldValue());
   server_validity_states_ = profile.GetServerValidityMap();
 
@@ -360,8 +362,11 @@ base::string16 AutofillProfile::GetRawInfo(ServerFieldType type) const {
 void AutofillProfile::SetRawInfo(ServerFieldType type,
                                  const base::string16& value) {
   FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
-  if (form_group)
+  if (form_group) {
+    is_client_validity_states_updated_ &=
+        !IsClientValidationSupportedForType(type);
     form_group->SetRawInfo(type, value);
+  }
 }
 
 void AutofillProfile::GetSupportedTypes(
@@ -434,8 +439,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
 bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
   return guid() == profile.guid() &&
          language_code() == profile.language_code() &&
-         GetClientValidityBitfieldValue() ==
-             profile.GetClientValidityBitfieldValue() &&
+         is_client_validity_states_updated() ==
+             profile.is_client_validity_states_updated() &&
          Compare(profile) == 0;
 }
 
@@ -517,7 +522,6 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
   // values.
   std::string language_code_value = language_code();
   std::string origin_value = origin();
-  int validity_bitfield_value = GetClientValidityBitfieldValue();
   base::string16 name_full_value = GetRawInfo(NAME_FULL);
 
   *this = profile;
@@ -526,8 +530,6 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
     set_origin(origin_value);
   if (language_code().empty())
     set_language_code(language_code_value);
-  if (GetClientValidityBitfieldValue() == 0)
-    SetClientValidityFromBitfieldValue(validity_bitfield_value);
   if (!HasRawInfo(NAME_FULL))
     SetRawInfo(NAME_FULL, name_full_value);
 }
@@ -607,6 +609,8 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
     address_ = address;
     modified = true;
   }
+
+  is_client_validity_states_updated_ &= !modified;
 
   return modified;
 }
@@ -954,6 +958,9 @@ bool AutofillProfile::SetInfoImpl(const AutofillType& type,
   if (!form_group)
     return false;
 
+  is_client_validity_states_updated_ &=
+      !IsClientValidationSupportedForType(type.GetStorableType());
+
   base::string16 trimmed_value;
   base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
   return form_group->SetInfoImpl(type, trimmed_value, app_locale);
@@ -1087,8 +1094,8 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
   return origin() == profile.origin() &&
          language_code() == profile.language_code() &&
-         GetClientValidityBitfieldValue() ==
-             profile.GetClientValidityBitfieldValue() &&
+         is_client_validity_states_updated() ==
+             profile.is_client_validity_states_updated() &&
          Compare(profile) == 0;
 }
 

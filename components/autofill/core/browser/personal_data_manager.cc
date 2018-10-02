@@ -473,6 +473,7 @@ void PersonalDataManager::Init(
     scoped_refptr<AutofillWebDataService> account_database,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
+    AutofillProfileValidator* client_profile_validator,
     bool is_off_the_record) {
   CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
@@ -500,6 +501,7 @@ void PersonalDataManager::Init(
   LoadCreditCards();
   LoadPaymentsCustomerData();
 
+  client_profile_validator_ = client_profile_validator;
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
       pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
@@ -1181,6 +1183,26 @@ void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
   profile_validities_need_update = false;
   for (auto* profile : profiles) {
     profile->UpdateServerValidityMap(GetProfileValidityByGUID(profile->guid()));
+  }
+}
+
+void PersonalDataManager::OnValidated(AutofillProfile* profile) {
+  // We always set a value for country validity state.
+  DCHECK(profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
+                                   AutofillProfile::CLIENT) !=
+         AutofillProfile::UNVALIDATED);
+  profile->set_is_client_validity_states_updated(true);
+}
+
+void PersonalDataManager::UpdateClientValidityStates(
+    std::vector<AutofillProfile*>& profiles) {
+  if (!client_profile_validator_)
+    return;
+  for (auto* profile : profiles) {
+    if (!profile->is_client_validity_states_updated())
+      client_profile_validator_->StartProfileValidation(
+          profile, base::BindOnce(&PersonalDataManager::OnValidated,
+                                  base::Unretained(this)));
   }
 }
 
