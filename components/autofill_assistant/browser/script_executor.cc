@@ -207,7 +207,7 @@ void ScriptExecutor::OnProcessedAction(
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
   processed_actions_.emplace_back(*processed_action_proto);
   if (processed_actions_.back().status() !=
-      ProcessedActionStatus::ACTION_APPLIED) {
+      ProcessedActionStatusProto::ACTION_APPLIED) {
     // Report error immediately, interrupting action processing.
     GetNextActions();
     return;

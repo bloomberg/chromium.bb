@@ -240,12 +240,12 @@ message ProcessedActionProto {
   // The action that was processed.
   optional ActionProto action = 1;
 
-  optional ProcessedActionStatus status = 2;
+  optional ProcessedActionStatusProto status = 2;
 
   optional PageContentProto page_content = 3;
 }
 
-enum ProcessedActionStatus {
+enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
   ELEMENT_RESOLUTION_FAILED = 1;
   ACTION_APPLIED = 2;

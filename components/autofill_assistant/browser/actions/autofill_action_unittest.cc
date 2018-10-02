@@ -135,7 +135,7 @@ class AutofillActionTest : public testing::Test {
     DirectCallback callback;
     action.ProcessAction(&mock_action_delegate_, callback.Get());
     return callback.GetResultOrDie()->status() ==
-           ProcessedActionStatus::ACTION_APPLIED;
+           ProcessedActionStatusProto::ACTION_APPLIED;
   }
 
   MockActionDelegate mock_action_delegate_;

@@ -11,7 +11,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
-
+// An action to stop Autofill Assistant.
 class StopAction : public Action {
  public:
   explicit StopAction(const ActionProto& proto);

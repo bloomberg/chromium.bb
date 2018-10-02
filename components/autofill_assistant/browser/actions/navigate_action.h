@@ -11,7 +11,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
-// An action to display a message.
+// An action to navigate to a given web page.
 class NavigateAction : public Action {
  public:
   explicit NavigateAction(const ActionProto& proto);
