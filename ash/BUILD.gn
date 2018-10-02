@@ -1385,6 +1385,7 @@ component("ash") {
     "//gpu/command_buffer/client:gles2_interface",
     "//media",
     "//net",
+    "//services/content/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
@@ -1392,6 +1393,7 @@ component("ash") {
     "//services/ws/public/cpp/host",
     "//services/ws/public/cpp/input_devices:input_device_controller",
     "//services/ws/public/mojom/input_devices",
+    "//services/ws/remote_view_host",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.
     "//ash/app_list/presenter",

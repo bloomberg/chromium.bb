@@ -30,6 +30,7 @@ component("cpp") {
     "//base",
     "//net",
     "//services/content/public/mojom",
+    "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",
     "//url",
   ]

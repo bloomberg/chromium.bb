@@ -28,6 +28,7 @@ include_rules = [
   "+mash/shelf/public",
   "+mojo/public",
   "+services/catalog/public",
+  "+services/content/public",
   "+services/preferences/public",
   "+services/service_manager/embedder",
   "+services/service_manager/public",

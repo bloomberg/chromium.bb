@@ -102,6 +102,7 @@ void NavigableContentsImpl::EmbedInProcessClientView(
   DCHECK(!local_view_host_);
   local_view_host_ = std::make_unique<views::NativeViewHost>();
   local_view_host_->set_owned_by_client();
+  view->set_native_view(local_view_host_->native_view());
   view->view()->AddChildView(local_view_host_.get());
   view->view()->Layout();
   local_view_host_->Attach(native_content_view_);
