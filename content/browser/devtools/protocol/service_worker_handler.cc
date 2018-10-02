@@ -175,6 +175,7 @@ void ServiceWorkerHandler::SetRenderer(int process_host_id,
   storage_partition_ =
       static_cast<StoragePartitionImpl*>(process_host->GetStoragePartition());
   DCHECK(storage_partition_);
+  browser_context_ = process_host->GetBrowserContext();
   context_ = static_cast<ServiceWorkerContextWrapper*>(
       storage_partition_->GetServiceWorkerContext());
 }
