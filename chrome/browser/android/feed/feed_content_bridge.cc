@@ -38,7 +38,7 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfByteArray;
 using base::android::ToJavaArrayOfStrings;
-using base::android::JavaByteArrayToByteVector;
+using base::android::JavaByteArrayToString;
 
 namespace {
 
@@ -206,11 +206,10 @@ void FeedContentBridge::AppendUpsertOperation(
     const JavaRef<jbyteArray>& j_data) {
   DCHECK(content_mutation_);
   std::string key(ConvertJavaStringToUTF8(j_env, j_key));
-  std::vector<uint8_t> byte_vector;
-  JavaByteArrayToByteVector(j_env, j_data.obj(), &byte_vector);
+  std::string data;
+  JavaByteArrayToString(j_env, j_data.obj(), &data);
 
-  content_mutation_->AppendUpsertOperation(
-      key, std::string(byte_vector.begin(), byte_vector.end()));
+  content_mutation_->AppendUpsertOperation(key, data);
 }
 
 void FeedContentBridge::AppendDeleteAllOperation(
