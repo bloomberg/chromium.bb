@@ -79,6 +79,8 @@ void ServiceImpl::OnStart() {
       base::Bind(&ServiceImpl::OnTestingControlsRequest,
                  base::Unretained(this)));
 
+  // Unretained |this| is safe because |factory_provider_bindings_| is owned by
+  // |this|.
   factory_provider_bindings_.set_connection_error_handler(base::BindRepeating(
       &ServiceImpl::OnProviderClientDisconnected, base::Unretained(this)));
 }
@@ -112,6 +114,8 @@ void ServiceImpl::OnDeviceFactoryProviderRequest(
     mojom::DeviceFactoryProviderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LazyInitializeDeviceFactoryProvider();
+  if (factory_provider_bindings_.empty())
+    device_factory_provider_->SetServiceRef(ref_factory_->CreateRef());
   factory_provider_bindings_.AddBinding(device_factory_provider_.get(),
                                         std::move(request));
 
@@ -132,15 +136,17 @@ void ServiceImpl::LazyInitializeDeviceFactoryProvider() {
   if (device_factory_provider_)
     return;
 
-  device_factory_provider_ =
-      std::make_unique<DeviceFactoryProviderImpl>(ref_factory_->CreateRef());
+  device_factory_provider_ = std::make_unique<DeviceFactoryProviderImpl>();
 }
 
 void ServiceImpl::OnProviderClientDisconnected() {
-  // Reset factory provider if no client is connected.
-  if (factory_provider_bindings_.empty()) {
-    device_factory_provider_.reset();
-  }
+  // If last client has disconnected, release service ref so that service
+  // shutdown timeout starts if no other references are still alive.
+  // We keep the |device_factory_provider_| instance alive in order to avoid
+  // losing state that would be expensive to reinitialize, e.g. having
+  // already enumerated the available devices.
+  if (factory_provider_bindings_.empty())
+    device_factory_provider_->SetServiceRef(nullptr);
 
   if (!factory_provider_client_disconnected_cb_.is_null()) {
     factory_provider_client_disconnected_cb_.Run();
