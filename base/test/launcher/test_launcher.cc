@@ -68,6 +68,7 @@
 
 #if defined(OS_FUCHSIA)
 #include <lib/zx/job.h>
+#include "base/atomic_sequence_num.h"
 #include "base/base_paths_fuchsia.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/file_utils.h"
@@ -347,11 +348,10 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // Create the test subdirectory with a name that is unique to the child test
   // process (qualified by parent PID and an autoincrementing test process
   // index).
-  static size_t child_launch_index = 0;
+  static base::AtomicSequenceNumber child_launch_index;
   base::FilePath nested_data_path = data_path.AppendASCII(
-      base::StringPrintf("test-%" PRIuS "-%" PRIuS,
-                         base::Process::Current().Pid(), child_launch_index));
-  ++child_launch_index;
+      base::StringPrintf("test-%" PRIuS "-%d", base::Process::Current().Pid(),
+                         child_launch_index.GetNext()));
   CHECK(!base::DirectoryExists(nested_data_path));
   CHECK(base::CreateDirectory(nested_data_path));
   DCHECK(base::DirectoryExists(nested_data_path));
