@@ -359,5 +359,31 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#turn-off'), false);
       assertVisible(testElement.$$('#sync-paused-button'), false);
     });
+
+    test('hide buttons', function() {
+      testElement.hideButtons = true;
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.NO_ACTION,
+        hasError: false,
+        hasUnrecoverableError: false,
+        disabled: false,
+      };
+
+      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#sync-paused-button'), false);
+
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true,
+        hasUnrecoverableError: false,
+        statusAction: settings.StatusAction.REAUTHENTICATE,
+        disabled: false,
+      };
+      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#sync-paused-button'), false);
+    });
   });
 });

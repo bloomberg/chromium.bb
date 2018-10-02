@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('settings_privacy_page', function() {
+  /**
+   * @param {!Element} element
+   * @param {boolean} displayed
+   */
+  function assertVisible(element, displayed) {
+    assertEquals(
+        displayed, window.getComputedStyle(element)['display'] != 'none');
+  }
+
   /** @implements {settings.ClearBrowsingDataBrowserProxy} */
   class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
     constructor() {
@@ -154,6 +163,7 @@ cr.define('settings_privacy_page', function() {
         PolymerTest.clearBody();
         element = document.createElement('settings-clear-browsing-data-dialog');
         element.set('prefs', getClearBrowsingDataPrefs());
+        element.syncStatus = {signedIn: true, hasError: false};
         document.body.appendChild(element);
         return testBrowserProxy.whenCalled('initialize');
       });
@@ -322,6 +332,67 @@ cr.define('settings_privacy_page', function() {
           assertTrue(element.$$('#browsingCheckboxBasic').hidden);
           assertTrue(element.$$('#downloadCheckbox').hidden);
         });
+      });
+
+      test('ClearBrowsingDataSyncAccountInfo', function() {
+        assertTrue(element.$$('#clearBrowsingDataDialog').open);
+
+        // Not syncing: the footer is hidden.
+        element.syncStatus = {
+          signedIn: false,
+          hasError: false,
+        };
+        Polymer.dom.flush();
+        assertTrue(element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+
+        // Syncing: the footer is shown, with the normal sync info.
+        element.syncStatus = {
+          signedIn: true,
+          hasError: false,
+        };
+        Polymer.dom.flush();
+        assertFalse(
+            element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+        assertVisible(element.$$('#sync-info'), true);
+        assertFalse(!!element.$$('#sync-paused-info'));
+        assertFalse(!!element.$$('#sync-passphrase-error-info'));
+        assertFalse(!!element.$$('#sync-other-error-info'));
+
+        // Sync is paused.
+        element.syncStatus = {
+          signedIn: true,
+          hasError: true,
+          statusAction: settings.StatusAction.REAUTHENTICATE
+        };
+        Polymer.dom.flush();
+        assertVisible(element.$$('#sync-paused-info'), true);
+        assertVisible(element.$$('#sync-info'), false);
+        assertFalse(!!element.$$('#sync-passphrase-error-info'));
+        assertFalse(!!element.$$('#sync-other-error-info'));
+
+        // Sync passphrase error.
+        element.syncStatus = {
+          signedIn: true,
+          hasError: true,
+          statusAction: settings.StatusAction.ENTER_PASSPHRASE
+        };
+        Polymer.dom.flush();
+        assertVisible(element.$$('#sync-passphrase-error-info'), true);
+        assertVisible(element.$$('#sync-info'), false);
+        assertVisible(element.$$('#sync-paused-info'), false);
+        assertFalse(!!element.$$('#sync-other-error-info'));
+
+        // Other sync error.
+        element.syncStatus = {
+          signedIn: true,
+          hasError: true,
+          statusAction: settings.StatusAction.NO_ACTION
+        };
+        Polymer.dom.flush();
+        assertVisible(element.$$('#sync-other-error-info'), true);
+        assertVisible(element.$$('#sync-info'), false);
+        assertVisible(element.$$('#sync-paused-info'), false);
+        assertVisible(element.$$('#sync-passphrase-error-info'), false);
       });
     });
   }
