@@ -223,7 +223,8 @@ class AutofillCapturedSitesInteractiveTest
     // feature forces input elements on a form to display their autofill type
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
-    feature_list_.InitAndEnableFeature(features::kAutofillShowTypePredictions);
+    feature_list_.InitWithFeatures({features::kAutofillShowTypePredictions},
+                                   {features::kAutofillCacheQueryResponses});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
