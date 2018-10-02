@@ -26,6 +26,7 @@
 namespace {
 const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
+const CGFloat kShortcutsRowHeight = 100;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
 UIColor* BackgroundColorTablet() {
@@ -209,6 +210,15 @@ UIColor* BackgroundColorIncognito() {
 - (void)setIncognito:(BOOL)incognito {
   DCHECK(!self.viewLoaded);
   _incognito = incognito;
+}
+
+- (void)setShortcutsEnabled:(BOOL)shortcutsEnabled {
+  if (shortcutsEnabled == _shortcutsEnabled) {
+    return;
+  }
+
+  _shortcutsEnabled = shortcutsEnabled;
+  [self.tableView reloadData];
 }
 
 #pragma mark - AutocompleteResultConsumer
@@ -608,6 +618,11 @@ UIColor* BackgroundColorIncognito() {
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return kShortcutsRowHeight;
+  }
+
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return ((OmniboxPopupRow*)(_rows[indexPath.row])).rowHeight;
@@ -620,6 +635,9 @@ UIColor* BackgroundColorIncognito() {
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
   DCHECK_EQ(0, section);
+  if (self.shortcutsEnabled && _currentResult.count == 0) {
+    return 1;
+  }
   return _currentResult.count;
 }
 
@@ -627,6 +645,17 @@ UIColor* BackgroundColorIncognito() {
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
+
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    // This is a placeholder cell.
+    UITableViewCell* cell =
+        [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                               reuseIdentifier:nil];
+    cell.textLabel.text = @"Shortcuts placeholder";
+    return cell;
+  }
+
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return _rows[indexPath.row];
 }
@@ -634,6 +663,12 @@ UIColor* BackgroundColorIncognito() {
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
+
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return NO;
+  }
+
   // iOS doesn't check -numberOfRowsInSection before checking
   // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,
   // simple return |NO|.
