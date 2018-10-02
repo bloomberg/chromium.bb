@@ -4783,7 +4783,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {
-  SetViewportDamage(active_tree_->GetDeviceViewport());
+  SetViewportDamage(gfx::Rect(active_tree_->GetDeviceViewport().size()));
 }
 
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
