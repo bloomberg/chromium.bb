@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
 #include "third_party/blink/renderer/modules/payments/basic_card_request.h"
 #include "third_party/blink/renderer/modules/payments/html_iframe_element_payments.h"
-#include "third_party/blink/renderer/modules/payments/payer_error_fields.h"
+#include "third_party/blink/renderer/modules/payments/payer_errors.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_update.h"
@@ -64,8 +64,8 @@ namespace {
 using ::payments::mojom::blink::AddressErrors;
 using ::payments::mojom::blink::AddressErrorsPtr;
 using ::payments::mojom::blink::CanMakePaymentQueryResult;
-using ::payments::mojom::blink::PayerErrorFields;
-using ::payments::mojom::blink::PayerErrorFieldsPtr;
+using ::payments::mojom::blink::PayerErrors;
+using ::payments::mojom::blink::PayerErrorsPtr;
 using ::payments::mojom::blink::PaymentAddress;
 using ::payments::mojom::blink::PaymentAddressPtr;
 using ::payments::mojom::blink::PaymentCurrencyAmount;
@@ -149,9 +149,8 @@ struct TypeConverter<PaymentValidationErrorsPtr,
       const blink::PaymentValidationErrors& input) {
     PaymentValidationErrorsPtr output =
         payments::mojom::blink::PaymentValidationErrors::New();
-    output->payer = input.hasPayer()
-                        ? PayerErrorFields::From(input.payer())
-                        : PayerErrorFields::From(blink::PayerErrorFields());
+    output->payer = input.hasPayer() ? PayerErrors::From(input.payer())
+                                     : PayerErrors::From(blink::PayerErrors());
     output->shipping_address =
         input.hasShippingAddress()
             ? AddressErrors::From(input.shippingAddress())
@@ -161,10 +160,9 @@ struct TypeConverter<PaymentValidationErrorsPtr,
 };
 
 template <>
-struct TypeConverter<PayerErrorFieldsPtr, blink::PayerErrorFields> {
-  static PayerErrorFieldsPtr Convert(const blink::PayerErrorFields& input) {
-    PayerErrorFieldsPtr output =
-        payments::mojom::blink::PayerErrorFields::New();
+struct TypeConverter<PayerErrorsPtr, blink::PayerErrors> {
+  static PayerErrorsPtr Convert(const blink::PayerErrors& input) {
+    PayerErrorsPtr output = payments::mojom::blink::PayerErrors::New();
     output->email = input.hasEmail() ? input.email() : g_empty_string;
     output->name = input.hasName() ? input.name() : g_empty_string;
     output->phone = input.hasPhone() ? input.phone() : g_empty_string;

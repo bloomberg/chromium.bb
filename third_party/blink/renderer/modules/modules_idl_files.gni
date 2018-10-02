@@ -583,7 +583,7 @@ modules_dictionary_idl_files =
           "payments/basic_card_request.idl",
           "payments/can_make_payment_event_init.idl",
           "payments/image_object.idl",
-          "payments/payer_error_fields.idl",
+          "payments/payer_errors.idl",
           "payments/payment_currency_amount.idl",
           "payments/payment_details_base.idl",
           "payments/payment_details_init.idl",
