@@ -3,8 +3,6 @@ caitkp@chromium.org
 jochen@chromium.org
 sdefresne@chromium.org
 
-# Note: Best not to use globs (like autofill*) due to crbug.com/397984
-
 per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 per-file autofill_strings.grdp=file://components/autofill/OWNERS
 per-file bookmark_bar_strings.grdp=file://components/bookmarks/OWNERS
@@ -16,7 +14,6 @@ per-file management_strings.grdp=file://components/policy/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS
 per-file page_info_strings.grdp=file://chrome/browser/ui/page_info/OWNERS
-per-file page_info_strings_grdp=file://chrome/browser/ui/page_info/OWNERS
 per-file password_manager_strings.grdp=file://components/password_manager/OWNERS
 per-file payments_strings.grdp=file://components/payments/OWNERS
 per-file pdf_strings.grdp=file://pdf/OWNERS
