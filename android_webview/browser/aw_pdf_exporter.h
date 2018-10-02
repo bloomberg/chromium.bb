@@ -32,7 +32,7 @@ class AwPdfExporter {
   void ExportToPdf(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    int fd,
-                   jintArray pages,
+                   const base::android::JavaParamRef<jintArray>& pages,
                    const base::android::JavaParamRef<jobject>& cancel_signal);
 
  private:

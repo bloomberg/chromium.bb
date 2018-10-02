@@ -25,6 +25,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace autofill_assistant {
 namespace switches {
@@ -34,12 +35,15 @@ const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
 namespace {
 
 // Builds a map from two Java arrays of strings with the same length.
-std::unique_ptr<std::map<std::string, std::string>>
-BuildParametersFromJava(JNIEnv* env, jobjectArray names, jobjectArray values) {
+std::unique_ptr<std::map<std::string, std::string>> BuildParametersFromJava(
+    JNIEnv* env,
+    const JavaRef<jobjectArray>& names,
+    const JavaRef<jobjectArray>& values) {
   std::vector<std::string> names_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, names, &names_vector);
+  base::android::AppendJavaStringArrayToStringVector(env, names.obj(),
+                                                     &names_vector);
   std::vector<std::string> values_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, values,
+  base::android::AppendJavaStringArrayToStringVector(env, values.obj(),
                                                      &values_vector);
   DCHECK_EQ(names_vector.size(), values_vector.size());
   auto parameters = std::make_unique<std::map<std::string, std::string>>();

@@ -21,10 +21,10 @@ namespace android_webview {
 namespace {
 
 void JNI_AwPdfExporter_GetPageRanges(JNIEnv* env,
-                                     jintArray int_arr,
+                                     const JavaRef<jintArray>& int_arr,
                                      printing::PageRanges* range_vector) {
   std::vector<int> pages;
-  base::android::JavaIntArrayToIntVector(env, int_arr, &pages);
+  base::android::JavaIntArrayToIntVector(env, int_arr.obj(), &pages);
   for (int page : pages) {
     printing::PageRange range;
     range.from = page;
@@ -56,7 +56,7 @@ AwPdfExporter::~AwPdfExporter() {
 void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 int fd,
-                                jintArray pages,
+                                const JavaParamRef<jintArray>& pages,
                                 const JavaParamRef<jobject>& cancel_signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   printing::PrintSettings print_settings;
