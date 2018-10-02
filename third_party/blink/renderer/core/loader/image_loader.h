@@ -254,12 +254,9 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
     enum State { kPendingMicrotask, kPendingLoad, kDispatched };
 
     DecodeRequest(ImageLoader*, ScriptPromiseResolver*);
-    DecodeRequest(DecodeRequest&&) = default;
     ~DecodeRequest() = default;
 
     void Trace(blink::Visitor*);
-
-    DecodeRequest& operator=(DecodeRequest&&) = default;
 
     uint64_t request_id() const { return request_id_; }
     State state() const { return state_; }
