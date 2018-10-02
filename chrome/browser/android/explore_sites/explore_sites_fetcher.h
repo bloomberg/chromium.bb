@@ -33,7 +33,6 @@ class ExploreSitesFetcher {
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCatalog(
       Callback callback,
       const std::string catalog_version,
-      const std::string country_code,
       const std::string accept_languages,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
@@ -41,7 +40,6 @@ class ExploreSitesFetcher {
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCategories(
       Callback callback,
       const std::string catalog_version,
-      const std::string country_code,
       const std::string accept_languages,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
@@ -52,7 +50,6 @@ class ExploreSitesFetcher {
       Callback callback,
       const GURL& url,
       const std::string catalog_version,
-      const std::string country_code,
       const std::string accept_languages,
       scoped_refptr<network ::SharedURLLoaderFactory> loader_factory);
 
