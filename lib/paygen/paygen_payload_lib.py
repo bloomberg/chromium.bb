@@ -18,7 +18,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
-from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
@@ -71,7 +70,7 @@ class _PaygenPayload(object):
     self.cache = cache
     self.work_dir = work_dir
     self._verify = verify
-    self._drm = dryrun_lib.DryRunMgr(dry_run)
+    self._dry_run = dry_run
 
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
@@ -600,10 +599,14 @@ class _PaygenPayload(object):
 
   def Run(self):
     """Create, verify and upload the results."""
-    self._drm(self._Create)
+    if self._dry_run:
+      logging.info('dry-run mode; skipping Create+Verify+Upload steps')
+      return
+
+    self._Create()
     if self._verify:
-      self._drm(self._VerifyPayload)
-    self._drm(self._UploadResults)
+      self._VerifyPayload()
+    self._UploadResults()
 
 
 def DefaultPayloadUri(payload, random_str=None):
