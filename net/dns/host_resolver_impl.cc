@@ -59,7 +59,6 @@
 #include "net/base/url_util.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_client.h"
-#include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_reloader.h"
 #include "net/dns/dns_response.h"

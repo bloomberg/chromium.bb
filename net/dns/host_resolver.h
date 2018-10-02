@@ -18,7 +18,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
-#include "net/dns/dns_config_service.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 
