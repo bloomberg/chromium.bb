@@ -26,6 +26,12 @@ BASE_EXPORT ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
     JNIEnv* env,
     const std::vector<uint8_t>& bytes);
 
+// Returns a new Java byte array converted from the given string. No UTF-8
+// conversion is performed.
+BASE_EXPORT ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
+    JNIEnv* env,
+    const std::string& str);
+
 // Returns a new Java boolean array converted from the given bool array.
 BASE_EXPORT ScopedJavaLocalRef<jbooleanArray>
 ToJavaBooleanArray(JNIEnv* env, const bool* bools, size_t len);
@@ -80,10 +86,16 @@ BASE_EXPORT void AppendJavaByteArrayToByteVector(JNIEnv* env,
                                                  jbyteArray byte_array,
                                                  std::vector<uint8_t>* out);
 
-// Replaces the content of |out| with the Java bytes in |bytes_array|.
+// Replaces the content of |out| with the Java bytes in |byte_array|.
 BASE_EXPORT void JavaByteArrayToByteVector(JNIEnv* env,
                                            jbyteArray byte_array,
                                            std::vector<uint8_t>* out);
+
+// Replaces the content of |out| with the Java bytes in |byte_array|. No UTF-8
+// conversion is performed.
+BASE_EXPORT void JavaByteArrayToString(JNIEnv* env,
+                                       jbyteArray byte_array,
+                                       std::string* out);
 
 // Replaces the content of |out| with the Java booleans in |boolean_array|.
 BASE_EXPORT void JavaBooleanArrayToBoolVector(JNIEnv* env,

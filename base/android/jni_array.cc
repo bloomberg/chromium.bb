@@ -45,6 +45,12 @@ ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
   return ToJavaByteArray(env, bytes.data(), bytes.size());
 }
 
+ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(JNIEnv* env,
+                                               const std::string& str) {
+  return ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(str.data()),
+                         str.size());
+}
+
 ScopedJavaLocalRef<jbooleanArray> ToJavaBooleanArray(JNIEnv* env,
                                                      const bool* bools,
                                                      size_t len) {
@@ -213,6 +219,17 @@ void JavaByteArrayToByteVector(JNIEnv* env,
   DCHECK(byte_array);
   out->clear();
   AppendJavaByteArrayToByteVector(env, byte_array, out);
+}
+
+void JavaByteArrayToString(JNIEnv* env,
+                           jbyteArray byte_array,
+                           std::string* out) {
+  DCHECK(out);
+  DCHECK(byte_array);
+
+  std::vector<uint8_t> byte_vector;
+  JavaByteArrayToByteVector(env, byte_array, &byte_vector);
+  out->assign(byte_vector.begin(), byte_vector.end());
 }
 
 void JavaBooleanArrayToBoolVector(JNIEnv* env,
