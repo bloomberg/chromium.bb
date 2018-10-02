@@ -126,7 +126,12 @@ public class FeedProcessScopeFactory {
                 .put(ConfigKey.FEED_SERVER_HOST, "https://www.google.com")
                 .put(ConfigKey.FEED_SERVER_PATH_AND_PARAMS,
                         "/httpservice/noretry/NowStreamService/FeedQuery")
-                .put(ConfigKey.SESSION_LIFETIME_MS, 300000L)
+                .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
+                .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
+                .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
+                        FeedConfiguration.getLoggingImmediateContentThresholdMs())
+                .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
+                        FeedConfiguration.getTriggerImmedatePagination())
                 .build();
     }
 
