@@ -52,9 +52,6 @@ class TopControlsSlideController {
   // changed state.
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) = 0;
 
-  // Returns true while gesture scrolls are in progress.
-  virtual bool IsTopControlsGestureScrollInProgress() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TopControlsSlideController);
 };
