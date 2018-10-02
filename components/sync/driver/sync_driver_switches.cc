@@ -58,6 +58,8 @@ const base::Feature kSyncPseudoUSSExtensions{"SyncPseudoUSSExtensions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSFavicons{"SyncPseudoUSSFavicons",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncPseudoUSSHistoryDeleteDirectives{
+    "SyncPseudoUSSHistoryDeleteDirectives", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSPreferences{
     "SyncPseudoUSSPreferences", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSPriorityPreferences{

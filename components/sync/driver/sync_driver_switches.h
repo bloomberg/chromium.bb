@@ -28,6 +28,7 @@ extern const base::Feature kSyncPseudoUSSApps;
 extern const base::Feature kSyncPseudoUSSDictionary;
 extern const base::Feature kSyncPseudoUSSExtensions;
 extern const base::Feature kSyncPseudoUSSFavicons;
+extern const base::Feature kSyncPseudoUSSHistoryDeleteDirectives;
 extern const base::Feature kSyncPseudoUSSPreferences;
 extern const base::Feature kSyncPseudoUSSPriorityPreferences;
 extern const base::Feature kSyncPseudoUSSThemes;
