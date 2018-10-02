@@ -995,7 +995,7 @@ var init = function() {
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
       updateTileVisibility();
-    }, RESIZE_TIMEOUT_DURATION);
+    }, RESIZE_TIMEOUT_DELAY);
   };
 
   window.addEventListener('message', handlePostMessage);
