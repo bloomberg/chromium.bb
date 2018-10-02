@@ -24,6 +24,7 @@ ScriptExecutor::ScriptExecutor(const std::string& script_path,
     : script_path_(script_path),
       delegate_(delegate),
       at_end_(CONTINUE),
+      should_stop_script_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
@@ -122,6 +123,13 @@ void ScriptExecutor::Restart() {
   at_end_ = RESTART;
 }
 
+void ScriptExecutor::StopCurrentScript(const std::string& message) {
+  if (!message.empty()) {
+    delegate_->GetUiController()->ShowStatusMessage(message);
+  }
+  should_stop_script_ = true;
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }
@@ -212,6 +220,14 @@ void ScriptExecutor::OnProcessedAction(
     GetNextActions();
     return;
   }
+
+  if (should_stop_script_) {
+    // Last action called StopCurrentScript(). We simulate a successful end of
+    // script to make sure we don't display any errors.
+    RunCallback(true);
+    return;
+  }
+
   ProcessNextAction();
 }
 
