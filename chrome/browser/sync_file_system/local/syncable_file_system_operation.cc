@@ -206,7 +206,7 @@ void SyncableFileSystemOperation::Remove(const FileSystemURL& url,
   operation_runner_->PostOperationTask(std::move(task));
 }
 
-void SyncableFileSystemOperation::Write(
+void SyncableFileSystemOperation::WriteBlob(
     const FileSystemURL& url,
     std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
     std::unique_ptr<storage::BlobReader> blob_reader,
@@ -222,8 +222,30 @@ void SyncableFileSystemOperation::Write(
   std::unique_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       weak_factory_.GetWeakPtr(),
       base::Bind(
-          &FileSystemOperation::Write, base::Unretained(impl_.get()), url,
+          &FileSystemOperation::WriteBlob, base::Unretained(impl_.get()), url,
           base::Passed(&writer_delegate), base::Passed(&blob_reader),
+          base::Bind(&self::DidWrite, weak_factory_.GetWeakPtr(), callback))));
+  operation_runner_->PostOperationTask(std::move(task));
+}
+
+void SyncableFileSystemOperation::Write(
+    const FileSystemURL& url,
+    std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
+    mojo::ScopedDataPipeConsumerHandle data_pipe,
+    const WriteCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!operation_runner_.get()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, 0, true);
+    return;
+  }
+  DCHECK(operation_runner_.get());
+  target_paths_.push_back(url);
+  completion_callback_ = base::BindOnce(&WriteCallbackAdapter, callback);
+  std::unique_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
+      weak_factory_.GetWeakPtr(),
+      base::Bind(
+          &FileSystemOperation::Write, base::Unretained(impl_.get()), url,
+          base::Passed(&writer_delegate), base::Passed(&data_pipe),
           base::Bind(&self::DidWrite, weak_factory_.GetWeakPtr(), callback))));
   operation_runner_->PostOperationTask(std::move(task));
 }

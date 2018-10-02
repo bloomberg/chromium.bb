@@ -61,9 +61,13 @@ class SyncableFileSystemOperation : public storage::FileSystemOperation {
   void Remove(const storage::FileSystemURL& url,
               bool recursive,
               StatusCallback callback) override;
+  void WriteBlob(const storage::FileSystemURL& url,
+                 std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
+                 std::unique_ptr<storage::BlobReader> blob_reader,
+                 const WriteCallback& callback) override;
   void Write(const storage::FileSystemURL& url,
              std::unique_ptr<storage::FileWriterDelegate> writer_delegate,
-             std::unique_ptr<storage::BlobReader> blob_reader,
+             mojo::ScopedDataPipeConsumerHandle data_pipe,
              const WriteCallback& callback) override;
   void Truncate(const storage::FileSystemURL& url,
                 int64_t length,

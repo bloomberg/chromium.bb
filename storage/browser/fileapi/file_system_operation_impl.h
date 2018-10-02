@@ -61,9 +61,13 @@ class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
   void Remove(const FileSystemURL& url,
               bool recursive,
               StatusCallback callback) override;
+  void WriteBlob(const FileSystemURL& url,
+                 std::unique_ptr<FileWriterDelegate> writer_delegate,
+                 std::unique_ptr<BlobReader> blob_reader,
+                 const WriteCallback& callback) override;
   void Write(const FileSystemURL& url,
              std::unique_ptr<FileWriterDelegate> writer_delegate,
-             std::unique_ptr<BlobReader> blob_reader,
+             mojo::ScopedDataPipeConsumerHandle data_pipe,
              const WriteCallback& callback) override;
   void Truncate(const FileSystemURL& url,
                 int64_t length,

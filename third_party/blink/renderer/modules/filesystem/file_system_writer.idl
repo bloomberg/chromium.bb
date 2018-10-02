@@ -7,8 +7,9 @@
     NoInterfaceObject,
     RuntimeEnabled=WritableFiles
 ] interface FileSystemWriter {
-    // TODO(mek): Support other types, such as ReadableStream, by using 'any'.
-    [CallWith=ScriptState] Promise<void> write(unsigned long long position, Blob data);
+    // TODO(mek): 'any' really is 'Blob or ReadableStream', but that's not
+    // currently supported by our bindings.
+    [CallWith=ScriptState, RaisesException] Promise<void> write(unsigned long long position, any data);
     [CallWith=ScriptState] Promise<void> truncate(unsigned long long size);
 
     [CallWith=ScriptState] Promise<void> close();

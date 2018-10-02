@@ -193,7 +193,7 @@ void FileSystemOperationImpl::Remove(const FileSystemURL& url,
   recursive_operation_delegate_->Run();
 }
 
-void FileSystemOperationImpl::Write(
+void FileSystemOperationImpl::WriteBlob(
     const FileSystemURL& url,
     std::unique_ptr<FileWriterDelegate> writer_delegate,
     std::unique_ptr<BlobReader> blob_reader,
@@ -204,6 +204,19 @@ void FileSystemOperationImpl::Write(
       std::move(blob_reader),
       base::Bind(&FileSystemOperationImpl::DidWrite, weak_factory_.GetWeakPtr(),
                  url, callback));
+}
+
+void FileSystemOperationImpl::Write(
+    const FileSystemURL& url,
+    std::unique_ptr<FileWriterDelegate> writer_delegate,
+    mojo::ScopedDataPipeConsumerHandle data_pipe,
+    const WriteCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationWrite));
+  file_writer_delegate_ = std::move(writer_delegate);
+  file_writer_delegate_->Start(
+      std::move(data_pipe),
+      base::BindRepeating(&FileSystemOperationImpl::DidWrite,
+                          weak_factory_.GetWeakPtr(), url, callback));
 }
 
 void FileSystemOperationImpl::Truncate(const FileSystemURL& url,
