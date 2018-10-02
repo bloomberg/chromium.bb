@@ -5,7 +5,7 @@
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
-#include "ui/gl/gl_bindings.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace viz {
 
