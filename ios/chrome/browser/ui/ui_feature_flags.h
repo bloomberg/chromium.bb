@@ -17,7 +17,7 @@ extern const base::Feature kCopyImage;
 
 // Feature to show most visited sites and collection shortcuts in the omnibox
 // popup instead of ZeroSuggest.
-extern const base::Feature kOmniboxPopupShortcuts;
+extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 
 // Used to enable using the WKWebView snapshotting API for iOS 11+.
 extern const base::Feature kWKWebViewSnapshots;

@@ -191,6 +191,13 @@ const base::Feature kBreakWordsAtUnderscores{"OmniboxBreakWordsAtUnderscores",
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to replace the standard ZeroSuggest with icons for most visited sites
+// and collections (bookmarks, history, recent tabs, reading list). Only
+// available on iOS.
+const base::Feature kOmniboxPopupShortcutIconsInZeroState{
+    "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {

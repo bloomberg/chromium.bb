@@ -526,6 +526,11 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   if (client()->IsOffTheRecord())
     return false;
 
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+    return false;
+  }
+
   // Only show zero suggest for pages with URLs the user will recognize
   // if it is not running in ChromeOS app_list context.
   // This list intentionally does not include items such as ftp: and file:
