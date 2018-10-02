@@ -33,7 +33,9 @@ DevtoolsClient::DevtoolsClient(
   agent_host_->AttachClient(this);
 }
 
-DevtoolsClient::~DevtoolsClient() {}
+DevtoolsClient::~DevtoolsClient() {
+  agent_host_->DetachClient(this);
+}
 
 input::Domain* DevtoolsClient::GetInput() {
   return &input_domain_;
