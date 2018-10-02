@@ -30,6 +30,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -114,6 +115,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 // if called on the UI Thread. See https://crbug.com/705477 and
                 // https://crbug.com/577185
                 Calendar.getInstance();
+
+                // Disable offline indicator UI to prevent it from popping up to obstruct other UI
+                // views that may make tests flaky.
+                Features.getInstance().disable(ChromeFeatureList.OFFLINE_INDICATOR);
 
                 base.evaluate();
             }
