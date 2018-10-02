@@ -710,7 +710,6 @@ HWTEST_MAX_RETRIES = 5
 #   INSTALLER: Blocking suite run against all canaries; tests basic installer
 #              functionality.
 HWTEST_ARC_COMMIT_SUITE = 'bvt-arc'
-HWTEST_ARC_CANARY_SUITE = 'arc-bvt-perbuild'
 HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
