@@ -86,6 +86,12 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       buildbucket['build'].get('bucket') == 'luci.chrome.ci'):
     is_luci = True
 
+  if 'build' in buildbucket:
+    args += [
+      '--project', buildbucket['build'].get('project'),
+      '--buildbucket', buildbucket['build'].get('bucket'),
+    ]
+
   if service_account_file and not is_luci:
     args += ['--service-account-file', service_account_file]
 
