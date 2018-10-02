@@ -560,16 +560,20 @@ bool IsRegularXRegularSizeClass() {
 }
 
 bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment) {
-  UITraitCollection* traitCollection = environment.traitCollection;
+  return IsRegularXRegularSizeClass(environment.traitCollection);
+}
+
+bool IsRegularXRegularSizeClass(UITraitCollection* traitCollection) {
   return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
+bool ShouldShowCompactToolbar(UITraitCollection* traitCollection) {
+  return !IsRegularXRegularSizeClass(traitCollection);
+}
+
 bool ShouldShowCompactToolbar() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return !IsRegularXRegularSizeClass();
-  }
-  return !IsIPadIdiom();
+  return !IsRegularXRegularSizeClass();
 }
 
 bool IsSplitToolbarMode() {
@@ -577,8 +581,7 @@ bool IsSplitToolbarMode() {
 }
 
 bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
-  return IsUIRefreshPhase1Enabled() && IsCompactWidth(environment) &&
-         !IsCompactHeight(environment);
+  return IsCompactWidth(environment) && !IsCompactHeight(environment);
 }
 
 // Returns the first responder in the subviews of |view|, or nil if no view in
