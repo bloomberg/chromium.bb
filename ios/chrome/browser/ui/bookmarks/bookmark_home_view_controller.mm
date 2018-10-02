@@ -382,13 +382,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // SearchController is active will fail.
   self.definesPresentationContext = YES;
 
-  self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
+  self.scrimView = [[UIControl alloc] init];
   self.scrimView.backgroundColor =
       [UIColor colorWithWhite:0
                         alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.scrimView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
@@ -946,7 +944,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     // Early return if the controller has been deallocated.
     if (!strongSelf)
       return;
-    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
+    [UIView animateWithDuration:0.2f
         animations:^{
           strongSelf.spinnerView.alpha = 0.0;
         }
@@ -1291,14 +1289,15 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)showScrim {
   self.navigationController.toolbarHidden = YES;
   self.scrimView.alpha = 0.0f;
-  CGSize contentSize = self.tableView.contentSize;
-  self.scrimView.frame =
-      CGRectMake(0.0f, 0.0f, contentSize.width,
-                 std::max(contentSize.height, self.view.bounds.size.height));
   [self.tableView addSubview:self.scrimView];
+  // We attach our constraints to the superview because the tableView is
+  // a scrollView and it seems that we get an empty frame when attaching to it.
+  AddSameConstraints(self.scrimView, self.view.superview);
+  self.tableView.scrollEnabled = NO;
   [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                    animations:^{
                      self.scrimView.alpha = 1.0f;
+                     [self.view layoutIfNeeded];
                    }];
 }
 
@@ -1310,6 +1309,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       }
       completion:^(BOOL finished) {
         [self.scrimView removeFromSuperview];
+        self.tableView.scrollEnabled = YES;
       }];
   [self setupContextBar];
 }

@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
@@ -231,14 +232,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // SearchController is active will fail.
   self.definesPresentationContext = YES;
 
-  self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
+  self.scrimView = [[UIControl alloc] init];
   self.scrimView.alpha = 0.0f;
   self.scrimView.backgroundColor =
       [UIColor colorWithWhite:0
                         alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.scrimView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   self.scrimView.accessibilityIdentifier = kHistorySearchScrimIdentifier;
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
@@ -918,14 +917,16 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if (self.scrimView.alpha < 1.0f) {
     self.navigationController.toolbarHidden = YES;
     self.scrimView.alpha = 0.0f;
-    CGSize contentSize = self.tableView.contentSize;
-    self.scrimView.frame =
-        CGRectMake(0.0f, 0.0f, contentSize.width,
-                   std::max(contentSize.height, self.view.bounds.size.height));
     [self.tableView addSubview:self.scrimView];
+    // We attach our constraints to the superview because the tableView is
+    // a scrollView and it seems that we get an empty frame when attaching to
+    // it.
+    AddSameConstraints(self.scrimView, self.view.superview);
+    self.tableView.scrollEnabled = NO;
     [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                      animations:^{
                        self.scrimView.alpha = 1.0f;
+                       [self.view layoutIfNeeded];
                      }];
   }
 }
@@ -940,6 +941,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         }
         completion:^(BOOL finished) {
           [self.scrimView removeFromSuperview];
+          self.tableView.scrollEnabled = YES;
         }];
   }
 }
