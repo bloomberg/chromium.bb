@@ -3580,6 +3580,12 @@ const char kOpenVRDescription[] =
     "Windows 10 or later).";
 #endif  // ENABLE_OPENVR
 
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+const char kXRSandboxName[] = "XR device sandboxing";
+const char kXRSandboxDescription[] =
+    "If enabled, Chrome will host VR APIs in a restricted process on desktop.";
+#endif  // ENABLE_ISOLATED_XR_SERVICE
+
 #endif  // ENABLE_VR
 
 #if BUILDFLAG(ENABLE_NACL)

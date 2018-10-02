@@ -24,6 +24,9 @@ void IsolatedVRDeviceProvider::Initialize(
       device::mojom::kVrIsolatedServiceName,
       mojo::MakeRequest(&device_provider_));
 
+  device_provider_.set_connection_error_handler(base::BindOnce(
+      &IsolatedVRDeviceProvider::OnServerError, base::Unretained(this)));
+
   device::mojom::IsolatedXRRuntimeProviderClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   device_provider_->RequestDevices(std::move(client));
@@ -43,20 +46,38 @@ void IsolatedVRDeviceProvider::OnDeviceAdded(
     device::mojom::VRDisplayInfoPtr display_info) {
   device::mojom::XRDeviceId id = display_info->id;
   add_device_callback_.Run(id, std::move(display_info), std::move(device));
-
 #if BUILDFLAG(ENABLE_OPENVR) || BUILDFLAG(ENABLE_OCULUS_VR)
   registered_gamepads_.insert(id);
   device::IsolatedGamepadDataFetcher::Factory::AddGamepad(
       id, std::move(gamepad_factory));
 #endif
+  added_devices_.insert(id);
 }
 
 void IsolatedVRDeviceProvider::OnDeviceRemoved(device::mojom::XRDeviceId id) {
   remove_device_callback_.Run(id);
+  added_devices_.erase(id);
 
 #if BUILDFLAG(ENABLE_OPENVR) || BUILDFLAG(ENABLE_OCULUS_VR)
   device::IsolatedGamepadDataFetcher::Factory::RemoveGamepad(id);
 #endif
+}
+
+void IsolatedVRDeviceProvider::OnServerError() {
+  // An error occurred - any devices we have added are now disconnected and
+  // should be removed.
+  for (auto id : added_devices_) {
+    remove_device_callback_.Run(id);
+  }
+  added_devices_.clear();
+
+  // At this point, XRRuntimeManager may be blocked waiting for us to return
+  // that we've enumerated all runtimes/devices.  If we lost the connection to
+  // the service, we won't ever get devices, so report we are done now.
+  // This will unblock WebXR/WebVR promises so they can reject indicating we
+  // never found devices.
+  if (!initialized_)
+    OnDevicesEnumerated();
 }
 
 void IsolatedVRDeviceProvider::OnDevicesEnumerated() {

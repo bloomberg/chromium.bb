@@ -145,6 +145,8 @@
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/views/views_switches.h"
 
+#include "services/service_manager/sandbox/features.h"
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -2430,6 +2432,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenVRDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kOpenVR)},
 #endif  // ENABLE_OPENVR
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+    {"xr-sandbox", flag_descriptions::kXRSandboxName,
+     flag_descriptions::kXRSandboxDescription, kOsWin,
+     FEATURE_VALUE_TYPE(service_manager::features::kXRSandbox)},
+#endif  // ENABLE_ISOLATED_XR_SERVICE
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",
