@@ -145,18 +145,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.CopyFail, gslib.Copy, src_path, dest_path)
     self.mox.VerifyAll()
 
-  def testCreateWithContents(self):
-    gs_path = 'gs://chromeos-releases-test/create-with-contents-test'
-    contents = 'Stuff with Rocks In'
-
-    self.mox.StubOutWithMock(gslib, 'Copy')
-
-    gslib.Copy(mox.IsA(str), gs_path)
-    self.mox.ReplayAll()
-
-    gslib.CreateWithContents(gs_path, contents)
-    self.mox.VerifyAll()
-
   def testCat(self):
     path = 'gs://bucket/some/gs/path'
 

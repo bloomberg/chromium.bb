@@ -14,7 +14,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib.paygen import utils
 
 
 PROTOCOL = 'gs'
@@ -266,22 +265,6 @@ def Copy(src_path, dest_path, acl=None, **kwargs):
     args += ['-a', acl]
   args += [src_path, dest_path]
   RunGsutilCommand(args, failed_exception=CopyFail, **kwargs)
-
-
-def CreateWithContents(gs_uri, contents, **kwargs):
-  """Creates the specified file with specified contents.
-
-  Args:
-    gs_uri: The URI of a file on Google Storage.
-    contents: Contents to write to the file.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    CopyFail: If it fails for any reason.
-  """
-  with utils.CreateTempFileWithContents(contents) as content_file:
-    Copy(content_file.name, gs_uri, **kwargs)
 
 
 @RetryGSLib
