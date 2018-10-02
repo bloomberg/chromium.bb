@@ -67,9 +67,17 @@ def main(argv):
         log("Skipping config build since already committed")
       else:
         robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
+        # TODO: This currently requires the user to re-start after manually
+        # handling any autorename conflicts.  However, since we haven't written
+        # the gn config commit yet, we'll rebuild everything.  Consider making
+        # this a separate commit after the gn configs, or (preferably) doing it
+        # automatically here.
         robo_branch.HandleAutorename(robo_configuration)
         # Run sanity checks on the merge before we commit.
         robo_branch.CheckMerge(robo_configuration)
+        # Write the config changes to help the reviewer.
+        robo_branch.WriteConfigChangesFile(robo_configuration)
+        # TODO(liberato): Add the 'autodetect' regex too.
         robo_branch.AddAndCommit(robo_configuration,
                                  robo_configuration.gn_commit_title())
 
@@ -82,17 +90,6 @@ def main(argv):
         robo_branch.WritePatchesReadme(robo_configuration)
         robo_branch.AddAndCommit(robo_configuration,
                                  robo_configuration.patches_commit_title())
-
-      # Make a summary of build changes to help the manual review of the merge.
-      if robo_branch.IsCommitOnThisBranch(
-          robo_configuration,
-          robo_configuration.build_changes_commit_title()):
-        log("Skipping build config changes file since already committed")
-      else:
-        robo_branch.WriteConfigChangesFile(robo_configuration)
-        robo_branch.AddAndCommit(
-          robo_configuration,
-          robo_configuration.build_changes_commit_title())
 
       # Run the tests.  Note that this will re-run ninja from chromium/src,
       # which will rebuild any changed ffmpeg sources as it normally would.
