@@ -4,11 +4,19 @@
 
 #include "chrome/browser/android/explore_sites/explore_sites_fetcher.h"
 
+#include <map>
+
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -43,6 +51,25 @@ class ExploreSitesFetcherTest : public testing::Test {
   ExploreSitesRequestStatus RunFetcherWithData(const std::string& response_data,
                                                std::string* data_received);
 
+  void SetUpExperimentOption(std::string country_code) {
+    const std::string kTrialName = "trial_name";
+    const std::string kGroupName = "group_name";
+
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::map<std::string, std::string> params = {
+        {"country_override", country_code}};
+    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+
+    std::unique_ptr<base::FeatureList> feature_list =
+        std::make_unique<base::FeatureList>();
+    feature_list->RegisterFieldTrialOverride(
+        chrome::android::kExploreSites.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
   network::ResourceRequest last_resource_request;
 
  private:
@@ -64,6 +91,8 @@ class ExploreSitesFetcherTest : public testing::Test {
   std::unique_ptr<std::string> last_data_;
   base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 ExploreSitesFetcher::Callback ExploreSitesFetcherTest::StoreResult() {
@@ -88,6 +117,8 @@ void ExploreSitesFetcherTest::SetUp() {
         EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());
         last_resource_request = request;
       }));
+  field_trial_list_ = std::make_unique<base::FieldTrialList>(
+      std::make_unique<base::MockEntropyProvider>());
 }
 
 ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithNetError(
@@ -160,7 +191,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
-      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "123", "KE",
+      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "123",
                                                kAcceptLanguages,
                                                test_shared_url_loader_factory_);
 
@@ -226,7 +257,20 @@ TEST_F(ExploreSitesFetcherTest, Success) {
 
   EXPECT_EQ(last_resource_request.url.spec(),
             "https://exploresites-pa.googleapis.com/v1/"
-            "getcatalog?country_code=KE&version_token=123");
+            "getcatalog?country_code=DEFAULT&version_token=123");
+}
+
+TEST_F(ExploreSitesFetcherTest, DefaultCountry) {
+  SetUpExperimentOption("KZ");
+  std::string data;
+  EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
+            RunFetcherWithData("Any data.", &data));
+  EXPECT_FALSE(data.empty());
+  EXPECT_EQ(data, "Any data.");
+
+  EXPECT_EQ(last_resource_request.url.spec(),
+            "https://exploresites-pa.googleapis.com/v1/"
+            "getcatalog?country_code=KZ&version_token=123");
 }
 
 TEST_F(ExploreSitesFetcherTest, TestHeaders) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/explore_sites_fetcher.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,8 +18,10 @@
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_accept_language_settings.h"
 #include "chrome/common/channel_info.h"
+#include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -38,6 +41,27 @@
 namespace explore_sites {
 
 namespace {
+
+std::string GetCountry() {
+  std::string manually_set_variation_country =
+      base::GetFieldTrialParamValueByFeature(chrome::android::kExploreSites,
+                                             "country_override");
+  if (!manually_set_variation_country.empty())
+    return manually_set_variation_country;
+
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service) {
+    std::string country = variations_service->GetStoredPermanentCountry();
+    if (!country.empty())
+      return country;
+    country = variations_service->GetLatestCountry();
+    if (!country.empty())
+      return country;
+  }
+
+  return "DEFAULT";
+}
 
 // Content type needed in order to communicate with the server in binary
 // proto format.
@@ -68,33 +92,30 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
 std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
     Callback callback,
     const std::string catalog_version,
-    const std::string country_code,
     const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCatalogURL();
   return base::WrapUnique(
       new ExploreSitesFetcher(std::move(callback), url, catalog_version,
-                              country_code, accept_languages, loader_factory));
+                              accept_languages, loader_factory));
 }
 
 std::unique_ptr<ExploreSitesFetcher>
 ExploreSitesFetcher::CreateForGetCategories(
     Callback callback,
     const std::string catalog_version,
-    const std::string country_code,
     const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   GURL url = GetCategoriesURL();
   return base::WrapUnique(
       new ExploreSitesFetcher(std::move(callback), url, catalog_version,
-                              country_code, accept_languages, loader_factory));
+                              accept_languages, loader_factory));
 }
 
 ExploreSitesFetcher::ExploreSitesFetcher(
     Callback callback,
     const GURL& url,
     const std::string catalog_version,
-    const std::string country_code,
     const std::string accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : callback_(std::move(callback)),
@@ -109,9 +130,10 @@ ExploreSitesFetcher::ExploreSitesFetcher(
                          version.components()[3],  // Patch
                          channel_name.c_str());
   GURL final_url =
-      net::AppendOrReplaceQueryParameter(url, "country_code", country_code);
+      net::AppendOrReplaceQueryParameter(url, "country_code", GetCountry());
   final_url = net::AppendOrReplaceQueryParameter(final_url, "version_token",
                                                  catalog_version);
+  DVLOG(1) << "Final URL: " << final_url.spec();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = final_url;

@@ -79,14 +79,12 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
 
   // TODO(petewil): Eventually get the catalog version from DB.
   std::string catalog_version = "";
-  // TODO(petewil): Eventually get the country code from somewhere.
-  std::string country_code = "KE";
 
   // Create a fetcher and start fetching the protobuf (async).
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      catalog_version, country_code, accept_languages, url_loader_factory_);
+      catalog_version, accept_languages, url_loader_factory_);
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(
