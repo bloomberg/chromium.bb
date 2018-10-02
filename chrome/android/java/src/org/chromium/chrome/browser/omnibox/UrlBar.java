@@ -694,20 +694,43 @@ public class UrlBar extends AutocompleteEditText {
         Editable url = getText();
         int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
 
+        Layout textLayout = getLayout();
         assert getLayout().getLineCount() == 1;
-        float endPointX = getLayout().getPrimaryHorizontal(mOriginEndIndex);
-        // Using 1 instead of 0 as zero does not return a valid value in RTL (always returns 0
-        // instead of the valid scroll position).
-        float startPointX = url.length() == 1 ? 0 : getLayout().getPrimaryHorizontal(1);
+        final int originEndIndex = mOriginEndIndex;
+        float endPointX = textLayout.getPrimaryHorizontal(originEndIndex);
+        // Compare the position offset of the last character and the character prior to determine
+        // the LTR-ness of the final component of the URL.
+        float priorToEndPointX = url.length() == 1
+                ? 0
+                : textLayout.getPrimaryHorizontal(Math.max(0, originEndIndex - 1));
 
         float scrollPos;
-        if (startPointX < endPointX) {
+        if (priorToEndPointX < endPointX) {
             // LTR
             scrollPos = Math.max(0, endPointX - measuredWidth);
         } else {
             // RTL
-            float width = getLayout().getPaint().measureText(
-                    url.subSequence(0, mOriginEndIndex).toString());
+
+            // To handle BiDirectional text, search backward from the two existing offsets to find
+            // the first LTR character.  Ensure the final RTL component of the domain is visible
+            // above any of the prior LTR pieces.
+            int rtlStartIndexForEndingRun = originEndIndex - 1;
+            for (int i = originEndIndex - 2; i >= 0; i--) {
+                float indexOffsetDrawPosition = textLayout.getPrimaryHorizontal(i);
+                if (indexOffsetDrawPosition > endPointX) {
+                    rtlStartIndexForEndingRun = i;
+                } else {
+                    // getPrimaryHorizontal determines the index position for the next character
+                    // based on the previous characters.  In bi-directional text, the first RTL
+                    // character following LTR text will have an LTR-appearing horizontal offset
+                    // as it is based on the preceding LTR text.  Thus, the start of the RTL
+                    // character run will be after and including the first LTR horizontal index.
+                    rtlStartIndexForEndingRun = Math.max(0, rtlStartIndexForEndingRun - 1);
+                    break;
+                }
+            }
+            float width = textLayout.getPaint().measureText(
+                    url.subSequence(rtlStartIndexForEndingRun, originEndIndex).toString());
             if (width < measuredWidth) {
                 scrollPos = Math.max(0, endPointX + width - measuredWidth);
             } else {
