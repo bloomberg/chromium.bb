@@ -9,7 +9,9 @@ import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +22,6 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 
@@ -31,7 +32,7 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
 
     private final TextView mTitle;
     private final TextView mCaption;
-    private final TintedImageView mThumbnailView;
+    private final AppCompatImageView mThumbnailView;
 
     private Bitmap mThumbnailBitmap;
 
@@ -52,7 +53,7 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
 
         mTitle = (TextView) itemView.findViewById(R.id.title);
         mCaption = (TextView) itemView.findViewById(R.id.caption);
-        mThumbnailView = (TintedImageView) itemView.findViewById(R.id.thumbnail);
+        mThumbnailView = (AppCompatImageView) itemView.findViewById(R.id.thumbnail);
     }
 
     // ListItemViewHolder implementation.
@@ -83,7 +84,7 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
             assert !mThumbnailBitmap.isRecycled();
 
             mThumbnailView.setBackground(null);
-            mThumbnailView.setTint(null);
+            ImageViewCompat.setImageTintList(mThumbnailView, null);
 
             RoundedBitmapDrawable drawable =
                     RoundedBitmapDrawableFactory.create(resources, mThumbnailBitmap);
@@ -94,8 +95,9 @@ public class GenericViewHolder extends ThumbnailAwareViewHolder {
             mThumbnailView.getBackground().setLevel(
                     resources.getInteger(R.integer.list_item_level_default));
             mThumbnailView.setImageResource(mIconId);
-            mThumbnailView.setTint(AppCompatResources.getColorStateList(
-                    mThumbnailView.getContext(), R.color.dark_mode_tint));
+            ImageViewCompat.setImageTintList(mThumbnailView,
+                    AppCompatResources.getColorStateList(
+                            mThumbnailView.getContext(), R.color.dark_mode_tint));
         }
     }
 }

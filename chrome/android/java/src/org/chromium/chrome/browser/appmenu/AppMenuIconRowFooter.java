@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
+import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,7 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
  * A {@link LinearLayout} that displays a horizontal row of icons for page actions.
@@ -24,11 +25,11 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     private ChromeActivity mActivity;
     private AppMenu mAppMenu;
 
-    private TintedImageButton mForwardButton;
-    private TintedImageButton mBookmarkButton;
-    private TintedImageButton mDownloadButton;
-    private TintedImageButton mPageInfoButton;
-    private TintedImageButton mReloadButton;
+    private AppCompatImageButton mForwardButton;
+    private AppCompatImageButton mBookmarkButton;
+    private AppCompatImageButton mDownloadButton;
+    private AppCompatImageButton mPageInfoButton;
+    private AppCompatImageButton mReloadButton;
 
     public AppMenuIconRowFooter(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,19 +39,19 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mForwardButton = (TintedImageButton) findViewById(R.id.forward_menu_id);
+        mForwardButton = (AppCompatImageButton) findViewById(R.id.forward_menu_id);
         mForwardButton.setOnClickListener(this);
 
-        mBookmarkButton = (TintedImageButton) findViewById(R.id.bookmark_this_page_id);
+        mBookmarkButton = (AppCompatImageButton) findViewById(R.id.bookmark_this_page_id);
         mBookmarkButton.setOnClickListener(this);
 
-        mDownloadButton = (TintedImageButton) findViewById(R.id.offline_page_id);
+        mDownloadButton = (AppCompatImageButton) findViewById(R.id.offline_page_id);
         mDownloadButton.setOnClickListener(this);
 
-        mPageInfoButton = (TintedImageButton) findViewById(R.id.info_menu_id);
+        mPageInfoButton = (AppCompatImageButton) findViewById(R.id.info_menu_id);
         mPageInfoButton.setOnClickListener(this);
 
-        mReloadButton = (TintedImageButton) findViewById(R.id.reload_menu_id);
+        mReloadButton = (AppCompatImageButton) findViewById(R.id.reload_menu_id);
         mReloadButton.setOnClickListener(this);
     }
 
@@ -102,7 +103,7 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
         if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             mBookmarkButton.setContentDescription(mActivity.getString(R.string.edit_bookmark));
-            mBookmarkButton.setTint(
+            ImageViewCompat.setImageTintList(mBookmarkButton,
                     AppCompatResources.getColorStateList(getContext(), R.color.blue_mode_tint));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);

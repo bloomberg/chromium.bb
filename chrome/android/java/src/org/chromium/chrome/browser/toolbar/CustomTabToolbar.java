@@ -23,6 +23,8 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v4.widget.ImageViewCompat;
+import android.support.v7.widget.AppCompatImageButton;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -60,7 +62,6 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
@@ -131,7 +132,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private View mLiteStatusSeparatorView;
     private UrlBarCoordinator mUrlCoordinator;
     private TextView mTitleBar;
-    private TintedImageButton mSecurityButton;
+    private AppCompatImageButton mSecurityButton;
     private LinearLayout mCustomActionButtons;
     private ImageButton mCloseButton;
 
@@ -503,7 +504,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     private void updateButtonsTint() {
         if (getMenuButton() != null) {
-            getMenuButton().setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
+            ImageViewCompat.setImageTintList(
+                    getMenuButton(), mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
         updateButtonTint(mCloseButton);
         int numCustomActionButtons = mCustomActionButtons.getChildCount();
@@ -549,7 +551,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(securityIconResource);
-            mSecurityButton.setTint(getToolbarDataProvider().getSecurityIconColorStateList());
+            ImageViewCompat.setImageTintList(
+                    mSecurityButton, getToolbarDataProvider().getSecurityIconColorStateList());
             mAnimDelegate.showSecurityButton();
         }
 

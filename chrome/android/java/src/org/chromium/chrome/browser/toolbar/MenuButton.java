@@ -6,21 +6,20 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.v4.widget.ImageViewCompat;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.View.AccessibilityDelegate;
-import android.view.View.OnTouchListener;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
  * The overflow menu button.
  */
 class MenuButton extends FrameLayout {
-    /** The {@link TintedImageButton} for the menu button. */
-    private TintedImageButton mMenuTintedImageButton;
+    /** The {@link android.support.v7.widget.AppCompatImageButton} for the menu button. */
+    private AppCompatImageButton mMenuImageButton;
 
     /** The view for the update badge. */
     private View mUpdateBadgeView;
@@ -32,7 +31,7 @@ class MenuButton extends FrameLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mMenuTintedImageButton = findViewById(R.id.menu_button);
+        mMenuImageButton = findViewById(R.id.menu_button);
         mUpdateBadgeView = findViewById(R.id.menu_badge);
     }
 
@@ -41,12 +40,12 @@ class MenuButton extends FrameLayout {
      *                        clicked.
      */
     void setTouchListener(OnTouchListener onTouchListener) {
-        mMenuTintedImageButton.setOnTouchListener(onTouchListener);
+        mMenuImageButton.setOnTouchListener(onTouchListener);
     }
 
     @Override
     public void setAccessibilityDelegate(AccessibilityDelegate delegate) {
-        mMenuTintedImageButton.setAccessibilityDelegate(delegate);
+        mMenuImageButton.setAccessibilityDelegate(delegate);
     }
 
     /**
@@ -64,7 +63,7 @@ class MenuButton extends FrameLayout {
     }
 
     View getMenuButton() {
-        return mMenuTintedImageButton;
+        return mMenuImageButton;
     }
 
     /**
@@ -72,6 +71,6 @@ class MenuButton extends FrameLayout {
      *                 tinted).
      */
     void setTint(ColorStateList tintList) {
-        mMenuTintedImageButton.setTint(tintList);
+        ImageViewCompat.setImageTintList(mMenuImageButton, tintList);
     }
 }
