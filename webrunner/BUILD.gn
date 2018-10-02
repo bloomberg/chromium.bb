@@ -211,7 +211,6 @@ test("webrunner_unittests") {
 fidl_library("fidl") {
   library_name = "web"
   namespace = "chromium"
-  namespace_path = "chromium"
 
   sources = [
     "fidl/context.fidl",
@@ -222,9 +221,9 @@ fidl_library("fidl") {
   ]
 
   public_deps = [
-    "//third_party/fuchsia-sdk:gfx",
-    "//third_party/fuchsia-sdk:sys",
-    "//third_party/fuchsia-sdk:viewsv1",
+    "//third_party/fuchsia-sdk/sdk:gfx",
+    "//third_party/fuchsia-sdk/sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:viewsv1",
   ]
 }
 

@@ -2178,7 +2178,7 @@ source_set("net_deps") {
     }
 
     if (is_fuchsia) {
-      public_deps += [ "//third_party/fuchsia-sdk:netstack" ]
+      public_deps += [ "//third_party/fuchsia-sdk/sdk:netstack" ]
     }
 
     if (use_platform_icu_alternatives) {
@@ -5374,7 +5374,7 @@ test("net_unittests") {
     use_test_server = true
     deps += [
       "//third_party/fuchsia-sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk:netstack",
+      "//third_party/fuchsia-sdk/sdk:netstack",
     ]
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
   }
