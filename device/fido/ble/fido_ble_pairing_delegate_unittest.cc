@@ -20,11 +20,18 @@ constexpr char kTestPinCode[] = "1234_abcd";
 constexpr uint32_t kTestPassKey = 1234;
 constexpr char kTestBluetoothDeviceName[] = "device_name";
 
+}  // namespace
+
 class FidoBlePairingDelegateTest : public ::testing::Test {
  public:
   FidoBlePairingDelegate* pairing_delegate() { return pairing_delegate_.get(); }
   MockBluetoothDevice* mock_bluetooth_device() {
     return mock_bluetooth_device_.get();
+  }
+
+  const base::flat_map<std::string, std::string>&
+  pairing_delegate_pincode_map() {
+    return pairing_delegate_->bluetooth_device_pincode_map_;
   }
 
  private:
@@ -38,8 +45,6 @@ class FidoBlePairingDelegateTest : public ::testing::Test {
                                             false /* paired */,
                                             false /* connected */);
 };
-
-}  // namespace
 
 TEST_F(FidoBlePairingDelegateTest, PairingWithPin) {
   pairing_delegate()->StoreBlePinCodeForDevice(kTestFidoBleDeviceId,
@@ -87,6 +92,24 @@ TEST_F(FidoBlePairingDelegateTest, RejectConfirmPassKey) {
   static constexpr uint32_t kTestPassKey = 0;
   EXPECT_CALL(*mock_bluetooth_device(), CancelPairing);
   pairing_delegate()->ConfirmPasskey(mock_bluetooth_device(), kTestPassKey);
+}
+
+TEST_F(FidoBlePairingDelegateTest, ChangeStoredDeviceAddress) {
+  static constexpr char kTestNewBleDeviceAddress[] =
+      "ble:test_changed_device_address";
+  pairing_delegate()->StoreBlePinCodeForDevice(kTestFidoBleDeviceId,
+                                               kTestPinCode);
+  EXPECT_TRUE(
+      base::ContainsKey(pairing_delegate_pincode_map(), kTestFidoBleDeviceId));
+  EXPECT_FALSE(base::ContainsKey(pairing_delegate_pincode_map(),
+                                 kTestNewBleDeviceAddress));
+
+  pairing_delegate()->ChangeStoredDeviceAddress(kTestFidoBleDeviceId,
+                                                kTestNewBleDeviceAddress);
+  EXPECT_FALSE(
+      base::ContainsKey(pairing_delegate_pincode_map(), kTestFidoBleDeviceId));
+  EXPECT_TRUE(base::ContainsKey(pairing_delegate_pincode_map(),
+                                kTestNewBleDeviceAddress));
 }
 
 }  // namespace device

@@ -33,6 +33,9 @@ class MockTransportAvailabilityObserver
   MOCK_METHOD1(FidoAuthenticatorAdded,
                void(const FidoAuthenticator& authenticator));
   MOCK_METHOD1(FidoAuthenticatorRemoved, void(base::StringPiece device_id));
+  MOCK_METHOD2(FidoAuthenticatorIdChanged,
+               void(base::StringPiece old_authenticator_id,
+                    std::string new_authenticator_id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTransportAvailabilityObserver);

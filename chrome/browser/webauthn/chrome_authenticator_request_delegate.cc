@@ -319,6 +319,16 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
   });
 }
 
+void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
+    base::StringPiece old_authenticator_id,
+    std::string new_authenticator_id) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->UpdateAuthenticatorReferenceId(
+      old_authenticator_id, std::move(new_authenticator_id));
+}
+
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
     bool is_powered_on) {
   if (!weak_dialog_model_)

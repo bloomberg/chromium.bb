@@ -5,6 +5,8 @@
 #ifndef DEVICE_FIDO_MOCK_FIDO_DISCOVERY_OBSERVER_H_
 #define DEVICE_FIDO_MOCK_FIDO_DISCOVERY_OBSERVER_H_
 
+#include <string>
+
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "device/fido/fido_discovery.h"
@@ -23,6 +25,8 @@ class MockFidoDiscoveryObserver : public FidoDiscovery::Observer {
   MOCK_METHOD2(DiscoveryStopped, void(FidoDiscovery*, bool));
   MOCK_METHOD2(DeviceAdded, void(FidoDiscovery*, FidoDevice*));
   MOCK_METHOD2(DeviceRemoved, void(FidoDiscovery*, FidoDevice*));
+  MOCK_METHOD3(DeviceIdChanged,
+               void(FidoDiscovery*, const std::string&, std::string));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFidoDiscoveryObserver);

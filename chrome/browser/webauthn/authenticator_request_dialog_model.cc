@@ -329,3 +329,15 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsync(
       delay);
   authenticator->dispatched = true;
 }
+
+void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
+    base::StringPiece old_authenticator_id,
+    std::string new_authenticator_id) {
+  auto it = std::find_if(
+      saved_authenticators_.begin(), saved_authenticators_.end(),
+      [old_authenticator_id](const auto& authenticator) {
+        return authenticator.authenticator_id == old_authenticator_id;
+      });
+  if (it != saved_authenticators_.end())
+    it->authenticator_id = std::move(new_authenticator_id);
+}

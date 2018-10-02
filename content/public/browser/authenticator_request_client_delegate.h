@@ -115,6 +115,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
+  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
+                                  std::string new_authenticator_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);
