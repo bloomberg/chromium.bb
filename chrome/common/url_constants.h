@@ -255,6 +255,9 @@ extern const char kTPMFirmwareUpdateLearnMoreURL[];
 
 // The URL for the "Learn more" page for the time zone settings page.
 extern const char kTimeZoneSettingsLearnMoreURL[];
+
+// The URL for the "Learn more" page for the network file shares settings page.
+extern const char kSmbSharesLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
