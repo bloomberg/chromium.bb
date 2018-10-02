@@ -964,8 +964,11 @@ void ClientControlledShellSurface::UpdateFrame() {
           .work_area();
 
   ash::wm::WindowState* window_state = GetWindowState();
-  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
-      work_area.width() != geometry().width()) {
+  bool enable_wide_frame = GetFrameView()->visible() &&
+                           window_state->IsMaximizedOrFullscreenOrPinned() &&
+                           work_area.width() != geometry().width();
+
+  if (enable_wide_frame) {
     if (!wide_frame_) {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
