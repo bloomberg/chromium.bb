@@ -1137,6 +1137,8 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
 
   histogram_cookie_delete_equivalent_->Add(COOKIE_DELETE_EQUIVALENT_ATTEMPT);
 
+  CookieMap::iterator cookie_it_to_possibly_delete = cookies_.end();
+  CanonicalCookie* cc_skipped_secure = nullptr;
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second;) {
     CookieMap::iterator curit = its.first;
@@ -1152,6 +1154,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
     if (cc->IsSecure() && !source_secure &&
         ecc.IsEquivalentForSecureCookieMatching(*cc)) {
       skipped_secure_cookie = true;
+      cc_skipped_secure = cc;
       histogram_cookie_delete_equivalent_->Add(
           COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE);
       net_log_.AddEvent(
@@ -1176,6 +1179,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
       // and be considered equivalent.
       CHECK(!found_equivalent_cookie)
           << "Duplicate equivalent cookies found, cookie store is corrupted.";
+      DCHECK(cookie_it_to_possibly_delete == cookies_.end());
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
         net_log_.AddEvent(
@@ -1183,20 +1187,38 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
             base::BindRepeating(&NetLogCookieMonsterCookieRejectedHttponly, cc,
                                 &ecc));
       } else {
-        histogram_cookie_delete_equivalent_->Add(
-            COOKIE_DELETE_EQUIVALENT_FOUND);
-        if (cc->Value() == ecc.Value()) {
-          *creation_date_to_inherit = cc->CreationDate();
-          histogram_cookie_delete_equivalent_->Add(
-              COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE);
-        }
-        InternalDeleteCookie(curit, true, already_expired
-                                              ? DELETE_COOKIE_EXPIRED_OVERWRITE
-                                              : DELETE_COOKIE_OVERWRITE);
+        cookie_it_to_possibly_delete = curit;
       }
       found_equivalent_cookie = true;
     }
   }
+
+  if (cookie_it_to_possibly_delete != cookies_.end()) {
+    CanonicalCookie* cc_to_possibly_delete =
+        cookie_it_to_possibly_delete->second.get();
+    // If a secure cookie was encountered (and left alone), don't actually
+    // modify any of the pre-existing cookies. Only delete if no secure cookies
+    // were skipped.
+    if (!skipped_secure_cookie) {
+      histogram_cookie_delete_equivalent_->Add(COOKIE_DELETE_EQUIVALENT_FOUND);
+      if (cc_to_possibly_delete->Value() == ecc.Value()) {
+        *creation_date_to_inherit = cc_to_possibly_delete->CreationDate();
+        histogram_cookie_delete_equivalent_->Add(
+            COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE);
+      }
+      InternalDeleteCookie(cookie_it_to_possibly_delete, true,
+                           already_expired ? DELETE_COOKIE_EXPIRED_OVERWRITE
+                                           : DELETE_COOKIE_OVERWRITE);
+    } else {
+      // If any secure cookie was skipped, preserve the pre-existing cookie.
+      DCHECK(cc_skipped_secure);
+      net_log_.AddEvent(
+          NetLogEventType::COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE,
+          base::BindRepeating(&NetLogCookieMonsterCookiePreservedSkippedSecure,
+                              cc_skipped_secure, cc_to_possibly_delete, &ecc));
+    }
+  }
+
   return skipped_httponly || skipped_secure_cookie;
 }
 
