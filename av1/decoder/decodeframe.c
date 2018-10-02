@@ -4356,7 +4356,6 @@ void av1_read_color_config(struct aom_read_bit_buffer *rb,
   if (seq_params->color_primaries == AOM_CICP_CP_BT_709 &&
       seq_params->transfer_characteristics == AOM_CICP_TC_SRGB &&
       seq_params->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
-    // It would be good to remove this dependency.
     seq_params->subsampling_y = seq_params->subsampling_x = 0;
     seq_params->color_range = 1;  // assume full color-range
     if (!(seq_params->profile == PROFILE_1 ||

@@ -2431,9 +2431,7 @@ static void write_color_config(const SequenceHeader *const seq_params,
   }
   if (seq_params->color_primaries == AOM_CICP_CP_BT_709 &&
       seq_params->transfer_characteristics == AOM_CICP_TC_SRGB &&
-      seq_params->matrix_coefficients ==
-          AOM_CICP_MC_IDENTITY) {  // it would be better to remove this
-                                   // dependency too
+      seq_params->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
     assert(seq_params->subsampling_x == 0 && seq_params->subsampling_y == 0);
     assert(seq_params->profile == PROFILE_1 ||
            (seq_params->profile == PROFILE_2 &&
