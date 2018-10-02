@@ -442,7 +442,6 @@ _CONFIG = [
         # AtomicString or HeapVector) are used cross thread. These Blink types
         # are converted to the STL/WebRTC counterparts in the parent directory.
         'allowed': [
-            'absl::.+',
             'base::OnTaskRunnerDeleter',
             'sigslot::.+',
         ],

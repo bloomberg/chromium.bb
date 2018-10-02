@@ -108,14 +108,4 @@ void IceTransportHost::OnStateChanged(cricket::IceTransportState new_state) {
       CrossThreadBind(&IceTransportProxy::OnStateChanged, proxy_, new_state));
 }
 
-void IceTransportHost::OnSelectedCandidatePairChanged(
-    const std::pair<cricket::Candidate, cricket::Candidate>&
-        selected_candidate_pair) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *proxy_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportProxy::OnSelectedCandidatePairChanged,
-                      proxy_, selected_candidate_pair));
-}
-
 }  // namespace blink
