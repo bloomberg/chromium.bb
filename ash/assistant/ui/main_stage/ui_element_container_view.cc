@@ -114,7 +114,8 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
   ~CardElementViewHolder() override {
-    card_element_view_->RemoveObserver(this);
+    if (card_element_view_)
+      card_element_view_->RemoveObserver(this);
   }
 
   // views::NativeViewHost:
@@ -164,7 +165,21 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
   // views::ViewObserver:
+  void OnViewIsDeleting(views::View* view) override {
+    DCHECK_EQ(card_element_view_, view);
+
+    // It's possible for |card_element_view_| to be destroyed before
+    // CardElementViewHolder. When this happens, we need to perform clean up
+    // prior to |card_element_view_| being destroyed and remove our cached
+    // reference to prevent additional clean up attempts on the destroyed
+    // instance when destroying CardElementViewHolder.
+    card_element_view_->RemoveObserver(this);
+    card_element_view_ = nullptr;
+  }
+
   void OnViewPreferredSizeChanged(views::View* view) override {
+    DCHECK_EQ(card_element_view_, view);
+
     gfx::Size preferred_size = view->GetPreferredSize();
 
     if (border()) {
@@ -197,7 +212,7 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
  private:
-  views::View* const card_element_view_;  // Owned by WebContentsManager.
+  views::View* card_element_view_;  // Owned by WebContentsManager.
 
   std::unique_ptr<views::Widget> child_widget_;
 

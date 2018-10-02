@@ -101,11 +101,38 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
   SchedulePaint();
 }
 
-void AssistantWebView::OnViewBoundsChanged(views::View* view) {
+void AssistantWebView::OnViewIsDeleting(views::View* view) {
   DCHECK_EQ(content_view_, view);
 
-  // The mask layer should always match the bounds of the content view.
-  content_view_mask_->layer()->SetBounds(content_view_->GetLocalBounds());
+  // It's possible for |content_view_| to be deleted before AssistantWebView.
+  // When this happens, we need to perform clean up on |content_view_| before
+  // it is destroyed and clear references so that we don't try to perform
+  // clean up on the destroyed instance when destroying AssistantWebView.
+  content_view_->RemoveObserver(this);
+  content_view_ = nullptr;
+}
+
+void AssistantWebView::OnWindowBoundsChanged(aura::Window* window,
+                                             const gfx::Rect& old_bounds,
+                                             const gfx::Rect& new_bounds,
+                                             ui::PropertyChangeReason reason) {
+  DCHECK_EQ(native_content_view_, window);
+
+  // The mask layer should always match the bounds of the native content view.
+  content_view_mask_->layer()->SetBounds(gfx::Rect(new_bounds.size()));
+}
+
+void AssistantWebView::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(native_content_view_, window);
+
+  // It's possible for |native_content_view_| to be deleted before
+  // AssistantWebView. When this happens, we need to perform clean up on
+  // |native_content_view_| before it is destroyed and clear references so that
+  // we don't try to perform clean up on the destroyed instance when destroying
+  // AssistantWebView.
+  native_content_view_->RemoveObserver(this);
+  native_content_view_->layer()->SetMaskLayer(nullptr);
+  native_content_view_ = nullptr;
 }
 
 void AssistantWebView::InitLayout() {
@@ -190,15 +217,18 @@ void AssistantWebView::OnWebContentsReady(
         embed_token.value());
     content_view_->AddObserver(this);
 
-    // The mask layer should always match the bounds of the content view. We
-    // enforce this prior to applying the mask to the |native_content_view_|
-    // layer to prevent a DCHECK failure in cc::Layer.
-    content_view_mask_->layer()->SetBounds(content_view_->GetLocalBounds());
-
-    // Apply our layer mask which enforces corner radius.
+    // Cache a reference to the content's native view and observe it so that
+    // we can monitor changes to bounds and lifecycle.
     native_content_view_ =
         app_list::AnswerCardContentsRegistry::Get()->GetNativeView(
             embed_token.value());
+    native_content_view_->AddObserver(this);
+
+    // Apply a mask layer to enforce corner radius. The mask bounds must always
+    // match the bounds of |native_content_view_|. We sync bounds prior to
+    // applying the mask to prevent a DCHECK failure in cc::Layer.
+    content_view_mask_->layer()->SetBounds(
+        gfx::Rect(native_content_view_->GetBoundsInScreen().size()));
     native_content_view_->layer()->SetMaskLayer(content_view_mask_->layer());
 
     AddChildView(content_view_);
@@ -226,6 +256,7 @@ void AssistantWebView::ReleaseWebContents() {
   }
 
   if (native_content_view_) {
+    native_content_view_->RemoveObserver(this);
     native_content_view_->layer()->SetMaskLayer(nullptr);
     native_content_view_ = nullptr;
   }
