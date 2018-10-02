@@ -1109,7 +1109,7 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
 void FakeBluetoothDeviceClient::RemoveDevice(
     const dbus::ObjectPath& adapter_path,
     const dbus::ObjectPath& device_path) {
-  std::vector<dbus::ObjectPath>::iterator listiter =
+  auto listiter =
       std::find(device_list_.begin(), device_list_.end(), device_path);
   if (listiter == device_list_.end())
     return;
