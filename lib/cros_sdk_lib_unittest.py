@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -552,7 +553,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     m4.assert_called_with(self.chroot_path, ignore_missing=True, sudo=True)
 
 
-class ChrootUpdaterTest(cros_test_lib.RunCommandTempDirTestCase):
+class ChrootUpdaterTest(cros_test_lib.MockTempDirTestCase):
   """ChrootUpdater tests."""
 
   def setUp(self):
@@ -565,6 +566,7 @@ class ChrootUpdaterTest(cros_test_lib.RunCommandTempDirTestCase):
             '11_run_success',
             '12_run_success',
         )),
+        'version_file',
     )
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
 
@@ -573,10 +575,9 @@ class ChrootUpdaterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.hooks_dir = os.path.join(self.tempdir, 'hooks')
 
     self.latest_version = 12
-    self.deprecated_versions = [6, 7, 8]
-    self.invalid_versions = [13]
-    # (start, expected) successful run versions.
-    self.success_versions = [9, 10, 11, 12]
+    self.deprecated_versions = (6, 7, 8)
+    self.invalid_versions = (13,)
+    self.success_versions = (9, 10, 11, 12)
     self.chroot = cros_sdk_lib.ChrootUpdater(version_file=self.version_file,
                                              hooks_dir=self.hooks_dir)
 
@@ -637,6 +638,8 @@ class ChrootUpdaterTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testApplyUpdates(self):
     """Test ApplyUpdates."""
+    self.PatchObject(cros_build_lib, 'RunCommand',
+                     return_value=cros_build_lib.CommandResult(returncode=0))
     for version in self.success_versions:
       self.chroot.SetVersion(version)
       self.chroot.ApplyUpdates()

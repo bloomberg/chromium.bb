@@ -9,8 +9,10 @@ from __future__ import print_function
 
 import collections
 import glob
+import grp
 import mock
 import os
+import pwd
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -196,6 +198,50 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     osutils.Touch(path, makedirs=True)
     self.assertExists(path)
     self.assertEqual(os.path.getsize(path), 0)
+
+  def testChown(self):
+    """Test chown."""
+    # Helpers to get the user and group name of the given path's owner.
+    def User(path):
+      return pwd.getpwuid(os.stat(path).st_uid).pw_name
+    def Group(path):
+      return grp.getgrgid(os.stat(path).st_gid).gr_name
+
+    filename = os.path.join(self.tempdir, 'chowntests')
+    osutils.Touch(filename)
+
+    user = User(filename)
+    group = Group(filename)
+
+    new_user = new_group = 'root'
+
+    # Change only the user.
+    osutils.Chown(filename, user=new_user)
+    self.assertEqual(new_user, User(filename))
+    self.assertEqual(new_group, Group(filename))
+
+    # Change both user and group.
+    osutils.Chown(filename, user=user, group=group)
+    self.assertEqual(user, User(filename))
+    self.assertEqual(group, Group(filename))
+
+    # Change only the group.
+    osutils.Chown(filename, group=new_group)
+    self.assertEqual(user, User(filename))
+    self.assertEqual(new_group, Group(filename))
+
+    # Chown with no arguments.
+    osutils.Chown(filename, user=new_user, group=new_group)
+    self.assertEqual(new_user, User(filename))
+    self.assertEqual(new_group, Group(filename))
+    osutils.Chown(filename)
+    self.assertEqual(user, User(filename))
+    self.assertEqual(group, Group(filename))
+
+    # User and group ids as the arguments.
+    osutils.Chown(filename, user=0, group=0)
+    self.assertEqual(new_user, User(filename))
+    self.assertEqual(new_group, Group(filename))
 
 
 class TestEmptyDir(cros_test_lib.TempDirTestCase):

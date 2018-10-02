@@ -550,7 +550,11 @@ class ChrootUpdater(object):
   def SetVersion(self, version):
     """Set and store the chroot version."""
     self._version = version
-    osutils.WriteFile(self._version_file, str(version))
+    osutils.WriteFile(self._version_file, str(version), sudo=True)
+    # TODO(saklein) Verify if this chown is necessary. The version file
+    # is in /etc, so it's reasonable to expect root would own it, but the bash
+    # version had the chown for many years before the conversion.
+    osutils.Chown(self._version_file)
 
   def IsInitialized(self):
     """Initialized Check."""
@@ -568,8 +572,9 @@ class ChrootUpdater(object):
           '    cros_sdk --replace' %  self.GetVersion())
 
     for hook, version in self.GetChrootUpdates():
-      result = cros_build_lib.RunCommand(['bash', '-c', hook],
-                                         enter_chroot=True, error_code_ok=True)
+      result = cros_build_lib.RunCommand('source %s' % hook,
+                                         enter_chroot=True, error_code_ok=True,
+                                         shell=True)
       if not result.returncode:
         self.SetVersion(version)
       else:
