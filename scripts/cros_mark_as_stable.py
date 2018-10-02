@@ -19,6 +19,8 @@ from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.lib import repo_util
 
+from chromite.cbuildbot import manifest_version
+
 # Commit message subject for uprevving Portage packages.
 GIT_COMMIT_SUBJECT = 'Marking set of ebuilds as stable'
 
@@ -383,8 +385,13 @@ def _GetOverlayToEbuildsMap(options, overlays, package_list):
   Returns:
     A dict mapping each overlay to a list of ebuilds belonging to it.
   """
+  root_version = manifest_version.VersionInfo.from_repo(options.buildroot)
+  subdir_removal = manifest_version.VersionInfo('10363.0.0')
+  require_subdir_support = root_version < subdir_removal
+
   overlay_ebuilds = {}
-  inputs = [[overlay, options.all, package_list, options.force]
+  inputs = [[overlay, options.all, package_list, options.force,
+             require_subdir_support]
             for overlay in overlays]
   result = parallel.RunTasksInProcessPool(
       portage_util.GetOverlayEBuilds, inputs)
@@ -499,7 +506,7 @@ def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
 
       if options.list_revisions:
         info = ebuild.GetSourceInfo(os.path.join(options.buildroot, 'src'),
-                                    manifest)
+                                    manifest, True)
         srcdirs = [os.path.join(options.buildroot, 'src', srcdir)
                    for srcdir in ebuild.cros_workon_vars.localname]
         old_commit_ids = dict(

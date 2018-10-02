@@ -103,7 +103,7 @@ inherit cros-workon superpower
 
   def _MakeFakeEbuild(self, fake_ebuild_path, fake_ebuild_content=''):
     osutils.WriteFile(fake_ebuild_path, fake_ebuild_content, makedirs=True)
-    fake_ebuild = portage_util.EBuild(fake_ebuild_path)
+    fake_ebuild = portage_util.EBuild(fake_ebuild_path, False)
     return fake_ebuild
 
   def testParseEBuildPath(self):
@@ -194,7 +194,7 @@ inherit cros-workon superpower
         ebuild = os.path.join(temp, 'overlay', 'app-misc',
                               'foo-0.0.1-r1.ebuild')
         osutils.WriteFile(ebuild, content, makedirs=True)
-        self.assertEqual(expected, portage_util.EBuild(ebuild).has_test)
+        self.assertEqual(expected, portage_util.EBuild(ebuild, False).has_test)
 
     run_case(self._MULTILINE_WITH_TEST, True)
     run_case(self._MULTILINE_NO_TEST, False)
@@ -291,7 +291,7 @@ class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
                                'package', 'package-9999.ebuild')
     osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
 
-    ebuild = portage_util.EBuild(ebuild_path)
+    ebuild = portage_util.EBuild(ebuild_path, False)
     return ebuild.GetSourceInfo(self.tempdir, MANIFEST)
 
   def testParseLegacyWorkonVariables(self):
@@ -388,8 +388,8 @@ CROS_WORKON_SUBTREE="%s"
 class StubEBuild(portage_util.EBuild):
   """Test helper to StubEBuild."""
 
-  def __init__(self, path):
-    super(StubEBuild, self).__init__(path)
+  def __init__(self, path, subdir_support):
+    super(StubEBuild, self).__init__(path, subdir_support)
     self.is_workon = True
     self.is_stable = True
 
@@ -456,7 +456,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     package_name = os.path.join(self.overlay,
                                 'category/test_package/test_package-0.0.1')
     ebuild_path = package_name + '-r1.ebuild'
-    self.m_ebuild = StubEBuild(ebuild_path)
+    self.m_ebuild = StubEBuild(ebuild_path, False)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
     self._m_file = cStringIO.StringIO()
     self.git_files_changed = []
@@ -506,11 +506,13 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
       source_mock.return_value = portage_util.SourceInfo(
           projects=['fake_project1', 'fake_project2'],
           srcdirs=['p1_path1', 'p1_path2'],
+          subdirs=['files', None],
           subtrees=['p1_path1/a', 'p1_path1/b', 'p1_path2'])
     else:
       source_mock.return_value = portage_util.SourceInfo(
           projects=['fake_project1'],
           srcdirs=['p1_path1'],
+          subdirs=['files', None],
           subtrees=['p1_path1/a', 'p1_path1/b'])
 
     self.PatchObject(portage_util.EBuild, 'GetTreeId', side_effect=_GetTreeId)
@@ -704,7 +706,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='1122')
     self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
     # Sanity check.
@@ -715,7 +717,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     run = self.PatchObject(portage_util.EBuild, '_RunCommand')
 
     # Reject no output.
@@ -736,7 +738,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='999999')
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
@@ -747,7 +749,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='abcd')
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
@@ -1041,7 +1043,7 @@ class GetOverlayEBuildsTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(package_path, content, makedirs=True)
 
   @staticmethod
-  def _FindUprevCandidateMock(files, allow_blacklisted=False):
+  def _FindUprevCandidateMock(files, allow_blacklisted, _subdir_support):
     """Mock for the FindUprevCandidateMock function.
 
     Simplified implementation of FindUprevCandidate: consider an ebuild worthy

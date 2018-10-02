@@ -69,8 +69,8 @@ UNITTEST_PACKAGE_BLACKLIST = set((
 # A structure to hold computed values of CROS_WORKON_*.
 CrosWorkonVars = collections.namedtuple(
     'CrosWorkonVars',
-    ('localname', 'project', 'srcpath', 'always_live', 'commit', 'rev_subdirs',
-     'subtrees'))
+    ('localname', 'project', 'srcpath', 'subdir', 'always_live', 'commit',
+     'rev_subdirs', 'subtrees'))
 
 # EBuild source information computed from CrosWorkonVars.
 SourceInfo = collections.namedtuple(
@@ -81,6 +81,8 @@ SourceInfo = collections.namedtuple(
         # List of source git directory paths. They are guaranteed to exist,
         # be a directory.
         'srcdirs',
+        # Obsolete concept of subdirs, present for old branch support.
+        'subdirs',
         # List of source paths under subdirs. Their existence is ensured by
         # cros-workon.eclass. They can be directories or regular files.
         'subtrees',
@@ -423,12 +425,16 @@ class EBuild(object):
     git_commit_cmd = ['commit', '-a', '-m', message]
     cls._RunGit(overlay, git_commit_cmd)
 
-  def __init__(self, path):
+  def __init__(self, path, subdir_support=False):
     """Sets up data about an ebuild from its path.
 
     Args:
       path: Path to the ebuild.
+      subdir_support: Support obsolete CROS_WORKON_SUBDIR.
+                      Intended for branchs older than 10363.0.0.
     """
+    self.subdir_support = subdir_support
+
     self.overlay, self.category, self.pkgname, filename = path.rsplit('/', 3)
     m = self._PACKAGE_VERSION_PATTERN.match(filename)
     if not m:
@@ -609,6 +615,7 @@ class EBuild(object):
         'CROS_WORKON_LOCALNAME',
         'CROS_WORKON_PROJECT',
         'CROS_WORKON_SRCPATH',
+        'CROS_WORKON_SUBDIR',  # Obsolete, used for older branches.
         'CROS_WORKON_ALWAYS_LIVE',
         'CROS_WORKON_COMMIT',
         'CROS_WORKON_SUBDIRS_TO_REV',
@@ -628,11 +635,14 @@ class EBuild(object):
     # to the wrong thing, but at least this covers some types of failures.
     projects = []
     srcpaths = []
+    subdirs = []
     rev_subdirs = []
     if 'CROS_WORKON_PROJECT' in settings:
       projects = settings['CROS_WORKON_PROJECT'].split(',')
     if 'CROS_WORKON_SRCPATH' in settings:
       srcpaths = settings['CROS_WORKON_SRCPATH'].split(',')
+    if 'CROS_WORKON_SUBDIR' in settings:
+      subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
     if 'CROS_WORKON_SUBDIRS_TO_REV' in settings:
       rev_subdirs = settings['CROS_WORKON_SUBDIRS_TO_REV'].split(',')
 
@@ -657,6 +667,7 @@ class EBuild(object):
         localname=localnames,
         project=projects,
         srcpath=srcpaths,
+        subdir=subdirs,
         always_live=live,
         commit=commit,
         rev_subdirs=rev_subdirs,
@@ -680,6 +691,7 @@ class EBuild(object):
     localnames = cros_workon_vars.localname
     projects = cros_workon_vars.project
     srcpaths = cros_workon_vars.srcpath
+    subdirs = cros_workon_vars.subdir
     subtrees = cros_workon_vars.subtrees
 
     # Sanity checks and completion.
@@ -708,6 +720,15 @@ class EBuild(object):
             '_SRCPATH has fewer items than _PROJECT.')
       srcpaths = [''] * num_projects
 
+    if subdirs:
+      if len(subdirs) != len(projects):
+        raise EbuildFormatIncorrectError(
+            ebuild_path,
+            '_SUBDIR is defined inconsistently with _PROJECT (%d vs %d)' %
+            (len(subdirs), len(projects)))
+    else:
+      subdirs = [''] * len(projects)
+
     # We better have at least one PROJECT or SRCPATH value at this point.
     if num_projects == 0:
       raise EbuildFormatIncorrectError(
@@ -726,6 +747,7 @@ class EBuild(object):
         localname=localnames,
         project=projects,
         srcpath=srcpaths,
+        subdir=subdirs,
         subtrees=subtrees)
 
   def GetSourceInfo(self, srcroot, manifest):
@@ -741,6 +763,7 @@ class EBuild(object):
     localnames = self.cros_workon_vars.localname
     projects = self.cros_workon_vars.project
     srcpaths = self.cros_workon_vars.srcpath
+    subdirs = self.cros_workon_vars.subdir
     always_live = self.cros_workon_vars.always_live
     subtrees = self.cros_workon_vars.subtrees
 
@@ -763,17 +786,24 @@ class EBuild(object):
 
     subdir_paths = []
     subtree_paths = []
-    rows = zip(localnames, projects, srcpaths, subtrees)
-    for local, project, srcpath, subtree in rows:
+    rows = zip(localnames, projects, srcpaths, subdirs, subtrees)
+    for local, project, srcpath, subdir, subtree in rows:
+
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
         if not os.path.isdir(subdir_path):
           cros_build_lib.Die('Source for package %s not found.' % self.pkgname)
+
+        if self.subdir_support and subdir:
+          subdir_path = os.path.join(subdir_path, subdir)
       else:
         subdir_path = os.path.realpath(os.path.join(srcroot, dir_, local))
         if dir_ == '' and not os.path.isdir(subdir_path):
           subdir_path = os.path.realpath(os.path.join(srcroot, 'platform',
                                                       local))
+
+        if self.subdir_support and subdir:
+          subdir_path = os.path.join(subdir_path, subdir)
 
         if not os.path.isdir(subdir_path):
           cros_build_lib.Die('Source repository %s '
@@ -793,7 +823,8 @@ class EBuild(object):
           for s in subtree)
 
     return SourceInfo(
-        projects=projects, srcdirs=subdir_paths, subtrees=subtree_paths)
+        projects=projects, srcdirs=subdir_paths, subdirs=[],
+        subtrees=subtree_paths)
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
@@ -1275,7 +1306,7 @@ def BestEBuild(ebuilds):
   return winner
 
 
-def _FindUprevCandidates(files, allow_blacklisted=False):
+def _FindUprevCandidates(files, allow_blacklisted, subdir_support):
   """Return the uprev candidate ebuild from a specified list of files.
 
   Usually an uprev candidate is a the stable ebuild in a cros_workon
@@ -1287,13 +1318,15 @@ def _FindUprevCandidates(files, allow_blacklisted=False):
   Args:
     files: List of files in a package directory.
     allow_blacklisted: If False, discard blacklisted packages.
+    subdir_support: Support obsolete CROS_WORKON_SUBDIR.
+                    Intended for branchs older than 10363.0.0.
   """
   stable_ebuilds = []
   unstable_ebuilds = []
   for path in files:
     if not path.endswith('.ebuild') or os.path.islink(path):
       continue
-    ebuild = EBuild(path)
+    ebuild = EBuild(path, subdir_support)
     if not ebuild.is_workon or (ebuild.is_blacklisted and
                                 not allow_blacklisted):
       continue
@@ -1341,7 +1374,8 @@ def _FindUprevCandidates(files, allow_blacklisted=False):
   return uprev_ebuild
 
 
-def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False):
+def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False,
+                      subdir_support=False):
   """Get ebuilds from the specified overlay.
 
   Args:
@@ -1352,6 +1386,8 @@ def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False):
     packages: A set of the packages we want to gather.  If use_all is
       True, this argument is ignored, and should be None.
     allow_blacklisted: Whether or not to consider blacklisted ebuilds.
+    subdir_support: Support obsolete CROS_WORKON_SUBDIR.
+                    Intended for branchs older than 10363.0.0.
 
   Returns:
     A list of ebuilds of the overlay
@@ -1371,7 +1407,7 @@ def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False):
       continue
 
     paths = [os.path.join(package_dir, path) for path in files]
-    ebuild = _FindUprevCandidates(paths, allow_blacklisted)
+    ebuild = _FindUprevCandidates(paths, allow_blacklisted, subdir_support)
 
     # Add stable ebuild.
     if ebuild:
@@ -1421,11 +1457,13 @@ def ParseBashArray(value):
       cmd, print_cmd=False, shell=True, capture_output=True).output.split(sep)
 
 
-def WorkonEBuildGeneratorForDirectory(base_dir):
+def WorkonEBuildGeneratorForDirectory(base_dir, subdir_support=False):
   """Yields cros_workon EBuilds in |base_dir|.
 
   Args:
     base_dir: Path to the base directory.
+    subdir_support: Support obsolete CROS_WORKON_SUBDIR.
+                    Intended for branchs older than 10363.0.0.
 
   Yields:
     A cros_workon EBuild instance.
@@ -1435,7 +1473,7 @@ def WorkonEBuildGeneratorForDirectory(base_dir):
       # Only look at *-9999.ebuild files.
       if filename.endswith(WORKON_EBUILD_SUFFIX):
         full_path = os.path.join(root, filename)
-        ebuild = EBuild(full_path)
+        ebuild = EBuild(full_path, subdir_support)
         if not ebuild.is_workon:
           continue
         yield ebuild
@@ -1881,7 +1919,7 @@ def _CheckHasTest(cp, sysroot):
   except cros_build_lib.RunCommandError as e:
     logging.error('FindEbuildForPackage error %s', e)
     raise failures_lib.PackageBuildFailure(e, 'equery', cp)
-  ebuild = EBuild(path)
+  ebuild = EBuild(path, False)
   return cp if ebuild.has_test else None
 
 
