@@ -31,7 +31,6 @@ PROTOCOLS = (PROTOCOL_GS,
 PROTOCOL_SEP = '://'
 
 EXTRACT_PROTOCOL_RE = re.compile(r'^(\w+)%s' % PROTOCOL_SEP)
-SPLIT_URI_RE = re.compile(r'^(\w+)%s(.*)$' % PROTOCOL_SEP)
 
 TYPE_GS = PROTOCOL_GS
 TYPE_HTTP = PROTOCOL_HTTP
@@ -123,67 +122,6 @@ def GetUriType(uri):
     return protocol
 
   return TYPE_LOCAL
-
-
-def SplitURI(uri):
-  """Get the protocol and path from a URI
-
-  Examples:
-    'gs://some/path' ==> ('gs', 'some/path')
-    'file:///some/path' ==> ('file', '/some/path')
-    '/some/path' ==> (None, '/some/path')
-    '/cns/some/colossus/path' ==> (None, '/cns/some/colossus/path')
-
-  Args:
-    uri: The uri to get protocol and path from.
-
-  Returns;
-    Tuple (protocol, path)
-  """
-  match = SPLIT_URI_RE.search(uri)
-  if match:
-    return (match.group(1), match.group(2))
-
-  return (None, uri)
-
-
-def IsGsURI(uri):
-  """Returns True if given uri uses Google Storage protocol."""
-  return PROTOCOL_GS == ExtractProtocol(uri)
-
-
-def IsFileURI(uri):
-  """Return True if given uri is a file URI (or path).
-
-  If uri uses the file protocol or it is a plain non-Colossus path
-  then return True.
-
-  Args:
-    uri: Any URI or path.
-
-  Returns:
-    True or False as described above.
-  """
-  return TYPE_LOCAL == GetUriType(uri)
-
-
-def IsHttpURI(uri, https_ok=False):
-  """Returns True if given uri uses http, or optionally https, protocol.
-
-  Args:
-    uri: The URI to check.
-    https_ok: If True, then accept https protocol as well.
-
-  Returns:
-    Boolean
-  """
-  uri_type = GetUriType(uri)
-  return TYPE_HTTP == uri_type or (https_ok and TYPE_HTTPS == uri_type)
-
-
-def IsHttpsURI(uri):
-  """Returns True if given uri uses https protocol."""
-  return TYPE_HTTPS == GetUriType(uri)
 
 
 def MD5Sum(uri):
