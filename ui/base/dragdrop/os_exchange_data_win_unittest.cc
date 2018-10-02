@@ -11,6 +11,7 @@
 #include "base/win/scoped_hglobal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "url/gurl.h"
 
@@ -301,6 +302,23 @@ TEST(OSExchangeDataWinTest, FileContents) {
   EXPECT_TRUE(copy.GetFileContents(&filename, &read_contents));
   EXPECT_EQ(L"filename.txt", filename.value());
   EXPECT_EQ(file_contents, read_contents);
+}
+
+TEST(OSExchangeDataWinTest, Filenames) {
+  OSExchangeData data;
+  const std::vector<FileInfo> kTestFilenames = {
+      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file1")),
+       base::FilePath()},
+      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file2")),
+       base::FilePath()},
+  };
+  data.SetFilenames(kTestFilenames);
+
+  OSExchangeData copy(data.provider().Clone());
+  std::vector<FileInfo> dropped_filenames;
+
+  EXPECT_TRUE(copy.GetFilenames(&dropped_filenames));
+  EXPECT_EQ(kTestFilenames, dropped_filenames);
 }
 
 TEST(OSExchangeDataWinTest, CFHtml) {
