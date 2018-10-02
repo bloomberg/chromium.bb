@@ -65,7 +65,7 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
                                            filepattern=self.FILE_GLOB)))
 
 
-class TestFileLib(cros_test_lib.MoxTempDirTestCase):
+class TestFileLib(cros_test_lib.TempDirTestCase):
   """Test filelib module.
 
   Note: We use tools for hashes to avoid relying on hashlib since that's what
@@ -105,30 +105,37 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     self.assertEqual(expected_sha1, sha1)
     self.assertEqual(expected_sha256, sha256)
 
-  def testCopy(self):
-    path1 = '/some/local/path'
-    path2 = '/other/local/path'
-    relative_path = 'relative.bin'
+  def testCopyIntoExistingDir(self):
+    """Copy a file into a dir that exists."""
+    path1 = os.path.join(self.tempdir, 'path1')
+    subdir = os.path.join(self.tempdir, 'subdir')
+    path2 = os.path.join(subdir, 'path2')
 
-    self.mox.StubOutWithMock(filelib.os.path, 'isdir')
-    self.mox.StubOutWithMock(osutils, 'SafeMakedirs')
-    self.mox.StubOutWithMock(filelib.shutil, 'copy2')
+    osutils.Touch(path1)
+    osutils.SafeMakedirs(subdir)
 
-    # Set up the test replay script.
-    # Run 1, path2 directory exists.
-    filelib.os.path.isdir(os.path.dirname(path2)).AndReturn(True)
-    filelib.shutil.copy2(path1, path2)
-    # Run 2, path2 directory does not exist.
-    filelib.os.path.isdir(os.path.dirname(path2)).AndReturn(False)
-    osutils.SafeMakedirs(os.path.dirname(path2))
-    filelib.shutil.copy2(path1, path2)
-
-    # Run 3, there is target directory is '.', don't test existence.
-    filelib.shutil.copy2(path1, relative_path)
-    self.mox.ReplayAll()
-
-    # Run the test verifications, three times.
     filelib.Copy(path1, path2)
+    self.assertExists(path2)
+
+  def testCopyIntoNewDir(self):
+    """Copy a file into a dir that does not yet exist."""
+    path1 = os.path.join(self.tempdir, 'path1')
+    subdir = os.path.join(self.tempdir, 'subdir')
+    path2 = os.path.join(subdir, 'path2')
+
+    osutils.Touch(path1)
+
     filelib.Copy(path1, path2)
+    self.assertExists(path2)
+
+  def testCopyRelative(self):
+    """Copy a file using relative destination."""
+    path1 = os.path.join(self.tempdir, 'path1')
+    path2 = os.path.join(self.tempdir, 'path2')
+    relative_path = os.path.basename(path2)
+
+    os.chdir(self.tempdir)
+    osutils.Touch(path1)
+
     filelib.Copy(path1, relative_path)
-    self.mox.VerifyAll()
+    self.assertExists(path2)
