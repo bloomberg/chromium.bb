@@ -78,7 +78,7 @@ BrowserPlugin* BrowserPlugin::GetFromNode(const blink::WebNode& node) {
     return nullptr;
 
   PluginContainerMap* browser_plugins = g_plugin_container_map.Pointer();
-  PluginContainerMap::iterator it = browser_plugins->find(container);
+  auto it = browser_plugins->find(container);
   return it == browser_plugins->end() ? nullptr : it->second;
 }
 

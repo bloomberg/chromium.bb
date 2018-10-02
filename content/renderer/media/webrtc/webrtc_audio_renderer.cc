@@ -515,7 +515,7 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
   // set to 0.0.
   float volume = 0.0f;
 
-  SourcePlayingStates::iterator entry = source_playing_states_.find(source);
+  auto entry = source_playing_states_.find(source);
   if (entry != source_playing_states_.end()) {
     PlayingStates& states = entry->second;
     for (PlayingStates::const_iterator it = states.begin();
@@ -566,13 +566,12 @@ bool WebRtcAudioRenderer::RemovePlayingState(
     PlayingState* state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!state->playing());
-  SourcePlayingStates::iterator found = source_playing_states_.find(source);
+  auto found = source_playing_states_.find(source);
   if (found == source_playing_states_.end())
     return false;
 
   PlayingStates& array = found->second;
-  PlayingStates::iterator state_it =
-      std::find(array.begin(), array.end(), state);
+  auto state_it = std::find(array.begin(), array.end(), state);
   if (state_it == array.end())
     return false;
 

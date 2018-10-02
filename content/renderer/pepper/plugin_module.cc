@@ -679,9 +679,7 @@ void PluginModule::PluginCrashed() {
   is_crashed_ = true;
 
   // Notify all instances that they crashed.
-  for (PluginInstanceSet::iterator i = instances_.begin();
-       i != instances_.end();
-       ++i)
+  for (auto i = instances_.begin(); i != instances_.end(); ++i)
     (*i)->InstanceCrashed();
 
   PepperPluginRegistry::GetInstance()->PluginModuleDead(this);

@@ -64,7 +64,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     streams_.push_back(stream);
   }
   void RemoveStream(MediaStreamInterface* stream) {
-    StreamVector::iterator it = streams_.begin();
+    auto it = streams_.begin();
     for (; it != streams_.end(); ++it) {
       if (it->get() == stream) {
         streams_.erase(it);
