@@ -131,6 +131,9 @@ public class WebsitePermissionsFetcher {
         // Background sync permission is per-origin.
         queue.add(new ExceptionInfoFetcher(
                 ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC));
+        // Automatic Downloads permission is per-origin.
+        queue.add(new ExceptionInfoFetcher(
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
         // Autoplay permission is per-origin.
         queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY));
         // USB device permission is per-origin and per-embedder.
@@ -196,6 +199,10 @@ public class WebsitePermissionsFetcher {
             // Background sync info is per-origin.
             queue.add(new ExceptionInfoFetcher(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC));
+        } else if (category.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)) {
+            // Automatic downloads info is per-origin.
+            queue.add(new ExceptionInfoFetcher(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
         } else if (category.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));

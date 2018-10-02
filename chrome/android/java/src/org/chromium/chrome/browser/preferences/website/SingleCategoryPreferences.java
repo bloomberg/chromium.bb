@@ -484,7 +484,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     private String getAddExceptionDialogMessage() {
         int resource = 0;
-        if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
+        if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)) {
+            resource = R.string.website_settings_add_site_description_automatic_downloads;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
             resource = R.string.website_settings_add_site_description_autoplay;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             resource = R.string.website_settings_add_site_description_background_sync;
@@ -579,6 +581,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
+            exception = true;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
+                && !PrefServiceBridge.getInstance().isCategoryEnabled(
+                           ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)) {
             exception = true;
         }
         if (exception) {

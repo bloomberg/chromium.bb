@@ -73,6 +73,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             "ads_permission_list", // ContentSettingException.Type.ADS
             "autoplay_permission_list", // ContentSettingException.Type.AUTOPLAY
             "background_sync_permission_list", // ContentSettingException.Type.BACKGROUND_SYNC
+            "automatic_downloads_permission_list",
+            // ContentSettingException.Type.AUTOMATIC_DOWNLOADS
             "cookies_permission_list", // ContentSettingException.Type.COOKIE
             "javascript_permission_list", // ContentSettingException.Type.JAVASCRIPT
             "popup_permission_list", // ContentSettingException.Type.POPUP
@@ -84,7 +86,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             "microphone_permission_list", // PermissionInfo.Type.MICROPHONE
             "midi_sysex_permission_list", // PermissionInfo.Type.MIDI
             "push_notifications_list", // PermissionInfo.Type.NOTIFICATION
-            "protected_media_identifier_permission_list", // PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER
+            "protected_media_identifier_permission_list",
+            // PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER
             "sensors_permission_list", // PermissionInfo.Type.SENSORS
     };
 
