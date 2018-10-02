@@ -33,6 +33,15 @@
 
 class GaiaAuthFetcherTest;
 
+namespace signin {
+// Mode determining whether Gaia can change the order of the accounts in
+// cookies.
+enum class MultiloginMode {
+  MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER = 0,
+  MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER
+};
+}  // namespace signin
+
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
