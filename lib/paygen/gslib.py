@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import base64
 import errno
 import os
 import re
@@ -268,44 +267,6 @@ def ValidateGsutilWorking(bucket):
   url = 'gs://%s/' % bucket
   if not List(url):
     raise ValidateGsutilFailure('Unable to find anything in: %s' % url)
-
-
-@RetryGSLib
-def MD5Sum(gs_uri):
-  """Read the gsutil md5 sum from etag and gsutil ls -L.
-
-  Note that because this relies on 'gsutil ls -L' it suffers from the
-  eventual consistency issue, meaning this function could fail to find
-  the MD5 value for a recently created file in Google Storage.
-
-  Args:
-    gs_uri: An absolute Google Storage URI that refers directly to an object.
-      No globs are supported.
-
-  Returns:
-    A string that is an md5sum, or None if no object found.
-
-  Raises:
-    GSLibError if the gsutil command fails.  If there is no object at that path
-    that is not considered a failure.
-  """
-  gs_md5_regex = re.compile(r'.*?Hash \(md5\):\s+(.*)', re.IGNORECASE)
-  args = ['ls', '-L', gs_uri]
-
-  result = RunGsutilCommand(args, error_code_ok=True)
-
-  # If object was not found then output is completely empty.
-  if not result.output:
-    return None
-
-  for line in result.output.splitlines():
-    match = gs_md5_regex.match(line)
-    if match:
-      # gsutil now prints the MD5 sum in base64, but we want it in hex.
-      return base64.b16encode(base64.b64decode(match.group(1))).lower()
-
-  # This means there was some actual failure in the command.
-  raise GSLibError('Unable to determine MD5Sum for %r' % gs_uri)
 
 
 @RetryGSLib

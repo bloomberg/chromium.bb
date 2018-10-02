@@ -7,17 +7,11 @@
 
 from __future__ import print_function
 
-import base64
 import errno
 import mox
-import os
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-
-from chromite.lib import gs
-from chromite.lib import osutils
-from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
 
 
@@ -327,126 +321,3 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.GSLibError, gslib.ListFiles,
                       self.bucket_uri, recurse=True)
     self.mox.VerifyAll()
-
-  def testMD5SumAccessError(self):
-    gs_uri = 'gs://bucket/foo/bar/somefile'
-    crc32c = 'c96fd51e'
-    crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
-    md5_sum = 'b026324c6904b2a9cb4b88d6d61c81d1'
-    md5_sum_64 = base64.b64encode(base64.b16decode(md5_sum, casefold=True))
-    output = '\n'.join([
-        '%s:' % gs_uri,
-        '        Creation time:          Tue, 04 Mar 2014 19:55:26 GMT',
-        '        Content-Language:       en',
-        '        Content-Length:         2',
-        '        Content-Type:           application/octet-stream',
-        '        Hash (crc32c):          %s' % crc32c_64,
-        '        Hash (md5):             %s' % md5_sum_64,
-        '        ETag:                   CMi938jU+bwCEAE=',
-        '        Generation:             1393962926989000',
-        '        Metageneration:         1',
-        '        ACL:                    ACCESS DENIED. Note: you need OWNER '
-        'permission',
-        '                                on the object to read its ACL.',
-    ])
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'ls', '-L', gs_uri]
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        error_code_ok=True).AndReturn(
-            cros_test_lib.EasyAttr(output=output))
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    result = gslib.MD5Sum(gs_uri)
-    self.assertEqual(md5_sum, result)
-    self.mox.VerifyAll()
-
-  def testMD5SumAccessOK(self):
-    gs_uri = 'gs://bucket/foo/bar/somefile'
-    crc32c = 'c96fd51e'
-    crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
-    md5_sum = 'b026324c6904b2a9cb4b88d6d61c81d1'
-    md5_sum_64 = base64.b64encode(base64.b16decode(md5_sum, casefold=True))
-    output = '\n'.join([
-        '%s:' % gs_uri,
-        '        Creation time:          Tue, 04 Mar 2014 19:55:26 GMT',
-        '        Content-Language:       en',
-        '        Content-Length:         2',
-        '        Content-Type:           application/octet-stream',
-        '        Hash (crc32c):          %s' % crc32c_64,
-        '        Hash (md5):             %s' % md5_sum_64,
-        '        ETag:                   CMi938jU+bwCEAE=',
-        '        Generation:             1393962926989000',
-        '        Metageneration:         1',
-        '        ACL:            [',
-        '  {',
-        '    "entity": "project-owners-134157665460",',
-        '    "projectTeam": {',
-        '      "projectNumber": "134157665460",',
-        '      "team": "owners"',
-        '    },',
-        '    "role": "OWNER"',
-        '  }',
-        ']',
-    ])
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'ls', '-L', gs_uri]
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        error_code_ok=True).AndReturn(
-            cros_test_lib.EasyAttr(output=output))
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    result = gslib.MD5Sum(gs_uri)
-    self.assertEqual(md5_sum, result)
-    self.mox.VerifyAll()
-
-
-class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
-  """Test access to gs lib functionality.
-
-  The tests here require GS .boto access to the gs://chromeos-releases-public
-  bucket, which is world-readable.  Any .boto setup should do, but without
-  a .boto there will be failures.
-  """
-  def populateUri(self, uri):
-    local_path = os.path.join(self.tempdir, 'remote_content')
-    osutils.WriteFile(local_path, 'some sample content')
-    gslib.Copy(local_path, uri)
-    return local_path
-
-  @cros_test_lib.NetworkTest()
-  def testCopyAndMD5Sum(self):
-    """Higher-level functional test. Test MD5Sum OK."""
-    with gs.TemporaryURL('chromite.gslib.md5') as tempuri:
-      local_path = self.populateUri(tempuri)
-      local_md5 = filelib.MD5Sum(local_path)
-      gs_md5 = gslib.MD5Sum(tempuri)
-      self.assertEqual(gs_md5, local_md5)
-
-  @cros_test_lib.NetworkTest()
-  def testMD5SumBadPath(self):
-    """Higher-level functional test.  Test MD5Sum bad path:
-
-    1) Make up random, non-existent gs path
-    2) Ask for MD5Sum.  Make sure it fails, but with no exeption.
-    """
-
-    gs_path = 'gs://chromeos-releases/awsedrftgyhujikol'
-    gs_md5 = gslib.MD5Sum(gs_path)
-    self.assertIsNone(gs_md5)
-
-  @cros_test_lib.NetworkTest()
-  def testMD5SumBadBucket(self):
-    """Higher-level functional test.  Test MD5Sum bad bucket:
-
-    1) Make up random, non-existent gs bucket and path
-    2) Ask for MD5Sum.  Make sure it fails, with exception
-    """
-
-    gs_path = 'gs://lokijuhygtfrdesxcv/awsedrftgyhujikol'
-    gs_md5 = gslib.MD5Sum(gs_path)
-    self.assertIsNone(gs_md5)

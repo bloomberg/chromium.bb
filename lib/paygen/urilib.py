@@ -123,37 +123,6 @@ def GetUriType(uri):
   return TYPE_LOCAL
 
 
-def MD5Sum(uri):
-  """Compute or retrieve MD5 sum of uri.
-
-  Supported for: local files, GS files.
-
-  Args:
-    uri: The /unix/path or gs:// uri to compute the md5sum on.
-
-  Returns:
-    A string representing the md5sum of the file/uri passed in.
-    None if we do not understand the uri passed in or cannot compute
-    the md5sum.
-  """
-
-  uri_type = GetUriType(uri)
-
-  if uri_type == TYPE_LOCAL:
-    return filelib.MD5Sum(uri)
-  elif uri_type == TYPE_GS:
-    try:
-      return gslib.MD5Sum(uri)
-    except gslib.GSLibError:
-      return None
-
-  # Colossus does not have a command for getting MD5 sum.  We could
-  # copy the file to local disk and calculate it, but it seems better
-  # to explicitly say it is not supported.
-
-  raise NotSupportedForType(uri_type)
-
-
 class URLopener(urllib.FancyURLopener):
   """URLopener that will actually complain when download fails."""
   # The urllib.urlretrieve function, which seems like a good fit for this,

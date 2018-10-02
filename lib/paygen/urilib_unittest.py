@@ -142,27 +142,6 @@ class TestUrilib(cros_test_lib.MoxTempDirTestCase):
       for uri in tests[uri_type]:
         self.assertEquals(uri_type, urilib.GetUriType(uri))
 
-  def testMD5Sum(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-
-    self.mox.StubOutWithMock(gslib, 'MD5Sum')
-    self.mox.StubOutWithMock(filelib, 'MD5Sum')
-
-    # Set up the test replay script.
-    # Run 1, GS.
-    gslib.MD5Sum(gs_path).AndReturn('TheResult')
-    # Run 3, local file.
-    filelib.MD5Sum(local_path).AndReturn('TheResult')
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEquals('TheResult', urilib.MD5Sum(gs_path))
-    self.assertEquals('TheResult', urilib.MD5Sum(local_path))
-    self.assertRaises(urilib.NotSupportedForType, urilib.MD5Sum, http_path)
-    self.mox.VerifyAll()
-
   @cros_test_lib.NetworkTest()
   def testURLRetrieve(self):
     good_url = 'https://codereview.chromium.org/download/issue11731004_1_2.diff'
