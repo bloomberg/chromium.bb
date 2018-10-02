@@ -13,7 +13,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator.AnimatorUpdateListener;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -430,15 +429,11 @@ public class ContextualSearchBarControl {
         float endValue = visible ? FULL_OPACITY : TRANSPARENT_OPACITY;
         if (mDividerLineVisibilityPercentage == endValue) return;
         if (mDividerLineVisibilityAnimation != null) mDividerLineVisibilityAnimation.cancel();
-        AnimatorUpdateListener listener = new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(CompositorAnimator animator) {
-                mDividerLineVisibilityPercentage = animator.getAnimatedValue();
-            }
-        };
         mDividerLineVisibilityAnimation = CompositorAnimator.ofFloat(
                 mContextualSearchPanel.getAnimationHandler(), mDividerLineVisibilityPercentage,
-                endValue, OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, listener);
+                endValue, OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
+        mDividerLineVisibilityAnimation.addUpdateListener(
+                animator -> mDividerLineVisibilityPercentage = animator.getAnimatedValue());
         mDividerLineVisibilityAnimation.start();
     }
 
@@ -581,12 +576,8 @@ public class ContextualSearchBarControl {
             mTextOpacityAnimation = CompositorAnimator.ofFloat(
                     mContextualSearchPanel.getAnimationHandler(), TRANSPARENT_OPACITY, FULL_OPACITY,
                     OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
-            mTextOpacityAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(CompositorAnimator animator) {
-                    updateSearchBarTextOpacity(animator.getAnimatedValue());
-                }
-            });
+            mTextOpacityAnimation.addUpdateListener(
+                    animator -> updateSearchBarTextOpacity(animator.getAnimatedValue()));
         }
         mTextOpacityAnimation.cancel();
         mTextOpacityAnimation.start();
