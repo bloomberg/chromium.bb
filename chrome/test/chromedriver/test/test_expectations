@@ -12,6 +12,14 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
+    # marked as not yet implemented with chrome but already works
+    'ChildrenFindingTest.testShouldNotReturnRootElementWhenFindingChildrenById',
+    'ClearTest.shouldBeAbleToClearDateInput',
+    'ClearTest.shouldBeAbleToClearDatetimeLocalInput',
+    'ClearTest.shouldBeAbleToClearMonthInput',
+    'ClearTest.shouldBeAbleToClearTimeInput',
+    'ClearTest.shouldBeAbleToClearWeekInput',
+
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
