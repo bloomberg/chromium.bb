@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/fido/ble_adapter_power_manager.h"
+#include "device/fido/ble_adapter_manager.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_task.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -168,10 +168,10 @@ void FidoRequestHandlerBase::OnBluetoothAdapterPowerChanged(
 }
 
 void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
-  if (!bluetooth_power_manager_)
+  if (!bluetooth_adapter_manager_)
     return;
 
-  bluetooth_power_manager_->SetAdapterPower(true /* set_power_on */);
+  bluetooth_adapter_manager_->SetAdapterPower(true /* set_power_on */);
 }
 
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
@@ -287,7 +287,7 @@ void FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest(
 }
 
 void FidoRequestHandlerBase::ConstructBleAdapterPowerManager() {
-  bluetooth_power_manager_ = std::make_unique<BleAdapterPowerManager>(this);
+  bluetooth_adapter_manager_ = std::make_unique<BleAdapterManager>(this);
 }
 
 }  // namespace device

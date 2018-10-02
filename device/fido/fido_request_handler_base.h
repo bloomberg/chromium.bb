@@ -29,7 +29,7 @@ class Connector;
 
 namespace device {
 
-class BleAdapterPowerManager;
+class BleAdapterManager;
 class FidoAuthenticator;
 class FidoDevice;
 class FidoTask;
@@ -208,7 +208,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityObserver* observer_ = nullptr;
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
-  std::unique_ptr<BleAdapterPowerManager> bluetooth_power_manager_;
+  std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
