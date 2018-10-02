@@ -8,16 +8,14 @@
 from __future__ import print_function
 
 import os
-import shutil
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import filelib
-from chromite.lib.paygen import utils
 
 
-class TestFileManipulation(cros_test_lib.TestCase):
+class TestFileManipulation(cros_test_lib.TempDirTestCase):
   """Test cases for filelib."""
 
   FILE1 = 'file1a'
@@ -44,35 +42,27 @@ class TestFileManipulation(cros_test_lib.TestCase):
       out3.write(self.SUBFILE_CONTENTS)
 
   def testIntegrationScript(self):
-    dir1 = None
-    dir2 = None
-    try:
-      dir1 = utils.CreateTmpDir('filelib_unittest1-')
-      dir2 = utils.CreateTmpDir('filelib_unittest2-')
+    dir1 = os.path.join(self.tempdir, 'filelib_unittest1-')
+    osutils.SafeMakedirs(dir1)
 
-      self._SetUpTempdir(dir1)
+    self._SetUpTempdir(dir1)
 
-      dir1_file1 = os.path.join(dir1, self.FILE1)
-      dir1_file2 = os.path.join(dir1, self.FILE2)
-      dir1_subfile = os.path.join(dir1, self.SUBFILE)
-      dir1_top_files = [dir1_file1, dir1_file2]
-      dir1_deep_files = dir1_top_files + [dir1_subfile]
+    dir1_file1 = os.path.join(dir1, self.FILE1)
+    dir1_file2 = os.path.join(dir1, self.FILE2)
+    dir1_subfile = os.path.join(dir1, self.SUBFILE)
+    dir1_top_files = [dir1_file1, dir1_file2]
+    dir1_deep_files = dir1_top_files + [dir1_subfile]
 
-      # Test ListFiles with various options.
-      self.assertEqual(set(dir1_top_files),
-                       set(filelib.ListFiles(dir1)))
-      self.assertEqual(set(dir1_deep_files),
-                       set(filelib.ListFiles(dir1, recurse=True)))
-      self.assertEqual(sorted(dir1_deep_files),
-                       filelib.ListFiles(dir1, recurse=True, sort=True))
-      self.assertEqual(set([dir1_file1, dir1_subfile]),
-                       set(filelib.ListFiles(dir1, recurse=True,
-                                             filepattern=self.FILE_GLOB)))
-
-    finally:
-      for d in (dir1, dir2):
-        if d and os.path.isdir(d):
-          shutil.rmtree(d)
+    # Test ListFiles with various options.
+    self.assertEqual(set(dir1_top_files),
+                     set(filelib.ListFiles(dir1)))
+    self.assertEqual(set(dir1_deep_files),
+                     set(filelib.ListFiles(dir1, recurse=True)))
+    self.assertEqual(sorted(dir1_deep_files),
+                     filelib.ListFiles(dir1, recurse=True, sort=True))
+    self.assertEqual(set([dir1_file1, dir1_subfile]),
+                     set(filelib.ListFiles(dir1, recurse=True,
+                                           filepattern=self.FILE_GLOB)))
 
 
 class TestFileLib(cros_test_lib.MoxTempDirTestCase):
