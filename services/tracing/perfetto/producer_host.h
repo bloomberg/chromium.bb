@@ -60,6 +60,9 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   void OnConnect() override;
   void OnDisconnect() override;
 
+  void SetupDataSource(perfetto::DataSourceInstanceID id,
+                       const perfetto::DataSourceConfig& config) override;
+
   void StartDataSource(perfetto::DataSourceInstanceID id,
                        const perfetto::DataSourceConfig& config) override;
 
