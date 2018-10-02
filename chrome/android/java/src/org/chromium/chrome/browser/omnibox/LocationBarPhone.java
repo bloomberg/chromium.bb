@@ -149,11 +149,6 @@ public class LocationBarPhone extends LocationBarLayout {
                 setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
             }
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
-            // As the position of the navigation icon has changed, ensure the suggestions are
-            // updated to reflect the new position.
-            if (getSuggestionList() != null && getSuggestionList().isShown()) {
-                getSuggestionList().invalidateSuggestionViews();
-            }
         }
         setUrlFocusChangeInProgress(false);
 

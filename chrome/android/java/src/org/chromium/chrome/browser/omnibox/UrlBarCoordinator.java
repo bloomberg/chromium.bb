@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Coordinates the interactions with the UrlBar text component.
  */
-public class UrlBarCoordinator {
+public class UrlBarCoordinator implements UrlBarEditingTextStateProvider {
     /** Specified how the text should be selected when focused. */
     @IntDef({SelectionState.SELECT_ALL, SelectionState.SELECT_END})
     @Retention(RetentionPolicy.SOURCE)
@@ -99,32 +99,32 @@ public class UrlBarCoordinator {
         mUrlBar.selectAll();
     }
 
-    /** Return the starting selection index for the text. */
+    @Override
     public int getSelectionStart() {
         return mUrlBar.getSelectionStart();
     }
 
-    /** Return the ending selection index for the text. */
+    @Override
     public int getSelectionEnd() {
         return mUrlBar.getSelectionEnd();
     }
 
-    /** Return whether the view can accept autocomplete. */
+    @Override
     public boolean shouldAutocomplete() {
         return mUrlBar.shouldAutocomplete();
     }
 
-    /** Return whether the last edit was the result of a paste operation. */
+    @Override
     public boolean wasLastEditPaste() {
         return mUrlBar.wasLastEditPaste();
     }
 
-    /** Return the full text with any inline autocomplete. */
+    @Override
     public String getTextWithAutocomplete() {
         return mUrlBar.getTextWithAutocomplete();
     }
 
-    /** Return the text excluding any inline autocomplete. */
+    @Override
     public String getTextWithoutAutocomplete() {
         return mUrlBar.getTextWithoutAutocomplete();
     }
