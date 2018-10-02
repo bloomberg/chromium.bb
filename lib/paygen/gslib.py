@@ -447,37 +447,6 @@ def IsGsURI(path):
   return path and path.startswith(PROTOCOL + '://')
 
 
-# TODO(mtennant): Rename this "Size" for consistency.
-@RetryGSLib
-def FileSize(gs_uri, **kwargs):
-  """Return the size of the given gsutil file in bytes.
-
-  Args:
-    gs_uri: Google Storage URI (beginning with 'gs://') pointing
-      directly to a single file.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Returns:
-    Size of file in bytes.
-
-  Raises:
-    URIError: Raised when URI is unknown to Google Storage or when
-      URI matches more than one file.
-  """
-  headers = {}
-  try:
-    Stat(gs_uri, headers=headers, **kwargs)
-  except StatFail as e:
-    raise URIError('Unable to stat file at URI %r: %s' % (gs_uri, e))
-
-  size_str = headers.get('stored-content-length')
-  if size_str is None:
-    raise URIError('Failed to get size of %r' % gs_uri)
-
-  return int(size_str)
-
-
 @RetryGSLib
 def List(root_uri, recurse=False, filepattern=None, sort=False):
   """Return list of file and directory paths under given root URI.

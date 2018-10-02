@@ -10,7 +10,6 @@ from __future__ import print_function
 import re
 import sys
 import urllib
-import urllib2
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
@@ -252,43 +251,6 @@ def Copy(src_uri, dest_uri):
     return URLRetrieve(src_uri, dest_uri)
 
   raise NotSupportedBetweenTypes(uri_type1, uri_type2)
-
-
-def Size(uri):
-  """Return size of file at URI in bytes.
-
-  Args:
-    uri: URI to consider
-
-  Returns:
-    Size of file at given URI in bytes.
-
-  Raises:
-    MissingURLError if uri is a URL and cannot be found.
-  """
-
-  uri_type = GetUriType(uri)
-
-  if TYPE_GS == uri_type:
-    return gslib.FileSize(uri)
-
-  if TYPE_LOCAL == uri_type:
-    return filelib.Size(uri)
-
-  if TYPE_HTTP == uri_type or TYPE_HTTPS == uri_type:
-    try:
-      response = urllib2.urlopen(uri)
-      if response.getcode() == 200:
-        return int(response.headers.getheader('Content-Length'))
-
-    except urllib2.HTTPError as e:
-      # Interpret 4** errors as our own MissingURLError.
-      if e.code < 400 or e.code >= 500:
-        raise
-
-    raise MissingURLError('No such file at URL %s' % uri)
-
-  raise NotSupportedForType(uri_type)
 
 
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):

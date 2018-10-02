@@ -17,14 +17,6 @@ import shutil
 from chromite.lib import osutils
 
 
-class MissingFileError(RuntimeError):
-  """Raised when required file is missing."""
-
-
-class MissingDirectoryError(RuntimeError):
-  """Raised when required directory is missing."""
-
-
 def Cmp(path1, path2):
   """Return True if paths hold identical files.
 
@@ -55,24 +47,6 @@ def Copy(src_path, dest_path):
     osutils.SafeMakedirs(dest_dir)
 
   shutil.copy2(src_path, dest_path)
-
-
-def Size(path):
-  """Return size of file in bytes.
-
-  Args:
-    path: Path to a local file.
-
-  Returns:
-    Size of file in bytes.
-
-  Raises:
-    MissingFileError if file is missing.
-  """
-  if os.path.isfile(path):
-    return os.stat(path).st_size
-
-  raise MissingFileError('No file at %r.' % path)
 
 
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
@@ -208,15 +182,3 @@ def ShaSums(file_path):
   sha256_hex = base64.b64encode(sha256.digest())
 
   return sha1_hex, sha256_hex
-
-
-def TruncateToSize(file_path, size):
-  """Truncates a file down to a given size, if it is bigger.
-
-  Args:
-    file_path: path to the file to truncate
-    size: the size to truncate down to, in bytes
-  """
-  if size < os.path.getsize(file_path):
-    with open(file_path, 'r+') as file_obj:
-      file_obj.truncate(size)

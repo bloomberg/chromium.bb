@@ -22,26 +22,6 @@ from chromite.lib.paygen import urilib
 # pylint: disable=protected-access
 
 
-class FakeHttpResponse(object):
-  """For simulating http response objects."""
-
-  class FakeHeaders(object):
-    """Helper class for faking HTTP headers in a response."""
-
-    def __init__(self, headers_dict):
-      self.headers_dict = headers_dict
-
-    def getheader(self, name):
-      return self.headers_dict.get(name)
-
-  def __init__(self, code, headers_dict=None):
-    self.code = code
-    self.headers = FakeHttpResponse.FakeHeaders(headers_dict)
-
-  def getcode(self):
-    return self.code
-
-
 class TestFileManipulation(cros_test_lib.TempDirTestCase):
   """Test general urilib file methods together."""
 
@@ -285,36 +265,6 @@ index %s..%s 100644
     self.assertEquals(result, urilib.Copy(http_path, local_path))
     self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Copy,
                       local_path, http_path)
-    self.mox.VerifyAll()
-
-  def testSize(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-    ftp_path = 'ftp://host.domain/some/path'
-
-    result = 100
-    http_response = FakeHttpResponse(200, {'Content-Length': str(result)})
-
-    self.mox.StubOutWithMock(gslib, 'FileSize')
-    self.mox.StubOutWithMock(filelib, 'Size')
-    self.mox.StubOutWithMock(urilib.urllib2, 'urlopen')
-
-    # Set up the test replay script.
-    # Run 1, local.
-    filelib.Size(local_path).AndReturn(result)
-    # Run 2, GS.
-    gslib.FileSize(gs_path).AndReturn(result)
-    # Run 4, HTTP.
-    urilib.urllib2.urlopen(http_path).AndReturn(http_response)
-    # Run 5, FTP.
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEquals(result, urilib.Size(local_path))
-    self.assertEquals(result, urilib.Size(gs_path))
-    self.assertEquals(result, urilib.Size(http_path))
-    self.assertRaises(urilib.NotSupportedForType, urilib.Size, ftp_path)
     self.mox.VerifyAll()
 
   def testListFiles(self):

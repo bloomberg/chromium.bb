@@ -240,28 +240,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.StatFail, gslib.Stat, path)
     self.mox.VerifyAll()
 
-  def testFileSize(self):
-    gs_uri = '%s/%s' % (self.bucket_uri, 'some/file/path')
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, '-d', 'stat', gs_uri]
-    size = 96
-    output = '\n'.join(['header: x-goog-generation: 1386322968237000',
-                        'header: x-goog-metageneration: 1',
-                        'header: x-goog-stored-content-encoding: identity',
-                        'header: x-goog-stored-content-length: %d' % size,
-                        'header: Content-Type: application/octet-stream'])
-
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(
-            cros_test_lib.EasyAttr(output=output))
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    result = gslib.FileSize(gs_uri)
-    self.assertEqual(size, result)
-    self.mox.VerifyAll()
-
   def _TestCatWithHeaders(self, gs_uri, cmd_output, cmd_error):
     # Set up the test replay script.
     # Run 1, versioning not enabled in bucket, one line of output.
@@ -291,21 +269,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertEqual(generation, int(headers['generation']))
     self.assertEqual(metageneration, int(headers['metageneration']))
     self.assertEqual(result, expected_output)
-    self.mox.VerifyAll()
-
-  def testFileSizeNoSuchFile(self):
-    gs_uri = '%s/%s' % (self.bucket_uri, 'some/file/path')
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, '-d', 'stat', gs_uri]
-    for _ in xrange(0, gslib.RETRY_ATTEMPTS + 1):
-      cros_build_lib.RunCommand(
-          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
-              self.cmd_error)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertRaises(gslib.URIError, gslib.FileSize, gs_uri)
     self.mox.VerifyAll()
 
   def testListFiles(self):

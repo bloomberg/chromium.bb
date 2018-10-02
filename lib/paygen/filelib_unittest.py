@@ -185,29 +185,3 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     filelib.Copy(path1, path2)
     filelib.Copy(path1, relative_path)
     self.mox.VerifyAll()
-
-  def testSize(self):
-    path = '/some/local/path'
-    size = 100
-
-    self.mox.StubOutWithMock(filelib.os.path, 'isfile')
-    self.mox.StubOutWithMock(filelib.os, 'stat')
-
-    # Set up the test replay script.
-    # Run 1, success.
-    filelib.os.path.isfile(path).AndReturn(True)
-    filelib.os.stat(path).AndReturn(cros_test_lib.EasyAttr(st_size=size))
-    # Run 2, file not found.
-    filelib.os.path.isfile(path).AndReturn(False)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEqual(size, filelib.Size(path))
-    self.assertRaises(filelib.MissingFileError, filelib.Size, path)
-    self.mox.VerifyAll()
-
-  def _CreateSimpleFile(self, *args):
-    contents = 'Not important, can be anything'
-    for path in args:
-      with open(path, 'w') as out:
-        out.write(contents)
