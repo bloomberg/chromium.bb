@@ -757,6 +757,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     dice_accounts_menu_->Show(sender, sync_to_another_account_button_);
   } else if (sender == signout_button_) {
     SignOutAllWebAccounts();
+    base::RecordAction(base::UserMetricsAction("Signin_Signout_FromUserMenu"));
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
