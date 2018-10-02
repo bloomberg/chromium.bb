@@ -93,6 +93,26 @@ void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
     OnSetPowered();
 }
 
+void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
+                                            BluetoothDevice* device,
+                                            const std::string& old_address) {
+  auto previous_device_id = FidoBleDevice::GetId(old_address);
+  auto new_device_id = FidoBleDevice::GetId(device->GetAddress());
+  auto it = devices_.find(previous_device_id);
+  if (it == devices_.end())
+    return;
+
+  VLOG(2) << "Discovered FIDO BLE device address change from old address : "
+          << old_address << " to new address : " << device->GetAddress();
+  devices_.emplace(new_device_id, std::move(it->second));
+  devices_.erase(it);
+
+  if (observer()) {
+    observer()->DeviceIdChanged(this, previous_device_id,
+                                std::move(new_device_id));
+  }
+}
+
 bool FidoBleDiscovery::CheckForExcludedDeviceAndCacheAddress(
     const BluetoothDevice* device) {
   std::string device_address = device->GetAddress();

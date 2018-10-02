@@ -38,6 +38,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
   void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
+  void DeviceAddressChanged(BluetoothAdapter* adapter,
+                            BluetoothDevice* device,
+                            const std::string& old_address) override;
 
   // Returns true if |device| is a Cable device. If so, add address of |device|
   // to |blacklisted_cable_device_addresses_|.

@@ -110,6 +110,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void FidoAuthenticatorAdded(
         const FidoAuthenticator& authenticator) = 0;
     virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
+    virtual void FidoAuthenticatorIdChanged(
+        base::StringPiece old_authenticator_id,
+        std::string new_authenticator_id) = 0;
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once
@@ -181,9 +184,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityObserver* observer() const { return observer_; }
 
  private:
+  friend class FidoRequestHandlerTest;
+
   // FidoDiscovery::Observer
   void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) final;
   void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
+  void DeviceIdChanged(FidoDiscovery* discovery,
+                       const std::string& previous_id,
+                       std::string new_id) final;
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
   void NotifyObserverTransportAvailability();

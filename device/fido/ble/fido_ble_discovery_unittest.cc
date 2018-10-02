@@ -5,6 +5,7 @@
 #include "device/fido/ble/fido_ble_discovery.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -12,7 +13,9 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/fido/ble/fido_ble_device.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -230,6 +233,54 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
   // updated device has an address that we know is an Cable device, this should
   // not trigger DeviceAdded().
   SimulateLowEnergyDevice(7);
+}
+
+TEST_F(BluetoothTest, DiscoveryDoesNotAddDuplicateDeviceOnAddressChanged) {
+  using TestMockDevice = ::testing::NiceMock<MockBluetoothDevice>;
+  static constexpr char kDeviceName[] = "device_name";
+  static constexpr char kDeviceAddress[] = "device_address";
+  static constexpr char kAuthenticatorId[] = "ble:device_address";
+  static constexpr char kDeviceChangedAddress[] = "device_changed_address";
+  static constexpr char kAuthenticatorChangedId[] =
+      "ble:device_changed_address";
+
+  MockFidoDiscoveryObserver observer;
+  FidoBleDiscovery discovery;
+  discovery.set_observer(&observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
+
+  auto mock_device = std::make_unique<TestMockDevice>(
+      mock_adapter.get(), 0 /* bluetooth_class */, kDeviceName, kDeviceAddress,
+      false /* paired */, false /* connected */);
+
+  EXPECT_CALL(*mock_device.get(), GetUUIDs)
+      .WillRepeatedly(::testing::Return(
+          std::vector<BluetoothUUID>{BluetoothUUID(kFidoServiceUUID)}));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter.get());
+  EXPECT_CALL(observer, DeviceIdChanged(&discovery, kAuthenticatorId,
+                                        kAuthenticatorChangedId));
+  discovery.Start();
+
+  EXPECT_CALL(*mock_device.get(), GetAddress)
+      .WillRepeatedly(::testing::Return(kDeviceAddress));
+  mock_adapter->NotifyDeviceChanged(mock_device.get());
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(mock_device.get()));
+
+  EXPECT_CALL(*mock_device.get(), GetAddress)
+      .WillRepeatedly(::testing::Return(kDeviceChangedAddress));
+  for (auto& observer : mock_adapter->GetObservers()) {
+    observer.DeviceAddressChanged(mock_adapter.get(), mock_device.get(),
+                                  kDeviceAddress);
+  }
+
+  mock_adapter->NotifyDeviceChanged(mock_device.get());
+
+  EXPECT_EQ(1u, discovery.GetDevices().size());
+  EXPECT_TRUE(discovery.GetDevice(kAuthenticatorChangedId));
 }
 
 }  // namespace device

@@ -208,6 +208,21 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
     observer_->FidoAuthenticatorRemoved(device->GetId());
 }
 
+void FidoRequestHandlerBase::DeviceIdChanged(FidoDiscovery* discovery,
+                                             const std::string& previous_id,
+                                             std::string new_id) {
+  DCHECK_EQ(FidoTransportProtocol::kBluetoothLowEnergy, discovery->transport());
+  auto it = active_authenticators_.find(previous_id);
+  if (it == active_authenticators_.end())
+    return;
+
+  active_authenticators_.emplace(new_id, std::move(it->second));
+  active_authenticators_.erase(it);
+
+  if (observer_)
+    observer_->FidoAuthenticatorIdChanged(previous_id, std::move(new_id));
+}
+
 void FidoRequestHandlerBase::AddAuthenticator(
     std::unique_ptr<FidoAuthenticator> authenticator) {
   DCHECK(authenticator &&

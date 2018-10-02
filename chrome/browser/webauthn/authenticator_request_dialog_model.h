@@ -258,6 +258,9 @@ class AuthenticatorRequestDialogModel {
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
 
+  void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
+                                      std::string new_authenticator_id);
+
   std::vector<AuthenticatorReference>& saved_authenticators() {
     return saved_authenticators_;
   }

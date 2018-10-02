@@ -76,4 +76,16 @@ void FidoBlePairingDelegate::StoreBlePinCodeForDevice(
                                                  std::move(pin_code));
 }
 
+void FidoBlePairingDelegate::ChangeStoredDeviceAddress(
+    const std::string& old_address,
+    std::string new_address) {
+  auto it = bluetooth_device_pincode_map_.find(old_address);
+  if (it != bluetooth_device_pincode_map_.end()) {
+    std::string pincode = std::move(it->second);
+    bluetooth_device_pincode_map_.erase(it);
+    bluetooth_device_pincode_map_.insert_or_assign(std::move(new_address),
+                                                   std::move(pincode));
+  }
+}
+
 }  // namespace device

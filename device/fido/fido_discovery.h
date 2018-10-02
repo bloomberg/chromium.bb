@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
@@ -58,6 +59,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
     virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
     virtual void DeviceRemoved(FidoDiscovery* discovery,
                                FidoDevice* device) = 0;
+    // Invoked when address of the connected FIDO Bluetooth device changes due
+    // to pairing.
+    virtual void DeviceIdChanged(FidoDiscovery* discovery,
+                                 const std::string& previous_id,
+                                 std::string new_id) = 0;
   };
 
   // Factory functions to construct an instance that discovers authenticators on

@@ -40,8 +40,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBlePairingDelegate
 
   void StoreBlePinCodeForDevice(std::string device_address,
                                 std::string pin_code);
+  void ChangeStoredDeviceAddress(const std::string& old_address,
+                                 std::string new_address);
 
  private:
+  friend class FidoBlePairingDelegateTest;
+
   base::flat_map<std::string, std::string> bluetooth_device_pincode_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoBlePairingDelegate);

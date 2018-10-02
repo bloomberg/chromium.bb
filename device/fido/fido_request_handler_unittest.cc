@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -53,6 +54,8 @@ class TestTransportAvailabilityObserver
  public:
   using TransportAvailabilityNotificationReceiver = test::TestCallbackReceiver<
       FidoRequestHandlerBase::TransportAvailabilityInfo>;
+  using AuthenticatorIdChangeNotificationReceiver =
+      test::TestCallbackReceiver<std::string>;
 
   TestTransportAvailabilityObserver() {}
   ~TestTransportAvailabilityObserver() override {}
@@ -72,6 +75,14 @@ class TestTransportAvailabilityObserver
     }
   }
 
+  void WaitForAuthenticatorIdChangeNotification(
+      base::StringPiece expected_new_authenticator_id) {
+    authenticator_id_change_notification_receiver_.WaitForCallback();
+    auto result =
+        std::get<0>(*authenticator_id_change_notification_receiver_.result());
+    EXPECT_EQ(expected_new_authenticator_id, result);
+  }
+
  protected:
   // FidoRequestHandlerBase::TransportAvailabilityObserver:
   void OnTransportAvailabilityEnumerated(
@@ -88,10 +99,17 @@ class TestTransportAvailabilityObserver
   void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
   }
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
+  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
+                                  std::string new_authenticator_id) override {
+    authenticator_id_change_notification_receiver_.callback().Run(
+        std::move(new_authenticator_id));
+  }
 
  private:
   TransportAvailabilityNotificationReceiver
       transport_availability_notification_receiver_;
+  AuthenticatorIdChangeNotificationReceiver
+      authenticator_id_change_notification_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTransportAvailabilityObserver);
 };
@@ -221,6 +239,13 @@ class FidoRequestHandlerTest : public ::testing::Test {
         cb_.callback());
     handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
     return handler;
+  }
+
+  void ChangeAuthenticatorId(FakeFidoRequestHandler* request_handler,
+                             FidoDevice* device,
+                             std::string new_authenticator_id) {
+    request_handler->DeviceIdChanged(ble_discovery_, device->GetId(),
+                                     std::move(new_authenticator_id));
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
@@ -585,6 +610,22 @@ TEST_F(FidoRequestHandlerTest,
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kUsbHumanInterfaceDevice,
        FidoTransportProtocol::kBluetoothLowEnergy});
+}
+
+TEST_F(FidoRequestHandlerTest, EmbedderNotifiedWhenAuthenticatorIdChanges) {
+  static constexpr char kNewAuthenticatorId[] = "new_authenticator_id";
+  TestTransportAvailabilityObserver observer;
+  auto request_handler = CreateFakeHandler();
+  request_handler->set_observer(&observer);
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  auto* device_ptr = device.get();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  discovery()->AddDevice(std::move(device));
+
+  ChangeAuthenticatorId(request_handler.get(), device_ptr, kNewAuthenticatorId);
+  observer.WaitForAuthenticatorIdChangeNotification(kNewAuthenticatorId);
 }
 
 }  // namespace device
