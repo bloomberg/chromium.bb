@@ -23,6 +23,8 @@ class SigninErrorController;
 
 namespace base { class FilePath; }
 
+struct AccountInfo;
+
 namespace profiles {
 
 // Assortment of methods for dealing with profiles.
@@ -66,7 +68,7 @@ void UpdateProfileName(Profile* profile,
 
 // Returns the list of secondary accounts for a specific
 // |profile|. Note that the profile must be signed in.
-std::vector<std::string> GetSecondaryAccountsForSignedInProfile(
+std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
     Profile* profile);
 #endif  // !defined(OS_CHROMEOS)
 

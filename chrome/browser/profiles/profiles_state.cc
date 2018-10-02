@@ -15,15 +15,17 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -144,18 +146,22 @@ void UpdateProfileName(Profile* profile,
                           base::UTF16ToUTF8(new_profile_name));
 }
 
-std::vector<std::string> GetSecondaryAccountsForSignedInProfile(
+std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
     Profile* profile) {
-  std::vector<std::string> accounts =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts();
-  std::string primary_account =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
-  DCHECK(!primary_account.empty());
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  std::vector<AccountInfo> accounts =
+      identity_manager->GetAccountsWithRefreshTokens();
 
-  // The vector returned by ProfileOAuth2TokenService::GetAccounts() contains
+  // The vector returned by GetAccountsWithRefreshTokens() contains
   // the primary account too, so we need to remove it from the list.
-  std::vector<std::string>::iterator primary_index =
-      std::find(accounts.begin(), accounts.end(), primary_account);
+  DCHECK(identity_manager->HasPrimaryAccount());
+  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+
+  std::vector<AccountInfo>::iterator primary_index = std::find_if(
+      accounts.begin(), accounts.end(),
+      [&primary_account](const AccountInfo& account_info) {
+        return account_info.account_id == primary_account.account_id;
+      });
   DCHECK(primary_index != accounts.end());
   accounts.erase(primary_index);
 
