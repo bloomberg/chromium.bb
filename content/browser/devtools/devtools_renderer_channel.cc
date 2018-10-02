@@ -6,6 +6,7 @@
 
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/public/common/child_process_host.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -23,14 +24,19 @@ void DevToolsRendererChannel::SetRenderer(
   agent_ptr_ = std::move(agent_ptr);
   process_id_ = process_id;
   frame_host_ = frame_host;
-  for (DevToolsSession* session : owner_->sessions())
-    session->AttachToAgent(agent_ptr_.get(), process_id_, frame_host_);
+  for (DevToolsSession* session : owner_->sessions()) {
+    for (auto& pair : session->handlers())
+      pair.second->SetRenderer(process_id_, frame_host_);
+    session->AttachToAgent(agent_ptr_.get());
+  }
 }
 
 void DevToolsRendererChannel::AttachSession(DevToolsSession* session) {
   if (!agent_ptr_)
     owner_->UpdateRendererChannel(true /* force */);
-  session->AttachToAgent(agent_ptr_.get(), process_id_, frame_host_);
+  for (auto& pair : session->handlers())
+    pair.second->SetRenderer(process_id_, frame_host_);
+  session->AttachToAgent(agent_ptr_.get());
 }
 
 void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {

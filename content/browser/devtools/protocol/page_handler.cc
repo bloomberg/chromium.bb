@@ -23,7 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -242,8 +242,7 @@ std::vector<PageHandler*> PageHandler::EnabledForWebContents(
 // static
 std::vector<PageHandler*> PageHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<PageHandler>(
-      host, Page::Metainfo::domainName);
+  return host->HandlersByName<PageHandler>(Page::Metainfo::domainName);
 }
 
 void PageHandler::SetRenderer(int process_host_id,

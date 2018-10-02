@@ -15,6 +15,7 @@
 #include "base/process/kill.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -23,7 +24,6 @@
 namespace content {
 
 class BrowserContext;
-class DevToolsSession;
 class TargetRegistry;
 
 // Describes interface for managing devtools agents from the browser process.
@@ -59,6 +59,19 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   bool Inspect();
 
+  template <typename Handler>
+  std::vector<Handler*> HandlersByName(const std::string& name) {
+    std::vector<Handler*> result;
+    if (sessions_.empty())
+      return result;
+    for (DevToolsSession* session : sessions_) {
+      auto it = session->handlers().find(name);
+      if (it != session->handlers().end())
+        result.push_back(static_cast<Handler*>(it->second.get()));
+    }
+    return result;
+  }
+
  protected:
   DevToolsAgentHostImpl(const std::string& id);
   ~DevToolsAgentHostImpl() override;
@@ -88,7 +101,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
  private:
   friend class DevToolsAgentHost;  // for static methods
-  friend class DevToolsSession;
   friend class TargetRegistry;  // for subtarget management
   friend class DevToolsRendererChannel;
 

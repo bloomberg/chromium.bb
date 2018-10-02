@@ -7,11 +7,11 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "content/public/common/child_process_host.h"
 
 namespace content {
 
@@ -36,8 +36,6 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
     : binding_(this),
       agent_host_(agent_host),
       client_(client),
-      process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
       weak_factory_(this) {}
 
@@ -65,14 +63,7 @@ void DevToolsSession::SetBrowserOnly(bool browser_only) {
   browser_only_ = browser_only;
 }
 
-void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent,
-                                    int process_host_id,
-                                    RenderFrameHostImpl* frame_host) {
-  process_host_id_ = process_host_id;
-  host_ = frame_host;
-  for (auto& pair : handlers_)
-    pair.second->SetRenderer(process_host_id_, host_);
-
+void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   if (!agent) {
     binding_.Close();
     session_ptr_.reset();

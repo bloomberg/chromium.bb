@@ -8,7 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -69,8 +69,8 @@ EmulationHandler::~EmulationHandler() {
 // static
 std::vector<EmulationHandler*> EmulationHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<EmulationHandler>(
-      host, Emulation::Metainfo::domainName);
+  return host->HandlersByName<EmulationHandler>(
+      Emulation::Metainfo::domainName);
 }
 
 void EmulationHandler::SetRenderer(int process_host_id,
