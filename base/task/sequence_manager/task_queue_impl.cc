@@ -204,7 +204,7 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
     PushOntoDelayedIncomingQueueFromMainThread(
         Task(std::move(task), time_domain_delayed_run_time, sequence_number),
-        time_domain_now);
+        time_domain_now, /* notify_task_annotator */ true);
   } else {
     // NOTE posting a delayed task from a different thread is not expected to
     // be common. This pathway is less optimal than perhaps it could be
@@ -225,8 +225,10 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task) {
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task,
-    TimeTicks now) {
-  main_thread_only().sequence_manager->WillQueueTask(&pending_task);
+    TimeTicks now,
+    bool notify_task_annotator) {
+  if (notify_task_annotator)
+    main_thread_only().sequence_manager->WillQueueTask(&pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
   LazyNow lazy_now(now);
@@ -266,7 +268,7 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
   } else {
     // If |delayed_run_time| is in the future we can queue it as normal.
     PushOntoDelayedIncomingQueueFromMainThread(std::move(pending_task),
-                                               time_domain_now);
+                                               time_domain_now, false);
   }
   TraceQueueSize();
 }
