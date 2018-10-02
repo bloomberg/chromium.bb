@@ -639,7 +639,7 @@ bool FileIOTest::CheckResult(const TestStep& result) {
     return false;
 
   // If there are multiple results expected, the order does not matter.
-  std::list<TestStep>::iterator iter = test_steps_.begin();
+  auto iter = test_steps_.begin();
   for (; iter != test_steps_.end(); ++iter) {
     if (!IsResult(*iter))
       return false;

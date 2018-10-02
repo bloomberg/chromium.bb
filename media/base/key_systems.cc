@@ -319,8 +319,7 @@ KeySystemsImpl::~KeySystemsImpl() = default;
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForMimeType(
     const std::string& container_mime_type) const {
-  MimeTypeToCodecsMap::const_iterator iter =
-      mime_type_to_codecs_map_.find(container_mime_type);
+  auto iter = mime_type_to_codecs_map_.find(container_mime_type);
   if (iter == mime_type_to_codecs_map_.end())
     return EME_CODEC_NONE;
 
@@ -329,7 +328,7 @@ SupportedCodecs KeySystemsImpl::GetCodecMaskForMimeType(
 }
 
 EmeCodec KeySystemsImpl::GetCodecForString(const std::string& codec) const {
-  CodecMap::const_iterator iter = codec_map_.find(codec);
+  auto iter = codec_map_.find(codec);
   if (iter != codec_map_.end())
     return iter->second;
   return EME_CODEC_NONE;
@@ -491,8 +490,7 @@ bool KeySystemsImpl::IsSupportedInitDataType(
     EmeInitDataType init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return false;
@@ -505,8 +503,7 @@ EmeConfigRule KeySystemsImpl::GetEncryptionSchemeConfigRule(
     EncryptionMode encryption_scheme) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
@@ -561,8 +558,7 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
 bool KeySystemsImpl::CanUseAesDecryptor(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     DLOG(ERROR) << key_system << " is not a known key system";
     return false;
@@ -592,8 +588,7 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   }
 
   // Double check whether the key system is supported.
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED()
         << "KeySystemConfigSelector should've checked key system support";
@@ -652,8 +647,7 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     const std::string& requested_robustness) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
@@ -666,8 +660,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
@@ -679,8 +672,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentUsageRecordSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
@@ -692,8 +684,7 @@ EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;
@@ -705,8 +696,7 @@ EmeFeatureSupport KeySystemsImpl::GetDistinctiveIdentifierSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;

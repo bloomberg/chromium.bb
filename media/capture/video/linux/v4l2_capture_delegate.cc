@@ -279,7 +279,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
   // favour mjpeg over raw formats.
   const std::vector<uint32_t>& desired_v4l2_formats =
       GetListOfUsableFourCcs(width > kMjpegWidth || height > kMjpegHeight);
-  std::vector<uint32_t>::const_iterator best = desired_v4l2_formats.end();
+  auto best = desired_v4l2_formats.end();
 
   v4l2_fmtdesc fmtdesc = {};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
