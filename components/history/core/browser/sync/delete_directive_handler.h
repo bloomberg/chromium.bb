@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_DELETE_DIRECTIVE_HANDLER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_DELETE_DIRECTIVE_HANDLER_H_
 
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -81,4 +82,4 @@ class DeleteDirectiveHandler {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_SYNC_DELETE_DIRECTIVE_HANDLER_H_

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_METADATA_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_METADATA_DATABASE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,7 +17,7 @@
 namespace sql {
 class Database;
 class MetaTable;
-}
+}  // namespace sql
 
 namespace history {
 
@@ -81,4 +82,4 @@ class TypedURLSyncMetadataDatabase : public syncer::SyncMetadataStore {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_METADATA_DATABASE_H_

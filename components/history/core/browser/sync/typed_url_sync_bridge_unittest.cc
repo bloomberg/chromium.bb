@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/typed_url_sync_bridge.h"
+#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 
 #include <memory>
 
@@ -51,13 +51,13 @@ const char kTitle2[] = "cookie";
 const char kURL[] = "http://pie.com/";
 const char kURL2[] = "http://cookie.com/";
 
-bool URLsEqual(URLRow& row, sync_pb::TypedUrlSpecifics& specifics) {
+bool URLsEqual(URLRow& row, const sync_pb::TypedUrlSpecifics& specifics) {
   return ((row.url().spec().compare(specifics.url()) == 0) &&
           (base::UTF16ToUTF8(row.title()).compare(specifics.title()) == 0) &&
           (row.hidden() == specifics.hidden()));
 }
 
-bool URLsEqual(URLRow& lhs, URLRow& rhs) {
+bool URLsEqual(const URLRow& lhs, const URLRow& rhs) {
   // Only compare synced fields (ignore typed_count and visit_count as those
   // are maintained by the history subsystem).
   return (lhs.url().spec().compare(rhs.url().spec()) == 0) &&

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_HISTORY_MODEL_WORKER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_HISTORY_MODEL_WORKER_H_
 
 #include <memory>
 
@@ -52,4 +52,4 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_SYNC_HISTORY_MODEL_WORKER_H_

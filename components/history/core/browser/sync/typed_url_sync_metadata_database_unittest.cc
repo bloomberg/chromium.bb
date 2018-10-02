@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/typed_url_sync_metadata_database.h"
+#include "components/history/core/browser/sync/typed_url_sync_metadata_database.h"
 
 #include "base/big_endian.h"
 #include "base/files/file_path.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/history_model_worker.h"
+#include "components/history/core/browser/sync/history_model_worker.h"
 
 #include <memory>
 #include <utility>
@@ -24,7 +24,8 @@ namespace {
 
 class HistoryServiceMock : public history::HistoryService {
  public:
-  HistoryServiceMock(scoped_refptr<base::SingleThreadTaskRunner> history_thread)
+  explicit HistoryServiceMock(
+      scoped_refptr<base::SingleThreadTaskRunner> history_thread)
       : history_thread_(std::move(history_thread)) {}
 
   base::CancelableTaskTracker::TaskId ScheduleDBTask(

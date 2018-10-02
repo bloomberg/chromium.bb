@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_BRIDGE_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_BRIDGE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_BRIDGE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_BRIDGE_H_
+
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/scoped_observer.h"
 #include "components/history/core/browser/history_backend_observer.h"
-#include "components/history/core/browser/typed_url_sync_metadata_database.h"
+#include "components/history/core/browser/sync/typed_url_sync_metadata_database.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -250,4 +257,4 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_BRIDGE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_SYNC_TYPED_URL_SYNC_BRIDGE_H_

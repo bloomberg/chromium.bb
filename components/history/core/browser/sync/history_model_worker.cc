@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/history_model_worker.h"
+#include "components/history/core/browser/sync/history_model_worker.h"
 
 #include <memory>
 #include <utility>
@@ -14,7 +14,7 @@ namespace browser_sync {
 
 class WorkerTask : public history::HistoryDBTask {
  public:
-  WorkerTask(base::OnceClosure work) : work_(std::move(work)) {}
+  explicit WorkerTask(base::OnceClosure work) : work_(std::move(work)) {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {

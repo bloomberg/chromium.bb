@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/typed_url_model_type_controller.h"
+#include "components/history/core/browser/sync/typed_url_model_type_controller.h"
 
 #include <memory>
 
