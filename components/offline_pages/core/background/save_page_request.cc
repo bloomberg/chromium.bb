@@ -65,14 +65,43 @@ void SavePageRequest::MarkAttemptPaused() {
 
 void SavePageRequest::UpdateFailState(FailState fail_state) {
   // The order of precedence for failure errors related to offline page
-  // downloads is as follows: NO_FAILURE, CANNOT_DOWNLOAD and
-  // NETWORK_INSTABILITY.
+  // downloads is as follows: NO_FAILURE, Failures that are not recoverable and
+  // recoverable failures.
   switch (fail_state) {
     case FailState::NO_FAILURE:  // Intentional fallthrough.
     case FailState::CANNOT_DOWNLOAD:
+    case FailState::FILE_ACCESS_DENIED:
+    case FailState::FILE_NO_SPACE:
+    case FailState::FILE_NAME_TOO_LONG:
+    case FailState::FILE_TOO_LARGE:
+    case FailState::FILE_VIRUS_INFECTED:
+    case FailState::FILE_BLOCKED:
+    case FailState::FILE_SECURITY_CHECK_FAILED:
+    case FailState::FILE_TOO_SHORT:
+    case FailState::FILE_SAME_AS_SOURCE:
+    case FailState::NETWORK_INVALID_REQUEST:
+    case FailState::NETWORK_SERVER_DOWN:
+    case FailState::SERVER_FAILED:
+    case FailState::SERVER_BAD_CONTENT:
+    case FailState::USER_CANCELED:
+    case FailState::USER_SHUTDOWN:
+    case FailState::CRASH:
+    case FailState::SERVER_UNAUTHORIZED:
+    case FailState::SERVER_CERT_PROBLEM:
+    case FailState::SERVER_FORBIDDEN:
+    case FailState::SERVER_UNREACHABLE:
+    case FailState::SERVER_CONTENT_LENGTH_MISMATCH:
+    case FailState::SERVER_NO_RANGE:
+    case FailState::SERVER_CROSS_ORIGIN_REDIRECT:
+    case FailState::FILE_FAILED:
+    case FailState::FILE_HASH_MISMATCH:
       fail_state_ = fail_state;
       break;
+    case FailState::FILE_TRANSIENT_ERROR:  // Intentional fallthrough.
     case FailState::NETWORK_INSTABILITY:
+    case FailState::NETWORK_FAILED:
+    case FailState::NETWORK_TIMEOUT:
+    case FailState::NETWORK_DISCONNECTED:
       if (fail_state_ != FailState::CANNOT_DOWNLOAD) {
         fail_state_ = fail_state;
       }

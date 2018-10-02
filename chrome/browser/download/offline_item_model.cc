@@ -187,19 +187,6 @@ bool OfflineItemModel::IsDone() const {
   return false;
 }
 
-download::DownloadInterruptReason OfflineItemModel::GetLastReason() const {
-  if (!offline_item_ || offline_item_->state == OfflineItemState::CANCELLED)
-    return download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
-  switch (offline_item_->fail_state) {
-    case FailState::CANNOT_DOWNLOAD:
-      return download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
-    case FailState::NETWORK_INSTABILITY:
-      return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED;
-    case FailState::NO_FAILURE:
-      return download::DOWNLOAD_INTERRUPT_REASON_NONE;
-  }
-}
-
 base::FilePath OfflineItemModel::GetFullPath() const {
   return GetTargetFilePath();
 }
@@ -243,6 +230,10 @@ void OfflineItemModel::OnItemUpdated(const OfflineItem& item) {
   offline_item_ = std::make_unique<OfflineItem>(item);
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();
+}
+
+FailState OfflineItemModel::GetLastFailState() const {
+  return offline_item_ ? offline_item_->fail_state : FailState::USER_CANCELED;
 }
 
 #if !defined(OS_ANDROID)

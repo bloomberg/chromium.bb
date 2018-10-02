@@ -11,7 +11,6 @@ import android.support.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.PendingState;
 
 import java.lang.annotation.Retention;
@@ -75,8 +74,6 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
         boolean mIsSupportedMimeType;
         boolean mCanDownloadWhileMetered;
         boolean mIsAutoResumable;
-        @FailState
-        int mFailState;
         @PendingState
         int mPendingState;
 
@@ -136,9 +133,10 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
     }
 
     @Override
-    public void notifyDownloadFailed(DownloadInfo info, @FailState int failState) {
-        getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
-                info.getFileName(), info.getIcon(), info.isOffTheRecord(), failState);
+    public void notifyDownloadFailed(DownloadInfo info) {
+        NotificationInfo notificationInfo =
+                new NotificationInfo(NotificationType.FAILED, info, NotificationPriority.HIGH);
+        addPendingNotification(notificationInfo);
     }
 
     @Override
@@ -261,7 +259,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
             case NotificationType.FAILED:
                 getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
                         info.getFileName(), info.getIcon(), info.isOffTheRecord(),
-                        notificationInfo.mFailState);
+                        info.getFailState());
                 break;
             case NotificationType.INTERRUPTED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),

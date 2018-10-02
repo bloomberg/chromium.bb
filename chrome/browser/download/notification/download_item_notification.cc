@@ -47,6 +47,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 
 using base::UserMetricsAction;
+using offline_items_collection::FailState;
 
 namespace {
 
@@ -373,10 +374,8 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
 
   if (item_->GetState() == download::DownloadItem::CANCELLED) {
     // Confirms that a download is cancelled by user action.
-    DCHECK(item_->GetLastReason() ==
-               download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
-           item_->GetLastReason() ==
-               download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
+    DCHECK(item_->GetLastFailState() == FailState::USER_CANCELED ||
+           item_->GetLastFailState() == FailState::USER_SHUTDOWN);
 
     CloseNotification();
     return;
@@ -778,8 +777,8 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
       // "Cancelled"
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
     case download::DownloadItem::INTERRUPTED: {
-      download::DownloadInterruptReason reason = item_->GetLastReason();
-      if (reason != download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+      FailState fail_state = item_->GetLastFailState();
+      if (fail_state != FailState::USER_CANCELED) {
         // "Failed - <REASON>"
         base::string16 interrupt_reason = item_->GetInterruptReasonText();
         DCHECK(!interrupt_reason.empty());

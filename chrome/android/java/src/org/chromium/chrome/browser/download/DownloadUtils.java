@@ -910,21 +910,11 @@ public class DownloadUtils {
      * @return String representing the current download status.
      */
     public static String getFailStatusString(@FailState int failState) {
+        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            return nativeGetFailStateMessage(failState);
+        }
         Context context = ContextUtils.getApplicationContext();
-
-        // TODO(cmsy): Return correct status for failure reasons once strings are finalized.
-        // if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-        //                .isStartupSuccessfullyCompleted()
-        //        && ChromeFeatureList.isEnabled(
-        //                   ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS)) {
-        //    switch (failState) {
-        //        case FailState.CANNOT_DOWNLOAD:
-        //        case FailState.NETWORK_INSTABILITY:
-        //        default:
-        //          return context.getString(R.string.download_notification_failed);
-        //    }
-        // }
-
         return context.getString(R.string.download_notification_failed);
     }
 
@@ -1173,4 +1163,6 @@ public class DownloadUtils {
         String primaryPath = primaryDir.getAbsolutePath();
         return primaryPath == null ? false : path.contains(primaryPath);
     }
+
+    private static native String nativeGetFailStateMessage(@FailState int failState);
 }

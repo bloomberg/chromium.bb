@@ -30,6 +30,7 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
@@ -343,7 +344,7 @@ public class DownloadNotificationServiceTest
         Assert.assertEquals(2, entries.size());
 
         ContentId id2 = LegacyHelpers.buildLegacyContentId(false, guid2);
-        service.notifyDownloadFailed(id2, "failed", null);
+        service.notifyDownloadFailed(id2, "failed", null, FailState.CANNOT_DOWNLOAD);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         Assert.assertEquals(1, entries.size());
@@ -497,7 +498,7 @@ public class DownloadNotificationServiceTest
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
         Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
-        service.notifyDownloadFailed(id, "/path/to/test", null);
+        service.notifyDownloadFailed(id, "/path/to/test", null, FailState.CANNOT_DOWNLOAD);
         Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
 
@@ -607,7 +608,7 @@ public class DownloadNotificationServiceTest
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
         Assert.assertTrue(getService().isForegroundRunning());
-        service.notifyDownloadFailed(id, "/path/to/test", null);
+        service.notifyDownloadFailed(id, "/path/to/test", null, FailState.CANNOT_DOWNLOAD);
         Assert.assertFalse(getService().isForegroundRunning());
 
         // In the case of offline pages failures, cancel is called even after the download fails and

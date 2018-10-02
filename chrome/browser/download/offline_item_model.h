@@ -50,13 +50,13 @@ class OfflineItemModel : public DownloadUIModel,
   bool IsPaused() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   bool IsDone() const override;
-  download::DownloadInterruptReason GetLastReason() const override;
   base::FilePath GetFullPath() const override;
   bool CanResume() const override;
   bool AllDataSaved() const override;
   bool GetFileExternallyRemoved() const override;
   GURL GetURL() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
+  offline_items_collection::FailState GetLastFailState() const override;
 
 #if !defined(OS_ANDROID)
   bool IsCommandEnabled(const DownloadCommands* download_commands,

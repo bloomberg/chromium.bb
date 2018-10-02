@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
@@ -32,6 +33,7 @@
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
@@ -137,7 +139,10 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()
                            : kUnknownRemainingTime,
-      item->GetLastAccessTime().ToJavaTime(), item->IsDangerous());
+      item->GetLastAccessTime().ToJavaTime(), item->IsDangerous(),
+      static_cast<int>(
+          OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
+              item->GetLastReason())));
 }
 
 static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
