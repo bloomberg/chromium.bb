@@ -33,6 +33,8 @@
 #include "net/base/network_change_notifier_linux.h"
 #elif defined(OS_MACOSX)
 #include "net/base/network_change_notifier_mac.h"
+#elif defined(OS_FUCHSIA)
+#include "net/base/network_change_notifier_fuchsia.h"
 #endif
 
 namespace net {
@@ -217,6 +219,8 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
   return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
 #elif defined(OS_MACOSX)
   return new NetworkChangeNotifierMac();
+#elif defined(OS_FUCHSIA)
+  return new NetworkChangeNotifierFuchsia();
 #else
   NOTIMPLEMENTED();
   return NULL;
