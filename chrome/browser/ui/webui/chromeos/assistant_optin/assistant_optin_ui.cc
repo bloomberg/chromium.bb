@@ -17,6 +17,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -50,6 +51,12 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  // Do not zoom for Assistant opt-in web contents.
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetForWebContents(web_ui->GetWebContents());
+  DCHECK(zoom_map);
+  zoom_map->SetZoomLevelForHost(web_ui->GetWebContents()->GetURL().host(), 0);
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;
