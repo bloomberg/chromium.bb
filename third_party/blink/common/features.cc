@@ -82,6 +82,9 @@ const base::Feature kStopNonTimersInBackground {
 const base::Feature kWritableFilesAPI{"WritableFilesAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";

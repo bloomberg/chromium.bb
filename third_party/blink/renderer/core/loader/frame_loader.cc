@@ -38,8 +38,10 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -1659,8 +1661,10 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     return;
 
   if (!(origin_context->GetSecurityContext().GetInsecureRequestPolicy() &
-        kUpgradeInsecureRequests))
+        kUpgradeInsecureRequests) &&
+      !base::FeatureList::IsEnabled(features::kMixedContentAutoupgrade)) {
     return;
+  }
 
   // Nested frames are always upgraded on the browser process.
   if (resource_request.GetFrameType() ==
