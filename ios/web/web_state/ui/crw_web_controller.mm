@@ -2895,14 +2895,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 #pragma mark -
 
-- (BOOL)wantsLocationBarHintText {
-  if ([self.nativeController
-          respondsToSelector:@selector(wantsLocationBarHintText)]) {
-    return [self.nativeController wantsLocationBarHintText];
-  }
-  return YES;
-}
-
 // TODO(stuartmorgan): This method conflates document changes and URL changes;
 // we should be distinguishing better, and be clear about the expected
 // WebDelegate and WCO callbacks in each case.

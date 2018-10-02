@@ -4445,10 +4445,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return _toolbarModel.get();
 }
 
-- (BOOL)shouldDisplayHintText {
-  return [[_model currentTab].webController wantsLocationBarHintText];
-}
-
 #pragma mark - BrowserCommands
 
 - (void)goBack {
