@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
@@ -683,6 +684,11 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
     net::HttpRequestHeaders* request_headers,
     const net::URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (base::FeatureList::IsEnabled(
+          features::kDataReductionProxyBrotliHoldback)) {
+    return;
+  }
 
   // This method should be called only when the resolved proxy was a data
   // saver proxy.

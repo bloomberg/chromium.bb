@@ -50,5 +50,11 @@ const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
     "DataSaverSiteBreakdownUsingPageLoadMetrics",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, "br" is not added to the accept-encoding header. This effectively
+// disables the use of Brotli on the connection from Chrome to secure
+// HTTPS data saver proxies.
+const base::Feature kDataReductionProxyBrotliHoldback{
+    "DataReductionProxyBrotliHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
