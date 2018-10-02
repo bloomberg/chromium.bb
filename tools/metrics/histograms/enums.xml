@@ -9166,8 +9166,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Error Loading Termina"/>
   <int value="4" label="Error Starting Concierge"/>
   <int value="5" label="Error Creating Disk Image"/>
-  <int value="6" label="Error Starting Termina"/>
+  <int value="6" label="Error Starting Termina VM"/>
   <int value="7" label="Error Starting Container"/>
+  <int value="8" label="Error Offline"/>
+  <int value="9" label="Error Fetching Ssh Keys"/>
+  <int value="10" label="Error Mounting Container"/>
 </enum>
 
 <enum name="CrostiniUISurface">
