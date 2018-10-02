@@ -70,10 +70,6 @@ class CatFail(GSLibError):
   """Raised if Cat fails in any way."""
 
 
-class StatFail(GSLibError):
-  """Raised if Stat fails in any way."""
-
-
 class URIError(GSLibError):
   """Raised when URI does not behave as expected."""
 
@@ -282,26 +278,6 @@ def Cat(gs_uri, **kwargs):
   args = ['cat', gs_uri]
   result = RunGsutilCommand(args, failed_exception=CatFail, **kwargs)
   return result.output
-
-
-def Stat(gs_uri, **kwargs):
-  """Stats a file at the given GS URI (returns nothing).
-
-  Args:
-    gs_uri: The URI of a file on Google Storage.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    StatFail: If the stat fails for any reason.
-  """
-  args = ['stat', gs_uri]
-  # IMPORTANT! With stat, header information is dumped to standard output,
-  # rather than standard error, as with other gsutil commands. Hence,
-  # get_headers_from_stdout must be True to ensure both correct parsing of
-  # output and stripping of sensitive information.
-  RunGsutilCommand(args, failed_exception=StatFail,
-                   get_headers_from_stdout=True, **kwargs)
 
 
 @RetryGSLib

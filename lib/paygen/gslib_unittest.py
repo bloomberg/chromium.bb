@@ -175,33 +175,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.assertRaises(gslib.CatFail, gslib.Cat, path)
     self.mox.VerifyAll()
 
-  def testStat(self):
-    path = 'gs://bucket/some/gs/path'
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'stat', path]
-    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                              redirect_stderr=True).AndReturn(self.cmd_result)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertIs(gslib.Stat(path), None)
-    self.mox.VerifyAll()
-
-  def testStatFail(self):
-    path = 'gs://bucket/some/gs/path'
-
-    # Set up the test replay script.
-    cmd = [self.gsutil, 'stat', path]
-    cros_build_lib.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
-            self.cmd_error)
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertRaises(gslib.StatFail, gslib.Stat, path)
-    self.mox.VerifyAll()
-
   def _TestCatWithHeaders(self, gs_uri, cmd_output, cmd_error):
     # Set up the test replay script.
     # Run 1, versioning not enabled in bucket, one line of output.
