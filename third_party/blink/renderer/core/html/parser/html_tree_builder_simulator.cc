@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
@@ -152,7 +153,23 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
         tokenizer->SetState(HTMLTokenizer::kRCDATAState);
       } else if (ThreadSafeMatch(tag_name, scriptTag)) {
         tokenizer->SetState(HTMLTokenizer::kScriptDataState);
-        simulated_token = kScriptStart;
+
+        String type_attribute_value;
+        if (auto* item = token.GetAttributeItem(typeAttr)) {
+          type_attribute_value = item->Value();
+        }
+
+        String language_attribute_value;
+        if (auto* item = token.GetAttributeItem(languageAttr)) {
+          language_attribute_value = item->Value();
+        }
+
+        ScriptType script_type;
+        if (ScriptLoader::IsValidScriptTypeAndLanguage(
+                type_attribute_value, language_attribute_value,
+                ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
+          simulated_token = kValidScriptStart;
+        }
       } else if (ThreadSafeMatch(tag_name, linkTag)) {
         simulated_token = kLink;
       } else if (!in_select_insertion_mode_) {
