@@ -5,8 +5,8 @@
 'use strict';
 
 /**
- * Sends a message to the controlling test harness, namely and usually, the
- * chrome FileManagerBrowserTest harness: it expects the message to contain
+ * Sends a command to the controlling test harness, namely and usually, the
+ * chrome FileManagerBrowserTest harness: it expects the command to contain
  * the 'name' of the command, and any required or optional arguments of the
  * command, e.g.,
  *
@@ -16,18 +16,18 @@
  *     entries: entries
  *   }).then(...);
  *
- * @param {Object} message Message object to be sent. The object is converted
- *     to a JSON string prior to sending.
+ * @param {Object} command Test command to send. The object is converted to
+ *     a JSON string prior to sending.
  * @return {Promise} Promise to be fulfilled with the value returned by the
  *     chrome.test.sendMessage callback.
  */
-function sendTestMessage(message) {
-  if (typeof message.name === 'string') {
+function sendTestMessage(command) {
+  if (typeof command.name === 'string') {
     return new Promise(function(fulfill) {
-      chrome.test.sendMessage(JSON.stringify(message), fulfill);
+      chrome.test.sendMessage(JSON.stringify(command), fulfill);
     });
   } else {
-    let error = 'sendTestMessage requires a message.name <string>';
+    const error = 'sendTestMessage requires a command.name <string>';
     throw new Error(error);
   }
 }
@@ -163,6 +163,33 @@ function repeatUntil(checkFunction) {
     });
   };
   return step();
+}
+
+/**
+ * Sends the test |command| to the browser test harness and awaits a 'string'
+ * result. Calls |callback| with that result.
+ * @param {Object} command Test command to send. Refer to sendTestMessage()
+ *    above for the expected format of a test |command| object.
+ * @param {function(string)} callback Completion callback.
+ * @param {Object=} opt_debug If truthy, log the result.
+ */
+function sendBrowserTestCommand(command, callback, opt_debug) {
+  const caller = getCaller();
+  if (typeof command.name !== 'string')
+    chrome.test.fail('Invalid test command: ' + JSON.stringify(command));
+  repeatUntil(function sendTestCommand() {
+    const tryAgain = pending(caller, 'Sent BrowserTest ' + command.name);
+    return sendTestMessage(command).then((result) => {
+      if (typeof result !== 'string')
+        return tryAgain;
+      if (opt_debug)
+        console.log('BrowserTest ' + command.name + ': ' + result);
+      callback(result);
+    }).catch((error) => {
+      console.log(error.stack || error);
+      return tryAgain;
+    });
+  });
 }
 
 /**
