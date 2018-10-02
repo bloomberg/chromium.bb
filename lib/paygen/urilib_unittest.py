@@ -131,17 +131,9 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
     self.assertTrue(urilib.Cmp(self.file1_local, self.file1_gs))
     self.assertFalse(urilib.Cmp(self.file2_local, self.file1_gs))
 
-    # Test RemoveDirContents, local version.
-    urilib.RemoveDirContents(self.filesdir)
-    self.assertFalse(urilib.ListFiles(self.filesdir))
-
     # Test CopyFiles, from GS to local.
     self.assertEquals(set(deep_local_files),
                       set(urilib.CopyFiles(self.gs_dir, self.filesdir)))
-
-    # Test RemoveDirContents, GS version.
-    urilib.RemoveDirContents(self.gs_dir)
-    self.assertFalse(urilib.ListFiles(self.gs_dir))
 
 
 class TestUrilib(cros_test_lib.MoxTempDirTestCase):
@@ -291,33 +283,6 @@ index %s..%s 100644
     self.assertEquals(result, urilib.Copy(gs_path, gs_path + '.1'))
     self.assertEquals(result, urilib.Copy(http_path, local_path))
     self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Copy,
-                      local_path, http_path)
-    self.mox.VerifyAll()
-
-  def testRemove(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-
-    self.mox.StubOutWithMock(gslib, 'Remove')
-    self.mox.StubOutWithMock(filelib, 'Remove')
-
-    # Set up the test replay script.
-    # Run 1, two local files.
-    filelib.Remove(local_path, local_path + '.1')
-    # Run 2, local and GS.
-    gslib.Remove(local_path, gs_path, ignore_no_match=True)
-    # Run 4, GS and GS
-    gslib.Remove(gs_path, gs_path + '.1',
-                 ignore_no_match=True, recurse=True)
-    # Run 7, local and HTTP
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    urilib.Remove(local_path, local_path + '.1')
-    urilib.Remove(local_path, gs_path, ignore_no_match=True)
-    urilib.Remove(gs_path, gs_path + '.1', ignore_no_match=True, recurse=True)
-    self.assertRaises(urilib.NotSupportedForTypes, urilib.Remove,
                       local_path, http_path)
     self.mox.VerifyAll()
 

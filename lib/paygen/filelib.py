@@ -93,49 +93,6 @@ def Exists(path, as_dir=False):
     return os.path.isfile(path)
 
 
-def Remove(*args, **kwargs):
-  """Delete the file(s) at path_or_paths, or directory with recurse set.
-
-  The first path to fail to be removed will abort the command, unless
-  the failure is for a path that cannot be found and ignore_no_match is True.
-  For example, if paths is [pathA, pathB, pathC] and pathB fails to be removed
-  then pathC will also not be removed, but pathA will.
-
-  Args:
-    args: One or more paths to local files.
-    ignore_no_match: If True, then do not complain if anything was not
-      removed because no file was found at path.  Like rm -f.  Defaults to
-      False.
-    recurse: Remove recursively starting at path.  Same as rm -R.  Defaults
-      to False.
-
-  Returns:
-    True if everything was removed, False if anything was not removed (which can
-      only happen with no exception if ignore_no_match is True).
-
-  Raises:
-    MissingFileError if file is missing and ignore_no_match was False.
-  """
-  ignore_no_match = kwargs.pop('ignore_no_match', False)
-  recurse = kwargs.pop('recurse', False)
-
-  any_no_match = False
-
-  for path in args:
-    if os.path.isdir(path) and recurse:
-      shutil.rmtree(path)
-    elif os.path.exists(path):
-      # Note that a directory path with recurse==False will call os.remove here,
-      # which will fail, causing this function to fail.  As it should.
-      os.remove(path)
-    elif ignore_no_match:
-      any_no_match = True
-    else:
-      raise MissingFileError('No file at %r.' % path)
-
-  return not any_no_match
-
-
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
   """Return list of full file paths under given root path.
 
@@ -199,16 +156,6 @@ def CopyFiles(src_dir, dst_dir):
     dst_paths.append(dst_path)
 
   return dst_paths
-
-
-def RemoveDirContents(base_dir):
-  """Remove all contents of a directory.
-
-  Args:
-    base_dir: directory to delete contents of.
-  """
-  for obj_name in os.listdir(base_dir):
-    Remove(os.path.join(base_dir, obj_name), recurse=True)
 
 
 def MD5Sum(file_path):

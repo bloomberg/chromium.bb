@@ -60,7 +60,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
 
       dir2_file1 = os.path.join(dir2, self.FILE1)
       dir2_file2 = os.path.join(dir2, self.FILE2)
-      dir2_subdir = os.path.join(dir2, self.SUBDIR)
       dir2_subfile = os.path.join(dir2, self.SUBFILE)
       dir2_top_files = [dir2_file1, dir2_file2]
       dir2_deep_files = dir2_top_files + [dir2_subfile]
@@ -91,20 +90,6 @@ class TestFileManipulation(cros_test_lib.TestCase):
       self.assertTrue(filelib.Cmp(dir1_file1, dir2_file1))
       self.assertTrue(filelib.Cmp(dir2_file2, dir1_file2))
       self.assertFalse(filelib.Cmp(dir1_file2, dir2_file1))
-
-      # Test RemoveDirContents.
-      filelib.RemoveDirContents(dir2_subdir)
-      self.assertTrue(filelib.Exists(dir2_subdir, as_dir=True))
-      self.assertFalse(filelib.Exists(dir2_subfile))
-      filelib.RemoveDirContents(dir2)
-      self.assertTrue(filelib.Exists(dir2, as_dir=True))
-      for dir2_path in dir2_deep_files:
-        self.assertFalse(filelib.Exists(dir2_path))
-
-      filelib.RemoveDirContents(dir1)
-      self.assertTrue(filelib.Exists(dir1, as_dir=True))
-      for dir1_path in dir1_deep_files:
-        self.assertFalse(filelib.Exists(dir1_path))
 
     finally:
       for d in (dir1, dir2):
@@ -251,65 +236,3 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     for path in args:
       with open(path, 'w') as out:
         out.write(contents)
-
-  def testRemove(self):
-    path1 = os.path.join(self.tempdir, 'file1')
-    path2 = os.path.join(self.tempdir, 'file2')
-    missing_path = os.path.join(self.tempdir, 'missing')
-    subdir = os.path.join(self.tempdir, 'subdir')
-    subpath1 = os.path.join(subdir, 'file3')
-    subpath2 = os.path.join(subdir, 'file4')
-
-    # Test remove on path that does not exist.
-    self.assertRaises(filelib.MissingFileError, filelib.Remove, path1)
-    self.assertFalse(filelib.Remove(path1, ignore_no_match=True))
-
-    # Test remove on simple file.
-    self._CreateSimpleFile(path1)
-    self.assertTrue(filelib.Remove(path1))
-    self.assertRaises(filelib.MissingFileError, filelib.Remove, path1)
-    self.assertFalse(filelib.Remove(path1, ignore_no_match=True))
-
-    # Test remove on more than one file.
-    self._CreateSimpleFile(path1, path2)
-    self.assertTrue(filelib.Remove(path1, path2))
-
-    # Test remove on multiple files, with one missing.
-    self._CreateSimpleFile(path1, path2)
-    self.assertRaises(filelib.MissingFileError, filelib.Remove,
-                      path1, missing_path, path2)
-    # First path1 removed, but path2 not because it was after missing.
-    self.assertFalse(filelib.Exists(path1))
-    self.assertTrue(filelib.Exists(path2))
-
-    # Test remove multiple files, one missing, with ignore_no_match True.
-    self._CreateSimpleFile(path1, path2)
-    self.assertFalse(filelib.Remove(path1, missing_path, path2,
-                                    ignore_no_match=True))
-    self.assertFalse(filelib.Exists(path1))
-    self.assertFalse(filelib.Exists(path2))
-
-    # Test recursive Remove.
-    os.makedirs(subdir)
-    self._CreateSimpleFile(path1, path2, subpath1, subpath2)
-    self.assertTrue(filelib.Remove(path1, path2, subdir, recurse=True))
-    self.assertFalse(filelib.Exists(path1))
-    self.assertFalse(filelib.Exists(subpath1))
-
-    # Test recursive Remove with one missing path.
-    os.makedirs(subdir)
-    self._CreateSimpleFile(path1, path2, subpath1, subpath2)
-    self.assertRaises(filelib.MissingFileError, filelib.Remove,
-                      path1, subdir, missing_path, path2, recurse=True)
-    self.assertFalse(filelib.Exists(path1))
-    self.assertTrue(filelib.Exists(path2))
-    self.assertFalse(filelib.Exists(subpath1))
-
-    # Test recursive Remove with one missing path and ignore_no_match True.
-    os.makedirs(subdir)
-    self._CreateSimpleFile(path1, path2, subpath1, subpath2)
-    self.assertFalse(filelib.Remove(path1, subdir, missing_path, path2,
-                                    recurse=True, ignore_no_match=True))
-    self.assertFalse(filelib.Exists(path1))
-    self.assertFalse(filelib.Exists(path2))
-    self.assertFalse(filelib.Exists(subpath1))

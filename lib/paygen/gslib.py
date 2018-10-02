@@ -75,10 +75,6 @@ class MoveFail(GSLibError):
   """Raised if Move fails in any way."""
 
 
-class RemoveFail(GSLibError):
-  """Raised if Remove fails in any way."""
-
-
 class CatFail(GSLibError):
   """Raised if Cat fails in any way."""
 
@@ -383,57 +379,6 @@ def Move(src_path, dest_path, **kwargs):
   """
   args = ['mv', src_path, dest_path]
   RunGsutilCommand(args, failed_exception=MoveFail, **kwargs)
-
-
-@RetryGSLib
-def Remove(*paths, **kwargs):  # pylint: disable=docstring-misnamed-args
-  """Run gsutil rm on path supporting GS globs.
-
-  Args:
-    paths: Local path or gs URI, or list of same.
-    ignore_no_match: If True, then do not complain if anything was not
-      removed because no URI match was found.  Like rm -f.  Defaults to False.
-    recurse: Remove recursively starting at path.  Same as rm -R.  Defaults
-      to False.
-    kwargs: Additional options to pass directly to RunGsutilCommand, beyond the
-      explicit ones above.  See RunGsutilCommand itself.
-
-  Raises:
-    RemoveFail: If the remove fails for any reason.
-  """
-  ignore_no_match = kwargs.pop('ignore_no_match', False)
-  recurse = kwargs.pop('recurse', False)
-
-  args = ['rm']
-
-  if recurse:
-    args.append('-R')
-
-  args.extend(paths)
-
-  try:
-    RunGsutilCommand(args, failed_exception=RemoveFail, **kwargs)
-  except RemoveFail as e:
-    should_raise = True
-    msg = str(e.args[0])
-
-    # Sometimes Google Storage glitches and complains about failing to remove a
-    # specific revision of the file.  It ends up getting removed anyway, but it
-    # throws a NotFoundException.
-    if (ignore_no_match and (('No URLs matched' in msg) or
-                             ('NotFoundException:' in msg))):
-      should_raise = False
-
-    if should_raise:
-      raise
-
-def RemoveDirContents(gs_dir_uri):
-  """Remove all contents of a directory.
-
-  Args:
-    gs_dir_uri: directory to delete contents of.
-  """
-  Remove(os.path.join(gs_dir_uri, '**'), ignore_no_match=True)
 
 
 def CreateWithContents(gs_uri, contents, **kwargs):

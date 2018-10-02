@@ -254,29 +254,6 @@ def Copy(src_uri, dest_uri):
   raise NotSupportedBetweenTypes(uri_type1, uri_type2)
 
 
-def Remove(*args, **kwargs):
-  """Delete the file(s) at uris, or directory(s) with recurse set.
-
-  Args:
-    args: One or more URIs.
-    ignore_no_match: If True, then do not complain if anything was not
-      removed because no URI match was found.  Like rm -f.  Defaults to False.
-    recurse: Remove recursively starting at path.  Same as rm -R.  Defaults
-      to False.
-  """
-  uri_types = set([GetUriType(u) for u in args])
-
-  if TYPE_GS in uri_types:
-    # GS support only allows local files among list.
-    if len(uri_types) == 1 or (TYPE_LOCAL in uri_types and len(uri_types) == 2):
-      return gslib.Remove(*args, **kwargs)
-
-  if TYPE_LOCAL in uri_types and len(uri_types) == 1:
-    return filelib.Remove(*args, **kwargs)
-
-  raise NotSupportedForTypes(*list(uri_types))
-
-
 def Size(uri):
   """Return size of file at URI in bytes.
 
@@ -401,20 +378,3 @@ def CopyFiles(src_dir, dst_dir):
     dst_paths.append(dst_path)
 
   return dst_paths
-
-
-def RemoveDirContents(base_dir):
-  """Remove all contents of a directory.
-
-  Args:
-    base_dir: directory to delete contents of.
-  """
-  uri_type = GetUriType(base_dir)
-
-  if TYPE_GS == uri_type:
-    return gslib.RemoveDirContents(base_dir)
-
-  if TYPE_LOCAL == uri_type:
-    return filelib.RemoveDirContents(base_dir)
-
-  raise NotSupportedForType(uri_type)
