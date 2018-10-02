@@ -22,7 +22,7 @@
 namespace chromeos {
 namespace {
 
-bool IsManagedSessionEnabled(const user_manager::User* active_user) {
+bool IsManagedSessionEnabled(const user_manager::User& active_user) {
   // If the service doesn't exist or the policy is not set, enable managed
   // session by default.
   const bool managed_session_enabled_by_default = true;
@@ -35,7 +35,7 @@ bool IsManagedSessionEnabled(const user_manager::User* active_user) {
     return managed_session_enabled_by_default;
 
   const policy::PolicyMap::Entry* entry =
-      service->GetBrokerForUser(active_user->GetAccountId().GetUserEmail())
+      service->GetBrokerForUser(active_user.GetAccountId().GetUserEmail())
           ->core()
           ->store()
           ->policy_map()
@@ -45,6 +45,40 @@ bool IsManagedSessionEnabled(const user_manager::User* active_user) {
     return managed_session_enabled_by_default;
 
   return entry && entry->value && entry->value->GetBool();
+}
+
+LoginState::LoggedInUserType GetLoggedInUserType(
+    const user_manager::User& active_user,
+    bool is_current_user_owner) {
+  if (is_current_user_owner)
+    return LoginState::LOGGED_IN_USER_OWNER;
+
+  switch (active_user.GetType()) {
+    case user_manager::USER_TYPE_REGULAR:
+      return LoginState::LOGGED_IN_USER_REGULAR;
+    case user_manager::USER_TYPE_GUEST:
+      return LoginState::LOGGED_IN_USER_GUEST;
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+      return IsManagedSessionEnabled(active_user)
+                 ? LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED
+                 : LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
+    case user_manager::USER_TYPE_SUPERVISED:
+      return LoginState::LOGGED_IN_USER_SUPERVISED;
+    case user_manager::USER_TYPE_KIOSK_APP:
+      return LoginState::LOGGED_IN_USER_KIOSK_APP;
+    case user_manager::USER_TYPE_CHILD:
+      return LoginState::LOGGED_IN_USER_CHILD;
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+      return LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+      // NOTE(olsen) There's no LOGGED_IN_USER_ACTIVE_DIRECTORY - is it needed?
+      return LoginState::LOGGED_IN_USER_REGULAR;
+    case user_manager::NUM_USER_TYPES:
+      break;  // Go to invalid-type handling code.
+      // Since there is no default, the compiler warns about unhandled types.
+  }
+  NOTREACHED() << "Invalid type for active user: " << active_user.GetType();
+  return LoginState::LOGGED_IN_USER_REGULAR;
 }
 
 }  // namespace
@@ -70,37 +104,22 @@ void ChromeUserManager::UpdateLoginState(const user_manager::User* active_user,
   if (!LoginState::IsInitialized())
     return;  // LoginState may be uninitialized in tests.
 
-  chromeos::LoginState::LoggedInState logged_in_state;
-  logged_in_state = active_user ? chromeos::LoginState::LOGGED_IN_ACTIVE
-                                : chromeos::LoginState::LOGGED_IN_NONE;
-
-  chromeos::LoginState::LoggedInUserType login_user_type;
-  if (logged_in_state == chromeos::LoginState::LOGGED_IN_NONE) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_NONE;
-  } else if (is_current_user_owner) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_OWNER;
-  } else if (active_user->GetType() == user_manager::USER_TYPE_GUEST) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_GUEST;
-  } else if (active_user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    login_user_type =
-        IsManagedSessionEnabled(active_user)
-            ? chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT_MANAGED
-            : chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
-  } else if (active_user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_SUPERVISED;
-  } else if (active_user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP;
-  } else if (active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
+  LoginState::LoggedInState logged_in_state;
+  LoginState::LoggedInUserType logged_in_user_type;
+  if (active_user) {
+    logged_in_state = LoginState::LOGGED_IN_ACTIVE;
+    logged_in_user_type =
+        GetLoggedInUserType(*active_user, is_current_user_owner);
   } else {
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_REGULAR;
+    logged_in_state = LoginState::LOGGED_IN_NONE;
+    logged_in_user_type = LoginState::LOGGED_IN_USER_NONE;
   }
 
   if (primary_user) {
     LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-        logged_in_state, login_user_type, primary_user->username_hash());
+        logged_in_state, logged_in_user_type, primary_user->username_hash());
   } else {
-    LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
+    LoginState::Get()->SetLoggedInState(logged_in_state, logged_in_user_type);
   }
 }
 
