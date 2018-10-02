@@ -48,6 +48,7 @@ public class VideoViewHolder extends MoreButtonViewHolder {
         mThumbnail = itemView.findViewById(R.id.thumbnail);
     }
 
+    // MoreButtonViewHolder implementation.
     @Override
     public void bind(PropertyModel properties, ListItem item) {
         super.bind(properties, item);

@@ -39,12 +39,10 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
     private final Drawable mUnavailableDrawable;
     private final Drawable mWaitingDrawable;
 
-    /**
-     * Used to handle synchronous responses to the callback in
-     * {@link #setAsyncImageDrawable(Factory)}.
-     */
-    private boolean mWaitingForResponse;
+    private Factory mFactory;
+
     private Runnable mCancelable;
+    private boolean mWaitingForResponse;
 
     /** Creates an {@link AsyncImageDrawable instance. */
     public AsyncImageView(Context context) {
@@ -81,10 +79,10 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
     public void setAsyncImageDrawable(Factory factory) {
         // This will clear out any outstanding request.
         setImageDrawable(null);
-
         setForegroundDrawableCompat(mWaitingDrawable);
-        mCancelable = factory.get(this ::setAsyncImageDrawableResponse, getWidth(), getHeight());
-        if (!mWaitingForResponse) mCancelable = null;
+
+        mFactory = factory;
+        retrieveDrawableIfNeeded();
     }
 
     // RoundedCornerImageView implementation.
@@ -92,14 +90,18 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
     public void setImageDrawable(Drawable drawable) {
         // If we had an outstanding async request, cancel it because we're now setting the drawable
         // to something else.
-        if (mWaitingForResponse) {
-            if (mCancelable != null) mCancelable.run();
-            mCancelable = null;
-            mWaitingForResponse = false;
-            setForegroundDrawableCompat(null);
-        }
+        cancelPreviousDrawableRequest();
 
+        setForegroundDrawableCompat(null);
         super.setImageDrawable(drawable);
+    }
+
+    // View implementation.
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+
+        retrieveDrawableIfNeeded();
     }
 
     private void setAsyncImageDrawableResponse(Drawable drawable) {
@@ -107,5 +109,33 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         mWaitingForResponse = false;
         setForegroundDrawableCompat(drawable == null ? mUnavailableDrawable : null);
         setImageDrawable(drawable);
+    }
+
+    private void cancelPreviousDrawableRequest() {
+        mFactory = null;
+
+        if (mCancelable != null) {
+            mCancelable.run();
+            mCancelable = null;
+            mWaitingForResponse = false;
+        }
+    }
+
+    private void retrieveDrawableIfNeeded() {
+        // If width or height are not valid, don't start to retrieve the drawable since the
+        // thumbnail may be scaled down to 0.
+        if (getWidth() <= 0 || getHeight() <= 0) return;
+
+        if (mFactory != null) {
+            // Start to retrieve the drawable.
+            mWaitingForResponse = true;
+            mCancelable =
+                    mFactory.get(this ::setAsyncImageDrawableResponse, getWidth(), getHeight());
+
+            // If setAsyncImageDrawableResponse is called synchronously, clear mCancelable.
+            if (!mWaitingForResponse) mCancelable = null;
+
+            mFactory = null;
+        }
     }
 }
