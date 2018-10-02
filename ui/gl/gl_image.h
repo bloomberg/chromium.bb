@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -105,7 +106,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   virtual bool EmulatingRGB() const;
 
   // An identifier for subclasses. Necessary for safe downcasting.
-  enum class Type { NONE, MEMORY, IOSURFACE, DXGI_IMAGE };
+  enum class Type { NONE, MEMORY, IOSURFACE, DXGI_IMAGE, A_HARDWARE_BUFFER };
   virtual Type GetType() const;
 
  protected:

@@ -2157,6 +2157,10 @@ const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
 
+const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
+const char kAndroidSurfaceControlDescription[] =
+    "Use the SurfaceControl API for supporting overlays on Android";
+
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";
 const char kAppNotificationStatusMessagingDescription[] =

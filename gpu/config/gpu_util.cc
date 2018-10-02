@@ -30,12 +30,32 @@
 #if defined(OS_ANDROID)
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "ui/gl/android/android_surface_composer_compat.h"
 #include "ui/gl/init/gl_factory.h"
 #endif  // OS_ANDROID
 
 namespace gpu {
 
 namespace {
+
+GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    const GpuPreferences& gpu_preferences) {
+#if !defined(OS_ANDROID)
+  return kGpuFeatureStatusDisabled;
+#else
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL))
+    return kGpuFeatureStatusBlacklisted;
+
+  if (!gpu_preferences.enable_android_surface_control)
+    return kGpuFeatureStatusDisabled;
+
+  if (!gl::SurfaceComposer::IsSupported())
+    return kGpuFeatureStatusDisabled;
+
+  return kGpuFeatureStatusEnabled;
+#endif
+}
 
 GpuFeatureStatus GetGpuRasterizationFeatureStatus(
     const std::set<int>& blacklisted_features,
@@ -250,6 +270,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -282,6 +304,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -313,6 +337,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -386,6 +412,9 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       GetOopRasterizationFeatureStatus(blacklisted_features, *command_line,
                                        gpu_preferences, gpu_info);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      GetAndroidSurfaceControlFeatureStatus(blacklisted_features,
+                                            gpu_preferences);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);

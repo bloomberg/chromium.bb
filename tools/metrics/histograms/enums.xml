@@ -29125,6 +29125,7 @@ from previous Chrome versions.
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
   <int value="-978700508" label="disable-simplified-fullscreen-ui"/>
+  <int value="-977770313" label="AndroidSurfaceControl:enabled"/>
   <int value="-977476498" label="disable-eol-notification"/>
   <int value="-974378602" label="WebAuthenticationCable:disabled"/>
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
@@ -29627,6 +29628,7 @@ from previous Chrome versions.
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
   <int value="37045987" label="AutofillPreviewStyleExperiment:disabled"/>
+  <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="48223610" label="SiteSettings:disabled"/>

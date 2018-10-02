@@ -26,6 +26,7 @@ GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
 
 #if defined(OS_ANDROID)
 GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
+GPU_EXPORT extern const base::Feature kAndroidSurfaceControl;
 #endif  // defined(OS_ANDROID)
 
 GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
