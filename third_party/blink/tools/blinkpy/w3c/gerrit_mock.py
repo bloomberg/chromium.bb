@@ -12,6 +12,7 @@ class MockGerritAPI(object):
 
     def __init__(self):
         self.exportable_open_cls = []
+        self.request_posted = []
 
     def query_exportable_open_cls(self):
         return self.exportable_open_cls
@@ -20,6 +21,7 @@ class MockGerritAPI(object):
         return '' if raw else {}
 
     def post(self, path, data):
+        self.request_posted.append((path, data))
         return {}
 
 
