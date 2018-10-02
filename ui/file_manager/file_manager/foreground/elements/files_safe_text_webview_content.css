@@ -9,17 +9,17 @@
 }
 
 pre {
-  overflow: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
 body {
-  /* properly set font size */
   font-size: medium;
-  /* prevent overflowing to enable scrolling */
-  height: calc(100vh - 16px);
   margin: 32px;
+}
+
+html {
+  overflow: auto;
 }
 
 #content[hidden] {
