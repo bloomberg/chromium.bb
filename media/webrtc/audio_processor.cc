@@ -129,7 +129,8 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
 
 void AudioProcessor::UpdateInternalStats() {
   if (audio_processing_)
-    echo_information_.UpdateAecStats(audio_processing_->echo_cancellation());
+    echo_information_.UpdateAecStats(
+        audio_processing_->GetStatistics(has_reverse_stream_));
 }
 
 void AudioProcessor::GetStats(GetStatsCB callback) {
@@ -250,22 +251,6 @@ void AudioProcessor::InitializeAPM() {
   // Audio processing module construction.
   audio_processing_ = base::WrapUnique(ap_builder.Create(ap_config));
 
-  // AEC setup part 2.
-  switch (settings_.echo_cancellation) {
-    case EchoCancellationType::kSystemAec:
-    case EchoCancellationType::kDisabled:
-      break;
-    case EchoCancellationType::kAec2:
-    case EchoCancellationType::kAec3:
-      int err = audio_processing_->echo_cancellation()->set_suppression_level(
-          webrtc::EchoCancellation::kHighSuppression);
-      err |= audio_processing_->echo_cancellation()->enable_metrics(true);
-      err |= audio_processing_->echo_cancellation()->enable_delay_logging(true);
-      err |= audio_processing_->echo_cancellation()->Enable(true);
-      DCHECK_EQ(err, 0);
-      break;
-  }
-
   // Noise suppression setup part 2.
   if (settings_.noise_suppression != NoiseSuppressionType::kDisabled) {
     int err = audio_processing_->noise_suppression()->set_level(
@@ -302,8 +287,7 @@ void AudioProcessor::InitializeAPM() {
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
 
-  // AEC setup part 3.
-  // New-fangled echo cancellation setup. (see: https://bugs.webrtc.org/9535).
+  // AEC setup part 2.
   apm_config.echo_canceller.enabled =
       settings_.echo_cancellation == EchoCancellationType::kAec2 ||
       settings_.echo_cancellation == EchoCancellationType::kAec3;
