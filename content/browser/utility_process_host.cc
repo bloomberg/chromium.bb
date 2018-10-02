@@ -102,8 +102,17 @@ class UtilitySandboxedProcessLauncherDelegate
   }
 
   bool DisableDefaultPolicy() override {
-    return sandbox_type_ == service_manager::SANDBOX_TYPE_XRCOMPOSITING &&
-           base::FeatureList::IsEnabled(service_manager::features::kXRSandbox);
+    switch (sandbox_type_) {
+      case service_manager::SANDBOX_TYPE_AUDIO:
+        // Default policy is disabled for audio process to allow audio drivers
+        // to read device properties (https://crbug.com/883326).
+        return true;
+      case service_manager::SANDBOX_TYPE_XRCOMPOSITING:
+        return base::FeatureList::IsEnabled(
+            service_manager::features::kXRSandbox);
+      default:
+        return false;
+    }
   }
 
   bool ShouldLaunchElevated() override {
