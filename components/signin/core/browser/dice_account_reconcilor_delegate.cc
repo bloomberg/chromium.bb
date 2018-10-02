@@ -125,6 +125,10 @@ DiceAccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
              : RevokeTokenOption::kDoNotRevoke;
 }
 
+bool DiceAccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
+  return account_consistency_ == AccountConsistencyMethod::kDice;
+}
+
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
     const std::string& first_account,
     bool reconcile_is_noop) {

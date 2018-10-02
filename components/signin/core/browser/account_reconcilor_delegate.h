@@ -61,10 +61,17 @@ class AccountReconcilorDelegate {
       bool first_execution,
       bool will_logout) const;
 
-  // Returns whether secondary accounts should be cleared at the beginning of
+  // Returns whether secondary accounts should be revoked at the beginning of
   // the reconcile.
   virtual RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts);
+
+  // Returns whether tokens should be revoked when the Gaia cookie has been
+  // explicitly deleted by the user.
+  // If this returns false, tokens will not be revoked. If this returns true,
+  // secondary tokens will be deleted ; and the primary token will be
+  // invalidated unless it has to be kept for critical Sync operations.
+  virtual bool ShouldRevokeTokensOnCookieDeleted();
 
   // Called when reconcile is finished.
   // |OnReconcileFinished| is always called at the end of reconciliation, even

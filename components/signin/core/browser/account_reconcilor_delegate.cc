@@ -42,6 +42,10 @@ AccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
   return RevokeTokenOption::kDoNotRevoke;
 }
 
+bool AccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
+  return false;
+}
+
 base::TimeDelta AccountReconcilorDelegate::GetReconcileTimeout() const {
   return base::TimeDelta::Max();
 }

@@ -36,6 +36,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       const std::vector<gaia::ListedAccount>& gaia_accounts) override;
   void OnReconcileFinished(const std::string& first_account,
                            bool reconcile_is_noop) override;
+  bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
   SigninClient* signin_client_;

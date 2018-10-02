@@ -53,6 +53,19 @@ class AccountReconcilor : public KeyedService,
     DISALLOW_COPY_AND_ASSIGN(Lock);
   };
 
+  // Helper class to indicate that synced data is being deleted. The object
+  // must be destroyed when the data deletion is complete.
+  class ScopedSyncedDataDeletion {
+   public:
+    ~ScopedSyncedDataDeletion();
+
+   private:
+    friend class AccountReconcilor;
+    explicit ScopedSyncedDataDeletion(AccountReconcilor* reconcilor);
+    AccountReconcilor* reconcilor_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedSyncedDataDeletion);
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -107,8 +120,12 @@ class AccountReconcilor : public KeyedService,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // ScopedSyncedDataDeletion can be created when synced data is being removed
+  // and destroyed when the deletion is complete. It prevents the Sync account
+  // from being invalidated during the deletion.
+  std::unique_ptr<ScopedSyncedDataDeletion> GetScopedSyncDataDeletion();
+
  private:
-  friend class Lock;
   friend class AccountReconcilorTest;
   friend class DiceBrowserTestBase;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
@@ -133,6 +150,7 @@ class AccountReconcilor : public KeyedService,
                            MigrationClearSecondaryTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, TokensNotLoaded);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceDeleteCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileCookiesDisabled);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
@@ -230,6 +248,7 @@ class AccountReconcilor : public KeyedService,
         const std::vector<gaia::ListedAccount>& accounts,
         const std::vector<gaia::ListedAccount>& signed_out_accounts,
         const GoogleServiceAuthError& error) override;
+  void OnGaiaCookieDeletedByUserAction() override;
 
   // Overriden from OAuth2TokenService::Observer.
   void OnEndBatchChanges() override;
@@ -309,6 +328,10 @@ class AccountReconcilor : public KeyedService,
   // such as a network connection not being present.
   std::unique_ptr<base::OneShotTimer> timer_;
   base::TimeDelta timeout_;
+
+  // Greater than 0 when synced data is being deleted, and it is important to
+  // not invalidate the primary token while this is happening.
+  int synced_data_deletion_in_progress_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };
