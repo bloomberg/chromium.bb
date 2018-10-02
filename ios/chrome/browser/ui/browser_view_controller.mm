@@ -1836,6 +1836,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
   }
 
+  // If the device's size class has changed from RegularXRegular to another and
+  // vice-versa, the find bar should switch between regular mode and compact
+  // mode accordingly. Hide the findbar here and it will be reshown in [self
+  // updateToobar];
+  if (ShouldShowCompactToolbar(previousTraitCollection) !=
+      ShouldShowCompactToolbar()) {
+    [self hideFindBarWithAnimation:NO];
+  }
+
   // Update the toolbar visibility.
   [self updateToolbar];
 
