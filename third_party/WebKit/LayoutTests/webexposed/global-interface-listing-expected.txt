@@ -5068,9 +5068,15 @@ interface PaymentManager
     getter userHint
     method constructor
     setter userHint
+interface PaymentMethodChangeEvent : PaymentRequestUpdateEvent
+    attribute @@toStringTag
+    getter methodDetails
+    getter methodName
+    method constructor
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter id
+    getter onpaymentmethodchange
     getter onshippingaddresschange
     getter onshippingoptionchange
     getter shippingAddress
@@ -5080,6 +5086,7 @@ interface PaymentRequest : EventTarget
     method canMakePayment
     method constructor
     method show
+    setter onpaymentmethodchange
     setter onshippingaddresschange
     setter onshippingoptionchange
 interface PaymentRequestUpdateEvent : Event

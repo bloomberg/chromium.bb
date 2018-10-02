@@ -195,6 +195,7 @@
     "paste",
     "pause",
     "payerdetailchange",
+    "paymentmethodchange",
     "paymentrequest",
     "periodicsync",
     "pictureinpicturecontrolclick",
