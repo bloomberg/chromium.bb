@@ -903,15 +903,6 @@ namespace {
 bool CreateImageValidInternalFormat(GLenum internalformat,
                                     const Capabilities& capabilities) {
   switch (internalformat) {
-    case GL_ATC_RGB_AMD:
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return capabilities.texture_format_atc;
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return capabilities.texture_format_dxt1;
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return capabilities.texture_format_dxt5;
-    case GL_ETC1_RGB8_OES:
-      return capabilities.texture_format_etc1;
     case GL_R16_EXT:
       return capabilities.texture_norm16;
     case GL_RGB10_A2_EXT:

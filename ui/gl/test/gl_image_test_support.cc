@@ -226,11 +226,6 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
       }
       return;
     }
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED() << gfx::BufferFormatToString(format);

@@ -135,14 +135,6 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     const gfx::Size& size,
     gfx::BufferFormat format) {
   switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-      // Compressed images must have a width and height that's evenly divisible
-      // by the block size.
-      return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
