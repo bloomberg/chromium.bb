@@ -144,7 +144,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
-  bridge()->CreateContentView(GetWidget()->GetRootView()->bounds());
+  bridge()->CreateContentView(bridge_host_->GetRootViewNSViewId(),
+                              GetWidget()->GetRootView()->bounds());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     bridge()->MakeFirstResponder();
     bridge_host_->SetFocusManager(focus_manager);

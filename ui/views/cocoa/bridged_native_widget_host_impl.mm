@@ -77,25 +77,25 @@ BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
 
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
-    : id_(++g_last_bridged_native_widget_id),
+    : widget_id_(++g_last_bridged_native_widget_id),
       native_widget_mac_(parent),
+      root_view_id_(ui::NSViewIds::GetNewId()),
       host_mojo_binding_(this) {
-  DCHECK(GetIdToWidgetHostImplMap().find(id_) ==
+  DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
-  GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
-  GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
+  GetIdToWidgetHostImplMap().insert(std::make_pair(widget_id_, this));
   DCHECK(parent);
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   if (bridge_factory_host_) {
-    bridge_factory_host_->GetFactory()->DestroyBridge(id_);
+    bridge_factory_host_->GetFactory()->DestroyBridge(widget_id_);
     bridge_factory_host_->RemoveObserver(this);
     bridge_factory_host_ = nullptr;
   }
 
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
-  auto found = GetIdToWidgetHostImplMap().find(id_);
+  auto found = GetIdToWidgetHostImplMap().find(widget_id_);
   DCHECK(found != GetIdToWidgetHostImplMap().end());
   DCHECK_EQ(found->second, this);
   GetIdToWidgetHostImplMap().erase(found);
@@ -126,7 +126,8 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window,
     NSView* parent) {
   local_window_ = window;
-  bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(id_, this, this);
+  bridge_impl_ =
+      std::make_unique<BridgedNativeWidgetImpl>(widget_id_, this, this);
   bridge_impl_->SetWindow(window);
   if (parent)
     bridge_impl_->SetParent(parent);
@@ -143,14 +144,14 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   // other process.
   local_window_ =
       BridgedNativeWidgetImpl::CreateNSWindow(window_create_params.get());
-  [local_window_ setBridgedNativeWidgetId:id_];
+  [local_window_ setBridgedNativeWidgetId:widget_id_];
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
   views_bridge_mac::mojom::BridgedNativeWidgetHostPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
                           ui::WindowResizeHelperMac::Get()->task_runner());
   bridge_factory_host_->GetFactory()->CreateBridge(
-      id_, mojo::MakeRequest(&bridge_ptr_), std::move(host_ptr));
+      widget_id_, mojo::MakeRequest(&bridge_ptr_), std::move(host_ptr));
 
   // Create the window in its process, and attach it to its parent window.
   bridge()->CreateWindow(std::move(window_create_params), parent_bridge_id);

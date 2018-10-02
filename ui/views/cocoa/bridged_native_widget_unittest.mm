@@ -618,7 +618,8 @@ void BridgedNativeWidgetTest::SetUp() {
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
   bridge_host()->SetRootView(view_.get());
-  bridge()->CreateContentView(view_->bounds());
+  bridge()->CreateContentView(bridge_host()->GetRootViewNSViewId(),
+                              view_->bounds());
   ns_view_ = bridge()->ns_view();
 
   // Pretend it has been shown via NativeWidgetMac::Show().

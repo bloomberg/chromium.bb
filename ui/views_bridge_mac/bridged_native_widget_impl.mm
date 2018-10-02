@@ -444,15 +444,19 @@ void BridgedNativeWidgetImpl::DestroyContentView() {
   if (!bridged_view_)
     return;
   [bridged_view_ clearView];
+  bridged_view_id_mapping_.reset();
   bridged_view_.reset();
   [window_ setContentView:nil];
 }
 
-void BridgedNativeWidgetImpl::CreateContentView(const gfx::Rect& bounds) {
+void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
+                                                const gfx::Rect& bounds) {
   DCHECK(!bridged_view_);
 
   bridged_view_.reset(
       [[BridgedContentView alloc] initWithBridge:this bounds:bounds]);
+  bridged_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
+      ns_view_id, bridged_view_.get());
 
   // Objective C initializers can return nil. However, if |view| is non-NULL
   // this should be treated as an error and caught early.

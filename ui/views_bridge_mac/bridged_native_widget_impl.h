@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
+#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/views_export.h"
@@ -205,7 +206,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;
   void InitCompositorView() override;
-  void CreateContentView(const gfx::Rect& bounds) override;
+  void CreateContentView(uint64_t ns_view_id, const gfx::Rect& bounds) override;
   void DestroyContentView() override;
   void CloseWindow() override;
   void CloseWindowNow() override;
@@ -284,6 +285,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
+  std::unique_ptr<ui::ScopedNSViewIdMapping> bridged_view_id_mapping_;
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
