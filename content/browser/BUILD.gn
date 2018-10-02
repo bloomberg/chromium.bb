@@ -319,6 +319,8 @@ jumbo_source_set("browser") {
     "android/content_protocol_handler_impl.h",
     "android/content_startup_flags.cc",
     "android/content_startup_flags.h",
+    "android/content_url_loader_factory.cc",
+    "android/content_url_loader_factory.h",
     "android/devtools_auth.cc",
     "android/dialog_overlay_impl.cc",
     "android/dialog_overlay_impl.h",

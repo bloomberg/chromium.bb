@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
@@ -87,6 +88,10 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/android/content_url_loader_factory.h"
+#endif
 
 namespace content {
 
@@ -1610,6 +1615,15 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
+#if defined(OS_ANDROID)
+  non_network_url_loader_factories_[url::kContentScheme] =
+      std::make_unique<ContentURLLoaderFactory>(
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+#endif
+
   std::set<std::string> known_schemes;
   for (auto& iter : non_network_url_loader_factories_)
     known_schemes.insert(iter.first);

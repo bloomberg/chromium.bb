@@ -181,6 +181,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/content_url_loader_factory.h"
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/frame_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
@@ -4073,6 +4074,18 @@ void RenderFrameHostImpl::CommitNavigation(
       non_network_url_loader_factories_.emplace(url::kFileScheme,
                                                 std::move(file_factory));
     }
+
+#if defined(OS_ANDROID)
+    if (common_params.url.SchemeIs(url::kContentScheme)) {
+      // Only content:// URLs can load content:// subresources
+      auto content_factory = std::make_unique<ContentURLLoaderFactory>(
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      non_network_url_loader_factories_.emplace(url::kContentScheme,
+                                                std::move(content_factory));
+    }
+#endif
 
     StoragePartition* partition =
         BrowserContext::GetStoragePartition(browser_context, GetSiteInstance());
