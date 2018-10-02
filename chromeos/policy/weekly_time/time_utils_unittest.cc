@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/weekly_time/time_utils.h"
+#include "chromeos/policy/weekly_time/time_utils.h"
 
 #include <memory>
 #include <utility>
@@ -13,8 +13,8 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
-#include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
+#include "chromeos/policy/weekly_time/weekly_time.h"
+#include "chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
