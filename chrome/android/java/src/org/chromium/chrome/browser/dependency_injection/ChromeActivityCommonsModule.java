@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.dependency_injection;
 import android.content.res.Resources;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -42,7 +43,6 @@ public class ChromeActivityCommonsModule {
         return mActivity.getTabModelSelector();
     }
 
-
     @Provides
     public ChromeFullscreenManager provideChromeFullscreenManager() {
         return mActivity.getFullscreenManager();
@@ -51,6 +51,11 @@ public class ChromeActivityCommonsModule {
     @Provides
     public ToolbarManager provideToolbarManager() {
         return mActivity.getToolbarManager();
+    }
+
+    @Provides
+    public LayoutManager provideLayoutManager() {
+        return mActivity.getCompositorViewHolder().getLayoutManager();
     }
 
     @Provides
