@@ -10,6 +10,7 @@
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
+#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -80,6 +81,18 @@ RenderWidgetHostNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
 void RenderWidgetHostNSViewBridgeLocal::InitAsPopup(
     const gfx::Rect& content_rect) {
   popup_window_ = std::make_unique<PopupWindowMac>(content_rect, cocoa_view_);
+}
+
+void RenderWidgetHostNSViewBridgeLocal::SetParentWebContentsNSView(
+    uint64_t parent_ns_view_id) {
+  NSView* parent_ns_view = ui::NSViewIds::GetNSView(parent_ns_view_id);
+  // If the browser passed an invalid handle, then there is no recovery.
+  CHECK(parent_ns_view);
+  // Set the frame and autoresizing mask of the RenderWidgetHostViewCocoa as is
+  // done by WebContentsViewMac.
+  [cocoa_view_ setFrame:[parent_ns_view bounds]];
+  [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [parent_ns_view addSubview:cocoa_view_];
 }
 
 void RenderWidgetHostNSViewBridgeLocal::MakeFirstResponder() {

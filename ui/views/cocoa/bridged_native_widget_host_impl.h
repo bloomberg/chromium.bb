@@ -60,7 +60,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // potentially in another.
   static BridgedNativeWidgetHostImpl* GetFromId(
       uint64_t bridged_native_widget_id);
-  uint64_t bridged_native_widget_id() const { return id_; }
+  uint64_t bridged_native_widget_id() const { return widget_id_; }
 
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* parent);
@@ -126,6 +126,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Set the root view (set during initialization and un-set during teardown).
   void SetRootView(views::View* root_view);
+
+  // Return the id through which the NSView for |root_view_| may be looked up.
+  uint64_t GetRootViewNSViewId() const { return root_view_id_; }
 
   // Initialize the ui::Compositor and ui::Layer.
   void CreateCompositor(const Widget::InitParams& params);
@@ -293,7 +296,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // ui::AcceleratedWidgetMacNSView:
   void AcceleratedWidgetCALayerParamsUpdated() override;
 
-  const uint64_t id_;
+  // The id that this bridge may be looked up from.
+  const uint64_t widget_id_;
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
   // The factory that was used to create |bridge_ptr_|.
@@ -301,6 +305,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 
+  // The id that may be used to look up the NSView for |root_view_|.
+  const uint64_t root_view_id_;
   views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
 

@@ -65,8 +65,9 @@ interface BridgedNativeWidget {
   // BridgedNativeWidgetHost.
   InitCompositorView();
 
-  // Create the NSView to be the content view for the window.
-  CreateContentView(gfx.mojom.Rect bounds);
+  // Create the NSView to be the content view for the window. Use |ns_view_id|
+  // to look up this NSView in other functions (e.g, to specify a parent view).
+  CreateContentView(uint64 ns_view_id, gfx.mojom.Rect bounds);
 
   // Destroy the content NSView for this window. Note that the window will
   // become blank once this has been called.
