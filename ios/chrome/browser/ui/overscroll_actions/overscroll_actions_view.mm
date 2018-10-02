@@ -93,8 +93,6 @@ const CGFloat kActionLabelSidePadding = 15.0;
 // The value to use as the R, B, and B components for the action label text and
 // selection layer animation.
 const CGFloat kSelectionColor = 0.4;
-// The values to use for the R, G, and B components for the
-const CGFloat kSelectionColorLegacy[] = {66.0 / 256, 133.0 / 256, 244.0 / 256};
 
 // This function maps a value from a range to another.
 CGFloat MapValueToRange(FloatRange from, FloatRange to, CGFloat value) {
@@ -314,47 +312,42 @@ enum class OverscrollViewState {
     [_highlightMaskLayer addSublayer:_reloadActionImageViewHighlighted.layer];
     [_highlightMaskLayer addSublayer:_closeTabActionImageViewHighlighted.layer];
 
-    if (IsUIRefreshPhase1Enabled()) {
-      _addTabLabel = [[UILabel alloc] init];
-      _addTabLabel.numberOfLines = 0;
-      _addTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
-      _addTabLabel.textAlignment = NSTextAlignmentLeft;
-      _addTabLabel.alpha = 0.0;
-      _addTabLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-      _addTabLabel.adjustsFontForContentSizeCategory = NO;
-      _addTabLabel.textColor =
-          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
-      _addTabLabel.text =
-          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
-      [self addSubview:_addTabLabel];
-      _reloadLabel = [[UILabel alloc] init];
-      _reloadLabel.numberOfLines = 0;
-      _reloadLabel.lineBreakMode = NSLineBreakByWordWrapping;
-      _reloadLabel.textAlignment = NSTextAlignmentCenter;
-      _reloadLabel.alpha = 0.0;
-      _reloadLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-      _reloadLabel.adjustsFontForContentSizeCategory = NO;
-      _reloadLabel.textColor =
-          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
-      _reloadLabel.text =
-          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_RELOAD_LABEL);
-      [self addSubview:_reloadLabel];
-      _closeTabLabel = [[UILabel alloc] init];
-      _closeTabLabel.numberOfLines = 0;
-      _closeTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
-      _closeTabLabel.textAlignment = NSTextAlignmentRight;
-      _closeTabLabel.alpha = 0.0;
-      _closeTabLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-      _closeTabLabel.adjustsFontForContentSizeCategory = NO;
-      _closeTabLabel.textColor =
-          [UIColor colorWithWhite:kSelectionColor alpha:1.0];
-      _closeTabLabel.text =
-          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
-      [self addSubview:_closeTabLabel];
-    }
+    _addTabLabel = [[UILabel alloc] init];
+    _addTabLabel.numberOfLines = 0;
+    _addTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _addTabLabel.textAlignment = NSTextAlignmentLeft;
+    _addTabLabel.alpha = 0.0;
+    _addTabLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _addTabLabel.adjustsFontForContentSizeCategory = NO;
+    _addTabLabel.textColor = [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _addTabLabel.text =
+        l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
+    [self addSubview:_addTabLabel];
+    _reloadLabel = [[UILabel alloc] init];
+    _reloadLabel.numberOfLines = 0;
+    _reloadLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _reloadLabel.textAlignment = NSTextAlignmentCenter;
+    _reloadLabel.alpha = 0.0;
+    _reloadLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _reloadLabel.adjustsFontForContentSizeCategory = NO;
+    _reloadLabel.textColor = [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _reloadLabel.text = l10n_util::GetNSString(IDS_IOS_OVERSCROLL_RELOAD_LABEL);
+    [self addSubview:_reloadLabel];
+    _closeTabLabel = [[UILabel alloc] init];
+    _closeTabLabel.numberOfLines = 0;
+    _closeTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _closeTabLabel.textAlignment = NSTextAlignmentRight;
+    _closeTabLabel.alpha = 0.0;
+    _closeTabLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _closeTabLabel.adjustsFontForContentSizeCategory = NO;
+    _closeTabLabel.textColor =
+        [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _closeTabLabel.text =
+        l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
+    [self addSubview:_closeTabLabel];
 
     _backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:_backgroundView];
@@ -579,9 +572,6 @@ enum class OverscrollViewState {
 }
 
 - (void)layoutActionLabels {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   // The text is truncated to be a maximum of half the width of the view.
   CGSize boundingSize = self.bounds.size;
   boundingSize.width /= 2.0;
@@ -996,13 +986,7 @@ enum class OverscrollViewState {
         setImage:[UIImage imageNamed:kCloseActionActiveImage]];
 
     _selectionCircleLayer.fillColor =
-        IsUIRefreshPhase1Enabled()
-            ? [UIColor colorWithWhite:kSelectionColor alpha:1.0].CGColor
-            : [UIColor colorWithRed:kSelectionColorLegacy[0]
-                              green:kSelectionColorLegacy[1]
-                               blue:kSelectionColorLegacy[2]
-                              alpha:1]
-                  .CGColor;
+        [UIColor colorWithWhite:kSelectionColor alpha:1.0].CGColor;
     _selectionCircleMaskLayer.fillColor = [[UIColor blackColor] CGColor];
   }
   [_addTabActionImageView sizeToFit];
@@ -1080,7 +1064,7 @@ enum class OverscrollViewState {
 - (void)fadeInActionLabel:(UILabel*)actionLabel
       previousActionLabel:(UILabel*)previousLabel {
   NSUInteger labelCount = (actionLabel ? 1 : 0) + (previousLabel ? 1 : 0);
-  if (!IsUIRefreshPhase1Enabled() || !labelCount)
+  if (!labelCount)
     return;
 
   NSTimeInterval duration = labelCount * kActionLabelFadeDuration;
