@@ -297,9 +297,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (std::vector<ui::FileInfo>::const_iterator it =
-           drop_data.filenames.begin();
-       it != drop_data.filenames.end();
+  for (auto it = drop_data.filenames.begin(); it != drop_data.filenames.end();
        ++it) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
@@ -309,10 +307,8 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (std::vector<DropData::FileSystemFileInfo>::const_iterator it =
-           drop_data.file_system_files.begin();
-       it != drop_data.file_system_files.end();
-       ++it) {
+  for (auto it = drop_data.file_system_files.begin();
+       it != drop_data.file_system_files.end(); ++it) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFileSystemFile;
     item.file_system_url = it->url;
@@ -470,7 +466,7 @@ RenderWidget::~RenderWidget() {
 // static
 RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
-  RoutingIDWidgetMap::iterator it = widgets->find(routing_id);
+  auto it = widgets->find(routing_id);
   return it == widgets->end() ? NULL : it->second;
 }
 

@@ -221,7 +221,7 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
   DCHECK(completed_tasks_.empty());
   CollectCompletedTasksWithLockAcquired(namespace_token_, &completed_tasks_);
 
-  cc::Task::Vector::iterator end = std::remove_if(
+  auto end = std::remove_if(
       tasks_.begin(), tasks_.end(), [this](const scoped_refptr<cc::Task>& e) {
         return std::find(this->completed_tasks_.begin(),
                          this->completed_tasks_.end(),

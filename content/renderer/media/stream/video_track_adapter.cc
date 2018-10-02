@@ -179,7 +179,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallback(
 void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndReleaseCallback(
     const MediaStreamVideoTrack* track) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
+  auto it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == track) {
       // Make sure the VideoCaptureDeliverFrameCB is released on the main

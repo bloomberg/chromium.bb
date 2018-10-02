@@ -438,8 +438,7 @@ PepperPluginInstanceImpl::ExternalDocumentLoader::~ExternalDocumentLoader() {}
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
     WebAssociatedURLLoaderClient* document_loader) {
-  for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
-       ++it) {
+  for (auto it = data_.begin(); it != data_.end(); ++it) {
     document_loader->DidReceiveData(it->c_str(), it->length());
   }
   if (finished_loading_) {
@@ -591,8 +590,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   // unregister themselves inside the delete call).
   PluginObjectSet plugin_object_copy;
   live_plugin_objects_.swap(plugin_object_copy);
-  for (PluginObjectSet::iterator i = plugin_object_copy.begin();
-       i != plugin_object_copy.end();
+  for (auto i = plugin_object_copy.begin(); i != plugin_object_copy.end();
        ++i) {
     (*i)->InstanceDeleted();
   }
@@ -1020,10 +1018,9 @@ bool PepperPluginInstanceImpl::
   for (size_t i = 0; i < ime_text_spans.size(); ++i) {
     if (ime_text_spans[i].thickness ==
         ws::mojom::ImeTextSpanThickness::kThick) {
-      std::vector<uint32_t>::iterator it =
-          std::find(event.composition_segment_offsets.begin(),
-                    event.composition_segment_offsets.end(),
-                    utf8_offsets[2 * i + 2]);
+      auto it = std::find(event.composition_segment_offsets.begin(),
+                          event.composition_segment_offsets.end(),
+                          utf8_offsets[2 * i + 2]);
       if (it != event.composition_segment_offsets.end()) {
         event.composition_target_segment =
             it - event.composition_segment_offsets.begin();
@@ -2370,9 +2367,7 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
       CreateSimulatedWebInputEvents(
           input_event, view_data_.rect.point.x + view_data_.rect.size.width / 2,
           view_data_.rect.point.y + view_data_.rect.size.height / 2);
-  for (std::vector<std::unique_ptr<WebInputEvent>>::iterator it =
-           events.begin();
-       it != events.end(); ++it) {
+  for (auto it = events.begin(); it != events.end(); ++it) {
     widget->HandleInputEvent(blink::WebCoalescedInputEvent(*it->get()));
   }
   if (input_event.event_type == PP_INPUTEVENT_TYPE_TOUCHSTART ||

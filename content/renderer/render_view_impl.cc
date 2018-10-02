@@ -380,8 +380,7 @@ UScriptCode GetScriptForWebSettings(UScriptCode scriptCode) {
 void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
                        SetFontFamilyWrapper setter,
                        WebSettings* settings) {
-  for (ScriptFontFamilyMap::const_iterator it = map.begin(); it != map.end();
-       ++it) {
+  for (auto it = map.begin(); it != map.end(); ++it) {
     int32_t script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
     if (script >= 0 && script < USCRIPT_CODE_LIMIT) {
       UScriptCode code = static_cast<UScriptCode>(script);
@@ -612,7 +611,7 @@ RenderViewImpl::~RenderViewImpl() {
 /*static*/
 RenderViewImpl* RenderViewImpl::FromWebView(WebView* webview) {
   ViewMap* views = g_view_map.Pointer();
-  ViewMap::iterator it = views->find(webview);
+  auto it = views->find(webview);
   return it == views->end() ? NULL : it->second;
 }
 
@@ -624,7 +623,7 @@ RenderView* RenderView::FromWebView(blink::WebView* webview) {
 /*static*/
 RenderViewImpl* RenderViewImpl::FromRoutingID(int32_t routing_id) {
   RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
-  RoutingIDViewMap::iterator it = views->find(routing_id);
+  auto it = views->find(routing_id);
   return it == views->end() ? NULL : it->second;
 }
 
@@ -641,7 +640,7 @@ size_t RenderView::GetRenderViewCount() {
 /*static*/
 void RenderView::ForEach(RenderViewVisitor* visitor) {
   ViewMap* views = g_view_map.Pointer();
-  for (ViewMap::iterator it = views->begin(); it != views->end(); ++it) {
+  for (auto it = views->begin(); it != views->end(); ++it) {
     if (!visitor->Visit(it->second))
       return;
   }

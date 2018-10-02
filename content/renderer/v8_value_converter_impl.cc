@@ -95,7 +95,7 @@ class V8ValueConverterImpl::FromV8ValueState {
   // hash (key) in the map, because two objects can have the same hash.
   bool AddToUniquenessCheck(v8::Local<v8::Object> handle) {
     int hash;
-    Iterator iter = GetIteratorInMap(handle, &hash);
+    auto iter = GetIteratorInMap(handle, &hash);
     if (iter != unique_map_.end())
       return false;
 
@@ -105,7 +105,7 @@ class V8ValueConverterImpl::FromV8ValueState {
 
   bool RemoveFromUniquenessCheck(v8::Local<v8::Object> handle) {
     int unused_hash;
-    Iterator iter = GetIteratorInMap(handle, &unused_hash);
+    auto iter = GetIteratorInMap(handle, &unused_hash);
     if (iter == unique_map_.end())
       return false;
     unique_map_.erase(iter);
@@ -126,7 +126,7 @@ class V8ValueConverterImpl::FromV8ValueState {
     // hash. Different hash obviously means different objects, but two objects
     // in a couple of thousands could have the same identity hash.
     std::pair<Iterator, Iterator> range = unique_map_.equal_range(*hash);
-    for (Iterator it = range.first; it != range.second; ++it) {
+    for (auto it = range.first; it != range.second; ++it) {
       // Operator == for handles actually compares the underlying objects.
       if (it->second == handle)
         return it;

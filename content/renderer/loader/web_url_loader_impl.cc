@@ -1250,15 +1250,14 @@ void WebURLLoaderImpl::PopulateURLResponse(
         info.raw_request_response_info->response_headers_text));
     const HeadersVector& request_headers =
         info.raw_request_response_info->request_headers;
-    for (HeadersVector::const_iterator it = request_headers.begin();
-         it != request_headers.end(); ++it) {
+    for (auto it = request_headers.begin(); it != request_headers.end(); ++it) {
       load_info.AddRequestHeader(WebString::FromLatin1(it->first),
                                  WebString::FromLatin1(it->second));
     }
     const HeadersVector& response_headers =
         info.raw_request_response_info->response_headers;
-    for (HeadersVector::const_iterator it = response_headers.begin();
-         it != response_headers.end(); ++it) {
+    for (auto it = response_headers.begin(); it != response_headers.end();
+         ++it) {
       load_info.AddResponseHeader(WebString::FromLatin1(it->first),
                                   WebString::FromLatin1(it->second));
     }

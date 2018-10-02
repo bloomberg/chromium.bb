@@ -511,7 +511,7 @@ void PeerConnectionTracker::OnGetAllStats() {
   DCHECK(main_thread_.CalledOnValidThread());
 
   const std::string empty_track_id;
-  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+  for (auto it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     rtc::scoped_refptr<InternalStatsObserver> observer(
         new rtc::RefCountedObject<InternalStatsObserver>(
@@ -532,7 +532,7 @@ RenderThread* PeerConnectionTracker::SendTarget() {
 
 void PeerConnectionTracker::OnSuspend() {
   DCHECK(main_thread_.CalledOnValidThread());
-  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+  for (auto it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
   }
@@ -611,8 +611,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
   DCHECK(main_thread_.CalledOnValidThread());
   DVLOG(1) << "PeerConnectionTracker::UnregisterPeerConnection()";
 
-  std::map<RTCPeerConnectionHandler*, int>::iterator it =
-      peer_connection_id_map_.find(pc_handler);
+  auto it = peer_connection_id_map_.find(pc_handler);
 
   if (it == peer_connection_id_map_.end()) {
     // The PeerConnection might not have been registered if its initilization

@@ -281,7 +281,7 @@ ResourceDispatcher::~ResourceDispatcher() {
 
 ResourceDispatcher::PendingRequestInfo*
 ResourceDispatcher::GetPendingRequestInfo(int request_id) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return nullptr;
   return it->second.get();
@@ -548,7 +548,7 @@ void ResourceDispatcher::OnRequestComplete(
 bool ResourceDispatcher::RemovePendingRequest(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;
 
@@ -579,7 +579,7 @@ bool ResourceDispatcher::RemovePendingRequest(
 void ResourceDispatcher::Cancel(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DLOG(ERROR) << "unknown request";
     return;

@@ -85,8 +85,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
                                          base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   {
-    std::vector<MediaStreamVideoTrack*>::iterator it =
-        std::find(tracks_.begin(), tracks_.end(), video_track);
+    auto it = std::find(tracks_.begin(), tracks_.end(), video_track);
     DCHECK(it != tracks_.end());
     tracks_.erase(it);
   }

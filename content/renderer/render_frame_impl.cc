@@ -1250,8 +1250,7 @@ RenderFrame* RenderFrame::FromRoutingID(int routing_id) {
 
 // static
 RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
-  RoutingIDFrameMap::iterator iter =
-      g_routing_id_frame_map.Get().find(routing_id);
+  auto iter = g_routing_id_frame_map.Get().find(routing_id);
   if (iter != g_routing_id_frame_map.Get().end())
     return iter->second;
   return nullptr;
@@ -1528,7 +1527,7 @@ RenderFrame* RenderFrame::FromWebFrame(blink::WebLocalFrame* web_frame) {
 // static
 void RenderFrame::ForEach(RenderFrameVisitor* visitor) {
   FrameMap* frames = g_frame_map.Pointer();
-  for (FrameMap::iterator it = frames->begin(); it != frames->end(); ++it) {
+  for (auto it = frames->begin(); it != frames->end(); ++it) {
     if (!visitor->Visit(it->second))
       return;
   }
@@ -1547,7 +1546,7 @@ int RenderFrame::GetRoutingIdForWebFrame(blink::WebFrame* web_frame) {
 
 // static
 RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
-  FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
+  auto iter = g_frame_map.Get().find(web_frame);
   if (iter != g_frame_map.Get().end())
     return iter->second;
   return nullptr;
@@ -4009,7 +4008,7 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   // the RenderFrameImpl.  In contrast, the main frame is owned by its
   // containing RenderViewHost (so that they have the same lifetime), so only
   // removal from the map is needed and no deletion.
-  FrameMap::iterator it = g_frame_map.Get().find(frame_);
+  auto it = g_frame_map.Get().find(frame_);
   CHECK(it != g_frame_map.Get().end());
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
@@ -5687,8 +5686,7 @@ void RenderFrameImpl::UpdateZoomLevel() {
 
     // Set zoom level, but don't do it for full-page plugin since they don't use
     // the same zoom settings.
-    HostZoomLevels::iterator host_zoom =
-        host_zoom_levels_.find(GetLoadingUrl());
+    auto host_zoom = host_zoom_levels_.find(GetLoadingUrl());
     if (render_view_->webview()->MainFrame()->IsWebLocalFrame() &&
         render_view_->webview()
             ->MainFrame()

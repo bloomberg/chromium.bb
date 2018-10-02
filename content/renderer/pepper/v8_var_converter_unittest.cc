@@ -80,7 +80,7 @@ bool Equals(const PP_Var& var,
             v8::Local<v8::Value> val,
             VarHandleMap* visited_ids) {
   if (ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
-    VarHandleMap::iterator it = visited_ids->find(var.value.as_id);
+    auto it = visited_ids->find(var.value.as_id);
     if (it != visited_ids->end())
       return it->second == val;
     (*visited_ids)[var.value.as_id] = val;

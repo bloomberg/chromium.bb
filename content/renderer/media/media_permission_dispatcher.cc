@@ -144,7 +144,7 @@ void MediaPermissionDispatcher::OnPermissionStatus(
   DVLOG(2) << __func__ << ": (" << request_id << ", " << status << ")";
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  RequestMap::iterator iter = requests_.find(request_id);
+  auto iter = requests_.find(request_id);
   DCHECK(iter != requests_.end()) << "Request not found.";
 
   PermissionStatusCB permission_status_cb = iter->second;
