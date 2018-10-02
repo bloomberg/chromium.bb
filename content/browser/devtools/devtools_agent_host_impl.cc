@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security_handler.h"

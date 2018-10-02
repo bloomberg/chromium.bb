@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -438,8 +438,7 @@ TargetHandler::~TargetHandler() {
 // static
 std::vector<TargetHandler*> TargetHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<TargetHandler>(
-      host, Target::Metainfo::domainName);
+  return host->HandlersByName<TargetHandler>(Target::Metainfo::domainName);
 }
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {

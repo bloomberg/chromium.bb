@@ -25,9 +25,9 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
 #include "components/tracing/common/trace_startup_config.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
-#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
@@ -237,8 +237,7 @@ TracingHandler::~TracingHandler() = default;
 // static
 std::vector<TracingHandler*> TracingHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<TracingHandler>(
-      host, Tracing::Metainfo::domainName);
+  return host->HandlersByName<TracingHandler>(Tracing::Metainfo::domainName);
 }
 
 void TracingHandler::SetRenderer(int process_host_id,
