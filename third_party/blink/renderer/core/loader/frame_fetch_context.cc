@@ -991,8 +991,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
-    unsigned long rtt = GetNetworkStateNotifier().RoundRtt(
-        request.Url().Host(), GetNetworkStateNotifier().HttpRtt());
+    base::Optional<TimeDelta> http_rtt =
+        GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
+    if (!http_rtt) {
+      http_rtt = GetNetworkStateNotifier().HttpRtt();
+    }
+
+    unsigned long rtt =
+        GetNetworkStateNotifier().RoundRtt(request.Url().Host(), http_rtt);
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kRtt)],
@@ -1001,9 +1007,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
                            hints_preferences, enabled_hints)) {
-    double mbps = GetNetworkStateNotifier().RoundMbps(
-        request.Url().Host(),
-        GetNetworkStateNotifier().DownlinkThroughputMbps());
+    base::Optional<double> throughput_mbps =
+        GetNetworkStateNotifier().GetWebHoldbackDownlinkThroughputMbps();
+    if (!throughput_mbps) {
+      throughput_mbps = GetNetworkStateNotifier().DownlinkThroughputMbps();
+    }
+
+    double mbps = GetNetworkStateNotifier().RoundMbps(request.Url().Host(),
+                                                      throughput_mbps);
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kDownlink)],
@@ -1012,11 +1023,16 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
                            enabled_hints)) {
+    base::Optional<WebEffectiveConnectionType> holdback_ect =
+        GetNetworkStateNotifier().GetWebHoldbackEffectiveType();
+    if (!holdback_ect)
+      holdback_ect = GetNetworkStateNotifier().EffectiveType();
+
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kEct)],
         AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
-            GetNetworkStateNotifier().EffectiveType())));
+            holdback_ect.value())));
   }
 }
 

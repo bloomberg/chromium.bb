@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -23,6 +24,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -260,6 +262,11 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
     EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                      ->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  }
+
+  void SetExpectedEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type) {
+    expected_ect = effective_connection_type;
   }
 
   const GURL& accept_ch_with_lifetime_http_local_url() const {
@@ -523,7 +530,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     EXPECT_TRUE(IsSimilarToIntABNF(request.headers.find("rtt")->second));
     // Verify that RTT value is a multiple of 50 milliseconds.
     EXPECT_EQ(0, rtt_value % 50);
-    EXPECT_GE(3000, rtt_value);
+    EXPECT_GE(expected_ect == net::EFFECTIVE_CONNECTION_TYPE_2G ? 3000 : 500,
+              rtt_value);
 
     double mbps_value = 0.0;
     EXPECT_TRUE(base::StringToDouble(request.headers.find("downlink")->second,
@@ -549,14 +557,27 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       // Effective connection type is forced to 2G using command line in these
       // tests. RTT is expected to be 1800 msec but leave some gap to account
       // for added noise and randomization.
-      EXPECT_NEAR(1800, rtt_value, 360);
+      if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_2G) {
+        EXPECT_NEAR(1800, rtt_value, 360);
+      } else if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_3G) {
+        EXPECT_NEAR(450, rtt_value, 90);
+      } else {
+        NOTREACHED();
+      }
 
       // Effective connection type is forced to 2G using command line in these
       // tests. downlink is expected to be 0.075 Mbps but leave some gap to
       // account for added noise and randomization.
-      EXPECT_NEAR(0.075, mbps_value, 0.05);
+      if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_2G) {
+        EXPECT_NEAR(0.075, mbps_value, 0.05);
+      } else if (expected_ect == net::EFFECTIVE_CONNECTION_TYPE_3G) {
+        EXPECT_NEAR(0.4, mbps_value, 0.1);
+      } else {
+        NOTREACHED();
+      }
 
-      EXPECT_EQ("2g", request.headers.find("ect")->second);
+      EXPECT_EQ(expected_ect == net::EFFECTIVE_CONNECTION_TYPE_2G ? "2g" : "3g",
+                request.headers.find("ect")->second);
     }
   }
 
@@ -594,6 +615,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   size_t count_client_hints_headers_seen_;
 
   std::unique_ptr<ThirdPartyURLLoaderInterceptor> request_interceptor_;
+
+  // Set to 2G in SetUpCommandLine().
+  net::EffectiveConnectionType expected_ect = net::EFFECTIVE_CONNECTION_TYPE_2G;
 
   DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTest);
 };
@@ -1417,4 +1441,76 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // Six client hints are attached to the image request, and six to the main
   // frame request.
   EXPECT_EQ(12u, count_client_hints_headers_seen());
+}
+
+class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
+ public:
+  ClientHintsWebHoldbackBrowserTest() : ClientHintsBrowserTest() {
+    ConfigureHoldbackExperiment();
+  }
+
+  net::EffectiveConnectionType web_effective_connection_type_override() const {
+    return web_effective_connection_type_override_;
+  }
+
+ private:
+  void ConfigureHoldbackExperiment() {
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+    const std::string kTrialName = "TrialFoo";
+    const std::string kGroupName = "GroupFoo";  // Value not used
+
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::map<std::string, std::string> params;
+
+    params["web_effective_connection_type_override"] =
+        net::GetNameForEffectiveConnectionType(
+            web_effective_connection_type_override_);
+    ASSERT_TRUE(
+        base::FieldTrialParamAssociator::GetInstance()
+            ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kNetworkQualityEstimatorWebHoldback.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list_override_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  const net::EffectiveConnectionType web_effective_connection_type_override_ =
+      net::EFFECTIVE_CONNECTION_TYPE_3G;
+
+  base::test::ScopedFeatureList scoped_feature_list_override_;
+};
+
+// Make sure that when NetInfo holdback experiment is enabled, the NetInfo APIs
+// and client hints return the overridden values. Verify that the client hints
+// are overridden on both main frame and subresource requests.
+IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
+                       EffectiveConnectionTypeChangeNotified) {
+  SetExpectedEffectiveConnectionType(web_effective_connection_type_override());
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(), accept_ch_with_lifetime_url());
+  EXPECT_EQ(0u, count_client_hints_headers_seen());
+  EXPECT_EQ(0u, third_party_request_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
+
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(
+      browser(), accept_ch_without_lifetime_with_subresource_url());
+  base::RunLoop().RunUntilIdle();
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  EXPECT_EQ(12u, count_client_hints_headers_seen());
+  EXPECT_EQ(0u, third_party_request_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }
