@@ -411,31 +411,57 @@ class SignedExchangeAcceptHeaderBrowserTest
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() {
+  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() const {
     return GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
                                       GetParam().sxg_accept_header_enabled);
   }
 
-  void CheckNavigationAcceptHeader(const GURL& url, bool should_have_sxg) {
-    if (should_have_sxg) {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(network::kFrameAcceptHeader) +
-                    std::string(kAcceptHeaderSignedExchangeSuffix));
-    } else {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(network::kFrameAcceptHeader));
+  bool ShouldHaveSXGAcceptHeaderInDisabledOrigin() const {
+    return GetParam().sxg_enabled;
+  }
+
+  void CheckAcceptHeader(const GURL& url, bool is_navigation) {
+    const bool is_enabled_origin =
+        url.IntPort() == enabled_https_server_.port();
+    const bool should_have_sxg =
+        is_enabled_origin ? ShouldHaveSXGAcceptHeaderInEnabledOrigin()
+                          : ShouldHaveSXGAcceptHeaderInDisabledOrigin();
+    const auto accept_header = GetInterceptedAcceptHeader(url);
+    ASSERT_TRUE(accept_header);
+    EXPECT_EQ(
+        *accept_header,
+        should_have_sxg
+            ? (is_navigation
+                   ? std::string(network::kFrameAcceptHeader) +
+                         std::string(kAcceptHeaderSignedExchangeSuffix)
+                   : std::string(kExpectedSXGEnabledAcceptHeaderForPrefetch))
+            : (is_navigation ? std::string(network::kFrameAcceptHeader)
+                             : std::string(network::kDefaultAcceptHeader)));
+  }
+
+  void CheckNavigationAcceptHeader(const std::vector<GURL>& urls) {
+    for (const auto& url : urls) {
+      SCOPED_TRACE(url);
+      CheckAcceptHeader(url, true /* is_navigation */);
     }
   }
 
-  void CheckPrefetchAcceptHeader(const GURL& url, bool should_have_sxg) {
-    if (should_have_sxg) {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(kExpectedSXGEnabledAcceptHeaderForPrefetch));
-    } else {
-      EXPECT_EQ(GetInterceptedAcceptHeader(url),
-                std::string(network::kDefaultAcceptHeader));
+  void CheckPrefetchAcceptHeader(const std::vector<GURL>& urls) {
+    for (const auto& url : urls) {
+      SCOPED_TRACE(url);
+      CheckAcceptHeader(url, false /* is_navigation */);
     }
   }
+
+  base::Optional<std::string> GetInterceptedAcceptHeader(
+      const GURL& url) const {
+    const auto it = url_accept_header_map_.find(url);
+    if (it == url_accept_header_map_.end())
+      return base::nullopt;
+    return it->second;
+  }
+
+  void ClearInterceptedAcceptHeaders() { url_accept_header_map_.clear(); }
 
   net::EmbeddedTestServer enabled_https_server_;
   net::EmbeddedTestServer disabled_https_server_;
@@ -451,6 +477,7 @@ class SignedExchangeAcceptHeaderBrowserTest
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", request.relative_url.substr(3));
+    http_response->AddCustomHeader("Cache-Control", "no-cache");
     return std::move(http_response);
   }
 
@@ -460,10 +487,6 @@ class SignedExchangeAcceptHeaderBrowserTest
       return;
     url_accept_header_map_[request.base_url.Resolve(request.relative_url)] =
         it->second;
-  }
-
-  std::string GetInterceptedAcceptHeader(const GURL& url) {
-    return url_accept_header_map_[url];
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -478,8 +501,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, EnabledOrigin) {
             signed_exchange_utils::ShouldAdvertiseAcceptHeader(
                 url::Origin::Create(enabled_test_url)));
   NavigateAndWaitForTitle(enabled_test_url, enabled_test_url.spec());
-  CheckNavigationAcceptHeader(enabled_test_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+  CheckNavigationAcceptHeader({enabled_test_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, DisabledOrigin) {
@@ -490,7 +512,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, DisabledOrigin) {
                 url::Origin::Create(disabled_test_url)));
 
   NavigateAndWaitForTitle(disabled_test_url, disabled_test_url.spec());
-  CheckNavigationAcceptHeader(disabled_test_url, GetParam().sxg_enabled);
+  CheckNavigationAcceptHeader({disabled_test_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -504,12 +526,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   NavigateAndWaitForTitle(redirect_enabled_to_disabled_to_enabled_url,
                           enabled_test_url.spec());
 
-  CheckNavigationAcceptHeader(redirect_enabled_to_disabled_to_enabled_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-  CheckNavigationAcceptHeader(redirect_disabled_to_enabled_url,
-                              GetParam().sxg_enabled);
-  CheckNavigationAcceptHeader(enabled_test_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+  CheckNavigationAcceptHeader({redirect_enabled_to_disabled_to_enabled_url,
+                               redirect_disabled_to_enabled_url,
+                               enabled_test_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -524,11 +543,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   NavigateAndWaitForTitle(redirect_disabled_to_enabled_to_disabled_url,
                           disabled_test_url.spec());
 
-  CheckNavigationAcceptHeader(redirect_disabled_to_enabled_to_disabled_url,
-                              GetParam().sxg_enabled);
-  CheckNavigationAcceptHeader(redirect_enabled_to_disabled_url,
-                              ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-  CheckNavigationAcceptHeader(disabled_test_url, GetParam().sxg_enabled);
+  CheckNavigationAcceptHeader({redirect_disabled_to_enabled_to_disabled_url,
+                               redirect_enabled_to_disabled_url,
+                               disabled_test_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -537,8 +554,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   const GURL enabled_page_url = enabled_https_server_.GetURL(
       std::string("/sxg/prefetch.html#") + enabled_target.spec());
   NavigateAndWaitForTitle(enabled_page_url, "OK");
-  CheckPrefetchAcceptHeader(enabled_target,
-                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+  CheckPrefetchAcceptHeader({enabled_target});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -547,7 +563,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   const GURL enabled_page_url = enabled_https_server_.GetURL(
       std::string("/sxg/prefetch.html#") + disabled_target.spec());
   NavigateAndWaitForTitle(enabled_page_url, "OK");
-  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
+  CheckPrefetchAcceptHeader({disabled_target});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -556,8 +572,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   const GURL disabled_page_url = disabled_https_server_.GetURL(
       std::string("/sxg/prefetch.html#") + enabled_target.spec());
   NavigateAndWaitForTitle(disabled_page_url, "OK");
-  CheckPrefetchAcceptHeader(enabled_target,
-                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
+  CheckPrefetchAcceptHeader({enabled_target});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -566,7 +581,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   const GURL disabled_page_url = disabled_https_server_.GetURL(
       std::string("/sxg/prefetch.html#") + disabled_target.spec());
   NavigateAndWaitForTitle(disabled_page_url, "OK");
-  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
+  CheckPrefetchAcceptHeader({disabled_target});
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -585,11 +600,188 @@ IN_PROC_BROWSER_TEST_P(
 
   NavigateAndWaitForTitle(enabled_page_url, "OK");
 
-  CheckPrefetchAcceptHeader(redirect_disabled_to_enabled_to_disabled_url,
-                            GetParam().sxg_enabled);
-  CheckPrefetchAcceptHeader(redirect_enabled_to_disabled_url,
-                            ShouldHaveSXGAcceptHeaderInEnabledOrigin());
-  CheckPrefetchAcceptHeader(disabled_target, GetParam().sxg_enabled);
+  CheckPrefetchAcceptHeader({redirect_disabled_to_enabled_to_disabled_url,
+                             redirect_enabled_to_disabled_url,
+                             disabled_target});
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
+  NavigateAndWaitForTitle(
+      enabled_https_server_.GetURL("/sxg/service-worker.html"), "Done");
+  NavigateAndWaitForTitle(
+      disabled_https_server_.GetURL("/sxg/service-worker.html"), "Done");
+
+  const std::string frame_accept = std::string(network::kFrameAcceptHeader);
+  const std::string frame_accept_with_sxg =
+      frame_accept + std::string(kAcceptHeaderSignedExchangeSuffix);
+  const std::vector<std::string> scopes = {"/sxg/sw-scope-generated/",
+                                           "/sxg/sw-scope-navigation-preload/",
+                                           "/sxg/sw-scope-no-respond-with/"};
+  for (const auto& scope : scopes) {
+    SCOPED_TRACE(scope);
+    const bool is_generated_scope =
+        scope == std::string("/sxg/sw-scope-generated/");
+    const GURL enabled_target_url =
+        enabled_https_server_.GetURL(scope + "test.html");
+    const GURL disabled_target_url =
+        disabled_https_server_.GetURL(scope + "test.html");
+    const GURL redirect_disabled_to_enabled_target_url =
+        disabled_https_server_.GetURL("/r?" + enabled_target_url.spec());
+    const GURL redirect_enabled_to_disabled_to_enabled_target_url =
+        enabled_https_server_.GetURL(
+            "/r?" + redirect_disabled_to_enabled_target_url.spec());
+    const GURL redirect_enabled_to_disabled_target_url =
+        enabled_https_server_.GetURL("/r?" + disabled_target_url.spec());
+    const GURL redirect_disabled_to_enabled_to_disabled_target_url =
+        disabled_https_server_.GetURL(
+            "/r?" + redirect_enabled_to_disabled_target_url.spec());
+
+    const std::string expected_enabled_title =
+        is_generated_scope ? (ShouldHaveSXGAcceptHeaderInEnabledOrigin()
+                                  ? frame_accept_with_sxg
+                                  : frame_accept)
+                           : "Done";
+    const std::string expected_disabled_title =
+        is_generated_scope ? (ShouldHaveSXGAcceptHeaderInDisabledOrigin()
+                                  ? frame_accept_with_sxg
+                                  : frame_accept)
+                           : "Done";
+    const base::Optional<std::string> expected_enabled_target_accept_header =
+        is_generated_scope ? base::nullopt
+                           : base::Optional<std::string>(
+                                 ShouldHaveSXGAcceptHeaderInEnabledOrigin()
+                                     ? frame_accept_with_sxg
+                                     : frame_accept);
+    const base::Optional<std::string> expected_disabled_target_accept_header =
+        is_generated_scope ? base::nullopt
+                           : base::Optional<std::string>(
+                                 ShouldHaveSXGAcceptHeaderInDisabledOrigin()
+                                     ? frame_accept_with_sxg
+                                     : frame_accept);
+
+    NavigateAndWaitForTitle(enabled_target_url, expected_enabled_title);
+    EXPECT_EQ(expected_enabled_target_accept_header,
+              GetInterceptedAcceptHeader(enabled_target_url));
+    ClearInterceptedAcceptHeaders();
+
+    NavigateAndWaitForTitle(disabled_target_url, expected_disabled_title);
+    EXPECT_EQ(expected_disabled_target_accept_header,
+              GetInterceptedAcceptHeader(disabled_target_url));
+    ClearInterceptedAcceptHeaders();
+
+    NavigateAndWaitForTitle(redirect_disabled_to_enabled_target_url,
+                            expected_enabled_title);
+    CheckNavigationAcceptHeader({redirect_disabled_to_enabled_target_url});
+    EXPECT_EQ(expected_enabled_target_accept_header,
+              GetInterceptedAcceptHeader(enabled_target_url));
+    ClearInterceptedAcceptHeaders();
+
+    NavigateAndWaitForTitle(redirect_enabled_to_disabled_target_url,
+                            expected_disabled_title);
+    CheckNavigationAcceptHeader({redirect_enabled_to_disabled_target_url});
+    EXPECT_EQ(expected_disabled_target_accept_header,
+              GetInterceptedAcceptHeader(disabled_target_url));
+    ClearInterceptedAcceptHeaders();
+
+    NavigateAndWaitForTitle(redirect_enabled_to_disabled_to_enabled_target_url,
+                            expected_enabled_title);
+    CheckNavigationAcceptHeader(
+        {redirect_enabled_to_disabled_to_enabled_target_url,
+         redirect_disabled_to_enabled_target_url});
+    EXPECT_EQ(expected_enabled_target_accept_header,
+              GetInterceptedAcceptHeader(enabled_target_url));
+    ClearInterceptedAcceptHeaders();
+
+    NavigateAndWaitForTitle(redirect_disabled_to_enabled_to_disabled_target_url,
+                            expected_disabled_title);
+    CheckNavigationAcceptHeader(
+        {redirect_disabled_to_enabled_to_disabled_target_url,
+         redirect_enabled_to_disabled_target_url});
+    EXPECT_EQ(expected_disabled_target_accept_header,
+              GetInterceptedAcceptHeader(disabled_target_url));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       ServiceWorkerPrefetch) {
+  NavigateAndWaitForTitle(
+      enabled_https_server_.GetURL("/sxg/service-worker-prefetch.html"),
+      "Done");
+  NavigateAndWaitForTitle(
+      disabled_https_server_.GetURL("/sxg/service-worker-prefetch.html"),
+      "Done");
+  const std::string scope = "/sxg/sw-prefetch-scope/";
+  const GURL enabled_target_url =
+      enabled_https_server_.GetURL(scope + "test.html");
+  const GURL disabled_target_url =
+      disabled_https_server_.GetURL(scope + "test.html");
+
+  const GURL enabled_prefetch_target =
+      enabled_https_server_.GetURL(std::string("/sxg/hello.txt"));
+  const GURL disabled_prefetch_target =
+      disabled_https_server_.GetURL(std::string("/sxg/hello.txt"));
+  const std::string load_prefetch_script = base::StringPrintf(
+      "(function loadPrefetch(urls) {"
+      "  for (let url of urls) {"
+      "    let link = document.createElement('link');"
+      "    link.rel = 'prefetch';"
+      "    link.href = url;"
+      "    document.body.appendChild(link);"
+      "  }"
+      "  function check() {"
+      "    const entries = performance.getEntriesByType('resource');"
+      "    const url_set = new Set(urls);"
+      "    for (let entry of entries) {"
+      "      url_set.delete(entry.name);"
+      "    }"
+      "    if (!url_set.size) {"
+      "      window.domAutomationController.send(true);"
+      "    } else {"
+      "      setTimeout(check, 100);"
+      "    }"
+      "  }"
+      "  check();"
+      "})(['%s','%s'])",
+      enabled_prefetch_target.spec().c_str(),
+      disabled_prefetch_target.spec().c_str());
+  bool unused = false;
+
+  NavigateAndWaitForTitle(enabled_target_url, "Done");
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                          load_prefetch_script, &unused));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      (GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
+                                  GetParam().sxg_accept_header_enabled))) {
+    // TODO(crbug/890748): Currently SignedExchange prefetch requests from
+    // Service Worker controlled pages aren't handled by
+    // SignedExchangePrefetchHandler when NetworkService is enabled.
+    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
+              GetInterceptedAcceptHeader(enabled_prefetch_target));
+    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
+              GetInterceptedAcceptHeader(disabled_prefetch_target));
+  } else {
+    CheckPrefetchAcceptHeader(
+        {enabled_prefetch_target, disabled_prefetch_target});
+  }
+  ClearInterceptedAcceptHeaders();
+
+  NavigateAndWaitForTitle(disabled_target_url, "Done");
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                          load_prefetch_script, &unused));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      (GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
+                                  GetParam().sxg_accept_header_enabled))) {
+    // TODO(crbug/890748): Currently SignedExchange prefetch requests from
+    // Service Worker controlled pages aren't handled by
+    // SignedExchangePrefetchHandler when NetworkService is enabled.
+    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
+              GetInterceptedAcceptHeader(enabled_prefetch_target));
+    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
+              GetInterceptedAcceptHeader(disabled_prefetch_target));
+  } else {
+    CheckPrefetchAcceptHeader(
+        {enabled_prefetch_target, disabled_prefetch_target});
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(
