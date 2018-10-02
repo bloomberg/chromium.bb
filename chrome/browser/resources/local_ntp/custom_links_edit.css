@@ -128,9 +128,6 @@ input:focus + .underline {
   margin-top: 24px;
 }
 
-.buttons-container .right {
-}
-
 button {
   border: none;
   border-radius: 4px;
