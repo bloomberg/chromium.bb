@@ -4952,30 +4952,6 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
   return 1;
 }
 
-// Estimate if the source frame is screen content, based on the portion of
-// blocks that have no more than 4 (experimentally selected) luma colors.
-static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
-                             int stride, int width, int height) {
-  assert(src != NULL);
-  int counts = 0;
-  const int blk_w = 16;
-  const int blk_h = 16;
-  const int limit = 4;
-  for (int r = 0; r + blk_h <= height; r += blk_h) {
-    for (int c = 0; c + blk_w <= width; c += blk_w) {
-      int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
-      const int n_colors =
-          use_hbd ? av1_count_colors_highbd(src + r * stride + c, stride, blk_w,
-                                            blk_h, bd, count_buf)
-                  : av1_count_colors(src + r * stride + c, stride, blk_w, blk_h,
-                                     count_buf);
-      if (n_colors > 1 && n_colors <= limit) counts++;
-    }
-  }
-  // The threshold is 10%.
-  return counts * blk_h * blk_w * 10 > width * height;
-}
-
 static const uint8_t ref_frame_flag_list[REF_FRAMES] = { 0,
                                                          AOM_LAST_FLAG,
                                                          AOM_LAST2_FLAG,
@@ -5183,20 +5159,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);
-
-  if (frame_is_intra_only(cm)) {
-    if (cm->seq_params.force_screen_content_tools == 2) {
-      cm->allow_screen_content_tools =
-          cpi->oxcf.content == AOM_CONTENT_SCREEN ||
-          is_screen_content(cpi->source->y_buffer,
-                            cpi->source->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-                            cpi->source->y_stride, cpi->source->y_width,
-                            cpi->source->y_height);
-    } else {
-      cm->allow_screen_content_tools =
-          cm->seq_params.force_screen_content_tools;
-    }
-  }
 
   // Allow intrabc when screen content tools are enabled.
   cm->allow_intrabc = cm->allow_screen_content_tools;

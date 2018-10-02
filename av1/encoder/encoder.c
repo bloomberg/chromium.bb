@@ -65,6 +65,7 @@
 #include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
+#include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
@@ -96,6 +97,30 @@ FILE *yuv_skinmap_file = NULL;
 FILE *yuv_rec_file;
 #define FILE_NAME_LEN 100
 #endif
+
+// Estimate if the source frame is screen content, based on the portion of
+// blocks that have no more than 4 (experimentally selected) luma colors.
+static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
+                             int stride, int width, int height) {
+  assert(src != NULL);
+  int counts = 0;
+  const int blk_w = 16;
+  const int blk_h = 16;
+  const int limit = 4;
+  for (int r = 0; r + blk_h <= height; r += blk_h) {
+    for (int c = 0; c + blk_w <= width; c += blk_w) {
+      int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
+      const int n_colors =
+          use_hbd ? av1_count_colors_highbd(src + r * stride + c, stride, blk_w,
+                                            blk_h, bd, count_buf)
+                  : av1_count_colors(src + r * stride + c, stride, blk_w, blk_h,
+                                     count_buf);
+      if (n_colors > 1 && n_colors <= limit) counts++;
+    }
+  }
+  // The threshold is 10%.
+  return counts * blk_h * blk_w * 10 > width * height;
+}
 
 static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
   switch (mode) {
@@ -3772,15 +3797,30 @@ static void set_mv_search_params(AV1_COMP *cpi) {
 
 static void set_size_independent_vars(AV1_COMP *cpi) {
   int i;
+  AV1_COMMON *cm = &cpi->common;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    cpi->common.global_motion[i] = default_warp_params;
+    cm->global_motion[i] = default_warp_params;
   }
   cpi->global_motion_search_done = 0;
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
-  cpi->common.interp_filter = SWITCHABLE;
-  cpi->common.switchable_motion_mode = 1;
+  cm->interp_filter = SWITCHABLE;
+  cm->switchable_motion_mode = 1;
+
+  if (frame_is_intra_only(cm)) {
+    if (cm->seq_params.force_screen_content_tools == 2) {
+      cm->allow_screen_content_tools =
+          cpi->oxcf.content == AOM_CONTENT_SCREEN ||
+          is_screen_content(cpi->source->y_buffer,
+                            cpi->source->flags & YV12_FLAG_HIGHBITDEPTH,
+                            cm->seq_params.bit_depth, cpi->source->y_stride,
+                            cpi->source->y_width, cpi->source->y_height);
+    } else {
+      cm->allow_screen_content_tools =
+          cm->seq_params.force_screen_content_tools;
+    }
+  }
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
@@ -4028,6 +4068,8 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       break;
     case SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
     case SUPERRES_QTHRESH: {
+      // Do not use superres when screen content tools are used.
+      if (cpi->common.allow_screen_content_tools) break;
       const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
       const RATE_FACTOR_LEVEL rf_level = gf_group->rf_level[gf_group->index];
       const double rate_factor_delta = rate_factor_deltas[rf_level];
@@ -4380,6 +4422,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   cpi->source->buf_8bit_valid = 0;
 
   aom_clear_system_state();
+
   setup_frame_size(cpi);
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
 
