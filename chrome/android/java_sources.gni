@@ -268,6 +268,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/scene_layer/ToolbarSceneLayer.java",
   "java/src/org/chromium/chrome/browser/consent_auditor/ConsentAuditorBridge.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactDetails.java",
+  "java/src/org/chromium/chrome/browser/contacts_picker/ContactsFetcherWorkerTask.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactsPickerDialog.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactsPickerToolbar.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/ContactView.java",
