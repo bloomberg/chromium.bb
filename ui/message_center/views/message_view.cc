@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -241,6 +242,15 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
+void MessageView::PaintChildren(const views::PaintInfo& paint_info) {
+  views::View::PaintChildren(paint_info);
+
+  // Paint focus ring on top of all the children.
+  ui::PaintRecorder recorder(paint_info.context(), size());
+  views::Painter::PaintFocusPainter(this, recorder.canvas(),
+                                    focus_painter_.get());
+}
+
 void MessageView::OnPaint(gfx::Canvas* canvas) {
   if (ShouldShowAeroShadowBorder()) {
     // If the border is shadow, paint border first.
@@ -249,7 +259,6 @@ void MessageView::OnPaint(gfx::Canvas* canvas) {
   } else {
     views::View::OnPaint(canvas);
   }
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void MessageView::OnFocus() {
