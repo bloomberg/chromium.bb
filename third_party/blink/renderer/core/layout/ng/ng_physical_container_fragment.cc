@@ -118,6 +118,20 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,
                                   descendant_line_box->Size().ToLayoutSize());
+    } else if (descendant_line_box->Children().IsEmpty()) {
+      // Special-case for when the first continuation does not generate
+      // fragments. NGInlineLayoutAlgorithm suppresses box fragments when the
+      // line is "empty". When there is a continuation from the LayoutInline,
+      // the suppression makes such continuation not reachable. Check the
+      // continuation from LayoutInline in such case.
+      DCHECK(GetLayoutObject());
+      if (LayoutInline* first_layout_inline =
+              ToLayoutInlineOrNull(GetLayoutObject()->SlowFirstChild())) {
+        if (!first_layout_inline->IsElementContinuation()) {
+          first_layout_inline->AddOutlineRectsForChildrenAndContinuations(
+              *outline_rects, additional_offset, outline_type);
+        }
+      }
     }
   }
 }
