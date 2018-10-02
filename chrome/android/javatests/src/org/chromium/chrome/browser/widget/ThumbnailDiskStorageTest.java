@@ -64,6 +64,11 @@ public class ThumbnailDiskStorageTest {
         }
 
         @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
         public String getContentId() {
             return mContentId;
         }

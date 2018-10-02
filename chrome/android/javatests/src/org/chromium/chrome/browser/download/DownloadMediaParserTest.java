@@ -63,7 +63,7 @@ public class DownloadMediaParserTest {
         // The native DownloadMediaParser needs to be created on UI thread.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadMediaParserBridge parser = new DownloadMediaParserBridge(
-                    mimeType, filePath, mediaFile.length(), (DownloadMediaData mediaData) -> {
+                    mimeType, filePath, (DownloadMediaData mediaData) -> {
                         result.mediaData = mediaData;
                         result.done = true;
                     });

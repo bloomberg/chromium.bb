@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task_runner_util.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/download/local_media_data_source_factory.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
@@ -38,19 +40,23 @@ bool IsSupportedMediaMimeType(const std::string& mime_type) {
 void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
                           const media::ProvideOverlayInfoCB& overlay_info_cb) {
   // No android overlay associated with video thumbnail.
-  overlay_info_cb.Run(media::OverlayInfo());
+  if (overlay_info_cb)
+    overlay_info_cb.Run(media::OverlayInfo());
+}
+
+int64_t GetFileSize(const base::FilePath& file_path) {
+  int64_t size = 0;
+  if (!base::GetFileSize(file_path, &size))
+    return -1;
+  return size;
 }
 
 }  // namespace
 
-DownloadMediaParser::DownloadMediaParser(int64_t size,
-                                         const std::string& mime_type,
-                                         const base::FilePath& file_path,
-                                         ParseCompleteCB parse_complete_cb)
-    : size_(size),
-      mime_type_(mime_type),
+DownloadMediaParser::DownloadMediaParser(const std::string& mime_type,
+                                         const base::FilePath& file_path)
+    : mime_type_(mime_type),
       file_path_(file_path),
-      parse_complete_cb_(std::move(parse_complete_cb)),
       file_task_runner_(
           base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})),
       decode_done_(false),
@@ -58,13 +64,30 @@ DownloadMediaParser::DownloadMediaParser(int64_t size,
 
 DownloadMediaParser::~DownloadMediaParser() = default;
 
-void DownloadMediaParser::Start() {
+void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
+  parse_complete_cb_ = std::move(parse_complete_cb);
+
   // Only process media mime types.
   if (!IsSupportedMediaMimeType(mime_type_)) {
     OnError();
     return;
   }
 
+  // Get the size of the file if needed.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&GetFileSize, file_path_),
+      base::BindOnce(&DownloadMediaParser::OnReadFileSize,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void DownloadMediaParser::OnReadFileSize(int64_t file_size) {
+  if (file_size < 0) {
+    OnError();
+    return;
+  }
+
+  size_ = file_size;
   RetrieveMediaParser(
       content::ServiceManagerConnection::GetForProcess()->GetConnector());
 }
@@ -188,6 +211,7 @@ void DownloadMediaParser::DecodeVideoFrame() {
 
   decoder_->Start(base::BindOnce(&DownloadMediaParser::OnVideoFrameDecoded,
                                  weak_factory_.GetWeakPtr()));
+  video_frame_data_.reset();
 }
 
 void DownloadMediaParser::OnVideoFrameDecoded(

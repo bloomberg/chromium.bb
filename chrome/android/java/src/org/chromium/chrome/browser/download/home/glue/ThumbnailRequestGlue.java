@@ -7,14 +7,17 @@ package org.chromium.chrome.browser.download.home.glue;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 /**
  * Glue class responsible for connecting the current downloads and {@link OfflineContentProvider}
- * thumbnail work to the {@link ThumbnailProvider} via a custon {@link ThumbnailProviderImpl}.
+ * thumbnail work to the {@link ThumbnailProvider} via a custom {@link ThumbnailProviderImpl}.
  */
 public class ThumbnailRequestGlue implements ThumbnailRequest {
     private final OfflineContentProviderGlue mProvider;
@@ -37,6 +40,11 @@ public class ThumbnailRequestGlue implements ThumbnailRequest {
     @Override
     public String getFilePath() {
         return mItem.filePath;
+    }
+
+    @Override
+    public String getMimeType() {
+        return mItem.mimeType;
     }
 
     @Override
