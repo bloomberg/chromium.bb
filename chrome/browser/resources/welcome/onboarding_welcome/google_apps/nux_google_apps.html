@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://welcome/apps/apps_chooser.html">
 <link rel="import" href="chrome://welcome/apps/nux_google_apps_proxy.html">
@@ -21,33 +22,33 @@
         margin-left: auto;
         margin-right: auto;
         margin-top: 116px;
-        max-width: 568px;
+        width: fit-content;
       }
 
       .chrome-logo {
         content: -webkit-image-set(
-            url('chrome://welcome/logo.png') 1x,
-            url('chrome://welcome/logo2x.png') 2x);
+            url(chrome://welcome/logo.png) 1x,
+            url(chrome://welcome/logo2x.png) 2x);
         height: 40px;
         margin-bottom: 36px;
         width: 40px;
       }
 
       h1 {
-        color: #202124;
+        color: var(--cr-primary-text-color);
         font-size: 28px;
-        opacity: .8;
         margin-bottom: 16px;
+        opacity: .8;
       }
 
       .description {
-        color: #5f6368;
+        color: var(--cr-secondary-text-color);
         font-size: 16px;
         margin-bottom: 24px;
       }
 
       apps-chooser {
-        color: #202124;
+        color: var(--cr-primary-text-color);
         font-size: 14px;
         margin-bottom: 48px;
       }

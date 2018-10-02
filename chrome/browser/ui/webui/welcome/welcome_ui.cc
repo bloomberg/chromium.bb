@@ -144,6 +144,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(hcarmona): Move this behind nux::kNuxOnboardingFeature when email and
+  // apps experiments end.
+  html_source->AddResourcePath("shared/chooser_shared_css.html",
+                               IDR_NUX_CHOOSER_SHARED_CSS);
+
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
     nux::SetAsDefaultHandler::AddSources(html_source);

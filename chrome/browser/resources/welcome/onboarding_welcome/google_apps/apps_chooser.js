@@ -53,8 +53,8 @@ Polymer({
             selected: true,
           },
           {
-            name: 'Chrome Web Store',
-            icon: 'chrome_store',
+            name: 'Web Store',
+            icon: 'chrome-store',
             selected: true,
           },
         ];
@@ -84,6 +84,22 @@ Polymer({
   onAppClick_: function(e) {
     e.model.set('item.selected', !e.model.item.selected);
     this.hasAppsSelected = this.computeHasAppsSelected_();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAppPointerDown_: function(e) {
+    e.currentTarget.classList.remove('keyboard-focused');
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAppKeyUp_: function(e) {
+    e.currentTarget.classList.add('keyboard-focused');
   },
 
   /**
