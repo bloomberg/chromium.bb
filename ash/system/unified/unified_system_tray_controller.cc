@@ -229,6 +229,8 @@ void UnifiedSystemTrayController::Fling(int velocity) {
 void UnifiedSystemTrayController::ShowUserChooserView() {
   if (!IsUserChooserEnabled())
     return;
+  animation_->Reset(1.0);
+  UpdateExpandedAmount();
   unified_view_->SetDetailedView(new UserChooserView(this));
 }
 
