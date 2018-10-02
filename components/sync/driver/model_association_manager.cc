@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
@@ -127,7 +126,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
   notified_about_ready_for_configure_ = false;
 
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
-  std::map<DataTypeController*, ShutdownReason> types_to_stop;
+  std::map<DataTypeController*, SyncStopMetadataFate> types_to_stop;
   for (const auto& type_and_dtc : *controllers_) {
     DataTypeController* dtc = type_and_dtc.second.get();
     // We stop a datatype if it's not desired. Independently of being desired,
@@ -136,9 +135,9 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
     if ((dtc->state() != DataTypeController::NOT_RUNNING &&
          !desired_types_.Has(dtc->type())) ||
         dtc->state() == DataTypeController::STOPPING) {
-      const ShutdownReason reason =
-          preferred_types.Has(dtc->type()) ? STOP_SYNC : DISABLE_SYNC;
-      types_to_stop[dtc] = reason;
+      const SyncStopMetadataFate metadata_fate =
+          preferred_types.Has(dtc->type()) ? KEEP_METADATA : CLEAR_METADATA;
+      types_to_stop[dtc] = metadata_fate;
     }
   }
 
@@ -150,18 +149,18 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
       base::BindOnce(&ModelAssociationManager::LoadEnabledTypes,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  for (const auto& dtc_and_reason : types_to_stop) {
-    DataTypeController* dtc = dtc_and_reason.first;
-    const ShutdownReason reason = dtc_and_reason.second;
-    DVLOG(1) << "ModelAssociationManager: stop " << dtc->name() << " due to "
-             << ShutdownReasonToString(reason);
-    StopDatatype(SyncError(), reason, dtc, barrier_closure);
+  for (const auto& dtc_and_metadata_fate : types_to_stop) {
+    DataTypeController* dtc = dtc_and_metadata_fate.first;
+    const SyncStopMetadataFate metadata_fate = dtc_and_metadata_fate.second;
+    DVLOG(1) << "ModelAssociationManager: stop " << dtc->name() << " with "
+             << SyncStopMetadataFateToString(metadata_fate);
+    StopDatatype(SyncError(), metadata_fate, dtc, barrier_closure);
   }
 }
 
 void ModelAssociationManager::StopDatatype(
     const SyncError& error,
-    ShutdownReason shutdown_reason,
+    SyncStopMetadataFate metadata_fate,
     DataTypeController* dtc,
     DataTypeController::StopCallback callback) {
   loaded_types_.Remove(dtc->type());
@@ -171,25 +170,6 @@ void ModelAssociationManager::StopDatatype(
   DCHECK(error.IsSet() || (dtc->state() != DataTypeController::NOT_RUNNING));
 
   delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
-
-  // Leave metadata if we do not disable sync completely.
-  SyncStopMetadataFate metadata_fate = KEEP_METADATA;
-  switch (shutdown_reason) {
-    case STOP_SYNC:
-      // Special case: For AUTOFILL_WALLET_DATA, we want to clear all data even
-      // when Sync is stopped temporarily.
-      // TODO(crbug.com/890361): Consider moving this decision into the
-      // individual controller
-      if (dtc->type() == AUTOFILL_WALLET_DATA) {
-        metadata_fate = CLEAR_METADATA;
-      }
-      break;
-    case DISABLE_SYNC:
-      metadata_fate = CLEAR_METADATA;
-      break;
-    case BROWSER_SHUTDOWN:
-      break;
-  }
   dtc->Stop(metadata_fate, std::move(callback));
 }
 
@@ -274,7 +254,7 @@ void ModelAssociationManager::StartAssociationAsync(
   }
 }
 
-void ModelAssociationManager::Stop(ShutdownReason shutdown_reason) {
+void ModelAssociationManager::Stop(SyncStopMetadataFate metadata_fate) {
   // Ignore callbacks from controllers.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -285,7 +265,7 @@ void ModelAssociationManager::Stop(ShutdownReason shutdown_reason) {
         dtc->state() != DataTypeController::STOPPING) {
       // We don't really wait until all datatypes have been fully stopped, which
       // is only required (and in fact waited for) when Initialize() is called.
-      StopDatatype(SyncError(), shutdown_reason, dtc, base::DoNothing());
+      StopDatatype(SyncError(), metadata_fate, dtc, base::DoNothing());
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
@@ -355,7 +335,8 @@ void ModelAssociationManager::TypeStartCallback(
     DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
     desired_types_.Remove(type);
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    StopDatatype(local_merge_result.error(), STOP_SYNC, dtc, base::DoNothing());
+    StopDatatype(local_merge_result.error(), KEEP_METADATA, dtc,
+                 base::DoNothing());
     NotifyDelegateIfReadyForConfigure();
 
     // Update configuration result.
@@ -429,7 +410,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
                                 static_cast<int>(MODEL_TYPE_COUNT));
       StopDatatype(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                              "Association timed out.", dtc->type()),
-                   STOP_SYNC, dtc, base::DoNothing());
+                   KEEP_METADATA, dtc, base::DoNothing());
     }
   }
 
