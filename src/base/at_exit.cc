@@ -99,6 +99,11 @@ void AtExitManager::DisableAllAtExitManagers() {
   AutoLock lock(g_top_manager->lock_);
   g_disable_managers = true;
 }
+// static
+bool AtExitManager::IsInitialized()
+{
+  return NULL != g_top_manager;
+}
 
 AtExitManager::AtExitManager(bool shadow)
     : processing_callbacks_(false), next_manager_(g_top_manager) {
