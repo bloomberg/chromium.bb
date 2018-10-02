@@ -95,9 +95,9 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     public void registerUiOperationCallbackForTesting(
-            int actionType, Runnable resultCallback, int quiescenceTimeoutMs) {
+            int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
         getVrShell().registerUiOperationCallbackForTesting(
-                actionType, resultCallback, quiescenceTimeoutMs);
+                actionType, resultCallback, timeoutMs, elementName);
     }
 
     public void saveNextFrameBufferToDiskForTesting(String filepathBase) {

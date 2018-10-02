@@ -78,7 +78,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ForceExitVr() override;
   void ReportUiOperationResultForTesting(
       const UiTestOperationType& action_type,
-      const VrUiTestActivityResult& result) override;
+      const UiTestOperationResult& result) override;
 
   // PlatformInputHandler
   void ForwardEventToPlatformUi(std::unique_ptr<InputEvent> event) override;

@@ -52,6 +52,7 @@ class MockUi : public UiInterface {
   MOCK_METHOD2(GetTargetPointForTesting,
                gfx::Point3F(UserFriendlyElementName,
                             const gfx::PointF& position));
+  MOCK_METHOD1(GetElementVisibilityForTesting, bool(UserFriendlyElementName));
   MOCK_METHOD0(IsContentVisibleAndOpaque, bool());
   MOCK_METHOD1(SetContentUsesQuadLayer, void(bool));
   gfx::Transform GetContentWorldSpaceTransform() override { return {}; }

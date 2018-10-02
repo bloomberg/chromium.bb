@@ -67,6 +67,8 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOverflowMenuNewIncognitoTabItem;
     case UserFriendlyElementName::kCloseIncognitoTabs:
       return kOverflowMenuCloseAllIncognitoTabsItem;
+    case UserFriendlyElementName::kExitPrompt:
+      return kExitPrompt;
     default:
       NOTREACHED();
       return kNone;
@@ -545,6 +547,13 @@ void Ui::SetOverlayTextureEmpty(bool empty) {
 
 void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
   InitializeModel(ui_initial_state);
+}
+
+bool Ui::GetElementVisibilityForTesting(UserFriendlyElementName element_name) {
+  auto* target_element = scene()->GetUiElementByName(
+      UserFriendlyElementNameToUiElementName(element_name));
+  DCHECK(target_element) << "Unsupported test element";
+  return target_element->IsVisible();
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {

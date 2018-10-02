@@ -74,6 +74,8 @@ class VR_UI_EXPORT Ui : public UiInterface,
   ContentInputDelegate* GetContentInputDelegateForTest() {
     return content_input_delegate_.get();
   }
+  bool GetElementVisibilityForTesting(
+      UserFriendlyElementName element_name) override;
 
   void Dump(bool include_bindings);
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.

@@ -256,6 +256,19 @@ void BrowserRenderer::SaveNextFrameBufferToDiskForTesting(
   frame_buffer_dump_filepath_base_ = filepath_base;
 }
 
+void BrowserRenderer::WatchElementForVisibilityChangeForTesting(
+    VisibilityChangeExpectation visibility_expectation) {
+  DCHECK(ui_visibility_state_ == nullptr) << "Attempted to watch a UI element "
+                                             "for visibility changes with one "
+                                             "in progress";
+  ui_visibility_state_ = std::make_unique<UiVisibilityState>();
+  ui_visibility_state_->timeout_ms =
+      base::TimeDelta::FromMilliseconds(visibility_expectation.timeout_ms);
+  ui_visibility_state_->element_to_watch = visibility_expectation.element_name;
+  ui_visibility_state_->initially_visible = ui_->GetElementVisibilityForTesting(
+      ui_visibility_state_->element_to_watch);
+}
+
 void BrowserRenderer::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
@@ -283,6 +296,7 @@ void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
     ui_updated = true;
   }
   ReportUiStatusForTesting(timing_start, ui_updated);
+  ReportElementVisibilityStatusForTesting(timing_start);
 
   base::TimeDelta scene_time = base::TimeTicks::Now() - timing_start;
   // Don't double-count the controller time that was part of the scene time.
@@ -374,16 +388,16 @@ void BrowserRenderer::ReportUiStatusForTesting(
     if (time_since_start > ui_test_state_->quiescence_timeout_ms) {
       // The UI is being updated, but hasn't reached a stable state in the
       // given time -> report timeout.
-      ReportUiActivityResultForTesting(VrUiTestActivityResult::kTimeoutNoEnd);
+      ReportUiActivityResultForTesting(UiTestOperationResult::kTimeoutNoEnd);
     }
   } else {
     if (ui_test_state_->activity_started) {
       // The UI has been updated since the test requested notification of
       // quiescence, but wasn't this frame -> report that the UI is quiescent.
-      ReportUiActivityResultForTesting(VrUiTestActivityResult::kQuiescent);
+      ReportUiActivityResultForTesting(UiTestOperationResult::kQuiescent);
     } else if (time_since_start > ui_test_state_->quiescence_timeout_ms) {
       // The UI has never been updated and we've reached the timeout.
-      ReportUiActivityResultForTesting(VrUiTestActivityResult::kTimeoutNoStart);
+      ReportUiActivityResultForTesting(UiTestOperationResult::kTimeoutNoStart);
     }
   }
 }
@@ -393,7 +407,7 @@ base::WeakPtr<BrowserRenderer> BrowserRenderer::GetWeakPtr() {
 }
 
 void BrowserRenderer::ReportUiActivityResultForTesting(
-    VrUiTestActivityResult result) {
+    UiTestOperationResult result) {
   ui_test_state_ = nullptr;
   browser_->ReportUiOperationResultForTesting(
       UiTestOperationType::kUiActivityResult, result);
@@ -406,7 +420,31 @@ void BrowserRenderer::ReportFrameBufferDumpForTesting() {
   frame_buffer_dump_filepath_base_.clear();
   browser_->ReportUiOperationResultForTesting(
       UiTestOperationType::kFrameBufferDumped,
-      VrUiTestActivityResult::kQuiescent /* unused */);
+      UiTestOperationResult::kQuiescent /* unused */);
+}
+
+void BrowserRenderer::ReportElementVisibilityStatusForTesting(
+    const base::TimeTicks& current_time) {
+  if (ui_visibility_state_ == nullptr)
+    return;
+  base::TimeDelta time_since_start =
+      current_time - ui_visibility_state_->start_time;
+  if (ui_->GetElementVisibilityForTesting(
+          ui_visibility_state_->element_to_watch) !=
+      ui_visibility_state_->initially_visible) {
+    ReportElementVisibilityResultForTesting(
+        UiTestOperationResult::kVisibilityChange);
+  } else if (time_since_start > ui_visibility_state_->timeout_ms) {
+    ReportElementVisibilityResultForTesting(
+        UiTestOperationResult::kTimeoutNoChange);
+  }
+}
+
+void BrowserRenderer::ReportElementVisibilityResultForTesting(
+    UiTestOperationResult result) {
+  ui_visibility_state_ = nullptr;
+  browser_->ReportUiOperationResultForTesting(
+      UiTestOperationType::kElementVisibilityChange, result);
 }
 
 }  // namespace vr

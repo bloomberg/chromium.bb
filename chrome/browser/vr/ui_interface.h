@@ -79,6 +79,8 @@ class UiInterface {
   virtual gfx::Point3F GetTargetPointForTesting(
       UserFriendlyElementName element_name,
       const gfx::PointF& position) = 0;
+  virtual bool GetElementVisibilityForTesting(
+      UserFriendlyElementName element_name) = 0;
   virtual bool IsContentVisibleAndOpaque() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;
   virtual gfx::Transform GetContentWorldSpaceTransform() = 0;
