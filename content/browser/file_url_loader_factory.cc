@@ -560,8 +560,6 @@ class FileURLLoader : public network::mojom::URLLoader {
     size_t first_byte_to_send = 0;
     size_t total_bytes_to_send = static_cast<size_t>(info.size);
 
-    total_bytes_written_ = static_cast<size_t>(info.size);
-
     if (byte_range.IsValid()) {
       first_byte_to_send =
           static_cast<size_t>(byte_range.first_byte_position());
@@ -569,6 +567,8 @@ class FileURLLoader : public network::mojom::URLLoader {
           static_cast<size_t>(byte_range.last_byte_position()) -
           first_byte_to_send + 1;
     }
+
+    total_bytes_written_ = static_cast<size_t>(total_bytes_to_send);
 
     head.content_length = base::saturated_cast<int64_t>(total_bytes_to_send);
 
@@ -677,7 +677,9 @@ class FileURLLoader : public network::mojom::URLLoader {
   network::mojom::URLLoaderClientPtr client_;
   std::unique_ptr<RedirectData> redirect_data_;
 
-  // In case of successful loads, this holds the total of bytes written.
+  // In case of successful loads, this holds the total number of bytes written
+  // to the response (this may be smaller than the total size of the file when
+  // a byte range was requested).
   // It is used to set some of the URLLoaderCompletionStatus data passed back
   // to the URLLoaderClients (eg SimpleURLLoader).
   size_t total_bytes_written_ = 0;
