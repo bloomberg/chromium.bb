@@ -898,6 +898,7 @@ if (!is_component_build) {
       "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
       "test/src/org/chromium/net/NativeTestServer.java",
       "test/src/org/chromium/net/QuicTestServer.java",
+      "test/src/org/chromium/net/ReportingCollector.java",
       "test/src/org/chromium/net/TestFilesInstaller.java",
       "test/src/org/chromium/net/TestUploadDataStreamHandler.java",
     ]
@@ -1000,6 +1001,7 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/GetStatusTest.java",
       "test/javatests/src/org/chromium/net/MetricsTestUtil.java",
       "test/javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
+      "test/javatests/src/org/chromium/net/NetworkErrorLoggingTest.java",
       "test/javatests/src/org/chromium/net/NQETest.java",
       "test/javatests/src/org/chromium/net/PkpTest.java",
       "test/javatests/src/org/chromium/net/QuicTest.java",
