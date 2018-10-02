@@ -2679,21 +2679,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                       selectText:(BOOL)selectText
                      shouldFocus:(BOOL)shouldFocus {
   DCHECK(_findBarController);
-  CGRect referenceFrame = CGRectZero;
-  if ([self canShowTabStrip]) {
-    DCHECK(_model.currentTab);
-    referenceFrame = [self visibleFrameForTab:_model.currentTab];
-  } else {
-    referenceFrame = self.contentArea.frame;
-  }
-
-  CGRect omniboxFrame =
-      [NamedGuide guideWithName:kOmniboxGuide view:self.view].layoutFrame;
   [_findBarController
       addFindBarViewToParentView:self.view
                 usingToolbarView:_primaryToolbarCoordinator.viewController.view
-                  alignWithFrame:omniboxFrame
-                           frame:referenceFrame
                       selectText:selectText
                         animated:animate];
   [self updateFindBar:YES shouldFocus:shouldFocus];
