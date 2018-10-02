@@ -21,14 +21,9 @@
 namespace syncer {
 namespace {
 
-void ReportError(ModelType model_type,
-                 scoped_refptr<base::SequencedTaskRunner> ui_thread,
+void ReportError(scoped_refptr<base::SequencedTaskRunner> ui_thread,
                  const ModelErrorHandler& error_handler,
                  const ModelError& error) {
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(model_type),
-                            static_cast<int>(MODEL_TYPE_COUNT));
   ui_thread->PostTask(error.location(), base::BindOnce(error_handler, error));
 }
 
@@ -90,7 +85,7 @@ void ModelTypeController::LoadModels(
 
   DataTypeActivationRequest request;
   request.error_handler = base::BindRepeating(
-      &ReportError, type(), base::SequencedTaskRunnerHandle::Get(),
+      &ReportError, base::SequencedTaskRunnerHandle::Get(),
       base::BindRepeating(&ModelTypeController::ReportModelError,
                           base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
   request.authenticated_account_id = configure_context.authenticated_account_id;
@@ -291,6 +286,11 @@ void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
 void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
                                            const ModelError& error) {
   DCHECK(CalledOnValidThread());
+
+  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            static_cast<int>(MODEL_TYPE_COUNT));
 
   // Error could arrive too late, e.g. after the datatype has been stopped.
   // This is allowed for the delegate's convenience, so there's no constraints

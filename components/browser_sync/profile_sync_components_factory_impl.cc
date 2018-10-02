@@ -21,6 +21,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
+#include "components/history/core/browser/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_data_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -239,9 +240,17 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
     // Delete directive sync is enabled by default.
     if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
-      controllers.push_back(
-          std::make_unique<HistoryDeleteDirectivesDataTypeController>(
-              error_callback, sync_client_));
+      if (base::FeatureList::IsEnabled(
+              switches::kSyncPseudoUSSHistoryDeleteDirectives)) {
+        controllers.push_back(
+            std::make_unique<HistoryDeleteDirectivesModelTypeController>(
+                sync_client_));
+
+      } else {
+        controllers.push_back(
+            std::make_unique<HistoryDeleteDirectivesDataTypeController>(
+                error_callback, sync_client_));
+      }
     }
 
     // Session sync is enabled by default.  This is disabled if history is
