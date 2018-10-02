@@ -41,6 +41,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:gravity="center_vertical"
-        app:chrometint="@null" />
+        app:tint="@null" />
 
 </LinearLayout>
