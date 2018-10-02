@@ -478,7 +478,11 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
       PartitionExcessiveAllocationSize();
     }
     new_page = PartitionDirectMap(root, flags, size);
+#if !defined(OS_MACOSX)
+    // TODO(https://crbug.com/890752): Remove this when we figure out and fix
+    // whatever is breaking on macOS.
     *is_already_zeroed = true;
+#endif
   } else if (LIKELY(this->SetNewActivePage())) {
     // First, did we find an active page in the active pages list?
     new_page = this->active_pages_head;
@@ -510,7 +514,11 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
       void* addr = PartitionPage::ToPointer(new_page);
       root->RecommitSystemPages(addr, new_page->bucket->get_bytes_per_span());
       new_page->Reset();
+#if !defined(OS_MACOSX)
+      // TODO(https://crbug.com/890752): Remove this when we figure out and fix
+      // whatever is breaking on macOS.
       *is_already_zeroed = true;
+#endif
     }
     DCHECK(new_page);
   } else {
@@ -520,7 +528,11 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
     if (LIKELY(raw_pages != nullptr)) {
       new_page = PartitionPage::FromPointerNoAlignmentCheck(raw_pages);
       InitializeSlotSpan(new_page);
+#if !defined(OS_MACOSX)
+      // TODO(https://crbug.com/890752): Remove this when we figure out and fix
+      // whatever is breaking on macOS.
       *is_already_zeroed = true;
+#endif
     }
   }
 
