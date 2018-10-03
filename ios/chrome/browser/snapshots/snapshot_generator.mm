@@ -95,7 +95,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @interface SnapshotGenerator ()<CRWWebStateObserver>
 
-// Returns the bounds of the snapshot. Will return an empty rectangle if the
+// Returns the frame of the snapshot. Will return an empty rectangle if the
 // WebState is not ready to capture a snapshot.
 - (CGRect)snapshotFrameVisibleFrameOnly:(BOOL)visibleFrameOnly;
 
@@ -219,8 +219,13 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_webState);
-  CGRect frame = [self snapshotFrameVisibleFrameOnly:YES];
-  if (CGRectIsEmpty(frame)) {
+  CGRect snapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
+  // WebState's |TakeSnapshot()| accepts a |rect| in the web view's coordinate
+  // space, but |-snapshotFrameVisibleFrameOnly:| returns a frame in the BVC's
+  // coordinate space.
+  CGRect webViewSnapshotFrame =
+      CGRectMake(0, 0, snapshotFrame.size.width, snapshotFrame.size.height);
+  if (CGRectIsEmpty(webViewSnapshotFrame)) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                base::BindOnce(^{
@@ -229,11 +234,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     }
     return;
   }
-  DCHECK(std::isnormal(frame.size.width) && (frame.size.width > 0))
-      << ": frame.size.width=" << frame.size.width;
-  DCHECK(std::isnormal(frame.size.height) && (frame.size.height > 0))
-      << ": frame.size.height=" << frame.size.height;
-
+  CGSize size = webViewSnapshotFrame.size;
+  DCHECK(std::isnormal(size.width) && (size.width > 0))
+      << ": webViewSnapshotFrame.size.width=" << size.width;
+  DCHECK(std::isnormal(size.height) && (size.height > 0))
+      << ": webViewSnapshotFrame.size.height=" << size.height;
   NSArray<SnapshotOverlay*>* overlays =
       [_delegate snapshotOverlaysForWebState:_webState];
   UIImage* snapshot =
@@ -252,7 +257,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   [_delegate willUpdateSnapshotForWebState:_webState];
   __weak SnapshotGenerator* weakSelf = self;
   _webState->TakeSnapshot(
-      frame, base::BindOnce(^(gfx::Image image) {
+      webViewSnapshotFrame, base::BindOnce(^(gfx::Image image) {
         SnapshotGenerator* strongSelf = weakSelf;
         if (!strongSelf)
           return;
@@ -260,7 +265,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
         if (overlays.count > 0) {
           snapshot = [strongSelf snapshotWithOverlays:overlays
                                              snapshot:snapshot
-                                                frame:frame];
+                                                frame:snapshotFrame];
         }
         [strongSelf.snapshotCache setImage:snapshot
                              withSessionID:_snapshotSessionId];
