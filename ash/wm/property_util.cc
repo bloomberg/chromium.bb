@@ -57,12 +57,6 @@ bool ShouldRemoveStandardFrame(const InitProperties& properties) {
   return iter != properties.end() && mojo::ConvertTo<bool>(iter->second);
 }
 
-bool ShouldEnableImmersive(const InitProperties& properties) {
-  auto iter =
-      properties.find(ws::mojom::WindowManager::kDisableImmersive_InitProperty);
-  return iter == properties.end() || !mojo::ConvertTo<bool>(iter->second);
-}
-
 void ApplyProperties(
     aura::Window* window,
     aura::PropertyConverter* property_converter,

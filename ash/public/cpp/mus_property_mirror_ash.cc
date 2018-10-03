@@ -85,13 +85,6 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kFrameInactiveColorKey) {
     root_window->SetProperty(kFrameInactiveColorKey,
                              window->GetProperty(kFrameInactiveColorKey));
-  } else if (key == kFrameIsThemedByHostedAppKey) {
-    root_window->SetProperty(kFrameIsThemedByHostedAppKey,
-                             window->GetProperty(kFrameIsThemedByHostedAppKey));
-  } else if (key == kHideCaptionButtonsInTabletModeKey) {
-    root_window->SetProperty(
-        kHideCaptionButtonsInTabletModeKey,
-        window->GetProperty(kHideCaptionButtonsInTabletModeKey));
   } else if (key == kImmersiveImpliedByFullscreen) {
     root_window->SetProperty(
         kImmersiveImpliedByFullscreen,

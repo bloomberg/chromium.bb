@@ -247,11 +247,6 @@ class BrowserNonClientFrameViewAsh
   // Owned by views hierarchy.
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
-  // A view that contains the extra views used for hosted apps
-  // (|hosted_app_button_container_| and |hosted_app_origin_text_|).
-  // Only used in Mash.
-  views::View* hosted_app_extras_container_ = nullptr;
-
   // Ash's mojom::SplitViewController.
   ash::mojom::SplitViewControllerPtr split_view_controller_;
 

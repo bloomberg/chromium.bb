@@ -186,17 +186,6 @@ void BrowserNonClientFrameViewAsh::Init() {
       static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
                                          : ash::AppType::BROWSER));
 
-  // In tablet mode, to prevent accidental taps of the window controls, and to
-  // give more horizontal space for tabs and the new tab button especially in
-  // splitscreen view, we hide the window controls. We only do this when the
-  // Home Launcher feature is enabled, since it gives the user the ability to
-  // minimize all windows when pressing the Launcher button on the shelf.
-  window->SetProperty(
-      ash::kHideCaptionButtonsInTabletModeKey,
-      (browser->is_app() || !app_list_features::IsHomeLauncherEnabled())
-          ? false
-          : true);
-
   window_observer_.Add(GetFrameWindow());
 
   // To preserve privacy, tag incognito windows so that they won't be included
@@ -452,8 +441,6 @@ void BrowserNonClientFrameViewAsh::OnThemeChanged() {
 
 void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
     views::View* child) {
-  // This is required even when Ash provides the header (as in Mash) for the
-  // |hosted_app_button_container_|.
   if (browser_view()->initialized()) {
     InvalidateLayout();
     frame()->GetRootView()->Layout();
@@ -744,9 +731,15 @@ void BrowserNonClientFrameViewAsh::OnProfileAvatarChanged(
 // BrowserNonClientFrameViewAsh, private:
 
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
-  if (frame()->GetNativeWindow()->GetProperty(
-          ash::kHideCaptionButtonsInTabletModeKey) &&
-      TabletModeClient::Get() &&
+  // In tablet mode, to prevent accidental taps of the window controls, and to
+  // give more horizontal space for tabs and the new tab button especially in
+  // splitscreen view, we hide the window controls. We only do this when the
+  // Home Launcher feature is enabled, since it gives the user the ability to
+  // minimize all windows when pressing the Launcher button on the shelf.
+  const bool hide_caption_buttons_in_tablet_mode =
+      !browser_view()->browser()->is_app() &&
+      app_list_features::IsHomeLauncherEnabled();
+  if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
       TabletModeClient::Get()->tablet_mode_enabled()) {
     return false;
   }
@@ -823,11 +816,8 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
   base::Optional<SkColor> theme_color =
       browser->hosted_app_controller()->GetThemeColor();
   if (theme_color) {
-    frame()->GetNativeWindow()->SetProperty(
-        ash::kFrameIsThemedByHostedAppKey,
-        !!browser->hosted_app_controller()->GetThemeColor());
+    header->set_button_color_mode(ash::FrameCaptionButton::ColorMode::kThemed);
     header->SetFrameColors(*theme_color, *theme_color);
-
     active_color = ash::FrameCaptionButton::GetButtonColor(
         ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
@@ -852,7 +842,9 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
                  IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
-    window->SetProperty(ash::kFrameIsThemedByHostedAppKey, !!active_color);
+    frame_header_->set_button_color_mode(
+        active_color ? ash::FrameCaptionButton::ColorMode::kThemed
+                     : ash::FrameCaptionButton::ColorMode::kDefault);
   } else if (!browser_view()->browser()->is_app()) {
     active_color = kMdWebUiFrameColor;
   }

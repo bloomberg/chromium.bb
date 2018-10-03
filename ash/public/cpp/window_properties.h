@@ -68,11 +68,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
-// A property to control the visibility of the frame captions buttons when in
-// tablet mode (when not in tablet mode, this property is ignored).
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kHideCaptionButtonsInTabletModeKey;
-
 // A property key to indicate whether we should hide this window in overview
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -171,11 +166,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
 // A property key to store the inactive color on the window frame.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
     kFrameInactiveColorKey;
-
-// True when the frame colors were provided by a hosted app, i.e. by a
-// progressive web app manifest.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kFrameIsThemedByHostedAppKey;
 
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager

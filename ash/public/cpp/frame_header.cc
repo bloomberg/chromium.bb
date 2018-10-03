@@ -164,7 +164,7 @@ void FrameHeader::SetLeftHeaderView(views::View* left_header_view) {
 void FrameHeader::SetBackButton(FrameCaptionButton* back_button) {
   back_button_ = back_button;
   if (back_button_) {
-    back_button_->SetColorMode(GetButtonColorMode());
+    back_button_->SetColorMode(button_color_mode_);
     back_button_->SetBackgroundColor(GetCurrentFrameColor());
     back_button_->SetImage(CAPTION_BUTTON_ICON_BACK,
                            FrameCaptionButton::ANIMATE_NO,
@@ -208,12 +208,10 @@ gfx::Rect FrameHeader::GetPaintedBounds() const {
 }
 
 void FrameHeader::UpdateCaptionButtonColors() {
-  auto button_color_mode = GetButtonColorMode();
-
-  caption_button_container_->SetColorMode(button_color_mode);
+  caption_button_container_->SetColorMode(button_color_mode_);
   caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
   if (back_button_) {
-    back_button_->SetColorMode(button_color_mode);
+    back_button_->SetColorMode(button_color_mode_);
     back_button_->SetBackgroundColor(GetCurrentFrameColor());
   }
 }
@@ -301,13 +299,6 @@ gfx::Rect FrameHeader::GetTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
   return GetAvailableTitleBounds(left_view, caption_button_container_,
                                  GetHeaderHeight());
-}
-
-FrameCaptionButton::ColorMode FrameHeader::GetButtonColorMode() {
-  return target_widget()->GetNativeWindow()->GetProperty(
-             ash::kFrameIsThemedByHostedAppKey)
-             ? FrameCaptionButton::ColorMode::kThemed
-             : FrameCaptionButton::ColorMode::kDefault;
 }
 
 }  // namespace ash

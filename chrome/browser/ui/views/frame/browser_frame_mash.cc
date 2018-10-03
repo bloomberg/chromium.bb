@@ -58,9 +58,9 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   params.delegate = browser_view_;
   std::map<std::string, std::vector<uint8_t>> properties =
       views::MusClient::ConfigurePropertiesFromParams(params);
-  // Indicates mash shouldn't handle immersive, rather we will.
-  properties[ws::mojom::WindowManager::kDisableImmersive_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(true);
+
+  // The client will draw the frame.
+  params.remove_standard_frame = true;
 
   // ChromeLauncherController manages the browser shortcut shelf item; set the
   // window's shelf item type property to be ignored by ash::ShelfWindowWatcher.

@@ -55,8 +55,6 @@ bool GetWindowPreferredSize(const InitProperties& properties, gfx::Size* size);
 
 bool ShouldRemoveStandardFrame(const InitProperties& properties);
 
-bool ShouldEnableImmersive(const InitProperties& properties);
-
 // Applies |properties| to |window| using |property_converter|.
 void ApplyProperties(
     aura::Window* window,

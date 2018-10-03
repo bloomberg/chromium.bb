@@ -60,15 +60,8 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       ws::mojom::WindowManager::kFrameActiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      kHideCaptionButtonsInTabletModeKey,
-      mojom::kHideCaptionButtonsInTabletMode_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
       ws::mojom::WindowManager::kFrameInactiveColor_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
-      kFrameIsThemedByHostedAppKey, mojom::kFrameIsThemedByHostedApp_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
@@ -157,7 +150,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideCaptionButtonsInTabletModeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveImpliedByFullscreen, true);
@@ -196,7 +188,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
                              kDefaultFrameColor);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kFrameIsThemedByHostedAppKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);

@@ -81,15 +81,13 @@ class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
 class WmNativeWidgetAura : public views::NativeWidgetAura {
  public:
   WmNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate,
-                     bool remove_standard_frame,
-                     bool should_ash_control_immersive)
+                     bool remove_standard_frame)
       // The NativeWidget is mirroring the real Widget created in client code.
       // |is_parallel_widget_in_window_manager| is used to indicate this
       : views::NativeWidgetAura(delegate,
                                 true /* is_parallel_widget_in_window_manager */,
                                 Shell::Get()->aura_env()),
-        remove_standard_frame_(remove_standard_frame),
-        should_ash_control_immersive_(should_ash_control_immersive) {}
+        remove_standard_frame_(remove_standard_frame) {}
   ~WmNativeWidgetAura() override = default;
 
   void set_cursor(const ui::Cursor& cursor) { cursor_ = cursor; }
@@ -98,12 +96,8 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   views::NonClientFrameView* CreateNonClientFrameView() override {
     // TODO(sky): investigate why we have this. Seems this should be the same
     // as not specifying client area insets.
-    if (remove_standard_frame_)
-      return new EmptyDraggableNonClientFrameView();
-    aura::Window* window = GetNativeView();
-
-    if (!should_ash_control_immersive_) {
-      wm::InstallResizeHandleWindowTargeterForWindow(window);
+    if (remove_standard_frame_) {
+      wm::InstallResizeHandleWindowTargeterForWindow(GetNativeWindow());
       return new EmptyDraggableNonClientFrameView();
     }
 
@@ -129,7 +123,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
  private:
   const bool remove_standard_frame_;
-  const bool should_ash_control_immersive_;
 
   // The cursor for this widget. CompoundEventFilter will retrieve this cursor
   // via GetCursor and update the CursorManager's active cursor as appropriate
@@ -225,8 +218,7 @@ NonClientFrameController::NonClientFrameController(
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.layer_type = ui::LAYER_SOLID_COLOR;
   WmNativeWidgetAura* native_widget =
-      new WmNativeWidgetAura(widget_, ShouldRemoveStandardFrame(*properties),
-                             ShouldEnableImmersive(*properties));
+      new WmNativeWidgetAura(widget_, ShouldRemoveStandardFrame(*properties));
   window_ = native_widget->GetNativeView();
   window_->SetProperty(kNonClientFrameControllerKey, this);
   window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);

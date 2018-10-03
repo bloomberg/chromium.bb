@@ -97,8 +97,10 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
 
   bool ShouldUseExtendedBounds(const aura::Window* target) const override {
     // Fullscreen/maximized windows can't be drag-resized.
-    if (GetWindowState(window())->IsMaximizedOrFullscreenOrPinned())
+    if (GetWindowState(window())->IsMaximizedOrFullscreenOrPinned() ||
+        !wm::GetWindowState(target)->CanResize()) {
       return false;
+    }
 
     // The shrunken hit region only applies to children of |window()|.
     return target->parent() == window();
