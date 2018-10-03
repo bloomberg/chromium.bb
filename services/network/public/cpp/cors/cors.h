@@ -132,11 +132,14 @@ std::vector<std::string> CORSUnsafeRequestHeaderNames(
 // https://fetch.spec.whatwg.org/#cors-unsafe-request-header-names
 // Returns header names which are not CORS-safelisted AND not forbidden.
 // |headers| must not contain multiple headers for the same name.
+// When |is_revalidating| is true, "if-modified-since", "if-none-match", and
+// "cache-control" are also exempted.
 // The returned list is NOT sorted.
 // The returned list consists of lower-cased names.
 COMPONENT_EXPORT(NETWORK_CPP)
 std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
-    const net::HttpRequestHeaders::HeaderVector& headers);
+    const net::HttpRequestHeaders::HeaderVector& headers,
+    bool is_revalidating);
 
 // Checks forbidden method in the fetch spec.
 // See https://fetch.spec.whatwg.org/#forbidden-method.

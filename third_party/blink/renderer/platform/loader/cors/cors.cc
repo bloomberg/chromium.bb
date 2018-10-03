@@ -168,8 +168,10 @@ base::Optional<network::CORSErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
   if (status)
     return status;
 
+  // |is_revalidating| is not needed for blink-side CORS.
+  constexpr bool is_revalidating = false;
   status = result->EnsureAllowedCrossOriginHeaders(
-      *CreateNetHttpRequestHeaders(request_header_map));
+      *CreateNetHttpRequestHeaders(request_header_map), is_revalidating);
   if (status)
     return status;
 
@@ -187,10 +189,12 @@ bool CheckIfRequestCanSkipPreflight(
   DCHECK(!origin.IsNull());
   DCHECK(!method.IsNull());
 
+  // |is_revalidating| is not needed for blink-side CORS.
+  constexpr bool is_revalidating = false;
   return GetPerThreadPreflightCache().CheckIfRequestCanSkipPreflight(
       std::string(origin.Ascii().data()), url, credentials_mode,
       std::string(method.Ascii().data()),
-      *CreateNetHttpRequestHeaders(request_header_map));
+      *CreateNetHttpRequestHeaders(request_header_map), is_revalidating);
 }
 
 network::mojom::FetchResponseType CalculateResponseTainting(
@@ -275,7 +279,11 @@ bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
     in.push_back(net::HttpRequestHeaders::HeaderKeyValuePair(
         WebString(entry.key).Latin1(), WebString(entry.value).Latin1()));
   }
-  return network::cors::CORSUnsafeNotForbiddenRequestHeaderNames(in).empty();
+  // |is_revalidating| is not needed for blink-side CORS.
+  constexpr bool is_revalidating = false;
+  return network::cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+             in, is_revalidating)
+      .empty();
 }
 
 bool IsOkStatus(int status) {

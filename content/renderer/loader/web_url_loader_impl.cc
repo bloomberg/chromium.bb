@@ -644,6 +644,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->url = url_;
   resource_request->site_for_cookies = request.SiteForCookies();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
+  resource_request->is_revalidating = request.IsRevalidating();
   if (!request.RequestorOrigin().IsNull()) {
     if (request.RequestorOrigin().ToString() == "null") {
       // "file:" origin is treated like an opaque unique origin when

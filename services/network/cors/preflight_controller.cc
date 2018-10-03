@@ -40,12 +40,14 @@ base::Optional<std::string> GetHeaderString(
 //  - sorted lexicographically
 //  - byte-lowercased
 std::string CreateAccessControlRequestHeadersHeader(
-    const net::HttpRequestHeaders& headers) {
+    const net::HttpRequestHeaders& headers,
+    bool is_revalidating) {
   // Exclude the forbidden headers because they may be added by the user
   // agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
   std::vector<std::string> filtered_headers =
-      CORSUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector());
+      CORSUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector(),
+                                               is_revalidating);
   if (filtered_headers.empty())
     return std::string();
 
@@ -83,8 +85,8 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);
 
-  std::string request_headers =
-      CreateAccessControlRequestHeadersHeader(request.headers);
+  std::string request_headers = CreateAccessControlRequestHeadersHeader(
+      request.headers, request.is_revalidating);
   if (!request_headers.empty()) {
     preflight_request->headers.SetHeader(
         header_names::kAccessControlRequestHeaders, request_headers);
@@ -164,7 +166,8 @@ base::Optional<CORSErrorStatus> CheckPreflightResult(
   if (status)
     return status;
 
-  return result->EnsureAllowedCrossOriginHeaders(original_request.headers);
+  return result->EnsureAllowedCrossOriginHeaders(
+      original_request.headers, original_request.is_revalidating);
 }
 
 // TODO(toyoshim): Remove this class once the Network Service is enabled.
@@ -378,7 +381,8 @@ void PreflightController::PerformPreflightCheck(
   if (!request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator->Serialize(), request.url,
-          request.fetch_credentials_mode, request.method, request.headers)) {
+          request.fetch_credentials_mode, request.method, request.headers,
+          request.is_revalidating)) {
     std::move(callback).Run(net::OK, base::nullopt);
     return;
   }
