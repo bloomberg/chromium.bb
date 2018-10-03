@@ -33,6 +33,7 @@ const OzonePlatform::PlatformProperties kScenicPlatformProperties(
     /*needs_view_owner_request=*/true,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
+    /*requires_mojo=*/false,
     std::vector<gfx::BufferFormat>());
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {

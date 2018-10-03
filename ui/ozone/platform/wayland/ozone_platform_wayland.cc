@@ -52,6 +52,10 @@ class OzonePlatformWayland : public OzonePlatform {
     // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
     properties_.custom_frame_pref_default = true;
     properties_.use_system_title_bar = false;
+    // Ozone/Wayland relies on the mojo communication when running in
+    // !single_process.
+    // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
+    properties_.requires_mojo = true;
   }
   ~OzonePlatformWayland() override {}
 
@@ -124,17 +128,8 @@ class OzonePlatformWayland : public OzonePlatform {
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
 #if defined(WAYLAND_GBM)
-    if (!args.single_process) {
-      if (!features::IsOzoneDrmMojo()) {
-        // Override kEnableOzoneDrmMojo to the enabled state, because
-        // Ozone/Wayland relies on the mojo communication when running in
-        // !single_process.
-        // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
-        base::FeatureList::GetInstance()->InitializeFromCommandLine(
-            features::kEnableOzoneDrmMojo.name, std::string());
-      }
+    if (!args.single_process)
       connector_.reset(new WaylandConnectionConnector(connection_.get()));
-    }
 #endif
 
     cursor_factory_.reset(new BitmapCursorFactoryOzone);
@@ -169,8 +164,7 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   const PlatformProperties& GetPlatformProperties() override {
-    DCHECK(connection_.get());
-    if (properties_.supported_buffer_formats.empty()) {
+    if (connection_ && properties_.supported_buffer_formats.empty()) {
       properties_.supported_buffer_formats =
           connection_->GetSupportedBufferFormats();
     }

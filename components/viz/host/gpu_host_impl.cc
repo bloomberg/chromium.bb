@@ -293,7 +293,13 @@ void GpuHostImpl::InitOzone() {
   // https://crbug.com/608839
   // If the OzonePlatform is not created yet, defer the callback until
   // OzonePlatform instance is created.
-  if (features::IsOzoneDrmMojo()) {
+  //
+  // The Ozone/Wayland requires mojo communication to be established to be
+  // functional with a separate gpu process. Thus, using the PlatformProperties,
+  // check if there is such a requirement.
+  if (features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
+                                        ->GetPlatformProperties()
+                                        .requires_mojo) {
     // TODO(rjkroege): Remove the legacy IPC code paths when no longer
     // necessary. https://crbug.com/806092
     auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
