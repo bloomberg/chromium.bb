@@ -35,10 +35,14 @@
         cursor: default;
         height: 100%;
       }
+
+      :host #title {
+        justify-content: flex-start;
+        padding-top: 9px;
+      }
     </style>
-    <print-preview-settings-section
-        class="input-settings-section multirow-controls">
-      <span slot="title">$i18n{pagesLabel}</span>
+    <print-preview-settings-section>
+      <span id="title" slot="title">$i18n{pagesLabel}</span>
       <div slot="controls" id="controls">
         <paper-radio-group selectable="cr-radio-button" class="radio"
             disabled$="[[controlsDisabled_]]"

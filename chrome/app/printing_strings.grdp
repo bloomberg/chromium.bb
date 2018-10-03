@@ -80,7 +80,7 @@
       Scale
     </message>
     <message name="IDS_PRINT_PREVIEW_PAGES_PER_SHEET_LABEL" desc="Pages per sheet option label.">
-      Pages Per Sheet
+      Pages per sheet
     </message>
     <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
       e.g. 1-5, 8, 11-13

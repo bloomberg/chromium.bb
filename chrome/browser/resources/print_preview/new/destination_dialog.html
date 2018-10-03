@@ -74,16 +74,20 @@
         flex-direction: column;
       }
 
-      /* Height = 3 * destination item (28px) + 10px padding + 1 line text */
+      /* Height = 3 * destination item + 10px padding + 1 line text */
+      #recentList,
+      #printList {
+        min-height:
+            calc(3 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
+      }
+
       #recentList {
         flex: 0;
-        min-height: calc(94px + 20 / 13 * 1rem);
         padding-bottom: 18px;
       }
 
       #printList {
         flex: 1;
-        min-height: calc(94px + 20 / 13 * 1rem);
         padding-bottom: 0;
       }
 
