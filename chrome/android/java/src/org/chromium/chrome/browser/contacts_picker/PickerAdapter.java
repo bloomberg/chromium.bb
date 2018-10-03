@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 
@@ -36,6 +37,9 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
     // A list of search result indices into the larger data set.
     private ArrayList<Integer> mSearchResults;
 
+    // A list of contacts to use for testing (instead of querying Android).
+    private static ArrayList<ContactDetails> sTestContacts;
+
     /**
      * The PickerAdapter constructor.
      * @param categoryView The category view to use to show the contacts.
@@ -45,8 +49,13 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
         mCategoryView = categoryView;
         mContentResolver = contentResolver;
 
-        mWorkerTask = new ContactsFetcherWorkerTask(mContentResolver, this);
-        mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (getAllContacts() == null && sTestContacts == null) {
+            mWorkerTask = new ContactsFetcherWorkerTask(mContentResolver, this);
+            mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            mContactDetails = sTestContacts;
+            notifyDataSetChanged();
+        }
     }
 
     /**
@@ -82,7 +91,7 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
         return mContactDetails;
     }
 
-    // ContactFetcherWorkerTask.ContactsRetrievedCallback:
+    // ContactsFetcherWorkerTask.ContactsRetrievedCallback:
 
     @Override
     public void contactsRetrieved(ArrayList<ContactDetails> contacts) {
@@ -122,5 +131,11 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
         if (mSearchResults != null) return mSearchResults.size();
         if (mContactDetails == null) return 0;
         return mContactDetails.size();
+    }
+
+    /** Sets a list of contacts to use as data for the dialog. For testing use only. */
+    @VisibleForTesting
+    public static void setTestContacts(ArrayList<ContactDetails> contacts) {
+        sTestContacts = contacts;
     }
 }

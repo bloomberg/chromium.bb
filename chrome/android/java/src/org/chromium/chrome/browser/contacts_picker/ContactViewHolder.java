@@ -8,6 +8,7 @@ import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 
 /**
@@ -30,6 +31,9 @@ public class ContactViewHolder
     // A worker task for asynchronously retrieving icons off the main thread.
     private FetchIconWorkerTask mWorkerTask;
 
+    // The icon to use when testing.
+    private static Bitmap sIconForTest;
+
     /**
      * The PickerBitmapViewHolder.
      * @param itemView The {@link ContactView} for the contact.
@@ -51,6 +55,11 @@ public class ContactViewHolder
      */
     public void setContactDetails(ContactDetails contact) {
         mContact = contact;
+
+        if (sIconForTest != null) {
+            mItemView.initialize(contact, sIconForTest);
+            return;
+        }
 
         Bitmap icon = mCategoryView.getIconCache().getBitmap(mContact.getId());
         if (icon == null) {
@@ -80,5 +89,11 @@ public class ContactViewHolder
         }
 
         mItemView.setIconBitmap(icon);
+    }
+
+    /** Sets the icon to use when testing. */
+    @VisibleForTesting
+    public static void setIconForTesting(Bitmap icon) {
+        sIconForTest = icon;
     }
 }

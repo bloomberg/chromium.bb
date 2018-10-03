@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -339,5 +340,10 @@ public class PickerCategoryView
         mListener.onContactsPickerUserAction(action, contacts);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
+    }
+
+    @VisibleForTesting
+    public SelectionDelegate<ContactDetails> getSelectionDelegateForTesting() {
+        return mSelectionDelegate;
     }
 }
