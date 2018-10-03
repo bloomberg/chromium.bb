@@ -312,14 +312,6 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   // ---------------------------------------------------------------------------
   // Helper functions.
 
-  // Helper function for getting the expected title given the |developer_title|.
-  std::string GetExpectedTitle(const char* developer_title) {
-    url::Origin origin = url::Origin::Create(https_server_->base_url());
-
-    return base::StringPrintf("%s (%s)", developer_title,
-                              origin.Serialize().c_str());
-  }
-
   // Runs the |script| in the current tab and writes the output to |*result|.
   bool RunScript(const std::string& script, std::string* result) {
     return content::ExecuteScriptAndExtractString(
@@ -503,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   const OfflineItem& offline_item = items[0];
 
   // Verify that the appropriate data is being set.
-  EXPECT_EQ(offline_item.title, GetExpectedTitle(kSingleFileDownloadTitle));
+  EXPECT_EQ(offline_item.title, kSingleFileDownloadTitle);
   EXPECT_EQ(offline_item.filter, OfflineItemFilter::FILTER_OTHER);
   EXPECT_TRUE(offline_item.is_transient);
   EXPECT_TRUE(offline_item.is_resumable);

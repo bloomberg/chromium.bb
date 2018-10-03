@@ -126,7 +126,7 @@ public class DownloadBroadcastManager extends Service {
         switch (action) {
             case ACTION_DOWNLOAD_PAUSE:
                 mDownloadNotificationService.notifyDownloadPaused(entry.id, entry.fileName, true,
-                        false, entry.isOffTheRecord, entry.isTransient, null, true, false,
+                        false, entry.isOffTheRecord, entry.isTransient, null, null, true, false,
                         PendingState.NOT_PENDING);
                 break;
 
@@ -148,7 +148,7 @@ public class DownloadBroadcastManager extends Service {
 
                 mDownloadNotificationService.notifyDownloadPending(entry.id, entry.fileName,
                         entry.isOffTheRecord, entry.canDownloadWhileMetered, entry.isTransient,
-                        null, true, PendingState.PENDING_NETWORK);
+                        null, null, true, PendingState.PENDING_NETWORK);
                 break;
 
             default:

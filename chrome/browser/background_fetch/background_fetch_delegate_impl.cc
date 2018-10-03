@@ -78,6 +78,7 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
   offline_item.is_off_the_record = is_off_the_record;
+  offline_item.original_url = this->fetch_description->origin.GetURL();
   UpdateOfflineItem();
 }
 
@@ -103,15 +104,7 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   offline_item.progress.unit =
       offline_items_collection::OfflineItemProgressUnit::PERCENTAGE;
 
-  if (fetch_description->title.empty()) {
-    offline_item.title = fetch_description->origin.Serialize();
-  } else {
-    // TODO(crbug.com/774612): Make sure that the origin is displayed completely
-    // in all cases so that long titles cannot obscure it.
-    offline_item.title =
-        base::StringPrintf("%s (%s)", fetch_description->title.c_str(),
-                           fetch_description->origin.Serialize().c_str());
-  }
+  offline_item.title = fetch_description->title;
 
   offline_item.is_transient = true;
   offline_item.is_resumable = true;
