@@ -131,6 +131,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& initiator_origin,
       int render_process_id,
       content::ResourceType resource_type) override;
+  network::mojom::URLLoaderFactoryPtrInfo
+  CreateURLLoaderFactoryForNetworkRequests(
+      content::RenderProcessHost* process,
+      network::mojom::NetworkContext* network_context,
+      const url::Origin& request_initiator) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(

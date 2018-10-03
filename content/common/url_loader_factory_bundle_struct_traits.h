@@ -28,6 +28,9 @@ struct StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
   static content::URLLoaderFactoryBundleInfo::SchemeMap
   scheme_specific_factories(BundleInfoType& bundle);
 
+  static content::URLLoaderFactoryBundleInfo::OriginMap
+  initiator_specific_factories(BundleInfoType& bundle);
+
   static bool bypass_redirect_checks(BundleInfoType& bundle);
 
   static bool Read(content::mojom::URLLoaderFactoryBundleDataView data,

@@ -700,10 +700,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                  base::Unretained(this)));
 
   // Figure out if we need to sniff (for MIME type detection or for CORB).
-  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_ &&
-      (factory_params_->corb_excluded_initiator_scheme.empty() ||
-       factory_params_->corb_excluded_initiator_scheme !=
-           url_request->initiator().value_or(url::Origin()).scheme())) {
+  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
 

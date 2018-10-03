@@ -7,6 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/pickle.h"
@@ -47,10 +50,9 @@ enum {
 // static
 const char UserScript::kFileExtension[] = ".user.js";
 
-
 // static
 int UserScript::GenerateUserScriptID() {
-   return g_user_script_id_generator.GetNext();
+  return g_user_script_id_generator.GetNext();
 }
 
 bool UserScript::IsURLUserScript(const GURL& url,
@@ -166,6 +168,14 @@ bool UserScript::MatchesURL(const GURL& url) const {
   }
 
   return true;
+}
+
+bool UserScript::MatchesDocument(const GURL& effective_document_url,
+                                 bool is_subframe) const {
+  if (is_subframe && !match_all_frames())
+    return false;
+
+  return MatchesURL(effective_document_url);
 }
 
 void UserScript::File::Pickle(base::Pickle* pickle) const {

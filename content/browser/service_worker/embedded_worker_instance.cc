@@ -83,10 +83,11 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
 
 std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     RenderProcessHost* rph,
+    const url::Origin& origin,
     bool use_non_network_factories) {
   auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  rph->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory_info));
+  rph->CreateURLLoaderFactory(origin, mojo::MakeRequest(&default_factory_info));
   factory_bundle->default_factory_info() = std::move(default_factory_info);
 
   if (use_non_network_factories) {
@@ -217,10 +218,11 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     // importScripts a non-http(s) URL.
     bool use_non_network_factories = !params->script_url.SchemeIsHTTPOrHTTPS();
 
+    url::Origin origin = url::Origin::Create(params->script_url);
     factory_bundle_for_browser =
-        CreateFactoryBundle(rph, use_non_network_factories);
+        CreateFactoryBundle(rph, origin, use_non_network_factories);
     factory_bundle_for_renderer =
-        CreateFactoryBundle(rph, use_non_network_factories);
+        CreateFactoryBundle(rph, origin, use_non_network_factories);
   }
 
   // Register to DevTools and update params accordingly.

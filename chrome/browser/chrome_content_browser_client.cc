@@ -1494,6 +1494,20 @@ void ChromeContentBrowserClient::LogInitiatorSchemeBypassingDocumentBlocking(
 #endif
 }
 
+network::mojom::URLLoaderFactoryPtrInfo
+ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+    content::RenderProcessHost* process,
+    network::mojom::NetworkContext* network_context,
+    const url::Origin& request_initiator) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientExtensionsPart::
+      CreateURLLoaderFactoryForNetworkRequests(process, network_context,
+                                               request_initiator);
+#else
+  return network::mojom::URLLoaderFactoryPtrInfo();
+#endif
+}
+
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
 // view-source is allowed for these schemes.
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(

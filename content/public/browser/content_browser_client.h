@@ -323,6 +323,28 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       ResourceType resource_type);
 
+  // Called to create a URLLoaderFactory for network requests in the following
+  // cases:
+  // - The default factory to be used by a frame.  In this case
+  //   |request_initiator| is the origin being committed in the frame (or the
+  //   last origin committed in the frame).
+  // - The initiator-specific factory to be used by a frame.  This happens for
+  //   origins covered via
+  //   RenderFrameHost::MarkInitiatorAsRequiringSeparateURLLoaderFactory.
+  //
+  // This method allows the //content embedder to provide a URLLoaderFactory
+  // with |request_initiator|-specific properties (e.g. with relaxed
+  // Cross-Origin Read Blocking enforcement as needed by some extensions).
+  //
+  // If the embedder doesn't want to override the URLLoaderFactory for the given
+  // |request_initiator|, then it should return an invalid
+  // mojo::InterfacePtrInfo.
+  virtual network::mojom::URLLoaderFactoryPtrInfo
+  CreateURLLoaderFactoryForNetworkRequests(
+      RenderProcessHost* process,
+      network::mojom::NetworkContext* network_context,
+      const url::Origin& request_initiator);
+
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource

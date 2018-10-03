@@ -59,13 +59,6 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   params->is_corb_enabled = true;
   params->corb_detachable_resource_type = RESOURCE_TYPE_PREFETCH;
   params->corb_excluded_resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
-
-  const char* initiator_scheme_exception =
-      GetContentClient()
-          ->browser()
-          ->GetInitiatorSchemeBypassingDocumentBlocking();
-  if (initiator_scheme_exception)
-    params->corb_excluded_initiator_scheme = initiator_scheme_exception;
 }
 
 // static

@@ -94,6 +94,19 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   network::mojom::URLLoaderClientPtr client_sink_;
 };
 
+template <typename TKey>
+static std::map<TKey, network::mojom::URLLoaderFactoryPtrInfo>
+PassInterfacePtrMapToPtrInfoMap(
+    std::map<TKey, network::mojom::URLLoaderFactoryPtr> input) {
+  std::map<TKey, network::mojom::URLLoaderFactoryPtrInfo> output;
+  for (auto& it : input) {
+    const TKey& key = it.first;
+    network::mojom::URLLoaderFactoryPtr& factory = it.second;
+    output.emplace(key, factory.PassInterface());
+  }
+  return output;
+}
+
 }  // namespace
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo() = default;
@@ -103,15 +116,18 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     : URLLoaderFactoryBundleInfo(
           std::move(base_info->default_factory_info()),
           std::move(base_info->scheme_specific_factory_infos()),
+          std::move(base_info->initiator_specific_factory_infos()),
           base_info->bypass_redirect_checks()) {}
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
     SchemeMap scheme_specific_factory_infos,
+    OriginMap initiator_specific_factory_infos,
     PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
     bool bypass_redirect_checks)
     : URLLoaderFactoryBundleInfo(std::move(default_factory_info),
                                  std::move(scheme_specific_factory_infos),
+                                 std::move(initiator_specific_factory_infos),
                                  bypass_redirect_checks),
       direct_network_factory_info_(std::move(direct_network_factory_info)) {}
 
@@ -123,6 +139,8 @@ ChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->default_factory_info_ = std::move(default_factory_info_);
   other->scheme_specific_factory_infos_ =
       std::move(scheme_specific_factory_infos_);
+  other->initiator_specific_factory_infos_ =
+      std::move(initiator_specific_factory_infos_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
@@ -145,10 +163,10 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
 
 ChildURLLoaderFactoryBundle::~ChildURLLoaderFactoryBundle() = default;
 
-network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactoryForURL(
-    const GURL& url) {
+network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
+    const network::ResourceRequest& request) {
   network::mojom::URLLoaderFactory* base_result =
-      URLLoaderFactoryBundle::GetFactoryForURL(url);
+      URLLoaderFactoryBundle::GetFactory(request);
   if (base_result)
     return base_result;
 
@@ -238,14 +256,6 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_default) {
   if (include_default && default_factory_)
     default_factory_->Clone(mojo::MakeRequest(&default_factory_info));
 
-  URLLoaderFactoryBundleInfo::SchemeMap scheme_specific_factory_infos;
-  for (auto& factory : scheme_specific_factories_) {
-    network::mojom::URLLoaderFactoryPtrInfo factory_info;
-    factory.second->Clone(mojo::MakeRequest(&factory_info));
-    scheme_specific_factory_infos.emplace(factory.first,
-                                          std::move(factory_info));
-  }
-
   network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
   if (direct_network_factory_) {
     direct_network_factory_->Clone(
@@ -256,7 +266,9 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_default) {
   // therefore |subresource_overrides| are not shared with the clones.
 
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-      std::move(default_factory_info), std::move(scheme_specific_factory_infos),
+      std::move(default_factory_info),
+      ClonePtrMapToPtrInfoMap(scheme_specific_factories_),
+      ClonePtrMapToPtrInfoMap(initiator_specific_factories_),
       std::move(direct_network_factory_info), bypass_redirect_checks_);
 }
 
@@ -268,12 +280,6 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   if (default_factory_)
     default_factory_info = default_factory_.PassInterface();
 
-  URLLoaderFactoryBundleInfo::SchemeMap scheme_specific_factory_infos;
-  for (auto& factory : scheme_specific_factories_) {
-    scheme_specific_factory_infos.emplace(factory.first,
-                                          factory.second.PassInterface());
-  }
-
   PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
       direct_network_factory_info;
   if (direct_network_factory_) {
@@ -281,7 +287,9 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   }
 
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-      std::move(default_factory_info), std::move(scheme_specific_factory_infos),
+      std::move(default_factory_info),
+      PassInterfacePtrMapToPtrInfoMap(std::move(scheme_specific_factories_)),
+      PassInterfacePtrMapToPtrInfoMap(std::move(initiator_specific_factories_)),
       std::move(direct_network_factory_info), bypass_redirect_checks_);
 }
 

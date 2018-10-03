@@ -2236,10 +2236,18 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Using an opaque origin here should be safe - the URLLoaderFactory created
+    // for such origin shouldn't have any special privileges.
+    //
+    // TODO(lukasza): https://crbug.com/871827: Use the actual origin that will
+    // be used as |request_initiator|.  The origin should come from the browser
+    // process.
+    const url::Origin kSafeOrigin = url::Origin();
+
     AddUIThreadInterface(
         registry.get(),
         base::Bind(&RenderProcessHostImpl::CreateURLLoaderFactory,
-                   base::Unretained(this)));
+                   base::Unretained(this), kSafeOrigin));
   }
 
   registry->AddInterface(
@@ -2516,6 +2524,7 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
+    const url::Origin& origin,
     network::mojom::URLLoaderFactoryRequest request) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::PostTaskWithTraits(
@@ -2524,15 +2533,26 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
                        std::move(request)));
     return;
   }
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = id_;
-  params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
-  SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
-  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(request), std::move(params));
+
+  network::mojom::NetworkContext* network_context =
+      storage_partition_impl_->GetNetworkContext();
+  network::mojom::URLLoaderFactoryPtrInfo embedder_provided_factory =
+      GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
+          this, network_context, origin);
+  if (embedder_provided_factory) {
+    mojo::FuseInterface(std::move(request),
+                        std::move(embedder_provided_factory));
+  } else {
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = GetID();
+    params->disable_web_security =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableWebSecurity);
+    SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
+    network_context->CreateURLLoaderFactory(std::move(request),
+                                            std::move(params));
+  }
 }
 
 void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {
