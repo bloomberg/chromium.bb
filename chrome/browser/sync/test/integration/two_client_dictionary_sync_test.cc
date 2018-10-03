@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -122,9 +123,15 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest,
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
+// Crash-flaky on win7 (dbg) and win-asan: http://crbug.com/889505
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_Limit DISABLED_Limit
+#else
+#define MAYBE_Limit Limit
+#endif
 // Tests the case where a client has more words added than the
 // kMaxSyncableDictionaryWords limit.
-IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, Limit) {
+IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, MAYBE_Limit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
