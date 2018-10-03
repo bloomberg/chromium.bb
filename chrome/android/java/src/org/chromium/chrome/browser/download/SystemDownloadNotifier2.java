@@ -233,13 +233,14 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                         info.getFileName(), info.getProgress(), info.getBytesReceived(),
                         info.getTimeRemainingInMillis(), notificationInfo.mStartTime,
                         info.isOffTheRecord(), notificationInfo.mCanDownloadWhileMetered,
-                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl());
+                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl(),
+                        info.getShouldPromoteOrigin());
                 break;
             case NotificationType.PAUSED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),
                         info.getFileName(), true, false, info.isOffTheRecord(),
-                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl(), false, false,
-                        info.getPendingState());
+                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl(),
+                        info.getShouldPromoteOrigin(), false, false, info.getPendingState());
                 break;
             case NotificationType.SUCCEEDED:
                 final int notificationId =
@@ -247,7 +248,8 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                                 info.getContentId(), info.getFilePath(), info.getFileName(),
                                 notificationInfo.mSystemDownloadId, info.isOffTheRecord(),
                                 notificationInfo.mIsSupportedMimeType, info.getIsOpenable(),
-                                info.getIcon(), info.getOriginalUrl(), info.getReferrer(),
+                                info.getIcon(), info.getOriginalUrl(),
+                                info.getShouldPromoteOrigin(), info.getReferrer(),
                                 info.getBytesTotalSize());
 
                 if (info.getIsOpenable()) {
@@ -259,13 +261,14 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
             case NotificationType.FAILED:
                 getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
                         info.getFileName(), info.getIcon(), info.getOriginalUrl(),
-                        info.isOffTheRecord(), info.getFailState());
+                        info.getShouldPromoteOrigin(), info.isOffTheRecord(), info.getFailState());
                 break;
             case NotificationType.INTERRUPTED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),
                         info.getFileName(), info.isResumable(), notificationInfo.mIsAutoResumable,
                         info.isOffTheRecord(), info.getIsTransient(), info.getIcon(),
-                        info.getOriginalUrl(), false, false, notificationInfo.mPendingState);
+                        info.getOriginalUrl(), info.getShouldPromoteOrigin(), false, false,
+                        notificationInfo.mPendingState);
                 break;
         }
     }

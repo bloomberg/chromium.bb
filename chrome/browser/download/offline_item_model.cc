@@ -241,8 +241,7 @@ GURL OfflineItemModel::GetOriginalURL() const {
 }
 
 bool OfflineItemModel::ShouldPromoteOrigin() const {
-  // TODO(crbug.com/774612): Add a field in OfflineItem to make this decision.
-  return true;
+  return offline_item_ && offline_item_->promote_origin;
 }
 
 #if !defined(OS_ANDROID)
