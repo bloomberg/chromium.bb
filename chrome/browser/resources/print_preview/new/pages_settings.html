@@ -18,11 +18,13 @@
         --paper-radio-group-item-padding: 0;
       }
 
-      :host([error-state_='0']) #pageSettingsCustomInput {
+      :host([error-state_='0']) #pageSettingsCustomInput,
+      :host([error-state_='3']) #pageSettingsCustomInput {
         --cr-input-error-display: none;
       }
 
-      :host(:not([error-state_='0'])) #customRadioButton {
+      :host([error-state_='1']) #customRadioButton,
+      :host([error-state_='2']) #customRadioButton {
         /* Margin = -1 * error height = -1 * (16px + 2 lines * line-height) */
         --cr-radio-button-disc: {
           margin-top: calc(-16px - 2 * .75rem);

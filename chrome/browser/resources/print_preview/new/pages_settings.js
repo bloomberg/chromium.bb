@@ -10,6 +10,7 @@ const PagesInputErrorState = {
   NO_ERROR: 0,
   INVALID_SYNTAX: 1,
   OUT_OF_BOUNDS: 2,
+  EMPTY: 3,
 };
 
 /** @enum {string} */
@@ -152,9 +153,13 @@ Polymer({
    * @private
    */
   computePagesToPrint_: function() {
-    if (this.optionSelected_ === PagesValue.ALL || this.inputString_ === '') {
+    if (this.optionSelected_ === PagesValue.ALL) {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
+    } else if (this.inputString_ === '') {
+      if (this.errorState_ !== PagesInputErrorState.NO_ERROR)
+        this.errorState_ = PagesInputErrorState.EMPTY;
+      return this.pagesToPrint_;
     }
 
     const pages = [];
@@ -283,11 +288,18 @@ Polymer({
     if (this.settings === undefined || this.pagesToPrint_ === undefined)
       return;
 
-    if (this.errorState_ != PagesInputErrorState.NO_ERROR) {
+    if (this.errorState_ === PagesInputErrorState.EMPTY) {
+      this.setSettingValid('pages', false);
+      this.$.pageSettingsCustomInput.invalid = false;
+      return;
+    }
+
+    if (this.errorState_ !== PagesInputErrorState.NO_ERROR) {
       this.setSettingValid('pages', false);
       this.$.pageSettingsCustomInput.invalid = true;
       return;
     }
+
     this.$.pageSettingsCustomInput.invalid = false;
     this.setSettingValid('pages', true);
     const nupPages = this.getNupPages_();
@@ -312,8 +324,14 @@ Polymer({
 
   /** @private */
   resetIfEmpty_: function() {
-    if (this.inputString_ === '')
-      this.optionSelected_ = PagesValue.ALL;
+    if (this.inputString_ !== '')
+      return;
+
+    this.optionSelected_ = PagesValue.ALL;
+
+    // Manually set tab index to -1, so that this is not identified as the
+    // target for the radio group if the user navigates back.
+    this.$.customRadioButton.tabIndex = -1;
   },
 
   /**
@@ -337,9 +355,10 @@ Polymer({
    * @private
    */
   onCustomRadioBlur_: function(event) {
-    if (event.relatedTarget !=
-        /** @type {!CrInputElement} */
-        (this.$.pageSettingsCustomInput).inputElement) {
+    if (event.relatedTarget != this.$.pageSettingsCustomInput &&
+        event.relatedTarget !=
+            /** @type {!CrInputElement} */
+            (this.$.pageSettingsCustomInput).inputElement) {
       this.resetIfEmpty_();
     }
   },
@@ -353,10 +372,6 @@ Polymer({
 
     if (event.relatedTarget != this.$.customRadioButton) {
       this.resetIfEmpty_();
-
-      // Manually set tab index to -1, so that this is not identified as the
-      // target for the radio group if the user navigates back.
-      this.$.customRadioButton.tabIndex = -1;
     }
   },
 
@@ -390,8 +405,10 @@ Polymer({
    * @private
    */
   getHintMessage_: function() {
-    if (this.errorState_ == PagesInputErrorState.NO_ERROR)
+    if (this.errorState_ == PagesInputErrorState.NO_ERROR ||
+        this.errorState_ == PagesInputErrorState.EMPTY) {
       return '';
+    }
 
     let formattedMessage = '';
     if (this.errorState_ == PagesInputErrorState.INVALID_SYNTAX) {
@@ -413,7 +430,8 @@ Polymer({
    * @private
    */
   hintHidden_: function() {
-    return this.errorState_ == PagesInputErrorState.NO_ERROR;
+    return this.errorState_ == PagesInputErrorState.NO_ERROR ||
+        this.errorState_ == PagesInputErrorState.EMPTY;
   }
 });
 })();
