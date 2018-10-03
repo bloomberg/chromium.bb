@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
 static const int32_t kBucketCountForMessageSizeHistogram = 50;
@@ -185,7 +186,7 @@ static inline bool IsValidSubprotocolCharacter(UChar character) {
 bool DOMWebSocket::IsValidSubprotocolString(const String& protocol) {
   if (protocol.IsEmpty())
     return false;
-  for (size_t i = 0; i < protocol.length(); ++i) {
+  for (wtf_size_t i = 0; i < protocol.length(); ++i) {
     if (!IsValidSubprotocolCharacter(protocol[i]))
       return false;
   }
@@ -194,7 +195,7 @@ bool DOMWebSocket::IsValidSubprotocolString(const String& protocol) {
 
 static String EncodeSubprotocolString(const String& protocol) {
   StringBuilder builder;
-  for (size_t i = 0; i < protocol.length(); i++) {
+  for (wtf_size_t i = 0; i < protocol.length(); i++) {
     if (protocol[i] < 0x20 || protocol[i] > 0x7E)
       builder.Append(String::Format("\\u%04X", protocol[i]));
     else if (protocol[i] == 0x5c)
@@ -208,7 +209,7 @@ static String EncodeSubprotocolString(const String& protocol) {
 static String JoinStrings(const Vector<String>& strings,
                           const char* separator) {
   StringBuilder builder;
-  for (size_t i = 0; i < strings.size(); ++i) {
+  for (wtf_size_t i = 0; i < strings.size(); ++i) {
     if (i)
       builder.Append(separator);
     builder.Append(strings[i]);
@@ -349,26 +350,26 @@ void DOMWebSocket::Connect(const String& url,
   }
 
   // Fail if not all elements in |protocols| are valid.
-  for (size_t i = 0; i < protocols.size(); ++i) {
-    if (!IsValidSubprotocolString(protocols[i])) {
+  for (const String& protocol : protocols) {
+    if (!IsValidSubprotocolString(protocol)) {
       state_ = kClosed;
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kSyntaxError,
-          "The subprotocol '" + EncodeSubprotocolString(protocols[i]) +
-              "' is invalid.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                        "The subprotocol '" +
+                                            EncodeSubprotocolString(protocol) +
+                                            "' is invalid.");
       return;
     }
   }
 
   // Fail if there're duplicated elements in |protocols|.
   HashSet<String> visited;
-  for (size_t i = 0; i < protocols.size(); ++i) {
-    if (!visited.insert(protocols[i]).is_new_entry) {
+  for (const String& protocol : protocols) {
+    if (!visited.insert(protocol).is_new_entry) {
       state_ = kClosed;
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kSyntaxError,
-          "The subprotocol '" + EncodeSubprotocolString(protocols[i]) +
-              "' is duplicated.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                        "The subprotocol '" +
+                                            EncodeSubprotocolString(protocol) +
+                                            "' is duplicated.");
       return;
     }
   }

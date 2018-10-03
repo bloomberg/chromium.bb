@@ -539,7 +539,7 @@ void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
 }
 
 void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
-                                                     size_t length) {
+                                                     uint32_t length) {
   if (state_ != mojom::blink::PresentationConnectionState::CONNECTED)
     return;
 
