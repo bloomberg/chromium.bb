@@ -106,7 +106,8 @@ Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const SurfaceInfo& surface_info,
     BeginFrameSource* begin_frame_source,
-    bool needs_sync_tokens) {
+    bool needs_sync_tokens,
+    bool block_activation_on_parent) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(surface_info.is_valid());
   DCHECK(surface_client);
@@ -116,7 +117,8 @@ Surface* SurfaceManager::CreateSurface(
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
     std::unique_ptr<Surface> surface = std::make_unique<Surface>(
-        surface_info, this, surface_client, needs_sync_tokens);
+        surface_info, this, surface_client, needs_sync_tokens,
+        block_activation_on_parent);
     surface->SetDependencyDeadline(std::make_unique<SurfaceDependencyDeadline>(
         surface.get(), begin_frame_source, tick_clock_));
     surface_map_[surface_info.id()] = std::move(surface);
@@ -604,6 +606,10 @@ void SurfaceManager::SurfaceActivated(
     observer.OnSurfaceActivated(surface->surface_id(), duration);
 
   dependency_tracker_.OnSurfaceActivated(surface);
+}
+
+void SurfaceManager::SurfaceDependencyAdded(const SurfaceId& surface_id) {
+  dependency_tracker_.OnSurfaceDependencyAdded(surface_id);
 }
 
 void SurfaceManager::SurfaceDependenciesChanged(

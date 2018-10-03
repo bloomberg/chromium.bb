@@ -197,7 +197,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool WantsAnimateOnlyBeginFrames() const override;
 
   void UpdateNeedsBeginFramesInternal();
-  Surface* CreateSurface(const SurfaceInfo& surface_info);
+  Surface* CreateSurface(const SurfaceInfo& surface_info,
+                         bool block_activation_on_parent);
 
   // For the sync API calls, if we are blocking a client callback, runs it once
   // BeginFrame and FrameAck are done.

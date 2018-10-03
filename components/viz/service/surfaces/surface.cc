@@ -26,11 +26,13 @@ namespace viz {
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
-                 bool needs_sync_tokens)
+                 bool needs_sync_tokens,
+                 bool block_activation_on_parent)
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      needs_sync_tokens_(needs_sync_tokens) {
+      needs_sync_tokens_(needs_sync_tokens),
+      block_activation_on_parent_(block_activation_on_parent) {
   TRACE_EVENT_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                            "Surface", this, "surface_info",
                            surface_info.ToString());
@@ -186,6 +188,20 @@ void Surface::OnChildActivated(const SurfaceId& activated_id) {
   }
 }
 
+void Surface::OnSurfaceDependencyAdded() {
+  if (seen_first_surface_dependency_)
+    return;
+
+  seen_first_surface_dependency_ = true;
+  if (!activation_dependencies_.empty() || !pending_frame_data_)
+    return;
+
+  DCHECK(frame_sink_id_dependencies_.empty());
+
+  // All blockers have been cleared. The surface can be activated now.
+  ActivatePendingFrame(base::nullopt);
+}
+
 void Surface::Close() {
   closed_ = true;
 }
@@ -222,7 +238,16 @@ bool Surface::QueueFrame(
   // regardless of whether it's pending or active.
   surface_client_->ReceiveFromChild(frame.resource_list);
 
-  if (activation_dependencies_.empty()) {
+  if (!seen_first_surface_dependency_) {
+    seen_first_surface_dependency_ =
+        surface_manager_->dependency_tracker()->HasSurfaceBlockedOn(
+            surface_id());
+  }
+
+  bool block_activation =
+      block_activation_on_parent_ && !seen_first_surface_dependency_;
+
+  if (!block_activation && activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(
         FrameData(std::move(frame), frame_index, std::move(presented_callback)),
@@ -298,13 +323,29 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
                dependency.local_surface_id() <= surface_id.local_surface_id();
       });
 
-  if (!activation_dependencies_.empty())
+  // We cannot activate this CompositorFrame if there are still missing
+  // activation dependencies or this surface is blocked on its parent arriving
+  // and the parent has not arrived yet.
+  bool block_activation =
+      block_activation_on_parent_ && !seen_first_surface_dependency_;
+  if (block_activation || !activation_dependencies_.empty())
     return;
 
   DCHECK(frame_sink_id_dependencies_.empty());
 
   // All blockers have been cleared. The surface can be activated now.
   ActivatePendingFrame(base::nullopt);
+}
+
+bool Surface::IsBlockedOn(const SurfaceId& surface_id) const {
+  for (const SurfaceId& dependency : activation_dependencies_) {
+    if (dependency.frame_sink_id() != surface_id.frame_sink_id())
+      continue;
+
+    if (dependency.local_surface_id() <= surface_id.local_surface_id())
+      return true;
+  }
+  return false;
 }
 
 void Surface::ActivatePendingFrameForDeadline(
@@ -483,7 +524,12 @@ void Surface::UpdateActivationDependencies(
 
   for (const SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {
+    // Inform the Surface |dependency| that it's been added as a dependency in
+    // another Surface's CompositorFrame.
+    surface_manager_->SurfaceDependencyAdded(surface_id);
+
     Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
+
     // If a activation dependency does not have a corresponding active frame in
     // the display compositor, then it blocks this frame.
     if (!dependency || !dependency->HasActiveFrame()) {

@@ -85,11 +85,13 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const SurfaceInfo& surface_info,
                          BeginFrameSource* begin_frame_source,
-                         bool needs_sync_tokens);
+                         bool needs_sync_tokens,
+                         bool block_activation_on_parent);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
   void DestroySurface(const SurfaceId& surface_id);
 
+  // Returns a Surface corresponding to the provided |surface_id|.
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
 
   void AddObserver(SurfaceObserver* obs) { observer_list_.AddObserver(obs); }
@@ -122,6 +124,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // was not blocked on dependencies.
   void SurfaceActivated(Surface* surface,
                         base::Optional<base::TimeDelta> duration);
+
+  // Called when this |surface_id| is referenced as an activation dependency
+  // from a parent CompositorFrame.
+  void SurfaceDependencyAdded(const SurfaceId& surface_id);
 
   // Called when the dependencies of a pending CompositorFrame within |surface|
   // has changed.
