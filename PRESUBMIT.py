@@ -2750,7 +2750,7 @@ def _CheckForRiskyJsFeatures(input_api, output_api):
 Use of => (arrow) operator detected in:
 %s
 Please ensure your code does not run on iOS9 (=> (arrow) does not work there).
-https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#Arrow-Functions
+https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#Arrow-Functions
 """ % f.LocalPath()
           ])))
 
@@ -2764,8 +2764,8 @@ Use of const/let keywords detected in:
 %s
 Please ensure your code does not run on iOS9 because const/let is not fully
 supported.
-https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#let-Block_Scoped-Variables
-https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#const-Block_Scoped-Constants
+https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#let-Block_Scoped-Variables
+https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#const-Block_Scoped-Constants
 """ % f.LocalPath()
           ])))
 
