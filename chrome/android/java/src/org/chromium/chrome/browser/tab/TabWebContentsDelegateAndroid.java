@@ -531,6 +531,15 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         return mTab.controlsResizeView();
     }
 
+    /**
+     *  This is currently called when committing a pre-rendered page or activating a portal.
+     */
+    @CalledByNative
+    private void swapWebContents(
+            WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
+        mTab.swapWebContents(webContents, didStartLoad, didFinishLoad);
+    }
+
     private float getDipScale() {
         return mTab.getWindowAndroid().getDisplay().getDipScale();
     }
