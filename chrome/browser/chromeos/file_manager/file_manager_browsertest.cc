@@ -380,6 +380,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickView").TabletMode(),
                       TestCase("openQuickViewScrollText"),
                       TestCase("openQuickViewScrollHtml"),
+                      TestCase("openQuickViewBackgroundColorHtml"),
                       TestCase("openQuickViewDrive"),
                       TestCase("openQuickViewDrive").EnableDriveFs(),
                       TestCase("openQuickViewUsb"),
