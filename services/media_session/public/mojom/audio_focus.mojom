@@ -66,10 +66,13 @@ interface AudioFocusManager {
   // audio focus and their current requested type.
   GetFocusRequests() => (array<AudioFocusRequestState> requests);
 
+  // Adds observers that receive audio focus events.
+  AddObserver(AudioFocusObserver observer);
+};
+
+// Provides debug information about audio focus requests.
+interface AudioFocusManagerDebug {
   // Gets debugging information for a |MediaSession| with |request_id|.
   GetDebugInfoForRequest(uint64 request_id)
       => (MediaSessionDebugInfo debug_info);
-
-  // Adds observers that receive audio focus events.
-  AddObserver(AudioFocusObserver observer);
 };

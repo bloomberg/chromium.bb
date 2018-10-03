@@ -27,6 +27,10 @@ void MediaSessionService::OnStart() {
   registry_.AddInterface(
       base::BindRepeating(&AudioFocusManager::BindToInterface,
                           base::Unretained(AudioFocusManager::GetInstance())));
+
+  registry_.AddInterface(
+      base::BindRepeating(&AudioFocusManager::BindToDebugInterface,
+                          base::Unretained(AudioFocusManager::GetInstance())));
 }
 
 void MediaSessionService::OnBindInterface(

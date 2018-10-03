@@ -223,10 +223,17 @@ void AudioFocusManager::BindToInterface(
   bindings_.AddBinding(this, std::move(request));
 }
 
+void AudioFocusManager::BindToDebugInterface(
+    mojom::AudioFocusManagerDebugRequest request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  debug_bindings_.AddBinding(this, std::move(request));
+}
+
 void AudioFocusManager::CloseAllMojoObjects() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.CloseAll();
   bindings_.CloseAllBindings();
+  debug_bindings_.CloseAllBindings();
 }
 
 void AudioFocusManager::RequestAudioFocusInternal(
@@ -285,6 +292,7 @@ AudioFocusManager::AudioFocusManager() {
 AudioFocusManager::~AudioFocusManager() {
   DCHECK(observers_.empty());
   DCHECK(bindings_.empty());
+  DCHECK(debug_bindings_.empty());
 }
 
 std::unique_ptr<AudioFocusManager::StackRow>
