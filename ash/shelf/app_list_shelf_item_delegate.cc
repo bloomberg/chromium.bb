@@ -75,6 +75,8 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
 
   if (back_action)
     Shell::Get()->app_list_controller()->Back();
+
+  std::move(callback).Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
 }
 
 void AppListShelfItemDelegate::ExecuteCommand(bool from_context_menu,

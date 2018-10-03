@@ -33,16 +33,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 
-namespace {
-
-int64_t GetDisplayIdToShowAppListOn() {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
-      .id();
-}
-
-}  // namespace
-
 namespace ash {
 
 AppListControllerImpl::AppListControllerImpl(ws::WindowService* window_service)
@@ -387,15 +377,14 @@ void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* /* pref_service */) {
-  if (!IsHomeLauncherEnabledInTabletMode() ||
-      !display::Display::HasInternalDisplay()) {
+  if (!IsHomeLauncherEnabledInTabletMode()) {
     DismissAppList();
     return;
   }
 
   // Show the app list after signing in in tablet mode.
-  Show(display::Display::InternalDisplayId(),
-       app_list::AppListShowSource::kTabletMode, base::TimeTicks());
+  Show(GetDisplayIdToShowAppListOn(), app_list::AppListShowSource::kTabletMode,
+       base::TimeTicks());
 
   // The app list is not dismissed before switching user, suggestion chips will
   // not be shown. So reset app list state and trigger an initial search here to
@@ -536,7 +525,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
     presenter_.GetView()->OnTabletModeChanged(true);
   }
 
-  if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay())
+  if (!is_home_launcher_enabled_)
     return;
 
   SessionController const* session_controller =
@@ -545,8 +534,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
     return;
 
   // Show the app list if the tablet mode starts.
-  Show(display::Display::InternalDisplayId(), app_list::kTabletMode,
-       base::TimeTicks());
+  Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
   UpdateHomeLauncherVisibility();
   Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
 }
@@ -863,6 +851,18 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
   GetSearchModel()->search_box()->SetShowAssistantButton(
       controller->settings_enabled() &&
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED);
+}
+
+int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
+  if (IsHomeLauncherEnabledInTabletMode()) {
+    return display::Display::HasInternalDisplay()
+               ? display::Display::InternalDisplayId()
+               : display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  }
+
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
+      .id();
 }
 
 }  // namespace ash

@@ -235,6 +235,8 @@ class ASH_EXPORT AppListControllerImpl
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
 
+  int64_t GetDisplayIdToShowAppListOn();
+
   ws::WindowService* window_service_;
 
   base::string16 last_raw_query_;

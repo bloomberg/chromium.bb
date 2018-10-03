@@ -2814,6 +2814,9 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window3->IsVisible());
   EXPECT_TRUE(window4->IsVisible());
 
+  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+    EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
+
   // 1) Start dragging |window1|. |window2| is the source window.
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window1.get(), window2.get());
