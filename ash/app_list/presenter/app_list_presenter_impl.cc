@@ -136,6 +136,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
     delegate_->Init(view, display_id, current_apps_page_);
     SetView(view);
   }
+  view_->ShowWhenReady();
   delegate_->OnShown(display_id);
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
@@ -279,7 +280,6 @@ void AppListPresenterImpl::SetView(AppListView* view) {
   // Sync the |onscreen_keyboard_shown_| in case |view_| is not initiated when
   // the on-screen is shown.
   view_->set_onscreen_keyboard_shown(delegate_->GetOnScreenKeyboardShown());
-  view_->ShowWhenReady();
 }
 
 void AppListPresenterImpl::ResetView() {

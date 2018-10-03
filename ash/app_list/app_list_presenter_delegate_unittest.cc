@@ -1124,9 +1124,6 @@ class AppListPresenterDelegateHomeLauncherTest
          app_list_features::kEnableBackgroundBlur},
         {});
     AppListPresenterDelegateTest::SetUp();
-    // Home launcher is only enabled on internal display.
-    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-        .SetFirstDisplayAsInternalDisplay();
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
