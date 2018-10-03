@@ -33,11 +33,6 @@ const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
     "AllowSignedHTTPExchangeCertsWithoutExtension",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables asm.js to WebAssembly V8 backend.
-// http://asmjs.org/spec/latest/
-const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
     "AudioServiceAudioStreams", base::FEATURE_DISABLED_BY_DEFAULT};
