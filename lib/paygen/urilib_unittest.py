@@ -108,7 +108,7 @@ class TestFileManipulation(cros_test_lib.TempDirTestCase):
                       set(urilib.ListFiles(self.gs_dir, recurse=True)))
 
 
-class TestUrilib(cros_test_lib.MoxTempDirTestCase):
+class TestUrilib(cros_test_lib.MockTempDirTestCase):
   """Test urilib module."""
 
   def testExtractProtocol(self):
@@ -182,32 +182,34 @@ index %s..%s 100644
     local_path = '/some/local/path'
     http_path = 'http://host.domain/some/path'
 
-    result = 'TheResult'
-
-    self.mox.StubOutWithMock(gslib, 'Copy')
-    self.mox.StubOutWithMock(filelib, 'Copy')
-    self.mox.StubOutWithMock(urilib, 'URLRetrieve')
+    gs_mock = self.PatchObject(gslib, 'Copy')
+    file_mock = self.PatchObject(filelib, 'Copy')
+    urlretrieve_mock = self.PatchObject(urilib, 'URLRetrieve')
 
     # Set up the test replay script.
     # Run 1, two local files.
-    filelib.Copy(local_path, local_path + '.1').AndReturn(result)
-    # Run 2, local and GS.
-    gslib.Copy(local_path, gs_path).AndReturn(result)
-    # Run 4, GS and GS
-    gslib.Copy(gs_path, gs_path + '.1').AndReturn(result)
-    # Run 7, HTTP and local
-    urilib.URLRetrieve(http_path, local_path).AndReturn(result)
-    # Run 8, local and HTTP
-    self.mox.ReplayAll()
+    urilib.Copy(local_path, local_path + '.1')
+    file_mock.assert_called_once_with(local_path, local_path + '.1')
+    file_mock.reset_mock()
 
-    # Run the test verification.
-    self.assertEquals(result, urilib.Copy(local_path, local_path + '.1'))
-    self.assertEquals(result, urilib.Copy(local_path, gs_path))
-    self.assertEquals(result, urilib.Copy(gs_path, gs_path + '.1'))
-    self.assertEquals(result, urilib.Copy(http_path, local_path))
+    # Run 2, local and GS.
+    urilib.Copy(local_path, gs_path)
+    gs_mock.assert_called_once_with(local_path, gs_path)
+    gs_mock.reset_mock()
+
+    # Run 4, GS and GS
+    urilib.Copy(gs_path, gs_path + '.1')
+    gs_mock.assert_called_once_with(gs_path, gs_path + '.1')
+    gs_mock.reset_mock()
+
+    # Run 7, HTTP and local
+    urilib.Copy(http_path, local_path)
+    urlretrieve_mock.assert_called_once_with(http_path, local_path)
+    urlretrieve_mock.reset_mock()
+
+    # Run 8, local and HTTP
     self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Copy,
                       local_path, http_path)
-    self.mox.VerifyAll()
 
   def testListFiles(self):
     gs_path = 'gs://bucket/some/path'
@@ -217,23 +219,21 @@ index %s..%s 100644
     result = 'TheResult'
     patt = 'TheFilePattern'
 
-    self.mox.StubOutWithMock(gslib, 'ListFiles')
-    self.mox.StubOutWithMock(filelib, 'ListFiles')
+    gs_mock = self.PatchObject(gslib, 'ListFiles', return_value=result)
+    file_mock = self.PatchObject(filelib, 'ListFiles', return_value=result)
 
     # Set up the test replay script.
     # Run 1, local.
-    filelib.ListFiles(
-        local_path, recurse=True, filepattern=None,
-        sort=False).AndReturn(result)
-    # Run 2, GS.
-    gslib.ListFiles(
-        gs_path, recurse=False, filepattern=patt, sort=True).AndReturn(result)
-    # Run 4, HTTP.
-    self.mox.ReplayAll()
-
-    # Run the test verification.
     self.assertEquals(result, urilib.ListFiles(local_path, recurse=True))
+    file_mock.assert_called_once_with(
+        local_path, recurse=True, filepattern=None,
+        sort=False)
+
+    # Run 2, GS.
     self.assertEquals(result, urilib.ListFiles(gs_path, filepattern=patt,
                                                sort=True))
+    gs_mock.assert_called_once_with(
+        gs_path, recurse=False, filepattern=patt, sort=True)
+
+    # Run 4, HTTP.
     self.assertRaises(urilib.NotSupportedForType, urilib.ListFiles, http_path)
-    self.mox.VerifyAll()
