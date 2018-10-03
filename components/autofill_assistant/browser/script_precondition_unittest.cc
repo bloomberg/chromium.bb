@@ -77,7 +77,7 @@ class ScriptPreconditionTest : public testing::Test {
 
   // Runs the preconditions and returns the result.
   bool Check(const ScriptPreconditionProto& proto) {
-    auto precondition = ScriptPrecondition::FromProto(proto);
+    auto precondition = ScriptPrecondition::FromProto("unused", proto);
     if (!precondition)
       return false;
 
@@ -99,17 +99,36 @@ TEST_F(ScriptPreconditionTest, NoConditions) {
 
 TEST_F(ScriptPreconditionTest, DomainMatch) {
   ScriptPreconditionProto proto;
-  proto.add_domain("match.example.com");
-  proto.add_domain("alsomatch.example.com");
+  proto.add_domain("http://match.example.com");
+  proto.add_domain("http://alsomatch.example.com");
 
   SetUrl("http://match.example.com/path");
   EXPECT_TRUE(Check(proto));
 
+  // Scheme must match.
+  SetUrl("https://match.example.com/path");
+  EXPECT_FALSE(Check(proto)) << "Scheme must match.";
+
+  // Port is ignored.
+  SetUrl("http://match.example.com:8080");
+  EXPECT_TRUE(Check(proto)) << "Port should be ignored";
+
   SetUrl("http://nomatch.example.com/path");
-  EXPECT_FALSE(Check(proto));
+  EXPECT_FALSE(Check(proto)) << "nomatch";
 
   SetUrl("http://alsomatch.example.com/path");
-  EXPECT_TRUE(Check(proto));
+  EXPECT_TRUE(Check(proto)) << "Path should be ignored";
+
+  SetUrl("http://alsomatch.example.com/path?a=b");
+  EXPECT_TRUE(Check(proto)) << "Query should be ignored.";
+}
+
+TEST_F(ScriptPreconditionTest, TrailingSlash) {
+  ScriptPreconditionProto proto;
+  proto.add_domain("http://example.com/");
+
+  SetUrl("http://example.com/path");
+  EXPECT_FALSE(Check(proto));
 }
 
 TEST_F(ScriptPreconditionTest, PathFullMatch) {
@@ -142,7 +161,18 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
   ScriptPreconditionProto proto;
   proto.add_path_pattern("invalid[");
 
-  EXPECT_EQ(nullptr, ScriptPrecondition::FromProto(proto));
+  EXPECT_EQ(nullptr, ScriptPrecondition::FromProto("unused", proto));
+}
+
+TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
+  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
+      .WillOnce(RunOnceCallback<1>(true));
+
+  ScriptPreconditionProto proto;
+  proto.add_elements_exist()->add_selectors("exists");
+  proto.add_elements_exist();
+
+  EXPECT_TRUE(Check(proto));
 }
 
 TEST_F(ScriptPreconditionTest, WrongScriptStatusEqualComparator) {
@@ -237,20 +267,18 @@ TEST_F(ScriptPreconditionTest, ParameterMustHaveValue) {
 
 TEST_F(ScriptPreconditionTest, MultipleConditions) {
   ScriptPreconditionProto proto;
-  proto.add_domain("match.example.com");
+  proto.add_domain("http://match.example.com");
   proto.add_path_pattern("/path");
   proto.add_elements_exist()->add_selectors("exists");
 
   // Domain and path don't match.
   EXPECT_FALSE(Check(proto));
 
-  // Domain, path and selector match.
   SetUrl("http://match.example.com/path");
-  EXPECT_TRUE(Check(proto));
+  EXPECT_TRUE(Check(proto)) << "Domain, path and selector must match.";
 
-  // Selector doesn't match.
   proto.mutable_elements_exist(0)->set_selectors(0, "does_not_exist");
-  EXPECT_FALSE(Check(proto));
+  EXPECT_FALSE(Check(proto)) << "Element can not match.";
 }
 
 TEST_F(ScriptPreconditionTest, FormValueMatch) {

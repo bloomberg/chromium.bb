@@ -28,7 +28,11 @@ class ScriptPrecondition {
  public:
   // Builds a precondition from its proto representation. Returns nullptr if the
   // preconditions are invalid.
+  //
+  // Note: The |script_path| paramter is used to allow logging misconfigured
+  // scripts.
   static std::unique_ptr<ScriptPrecondition> FromProto(
+      const std::string& script_path,
       const ScriptPreconditionProto& script_precondition_proto);
 
   ScriptPrecondition(
