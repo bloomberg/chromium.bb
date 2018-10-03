@@ -22,13 +22,9 @@
 <dom-module id="print-preview-destination-settings">
   <template>
     <style include="print-preview-shared paper-button-style throbber cr-hidden-style">
-      print-preview-settings-section {
-        margin-top: 16px;
-      }
-
       paper-button {
         margin: 2px;
-        margin-top: 12px;
+        margin-top: 8px;
         width: 89px;
       }
 
@@ -40,7 +36,6 @@
       .throbber-container {
         align-items: center;
         display: flex;
-        min-height: 28px;
         overflow: hidden;
       }
 
@@ -56,14 +51,14 @@
         overflow: hidden;
       }
 
+      .destination-name {
+        line-height: calc(20/13 * 1em);
+      }
+
       .destination-location,
       .destination-connection-status {
         color: var(--google-grey-700);
         font-size: calc(12/13 * 1em);
-      }
-
-      .destination-name {
-        margin-bottom: 4px;
       }
 
       .destination-info-wrapper > div,
@@ -78,7 +73,7 @@
         opacity: 0.4;
       }
     </style>
-    <print-preview-settings-section class="multirow-controls">
+    <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
         <div class="throbber-container" hidden="[[!loadingDestination_]]">
@@ -96,6 +91,11 @@
             </div>
           </div>
         </div>
+      </div>
+    </print-preview-settings-section>
+    <print-preview-settings-section>
+      <div slot="title"></div>
+      <div slot="controls">
         <paper-button
           disabled$="[[shouldDisableButton_(destinationStore, disabled,
                                             state)]]"

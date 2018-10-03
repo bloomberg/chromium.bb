@@ -34,14 +34,10 @@
         color: var(--google-grey-900);
         flex: none;
         font-size: 1em;
+        line-height: calc(20/13 * 1em);
         padding-inline-end: var(--policy-icon-padding);
         width: calc(75px - var(--policy-icon-padding));
         word-break: break-word;
-      }
-
-      :host(.multirow-controls) ::slotted([slot=title]) {
-        justify-content: flex-start;
-        padding-top: 10px;
       }
 
       :host([managed]:not([show-policy-on-end])) ::slotted([slot=title]) {
