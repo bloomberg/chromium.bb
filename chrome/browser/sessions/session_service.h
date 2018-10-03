@@ -28,10 +28,6 @@
 
 class Profile;
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace content {
 class WebContents;
 }  // namespace content
@@ -93,11 +89,8 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // during startup and window creation this is invoked to see if a session
   // needs to be restored. If a session needs to be restored it is done so
   // asynchronously and true is returned. If false is returned the session was
-  // not restored and the caller needs to create a new window. The command_line
-  // should be the one of the original process that lead to opening the window
-  // and deciding whether the session needs to be restored.
-  bool RestoreIfNecessary(const base::CommandLine& command_line,
-                          const std::vector<GURL>& urls_to_open);
+  // not restored and the caller needs to create a new window.
+  bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open);
 
   // Resets the contents of the file from the current state of all open
   // browsers whose profile matches our profile.
@@ -254,8 +247,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // Implementation of RestoreIfNecessary. If |browser| is non-null and we need
   // to restore, the tabs are added to it, otherwise a new browser is created.
-  bool RestoreIfNecessary(const base::CommandLine& command_line,
-                          const std::vector<GURL>& urls_to_open,
+  bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                           Browser* browser);
 
   // BrowserListObserver
