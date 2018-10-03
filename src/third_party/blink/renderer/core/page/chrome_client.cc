@@ -170,7 +170,7 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
       result.InnerNode()->GetDocument().IsDNSPrefetchEnabled())
     PrefetchDNS(result.AbsoluteLinkURL().Host());
 
-  ShowMouseOverURL(result);
+  ShowMouseOverURL(frame, result);
 
   if (result.GetScrollbar())
     ClearToolTip(frame);
