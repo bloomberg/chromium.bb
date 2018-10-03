@@ -108,10 +108,10 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
   return kGoogleSearchDoodleHeight;
 }
 
-CGFloat doodleTopMargin(BOOL toolbarPresent) {
+CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
-  return StatusBarHeight() + kDoodleTopMarginOther;
+  return topInset + kDoodleTopMarginOther;
 }
 
 CGFloat searchFieldTopMargin() {
@@ -128,8 +128,9 @@ CGFloat searchFieldWidth(CGFloat superviewWidth) {
 
 CGFloat heightForLogoHeader(BOOL logoIsShowing,
                             BOOL promoCanShow,
-                            BOOL toolbarPresent) {
-  CGFloat headerHeight = doodleTopMargin(toolbarPresent) +
+                            BOOL toolbarPresent,
+                            CGFloat topInset) {
+  CGFloat headerHeight = doodleTopMargin(toolbarPresent, topInset) +
                          doodleHeight(logoIsShowing) + searchFieldTopMargin() +
                          kSearchFieldHeight + kNTPSearchFieldBottomPadding;
   if (!IsRegularXRegularSizeClass()) {
