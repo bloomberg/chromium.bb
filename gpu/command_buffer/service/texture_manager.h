@@ -28,6 +28,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_image.h"
 
+namespace gl {
+class ProgressReporter;
+}
+
 namespace gpu {
 class DecoderContext;
 class ServiceDiscardableManager;
@@ -40,7 +44,6 @@ struct DecoderFramebufferState;
 class ErrorState;
 class FeatureInfo;
 class FramebufferManager;
-class ProgressReporter;
 class Texture;
 class TextureManager;
 class TextureRef;
@@ -754,7 +757,7 @@ class GPU_GLES2_EXPORT TextureManager
                  GLsizei max_3d_texture_size,
                  GLsizei max_array_texture_layers,
                  bool use_default_textures,
-                 ProgressReporter* progress_reporter,
+                 gl::ProgressReporter* progress_reporter,
                  ServiceDiscardableManager* discardable_manager);
   ~TextureManager() override;
 
@@ -1247,7 +1250,7 @@ class GPU_GLES2_EXPORT TextureManager
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when
   // using in-process command buffer.
-  ProgressReporter* progress_reporter_;
+  gl::ProgressReporter* progress_reporter_;
 
   ServiceDiscardableManager* discardable_manager_;
 

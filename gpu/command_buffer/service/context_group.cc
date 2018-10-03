@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
-#include "gpu/command_buffer/service/progress_reporter.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -27,6 +26,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/progress_reporter.h"
 
 namespace gpu {
 namespace gles2 {
@@ -70,7 +70,7 @@ ContextGroup::ContextGroup(
     bool bind_generates_resource,
     ImageManager* image_manager,
     gpu::ImageFactory* image_factory,
-    ProgressReporter* progress_reporter,
+    gl::ProgressReporter* progress_reporter,
     const GpuFeatureInfo& gpu_feature_info,
     ServiceDiscardableManager* discardable_manager)
     : gpu_preferences_(gpu_preferences),
