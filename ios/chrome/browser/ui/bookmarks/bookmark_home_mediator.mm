@@ -199,9 +199,6 @@ const int kMaxBookmarksSearchResults = 50;
 
   int count = 0;
   for (const BookmarkNode* node : nodes) {
-    if (!node->is_url())
-      continue;
-
     BookmarkHomeNodeItem* nodeItem =
         [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                       bookmarkNode:node];
