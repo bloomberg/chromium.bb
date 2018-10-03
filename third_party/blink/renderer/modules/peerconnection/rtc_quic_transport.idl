@@ -28,8 +28,8 @@ enum RTCQuicTransportState {
     sequence<ArrayBuffer> getRemoteCertificates();
     [RaisesException] void start(RTCQuicParameters remoteParameters);
     void stop();
-    [RaisesException, RuntimeEnabled=RTCQuicStream] RTCQuicStream createStream();
+    [RaisesException] RTCQuicStream createStream();
     attribute EventHandler onstatechange;
     attribute EventHandler onerror;
-    // TODO(crbug.com/868068): Implement onstream.
+    attribute EventHandler onquicstream;
 };

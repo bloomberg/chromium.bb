@@ -14,10 +14,14 @@ namespace blink {
 
 IceTransportHost::IceTransportHost(
     scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     base::WeakPtr<IceTransportProxy> proxy)
-    : proxy_thread_(std::move(proxy_thread)), proxy_(std::move(proxy)) {
+    : proxy_thread_(std::move(proxy_thread)),
+      host_thread_(std::move(host_thread)),
+      proxy_(std::move(proxy)) {
   DETACH_FROM_THREAD(thread_checker_);
   DCHECK(proxy_thread_);
+  DCHECK(host_thread_);
   DCHECK(proxy_);
 }
 
@@ -31,6 +35,18 @@ void IceTransportHost::Initialize(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(adapter_factory);
   transport_ = adapter_factory->ConstructOnWorkerThread(this);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportHost::proxy_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return proxy_thread_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> IceTransportHost::host_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return host_thread_;
 }
 
 void IceTransportHost::StartGathering(

@@ -5569,16 +5569,25 @@ interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
     method constructor
-interface RTCQuicStream
+interface RTCQuicStream : EventTarget
     attribute @@toStringTag
+    getter onstatechange
     getter readBufferedAmount
     getter state
     getter transport
     getter writeBufferedAmount
     method constructor
+    method finish
+    method reset
+    setter onstatechange
+interface RTCQuicStreamEvent : Event
+    attribute @@toStringTag
+    getter stream
+    method constructor
 interface RTCQuicTransport : EventTarget
     attribute @@toStringTag
     getter onerror
+    getter onquicstream
     getter onstatechange
     getter state
     getter transport
@@ -5591,6 +5600,7 @@ interface RTCQuicTransport : EventTarget
     method start
     method stop
     setter onerror
+    setter onquicstream
     setter onstatechange
 interface RTCRtpContributingSource
     attribute @@toStringTag

@@ -4,10 +4,14 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_host.h"
 
+#include <utility>
+
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -15,12 +19,9 @@
 
 namespace blink {
 
-QuicTransportHost::QuicTransportHost(
-    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
-    base::WeakPtr<QuicTransportProxy> proxy)
-    : proxy_thread_(std::move(proxy_thread)), proxy_(std::move(proxy)) {
+QuicTransportHost::QuicTransportHost(base::WeakPtr<QuicTransportProxy> proxy)
+    : proxy_(std::move(proxy)) {
   DETACH_FROM_THREAD(thread_checker_);
-  DCHECK(proxy_thread_);
   DCHECK(proxy_);
 }
 
@@ -35,7 +36,6 @@ QuicTransportHost::~QuicTransportHost() {
 
 void QuicTransportHost::Initialize(
     IceTransportHost* ice_transport_host,
-    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     quic::Perspective perspective,
     const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -43,8 +43,8 @@ void QuicTransportHost::Initialize(
   DCHECK(!ice_transport_host_);
   ice_transport_host_ = ice_transport_host;
   quic::QuicClock* clock = quic::QuicChromiumClock::GetInstance();
-  auto alarm_factory =
-      std::make_unique<net::QuicChromiumAlarmFactory>(host_thread.get(), clock);
+  auto alarm_factory = std::make_unique<net::QuicChromiumAlarmFactory>(
+      host_thread().get(), clock);
   quic_transport_factory_.reset(
       new P2PQuicTransportFactoryImpl(clock, std::move(alarm_factory)));
   P2PQuicTransportConfig config(
@@ -53,6 +53,18 @@ void QuicTransportHost::Initialize(
   config.is_server = (perspective == quic::Perspective::IS_SERVER);
   quic_transport_ =
       quic_transport_factory_->CreateQuicTransport(std::move(config));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> QuicTransportHost::proxy_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return ice_transport_host_->proxy_thread();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> QuicTransportHost::host_thread()
+    const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return ice_transport_host_->host_thread();
 }
 
 void QuicTransportHost::Start(
@@ -66,17 +78,37 @@ void QuicTransportHost::Stop() {
   quic_transport_->Stop();
 }
 
+void QuicTransportHost::CreateStream(
+    std::unique_ptr<QuicStreamHost> stream_host) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  P2PQuicStream* p2p_stream = quic_transport_->CreateStream();
+  stream_host->Initialize(this, p2p_stream);
+  stream_hosts_.insert(
+      std::make_pair(stream_host.get(), std::move(stream_host)));
+}
+
+void QuicTransportHost::OnRemoveStream(QuicStreamHost* stream_host_to_remove) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto it = stream_hosts_.find(stream_host_to_remove);
+  DCHECK(it != stream_hosts_.end());
+  stream_hosts_.erase(it);
+}
+
 void QuicTransportHost::OnRemoteStopped() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  stream_hosts_.clear();
   PostCrossThreadTask(
-      *proxy_thread_, FROM_HERE,
+      *proxy_thread(), FROM_HERE,
       CrossThreadBind(&QuicTransportProxy::OnRemoteStopped, proxy_));
 }
 
 void QuicTransportHost::OnConnectionFailed(const std::string& error_details,
                                            bool from_remote) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
+  stream_hosts_.clear();
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
                       CrossThreadBind(&QuicTransportProxy::OnConnectionFailed,
                                       proxy_, error_details, from_remote));
 }
@@ -84,8 +116,27 @@ void QuicTransportHost::OnConnectionFailed(const std::string& error_details,
 void QuicTransportHost::OnConnected() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
-      *proxy_thread_, FROM_HERE,
+      *proxy_thread(), FROM_HERE,
       CrossThreadBind(&QuicTransportProxy::OnConnected, proxy_));
+}
+
+void QuicTransportHost::OnStream(P2PQuicStream* p2p_stream) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(p2p_stream);
+
+  auto stream_proxy = std::make_unique<QuicStreamProxy>();
+  auto stream_host = std::make_unique<QuicStreamHost>();
+  stream_proxy->set_host(stream_host->AsWeakPtr());
+  stream_host->set_proxy(stream_proxy->AsWeakPtr());
+
+  stream_host->Initialize(this, p2p_stream);
+
+  stream_hosts_.insert(
+      std::make_pair(stream_host.get(), std::move(stream_host)));
+
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportProxy::OnStream, proxy_,
+                                      WTF::Passed(std::move(stream_proxy))));
 }
 
 }  // namespace blink

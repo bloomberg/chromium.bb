@@ -216,6 +216,7 @@
     "progress",
     "processorerror",
     "push",
+    "quicstream",
     "ratechange",
     "reading",
     "readystatechange",

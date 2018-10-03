@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_HOST_H_
 
+#include <unordered_map>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -16,6 +18,7 @@ namespace blink {
 
 class IceTransportHost;
 class P2PQuicTransportFactory;
+class QuicStreamHost;
 class QuicTransportProxy;
 
 // The host class is the host side correspondent to the QuicTransportProxy. See
@@ -42,19 +45,25 @@ class QuicTransportProxy;
 // must be called on the host thread.
 class QuicTransportHost final : public P2PQuicTransport::Delegate {
  public:
-  QuicTransportHost(scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
-                    base::WeakPtr<QuicTransportProxy> transport_proxy);
+  QuicTransportHost(base::WeakPtr<QuicTransportProxy> transport_proxy);
   ~QuicTransportHost() override;
 
   void Initialize(
       IceTransportHost* ice_transport_host,
-      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
       quic::Perspective perspective,
       const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates);
+
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
   void Start(
       std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints);
   void Stop();
+
+  void CreateStream(std::unique_ptr<QuicStreamHost> stream_host);
+
+  // QuicStreamHost callbacks.
+  void OnRemoveStream(QuicStreamHost* stream_host_to_remove);
 
  private:
   // P2PQuicTransport::Delegate overrides.
@@ -62,12 +71,14 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   void OnConnectionFailed(const std::string& error_details,
                           bool from_remote) override;
   void OnConnected() override;
+  void OnStream(P2PQuicStream* stream) override;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
   std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory_;
   std::unique_ptr<P2PQuicTransport> quic_transport_;
   base::WeakPtr<QuicTransportProxy> proxy_;
   IceTransportHost* ice_transport_host_ = nullptr;
+  std::unordered_map<QuicStreamHost*, std::unique_ptr<QuicStreamHost>>
+      stream_hosts_;
 
   THREAD_CHECKER(thread_checker_);
 };

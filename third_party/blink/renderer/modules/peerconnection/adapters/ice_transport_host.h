@@ -42,11 +42,15 @@ class QuicTransportHost;
 class IceTransportHost final : public IceTransportAdapter::Delegate {
  public:
   IceTransportHost(scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+                   scoped_refptr<base::SingleThreadTaskRunner> host_thread,
                    base::WeakPtr<IceTransportProxy> proxy);
   ~IceTransportHost() override;
 
   void Initialize(
       std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
+
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
   void StartGathering(
       const cricket::IceParameters& local_parameters,
@@ -75,6 +79,7 @@ class IceTransportHost final : public IceTransportAdapter::Delegate {
   void OnStateChanged(cricket::IceTransportState new_state) override;
 
   const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
   std::unique_ptr<IceTransportAdapter> transport_;
   base::WeakPtr<IceTransportProxy> proxy_;
   QuicTransportHost* consumer_host_ = nullptr;

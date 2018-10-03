@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_QUIC_TRANSPORT_PROXY_H_
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -22,6 +23,7 @@ struct SSLFingerprint;
 namespace blink {
 
 class IceTransportProxy;
+class QuicStreamProxy;
 class QuicTransportHost;
 
 // This class allows the QUIC implementation (P2PQuicTransport) to run on a
@@ -49,6 +51,8 @@ class QuicTransportProxy final {
     // locally by the framer or remotely by the peer.
     virtual void OnConnectionFailed(const std::string& error_details,
                                     bool from_remote) {}
+    // Called when the remote side has created a new stream.
+    virtual void OnStream(QuicStreamProxy* stream_proxy) {}
   };
 
   // Construct a Proxy with the underlying QUIC implementation running on the
@@ -72,18 +76,26 @@ class QuicTransportProxy final {
       std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints);
   void Stop();
 
+  QuicStreamProxy* CreateStream();
+
+  // QuicStreamProxy callbacks.
+  void OnRemoveStream(QuicStreamProxy* stream_proxy);
+
  private:
   // Callbacks from QuicTransportHost.
   friend class QuicTransportHost;
   void OnConnected();
   void OnRemoteStopped();
   void OnConnectionFailed(const std::string& error_details, bool from_remote);
+  void OnStream(std::unique_ptr<QuicStreamProxy> stream_proxy);
 
   // Since the Host is deleted on the host thread (Via OnTaskRunnerDeleter), as
   // long as this is alive it is safe to post tasks to it (using unretained).
   std::unique_ptr<QuicTransportHost, base::OnTaskRunnerDeleter> host_;
   Delegate* const delegate_;
   IceTransportProxy* ice_transport_proxy_;
+  std::unordered_map<QuicStreamProxy*, std::unique_ptr<QuicStreamProxy>>
+      stream_proxies_;
 
   THREAD_CHECKER(thread_checker_);
 

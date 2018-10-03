@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -32,8 +34,7 @@ QuicTransportProxy::QuicTransportProxy(
   // The QuicTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(
-      new QuicTransportHost(proxy_thread, weak_ptr_factory_.GetWeakPtr()));
+  host_.reset(new QuicTransportHost(weak_ptr_factory_.GetWeakPtr()));
   // Connect to the IceTransportProxy. This gives us a reference to the
   // underlying IceTransportHost that should be connected by the
   // QuicTransportHost on the host thread. It is safe to post it unretained
@@ -42,12 +43,11 @@ QuicTransportProxy::QuicTransportProxy(
   // object.
   IceTransportHost* ice_transport_host =
       ice_transport_proxy->ConnectConsumer(this);
-  PostCrossThreadTask(
-      *host_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportHost::Initialize,
-                      CrossThreadUnretained(host_.get()),
-                      CrossThreadUnretained(ice_transport_host), host_thread(),
-                      perspective, certificates));
+  PostCrossThreadTask(*host_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportHost::Initialize,
+                                      CrossThreadUnretained(host_.get()),
+                                      CrossThreadUnretained(ice_transport_host),
+                                      perspective, certificates));
 }
 
 QuicTransportProxy::~QuicTransportProxy() {
@@ -85,6 +85,36 @@ void QuicTransportProxy::Stop() {
                                       CrossThreadUnretained(host_.get())));
 }
 
+QuicStreamProxy* QuicTransportProxy::CreateStream() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto stream_proxy = std::make_unique<QuicStreamProxy>();
+  auto stream_host = std::make_unique<QuicStreamHost>();
+  stream_proxy->set_host(stream_host->AsWeakPtr());
+  stream_host->set_proxy(stream_proxy->AsWeakPtr());
+
+  stream_proxy->Initialize(this);
+
+  PostCrossThreadTask(*host_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicTransportHost::CreateStream,
+                                      CrossThreadUnretained(host_.get()),
+                                      WTF::Passed(std::move(stream_host))));
+
+  QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
+  stream_proxies_.insert(
+      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  return stream_proxy_ptr;
+}
+
+void QuicTransportProxy::OnRemoveStream(
+    QuicStreamProxy* stream_proxy_to_remove) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto it = stream_proxies_.find(stream_proxy_to_remove);
+  DCHECK(it != stream_proxies_.end());
+  stream_proxies_.erase(it);
+}
+
 void QuicTransportProxy::OnConnected() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnConnected();
@@ -92,6 +122,7 @@ void QuicTransportProxy::OnConnected() {
 
 void QuicTransportProxy::OnRemoteStopped() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  stream_proxies_.clear();
   delegate_->OnRemoteStopped();
 }
 
@@ -99,6 +130,19 @@ void QuicTransportProxy::OnConnectionFailed(const std::string& error_details,
                                             bool from_remote) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnConnectionFailed(error_details, from_remote);
+  stream_proxies_.clear();
+}
+
+void QuicTransportProxy::OnStream(
+    std::unique_ptr<QuicStreamProxy> stream_proxy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  stream_proxy->Initialize(this);
+
+  QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
+  stream_proxies_.insert(
+      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  delegate_->OnStream(stream_proxy_ptr);
 }
 
 }  // namespace blink
