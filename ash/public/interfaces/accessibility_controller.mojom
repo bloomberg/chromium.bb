@@ -48,6 +48,22 @@ enum AccessibilityPanelState {
   FULLSCREEN
 };
 
+// These values are persisted to logs and should not be renumbered or re-used.
+// See tools/metrics/histograms/enums.xml.
+enum DictationToggleSource {
+  // Toggled by the keyboard command (Search + D).
+  kKeyboard,
+
+  // Toggled by the dictation button in the tray.
+  kButton,
+
+  // Switch Access context menu button.
+  kSwitchAccess,
+
+  // Chromevox chrome extension.
+  kChromevox
+};
+
 enum SelectToSpeakState {
   // Select to Speak is not actively selecting text or speaking.
   kSelectToSpeakStateInactive,
@@ -111,6 +127,9 @@ interface AccessibilityController {
   // Set the delegate used by the Select-to-Speak event handler.
   SetSelectToSpeakEventHandlerDelegate(
       SelectToSpeakEventHandlerDelegate delegate);
+
+  // Starts or stops dictation. Records metrics for toggling via SwitchAccess.
+  ToggleDictationFromSource(DictationToggleSource source);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.

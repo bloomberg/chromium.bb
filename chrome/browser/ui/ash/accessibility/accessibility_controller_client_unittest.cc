@@ -45,6 +45,8 @@ class TestAccessibilityController : ash::mojom::AccessibilityController {
   void SetSelectToSpeakState(ash::mojom::SelectToSpeakState state) override {}
   void SetSelectToSpeakEventHandlerDelegate(
       ash::mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override {}
+  void ToggleDictationFromSource(
+      ash::mojom::DictationToggleSource source) override {}
 
   bool was_client_set() const { return was_client_set_; }
 

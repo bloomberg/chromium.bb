@@ -8885,6 +8885,8 @@ Called by update_net_error_codes.py.-->
 <enum name="CrosDictationToggleDictationMethod">
   <int value="0" label="Search+D"/>
   <int value="1" label="Click onscreen button"/>
+  <int value="2" label="Select the button in the SwitchAccess context menu"/>
+  <int value="3" label="ChromeVox gesture"/>
 </enum>
 
 <enum name="CrosDisksArchiveType">
@@ -16913,6 +16915,7 @@ Called by update_net_error_codes.py.-->
   <int value="1281" label="AUTOTESTPRIVATE_BOOTSTRAPMACHINELEARNINGSERVICE"/>
   <int value="1282" label="AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER"/>
   <int value="1283" label="AUTOTESTPRIVATE_TAKESCREENSHOT"/>
+  <int value="1284" label="ACCESSIBILITY_PRIVATE_TOGGLEDICTATION"/>
 </enum>
 
 <enum name="ExtensionIconState">

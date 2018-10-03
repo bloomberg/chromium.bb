@@ -194,6 +194,8 @@ class ContextMenuManager {
 
     if (event.data === ContextMenuManager.Action.CLICK)
       this.automationManager_.selectCurrentNode();
+    else if (event.data === ContextMenuManager.Action.DICTATION)
+      chrome.accessibilityPrivate.toggleDictation();
     else if (event.data === ContextMenuManager.Action.OPTIONS)
       window.switchAccess.showOptionsPage();
     else if (
@@ -228,6 +230,7 @@ class ContextMenuManager {
  */
 ContextMenuManager.Action = {
   CLICK: 'click',
+  DICTATION: 'dictation',
   OPTIONS: 'options',
   SCROLL_BACKWARD: 'scroll-backward',
   SCROLL_DOWN: 'scroll-down',

@@ -167,6 +167,7 @@ class ASH_EXPORT AccessibilityController
   void SetSelectToSpeakState(mojom::SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
       mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override;
+  void ToggleDictationFromSource(mojom::DictationToggleSource source) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

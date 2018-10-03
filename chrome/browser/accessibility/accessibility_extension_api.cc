@@ -35,6 +35,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
@@ -52,6 +53,17 @@ namespace accessibility_private = extensions::api::accessibility_private;
 namespace {
 
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
+
+#if defined(OS_CHROMEOS)
+ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
+  // Connect to the accessibility mojo interface in ash.
+  ash::mojom::AccessibilityControllerPtr accessibility_controller;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  return accessibility_controller;
+}
+#endif
 
 }  // namespace
 
@@ -298,6 +310,22 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
 
   auto* accessibility_manager = chromeos::AccessibilityManager::Get();
   accessibility_manager->OnSelectToSpeakStateChanged(state);
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateToggleDictationFunction::Run() {
+  ash::mojom::DictationToggleSource source =
+      ash::mojom::DictationToggleSource::kChromevox;
+  if (extension()->id() == extension_misc::kSwitchAccessExtensionId)
+    source = ash::mojom::DictationToggleSource::kSwitchAccess;
+  else if (extension()->id() == extension_misc::kChromeVoxExtensionId)
+    source = ash::mojom::DictationToggleSource::kChromevox;
+  else
+    NOTREACHED();
+
+  GetAccessibilityController()->ToggleDictationFromSource(source);
 
   return RespondNow(NoArguments());
 }
