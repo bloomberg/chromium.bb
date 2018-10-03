@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
@@ -31,6 +32,7 @@
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace arc {
 namespace {
@@ -200,7 +202,9 @@ class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
   DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerBridge);
 };
 
-class ArcInputMethodManagerServiceTest : public testing::Test {
+// TODO(crbug.com/890677): Stop inheriting ash::AshTestBase once ash::Shell
+// dependency is removed from ArcInputMethodManagerService.
+class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
  protected:
   ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
@@ -219,12 +223,13 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   }
 
   void SetUp() override {
+    ash::AshTestBase::SetUp();
+    SetRunningOutsideAsh();
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
-    keyboard_controller_ = std::make_unique<keyboard::KeyboardController>();
     profile_ = std::make_unique<TestingProfile>();
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
         profile_.get());
@@ -237,18 +242,16 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     test_bridge_ = nullptr;
     service_->Shutdown();
     profile_.reset(nullptr);
-    keyboard_controller_.reset(nullptr);
     tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
+    ash::AshTestBase::TearDown();
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
-  std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
 
@@ -781,6 +784,61 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
 
   mock_input_method.DetachTextInputClient(&dummy_text_input_client);
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
+  namespace ceiu = chromeos::extension_ime_util;
+  using crx_file::id_util::GenerateId;
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+  ToggleTabletMode(true);
+
+  // Adding one ARC IME.
+  {
+    const std::string android_ime_id = "test.arc.ime";
+    const std::string display_name = "DisplayName";
+    const std::string settings_url = "url_to_settings";
+    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
+    info->ime_id = android_ime_id;
+    info->display_name = display_name;
+    info->enabled = false;
+    info->settings_url = settings_url;
+
+    std::vector<mojom::ImeInfoPtr> info_array;
+    info_array.emplace_back(std::move(info));
+    service()->OnImeInfoChanged(std::move(info_array));
+  }
+  // The proxy IME engine should be added.
+  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
+  ui::IMEEngineHandlerInterface* engine_handler =
+      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
+  // Enable it
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+
+  const std::string extension_ime_id =
+      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
+
+  // Enable Chrome OS virtual keyboard
+  keyboard::SetTouchKeyboardEnabled(true);
+  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+
+  // It's disabled when the ARC IME is activated.
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+  engine_handler->Enable(
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
+          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
+              .at(0)
+              .id()));
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+
+  // It's re-enabled when the ARC IME is deactivated.
+  engine_handler->Disable();
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 }
 
 }  // namespace arc
