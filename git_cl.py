@@ -81,6 +81,9 @@ REFS_THAT_ALIAS_TO_OTHER_REFS = {
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
+# File name for yapf style config files.
+YAPF_CONFIG_FILENAME = '.style.yapf'
+
 # Buildbucket master name prefix.
 MASTER_PREFIX = 'master.'
 
@@ -666,6 +669,88 @@ def print_try_jobs(options, builds):
   print('Total: %d try jobs' % total)
 
 
+def _ComputeDiffLineRanges(files, upstream_commit):
+  """Gets the changed line ranges for each file since upstream_commit.
+
+  Parses a git diff on provided files and returns a dict that maps a file name
+  to an ordered list of range tuples in the form (start_line, count).
+  Ranges are in the same format as a git diff.
+  """
+  # If files is empty then diff_output will be a full diff.
+  if len(files) == 0:
+    return {}
+
+  # Take diff and find the line ranges where there are changes.
+  diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, files, allow_prefix=True)
+  diff_output = RunGit(diff_cmd)
+
+  pattern = r'(?:^diff --git a/(?:.*) b/(.*))|(?:^@@.*\+(.*) @@)'
+  # 2 capture groups
+  # 0 == fname of diff file
+  # 1 == 'diff_start,diff_count' or 'diff_start'
+  # will match each of
+  # diff --git a/foo.foo b/foo.py
+  # @@ -12,2 +14,3 @@
+  # @@ -12,2 +17 @@
+  # running re.findall on the above string with pattern will give
+  # [('foo.py', ''), ('', '14,3'), ('', '17')]
+
+  curr_file = None
+  line_diffs = {}
+  for match in re.findall(pattern, diff_output, flags=re.MULTILINE):
+    if match[0] != '':
+      # Will match the second filename in diff --git a/a.py b/b.py.
+      curr_file = match[0]
+      line_diffs[curr_file] = []
+    else:
+      # Matches +14,3
+      if ',' in match[1]:
+        diff_start, diff_count = match[1].split(',')
+      else:
+        # Single line changes are of the form +12 instead of +12,1.
+        diff_start = match[1]
+        diff_count = 1
+
+      diff_start = int(diff_start)
+      diff_count = int(diff_count)
+
+      # If diff_count == 0 this is a removal we can ignore.
+      line_diffs[curr_file].append((diff_start, diff_count))
+
+  return line_diffs
+
+
+def _FindYapfConfigFile(fpath,
+                        yapf_config_cache,
+                        top_dir=None,
+                        default_style=None):
+  """Checks if a yapf file is in any parent directory of fpath until top_dir.
+
+  Recursively checks parent directories to find yapf file
+  and if no yapf file is found returns default_style.
+  Uses yapf_config_cache as a cache for previously found files.
+  """
+  # Return result if we've already computed it.
+  if fpath in yapf_config_cache:
+    return yapf_config_cache[fpath]
+
+  # Check if there is a style file in the current directory.
+  yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
+  dirname = os.path.dirname(fpath)
+  if os.path.isfile(yapf_file):
+    ret = yapf_file
+  elif fpath == top_dir or dirname == fpath:
+    # If we're at the top level directory, or if we're at root
+    # use the chromium default yapf style.
+    ret = default_style
+  else:
+    # Otherwise recurse on the current directory.
+    ret = _FindYapfConfigFile(dirname, yapf_config_cache, top_dir,
+                              default_style)
+  yapf_config_cache[fpath] = ret
+  return ret
+
+
 def write_try_results_json(output_file, builds):
   """Writes a subset of the data from fetch_try_jobs to a file as JSON.
 
@@ -691,7 +776,7 @@ def write_try_results_json(output_file, builds):
 
   converted = []
   for _, build in sorted(builds.items()):
-      converted.append(convert_build_dict(build))
+    converted.append(convert_build_dict(build))
   write_json(output_file, converted)
 
 
@@ -5772,12 +5857,15 @@ def CMDowners(parser, args):
       override_files=change.OriginalOwnersFiles()).run()
 
 
-def BuildGitDiffCmd(diff_type, upstream_commit, args):
+def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
   """Generates a diff command."""
   # Generate diff for the current branch's changes.
-  diff_cmd = ['-c', 'core.quotePath=false', 'diff',
-              '--no-ext-diff', '--no-prefix', diff_type,
-              upstream_commit, '--']
+  diff_cmd = ['-c', 'core.quotePath=false', 'diff', '--no-ext-diff']
+
+  if not allow_prefix:
+    diff_cmd += ['--no-prefix']
+
+  diff_cmd += [diff_type, upstream_commit, '--']
 
   if args:
     for arg in args:
@@ -5898,26 +5986,59 @@ def CMDformat(parser, args):
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
-  if opts.python:
+  if opts.python and python_diff_files:
     yapf_tool = gclient_utils.FindExecutable('yapf')
     if yapf_tool is None:
       DieWithError('yapf not found in PATH')
 
-    if opts.full:
-      if python_diff_files:
-        if opts.dry_run or opts.diff:
-          cmd = [yapf_tool, '--diff'] + python_diff_files
-          stdout = RunCommand(cmd, error_ok=True, cwd=top_dir)
-          if opts.diff:
-            sys.stdout.write(stdout)
-          elif len(stdout) > 0:
-            return_value = 2
-        else:
-          RunCommand([yapf_tool, '-i'] + python_diff_files, cwd=top_dir)
-    else:
-      # TODO(sbc): yapf --lines mode still has some issues.
-      # https://github.com/google/yapf/issues/154
-      DieWithError('--python currently only works with --full')
+    # If we couldn't find a yapf file we'll default to the chromium style
+    # specified in depot_tools.
+    depot_tools_path = os.path.dirname(os.path.abspath(__file__))
+    chromium_default_yapf_style = os.path.join(depot_tools_path,
+                                               YAPF_CONFIG_FILENAME)
+
+    # Note: yapf still seems to fix indentation of the entire file
+    # even if line ranges are specified.
+    # See https://github.com/google/yapf/issues/499
+    if not opts.full:
+      py_line_diffs = _ComputeDiffLineRanges(python_diff_files, upstream_commit)
+
+    # Used for caching.
+    yapf_configs = {}
+    for f in python_diff_files:
+      # Find the yapf style config for the current file, defaults to depot
+      # tools default.
+      yapf_config = _FindYapfConfigFile(
+          os.path.abspath(f), yapf_configs, top_dir,
+          chromium_default_yapf_style)
+
+      cmd = [yapf_tool, '--style', yapf_config, f]
+
+      has_formattable_lines = False
+      if not opts.full:
+        # Only run yapf over changed line ranges.
+        for diff_start, diff_len in py_line_diffs[f]:
+          diff_end = diff_start + diff_len - 1
+          # Yapf errors out if diff_end < diff_start but this
+          # is a valid line range diff for a removal.
+          if diff_end >= diff_start:
+            has_formattable_lines = True
+            cmd += ['-l', '{}-{}'.format(diff_start, diff_end)]
+        # If all line diffs were removals we have nothing to format.
+        if not has_formattable_lines:
+          continue
+
+      if opts.diff or opts.dry_run:
+        cmd += ['--diff']
+        # Will return non-zero exit code if non-empty diff.
+        stdout = RunCommand(cmd, error_ok=True, cwd=top_dir)
+        if opts.diff:
+          sys.stdout.write(stdout)
+        elif len(stdout) > 0:
+          return_value = 2
+      else:
+        cmd += ['-i']
+        RunCommand(cmd, cwd=top_dir)
 
   # Dart's formatter does not have the nice property of only operating on
   # modified chunks, so hard code full.
