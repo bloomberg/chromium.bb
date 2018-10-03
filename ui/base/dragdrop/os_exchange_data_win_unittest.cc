@@ -304,23 +304,6 @@ TEST(OSExchangeDataWinTest, FileContents) {
   EXPECT_EQ(file_contents, read_contents);
 }
 
-TEST(OSExchangeDataWinTest, Filenames) {
-  OSExchangeData data;
-  const std::vector<FileInfo> kTestFilenames = {
-      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file1")),
-       base::FilePath()},
-      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file2")),
-       base::FilePath()},
-  };
-  data.SetFilenames(kTestFilenames);
-
-  OSExchangeData copy(data.provider().Clone());
-  std::vector<FileInfo> dropped_filenames;
-
-  EXPECT_TRUE(copy.GetFilenames(&dropped_filenames));
-  EXPECT_EQ(kTestFilenames, dropped_filenames);
-}
-
 TEST(OSExchangeDataWinTest, CFHtml) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
