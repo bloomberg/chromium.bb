@@ -106,7 +106,9 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
   if (isVP9(config)) {
     accelerated_video_decoder_ =
-        std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>());
+        std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>(
+            this, media_log_.get(), video_decoder, video_device_,
+            video_context_));
     return;
   }
 
