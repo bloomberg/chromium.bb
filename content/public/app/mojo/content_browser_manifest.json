@@ -117,6 +117,7 @@
         ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
+        "media_session": [ "media_session:app" ],
         "metrics": [ "url_keyed_metrics" ],
         "network": [
           "network_service",
