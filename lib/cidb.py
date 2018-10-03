@@ -693,7 +693,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
-      'build_type', 'metadata_url', 'toolchain_url')
+      'build_type', 'metadata_url', 'toolchain_url', 'branch')
 
   _SQL_FETCH_ANNOTATIONS = (
       'SELECT aT.build_id, aT.last_updated, last_annotator, '
@@ -1156,14 +1156,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'WHERE (build_id, child_config) = (%d, "%s")' %
         (status, build_id, child_config))
 
-  @minimum_schema(50)
+  @minimum_schema(65)
   def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
     status = self._SelectWhere('buildTable',
                                'buildbucket_id = "%s"' % buildbucket_id,
                                self.BUILD_STATUS_KEYS)
     return status[0] if status else None
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildStatus(self, build_id):
     """Gets the status of the build.
 
@@ -1177,7 +1177,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     statuses = self.GetBuildStatuses([build_id])
     return statuses[0] if statuses else None
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildStatuses(self, build_ids):
     """Gets the statuses of the builds.
 
@@ -1248,7 +1248,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         ['id', 'build_id', 'name', 'board', 'status',
          'last_updated', 'start_time', 'finish_time', 'final'])
 
-  @minimum_schema(43)
+  @minimum_schema(65)
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the statuses of slave builders to given build.
 
@@ -1458,7 +1458,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     deadline_past = (r[0][0] == 0)
     return 0 if deadline_past else abs(time_remaining.total_seconds())
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       milestone_version=None, platform_version=None,
@@ -1511,7 +1511,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         waterfall=waterfall, buildbot_generation=buildbot_generation,
         final=final, reverse=reverse)
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
                        milestone_version=None, platform_version=None,
@@ -1670,7 +1670,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
             for values in results]
 
-  @minimum_schema(47)
+  @minimum_schema(65)
   def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
     """Returns basic information about most recent completed build.
 
