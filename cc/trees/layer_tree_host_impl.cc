@@ -5397,8 +5397,7 @@ bool LayerTreeHostImpl::EvictedUIResourcesExist() const {
 }
 
 void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
-  std::set<UIResourceId>::iterator found_in_evicted =
-      evicted_ui_resources_.find(uid);
+  auto found_in_evicted = evicted_ui_resources_.find(uid);
   if (found_in_evicted == evicted_ui_resources_.end())
     return;
   evicted_ui_resources_.erase(found_in_evicted);
@@ -5420,13 +5419,13 @@ void LayerTreeHostImpl::RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
 }
 
 void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfSetNeedsRedraw() {
-  std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
+  auto it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnSetNeedsRedrawOnImpl();
 }
 
 void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
-  std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
+  auto it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
 }

@@ -311,7 +311,7 @@ class RasterBufferProviderPerfTestBase {
 
       for (auto& decode_task : raster_task->dependencies()) {
         // Add decode task if it doesn't already exist in graph.
-        TaskGraph::Node::Vector::iterator decode_it =
+        auto decode_it =
             std::find_if(graph->nodes.begin(), graph->nodes.end(),
                          [decode_task](const TaskGraph::Node& node) {
                            return node.task == decode_task;

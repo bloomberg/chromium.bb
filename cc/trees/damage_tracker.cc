@@ -213,8 +213,8 @@ DamageTracker::LayerRectMapData& DamageTracker::RectDataForLayer(
     bool* layer_is_new) {
   LayerRectMapData data(layer_id);
 
-  SortedRectMapForLayers::iterator it = std::lower_bound(
-      rect_history_for_layers_.begin(), rect_history_for_layers_.end(), data);
+  auto it = std::lower_bound(rect_history_for_layers_.begin(),
+                             rect_history_for_layers_.end(), data);
 
   if (it == rect_history_for_layers_.end() || it->layer_id_ != layer_id) {
     *layer_is_new = true;
@@ -229,9 +229,8 @@ DamageTracker::SurfaceRectMapData& DamageTracker::RectDataForSurface(
     bool* surface_is_new) {
   SurfaceRectMapData data(surface_id);
 
-  SortedRectMapForSurfaces::iterator it =
-      std::lower_bound(rect_history_for_surfaces_.begin(),
-                       rect_history_for_surfaces_.end(), data);
+  auto it = std::lower_bound(rect_history_for_surfaces_.begin(),
+                             rect_history_for_surfaces_.end(), data);
 
   if (it == rect_history_for_surfaces_.end() || it->surface_id_ != surface_id) {
     *surface_is_new = true;
@@ -271,12 +270,10 @@ DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromLeftoverRects() {
   // So, these regions are now exposed on the target surface.
 
   DamageAccumulator damage;
-  SortedRectMapForLayers::iterator layer_cur_pos =
-      rect_history_for_layers_.begin();
-  SortedRectMapForLayers::iterator layer_copy_pos = layer_cur_pos;
-  SortedRectMapForSurfaces::iterator surface_cur_pos =
-      rect_history_for_surfaces_.begin();
-  SortedRectMapForSurfaces::iterator surface_copy_pos = surface_cur_pos;
+  auto layer_cur_pos = rect_history_for_layers_.begin();
+  auto layer_copy_pos = layer_cur_pos;
+  auto surface_cur_pos = rect_history_for_surfaces_.begin();
+  auto surface_copy_pos = surface_cur_pos;
 
   // Loop below basically implements std::remove_if loop with and extra
   // processing (adding deleted rect to damage) for deleted items.

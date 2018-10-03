@@ -1402,7 +1402,7 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) const {
-  LayerImplMap::const_iterator iter = layer_id_map_.find(id);
+  auto iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
@@ -1834,8 +1834,7 @@ void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
 }
 
 void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
-  std::vector<PictureLayerImpl*>::iterator it =
-      std::find(picture_layers_.begin(), picture_layers_.end(), layer);
+  auto it = std::find(picture_layers_.begin(), picture_layers_.end(), layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
 }
