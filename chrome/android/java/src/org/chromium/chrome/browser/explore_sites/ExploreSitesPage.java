@@ -49,9 +49,10 @@ public class ExploreSitesPage extends BasicNativePage {
     @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CatalogLoadingState {
-        int LOADING = 1;
+        int LOADING = 1; // Loading catalog info from disk.
         int SUCCESS = 2;
-        int ERROR = 3;
+        int ERROR = 3; // Error retrieving catalog resources from internet.
+        int LOADING_NET = 4; // Retrieving catalog resources from internet.
     }
 
     private final TabModelSelector mTabModelSelector;
@@ -122,6 +123,10 @@ public class ExploreSitesPage extends BasicNativePage {
     private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
         if (categoryList == null) {
             mModel.set(STATUS_KEY, CatalogLoadingState.ERROR);
+            return;
+        }
+        if (categoryList.isEmpty()) {
+            mModel.set(STATUS_KEY, CatalogLoadingState.LOADING_NET);
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
