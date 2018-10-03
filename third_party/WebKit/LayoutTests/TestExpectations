@@ -3489,8 +3489,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
-crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_up.html [ Failure ]
