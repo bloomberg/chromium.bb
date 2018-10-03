@@ -134,7 +134,7 @@ class TryFlagTest(unittest.TestCase):
         TryFlag(cmd, host, MockGitCL(host, self.mock_try_results)).run()
 
         def results_url(build):
-            return '%s/%s/%s/webkit_layout_tests (with patch)/layout-test-results/results.html' % (
+            return '%s/%s/%s/layout-test-results/results.html' % (
                 'https://test-results.appspot.com/data/layout_results',
                 build.builder_name,
                 build.build_number
