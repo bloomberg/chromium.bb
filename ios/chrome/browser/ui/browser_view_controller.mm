@@ -5080,8 +5080,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // The animation will have the same frame as |self|, minus the status bar,
   // so shift it down and reduce its height accordingly.
   CGRect frame = self.view.bounds;
-  frame.origin.y += StatusBarHeight();
-  frame.size.height -= StatusBarHeight();
+  if (!self.usesFullscreenContainer ||
+      !base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    frame.origin.y += StatusBarHeight();
+    frame.size.height -= StatusBarHeight();
+  }
   frame = [self.contentArea convertRect:frame fromView:self.view];
   ForegroundTabAnimationView* animatedView =
       [[ForegroundTabAnimationView alloc] initWithFrame:frame];

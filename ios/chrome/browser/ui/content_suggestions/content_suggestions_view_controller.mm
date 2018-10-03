@@ -591,6 +591,9 @@ const CGFloat kCardBorderRadius = 11;
 // though content suggestions appear under the top safe area, they are blocked
 // by the browser container view controller.
 - (void)correctMissingSafeArea {
+  if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
+    return;
+
   if (@available(iOS 11, *)) {
     UIEdgeInsets missingTop = UIEdgeInsetsZero;
     // During the new tab animation the browser container view controller
