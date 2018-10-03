@@ -531,8 +531,7 @@ bool Query::GetMemberValueAsDouble(const TraceEvent& event,
     case OTHER_ARG:
     case PREV_ARG: {
       // Search for the argument name and return its value if found.
-      std::map<std::string, double>::const_iterator num_i =
-          the_event->arg_numbers.find(string_);
+      auto num_i = the_event->arg_numbers.find(string_);
       if (num_i == the_event->arg_numbers.end())
         return false;
       *num = num_i->second;
@@ -582,8 +581,7 @@ bool Query::GetMemberValueAsString(const TraceEvent& event,
     case OTHER_ARG:
     case PREV_ARG: {
       // Search for the argument name and return its value if found.
-      std::map<std::string, std::string>::const_iterator str_i =
-          the_event->arg_strings.find(string_);
+      auto str_i = the_event->arg_strings.find(string_);
       if (str_i == the_event->arg_strings.end())
         return false;
       *str = str_i->second;

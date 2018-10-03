@@ -1052,8 +1052,7 @@ void TraceLog::OnFlushTimeout(int generation, bool discard_events) {
            "If this happens stably for some thread, please call "
            "TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop() from "
            "the thread to avoid its trace events from being lost.";
-    for (hash_set<MessageLoop*>::const_iterator it =
-             thread_message_loops_.begin();
+    for (auto it = thread_message_loops_.begin();
          it != thread_message_loops_.end(); ++it) {
       LOG(WARNING) << "Thread: " << (*it)->GetThreadName();
     }
