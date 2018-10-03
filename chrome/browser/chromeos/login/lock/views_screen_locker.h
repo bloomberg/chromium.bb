@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_VIEWS_SCREEN_LOCKER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -25,7 +28,8 @@ class MojoVersionInfoDispatcher;
 class ViewsScreenLocker : public LoginScreenClient::Delegate,
                           public ScreenLocker::Delegate,
                           public PowerManagerClient::Observer,
-                          public lock_screen_apps::FocusCyclerDelegate {
+                          public lock_screen_apps::FocusCyclerDelegate,
+                          public chromeos::MediaAnalyticsClient::Observer {
  public:
   explicit ViewsScreenLocker(ScreenLocker* screen_locker);
   ~ViewsScreenLocker() override;
@@ -78,6 +82,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UnregisterLockScreenAppFocusHandler() override;
   void HandleLockScreenAppFocusOut(bool reverse) override;
 
+  // chromeos::MediaAnalyticsClient::Observer
+  void OnDetectionSignal(const mri::MediaPerception& media_perception) override;
+
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
@@ -108,6 +115,11 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
   // Updates UI when version info is changed.
   std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
+
+  chromeos::MediaAnalyticsClient* media_analytics_client_;
+
+  ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
+      scoped_observer_{this};
 
   base::WeakPtrFactory<ViewsScreenLocker> weak_factory_;
 

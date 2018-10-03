@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -38,6 +40,7 @@ namespace chromeos {
 
 namespace {
 constexpr char kLockDisplay[] = "lock";
+constexpr char kExternalBinaryAuth[] = "external_binary_auth";
 
 ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
     ScreenLocker::FingerprintState state) {
@@ -57,11 +60,40 @@ ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
   }
 }
 
+void OnSetState(base::Optional<mri::State> maybe_state) {
+  // TODO/FIXME: add handling for starting the graph process.
+  NOTIMPLEMENTED();
+}
+
+// Starts the graph specified by |configuration| if the current graph
+// is SUSPENDED or if the current configuration is different.
+void StartGraphIfNeeded(chromeos::MediaAnalyticsClient* client,
+                        const std::string& configuration,
+                        base::Optional<mri::State> maybe_state) {
+  if (!maybe_state)
+    return;
+
+  if (maybe_state->status() == mri::State::SUSPENDED) {
+    mri::State new_state;
+    new_state.set_status(mri::State::RUNNING);
+    new_state.set_configuration(configuration);
+    client->SetState(new_state, base::BindOnce(&OnSetState));
+  } else if (maybe_state->configuration() != configuration) {
+    mri::State suspend_state;
+    suspend_state.set_status(mri::State::SUSPENDED);
+    suspend_state.set_configuration(configuration);
+    client->SetState(suspend_state, base::BindOnce(&StartGraphIfNeeded, client,
+                                                   configuration));
+  }
+}
+
 }  // namespace
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
       version_info_updater_(std::make_unique<MojoVersionInfoDispatcher>()),
+      media_analytics_client_(
+          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()),
       weak_factory_(this) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
@@ -74,6 +106,9 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
           kDeviceLoginScreenInputMethods,
           base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
                      base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(ash::features::kUnlockWithExternalBinary))
+    scoped_observer_.Add(media_analytics_client_);
 }
 
 ViewsScreenLocker::~ViewsScreenLocker() {
@@ -198,6 +233,8 @@ void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
 void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
+  media_analytics_client_->GetState(base::BindOnce(
+      &StartGraphIfNeeded, media_analytics_client_, kExternalBinaryAuth));
   // TODO/FIXME: implement the actual external binary auth check.
   bool auth_success = false;
   NOTIMPLEMENTED();
@@ -297,6 +334,13 @@ void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
 void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
   LoginScreenClient::Get()->login_screen()->HandleFocusLeavingLockScreenApps(
       reverse);
+}
+
+void ViewsScreenLocker::OnDetectionSignal(
+    const mri::MediaPerception& media_perception) {
+  // TODO/FIXME: respond to positive/negative signal from external binary
+  // auth service.
+  NOTIMPLEMENTED();
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {

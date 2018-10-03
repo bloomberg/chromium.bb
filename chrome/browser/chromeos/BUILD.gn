@@ -83,6 +83,7 @@ source_set("chromeos") {
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:login_manager_proto",
+    "//chromeos:media_perception_proto",
     "//chromeos:metrics_event_proto",
     "//chromeos:oobe_config_proto",
     "//chromeos/assistant:buildflags",
