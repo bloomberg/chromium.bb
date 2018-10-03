@@ -137,9 +137,6 @@ class VR_UI_EXPORT Ui : public UiInterface,
                                            PlatformUiInputDelegate* delegate,
                                            float width_percentage,
                                            float height_percentage) override;
-  void SetAlertDialogSize(float width, float height) override;
-  void SetContentOverlayAlertDialogSize(float width_percentage,
-                                        float height_percentage) override;
   void SetDialogLocation(float x, float y) override;
   void SetDialogFloating(bool floating) override;
   void ShowPlatformToast(const base::string16& text) override;
@@ -198,6 +195,9 @@ class VR_UI_EXPORT Ui : public UiInterface,
   void OnKeyboardHidden() override;
 
  private:
+  void SetAlertDialogSize(float width, float height);
+  void SetContentOverlayAlertDialogSize(float width_percentage,
+                                        float height_percentage);
   void RequestFocus(int element_id);
   void RequestUnfocus(int element_id);
   void OnMenuButtonClicked();

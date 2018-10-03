@@ -58,18 +58,12 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   void OnExitPresent();
   void OnTriggerEvent(bool pressed);
   void SetWebXrMode(bool enabled);
-  void OnSwapContents(int new_content_id);
   void EnableAlertDialog(PlatformInputHandler* input_handler,
                          float width,
                          float height);
   void DisableAlertDialog();
   void SetAlertDialogSize(float width, float height);
-  void SetDialogLocation(float x, float y);
-  void SetDialogFloating(bool floating);
-  void ShowToast(const base::string16& text);
-  void CancelToast();
   void ResumeContentRendering();
-  void ContentBoundsChanged(int width, int height);
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size);
 

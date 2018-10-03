@@ -220,9 +220,7 @@ void VrShell::SwapContents(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& tab) {
   content_id_++;
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&BrowserRenderer::OnSwapContents,
-                                gl_thread_->GetBrowserRenderer(), content_id_));
+  gl_thread_->OnSwapContents(content_id_);
   TabAndroid* active_tab =
       tab.is_null()
           ? nullptr
@@ -673,17 +671,13 @@ void VrShell::SetDialogLocation(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 float x,
                                 float y) {
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&BrowserRenderer::SetDialogLocation,
-                                gl_thread_->GetBrowserRenderer(), x, y));
+  gl_thread_->SetDialogLocation(x, y);
 }
 
 void VrShell::SetDialogFloating(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 bool floating) {
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&BrowserRenderer::SetDialogFloating,
-                                gl_thread_->GetBrowserRenderer(), floating));
+  gl_thread_->SetDialogFloating(floating);
 }
 
 void VrShell::ShowToast(JNIEnv* env,
@@ -691,15 +685,12 @@ void VrShell::ShowToast(JNIEnv* env,
                         jstring jtext) {
   base::string16 text;
   base::android::ConvertJavaStringToUTF16(env, jtext, &text);
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&BrowserRenderer::ShowToast,
-                                gl_thread_->GetBrowserRenderer(), text));
+  gl_thread_->ShowPlatformToast(text);
 }
 
 void VrShell::CancelToast(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::CancelToast,
-                                           gl_thread_->GetBrowserRenderer()));
+  gl_thread_->CancelPlatformToast();
 }
 
 void VrShell::ConnectPresentingService(
@@ -952,10 +943,7 @@ void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
   Java_VrShell_setContentCssSize(env, j_vr_shell_, window_size.width(),
                                  window_size.height(), dpr);
 
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&BrowserRenderer::ContentBoundsChanged,
-                                gl_thread_->GetBrowserRenderer(),
-                                window_size.width(), window_size.height()));
+  gl_thread_->OnContentBoundsChanged(window_size.width(), window_size.height());
 }
 
 void VrShell::SetVoiceSearchActive(bool active) {

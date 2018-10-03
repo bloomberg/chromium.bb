@@ -158,10 +158,6 @@ void BrowserRenderer::SetWebXrMode(bool enabled) {
   scheduler_delegate_->SetWebXrMode(enabled);
 }
 
-void BrowserRenderer::OnSwapContents(int new_content_id) {
-  ui_->OnSwapContents(new_content_id);
-}
-
 void BrowserRenderer::EnableAlertDialog(PlatformInputHandler* input_handler,
                                         float width,
                                         float height) {
@@ -206,29 +202,8 @@ void BrowserRenderer::SetAlertDialogSize(float width, float height) {
   }
 }
 
-void BrowserRenderer::SetDialogLocation(float x, float y) {
-  ui_->SetDialogLocation(x, y);
-}
-
-void BrowserRenderer::SetDialogFloating(bool floating) {
-  ui_->SetDialogFloating(floating);
-}
-
-void BrowserRenderer::ShowToast(const base::string16& text) {
-  ui_->ShowPlatformToast(text);
-}
-
-void BrowserRenderer::CancelToast() {
-  ui_->CancelPlatformToast();
-}
-
 void BrowserRenderer::ResumeContentRendering() {
   graphics_delegate_->ResumeContentRendering();
-}
-
-void BrowserRenderer::ContentBoundsChanged(int width, int height) {
-  TRACE_EVENT0("gpu", __func__);
-  ui_->OnContentBoundsChanged(width, height);
 }
 
 void BrowserRenderer::BufferBoundsChanged(

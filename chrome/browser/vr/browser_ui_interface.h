@@ -24,6 +24,8 @@ struct OmniboxSuggestions;
 struct ToolbarState;
 
 // The browser communicates state changes to the VR UI via this interface.
+// A GL thread would also implement this interface to provide a convenient way
+// to call these methods from the main thread.
 class VR_EXPORT BrowserUiInterface {
  public:
   virtual ~BrowserUiInterface() {}
@@ -57,6 +59,12 @@ class VR_EXPORT BrowserUiInterface {
                                      int selection_end,
                                      int composition_start,
                                      int composition_end) = 0;
+  virtual void OnSwapContents(int new_content_id) = 0;
+  virtual void SetDialogLocation(float x, float y) = 0;
+  virtual void SetDialogFloating(bool floating) = 0;
+  virtual void ShowPlatformToast(const base::string16& text) = 0;
+  virtual void CancelPlatformToast() = 0;
+  virtual void OnContentBoundsChanged(int width, int height) = 0;
   virtual void AddOrUpdateTab(int id,
                               bool incognito,
                               const base::string16& title) = 0;
