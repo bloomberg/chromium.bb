@@ -1594,23 +1594,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Create a profile that will be destroyed later.
   base::ScopedAllowBlockingForTesting allow_blocking;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* tmp_profile = Profile::CreateProfile(
+  Profile* temp_profile = Profile::CreateProfile(
       profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
       Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
 
   // Create a WebRequestAPI instance that we can control the lifetime of.
-  auto api = std::make_unique<WebRequestAPI>(tmp_profile);
-  // Make sure we are proxying for |tmp_profile|.
+  auto api = std::make_unique<WebRequestAPI>(temp_profile);
+  // Make sure we are proxying for |temp_profile|.
   api->ForceProxyForTesting();
-  content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
+  content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->FlushNetworkInterfaceForTesting();
 
   network::mojom::URLLoaderFactoryPtr factory;
   auto request = mojo::MakeRequest(&factory);
-  EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(nullptr, false, &request));
+  auto temp_web_contents =
+      WebContents::Create(WebContents::CreateParams(temp_profile));
+  EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(temp_web_contents->GetMainFrame(),
+                                              false, &request));
+  temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
-  content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
+  content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->GetNetworkContext()
       ->CreateURLLoaderFactory(std::move(request), std::move(params));
 
@@ -1627,7 +1631,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // WebRequestAPI. This will cause the connection error that will reach the
   // proxy before the ProxySet shutdown code runs on the IO thread.
   api->Shutdown();
-  ProfileDestroyer::DestroyProfileWhenAppropriate(tmp_profile);
+  ProfileDestroyer::DestroyProfileWhenAppropriate(temp_profile);
   client.Unbind();
   api.reset();
 }

@@ -600,20 +600,18 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool skip_proxy = true;
     // There are a few internal WebUIs that use WebView tag that are whitelisted
     // for webRequest.
-    if (frame) {
-      auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
-      if (web_contents && WebViewGuest::IsGuest(web_contents)) {
-        auto* guest_web_contents =
-            WebViewGuest::GetTopLevelWebContents(web_contents);
-        auto& guest_url = guest_web_contents->GetURL();
-        if (guest_url.SchemeIs(content::kChromeUIScheme)) {
-          auto* feature = FeatureProvider::GetAPIFeature("webRequestInternal");
-          if (feature
-                  ->IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
-                                         guest_url)
-                  .is_available()) {
-            skip_proxy = false;
-          }
+    auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
+    if (web_contents && WebViewGuest::IsGuest(web_contents)) {
+      auto* guest_web_contents =
+          WebViewGuest::GetTopLevelWebContents(web_contents);
+      auto& guest_url = guest_web_contents->GetURL();
+      if (guest_url.SchemeIs(content::kChromeUIScheme)) {
+        auto* feature = FeatureProvider::GetAPIFeature("webRequestInternal");
+        if (feature
+                ->IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
+                                       guest_url)
+                .is_available()) {
+          skip_proxy = false;
         }
       }
     }
@@ -639,25 +637,22 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   // NOTE: This request may be proxied on behalf of an incognito frame, but
   // |this| will always be bound to a regular profile (see
   // |BrowserContextKeyedAPI::kServiceRedirectedInIncognito|). As such, we use
-  // the frame's BrowserContext when |frame| is non-null.
-  auto* browser_context =
-      frame ? frame->GetProcess()->GetBrowserContext() : browser_context_;
+  // the frame's BrowserContext.
+  auto* browser_context = frame->GetProcess()->GetBrowserContext();
   DCHECK(browser_context == browser_context_ ||
          (browser_context->IsOffTheRecord() &&
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
-  const bool is_for_browser_initiated_requests = is_navigation || !frame;
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &WebRequestProxyingURLLoaderFactory::StartProxying, browser_context,
-          browser_context->GetResourceContext(),
-          // Match the behavior of the WebRequestInfo constructor
-          // which takes a net::URLRequest*.
-          is_for_browser_initiated_requests ? -1 : frame->GetProcess()->GetID(),
-          request_id_generator_, std::move(navigation_ui_data),
-          base::Unretained(info_map_), std::move(proxied_request),
-          std::move(target_factory_info)));
+      base::BindOnce(&WebRequestProxyingURLLoaderFactory::StartProxying,
+                     browser_context, browser_context->GetResourceContext(),
+                     // Match the behavior of the WebRequestInfo constructor
+                     // which takes a net::URLRequest*.
+                     is_navigation ? -1 : frame->GetProcess()->GetID(),
+                     request_id_generator_, std::move(navigation_ui_data),
+                     base::Unretained(info_map_), std::move(proxied_request),
+                     std::move(target_factory_info)));
   return true;
 }
 
