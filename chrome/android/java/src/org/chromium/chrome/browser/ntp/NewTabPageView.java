@@ -280,7 +280,7 @@ public class NewTabPageView extends FrameLayout {
 
         if (FeatureUtilities.isBottomToolbarEnabled()) {
             ((MarginLayoutParams) getLayoutParams()).bottomMargin =
-                    mTab.getFullscreenManager().getBottomControlsHeight();
+                    getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height);
         }
     }
 
