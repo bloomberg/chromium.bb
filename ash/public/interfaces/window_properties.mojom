@@ -18,31 +18,19 @@ const string kBlockedForAssistantSnapshot_Property =
 const string kCanConsumeSystemKeys_Property =
   "ash:can-consume-system-keys";
 
-// A boolean that tells Ash whether the frame's colors come from a PWA manifest.
-const string kFrameIsThemedByHostedApp_Property =
-    "ash:frame-is-themed-by-hosted-app";
-
-// The color of the text drawn on the frame (i.e. the window title). Only used
-// for tabless browser windows.
-const string kFrameTextColor_Property = "ash:frame-text-color";
-
-// See ash::kHideCaptionButtonsInTabletModeKey.
-const string kHideCaptionButtonsInTabletMode_Property =
-    "ash:hide-caption-buttons-in-tablet-mode";
-
 // True if the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 const string kHideShelfWhenFullscreen_Property =
   "ash:hide-shelf-when-fullscreen";
 
-// See ash::kImmseriveImpliedByFullscreen.
+// See ash::kImmersiveImpliedByFullscreen.
 const string kImmersiveImpliedByFullscreen_Property =
   "ash:immersive-implied-by-fullscreen";
 
-// See ash::kImmseriveIsActive.
+// See ash::kImmersiveIsActive.
 const string kImmersiveIsActive_Property = "ash:immersive-is-active";
 
-// See ash::kImmseriveTopContainerBoundsInScreen.
+// See ash::kImmersiveTopContainerBoundsInScreen.
 const string kImmersiveTopContainerBoundsInScreen_Property =
     "ash:immersive-top-container-bounds-in-screen";
 

@@ -34,11 +34,6 @@ interface WindowManager {
   // Type: int32_t.
   const string kContainerId_InitProperty = "init:container_id";
 
-  // Disables the window manager from handling immersive fullscreen for the
-  // window. This is typically done if the client wants to handle immersive
-  // themselves. Type: bool.
-  const string kDisableImmersive_InitProperty = "init:disable_immersive";
-
   // The id of the display (display::Display::id()) to create the window on.
   // Type: int64.
   const string kDisplayId_InitProperty = "init:display_id";

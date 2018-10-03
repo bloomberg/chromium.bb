@@ -325,12 +325,7 @@ void HeaderView::UpdateCaptionButtonsVisibility() {
   if (!target_widget_)
     return;
 
-  caption_button_container_->SetVisible(
-      should_paint_ && !(Shell::Get()
-                             ->tablet_mode_controller()
-                             ->IsTabletModeWindowManagerEnabled() &&
-                         target_widget_->GetNativeWindow()->GetProperty(
-                             ash::kHideCaptionButtonsInTabletModeKey)));
+  caption_button_container_->SetVisible(should_paint_);
 }
 
 }  // namespace ash
