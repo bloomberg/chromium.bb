@@ -18,7 +18,8 @@
 
 namespace media_session {
 
-class AudioFocusManager : public mojom::AudioFocusManager {
+class AudioFocusManager : public mojom::AudioFocusManager,
+                          public mojom::AudioFocusManagerDebug {
  public:
   using RequestId = uint64_t;
 
@@ -32,12 +33,17 @@ class AudioFocusManager : public mojom::AudioFocusManager {
                          mojom::AudioFocusType type,
                          RequestAudioFocusCallback callback) override;
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
+  void AddObserver(mojom::AudioFocusObserverPtr observer) override;
+
+  // mojom::AudioFocusManagerDebug.
   void GetDebugInfoForRequest(uint64_t request_id,
                               GetDebugInfoForRequestCallback callback) override;
-  void AddObserver(mojom::AudioFocusObserverPtr observer) override;
 
   // Bind to a mojom::AudioFocusManagerRequest.
   void BindToInterface(mojom::AudioFocusManagerRequest request);
+
+  // Bind to a mojom::AudioFocusManagerDebugRequest.
+  void BindToDebugInterface(mojom::AudioFocusManagerDebugRequest request);
 
   // This will close all Mojo bindings and interface pointers. This should be
   // called by the MediaSession service before it is destroyed.
@@ -72,6 +78,9 @@ class AudioFocusManager : public mojom::AudioFocusManager {
 
   // Holds mojo bindings for the Audio Focus Manager API.
   mojo::BindingSet<mojom::AudioFocusManager> bindings_;
+
+  // Holds mojo bindings for the Audio Focus Manager Debug API.
+  mojo::BindingSet<mojom::AudioFocusManagerDebug> debug_bindings_;
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.

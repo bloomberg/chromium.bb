@@ -140,6 +140,10 @@ class AudioFocusManagerTest : public testing::Test {
     // Bind |audio_focus_ptr_| to AudioFocusManager.
     connector_->BindInterface("test", mojo::MakeRequest(&audio_focus_ptr_));
 
+    // Bind |audio_focus_debug_ptr_| to AudioFocusManagerDebug.
+    connector_->BindInterface("test",
+                              mojo::MakeRequest(&audio_focus_debug_ptr_));
+
     // AudioFocusManager is a singleton so we should make sure we reset any
     // state in between tests.
     AudioFocusManager::GetInstance()->ResetForTesting();
@@ -239,8 +243,10 @@ class AudioFocusManagerTest : public testing::Test {
             },
             &result);
 
-    GetService()->GetDebugInfoForRequest(request_id, std::move(callback));
+    GetDebugService()->GetDebugInfoForRequest(request_id, std::move(callback));
+
     FlushForTesting();
+    audio_focus_debug_ptr_.FlushForTesting();
 
     return result;
   }
@@ -296,6 +302,10 @@ class AudioFocusManagerTest : public testing::Test {
     return audio_focus_ptr_.get();
   }
 
+  mojom::AudioFocusManagerDebug* GetDebugService() const {
+    return audio_focus_debug_ptr_.get();
+  }
+
   void FlushForTesting() {
     audio_focus_ptr_.FlushForTesting();
     AudioFocusManager::GetInstance()->FlushForTesting();
@@ -305,6 +315,7 @@ class AudioFocusManagerTest : public testing::Test {
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
