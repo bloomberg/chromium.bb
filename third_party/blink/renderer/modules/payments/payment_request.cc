@@ -1222,7 +1222,8 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 
   if (retry_resolver_) {
     DCHECK(payment_response_);
-    payment_response_->Update(std::move(response), shipping_address_.Get());
+    payment_response_->Update(retry_resolver_->GetScriptState(),
+                              std::move(response), shipping_address_.Get());
     retry_resolver_->Resolve();
 
     // Do not close the mojo connection here. The merchant website should call
@@ -1230,9 +1231,9 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     // connection to display a success or failure message to the user.
     retry_resolver_.Clear();
   } else if (accept_resolver_) {
-    payment_response_ =
-        new PaymentResponse(GetExecutionContext(), std::move(response),
-                            shipping_address_.Get(), this, id_);
+    payment_response_ = new PaymentResponse(accept_resolver_->GetScriptState(),
+                                            std::move(response),
+                                            shipping_address_.Get(), this, id_);
     accept_resolver_->Resolve(payment_response_);
 
     // Do not close the mojo connection here. The merchant website should call
