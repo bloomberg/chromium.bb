@@ -63,16 +63,14 @@
           </div>
         </div>
         <div id="offline-content-list" hidden>
-          <webview>
-            <div class="offline-content-list-title" jsselect="offlineContentList"
-                jscontent="title"></div>
-            <div id="offline-content-suggestions"></div>
-            <div class="offline-content-list-action">
-              <a class="link-button" onclick="launchDownloadsPage()" 
-                  jsselect="offlineContentList" jscontent="actionText">
-              </a>
-            </div>
-          </webview>
+          <div class="offline-content-list-title" jsselect="offlineContentList"
+              jscontent="title"></div>
+          <div id="offline-content-suggestions"></div>
+          <div class="offline-content-list-action">
+            <a class="link-button" onclick="launchDownloadsPage()"
+                jsselect="offlineContentList" jscontent="actionText">
+            </a>
+          </div>
         </div>
         <div id="offline-content-summary" onclick="launchDownloadsPage()" hidden>
           <div class="offline-content-summary-images">
