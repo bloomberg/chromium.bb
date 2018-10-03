@@ -98,13 +98,13 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
   void VerifyUnackedPackets(QuicPacketNumber* packets, size_t num_packets) {
     unacked_packets_.RemoveObsoletePackets();
     if (num_packets == 0) {
-      EXPECT_FALSE(unacked_packets_.HasUnackedPackets());
+      EXPECT_TRUE(unacked_packets_.empty());
       if (!GetQuicReloadableFlag(quic_optimize_inflight_check)) {
         EXPECT_FALSE(unacked_packets_.HasUnackedRetransmittableFrames());
       }
       return;
     }
-    EXPECT_TRUE(unacked_packets_.HasUnackedPackets());
+    EXPECT_FALSE(unacked_packets_.empty());
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(unacked_packets_.IsUnacked(packets[i])) << packets[i];
     }

@@ -43,6 +43,10 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   QuicTagVector copt;
   copt.push_back(kNSTP);
 
+  // Enable and request QUIC to include receive timestamps in ACK frames.
+  SetQuicReloadableFlag(quic_send_timestamps, true);
+  copt.push_back(kSTMP);
+
   // Enable ACK_DECIMATION_WITH_REORDERING. It requires ack_decimation to be
   // false.
   SetQuicReloadableFlag(quic_enable_ack_decimation, false);

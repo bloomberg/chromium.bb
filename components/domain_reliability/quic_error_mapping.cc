@@ -291,6 +291,7 @@ const struct QuicErrorMapping {
     {quic::QUIC_INVALID_PATH_RESPONSE_DATA, "quic.invalid.path_response_data"},
     {quic::QUIC_INVALID_MESSAGE_DATA, "quic.invalid.message_data"},
     {quic::IETF_QUIC_PROTOCOL_VIOLATION, "quic.ietf.protocol_violation"},
+    {quic::QUIC_INVALID_NEW_TOKEN, "quic.invalid_new_token"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

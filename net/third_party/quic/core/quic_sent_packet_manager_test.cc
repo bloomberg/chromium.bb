@@ -113,13 +113,13 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
   }
   void VerifyUnackedPackets(QuicPacketNumber* packets, size_t num_packets) {
     if (num_packets == 0) {
-      EXPECT_FALSE(manager_.HasUnackedPackets());
+      EXPECT_TRUE(manager_.unacked_packets().empty());
       EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
                         &manager_));
       return;
     }
 
-    EXPECT_TRUE(manager_.HasUnackedPackets());
+    EXPECT_FALSE(manager_.unacked_packets().empty());
     EXPECT_EQ(packets[0], manager_.GetLeastUnacked());
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(QuicSentPacketManagerPeer::IsUnacked(&manager_, packets[i]))
@@ -1612,6 +1612,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, RetransmitFrames(_, _))
         .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(2); }));
+    // When session decides what to write, crypto_packet_send_time gets updated.
     crypto_packet_send_time = clock_.Now();
   }
   manager_.OnRetransmissionTimeout();
@@ -1621,6 +1622,23 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
 
   // The retransmission time should now be twice as far in the future.
   expected_time = crypto_packet_send_time + srtt * 2 * 1.5;
+  EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
+
+  // Retransmit the packet for the 2nd time.
+  clock_.AdvanceTime(2 * 1.5 * srtt);
+  if (manager_.session_decides_what_to_write()) {
+    EXPECT_CALL(notifier_, RetransmitFrames(_, _))
+        .WillOnce(InvokeWithoutArgs([this]() { RetransmitCryptoPacket(3); }));
+    // When session decides what to write, crypto_packet_send_time gets updated.
+    crypto_packet_send_time = clock_.Now();
+  }
+  manager_.OnRetransmissionTimeout();
+  if (!manager_.session_decides_what_to_write()) {
+    RetransmitNextPacket(3);
+  }
+
+  // Verify exponential backoff of the retransmission timeout.
+  expected_time = crypto_packet_send_time + srtt * 4 * 1.5;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 

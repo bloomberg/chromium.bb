@@ -226,6 +226,9 @@ const size_t kQuicConnectionIdLength = 8;
 // Minimum length of random bytes in IETF stateless reset packet.
 const size_t kMinRandomBytesLengthInStatelessReset = 20;
 
+// Maximum length allowed for the token in a NEW_TOKEN frame.
+const size_t kMaxNewTokenTokenLength = 0xffff;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_

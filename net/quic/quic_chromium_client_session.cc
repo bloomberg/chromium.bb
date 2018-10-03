@@ -1487,7 +1487,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
       if (GetNumOpenOutgoingStreams() > 0) {
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
-            connection()->sent_packet_manager().HasUnackedPackets());
+            connection()->sent_packet_manager().HasInFlightPackets());
         UMA_HISTOGRAM_COUNTS_1M(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveRTOCount",
             connection()->sent_packet_manager().GetConsecutiveRtoCount());

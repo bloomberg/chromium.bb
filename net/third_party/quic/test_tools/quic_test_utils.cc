@@ -245,6 +245,10 @@ bool NoOpFramerVisitor::OnNewConnectionIdFrame(
   return true;
 }
 
+bool NoOpFramerVisitor::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
+  return true;
+}
+
 bool NoOpFramerVisitor::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
   return true;
 }

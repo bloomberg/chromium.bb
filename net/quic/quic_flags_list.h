@@ -133,9 +133,6 @@ QUIC_FLAG(
 // If true, enable experiment for testing PCC congestion-control.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 
-// If true, fix potential crashes in QuicSession::RetransmitLostData.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_retransmit_lost_data, true)
-
 // When true, ensure BBR allows at least one MSS to be sent in response to an
 // ACK in packet conservation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
@@ -241,7 +238,7 @@ QUIC_FLAG(bool,
           true)
 
 // This flag fixes a bug where a zombie stream cannot be correctly reset.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_reset_zombie_streams, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_reset_zombie_streams, true)
 
 // When true, fix initialization and updating of
 // |time_of_first_packet_sent_after_receiving_| in QuicConnection.
@@ -266,3 +263,10 @@ QUIC_FLAG(
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
+
+// If true, use a common stream ID limit checking method.
+QUIC_FLAG(bool, FLAGS_quic_use_common_stream_check, false)
+
+// When true, don't arm the path degrading alarm on the server side and stop
+// using HasUnackedPackets to decide when to arm it.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, false)

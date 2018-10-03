@@ -6696,6 +6696,40 @@ TEST_P(QuicConnectionTest, UnmarkPathDegradingOnForwardProgress) {
   EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, NoPathDegradingOnServer) {
+  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+
+  // Send data.
+  const char data[] = "data";
+  connection_.SendStreamDataWithString(1, data, 0, NO_FIN);
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+
+  // Ack data.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1u, 2u}});
+  ProcessAckPacket(&frame);
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, NoPathDegradingAfterSendingAck) {
+  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
+
+  SendAckPacketToPeer();
+  EXPECT_FALSE(connection_.sent_packet_manager().unacked_packets().empty());
+  EXPECT_FALSE(connection_.sent_packet_manager().HasInFlightPackets());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+}
+
 TEST_P(QuicConnectionTest, MultipleCallsToCloseConnection) {
   // Verifies that multiple calls to CloseConnection do not
   // result in multiple attempts to close the connection - it will be marked as
@@ -6965,7 +6999,7 @@ TEST_P(QuicConnectionTest, SendProbingRetransmissions) {
 // there are no outstanding packets.
 TEST_P(QuicConnectionTest,
        SendProbingRetransmissionsFailsWhenNothingToRetransmit) {
-  ASSERT_FALSE(connection_.sent_packet_manager().HasUnackedPackets());
+  ASSERT_TRUE(connection_.sent_packet_manager().unacked_packets().empty());
 
   MockQuicConnectionDebugVisitor debug_visitor;
   connection_.set_debug_visitor(&debug_visitor);
