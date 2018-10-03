@@ -9,7 +9,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
@@ -258,6 +260,16 @@ class DropdownPopupWindowImpl
      */
     private int measureContentWidth() {
         assert mAdapter != null : "Set the adapter before showing the popup.";
-        return UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
+        int adapterWidth = UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
+        if (mFooterView.getChildCount() > 0) {
+            if (mFooterView.getLayoutParams() == null) {
+                mFooterView.setLayoutParams(new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+            mFooterView.measure(measureSpec, measureSpec);
+            return Math.max(mFooterView.getMeasuredWidth(), adapterWidth);
+        }
+        return adapterWidth;
     }
 }
