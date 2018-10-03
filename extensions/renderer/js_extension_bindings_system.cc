@@ -45,7 +45,7 @@ v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
   // API, so it is safe to delete. This is checked before GetOrCreateObject is
   // called.
   if (object->HasRealNamedCallbackProperty(key)) {
-    object->Delete(key);
+    object->Delete(context->v8_context(), key).ToChecked();
   } else if (object->HasRealNamedProperty(key)) {
     v8::Local<v8::Value> value = object->Get(key);
     CHECK(value->IsObject());

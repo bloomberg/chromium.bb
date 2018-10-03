@@ -192,7 +192,9 @@ void SetIconNatives::SetIconCommon(
       v8::String::NewFromUtf8(args.GetIsolate(), "tabId",
                               v8::NewStringType::kInternalized)
           .ToLocalChecked();
-  if (details->Has(tabId)) {
+  bool has_tabid = false;
+  if (details->Has(context()->v8_context(), tabId).To(&has_tabid) &&
+      has_tabid) {
     dict->Set(tabId, details->Get(tabId));
   }
   args.GetReturnValue().Set(dict);
