@@ -200,7 +200,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 // The current search term.  Set to the empty string when no search is active.
-@property(nonatomic, assign) NSString* searchTerm;
+@property(nonatomic, copy) NSString* searchTerm;
 
 // This ViewController's searchController;
 @property(nonatomic, strong) UISearchController* searchController;
@@ -772,6 +772,53 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)handleSelectFolderForNavigation:(const bookmarks::BookmarkNode*)folder {
+  if (self.sharedState.currentlyShowingSearchResults) {
+    // Clear bookmark path cache.
+    int64_t unusedFolderId;
+    int unusedIndexPathRow;
+    while ([BookmarkPathCache
+        getBookmarkTopMostRowCacheWithPrefService:self.browserState->GetPrefs()
+                                            model:self.bookmarks
+                                         folderId:&unusedFolderId
+                                       topMostRow:&unusedIndexPathRow]) {
+      [BookmarkPathCache
+          clearBookmarkTopMostRowCacheWithPrefService:self.browserState
+                                                          ->GetPrefs()];
+    }
+
+    // Rebuild folder controller list, going back up the tree.
+    NSMutableArray<BookmarkHomeViewController*>* stack = [NSMutableArray array];
+    std::vector<const bookmarks::BookmarkNode*> nodes;
+    const bookmarks::BookmarkNode* cursor = folder;
+    while (cursor) {
+      // Build reversed list of nodes to restore bookmark path below.
+      nodes.insert(nodes.begin(), cursor);
+
+      // Build reversed list of controllers.
+      BookmarkHomeViewController* controller =
+          [self createControllerWithRootFolder:cursor];
+      [stack insertObject:controller atIndex:0];
+
+      // Setup now, so that the back button labels shows parent folder
+      // title and that we don't show large title everywhere.
+      [self setupNavigationForBookmarkHomeViewController:controller
+                                       usingBookmarkNode:cursor];
+
+      cursor = cursor->parent();
+    }
+
+    // Reconstruct bookmark path cache.
+    for (const bookmarks::BookmarkNode* node : nodes) {
+      [BookmarkPathCache
+          cacheBookmarkTopMostRowWithPrefService:self.browserState->GetPrefs()
+                                        folderId:node->id()
+                                      topMostRow:0];
+    }
+
+    [self navigateAway];
+    [self.navigationController setViewControllers:stack animated:YES];
+    return;
+  }
   BookmarkHomeViewController* controller =
       [self createControllerWithRootFolder:folder];
   [self.navigationController pushViewController:controller animated:YES];

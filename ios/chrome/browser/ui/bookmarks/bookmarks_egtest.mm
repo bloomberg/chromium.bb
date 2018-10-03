@@ -1729,7 +1729,7 @@ id<GREYMatcher> SearchIconButton() {
 #pragma mark - BookmarksTestCaseEntries Tests
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // TODO(crbug.com/851227): On Compact Width on iOS11, the
   // bookmark cell is being deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
@@ -1781,7 +1781,7 @@ id<GREYMatcher> SearchIconButton() {
   FLAKY_testSwipeToDeleteDisabledInEditMode
 #endif
 - (void)testSwipeToDeleteDisabledInEditMode {
-  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
   // bookmark cell is being deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
@@ -4115,10 +4115,10 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_typeText(@"o")];
 
-  // Verify that folders are filtered out.
+  // Verify that folders are not filtered out.
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_notNil()];
 
   // Search 'on'.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -4134,6 +4134,10 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
+      assertWithMatcher:grey_nil()];
+  // Verify that folders are not filtered out.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       assertWithMatcher:grey_nil()];
 
   // Search again for 'ony'.
@@ -4338,9 +4342,57 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that you can swipe items in search mode.
-- (void)testSearchItemsCanBeSwipedToDelete {
-  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+// Tests that you can long press and edit a bookmark folder and see edits
+// when going back to search.
+- (void)testSearchLongPressEditOnFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  NSString* existingFolderTitle = @"Folder 1.1";
+
+  // Search.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(existingFolderTitle)];
+
+  // Invoke Edit through long press.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          existingFolderTitle)]
+      performAction:grey_longPress()];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify that the editor is present.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  NSString* newFolderTitle = @"n7";
+  [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
+
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify that the change has been made.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          existingFolderTitle)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_replaceText(newFolderTitle)];
+
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(newFolderTitle)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that you can swipe URL items in search mode.
+- (void)testSearchUrlCanBeSwipedToDelete {
+  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
   // bookmark cell is being deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
@@ -4357,10 +4409,40 @@ id<GREYMatcher> SearchIconButton() {
 
   // Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
-      performAction:grey_typeText(@"F")];
+      performAction:grey_typeText(@"First URL")];
 
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify we have a delete button.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that you can swipe folders in search mode.
+- (void)testSearchFolderCanBeSwipedToDelete {
+  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
+  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
+  // fail on devices. Disabling this test under these conditions on the
+  // meantime.
+  if (@available(iOS 11, *)) {
+    if (!IsCompactWidth()) {
+      EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
+    }
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Search.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"Folder 1")];
+
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify we have a delete button.
@@ -4631,6 +4713,46 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_nil()];
+}
+
+// Tests that you can search folders.
+- (void)testSearchFolders {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Go down Folder 1 / Folder 2 / Folder 3.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 3")]
+      performAction:grey_tap()];
+
+  // Search and go to folder 1.1.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"Folder 1.1")];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Go back and verify we are in MobileBooknarks. (i.e. not back to Folder 2)
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+      performAction:grey_tap()];
+
+  // Search and go to Folder 2.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"Folder 2")];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Go back and verify we are in Folder 1. (i.e. not back to Mobile Bookmarks)
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
+      performAction:grey_tap()];
 }
 
 @end
