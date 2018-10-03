@@ -134,8 +134,6 @@ used when committed.
     the window system and low level input and graphics.
 *   [Optimizing Chrome Web UIs](optimizing_web_uis.md) - Notes on making webuis
     more performant
-*   [ES6 Support in Chromium](es6_chromium.md) - Implementation of ECMAScript6
-    features in Chromium
 *   [Adding a new feature flag in chrome://flags](how_to_add_your_feature_flag.md) - Quick
     guide to add a new feature flag to experiment your feature.
 *   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
