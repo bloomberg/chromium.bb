@@ -72,8 +72,8 @@ class WaylandConnection : public PlatformEventSource,
   wl_compositor* compositor() { return compositor_.get(); }
   wl_subcompositor* subcompositor() { return subcompositor_.get(); }
   wl_shm* shm() { return shm_.get(); }
-  xdg_shell* shell() { return shell_.get(); }
-  zxdg_shell_v6* shell_v6() { return shell_v6_.get(); }
+  xdg_shell* shell() const { return shell_.get(); }
+  zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
   wl_seat* seat() { return seat_.get(); }
   wl_data_device* data_device() { return data_device_->data_device(); }
   wp_presentation* presentation() const { return presentation_.get(); }
@@ -146,6 +146,13 @@ class WaylandConnection : public PlatformEventSource,
   // be called with the data.
   void RequestDragData(const std::string& mime_type,
                        base::OnceCallback<void(const std::string&)> callback);
+
+  // Resets flags and keyboard modifiers.
+  //
+  // This method is specially handy for cases when the WaylandPointer state is
+  // modified by a POINTER_DOWN event, but the respective POINTER_UP event is
+  // not delivered.
+  void ResetPointerFlags();
 
  private:
   // WaylandInputMethodContextFactory needs access to DispatchUiEvent

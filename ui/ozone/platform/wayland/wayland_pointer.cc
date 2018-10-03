@@ -212,4 +212,9 @@ int WaylandPointer::GetFlagsWithKeyboardModifiers() {
   return flags_;
 }
 
+void WaylandPointer::ResetFlags() {
+  flags_ = 0;
+  keyboard_modifiers_ = 0;
+}
+
 }  // namespace ui

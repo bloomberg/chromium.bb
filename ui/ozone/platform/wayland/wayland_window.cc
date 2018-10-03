@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
@@ -73,7 +74,11 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL) {}
+      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL) {
+  // Set a class property key, which allows |this| to be used for interactive
+  // events, e.g. move or resize.
+  SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
+}
 
 WaylandWindow::~WaylandWindow() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
@@ -193,6 +198,20 @@ void WaylandWindow::ApplyPendingBounds() {
   xdg_surface_->SetWindowGeometry(bounds_);
   xdg_surface_->AckConfigure();
   pending_bounds_ = gfx::Rect();
+  connection_->ScheduleFlush();
+}
+
+void WaylandWindow::DispatchHostWindowDragMovement(
+    int hittest,
+    const gfx::Point& pointer_location) {
+  DCHECK(xdg_surface_);
+
+  connection_->ResetPointerFlags();
+  if (hittest == HTCAPTION)
+    xdg_surface_->SurfaceMove(connection_);
+  else
+    xdg_surface_->SurfaceResize(connection_, hittest);
+
   connection_->ScheduleFlush();
 }
 
@@ -570,6 +589,10 @@ WaylandWindow* WaylandWindow::GetParentWindow(
   if (!parent_window)
     return connection_->GetCurrentFocusedWindow();
   return parent_window;
+}
+
+WmMoveResizeHandler* WaylandWindow::AsWmMoveResizeHandler() {
+  return static_cast<WmMoveResizeHandler*>(this);
 }
 
 }  // namespace ui
