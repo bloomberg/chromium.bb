@@ -309,6 +309,9 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns a slightly dimmed version of the base text color.
   SkColor GetDimmedTextColor() const;
 
+  // Returns the status text to show in the notification.
+  base::string16 GetStatusText() const;
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 

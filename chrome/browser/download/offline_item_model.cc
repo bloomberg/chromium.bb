@@ -236,6 +236,15 @@ FailState OfflineItemModel::GetLastFailState() const {
   return offline_item_ ? offline_item_->fail_state : FailState::USER_CANCELED;
 }
 
+GURL OfflineItemModel::GetOriginalURL() const {
+  return offline_item_ ? offline_item_->original_url : GURL();
+}
+
+bool OfflineItemModel::ShouldPromoteOrigin() const {
+  // TODO(crbug.com/774612): Add a field in OfflineItem to make this decision.
+  return true;
+}
+
 #if !defined(OS_ANDROID)
 bool OfflineItemModel::IsCommandEnabled(
     const DownloadCommands* download_commands,
