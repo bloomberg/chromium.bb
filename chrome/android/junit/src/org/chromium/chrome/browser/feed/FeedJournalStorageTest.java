@@ -47,9 +47,9 @@ public class FeedJournalStorageTest {
     public static final String JOURNAL_KEY1 = "JOURNAL_KEY_1";
     public static final String JOURNAL_KEY2 = "JOURNAL_KEY_2";
     public static final String JOURNAL_KEY3 = "JOURNAL_KEY_3";
-    public static final String JOURNAL_DATA1 = "JOURNAL_DATA_1";
-    public static final String JOURNAL_DATA2 = "JOURNAL_DATA_2";
-    public static final String JOURNAL_DATA3 = "JOURNAL_DATA_3";
+    public static final byte[] JOURNAL_DATA1 = {24, -119, -10, -71, -35, 5};
+    public static final byte[] JOURNAL_DATA2 = {8, 3, 18, 53, 70, 69, 65, 84, 85, 82, 69};
+    public static final byte[] JOURNAL_DATA3 = {54, 55, 56, 48, 51, 57, 24, -119, -10};
 
     @Mock
     private FeedJournalBridge mBridge;
@@ -76,6 +76,8 @@ public class FeedJournalStorageTest {
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mBooleanSuccessCallbackArgument;
     @Captor
+    private ArgumentCaptor<Callback<byte[][]>> mArrayOfByteArraySuccessCallbackArgument;
+    @Captor
     private ArgumentCaptor<Callback<String[]>> mStringArraySuccessCallbackArgument;
     @Captor
     private ArgumentCaptor<Callback<Void>> mFailureCallbackArgument;
@@ -83,6 +85,16 @@ public class FeedJournalStorageTest {
     private ArgumentCaptor<JournalMutation> mJournalMutationArgument;
 
     private FeedJournalStorage mJournalStorage;
+
+    private Answer<Void> createArrayOfByteArraySuccessAnswer(byte[][] arrayOfByteArray) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mArrayOfByteArraySuccessCallbackArgument.getValue().onResult(arrayOfByteArray);
+                return null;
+            }
+        };
+    }
 
     private Answer<Void> createStringArraySuccessAnswer(String[] stringArray) {
         return new Answer<Void>() {
@@ -115,21 +127,19 @@ public class FeedJournalStorageTest {
     }
 
     private void verifyListOfBytesResult(
-            List<String> expectedList, boolean expectedSuccess, Result<List<byte[]>> actualResult) {
-        assertEquals(expectedSuccess, actualResult.isSuccessful());
-        if (!expectedSuccess) return;
-
+            List<byte[]> expectedList, Result<List<byte[]>> actualResult) {
         List<byte[]> actualList = actualResult.getValue();
         assertEquals(expectedList.size(), actualList.size());
         for (byte[] actualString : actualList) {
-            assertTrue(expectedList.contains(new String(actualString)));
+            boolean foundSame = false;
+            for (byte[] expectedBytes : expectedList) {
+                if (Arrays.equals(expectedBytes, actualString)) {
+                    foundSame = true;
+                    break;
+                }
+            }
+            assertTrue(foundSame);
         }
-    }
-
-    private void verifyListOfBytesResult(
-            String[] expectedString, boolean expectedSuccess, Result<List<byte[]>> actualResult) {
-        List<String> expectedList = Arrays.asList(expectedString);
-        verifyListOfBytesResult(expectedList, expectedSuccess, actualResult);
     }
 
     private void verifyListOfStringResult(
@@ -153,33 +163,40 @@ public class FeedJournalStorageTest {
     @Test
     @SmallTest
     public void readTest() {
-        String[] answerStrings = {JOURNAL_DATA1, JOURNAL_DATA2, JOURNAL_DATA3};
-        Answer<Void> answer = createStringArraySuccessAnswer(answerStrings);
+        byte[][] answerStrings = {JOURNAL_DATA1, JOURNAL_DATA2, JOURNAL_DATA3};
+        Answer<Void> answer = createArrayOfByteArraySuccessAnswer(answerStrings);
         doAnswer(answer).when(mBridge).loadJournal(mStringArgument.capture(),
-                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+                mArrayOfByteArraySuccessCallbackArgument.capture(),
+                mFailureCallbackArgument.capture());
 
         mJournalStorage.read(JOURNAL_KEY1, mListOfByteArrayConsumer);
         verify(mBridge, times(1))
-                .loadJournal(eq(JOURNAL_KEY1), mStringArraySuccessCallbackArgument.capture(),
+                .loadJournal(eq(JOURNAL_KEY1), mArrayOfByteArraySuccessCallbackArgument.capture(),
                         mFailureCallbackArgument.capture());
         verify(mListOfByteArrayConsumer, times(1)).accept(mListOfByteArrayCaptor.capture());
-        verifyListOfBytesResult(answerStrings, true, mListOfByteArrayCaptor.getValue());
+        assertEquals(true, mListOfByteArrayCaptor.getValue().isSuccessful());
+        List<byte[]> expectedStrings = new ArrayList<byte[]>();
+        expectedStrings.add(JOURNAL_DATA1);
+        expectedStrings.add(JOURNAL_DATA2);
+        expectedStrings.add(JOURNAL_DATA3);
+        verifyListOfBytesResult(expectedStrings, mListOfByteArrayCaptor.getValue());
     }
 
     @Test
     @SmallTest
     public void readFailureTest() {
-        String[] answerStrings = {};
+        byte[][] answerStrings = {};
         Answer<Void> answer = createFailureAnswer();
         doAnswer(answer).when(mBridge).loadJournal(mStringArgument.capture(),
-                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+                mArrayOfByteArraySuccessCallbackArgument.capture(),
+                mFailureCallbackArgument.capture());
 
         mJournalStorage.read(JOURNAL_KEY1, mListOfByteArrayConsumer);
         verify(mBridge, times(1))
-                .loadJournal(eq(JOURNAL_KEY1), mStringArraySuccessCallbackArgument.capture(),
+                .loadJournal(eq(JOURNAL_KEY1), mArrayOfByteArraySuccessCallbackArgument.capture(),
                         mFailureCallbackArgument.capture());
         verify(mListOfByteArrayConsumer, times(1)).accept(mListOfByteArrayCaptor.capture());
-        verifyListOfBytesResult(answerStrings, false, mListOfByteArrayCaptor.getValue());
+        assertEquals(false, mListOfByteArrayCaptor.getValue().isSuccessful());
     }
 
     @Test
@@ -267,7 +284,7 @@ public class FeedJournalStorageTest {
                         mBooleanSuccessCallbackArgument.capture());
 
         mJournalStorage.commit(new JournalMutation.Builder(JOURNAL_KEY1)
-                                       .append(JOURNAL_DATA1.getBytes())
+                                       .append(JOURNAL_DATA1)
                                        .copy(JOURNAL_KEY2)
                                        .delete()
                                        .build(),
