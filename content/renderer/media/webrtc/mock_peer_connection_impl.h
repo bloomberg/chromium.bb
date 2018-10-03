@@ -92,8 +92,6 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
   absl::optional<webrtc::RtpTransceiverDirection> current_direction()
       const override;
   void Stop() override;
-  void SetCodecPreferences(
-      rtc::ArrayView<webrtc::RtpCodecCapability> codecs) override;
 
  private:
   cricket::MediaType media_type_;
