@@ -14,6 +14,7 @@ import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 
 from chromite.lib.paygen import download_cache
@@ -27,7 +28,8 @@ from chromite.lib.paygen import urilib
 # pylint: disable=protected-access
 
 
-class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
+class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase,
+                           cros_test_lib.MoxTestCase):
   """PaygenPayloadLib tests base class."""
 
   def setUp(self):
@@ -617,7 +619,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Set up stubs.
     self.mox.StubOutWithMock(urilib, 'Copy')
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
 
     # Record signed calls.
     urilib.Copy('/work/delta.bin.signed',
@@ -703,19 +704,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
   def testFindExistingPayloads(self):
     """Test finding already existing payloads."""
-    self.mox.StubOutWithMock(urilib, 'ListFiles')
-
     # Set up the test replay script.
-    urilib.ListFiles('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/'
-                     'payloads/chromeos_1620.0.0_x86-alex_dev-channel_full_'
-                     'mp-v3.bin-*.signed').AndReturn(['foo_result'])
-
-    # Run the test verification.
-    self.mox.ReplayAll()
+    ls_mock = self.PatchObject(gs.GSContext, 'LS', return_value=['foo_result'])
 
     self.assertEqual(
         paygen_payload_lib.FindExistingPayloads(self.full_payload),
         ['foo_result'])
+
+    ls_mock.assert_called_once_with(
+        'gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/payloads/'
+        'chromeos_1620.0.0_x86-alex_dev-channel_full_mp-v3.bin-*.signed')
 
   def testFindCacheDir(self):
     """Test calculating the location of the cache directory."""
