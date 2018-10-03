@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/android/jni_string.h"
+#include "base/android/path_utils.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/single_thread_task_runner.h"
@@ -20,7 +21,9 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -219,7 +222,10 @@ void DownloadManagerService::Observe(
 download::InProgressDownloadManager*
 DownloadManagerService::RetriveInProgressDownloadManager(
     content::BrowserContext* context) {
-  // TODO(qinmin): return pre-created InProgressDownloadManager here.
+  if (in_progress_manager_) {
+    DCHECK(!context->IsOffTheRecord());
+    return in_progress_manager_.release();
+  }
   return nullptr;
 }
 
@@ -472,10 +478,7 @@ void DownloadManagerService::ResumeDownloadInternal(
 
 void DownloadManagerService::CancelDownloadInternal(
     const std::string& download_guid, bool is_off_the_record) {
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return;
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item) {
     // Remove the observer first to avoid item->Cancel() causing re-entrance
     // issue.
@@ -486,10 +489,7 @@ void DownloadManagerService::CancelDownloadInternal(
 
 void DownloadManagerService::PauseDownloadInternal(
     const std::string& download_guid, bool is_off_the_record) {
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return;
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item) {
     item->Pause();
     item->RemoveObserver(DownloadControllerBase::Get());
@@ -498,10 +498,7 @@ void DownloadManagerService::PauseDownloadInternal(
 
 void DownloadManagerService::RemoveDownloadInternal(
     const std::string& download_guid, bool is_off_the_record) {
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return;
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item)
     item->Remove();
 }
@@ -553,6 +550,40 @@ void DownloadManagerService::OnResumptionFailedInternal(
   }
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(false);
+}
+
+download::DownloadItem* DownloadManagerService::GetDownload(
+    const std::string& download_guid,
+    bool is_off_the_record) {
+  if (in_progress_manager_) {
+    DCHECK(!is_off_the_record);
+    return in_progress_manager_->GetInProgressDownload(download_guid);
+  }
+
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (manager)
+    return manager->GetDownloadByGuid(download_guid);
+  return nullptr;
+}
+
+void DownloadManagerService::CreateInProgressDownloadManager() {
+  DCHECK(!in_progress_manager_);
+  base::FilePath data_dir;
+  base::android::GetDataDirectory(&data_dir);
+  in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
+      nullptr, data_dir.Append(chrome::kInitialProfile),
+      download::InProgressDownloadManager::IsOriginSecureCallback());
+  // TODO(qinmin): construct the URLLoaderFactoryGetter and pass it to
+  // |in_progress_manager_|
+  in_progress_manager_->NotifyWhenInitialized(
+      base::BindOnce(&DownloadManagerService::OnInProgressManagerInitiailized,
+                     base::Unretained(this)));
+  in_progress_manager_->set_download_start_observer(
+      DownloadControllerBase::Get());
+}
+
+void DownloadManagerService::OnInProgressManagerInitiailized() {
+  // TODO(qinmin): carry out all the pending actions to be performed.
 }
 
 content::DownloadManager* DownloadManagerService::GetDownloadManager(
