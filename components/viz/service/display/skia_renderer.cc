@@ -493,14 +493,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     current_paint_.setFilterQuality(kLow_SkFilterQuality);
   }
 
-  if (quad->ShouldDrawWithBlending() ||
-      quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver) {
-    current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
-    current_paint_.setBlendMode(
-        static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
-  } else {
-    current_paint_.setBlendMode(SkBlendMode::kSrc);
-  }
+  current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
+  current_paint_.setBlendMode(
+      static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
 
   if (draw_region) {
     gfx::QuadF local_draw_region(*draw_region);
