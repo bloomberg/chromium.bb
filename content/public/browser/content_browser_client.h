@@ -1114,9 +1114,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
-  // navigation or being brokered on behalf of a renderer fetching subresources,
-  // or for non-navigation requests initiated by the browser on behalf of a
-  // BrowserContext.
+  // navigation or being brokered on behalf of a renderer fetching subresources.
   //
   // |is_navigation| is true when it's a request used for navigation.
   //
@@ -1126,9 +1124,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // it's a request for a renderer fetching subresources. It's not set when
   // creating a factory for navigation requests, because navigation requests are
   // made on behalf of the browser, rather than on behalf of any particular
-  // origin. It's not set in the case of browser-initiated, non-navigation
-  // requests, because in that case the factory is cached and it can be used for
-  // multiple URLs.
+  // origin.
   //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its
@@ -1141,10 +1137,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
-  //
-  // Note that |frame| may be null if this is a browser-initiated,
-  // non-navigation request, e.g. a request made via
-  // |StoragePartition::GetURLLoaderFactoryForBrowserProcess()|.
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,

@@ -25,7 +25,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     int32_t network_service_request_id,
     int32_t routing_id,
     uint32_t options,
-    bool is_non_navigation_browser_request,
     const network::ResourceRequest& request,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     network::mojom::URLLoaderRequest loader_request,
@@ -36,7 +35,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       network_service_request_id_(network_service_request_id),
       routing_id_(routing_id),
       options_(options),
-      is_non_navigation_browser_request_(is_non_navigation_browser_request),
       traffic_annotation_(traffic_annotation),
       proxied_loader_binding_(this, std::move(loader_request)),
       target_client_(std::move(client)),
@@ -68,22 +66,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
                                     : nullptr,
       routing_id_, factory_->resource_context_, request_,
       !(options_ & network::mojom::kURLLoadOptionSynchronous));
-
-  if (is_non_navigation_browser_request_) {
-    // ResourceRequest always has a valid-looking ResourceType value since it's
-    // non-optional and defaults to 0 (i.e. MAIN_FRAME), even of the
-    // corresponding request didn't actually come from a renderer. Because
-    // |info_| was blindly constructed from that ResourceRequest, it also now
-    // appears to pertain to a main-frame request.
-    //
-    // Because we already know this is a browser-originated request, we
-    // explicitly reset |info_->type| to null. A request having no ResourceType
-    // effectively implies a browser-originated request to any subsequent
-    // WebRequest logic that cares, e.g. some permission checking to determine
-    // when to filter certain kinds of requests.
-    info_->type.reset();
-    info_->web_request_type = WebRequestResourceType::OTHER;
-  }
 
   auto continuation =
       base::BindRepeating(&InProgressRequest::ContinueToBeforeSendHeaders,
@@ -617,6 +599,9 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  // Make sure we are not proxying a browser initiated non-navigation request.
+  DCHECK(render_process_id_ != -1 || navigation_ui_data_);
+
   // The request ID doesn't really matter in the Network Service path. It just
   // needs to be unique per-BrowserContext so extensions can make sense of it.
   // Note that |network_service_request_id_| by contrast is not necessarily
@@ -633,18 +618,11 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
     network_request_id_to_web_request_id_.emplace(request_id, web_request_id);
   }
 
-  // The WebRequest API treats browser-originated non-navigation requests with a
-  // few additional restrictions, so we deduce and propagate that information
-  // here.
-  const bool is_non_navigation_browser_request =
-      render_process_id_ == -1 && !navigation_ui_data_;
-
   auto result = requests_.emplace(
       web_request_id,
       std::make_unique<InProgressRequest>(
-          this, web_request_id, request_id, routing_id, options,
-          is_non_navigation_browser_request, request, traffic_annotation,
-          std::move(loader_request), std::move(client)));
+          this, web_request_id, request_id, routing_id, options, request,
+          traffic_annotation, std::move(loader_request), std::move(client)));
   result.first->second->Restart();
 }
 
