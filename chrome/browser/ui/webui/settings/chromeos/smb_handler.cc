@@ -26,7 +26,7 @@ smb_client::SmbService* GetSmbService(Profile* profile) {
 base::Value BuildShareList(const std::vector<smb_client::SmbUrl>& shares) {
   base::Value shares_list(base::Value::Type::LIST);
   for (const auto& share : shares) {
-    shares_list.GetList().push_back(base::Value(share.ToString()));
+    shares_list.GetList().push_back(base::Value(share.GetWindowsUNCString()));
   }
   return shares_list;
 }
