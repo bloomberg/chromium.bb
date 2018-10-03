@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.test.filters.SmallTest;
 
+import com.google.android.libraries.feed.host.config.Configuration;
+import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +28,8 @@ public class FeedConfigurationTest {
     @Rule
     public final ChromeBrowserTestRule mRule = new ChromeBrowserTestRule();
 
+    private static final double ASSERT_EQUALS_DOUBLE_DELTA = 0.001d;
+
     @Test
     @Feature({"Feed"})
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
@@ -41,7 +46,7 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getSessionLifetimeMs());
         Assert.assertFalse(FeedConfiguration.getTriggerImmedatePagination());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
-                FeedConfiguration.getViewLogThreshold(), 0.001d);
+                FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
     }
 
     @Test
@@ -106,6 +111,31 @@ public class FeedConfigurationTest {
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:view_log_threshold/0.33"})
     public void testViewLogThreshold() {
-        Assert.assertEquals(0.33d, FeedConfiguration.getViewLogThreshold(), 0.001d);
+        Assert.assertEquals(
+                0.33d, FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
+    public void testCreateConfiguration() {
+        Configuration configuration = FeedConfiguration.createConfiguration();
+        Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, ""));
+        Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, ""));
+        Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, 0));
+        Assert.assertEquals(
+                Long.valueOf(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT),
+                configuration.getValueOrDefault(
+                        ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
+        Assert.assertEquals(Long.valueOf(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT),
+                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
+        Assert.assertEquals(Double.valueOf(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT),
+                configuration.getValueOrDefault(ConfigKey.VIEW_LOG_THRESHOLD, 0d),
+                ASSERT_EQUALS_DOUBLE_DELTA);
     }
 }

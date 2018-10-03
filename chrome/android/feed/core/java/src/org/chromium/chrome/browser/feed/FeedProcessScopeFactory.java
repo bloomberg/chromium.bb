@@ -10,7 +10,6 @@ import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
@@ -92,7 +91,7 @@ public class FeedProcessScopeFactory {
                 FeedProcessScopeFactory::articlesEnabledPrefChange);
 
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-        Configuration configHostApi = createConfiguration();
+        Configuration configHostApi = FeedConfiguration.createConfiguration();
 
         FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
         sFeedScheduler = schedulerBridge;
@@ -121,21 +120,6 @@ public class FeedProcessScopeFactory {
                 new FeedLifecycleBridge(profile), sFeedScheduler);
     }
 
-    private static Configuration createConfiguration() {
-        return new Configuration.Builder()
-                .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
-                .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerEndpoint())
-                .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
-                        FeedConfiguration.getFeedServerReponseLengthPrefixed())
-                .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
-                .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
-                .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
-                        FeedConfiguration.getLoggingImmediateContentThresholdMs())
-                .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
-                        FeedConfiguration.getTriggerImmedatePagination())
-                .build();
-    }
-
     /**
      * Creates a {@link FeedProcessScope} using the provided host implementations. Call {@link
      * #clearFeedProcessScopeForTesting()} to reset the FeedProcessScope after testing is complete.
@@ -148,7 +132,7 @@ public class FeedProcessScopeFactory {
     static void createFeedProcessScopeForTesting(FeedScheduler feedScheduler,
             NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator,
             FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener) {
-        Configuration configHostApi = createConfiguration();
+        Configuration configHostApi = FeedConfiguration.createConfiguration();
         sFeedScheduler = feedScheduler;
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),

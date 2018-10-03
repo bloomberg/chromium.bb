@@ -6,9 +6,19 @@ package org.chromium.chrome.browser.feed;
 
 import android.text.TextUtils;
 
+import com.google.android.libraries.feed.host.config.Configuration;
+import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
 
-class FeedConfiguration {
+/**
+ * Collection of configurable parameters and default values given to the Feed. Every getter passes
+ * checks to see if it has been overridden by a field trail param.
+ * */
+final class FeedConfiguration {
+    /** Do not allow construction */
+    private FeedConfiguration() {}
+
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
     public static final String FEED_SERVER_ENDPOINT_DEFAULT =
@@ -94,5 +104,23 @@ class FeedConfiguration {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, VIEW_LOG_THRESHOLD,
                 VIEW_LOG_THRESHOLD_DEFAULT);
+    }
+
+    /**
+     * @return A fully built {@link Configuration}, ready to be given to the Feed.
+     */
+    public static Configuration createConfiguration() {
+        return new Configuration.Builder()
+                .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
+                .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
+                .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
+                        FeedConfiguration.getFeedServerReponseLengthPrefixed())
+                .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
+                        FeedConfiguration.getLoggingImmediateContentThresholdMs())
+                .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
+                .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
+                        FeedConfiguration.getTriggerImmedatePagination())
+                .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
+                .build();
     }
 }
