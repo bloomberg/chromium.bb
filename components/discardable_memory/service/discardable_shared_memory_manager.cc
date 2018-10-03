@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
@@ -235,11 +234,9 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 
@@ -403,32 +400,6 @@ size_t DiscardableSharedMemoryManager::GetBytesAllocated() {
   base::AutoLock lock(lock_);
 
   return bytes_allocated_;
-}
-
-void DiscardableSharedMemoryManager::OnMemoryStateChange(
-    base::MemoryState state) {
-  // Don't use SetMemoryLimit() as it frees up existing allocations.
-  // OnPurgeMemory() is called to actually free up memory.
-  base::AutoLock lock(lock_);
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      memory_limit_ = default_memory_limit_;
-      break;
-    case base::MemoryState::THROTTLED:
-      memory_limit_ = 0;
-      break;
-    case base::MemoryState::SUSPENDED:
-    // Note that SUSPENDED never occurs in the main browser process so far.
-    // Fall through.
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
-}
-
-void DiscardableSharedMemoryManager::OnPurgeMemory() {
-  base::AutoLock lock(lock_);
-  ReduceMemoryUsageUntilWithinLimit(0);
 }
 
 void DiscardableSharedMemoryManager::WillDestroyCurrentMessageLoop() {
