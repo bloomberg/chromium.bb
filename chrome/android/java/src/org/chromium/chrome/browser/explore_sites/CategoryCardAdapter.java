@@ -8,6 +8,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -15,6 +16,7 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
@@ -71,15 +73,18 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     @ViewType
     public int getItemViewType(int position) {
         if (position == 0) return ViewType.HEADER;
-        if (mCategoryModel.get(ExploreSitesPage.STATUS_KEY)
-                == ExploreSitesPage.CatalogLoadingState.ERROR) {
-            return ViewType.ERROR;
+        switch (mCategoryModel.get(ExploreSitesPage.STATUS_KEY)) {
+            case ExploreSitesPage.CatalogLoadingState.ERROR:
+                return ViewType.ERROR;
+            case ExploreSitesPage.CatalogLoadingState.LOADING: // fall-through
+            case ExploreSitesPage.CatalogLoadingState.LOADING_NET:
+                return ViewType.LOADING;
+            case ExploreSitesPage.CatalogLoadingState.SUCCESS:
+                return ViewType.CATEGORY;
+            default:
+                assert(false);
+                return ViewType.ERROR;
         }
-        if (mCategoryModel.get(ExploreSitesPage.STATUS_KEY)
-                == ExploreSitesPage.CatalogLoadingState.LOADING) {
-            return ViewType.LOADING;
-        }
-        return ViewType.CATEGORY;
     }
 
     @Override
@@ -91,6 +96,10 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             view.setCategory(
                     mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1),
                     mIconGenerator, mContextMenuManager, mNavDelegate);
+        } else if (holder.getItemViewType() == ViewType.LOADING) {
+            // Start spinner.
+            LoadingView spinner = holder.itemView.findViewById(R.id.loading);
+            spinner.showLoadingUI();
         }
     }
 
@@ -99,8 +108,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             PropertyObservable<PropertyKey> source, @Nullable PropertyKey key) {
         if (key == ExploreSitesPage.STATUS_KEY) {
             int status = mCategoryModel.get(ExploreSitesPage.STATUS_KEY);
-            if (status == ExploreSitesPage.CatalogLoadingState.LOADING
-                    || status == ExploreSitesPage.CatalogLoadingState.ERROR) {
+            if (status != ExploreSitesPage.CatalogLoadingState.SUCCESS) {
                 notifyItemChanged(1);
             } // Else the list observer takes care of updating.
         }

@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
@@ -38,9 +37,15 @@ class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFac
                                .inflate(R.layout.explore_sites_category_card_view, parent,
                                        /* attachToRoot = */ false);
                 break;
-            case CategoryCardAdapter.ViewType.LOADING: // inflate loading spinny
+            case CategoryCardAdapter.ViewType.LOADING:
+                view = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.explore_sites_loading_from_net_view, parent,
+                                       /* attachToRoot = */ false);
+                break;
             case CategoryCardAdapter.ViewType.ERROR: // inflate error
-                view = new TextView(parent.getContext()); // dummy view.
+                view = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.explore_sites_loading_error_view, parent,
+                                       /* attachToRoot = */ false);
                 break;
             default:
                 assert false;

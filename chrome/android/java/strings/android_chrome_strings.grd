@@ -2849,6 +2849,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_COOKING" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to food and cooking. [CHAR-LIMIT=12]">
         Cooking
       </message>
+      <message name="IDS_EXPLORE_SITES_LOADING_FROM_NET" desc="Caption for an indeterminate loading spinner indicating that we are loading the data from the internet">
+        Finding the best from the web.
+      </message>
+      <message name="IDS_EXPLORE_SITES_LOADING_ERROR" desc="Caption text indicating that a set of site icons and links failed to load.">
+        Oops! Something went wrong. Please check your connection.
+      </message>
 
       <!-- Contextual suggestions strings -->
       <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
