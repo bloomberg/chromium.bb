@@ -158,6 +158,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/host/action/StreamActionApi.java",
   "src/src/main/java/com/google/android/libraries/feed/host/config/Configuration.java",
   "src/src/main/java/com/google/android/libraries/feed/host/config/DebugBehavior.java",
+  "src/src/main/java/com/google/android/libraries/feed/host/imageloader/BundledAssets.java",
   "src/src/main/java/com/google/android/libraries/feed/host/imageloader/ImageLoaderApi.java",
   "src/src/main/java/com/google/android/libraries/feed/host/logging/ActionType.java",
   "src/src/main/java/com/google/android/libraries/feed/host/logging/BasicLoggingApi.java",
@@ -228,6 +229,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/piet/host/CustomElementProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/host/HostBindingProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/DrawableScalingHelper.java",
+  "src/src/main/java/com/google/android/libraries/feed/piet/ui/GridRowView.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerColorDrawable.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerImageView.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerViewHelper.java",
@@ -235,6 +237,8 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietAssetProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietCustomElementProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietHostBindingProvider.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/menumeasurer/MenuMeasurer.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/menumeasurer/Size.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/removetrackingfactory/StreamRemoveTrackingFactory.java",
 ]
 
