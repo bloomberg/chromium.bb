@@ -45,14 +45,13 @@ class ScriptPrecondition {
   ~ScriptPrecondition();
 
   // Check whether the conditions satisfied and return the result through
-  // |callback|.
+  // |callback|. |web_controller| must remain valid until the callback is run.
   void Check(WebController* web_controller,
              const std::map<std::string, std::string>& parameters,
              const std::map<std::string, ScriptStatusProto>& executed_scripts,
              base::OnceCallback<void(bool)> callback);
 
  private:
-  void OnCheckElementExists(bool result);
   bool MatchDomain(const GURL& url) const;
   bool MatchPath(const GURL& url) const;
   bool MatchParameters(
@@ -60,16 +59,17 @@ class ScriptPrecondition {
   bool MatchScriptStatus(
       const std::map<std::string, ScriptStatusProto>& executed_scripts) const;
 
-  void OnGetFieldValue(const std::string& value);
-
-  // Return if all checks have been completed and we have not returned anything
-  // yet.
-  void MaybeRunCheckPreconditionCallback();
+  void RunChecksSequentially(WebController* web_controller,
+                             size_t check_precondition_count);
+  void OnCheckElementExists(WebController* web_controller,
+                            size_t check_precondition_count,
+                            bool result);
+  void OnGetFieldValue(WebController* web_controller,
+                       size_t check_precondition_count,
+                       const std::string& value);
 
   std::vector<std::vector<std::string>> elements_exist_;
   base::OnceCallback<void(bool)> check_preconditions_callback_;
-  size_t pending_preconditions_check_count_;
-  bool all_preconditions_check_satisfied_;
 
   // Domain (exact match) excluding the last '/' character.
   std::set<std::string> domain_match_;
