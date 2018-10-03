@@ -202,6 +202,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool has_user_gesture) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   bool ShouldEnableStrictSiteIsolation() override;
+  bool WillCreateURLLoaderFactory(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* frame,
+      bool is_navigation,
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      bool* bypass_redirect_checks) override;
 
   static void DisableCreatingTaskScheduler();
 
