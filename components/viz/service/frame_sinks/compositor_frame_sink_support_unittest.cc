@@ -554,26 +554,64 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
   LocalSurfaceId local_surface_id4(5, 3, kArbitraryToken);
   LocalSurfaceId local_surface_id5(8, 1, kArbitraryToken);
   LocalSurfaceId local_surface_id6(9, 3, kArbitraryToken);
+
+  // LocalSurfaceId1(6, 1)
   auto result = support->MaybeSubmitCompositorFrame(
       local_surface_id1, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::ACCEPTED, result);
+
+  // LocalSurfaceId(6, 2): Child-initiated synchronization.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id2, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::ACCEPTED, result);
+
+  // Since the Surface corresponding to |local_surface_id1| was not a dependency
+  // anywhere then the Surface corresponding to |local_surface_id2| will not
+  // activate until it becomes a dependency.
+  Surface* last_created_surface = support->GetLastCreatedSurfaceForTesting();
+  EXPECT_EQ(local_surface_id2,
+            last_created_surface->surface_id().local_surface_id());
+  EXPECT_FALSE(last_created_surface->HasActiveFrame());
+
+  SurfaceId surface_id2(kAnotherArbitraryFrameSinkId, local_surface_id2);
+  auto frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({surface_id2})
+          .SetReferencedSurfaces({SurfaceRange(base::nullopt, surface_id2)})
+          .Build();
+  result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id_, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
+
+  // Submitting a CompositorFrame to the parent FrameSink with a dependency on
+  // |local_surface_id2| causes that Surface's CompositorFrame to activate.
+  EXPECT_TRUE(last_created_surface->HasActiveFrame());
+
+  // LocalSurfaceId(7, 2): Parent-initiated synchronization.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id3, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::ACCEPTED, result);
+
+  // LocalSurfaceId(5, 3): Surface Invariants Violation. Not monotonically
+  // increasing.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id4, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
+
+  // LocalSurfaceId(8, 1): Surface Invariants Violation. Not monotonically
+  // increasing.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id5, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
+
+  // LocalSurfaceId(9, 3): Parent AND child-initiated synchronization.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id6, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());

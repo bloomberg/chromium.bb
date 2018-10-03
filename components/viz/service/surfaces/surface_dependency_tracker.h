@@ -34,7 +34,12 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   // informed when that surface's dependencies are resolved.
   void RequestSurfaceResolution(Surface* surface);
 
+  // Returns whether the dependency tracker has a surface blocked on the
+  // provided |surface_id|.
+  bool HasSurfaceBlockedOn(const SurfaceId& surface_id) const;
+
   void OnSurfaceActivated(Surface* surface);
+  void OnSurfaceDependencyAdded(const SurfaceId& surface_id);
   void OnSurfaceDependenciesChanged(
       Surface* surface,
       const base::flat_set<FrameSinkId>& added_dependencies,
@@ -67,6 +72,11 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   // surfaces associated with that FrameSinkId.
   std::unordered_map<FrameSinkId, base::flat_set<SurfaceId>, FrameSinkIdHash>
       blocked_surfaces_from_dependency_;
+
+  // A map from a FrameSinkid to a set of surfaces with that FrameSinkId that
+  // are blocked on a parent arriving to embed them.
+  std::unordered_map<FrameSinkId, base::flat_set<SurfaceId>, FrameSinkIdHash>
+      surfaces_blocked_on_parent_by_frame_sink_id_;
 
   // The set of SurfaceIds corresponding to Surfaces that have active
   // CompositorFrames with missing dependencies.
