@@ -152,7 +152,6 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
   SkColor color = SK_ColorTRANSPARENT;
 
   struct Frame {
-    Frame() = default;
     Frame(PaintOpBuffer::CompositeIterator iter,
           const SkMatrix& original_ctm,
           int save_count)
