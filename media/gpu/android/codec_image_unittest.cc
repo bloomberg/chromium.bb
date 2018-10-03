@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
@@ -42,7 +43,7 @@ class CodecImageTest : public testing::Test {
     codec_ = codec.get();
     wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
-        base::DoNothing());
+        base::DoNothing(), base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 

@@ -4,16 +4,19 @@
 
 #include <memory>
 
-#include "media/gpu/android/codec_wrapper.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
+#include "media/gpu/android/codec_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,13 +31,15 @@ namespace media {
 
 class CodecWrapperTest : public testing::Test {
  public:
-  CodecWrapperTest() {
+  CodecWrapperTest() : other_thread_("Other thread") {
     auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
     surface_bundle_ = base::MakeRefCounted<AVDASurfaceBundle>();
     wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), surface_bundle_),
-        output_buffer_release_cb_.Get());
+        output_buffer_release_cb_.Get(),
+        // Unrendered output buffers are released on our thread.
+        base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
     ON_CALL(*codec_, DequeueInputBuffer(_, _))
@@ -44,6 +49,9 @@ class CodecWrapperTest : public testing::Test {
 
     uint8_t data = 0;
     fake_decoder_buffer_ = DecoderBuffer::CopyFrom(&data, 1);
+
+    // May fail.
+    other_thread_.Start();
   }
 
   ~CodecWrapperTest() override {
@@ -66,6 +74,8 @@ class CodecWrapperTest : public testing::Test {
   NiceMock<base::MockCallback<CodecWrapper::OutputReleasedCB>>
       output_buffer_release_cb_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
+
+  base::Thread other_thread_;
 };
 
 TEST_F(CodecWrapperTest, TakeCodecReturnsTheCodecFirstAndNullLater) {
@@ -316,6 +326,35 @@ TEST_F(CodecWrapperTest, EOSWhileFlushedOrDrainedIsElided) {
   is_eos = false;
   wrapper_->DequeueOutputBuffer(nullptr, &is_eos, &codec_buffer);
   ASSERT_TRUE(is_eos);
+}
+
+TEST_F(CodecWrapperTest, CodecWrapperPostsReleaseToProvidedThread) {
+  // Releasing an output buffer without rendering on some other thread should
+  // post back to the main thread.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      other_thread_.task_runner();
+  // If the thread failed to start, pass.
+  if (!task_runner)
+    return;
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  auto cb = base::BindOnce(
+      [](std::unique_ptr<CodecOutputBuffer> codec_buffer,
+         base::WaitableEvent* event) {
+        codec_buffer.reset();
+        event->Signal();
+      },
+      DequeueCodecOutputBuffer(), base::Unretained(&event));
+  task_runner->PostTask(FROM_HERE, std::move(cb));
+
+  // Wait until the CodecOutputBuffer is released.  It should not release the
+  // underlying buffer, but should instead post a task to release it.
+  event.Wait();
+
+  // The underlying buffer should not be released until we RunUntilIdle.
+  EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, false));
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media

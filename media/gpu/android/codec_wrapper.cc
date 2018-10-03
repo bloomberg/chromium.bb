@@ -23,8 +23,10 @@ namespace media {
 // CodecOutputBuffer are the only two things that hold references to it.
 class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
  public:
-  CodecWrapperImpl(CodecSurfacePair codec_surface_pair,
-                   CodecWrapper::OutputReleasedCB output_buffer_release_cb);
+  CodecWrapperImpl(
+      CodecSurfacePair codec_surface_pair,
+      CodecWrapper::OutputReleasedCB output_buffer_release_cb,
+      scoped_refptr<base::SequencedTaskRunner> release_task_runner);
 
   using DequeueStatus = CodecWrapper::DequeueStatus;
   using QueueStatus = CodecWrapper::QueueStatus;
@@ -95,6 +97,10 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   // while we're already flushed?
   bool elided_eos_pending_ = false;
 
+  // Task runner on which we'll release codec buffers without rendering.  May be
+  // null to always do this on the calling task runner.
+  scoped_refptr<base::SequencedTaskRunner> release_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(CodecWrapperImpl);
 };
 
@@ -104,21 +110,28 @@ CodecOutputBuffer::CodecOutputBuffer(scoped_refptr<CodecWrapperImpl> codec,
     : codec_(std::move(codec)), id_(id), size_(size) {}
 
 CodecOutputBuffer::~CodecOutputBuffer() {
-  codec_->ReleaseCodecOutputBuffer(id_, false);
+  // While it will work if we re-release the buffer, since CodecWrapper handles
+  // it properly, we can save a lock + (possibly) post by checking here if we
+  // know that it has been rendered already.
+  if (!was_rendered_)
+    codec_->ReleaseCodecOutputBuffer(id_, false);
 }
 
 bool CodecOutputBuffer::ReleaseToSurface() {
+  was_rendered_ = true;
   return codec_->ReleaseCodecOutputBuffer(id_, true);
 }
 
 CodecWrapperImpl::CodecWrapperImpl(
     CodecSurfacePair codec_surface_pair,
-    CodecWrapper::OutputReleasedCB output_buffer_release_cb)
+    CodecWrapper::OutputReleasedCB output_buffer_release_cb,
+    scoped_refptr<base::SequencedTaskRunner> release_task_runner)
     : state_(State::kFlushed),
       codec_(std::move(codec_surface_pair.first)),
       surface_bundle_(std::move(codec_surface_pair.second)),
       next_buffer_id_(0),
-      output_buffer_release_cb_(std::move(output_buffer_release_cb)) {
+      output_buffer_release_cb_(std::move(output_buffer_release_cb)),
+      release_task_runner_(std::move(release_task_runner)) {
   DVLOG(2) << __func__;
 }
 
@@ -365,6 +378,34 @@ scoped_refptr<AVDASurfaceBundle> CodecWrapperImpl::SurfaceBundle() {
 }
 
 bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
+  if (!render && release_task_runner_ &&
+      !release_task_runner_->RunsTasksInCurrentSequence()) {
+    // Note that this can only delay releases, but that won't ultimately change
+    // the ordering at the codec, assuming that releases / renders originate
+    // from the same thread.
+    //
+    // We know that a render call that happens before a release call will still
+    // run before the release's posted task, since it happens before we even
+    // post it.
+    //
+    // Similarly, renders are kept in order with each other.
+    //
+    // It is possible that a render happens before the posted task(s) of some
+    // earlier release(s) (with no intervening renders, since those are
+    // ordered).  In this case, though, the loop below will still release
+    // everything earlier than the rendered buffer, so the codec still sees the
+    // same sequence of calls -- some releases follwed by a render.
+    //
+    // Of course, if releases and renders are posted from different threads,
+    // then it's unclear what the ordering was anyway.
+    release_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(&CodecWrapperImpl::ReleaseCodecOutputBuffer),
+            this, id, render));
+    return true;
+  }
+
   base::AutoLock l(lock_);
   if (!codec_ || state_ == State::kError)
     return false;
@@ -394,10 +435,13 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   return true;
 }
 
-CodecWrapper::CodecWrapper(CodecSurfacePair codec_surface_pair,
-                           OutputReleasedCB output_buffer_release_cb)
+CodecWrapper::CodecWrapper(
+    CodecSurfacePair codec_surface_pair,
+    OutputReleasedCB output_buffer_release_cb,
+    scoped_refptr<base::SequencedTaskRunner> release_task_runner)
     : impl_(new CodecWrapperImpl(std::move(codec_surface_pair),
-                                 std::move(output_buffer_release_cb))) {}
+                                 std::move(output_buffer_release_cb),
+                                 std::move(release_task_runner))) {}
 
 CodecWrapper::~CodecWrapper() {
   // The codec must have already been taken.

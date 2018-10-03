@@ -52,6 +52,7 @@ class MEDIA_GPU_EXPORT CodecOutputBuffer {
 
   scoped_refptr<CodecWrapperImpl> codec_;
   int64_t id_;
+  bool was_rendered_ = false;
   gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(CodecOutputBuffer);
 };
@@ -71,9 +72,15 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   //
   // OutputReleasedCB will be called with a bool indicating if CodecWrapper is
   // currently draining or in the drained state.
+  //
+  // If not null, then we will only release codec buffers without rendering
+  // on |release_task_runner|, posting if needed.  This does not change where
+  // we release them with rendering; that has to be done inline.  This helps
+  // us avoid a common case of hanging up the GPU main thread.
   using OutputReleasedCB = base::RepeatingCallback<void(bool)>;
   CodecWrapper(CodecSurfacePair codec_surface_pair,
-               OutputReleasedCB output_buffer_release_cb);
+               OutputReleasedCB output_buffer_release_cb,
+               scoped_refptr<base::SequencedTaskRunner> release_task_runner);
   ~CodecWrapper();
 
   // Takes the backing codec and surface, implicitly discarding all outstanding
