@@ -38,9 +38,8 @@ class StopButton : public views::LabelButton {
              int button_tag,
              bool enabled)
       : views::LabelButton(button_listener, base::string16()) {
-    // TODO(https://crbug.com/877702): Update the icon to match the mocks.
-    static const gfx::ImageSkia icon = CreateVectorIcon(
-        kNavigateStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
+    static const gfx::ImageSkia icon =
+        CreateVectorIcon(kStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
     SetImage(views::Button::STATE_NORMAL, icon);
     SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
     set_tag(button_tag);
