@@ -85,12 +85,4 @@ camera.bg.create = function() {
   });
 };
 
-/**
- * Creates the window for tests. If renamed, the Camera's autotest must be
- * updated too.
- */
-camera.bg.createForTesting = function() {
-  camera.bg.create();
-};
-
 chrome.app.runtime.onLaunched.addListener(camera.bg.create);
