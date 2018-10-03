@@ -73,13 +73,8 @@ void AssistantUiController::RemoveModelObserver(
 
 void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
                                                       bool active) {
-  if (active) {
+  if (active)
     container_view_->RequestFocus();
-  } else {
-    // When the widget is deactivated the UI should hide. Interacting with
-    // the metalayer does not cause widget deactivation.
-    HideUi(AssistantSource::kUnspecified);
-  }
 }
 
 void AssistantUiController::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -227,16 +222,39 @@ void AssistantUiController::OnUiVisibilityChanged(
           ? mojom::VoiceInteractionState::RUNNING
           : mojom::VoiceInteractionState::STOPPED);
 
-  if (new_visibility == AssistantVisibility::kHidden) {
-    // When hiding the UI, start a timer to automatically close ourselves after
-    // |kAutoCloseThreshold|. This is to give the user an opportunity to resume
-    // their previous session before it is automatically finished.
-    auto_close_timer_.Start(FROM_HERE, kAutoCloseThreshold,
-                            base::BindRepeating(&AssistantUiController::CloseUi,
-                                                weak_factory_.GetWeakPtr(),
-                                                AssistantSource::kUnspecified));
-  } else {
-    auto_close_timer_.Stop();
+  switch (new_visibility) {
+    case AssistantVisibility::kClosed:
+      // When the UI is closed, we stop the auto close timer as it may be
+      // running and also stop monitoring events.
+      auto_close_timer_.Stop();
+      event_monitor_.reset();
+      break;
+    case AssistantVisibility::kHidden:
+      // When hiding the UI, we start a timer to automatically close ourselves
+      // after |kAutoCloseThreshold|. This is to give the user an opportunity to
+      // resume their previous session before it is automatically finished.
+      auto_close_timer_.Start(
+          FROM_HERE, kAutoCloseThreshold,
+          base::BindRepeating(&AssistantUiController::CloseUi,
+                              weak_factory_.GetWeakPtr(),
+                              AssistantSource::kUnspecified));
+
+      // Because the UI is not visible we needn't monitor events.
+      event_monitor_.reset();
+      break;
+    case AssistantVisibility::kVisible:
+      // Upon becoming visible, we stop the auto close timer.
+      auto_close_timer_.Stop();
+
+      // We need to monitor events for the root window while we're visible to
+      // give us an opportunity to dismiss Assistant UI when the user starts an
+      // interaction outside of our bounds. TODO(dmblack): Investigate how this
+      // behaves in a multi-display environment.
+      gfx::NativeWindow root_window =
+          container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+      event_monitor_ =
+          views::EventMonitor::CreateWindowMonitor(this, root_window);
+      break;
   }
 
   // Metalayer should not be sticky. Disable when the UI is no longer visible.
@@ -379,6 +397,34 @@ void AssistantUiController::OnDisplayMetricsChanged(
       UpdateUsableWorkArea(root_window);
     }
   }
+}
+
+void AssistantUiController::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    OnPressedEvent(*event);
+}
+
+void AssistantUiController::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    OnPressedEvent(*event);
+}
+
+void AssistantUiController::OnPressedEvent(const ui::LocatedEvent& event) {
+  DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
+         event.type() == ui::ET_TOUCH_PRESSED);
+
+  const gfx::Point screen_location =
+      event.target() ? event.target()->GetScreenLocation(event)
+                     : event.root_location();
+
+  const gfx::Rect screen_bounds =
+      container_view_->GetWidget()->GetWindowBoundsInScreen();
+
+  // Pressed events outside our widget bounds should result in hiding of
+  // Assistant UI. This event does not fire during a Metalayer session so we
+  // needn't enforce logic to prevent hiding when using the stylus.
+  if (!screen_bounds.Contains(screen_location))
+    HideUi(AssistantSource::kUnspecified);
 }
 
 void AssistantUiController::UpdateUsableWorkArea(aura::Window* root_window) {

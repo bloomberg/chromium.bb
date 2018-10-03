@@ -21,8 +21,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/display/display_observer.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
@@ -53,7 +55,8 @@ class ASH_EXPORT AssistantUiController
       public DialogPlateObserver,
       public HighlighterController::Observer,
       public keyboard::KeyboardControllerObserver,
-      public display::DisplayObserver {
+      public display::DisplayObserver,
+      public ui::EventHandler {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
@@ -115,6 +118,10 @@ class ASH_EXPORT AssistantUiController
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+
   void ShowUi(AssistantSource source);
   void HideUi(AssistantSource source);
   void CloseUi(AssistantSource source);
@@ -123,6 +130,9 @@ class ASH_EXPORT AssistantUiController
   AssistantContainerView* GetViewForTest();
 
  private:
+  // Invoked on either a mouse or touch pressed event.
+  void OnPressedEvent(const ui::LocatedEvent& event);
+
   // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
   // the basis of interaction/widget visibility state.
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
@@ -145,6 +155,8 @@ class ASH_EXPORT AssistantUiController
 
   AssistantContainerView* container_view_ =
       nullptr;  // Owned by view hierarchy.
+
+  std::unique_ptr<views::EventMonitor> event_monitor_;
 
   gfx::Rect keyboard_workspace_occluded_bounds_;
 
