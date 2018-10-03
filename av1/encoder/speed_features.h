@@ -495,6 +495,9 @@ typedef struct SPEED_FEATURES {
   // usually includes EIGHTTAP_REGULAR.
   int use_fast_interpolation_filter_search;
 
+  // Disable dual filter
+  int disable_dual_filter;
+
   // Save results of interpolation_filter_search for a block
   // Check mv and ref_frames before search, if they are same with previous
   // saved results, it can be skipped.

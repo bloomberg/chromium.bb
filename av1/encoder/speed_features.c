@@ -252,6 +252,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->fast_wedge_sign_estimate = 1;
+    sf->disable_dual_filter = 1;
   }
 
   if (speed >= 3) {
@@ -480,6 +481,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->gm_disable_recode = 0;
   sf->use_fast_interpolation_filter_search = 0;
+  sf->disable_dual_filter = 0;
   sf->skip_repeat_interpolation_filter_search = 0;
   sf->use_hash_based_trellis = 0;
   sf->prune_comp_search_by_single_result = 0;
@@ -494,6 +496,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, oxcf->speed);
+
+  if (!cpi->seq_params_locked) {
+    cpi->common.seq_params.enable_dual_filter &= !sf->disable_dual_filter;
+  }
 
   // sf->partition_search_breakout_dist_thr is set assuming max 64x64
   // blocks. Normalise this if the blocks are bigger.
