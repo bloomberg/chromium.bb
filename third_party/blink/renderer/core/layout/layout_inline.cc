@@ -1312,6 +1312,23 @@ LayoutRect LayoutInline::VisualOverflowRect() const {
   return overflow_rect;
 }
 
+LayoutRect LayoutInline::ReferenceBoxForClipPath() const {
+  // The spec just says to use the border box as clip-path reference box. It
+  // doesn't say what to do if there are multiple lines. Gecko uses the first
+  // fragment in that case. We'll do the same here (but correctly with respect
+  // to writing-mode - Gecko has some issues there).
+  // See crbug.com/641907
+  LayoutRect bounding_box;
+  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
+    bounding_box.SetLocation(fragment->Offset().ToLayoutPoint());
+    bounding_box.SetSize(fragment->Size().ToLayoutSize());
+  } else if (const InlineFlowBox* flow_box = FirstLineBox()) {
+    bounding_box = flow_box->FrameRect();
+  }
+  ContainingBlock()->FlipForWritingMode(bounding_box);
+  return bounding_box;
+}
+
 bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
     TransformState& transform_state,

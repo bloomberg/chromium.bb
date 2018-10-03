@@ -158,6 +158,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   LayoutRect LinesBoundingBox() const;
   LayoutRect VisualOverflowRect() const final;
+  LayoutRect ReferenceBoxForClipPath() const;
 
   InlineFlowBox* CreateAndAppendInlineFlowBox();
 
