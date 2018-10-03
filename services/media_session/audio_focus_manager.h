@@ -11,48 +11,50 @@
 #include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace media_session {
 
-class AudioFocusManager {
+class AudioFocusManager : public mojom::AudioFocusManager {
  public:
-  using RequestId = int;
-  using RequestResponse = std::pair<RequestId, bool>;
+  using RequestId = uint64_t;
 
   // Returns Chromium's internal AudioFocusManager.
   static AudioFocusManager* GetInstance();
 
-  // Requests audio focus with |type| for the |media_session| with
-  // |session_info|. The function will return a |RequestResponse| which contains
-  // a |RequestId| and a boolean as to whether the request was successful. If a
-  // session wishes to request a different focus type it should provide its
-  // previous request id as |previous_id|.
-  RequestResponse RequestAudioFocus(mojom::MediaSessionPtr media_session,
-                                    mojom::MediaSessionInfoPtr session_info,
-                                    mojom::AudioFocusType type,
-                                    base::Optional<RequestId> previous_id);
+  // mojom::AudioFocusManager.
+  void RequestAudioFocus(mojom::AudioFocusRequestClientRequest request,
+                         mojom::MediaSessionPtr media_session,
+                         mojom::MediaSessionInfoPtr session_info,
+                         mojom::AudioFocusType type,
+                         RequestAudioFocusCallback callback) override;
+  void GetFocusRequests(GetFocusRequestsCallback callback) override;
+  void GetDebugInfoForRequest(uint64_t request_id,
+                              GetDebugInfoForRequestCallback callback) override;
+  void AddObserver(mojom::AudioFocusObserverPtr observer) override;
 
-  // Abandons audio focus for a request with |id|. The next request on top of
-  // the stack will be granted audio focus.
-  void AbandonAudioFocus(RequestId id);
+  // Bind to a mojom::AudioFocusManagerRequest.
+  void BindToInterface(mojom::AudioFocusManagerRequest request);
 
-  // Returns the current audio focus type for a request with |id|.
-  mojom::AudioFocusType GetFocusTypeForSession(RequestId id);
-
-  // Adds/removes audio focus observers.
-  mojo::InterfacePtrSetElementId AddObserver(mojom::AudioFocusObserverPtr);
-  void RemoveObserver(mojo::InterfacePtrSetElementId);
+  // This will close all Mojo bindings and interface pointers. This should be
+  // called by the MediaSession service before it is destroyed.
+  void CloseAllMojoObjects();
 
  private:
   friend struct base::DefaultSingletonTraits<AudioFocusManager>;
   friend class AudioFocusManagerTest;
 
-  // Media internals UI needs access to internal state.
-  friend class MediaInternalsAudioFocusTest;
-  friend class MediaInternals;
+  // StackRow is an AudioFocusRequestClient and allows a media session to
+  // control its audio focus.
+  class StackRow;
+
+  void RequestAudioFocusInternal(std::unique_ptr<StackRow> row,
+                                 mojom::AudioFocusType type,
+                                 base::OnceCallback<void()> callback);
+  void AbandonAudioFocusInternal(RequestId id);
 
   // Flush for testing will flush any pending messages to the observers.
   void FlushForTesting();
@@ -61,50 +63,19 @@ class AudioFocusManager {
   void ResetForTesting();
 
   AudioFocusManager();
-  ~AudioFocusManager();
+  ~AudioFocusManager() override;
 
-  void RemoveFocusEntryIfPresent(RequestId id);
+  std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
+
+  bool IsSessionOnTopOfAudioFocusStack(RequestId id,
+                                       mojom::AudioFocusType type) const;
+
+  // Holds mojo bindings for the Audio Focus Manager API.
+  mojo::BindingSet<mojom::AudioFocusManager> bindings_;
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.
   mojo::InterfacePtrSet<mojom::AudioFocusObserver> observers_;
-
-  // StackRow is a MediaSessionObserver and holds a cached copy of the latest
-  // MediaSessionInfo associated with the MediaSession. By keeping the info
-  // cached and readily available we can make audio focus decisions quickly
-  // without waiting on MediaSessions.
-  class StackRow : public mojom::MediaSessionObserver {
-   public:
-    StackRow(mojom::MediaSessionPtr session,
-             mojom::MediaSessionInfoPtr current_info,
-             mojom::AudioFocusType audio_focus_type,
-             RequestId id);
-    ~StackRow() override;
-
-    // mojom::MediaSessionObserver.
-    void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) override;
-
-    mojom::MediaSession* session();
-    const mojom::MediaSessionInfoPtr& info() const;
-    mojom::AudioFocusType audio_focus_type() const { return audio_focus_type_; }
-
-    bool IsActive() const;
-    int id() { return id_; }
-
-    // Flush any pending mojo messages for testing.
-    void FlushForTesting();
-
-   private:
-    void OnConnectionError();
-
-    int id_;
-    mojom::MediaSessionPtr session_;
-    mojom::MediaSessionInfoPtr current_info_;
-    mojom::AudioFocusType audio_focus_type_;
-    mojo::Binding<mojom::MediaSessionObserver> binding_;
-
-    DISALLOW_COPY_AND_ASSIGN(StackRow);
-  };
 
   // A stack of Mojo interface pointers and their requested audio focus type.
   // A MediaSession must abandon audio focus before its destruction.

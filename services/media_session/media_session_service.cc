@@ -4,6 +4,8 @@
 
 #include "services/media_session/media_session_service.h"
 
+#include "base/bind.h"
+#include "services/media_session/audio_focus_manager.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace media_session {
@@ -14,12 +16,17 @@ std::unique_ptr<service_manager::Service> MediaSessionService::Create() {
 
 MediaSessionService::MediaSessionService() = default;
 
-MediaSessionService::~MediaSessionService() = default;
+MediaSessionService::~MediaSessionService() {
+  AudioFocusManager::GetInstance()->CloseAllMojoObjects();
+}
 
 void MediaSessionService::OnStart() {
-  DLOG(ERROR) << "start";
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       context()->CreateQuitClosure()));
+
+  registry_.AddInterface(
+      base::BindRepeating(&AudioFocusManager::BindToInterface,
+                          base::Unretained(AudioFocusManager::GetInstance())));
 }
 
 void MediaSessionService::OnBindInterface(
