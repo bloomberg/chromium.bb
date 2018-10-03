@@ -5,6 +5,7 @@
 #include "ash/system/message_center/unified_message_list_view.h"
 
 #include "ash/system/message_center/new_unified_message_center_view.h"
+#include "base/auto_reset.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
@@ -25,8 +26,13 @@ UnifiedMessageListView::UnifiedMessageListView(
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
+  bool is_latest = true;
   for (auto* notification : MessageCenter::Get()->GetVisibleNotifications()) {
-    AddChildViewAt(CreateMessageView(*notification), 0);
+    auto* view = CreateMessageView(*notification);
+    // Expand the latest notification, and collapse all other notifications.
+    view->SetExpanded(is_latest && view->IsAutoExpandingAllowed());
+    is_latest = false;
+    AddChildViewAt(view, 0);
     MessageCenter::Get()->DisplayedNotification(
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   }
@@ -37,6 +43,8 @@ UnifiedMessageListView::~UnifiedMessageListView() {
 }
 
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
+  if (ignore_size_change_)
+    return;
   PreferredSizeChanged();
 }
 
@@ -50,7 +58,14 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
   auto* notification = MessageCenter::Get()->FindVisibleNotificationById(id);
   if (!notification)
     return;
-  AddChildView(CreateMessageView(*notification));
+
+  // Collapse all notifications before adding new one.
+  CollapseAllNotifications();
+
+  auto* view = CreateMessageView(*notification);
+  // Expand the latest notification.
+  view->SetExpanded(view->IsAutoExpandingAllowed());
+  AddChildView(view);
   PreferredSizeChanged();
 }
 
@@ -92,6 +107,15 @@ message_center::MessageView* UnifiedMessageListView::CreateMessageView(
   if (message_center_view_)
     message_center_view_->ConfigureMessageView(view);
   return view;
+}
+
+void UnifiedMessageListView::CollapseAllNotifications() {
+  base::AutoReset<bool> auto_reset(&ignore_size_change_, true);
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = static_cast<message_center::MessageView*>(child_at(i));
+    if (!view->IsManuallyExpandedOrCollapsed())
+      view->SetExpanded(false);
+  }
 }
 
 }  // namespace ash

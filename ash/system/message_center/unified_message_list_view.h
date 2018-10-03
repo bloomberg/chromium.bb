@@ -41,8 +41,14 @@ class ASH_EXPORT UnifiedMessageListView
  private:
   message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification) const;
+  void CollapseAllNotifications();
 
   NewUnifiedMessageCenterView* const message_center_view_;
+
+  // If true, ChildPreferredSizeChanged() will be ignored. This is used in
+  // CollapseAllNotifications() to prevent PreferredSizeChanged() triggered
+  // multiple times because of sequential SetExpanded() calls.
+  bool ignore_size_change_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListView);
 };
