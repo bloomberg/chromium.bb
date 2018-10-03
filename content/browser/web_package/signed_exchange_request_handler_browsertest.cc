@@ -222,6 +222,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   EXPECT_EQ(original_fingerprint, fingerprint);
   histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
                                        SignedExchangeLoadResult::kSuccess, 1);
+  histogram_tester_.ExpectTotalCount(
+      "SignedExchange.Time.CertificateFetch.Success", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
@@ -310,6 +312,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kCertFetchError,
       1);
+  histogram_tester_.ExpectTotalCount(
+      "SignedExchange.Time.CertificateFetch.Failure", 1);
 }
 
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest

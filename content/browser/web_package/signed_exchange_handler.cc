@@ -391,6 +391,7 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
 
   const bool force_fetch = load_flags_ & net::LOAD_BYPASS_CACHE;
 
+  cert_fetch_start_time_ = base::TimeTicks::Now();
   cert_fetcher_ = std::move(cert_fetcher_factory_)
                       ->CreateFetcherAndStart(
                           cert_url, force_fetch, *version_,
@@ -423,8 +424,13 @@ void SignedExchangeHandler::OnCertReceived(
     std::unique_ptr<SignedExchangeCertificateChain> cert_chain) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertReceived");
+  base::TimeDelta cert_fetch_duration =
+      base::TimeTicks::Now() - cert_fetch_start_time_;
   DCHECK_EQ(state_, State::kFetchingCertificate);
   if (result != SignedExchangeLoadResult::kSuccess) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("SignedExchange.Time.CertificateFetch.Failure",
+                               cert_fetch_duration);
+
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(), "Failed to fetch the certificate.",
         std::make_pair(0 /* signature_index */,
@@ -433,6 +439,8 @@ void SignedExchangeHandler::OnCertReceived(
     return;
   }
 
+  UMA_HISTOGRAM_MEDIUM_TIMES("SignedExchange.Time.CertificateFetch.Success",
+                             cert_fetch_duration);
   unverified_cert_chain_ = std::move(cert_chain);
 
   const SignedExchangeSignatureVerifier::Result verify_result =
