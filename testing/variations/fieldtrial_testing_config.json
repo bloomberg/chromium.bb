@@ -537,7 +537,7 @@
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_LaunchOnStartup_Sandboxed_v7",
+                    "name": "AudioProcess_LaunchOnStartup_Sandboxed_APM_v8",
                     "params": {
                         "teardown_timeout_s": "0"
                     },
@@ -545,7 +545,8 @@
                         "AudioServiceAudioStreams",
                         "AudioServiceLaunchOnStartup",
                         "AudioServiceOutOfProcess",
-                        "AudioServiceSandbox"
+                        "AudioServiceSandbox",
+                        "WebRtcApmInAudioService"
                     ]
                 }
             ]
