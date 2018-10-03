@@ -11,14 +11,14 @@
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -257,9 +257,8 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
 
   std::unique_ptr<WebContentSettingsClient> client;
   if (GetExecutionContext()->IsDocument()) {
-    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(
-        ToDocument(GetExecutionContext())->GetFrame());
-    client = web_frame->Client()->CreateWorkerContentSettingsClient();
+    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+    client = frame->Client()->CreateWorkerContentSettingsClient();
   } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
     WebContentSettingsClient* web_worker_content_settings_client =
         WorkerContentSettingsClient::From(*GetExecutionContext())
