@@ -60,7 +60,6 @@ class TracingUmaTracker {
   }
   ~TracingUmaTracker() = default;
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
-  TracingUmaTracker& operator=(TracingUmaTracker&& tracker) = default;
 
   void Stop() {
     TRACE_EVENT_ASYNC_END0(
