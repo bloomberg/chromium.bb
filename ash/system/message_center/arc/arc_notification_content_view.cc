@@ -683,7 +683,7 @@ void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(
         item_->GetSnapshot(), 0, 0, item_->GetSnapshot().width(),
         item_->GetSnapshot().height(), contents_bounds.x(), contents_bounds.y(),
-        contents_bounds.width(), contents_bounds.height(), false);
+        contents_bounds.width(), contents_bounds.height(), true /* filter */);
   } else {
     // Draw a blank background otherwise. The height of the view and surface are
     // not exactly synced and user may see the blank area out of the surface.
