@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_vector_animation_observer.h"
+#include "ui/gfx/skottie_wrapper.h"
 
 namespace gfx {
 namespace {
@@ -101,6 +102,9 @@ class SkiaVectorAnimationTest : public testing::Test {
   void SetUp() override {
     canvas_.reset(new gfx::Canvas(gfx::Size(kAnimationWidth, kAnimationHeight),
                                   1.f, false));
+    skottie_ = base::MakeRefCounted<SkottieWrapper>(
+        std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
+    animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   }
 
   void TearDown() override { animation_.reset(nullptr); }
@@ -186,6 +190,7 @@ class SkiaVectorAnimationTest : public testing::Test {
 
  protected:
   std::unique_ptr<SkiaVectorAnimation> animation_;
+  scoped_refptr<SkottieWrapper> skottie_;
 
  private:
   std::unique_ptr<gfx::Canvas> canvas_;
@@ -197,15 +202,17 @@ class SkiaVectorAnimationTest : public testing::Test {
 TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
   auto bytes = base::MakeRefCounted<base::RefCountedBytes>(
       std::vector<unsigned char>(kData, kData + std::strlen(kData)));
-  animation_ = std::make_unique<SkiaVectorAnimation>(bytes.get());
+  skottie_ = base::MakeRefCounted<SkottieWrapper>(bytes.get());
+  animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
   EXPECT_FLOAT_EQ(animation_->GetAnimationDuration().InSecondsF(),
                   kAnimationDuration);
   EXPECT_TRUE(IsStopped());
 
-  animation_ = std::make_unique<SkiaVectorAnimation>(
+  skottie_ = base::MakeRefCounted<SkottieWrapper>(
       std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
+  animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
   EXPECT_FLOAT_EQ(animation_->GetAnimationDuration().InSecondsF(),
@@ -215,8 +222,6 @@ TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
 
 TEST_F(SkiaVectorAnimationTest, PlayLinearAnimation) {
   TestAnimationObserver observer;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   animation_->SetAnimationObserver(&observer);
 
   // Advance clock by 300 milliseconds.
@@ -256,8 +261,6 @@ TEST_F(SkiaVectorAnimationTest, PlayLinearAnimation) {
 
 TEST_F(SkiaVectorAnimationTest, StopLinearAnimation) {
   TestAnimationObserver observer;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   animation_->SetAnimationObserver(&observer);
 
   // Advance clock by 300 milliseconds.
@@ -285,8 +288,6 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLinearAnimation) {
 
   TestAnimationObserver observer;
 
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   animation_->SetAnimationObserver(&observer);
 
   // Advance clock by 300 milliseconds.
@@ -344,8 +345,6 @@ TEST_F(SkiaVectorAnimationTest, PausingLinearAnimation) {
   const int start_time_ms = 400;
   const int duration_ms = 1000;
   const float total_duration_ms = kAnimationDuration * 1000.f;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
@@ -390,8 +389,6 @@ TEST_F(SkiaVectorAnimationTest, PausingLinearAnimation) {
 
 TEST_F(SkiaVectorAnimationTest, PlayLoopAnimation) {
   TestAnimationObserver observer;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   animation_->SetAnimationObserver(&observer);
 
   // Advance clock by 300 milliseconds.
@@ -436,8 +433,6 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfLoopAnimation) {
   const int duration_ms = 1000;
   const float total_duration_ms = kAnimationDuration * 1000.f;
 
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
@@ -498,8 +493,6 @@ TEST_F(SkiaVectorAnimationTest, PausingLoopAnimation) {
   const int start_time_ms = 400;
   const int duration_ms = 1000;
   const float total_duration_ms = kAnimationDuration * 1000.f;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
@@ -550,8 +543,6 @@ TEST_F(SkiaVectorAnimationTest, PausingLoopAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
@@ -607,8 +598,6 @@ TEST_F(SkiaVectorAnimationTest, PlaySubsectionOfThrobbingAnimation) {
   const int duration_ms = 1000;
   const float total_duration_ms = kAnimationDuration * 1000.f;
 
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
@@ -688,8 +677,6 @@ TEST_F(SkiaVectorAnimationTest, PausingThrobbingAnimation) {
   const int start_time_ms = 400;
   const int duration_ms = 1000;
   const float total_duration_ms = kAnimationDuration * 1000.f;
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   AdvanceClock(200);
 
@@ -782,8 +769,6 @@ TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
 
   // Test to see if the race condition is handled correctly. It may happen that
   // we pause the video before it even starts playing.
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
@@ -814,8 +799,6 @@ TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
 TEST_F(SkiaVectorAnimationTest, PaintTest) {
   std::unique_ptr<gfx::Canvas> canvas(new gfx::Canvas(
       gfx::Size(kAnimationWidth, kAnimationHeight), 1.f, false));
-  animation_ = std::make_unique<SkiaVectorAnimation>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
 
   // Advance clock by 300 milliseconds.
   AdvanceClock(300);
