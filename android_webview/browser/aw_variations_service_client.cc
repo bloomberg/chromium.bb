@@ -54,6 +54,10 @@ Channel AwVariationsServiceClient::GetChannel() {
   return android_webview::GetChannelOrStable();
 }
 
+bool AwVariationsServiceClient::GetSupportsPermanentConsistency() {
+  return false;
+}
+
 bool AwVariationsServiceClient::OverridesRestrictParameter(
     std::string* parameter) {
   return false;
