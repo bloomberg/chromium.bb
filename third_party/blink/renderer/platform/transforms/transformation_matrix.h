@@ -474,6 +474,10 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   bool IsIntegerTranslation() const;
 
+  // Returns true if axis-aligned 2d rects will remain axis-aligned after being
+  // transformed by this matrix.
+  bool Preserves2dAxisAlignment() const;
+
   // If this transformation is identity or 2D translation, returns the
   // translation.
   FloatSize To2DTranslation() const;

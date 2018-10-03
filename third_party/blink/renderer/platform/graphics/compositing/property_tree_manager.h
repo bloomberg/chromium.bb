@@ -19,6 +19,7 @@ class Layer;
 class PropertyTrees;
 class ScrollTree;
 class TransformTree;
+struct EffectNode;
 struct TransformNode;
 }
 
@@ -126,9 +127,38 @@ class PropertyTreeManager {
       bool effect_is_newly_built);
   void EmitClipMaskLayer();
   void CloseCcEffect();
+
   bool IsCurrentCcEffectSynthetic() const {
-    return current_effect_type_ != CcEffectType::kEffect;
+    return current_.effect_type != CcEffectType::kEffect;
   }
+  bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {
+    return current_.effect_type == CcEffectType::kSyntheticForNonTrivialClip;
+  }
+
+  // The type of operation the current cc effect node applies.
+  enum class CcEffectType {
+    // The cc effect corresponds to a Blink effect node.
+    kEffect,
+    // The cc effect is synthetic for a blink clip node that has to be
+    // rasterized because the clip is non-trivial.
+    kSyntheticForNonTrivialClip,
+    // The cc effect is synthetic to create a render surface that is
+    // 2d-axis-aligned with a blink clip node that is non-2d-axis-aligned
+    // in the the original render surface. Cc requires a rectangular clip to be
+    // 2d-axis-aligned with the render surface to correctly apply the clip.
+    // TODO(crbug.com/504464): This will be changed when we move render surface
+    // decision logic into the cc compositor thread.
+    kSyntheticFor2dAxisAlignment,
+  };
+
+  base::Optional<CcEffectType> NeedsSyntheticEffect(
+      const ClipPaintPropertyNode&) const;
+
+  void SetCurrentEffectState(const cc::EffectNode&,
+                             CcEffectType,
+                             const EffectPaintPropertyNode*,
+                             const ClipPaintPropertyNode*);
+  void SetCurrentEffectHasRenderSurface();
 
   cc::TransformTree& GetTransformTree();
   cc::ClipTree& GetClipTree();
@@ -158,32 +188,36 @@ class PropertyTreeManager {
   HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
   HashMap<const ScrollPaintPropertyNode*, int> scroll_node_map_;
 
-  // The cc effect node that has the corresponding drawing state to the
-  // effect and clip state from the last SwitchToEffectNodeWithSynthesizedClip.
-  int current_effect_id_;
-  // The type of operation the current cc effect node applies. kEffect means
-  // it corresponds to a Blink effect node. kSynthesizedClip means it implements
-  // a Blink clip node that has to be rasterized.
-  enum class CcEffectType { kEffect, kSynthesizedClip } current_effect_type_;
-  // The effect state of the current cc effect node.
-  const EffectPaintPropertyNode* current_effect_;
-  // The clip state of the current cc effect node. This value may be shallower
-  // than the one passed into SwitchToEffectNodeWithSynthesizedClip because not
-  // every clip needs to be synthesized as cc effect.
-  // Is set to output clip of the effect if the type is kEffect, or set to the
-  // synthesized clip node if the type is kSynthesizedClip.
-  const ClipPaintPropertyNode* current_clip_;
+  struct EffectState {
+    // The cc effect node that has the corresponding drawing state to the
+    // effect and clip state from the last
+    // SwitchToEffectNodeWithSynthesizedClip.
+    int effect_id;
+    CcEffectType effect_type;
+    // The effect state of the cc effect node.
+    const EffectPaintPropertyNode* effect;
+    // The clip state of the cc effect node. This value may be shallower than
+    // the one passed into SwitchToEffectNodeWithSynthesizedClip because not
+    // every clip needs to be synthesized as cc effect.
+    // Is set to output clip of the effect if the type is kEffect, or set to the
+    // synthesized clip node if the type is kSyntheticForNonTrivialClip.
+    const ClipPaintPropertyNode* clip;
+    // The transform space of the containing render surface.
+    // TODO(crbug.com/504464): Remove this when move render surface decision
+    // logic into cc compositor thread.
+    const TransformPaintPropertyNode* render_surface_transform;
+  };
+
+  // The current effect state. Virtually it's the top of the effect stack if
+  // it and effect_stack_ are treated as a whole stack.
+  EffectState current_;
+
   // This keep track of cc effect stack. Whenever a new cc effect is nested,
   // a new entry is pushed, and the entry will be popped when the effect closed.
   // Note: This is a "restore stack", i.e. the top element does not represent
-  // the current state, but the state prior to most recent push.
-  struct EffectStackEntry {
-    int effect_id;
-    CcEffectType effect_type;
-    const EffectPaintPropertyNode* effect;
-    const ClipPaintPropertyNode* clip;
-  };
-  Vector<EffectStackEntry> effect_stack_;
+  // the current state (which is in current_), but the state prior to most
+  // recent push.
+  Vector<EffectState> effect_stack_;
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;

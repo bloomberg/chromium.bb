@@ -154,6 +154,7 @@ Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.h
 # Benign subpixel differences.
 Bug(none) transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 Bug(none) transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+Bug(none) compositing/direct-image-compositing.html [ Failure ]
 Bug(none) compositing/masks/direct-image-mask.html [ Failure ]
 Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]
 Bug(none) compositing/perpendicular-layer-sorting.html [ Failure ]
