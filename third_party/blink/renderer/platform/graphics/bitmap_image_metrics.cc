@@ -78,8 +78,8 @@ void BitmapImageMetrics::CountImageGammaAndGamut(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, gamut_named_histogram,
       ("Blink.ColorGamut.Source", static_cast<int>(ColorSpaceGamut::kEnd)));
-  gamut_named_histogram.Count(
-      static_cast<int>(ColorSpaceUtilities::GetColorSpaceGamut(color_profile)));
+  gamut_named_histogram.Count(static_cast<int>(
+      color_space_utilities::GetColorSpaceGamut(color_profile)));
 }
 
 void BitmapImageMetrics::CountJpegArea(const IntSize& size) {
