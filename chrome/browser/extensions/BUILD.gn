@@ -952,8 +952,6 @@ jumbo_static_library("extensions") {
       "chrome_kiosk_delegate_chromeos.cc",
       "updater/chromeos_extension_cache_delegate.cc",
       "updater/chromeos_extension_cache_delegate.h",
-      "updater/extension_cache_delegate.cc",
-      "updater/extension_cache_delegate.h",
       "updater/extension_cache_impl.cc",
       "updater/extension_cache_impl.h",
       "updater/local_extension_cache.cc",
