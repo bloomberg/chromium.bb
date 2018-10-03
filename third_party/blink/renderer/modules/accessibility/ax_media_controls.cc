@@ -195,45 +195,31 @@ String AccessibilityMediaControl::Description(
     ax::mojom::DescriptionFrom& description_from,
     AXObjectVector* description_objects) const {
   switch (ControlType()) {
-    case kMediaEnterFullscreenButton:
-      return QueryString(WebLocalizedString::kAXMediaEnterFullscreenButtonHelp);
-    case kMediaExitFullscreenButton:
-      return QueryString(WebLocalizedString::kAXMediaExitFullscreenButtonHelp);
-    case kMediaMuteButton:
-      return QueryString(WebLocalizedString::kAXMediaMuteButtonHelp);
-    case kMediaPlayButton:
-      return QueryString(WebLocalizedString::kAXMediaPlayButtonHelp);
-    case kMediaUnMuteButton:
-      return QueryString(WebLocalizedString::kAXMediaUnMuteButtonHelp);
-    case kMediaPauseButton:
-      return QueryString(WebLocalizedString::kAXMediaPauseButtonHelp);
     case kMediaCurrentTimeDisplay:
       return QueryString(WebLocalizedString::kAXMediaCurrentTimeDisplayHelp);
     case kMediaTimeRemainingDisplay:
       return QueryString(WebLocalizedString::kAXMediaTimeRemainingDisplayHelp);
-    case kMediaShowClosedCaptionsButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaShowClosedCaptionsButtonHelp);
-    case kMediaHideClosedCaptionsButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaHideClosedCaptionsButtonHelp);
-    case kMediaCastOffButton:
-    case kMediaOverlayCastOffButton:
-      return QueryString(WebLocalizedString::kAXMediaCastOffButtonHelp);
-    case kMediaCastOnButton:
-    case kMediaOverlayCastOnButton:
-      return QueryString(WebLocalizedString::kAXMediaCastOnButtonHelp);
     case kMediaOverflowButton:
       return QueryString(WebLocalizedString::kAXMediaOverflowButtonHelp);
-    case kMediaEnterPictureInPictureButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaEnterPictureInPictureButtonHelp);
-    case kMediaExitPictureInPictureButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaExitPictureInPictureButtonHelp);
+    // The following descriptions are repeats of their respective titles. When
+    // read by accessibility, we get the same thing said twice, with no value
+    // added. So instead, we just return an empty string.
+    case kMediaEnterFullscreenButton:
+    case kMediaExitFullscreenButton:
     case kMediaDisplayCutoutFullscreenButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaDisplayCutoutFullscreenButtonHelp);
+    case kMediaMuteButton:
+    case kMediaUnMuteButton:
+    case kMediaPlayButton:
+    case kMediaPauseButton:
+    case kMediaShowClosedCaptionsButton:
+    case kMediaHideClosedCaptionsButton:
+    case kMediaCastOffButton:
+    case kMediaOverlayCastOffButton:
+    case kMediaCastOnButton:
+    case kMediaOverlayCastOnButton:
+    case kMediaEnterPictureInPictureButton:
+    case kMediaExitPictureInPictureButton:
+      return "";
     case kMediaSliderThumb:
     case kMediaTextTrackList:
     case kMediaTimelineContainer:
