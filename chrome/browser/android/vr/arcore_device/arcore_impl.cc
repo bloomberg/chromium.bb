@@ -251,8 +251,16 @@ bool ARCoreImpl::RequestHitTest(
   ArHitResultList_getSize(arcore_session_.get(), arcore_hit_result_list.get(),
                           &arcore_hit_result_list_size);
 
-  for (int i = 0; i < arcore_hit_result_list_size; i++) {
+  // Go through the list in reverse order so the first hit we encounter is the
+  // furthest.
+  // We will accept the furthest hit and then for the rest require that the hit
+  // be within the actual polygon detected by ArCore. This heuristic allows us
+  // to get better results on floors w/o overestimating the size of tables etc.
+  // See https://crbug.com/872855.
+
+  for (int i = arcore_hit_result_list_size - 1; i >= 0; i--) {
     internal::ScopedArCoreObject<ArHitResult*> arcore_hit;
+
     ArHitResult_create(arcore_session_.get(), arcore_hit.receive());
     if (!arcore_hit.is_valid()) {
       DLOG(ERROR) << "ArHitResult_create failed!";
@@ -262,11 +270,48 @@ bool ARCoreImpl::RequestHitTest(
     ArHitResultList_getItem(arcore_session_.get(), arcore_hit_result_list.get(),
                             i, arcore_hit.get());
 
-    mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
-    if (!ArHitResultToXRHitResult(arcore_hit.get(), mojo_hit.get())) {
+    internal::ScopedArCoreObject<ArTrackable*> ar_trackable;
+
+    ArHitResult_acquireTrackable(arcore_session_.get(), arcore_hit.get(),
+                                 ar_trackable.receive());
+    ArTrackableType ar_trackable_type = AR_TRACKABLE_NOT_VALID;
+    ArTrackable_getType(arcore_session_.get(), ar_trackable.get(),
+                        &ar_trackable_type);
+
+    // Only consider hits with plane trackables
+    // TODO(874985): make this configurable or re-evaluate this decision
+    if (AR_TRACKABLE_PLANE != ar_trackable_type) {
+      continue;
+    }
+
+    internal::ScopedArCoreObject<ArPose*> arcore_pose;
+    ArPose_create(arcore_session_.get(), nullptr, arcore_pose.receive());
+    if (!arcore_pose.is_valid()) {
+      DLOG(ERROR) << "ArPose_create failed!";
       return false;
     }
-    hit_results->push_back(std::move(mojo_hit));
+
+    ArHitResult_getHitPose(arcore_session_.get(), arcore_hit.get(),
+                           arcore_pose.get());
+
+    // After the first (furthest) hit, only return hits that are within the
+    // actual detected polygon and not just within than the larger plane.
+    if (!hit_results->empty()) {
+      int32_t in_polygon = 0;
+      ArPlane* ar_plane = ArAsPlane(ar_trackable.get());
+      ArPlane_isPoseInPolygon(arcore_session_.get(), ar_plane,
+                              arcore_pose.get(), &in_polygon);
+      if (!in_polygon)
+        continue;
+    }
+
+    mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
+    mojo_hit.get()->hit_matrix.resize(16);
+    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(),
+                     mojo_hit.get()->hit_matrix.data());
+
+    // Insert new results at head to preserver order from ArCore
+    hit_results->insert(hit_results->begin(), std::move(mojo_hit));
   }
   return true;
 }
@@ -322,26 +367,6 @@ bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
   // The output screen space coordinates range from 0..1, with 0, 0 at the
   // top left.
   screen_point->set_y((-screen_point_3d.y() + 1) / 2);
-  return true;
-}
-
-bool ARCoreImpl::ArHitResultToXRHitResult(ArHitResult* arcore_hit,
-                                          mojom::XRHitResult* hit_result) {
-  DCHECK(IsOnGlThread());
-  DCHECK(arcore_session_.is_valid());
-  DCHECK(arcore_frame_.is_valid());
-
-  internal::ScopedArCoreObject<ArPose*> arcore_pose;
-  ArPose_create(arcore_session_.get(), nullptr, arcore_pose.receive());
-  if (!arcore_pose.is_valid()) {
-    DLOG(ERROR) << "ArPose_create failed!";
-    return false;
-  }
-  ArHitResult_getHitPose(arcore_session_.get(), arcore_hit, arcore_pose.get());
-  hit_result->hit_matrix.resize(16);
-  ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(),
-                   hit_result->hit_matrix.data());
-
   return true;
 }
 
