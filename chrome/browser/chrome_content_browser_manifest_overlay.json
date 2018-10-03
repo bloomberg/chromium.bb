@@ -90,6 +90,7 @@
           "chrome.mojom.OpenSearchDocumentDescriptionHandler",
           "chrome.mojom.PrerenderCanceler",
           "chromeos.ime.mojom.InputEngineManager",
+          "chromeos.media_perception.mojom.MediaPerception",
           "contextual_search.mojom.ContextualSearchJsApiService",
           "dom_distiller.mojom.DistillabilityService",
           "dom_distiller.mojom.DistillerJavaScriptService",

@@ -122,7 +122,7 @@ bool ContextNeedsMojoBindings(ScriptContext* context) {
   //
   // Prefer to use Mojo from C++ if possible rather than adding to this list.
   static const char* const kApisRequiringMojo[] = {
-      "mimeHandlerPrivate", "mojoPrivate",
+      "mediaPerceptionPrivate", "mimeHandlerPrivate", "mojoPrivate",
   };
 
   for (const auto* api : kApisRequiringMojo) {
