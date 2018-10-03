@@ -29,6 +29,10 @@ class ASH_EXPORT UnifiedMessageListView
       NewUnifiedMessageCenterView* message_center_view);
   ~UnifiedMessageListView() override;
 
+  // Initializes the view with existing notifications. Should be called right
+  // after ctor.
+  void Init();
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;
@@ -38,10 +42,14 @@ class ASH_EXPORT UnifiedMessageListView
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
 
- private:
-  message_center::MessageView* CreateMessageView(
+ protected:
+  // Virtual for testing.
+  virtual message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification) const;
+
+ private:
   void CollapseAllNotifications();
+  void UpdateBorders();
 
   NewUnifiedMessageCenterView* const message_center_view_;
 
