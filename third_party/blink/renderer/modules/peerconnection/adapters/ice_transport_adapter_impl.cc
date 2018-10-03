@@ -106,6 +106,12 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
       this, &IceTransportAdapterImpl::OnCandidateGathered);
   p2p_transport_channel_->SignalStateChanged.connect(
       this, &IceTransportAdapterImpl::OnStateChanged);
+  p2p_transport_channel_->SignalNetworkRouteChanged.connect(
+      this, &IceTransportAdapterImpl::OnNetworkRouteChanged);
+  // We need to set the ICE role even before Start is called since the Port
+  // assumes that the role has been set before receiving incoming connectivity
+  // checks. These checks can race with the information signaled for Start.
+  p2p_transport_channel_->SetIceRole(cricket::ICEROLE_CONTROLLING);
   // The ICE tiebreaker is used to determine which side is controlling/
   // controlled when both sides start in the same role. The number is randomly
   // generated so that each peer can calculate a.tiebreaker <= b.tiebreaker
@@ -190,6 +196,23 @@ void IceTransportAdapterImpl::OnStateChanged(
     cricket::IceTransportInternal* transport) {
   DCHECK_EQ(transport, p2p_transport_channel_.get());
   delegate_->OnStateChanged(p2p_transport_channel_->GetState());
+}
+
+void IceTransportAdapterImpl::OnNetworkRouteChanged(
+    absl::optional<rtc::NetworkRoute> new_network_route) {
+  const cricket::CandidatePairInterface* selected_connection =
+      p2p_transport_channel_->selected_connection();
+  if (!selected_connection) {
+    // The selected connection will only be null if the ICE connection has
+    // totally failed, at which point we'll get a StateChanged signal. The
+    // client will implicitly clear the selected candidate pair when it receives
+    // the failed state change, so we don't need to give an explicit callback
+    // here.
+    return;
+  }
+  delegate_->OnSelectedCandidatePairChanged(
+      std::make_pair(selected_connection->local_candidate(),
+                     selected_connection->remote_candidate()));
 }
 
 }  // namespace blink

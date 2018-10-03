@@ -237,6 +237,7 @@
     "seeked",
     "seeking",
     "select",
+    "selectedcandidatepairchange",
     "selectionchange",
     "selectstart",
     "selectend",
