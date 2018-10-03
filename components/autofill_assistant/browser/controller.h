@@ -67,6 +67,15 @@ class Controller : public ScriptExecutorDelegate,
   void OnScriptExecuted(const std::string& script_path,
                         ScriptExecutor::Result result);
 
+  // Check script preconditions every few seconds for a certain number of times.
+  // If checks are already running, StartPeriodicScriptChecks resets the count.
+  //
+  // TODO(crbug.com/806868): Find a better solution. This is a brute-force
+  // solution that reacts slowly to changes.
+  void StartPeriodicScriptChecks();
+  void StopPeriodicScriptChecks();
+  void OnPeriodicScriptCheck();
+
   // Overrides content::UiDelegate:
   void OnClickOverlay() override;
   void OnDestroy() override;
@@ -92,6 +101,14 @@ class Controller : public ScriptExecutorDelegate,
   std::string script_domain_;
   std::unique_ptr<ClientMemory> memory_;
   bool allow_autostart_;
+
+  // Whether a task for periodic checks is scheduled.
+  bool periodic_script_check_scheduled_;
+
+  // Number of remaining periodic checks.
+  int periodic_script_check_count_;
+
+  base::WeakPtrFactory<Controller> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
