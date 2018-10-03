@@ -20,6 +20,7 @@ namespace gfx {
 class Canvas;
 class SkiaVectorAnimationTest;
 class SkiaVectorAnimationObserver;
+class SkottieWrapper;
 
 // This class is a wrapper over the Skia object for lottie vector graphic
 // animations. It has its own timeline manager for the animation controls. The
@@ -80,9 +81,7 @@ class GFX_EXPORT SkiaVectorAnimation {
     kLoop         // Same as LINEAR, except the animation repeats after it ends.
   };
 
-  explicit SkiaVectorAnimation(
-      const scoped_refptr<base::RefCountedMemory>& data_stream);
-  explicit SkiaVectorAnimation(std::unique_ptr<SkMemoryStream> stream);
+  explicit SkiaVectorAnimation(scoped_refptr<SkottieWrapper> skottie);
   ~SkiaVectorAnimation();
 
   void SetAnimationObserver(SkiaVectorAnimationObserver* Observer);
@@ -137,6 +136,9 @@ class GFX_EXPORT SkiaVectorAnimation {
   // this for special cases when you want to manually manage which frame to
   // paint.
   void PaintFrame(gfx::Canvas* canvas, float t, const gfx::Size& size);
+
+  // Returns the skottie object that contins the animation data.
+  scoped_refptr<SkottieWrapper> skottie() const { return skottie_; }
 
  private:
   friend class SkiaVectorAnimationTest;
@@ -229,7 +231,7 @@ class GFX_EXPORT SkiaVectorAnimation {
 
   SkiaVectorAnimationObserver* observer_ = nullptr;
 
-  sk_sp<skottie::Animation> animation_;
+  scoped_refptr<SkottieWrapper> skottie_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaVectorAnimation);
 };

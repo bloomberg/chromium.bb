@@ -224,6 +224,8 @@ jumbo_component("gfx") {
       "skia_vector_animation.cc",
       "skia_vector_animation.h",
       "skia_vector_animation_observer.h",
+      "skottie_wrapper.cc",
+      "skottie_wrapper.h",
     ]
   }
 

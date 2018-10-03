@@ -13,6 +13,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/skia_vector_animation_observer.h"
+#include "ui/gfx/skottie_wrapper.h"
 
 namespace gfx {
 
@@ -68,15 +69,8 @@ double SkiaVectorAnimation::TimerControl::GetNormalizedEndOffset() const {
   return end_offset_.InMillisecondsF() * progress_per_millisecond_;
 }
 
-SkiaVectorAnimation::SkiaVectorAnimation(
-    const scoped_refptr<base::RefCountedMemory>& data_stream) {
-  TRACE_EVENT0("ui", "SkiaVectorAnimation Parse");
-  SkMemoryStream sk_stream(data_stream->front(), data_stream->size());
-  animation_ = skottie::Animation::Make(&sk_stream);
-}
-
-SkiaVectorAnimation::SkiaVectorAnimation(std::unique_ptr<SkMemoryStream> stream)
-    : animation_(skottie::Animation::Make(stream.get())) {}
+SkiaVectorAnimation::SkiaVectorAnimation(scoped_refptr<SkottieWrapper> skottie)
+    : skottie_(skottie) {}
 
 SkiaVectorAnimation::~SkiaVectorAnimation() {}
 
@@ -88,13 +82,13 @@ void SkiaVectorAnimation::SetAnimationObserver(
 
 base::TimeDelta SkiaVectorAnimation::GetAnimationDuration() const {
   return base::TimeDelta::FromMilliseconds(
-      std::floor(SkScalarToFloat(animation_->duration()) * 1000.f));
+      std::floor(SkScalarToFloat(skottie_->duration()) * 1000.f));
 }
 
 gfx::Size SkiaVectorAnimation::GetOriginalSize() const {
 #if DCHECK_IS_ON()
   // The size should have no fractional component.
-  gfx::SizeF float_size = gfx::SkSizeToSizeF(animation_->size());
+  gfx::SizeF float_size = gfx::SkSizeToSizeF(skottie_->size());
   gfx::Size rounded_size = gfx::ToRoundedSize(float_size);
 
   float height_diff = std::abs(float_size.height() - rounded_size.height());
@@ -103,7 +97,7 @@ gfx::Size SkiaVectorAnimation::GetOriginalSize() const {
   DCHECK_LE(height_diff, std::numeric_limits<float>::epsilon());
   DCHECK_LE(width_diff, std::numeric_limits<float>::epsilon());
 #endif
-  return gfx::ToRoundedSize(gfx::SkSizeToSizeF(animation_->size()));
+  return gfx::ToRoundedSize(gfx::SkSizeToSizeF(skottie_->size()));
 }
 
 void SkiaVectorAnimation::Start(Style style) {
@@ -158,8 +152,7 @@ float SkiaVectorAnimation::GetCurrentProgress() const {
       } else {
         // It may be that the timer hasn't been initialized which may happen if
         // the animation was paused while it was in |kScheculePlay| state.
-        return scheduled_start_offset_.InMillisecondsF() /
-               animation_->duration();
+        return scheduled_start_offset_.InMillisecondsF() / skottie_->duration();
       }
     case PlayState::kSchedulePlay:
     case PlayState::kPlaying:
@@ -214,17 +207,16 @@ void SkiaVectorAnimation::PaintFrame(gfx::Canvas* canvas,
   DCHECK_GE(t, 0.f);
   DCHECK_LE(t, 1.f);
 
-  animation_->seek(t);
   float scale = canvas->UndoDeviceScaleFactor();
+  gfx::Size pixel_size = gfx::ScaleToRoundedSize(size, scale);
 
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(std::round(size.width() * scale),
-                        std::round(size.height() * scale), false);
+  bitmap.allocN32Pixels(std::round(pixel_size.width()),
+                        std::round(pixel_size.height()), false);
   SkCanvas skcanvas(bitmap);
   skcanvas.clear(SK_ColorTRANSPARENT);
-  SkRect dst = SkRect::MakeXYWH(0, 0, std::round(size.width() * scale),
-                                std::round(size.height() * scale));
-  animation_->render(&skcanvas, &dst);
+
+  skottie_->Draw(&skcanvas, t, pixel_size);
 
   canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), 0, 0);
 }
