@@ -6,6 +6,7 @@
 
 [
     Constructor,
+    Serializable,
     OriginTrialEnabled=ShapeDetection
 ] interface DetectedText {
     [SameObject] readonly attribute DOMString rawValue;

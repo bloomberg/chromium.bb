@@ -6,6 +6,7 @@
 
 [
     Constructor,
+    Serializable,
     OriginTrialEnabled=ShapeDetection
 ] interface DetectedBarcode {
     // TODO(mcasas): Implement missing fields. https://crbug.com/646083
