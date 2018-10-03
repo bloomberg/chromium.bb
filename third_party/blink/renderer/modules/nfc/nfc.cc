@@ -872,8 +872,8 @@ bool NFC::IsSupportedInContext(ExecutionContext* context,
                                String& error_message) {
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!ToDocument(context)->domWindow()->GetFrame() ||
-      !ToDocument(context)->GetFrame()->IsMainFrame()) {
+  if (!To<Document>(context)->domWindow()->GetFrame() ||
+      !To<Document>(context)->GetFrame()->IsMainFrame()) {
     error_message = "Must be in a top-level browsing context";
     return false;
   }

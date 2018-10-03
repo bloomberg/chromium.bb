@@ -446,8 +446,8 @@ void StyledMarkupTraverser<Strategy>::WrapWithNode(ContainerNode& node,
   if (!accumulator_)
     return;
   StringBuilder markup;
-  if (node.IsDocumentNode()) {
-    MarkupFormatter::AppendXMLDeclaration(markup, ToDocument(node));
+  if (auto* document = DynamicTo<Document>(node)) {
+    MarkupFormatter::AppendXMLDeclaration(markup, *document);
     accumulator_->PushMarkup(markup.ToString());
     return;
   }

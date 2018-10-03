@@ -1408,7 +1408,7 @@ const AtomicString& Node::lookupPrefix(
       context = ToElement(this);
       break;
     case kDocumentNode:
-      context = ToDocument(this)->documentElement();
+      context = To<Document>(this)->documentElement();
       break;
     case kDocumentFragmentNode:
     case kDocumentTypeNode:
@@ -1478,7 +1478,7 @@ const AtomicString& Node::lookupNamespaceURI(
       return g_null_atom;
     }
     case kDocumentNode:
-      if (Element* de = ToDocument(this)->documentElement())
+      if (Element* de = To<Document>(this)->documentElement())
         return de->lookupNamespaceURI(prefix);
       return g_null_atom;
     case kDocumentTypeNode:
@@ -2395,9 +2395,8 @@ void Node::DefaultEventHandler(Event& event) {
           layout_object &&
           (!layout_object->IsBox() ||
            !ToLayoutBox(layout_object)->CanBeScrolledAndHasScrollableArea())) {
-        if (layout_object->GetNode() &&
-            layout_object->GetNode()->IsDocumentNode()) {
-          Element* owner = ToDocument(layout_object->GetNode())->LocalOwner();
+        if (auto* document = DynamicTo<Document>(layout_object->GetNode())) {
+          Element* owner = document->LocalOwner();
           layout_object = owner ? owner->GetLayoutObject() : nullptr;
         } else {
           layout_object = layout_object->Parent();

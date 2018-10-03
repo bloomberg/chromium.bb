@@ -743,12 +743,9 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
   // To determine whether a Document object |document| is allowed to use the
   // feature indicated by attribute name |allowpaymentrequest|, run these steps:
 
-  // If this context is not a document, return false.
-  if (!execution_context->IsDocument())
-    return false;
-
+  // Note: PaymentRequest is only exposed to Window and not workers.
   // 1. If |document| has no browsing context, then return false.
-  const Document* document = ToDocument(execution_context);
+  const Document* document = To<Document>(execution_context);
   if (!document->GetFrame())
     return false;
 

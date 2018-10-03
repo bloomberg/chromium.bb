@@ -189,14 +189,13 @@ void RemoteFontFaceSource::UpdatePeriod() {
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
-  if (!font_selector_->GetExecutionContext()->IsDocument())
+  const auto* document =
+      DynamicTo<Document>(font_selector_->GetExecutionContext());
+  if (!document)
     return false;
 
   WebEffectiveConnectionType connection_type =
-      ToDocument(font_selector_->GetExecutionContext())
-          ->GetFrame()
-          ->Client()
-          ->GetEffectiveConnectionType();
+      document->GetFrame()->Client()->GetEffectiveConnectionType();
 
   bool network_is_slow =
       WebEffectiveConnectionType::kTypeOffline <= connection_type &&

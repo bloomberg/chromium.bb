@@ -308,8 +308,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   id_to_node_.erase(id);
   id_to_nodes_map_.erase(id);
 
-  if (node->IsDocumentNode() && dom_listener_)
-    dom_listener_->DidRemoveDocument(ToDocument(node));
+  if (IsA<Document>(node) && dom_listener_)
+    dom_listener_->DidRemoveDocument(To<Document>(node));
 
   if (node->IsFrameOwnerElement()) {
     Document* content_document =
@@ -893,7 +893,7 @@ Response InspectorDOMAgent::setOuterHTML(int node_id,
     return response;
 
   Document* document =
-      node->IsDocumentNode() ? ToDocument(node) : node->ownerDocument();
+      IsA<Document>(node) ? To<Document>(node) : node->ownerDocument();
   if (!document || (!document->IsHTMLDocument() && !document->IsXMLDocument()))
     return Response::Error("Not an HTML/XML document");
 
@@ -1533,8 +1533,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         force_push_children = true;
       }
     }
-  } else if (node->IsDocumentNode()) {
-    Document* document = ToDocument(node);
+  } else if (auto* document = DynamicTo<Document>(node)) {
     value->setDocumentURL(DocumentURLString(document));
     value->setBaseURL(DocumentBaseURLString(document));
     value->setXmlVersion(document->xmlVersion());
@@ -1735,8 +1734,7 @@ unsigned InspectorDOMAgent::InnerChildNodeCount(Node* node) {
 
 // static
 Node* InspectorDOMAgent::InnerParentNode(Node* node) {
-  if (node->IsDocumentNode()) {
-    Document* document = ToDocument(node);
+  if (auto* document = DynamicTo<Document>(node)) {
     if (HTMLImportLoader* loader = document->ImportLoader())
       return loader->FirstImport()->Link();
     return document->LocalOwner();

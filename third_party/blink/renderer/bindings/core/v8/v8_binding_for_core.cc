@@ -713,8 +713,8 @@ static ScriptState* ToScriptStateImpl(LocalFrame* frame,
 v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   DCHECK(context);
-  if (context->IsDocument()) {
-    if (LocalFrame* frame = ToDocument(context)->GetFrame())
+  if (auto* document = DynamicTo<Document>(context)) {
+    if (LocalFrame* frame = document->GetFrame())
       return ToV8Context(frame, world);
   } else if (context->IsWorkerOrWorkletGlobalScope()) {
     if (WorkerOrWorkletScriptController* script =

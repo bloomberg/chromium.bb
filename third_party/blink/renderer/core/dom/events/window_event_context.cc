@@ -41,9 +41,10 @@ WindowEventContext::WindowEventContext(
   // added because Mozilla doesn't propagate load events to the window object.
   if (event.type() == EventTypeNames::load)
     return;
-  if (!top_node_event_context.GetNode()->IsDocumentNode())
+  auto* document = DynamicTo<Document>(top_node_event_context.GetNode());
+  if (!document)
     return;
-  window_ = ToDocument(top_node_event_context.GetNode())->domWindow();
+  window_ = document->domWindow();
   target_ = top_node_event_context.Target();
   related_target_ = top_node_event_context.RelatedTarget();
 }

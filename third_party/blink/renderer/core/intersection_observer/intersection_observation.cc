@@ -128,7 +128,7 @@ void IntersectionObservation::Compute(unsigned flags) {
         root_bounds_pointer, FloatRect(geometry.UnZoomedIntersectionRect()),
         new_threshold_index > 0, is_visible, Target());
     entries_.push_back(new_entry);
-    ToDocument(Observer()->GetExecutionContext())
+    To<Document>(Observer()->GetExecutionContext())
         ->EnsureIntersectionObserverController()
         .ScheduleIntersectionObserverForDelivery(*Observer());
     SetLastThresholdIndex(new_threshold_index);

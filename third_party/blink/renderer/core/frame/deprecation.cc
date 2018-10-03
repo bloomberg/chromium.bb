@@ -698,8 +698,9 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
                                    WebFeature feature) {
   if (!context)
     return;
-  if (context->IsDocument()) {
-    Deprecation::CountDeprecation(*ToDocument(context), feature);
+  // TODO(dcheng): Maybe this should be a virtual on ExecutionContext?
+  if (auto* document = DynamicTo<Document>(context)) {
+    Deprecation::CountDeprecation(*document, feature);
     return;
   }
   if (context->IsWorkerOrWorkletGlobalScope())

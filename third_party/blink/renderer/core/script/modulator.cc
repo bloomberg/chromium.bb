@@ -34,8 +34,7 @@ Modulator* Modulator::From(ScriptState* script_state) {
   if (modulator)
     return modulator;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  if (execution_context->IsDocument()) {
-    Document* document = ToDocument(execution_context);
+  if (auto* document = DynamicTo<Document>(execution_context)) {
     modulator =
         DocumentModulatorImpl::Create(script_state, document->Fetcher());
     Modulator::SetModulator(script_state, modulator);

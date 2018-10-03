@@ -398,7 +398,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (observer_) {
-    task_runner = ToDocument(observer_->LifecycleContext())
+    task_runner = To<Document>(observer_->LifecycleContext())
                       ->GetTaskRunner(TaskType::kInternalLoading);
   } else {
     task_runner = Platform::Current()->CurrentThread()->GetTaskRunner();
@@ -438,9 +438,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
           FetchInitiatorTypeNames::audio;
     }
 
-    Document* document = ToDocument(observer_->LifecycleContext());
-    DCHECK(document);
-    loader_ = new ThreadableLoader(*document, client_adapter_.get(),
+    Document& document = To<Document>(*observer_->LifecycleContext());
+    loader_ = new ThreadableLoader(document, client_adapter_.get(),
                                    resource_loader_options);
     loader_->Start(webcore_request);
   }

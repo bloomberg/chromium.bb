@@ -56,9 +56,10 @@ void PerformanceMonitor::ReportGenericViolation(
 // static
 PerformanceMonitor* PerformanceMonitor::Monitor(
     const ExecutionContext* context) {
-  if (!context || !context->IsDocument())
+  const auto* document = DynamicTo<Document>(context);
+  if (!document)
     return nullptr;
-  LocalFrame* frame = ToDocument(context)->GetFrame();
+  LocalFrame* frame = document->GetFrame();
   if (!frame)
     return nullptr;
   return frame->GetPerformanceMonitor();
@@ -146,10 +147,11 @@ void PerformanceMonitor::DidExecuteScript() {
 
 void PerformanceMonitor::UpdateTaskAttribution(ExecutionContext* context) {
   // If |context| is not a document, unable to attribute a frame context.
-  if (!context || !context->IsDocument())
+  auto* document = DynamicTo<Document>(context);
+  if (!document)
     return;
 
-  UpdateTaskShouldBeReported(ToDocument(context)->GetFrame());
+  UpdateTaskShouldBeReported(document->GetFrame());
   if (!task_execution_context_)
     task_execution_context_ = context;
   else if (task_execution_context_ != context)

@@ -277,10 +277,9 @@ void LocalFileSystem::Trace(blink::Visitor* visitor) {
 const char LocalFileSystem::kSupplementName[] = "LocalFileSystem";
 
 LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
-  if (context.IsDocument()) {
+  if (auto* document = DynamicTo<Document>(context)) {
     LocalFileSystem* file_system =
-        Supplement<LocalFrame>::From<LocalFileSystem>(
-            ToDocument(context).GetFrame());
+        Supplement<LocalFrame>::From<LocalFileSystem>(document->GetFrame());
     DCHECK(file_system);
     return file_system;
   }

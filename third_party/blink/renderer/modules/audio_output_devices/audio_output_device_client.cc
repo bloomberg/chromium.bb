@@ -16,17 +16,12 @@ AudioOutputDeviceClient::AudioOutputDeviceClient(LocalFrame& frame)
 const char AudioOutputDeviceClient::kSupplementName[] =
     "AudioOutputDeviceClient";
 
-AudioOutputDeviceClient* AudioOutputDeviceClient::From(
-    ExecutionContext* context) {
-  if (!context || !context->IsDocument())
-    return nullptr;
-
-  const Document* document = ToDocument(context);
-  if (!document->GetFrame())
+AudioOutputDeviceClient* AudioOutputDeviceClient::From(Document& document) {
+  if (!document.GetFrame())
     return nullptr;
 
   return Supplement<LocalFrame>::From<AudioOutputDeviceClient>(
-      document->GetFrame());
+      document.GetFrame());
 }
 
 void ProvideAudioOutputDeviceClientTo(LocalFrame& frame,

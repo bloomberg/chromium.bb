@@ -300,7 +300,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   DVLOG(3) << __func__;
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
 
   if (!document->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kEncryptedMedia)) {

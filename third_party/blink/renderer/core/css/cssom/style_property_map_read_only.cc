@@ -153,11 +153,11 @@ const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
     const AtomicString& property_name) {
   const CSSValue* value = GetCustomProperty(property_name);
 
-  if (!execution_context.IsDocument())
+  const auto* document = DynamicTo<Document>(execution_context);
+  if (!document)
     return value;
 
-  return PropertyRegistry::ParseIfRegistered(ToDocument(execution_context),
-                                             property_name, value);
+  return PropertyRegistry::ParseIfRegistered(*document, property_name, value);
 }
 
 }  // namespace blink

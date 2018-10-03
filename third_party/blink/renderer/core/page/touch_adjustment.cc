@@ -221,8 +221,8 @@ static inline void AppendContextSubtargetsForNode(
 static inline Node* ParentShadowHostOrOwner(const Node* node) {
   if (Node* ancestor = node->ParentOrShadowHostNode())
     return ancestor;
-  if (node->IsDocumentNode())
-    return ToDocument(node)->LocalOwner();
+  if (auto* document = DynamicTo<Document>(node))
+    return document->LocalOwner();
   return nullptr;
 }
 

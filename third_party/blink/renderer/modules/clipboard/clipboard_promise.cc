@@ -95,8 +95,7 @@ PermissionService* ClipboardPromise::GetPermissionService() {
 }
 
 bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
-  DCHECK(context->IsDocument());
-  Document* doc = ToDocumentOrNull(context);
+  Document* doc = To<Document>(context);
   return doc && doc->hasFocus();
 }
 

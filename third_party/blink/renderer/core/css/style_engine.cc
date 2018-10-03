@@ -266,7 +266,7 @@ void StyleEngine::RemoveStyleSheetCandidateNode(
     shadow_root = insertion_point.ContainingShadowRoot();
 
   TreeScope& tree_scope =
-      shadow_root ? *ToTreeScope(shadow_root) : ToTreeScope(GetDocument());
+      shadow_root ? *ToTreeScope(shadow_root) : GetDocument();
   TreeScopeStyleSheetCollection* collection =
       StyleSheetCollectionFor(tree_scope);
   // After detaching document, collection could be null. In the case,

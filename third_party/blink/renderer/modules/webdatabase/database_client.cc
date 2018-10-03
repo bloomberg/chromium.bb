@@ -51,7 +51,7 @@ DatabaseClient* DatabaseClient::FromPage(Page* page) {
 }
 
 DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
-  return DatabaseClient::FromPage(ToDocument(context)->GetPage());
+  return DatabaseClient::FromPage(To<Document>(context)->GetPage());
 }
 
 const char DatabaseClient::kSupplementName[] = "DatabaseClient";
@@ -61,7 +61,7 @@ bool DatabaseClient::AllowDatabase(ExecutionContext* context,
                                    const String& display_name,
                                    unsigned estimated_size) {
   DCHECK(context->IsContextThread());
-  Document* document = ToDocument(context);
+  Document* document = To<Document>(context);
   DCHECK(document->GetFrame());
   if (document->GetFrame()->GetContentSettingsClient()) {
     return document->GetFrame()->GetContentSettingsClient()->AllowDatabase(

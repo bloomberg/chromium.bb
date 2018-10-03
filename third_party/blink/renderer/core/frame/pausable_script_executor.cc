@@ -217,7 +217,7 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   DCHECK(context);
   blocking_option_ = blocking;
   if (blocking_option_ == kOnloadBlocking)
-    ToDocument(GetExecutionContext())->IncrementLoadEventDelayCount();
+    To<Document>(GetExecutionContext())->IncrementLoadEventDelayCount();
 
   StartOneShot(TimeDelta(), FROM_HERE);
   PauseIfNeeded();
@@ -231,7 +231,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 
   ScriptState::Scope script_scope(script_state_);
   Vector<v8::Local<v8::Value>> results =
-      executor_->Execute(ToDocument(GetExecutionContext())->GetFrame());
+      executor_->Execute(To<Document>(GetExecutionContext())->GetFrame());
 
   // The script may have removed the frame, in which case contextDestroyed()
   // will have handled the disposal/callback.
@@ -239,7 +239,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
     return;
 
   if (blocking_option_ == kOnloadBlocking)
-    ToDocument(GetExecutionContext())->DecrementLoadEventDelayCount();
+    To<Document>(GetExecutionContext())->DecrementLoadEventDelayCount();
 
   if (callback_)
     callback_->Completed(results);

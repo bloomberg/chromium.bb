@@ -96,7 +96,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
                              ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
 
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
   return Create(effect, &document->Timeline(), exception_state);
 }
 

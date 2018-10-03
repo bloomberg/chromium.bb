@@ -212,9 +212,8 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
     PresentationRequest* request) {
   DCHECK(resolver);
   DCHECK(request);
-  DCHECK(resolver->GetExecutionContext()->IsDocument());
 
-  Document* document = ToDocument(resolver->GetExecutionContext());
+  Document* document = To<Document>(resolver->GetExecutionContext());
   if (!document->GetFrame())
     return nullptr;
 

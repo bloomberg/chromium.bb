@@ -32,9 +32,8 @@ IndexedDBClient::IndexedDBClient(WorkerClients& clients)
     : Supplement<WorkerClients>(clients) {}
 
 IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
-  if (context->IsDocument()) {
-    return Supplement<LocalFrame>::From<IndexedDBClient>(
-        ToDocument(*context).GetFrame());
+  if (auto* document = DynamicTo<Document>(context)) {
+    return Supplement<LocalFrame>::From<IndexedDBClient>(document->GetFrame());
   }
 
   WorkerClients* clients = ToWorkerGlobalScope(*context).Clients();
@@ -47,8 +46,7 @@ bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
   DCHECK(context->IsContextThread());
   SECURITY_DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
 
-  if (context->IsDocument()) {
-    Document* document = ToDocument(context);
+  if (auto* document = DynamicTo<Document>(context)) {
     LocalFrame* frame = document->GetFrame();
     if (!frame)
       return false;

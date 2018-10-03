@@ -394,8 +394,8 @@ void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
-  if (GetExecutionContext()->IsDocument()) {
-    return ToDocument(execution_context_)->GetStyleEngine().GetFontSelector();
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+    return document->GetStyleEngine().GetFontSelector();
   }
   return ToWorkerGlobalScope(execution_context_)->GetFontSelector();
 }

@@ -1463,8 +1463,8 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
 
   Element* focused_element = focused_document->FocusedElement();
   Node* container = focused_document;
-  if (container->IsDocumentNode())
-    ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (auto* document = DynamicTo<Document>(container))
+    document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
 
@@ -1483,8 +1483,8 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
     // Nothing found in |container| so search the parent container.
     pruned_sub_tree_root = container;
     container = ScrollableAreaOrDocumentOf(container);
-    if (container && container->IsDocumentNode())
-      ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    if (auto* document = DynamicTo<Document>(container))
+      document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
   return consumed;

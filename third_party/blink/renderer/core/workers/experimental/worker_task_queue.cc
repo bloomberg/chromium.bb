@@ -19,7 +19,8 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  if (!context->IsDocument()) {
+  auto* document = DynamicTo<Document>(context);
+  if (!document) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "WorkerTaskQueue can only be constructed from a document.");
@@ -29,7 +30,7 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
   DCHECK(type == "user-interaction" || type == "background");
   TaskType task_type = type == "user-interaction" ? TaskType::kUserInteraction
                                                   : TaskType::kIdleTask;
-  return new WorkerTaskQueue(ToDocument(context), task_type);
+  return new WorkerTaskQueue(document, task_type);
 }
 
 WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)

@@ -213,8 +213,8 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   // won't be initialized. If that's the case, the Worker will initialize it by
   // itself later.
   BeginFrameProviderParams begin_frame_provider_params;
-  if (GetExecutionContext() && GetExecutionContext()->IsDocument()) {
-    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+    LocalFrame* frame = document->GetFrame();
     WebLayerTreeView* layer_tree_view = nullptr;
     if (frame && frame->GetPage()) {
       layer_tree_view =
@@ -256,8 +256,8 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
       *worker_clients);
 
   std::unique_ptr<WebContentSettingsClient> client;
-  if (GetExecutionContext()->IsDocument()) {
-    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+    LocalFrame* frame = document->GetFrame();
     client = frame->Client()->CreateWorkerContentSettingsClient();
   } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
     WebContentSettingsClient* web_worker_content_settings_client =
@@ -314,8 +314,7 @@ std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
   base::UnguessableToken devtools_worker_token;
   std::unique_ptr<WorkerSettings> settings;
-  if (GetExecutionContext()->IsDocument()) {
-    Document* document = ToDocument(GetExecutionContext());
+  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     devtools_worker_token = document->GetFrame()
                                 ? document->GetFrame()->GetDevToolsFrameToken()
                                 : base::UnguessableToken::Create();

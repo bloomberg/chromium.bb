@@ -295,7 +295,7 @@ ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, {{me
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *ToDocument(ToExecutionContext(
+Document& document = *To<Document>(ToExecutionContext(
     info.NewTarget().As<v8::Object>()->CreationContext()));
 {% endif %}
 {# Call #}

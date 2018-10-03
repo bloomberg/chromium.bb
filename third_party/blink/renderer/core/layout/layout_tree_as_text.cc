@@ -830,11 +830,10 @@ static String NodePosition(Node* node) {
 }
 
 static void WriteSelection(WTF::TextStream& ts, const LayoutObject* o) {
-  Node* n = o->GetNode();
-  if (!n || !n->IsDocumentNode())
+  Document* doc = DynamicTo<Document>(o->GetNode());
+  if (!doc)
     return;
 
-  Document* doc = ToDocument(n);
   LocalFrame* frame = doc->GetFrame();
   if (!frame)
     return;

@@ -130,7 +130,7 @@ class DedicatedWorkerMessagingProxyForTest
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
-        ToDocument(GetExecutionContext())->GetSettings());
+        To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             script_url, ScriptType::kClassic, "fake user agent", headers,
