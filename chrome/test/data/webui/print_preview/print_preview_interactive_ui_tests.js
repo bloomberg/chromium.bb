@@ -132,3 +132,11 @@ TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
 TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
   this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
 });
+
+TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
+  this.runMochaTest(pages_settings_test.TestNames.ClearInput);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'TabOrder', function() {
+  this.runMochaTest(pages_settings_test.TestNames.TabOrder);
+});
