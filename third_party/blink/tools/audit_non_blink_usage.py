@@ -266,11 +266,7 @@ _CONFIG = [
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
         ],
-        'disallowed': [
-            '.+',
-            ('base::Bind(|Once|Repeating)',
-             'Use WTF::Bind or WTF::BindRepeating.'),
-        ],
+        'disallowed': ['.+'],
     },
     {
         'paths': ['third_party/blink/renderer/bindings/'],
@@ -473,30 +469,12 @@ def _precompile_config():
             return re.compile('(?:%s)$' % '|'.join(match_list))
         return match_nothing_re
 
-    def compile_disallowed(disallowed_list):
-        """Transforms the disallowed list to one with the regexps compiled."""
-        if not disallowed_list:
-            return [], []
-        match_list = []
-        advice_list = []
-        for entry in disallowed_list:
-            if isinstance(entry, tuple):
-                match, advice = entry
-                match_list.append(match)
-                advice_list.append((compile_regexp(match), advice))
-            else:
-                # Just a string
-                match_list.append(entry)
-        return compile_regexp(match_list), advice_list
-
     compiled_config = []
     for raw_entry in _CONFIG:
-        disallowed, advice = compile_disallowed(raw_entry.get('disallowed'))
         compiled_config.append({
             'paths': raw_entry['paths'],
             'allowed': compile_regexp(raw_entry.get('allowed')),
-            'disallowed': disallowed,
-            'advice': advice,
+            'disallowed': compile_regexp(raw_entry.get('disallowed')),
         })
     return compiled_config
 
@@ -520,10 +498,9 @@ def _find_matching_entries(path):
 
     Returns:
         A list of entries, sorted in order of relevance. Each entry is a
-        dictionary with keys:
+        dictionary with two keys:
             allowed: A regexp for identifiers that should be allowed.
             disallowed: A regexp for identifiers that should not be allowed.
-            advice: (optional) A regexp for identifiers along with advice
     """
     entries = []
     for entry in _COMPILED_CONFIG:
@@ -537,7 +514,6 @@ def _find_matching_entries(path):
 
 
 def _check_entries_for_identifier(entries, identifier):
-    """Check if an identifier is allowed"""
     for entry in entries:
         if entry['allowed'].match(identifier):
             return True
@@ -545,23 +521,6 @@ def _check_entries_for_identifier(entries, identifier):
             return False
     # Disallow by default.
     return False
-
-
-def _find_advice_for_identifier(entries, identifier):
-    advice_list = []
-    for entry in entries:
-        for matcher, advice in entry.get('advice', []):
-            if matcher.match(identifier):
-                advice_list.append(advice)
-    return advice_list
-
-
-class BadIdentifier(object):
-    """Represents a single instance of a bad identifier."""
-    def __init__(self, identifier, line, advice=None):
-        self.identifier = identifier
-        self.line = line
-        self.advice = advice
 
 
 def check(path, contents):
@@ -572,7 +531,7 @@ def check(path, contents):
         contents: An array of line number, line tuples to check.
 
     Returns:
-        A list of (line number, disallowed identifier, advice) tuples.
+        A list of line number, disallowed identifier tuples.
     """
     results = []
     # Because Windows.
@@ -596,11 +555,8 @@ def check(path, contents):
             line = line[:idx]
         match = _IDENTIFIER_WITH_NAMESPACE_RE.search(line)
         if match:
-            identifier = match.group(0)
-            if not _check_entries_for_identifier(entries, identifier):
-                advice = _find_advice_for_identifier(entries, identifier)
-                results.append(
-                    BadIdentifier(identifier, line_number, advice))
+            if not _check_entries_for_identifier(entries, match.group(0)):
+                results.append((line_number, match.group(0)))
     return results
 
 
@@ -615,7 +571,7 @@ def main():
                 if disallowed_identifiers:
                     print '%s uses disallowed identifiers:' % path
                     for i in disallowed_identifiers:
-                        print (i.line, i.identifier, i.advice)
+                        print i
         except IOError as e:
             print 'could not open %s: %s' % (path, e)
 
