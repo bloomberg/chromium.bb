@@ -177,18 +177,23 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 
 base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
+  NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
+                              ComputePadding(ConstraintSpace(), Style());
   MinMaxSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
-  if (node_.ShouldApplySizeContainment())
+  if (node_.ShouldApplySizeContainment()) {
+    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize) {
+      sizes =
+          border_padding.InlineSum() + Node().GetScrollbarSizes().InlineSum();
+    }
     return sizes;
+  }
 
   const TextDirection direction = Style().Direction();
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
   LayoutUnit float_right_inline_size = input.float_right_inline_size;
 
-  NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
-                              ComputePadding(ConstraintSpace(), Style());
   LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), NGSizeIndefinite, border_padding);
   if (extrinsic_block_size != NGSizeIndefinite) {
