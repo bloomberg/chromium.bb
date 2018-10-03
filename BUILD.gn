@@ -216,7 +216,10 @@ group("gn_all") {
   } else if (is_ios) {
     deps += [ "//ios:all" ]
   } else if (is_fuchsia) {
-    deps += [ ":d8_fuchsia" ]
+    deps += [
+      ":d8_fuchsia",
+      "tools/fuchsia/fidlgen_js:fidlgen_js_unittests",
+    ]
   }
 
   deps += root_extra_deps
