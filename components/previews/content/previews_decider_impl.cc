@@ -112,6 +112,7 @@ void PreviewsDeciderImpl::Initialize(
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   is_enabled_callback_ = is_enabled_callback;
   previews_ui_service_ = previews_ui_service;
@@ -127,6 +128,7 @@ void PreviewsDeciderImpl::Initialize(
 
 void PreviewsDeciderImpl::OnNewBlacklistedHost(const std::string& host,
                                                base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PreviewsUIService::OnNewBlacklistedHost,
@@ -134,6 +136,7 @@ void PreviewsDeciderImpl::OnNewBlacklistedHost(const std::string& host,
 }
 
 void PreviewsDeciderImpl::OnUserBlacklistedStatusChange(bool blacklisted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -142,6 +145,7 @@ void PreviewsDeciderImpl::OnUserBlacklistedStatusChange(bool blacklisted) {
 }
 
 void PreviewsDeciderImpl::OnBlacklistCleared(base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PreviewsUIService::OnBlacklistCleared,
@@ -151,6 +155,7 @@ void PreviewsDeciderImpl::OnBlacklistCleared(base::Time time) {
 void PreviewsDeciderImpl::InitializeOnIOThread(
     std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_.reset(
       new PreviewsBlackList(std::move(previews_opt_out_store), clock_, this,
@@ -164,6 +169,7 @@ void PreviewsDeciderImpl::InitializeOnIOThread(
 void PreviewsDeciderImpl::OnResourceLoadingHints(
     const GURL& document_gurl,
     const std::vector<std::string>& patterns_to_block) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -182,6 +188,7 @@ void PreviewsDeciderImpl::LogPreviewNavigation(const GURL& url,
                                                PreviewsType type,
                                                base::Time time,
                                                uint64_t page_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PreviewsUIService::LogPreviewNavigation,
@@ -195,6 +202,7 @@ void PreviewsDeciderImpl::LogPreviewDecisionMade(
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>&& passed_reasons,
     uint64_t page_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogPreviewsEligibilityReason(reason, type);
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PreviewsUIService::LogPreviewDecisionMade,
@@ -206,6 +214,7 @@ void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
                                                bool opt_out,
                                                PreviewsType type,
                                                uint64_t page_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
@@ -217,11 +226,13 @@ void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
 
 void PreviewsDeciderImpl::ClearBlackList(base::Time begin_time,
                                          base::Time end_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_->ClearBlackList(begin_time, end_time);
 }
 
 void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   blacklist_ignored_ = ignored;
   ui_task_runner_->PostTask(
@@ -232,6 +243,7 @@ void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
 
 bool PreviewsDeciderImpl::ShouldAllowPreview(const net::URLRequest& request,
                                              PreviewsType type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::OFFLINE ||
          type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
@@ -248,7 +260,8 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
     const std::vector<std::string>& host_blacklist_from_finch,
-    bool ignore_long_term_black_list_rules) const {
+    bool is_server_preview) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!previews::params::ArePreviewsAllowed()) {
     return false;
   }
@@ -289,7 +302,8 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
-        request.url(), type, ignore_long_term_black_list_rules,
+        request.url(), type,
+        is_server_preview && ignore_long_term_blacklist_for_server_previews_,
         &passed_reasons);
 
     if (status != PreviewsEligibilityReason::ALLOWED) {
@@ -408,6 +422,7 @@ void PreviewsDeciderImpl::LoadResourceHints(const net::URLRequest& request) {
 
 bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
                                                  PreviewsType type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PreviewsType::NOSCRIPT == type ||
          PreviewsType::RESOURCE_LOADING_HINTS == type);
   if (previews_black_list_ && !blacklist_ignored_) {
@@ -451,6 +466,7 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
@@ -493,6 +509,7 @@ PreviewsDeciderImpl::IsURLAllowedForPreviewByOptmizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
@@ -514,6 +531,13 @@ PreviewsDeciderImpl::IsURLAllowedForPreviewByOptmizationHints(
 
 uint64_t PreviewsDeciderImpl::GeneratePageId() {
   return ++page_id_;
+}
+
+void PreviewsDeciderImpl::SetIgnoreLongTermBlackListForServerPreviews(
+    bool ignore_long_term_blacklist_for_server_previews) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ignore_long_term_blacklist_for_server_previews_ =
+      ignore_long_term_blacklist_for_server_previews;
 }
 
 }  // namespace previews

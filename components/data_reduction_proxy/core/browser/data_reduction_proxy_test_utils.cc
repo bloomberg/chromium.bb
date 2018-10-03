@@ -294,6 +294,11 @@ void TestDataReductionProxyIOData::SetPingbackReportingFraction(
   pingback_reporting_fraction_ = pingback_reporting_fraction;
 }
 
+void TestDataReductionProxyIOData::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  ignore_blacklist_ = ignore_long_term_black_list_rules;
+}
+
 void TestDataReductionProxyIOData::SetDataReductionProxyService(
     base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
   if (!service_set_)

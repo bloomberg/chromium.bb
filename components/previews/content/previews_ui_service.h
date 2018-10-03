@@ -128,6 +128,10 @@ class PreviewsUIService {
   // return null.
   PreviewsLogger* previews_logger() const;
 
+  // When triggering previews, prevent long term black list rules.
+  void SetIgnoreLongTermBlackListForServerPreviews(
+      bool ignore_long_term_black_list_rules_allowed);
+
  private:
   // The IO thread portion of the inter-thread communication for previews/.
   base::WeakPtr<previews::PreviewsDeciderImpl> previews_decider_impl_;

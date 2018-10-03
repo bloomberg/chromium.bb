@@ -30,7 +30,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/previews/core/previews_decider.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -340,15 +339,13 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
-bool DataReductionProxyIOData::ShouldAcceptServerPreview(
-    const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(previews_decider);
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  if (!config_ || !request.url().SchemeIsHTTPOrHTTPS()) {
-    return false;
-  }
-  return config_->ShouldAcceptServerPreview(request, *previews_decider);
+void DataReductionProxyIOData::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &DataReductionProxyService::SetIgnoreLongTermBlackListRules, service_,
+          ignore_long_term_black_list_rules));
 }
 
 void DataReductionProxyIOData::UpdateDataUseForHost(int64_t network_bytes,

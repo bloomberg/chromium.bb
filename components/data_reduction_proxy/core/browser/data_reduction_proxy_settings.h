@@ -143,6 +143,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // some of them should have.
   bool IsDataReductionProxyUnreachable();
 
+  // When triggering previews, prevent long term black list rules.
+  virtual void SetIgnoreLongTermBlackListRules(
+      bool ignore_long_term_black_list_rules) {}
+
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 
   // Configures data reduction proxy. |at_startup| is true when this method is

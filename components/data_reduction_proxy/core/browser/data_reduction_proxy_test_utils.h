@@ -263,9 +263,15 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
   // Records the reporting fraction that was set by parsing a config.
   void SetPingbackReportingFraction(float pingback_reporting_fraction) override;
 
+  // Records |ignore_long_term_black_list_rules| as |ignore_blacklist_|.
+  void SetIgnoreLongTermBlackListRules(
+      bool ignore_long_term_black_list_rules) override;
+
   float pingback_reporting_fraction() const {
     return pingback_reporting_fraction_;
   }
+
+  bool ignore_blacklist() const { return ignore_blacklist_; }
 
  private:
   // Allowed SetDataReductionProxyService to be re-entrant.
@@ -273,6 +279,9 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
 
   // Reporting fraction last set via SetPingbackReportingFraction.
   float pingback_reporting_fraction_;
+
+  // Whether the long term blacklist rules should be ignored.
+  bool ignore_blacklist_ = false;
 
   TestDataReductionProxyRequestOptions* test_request_options_;
 };
