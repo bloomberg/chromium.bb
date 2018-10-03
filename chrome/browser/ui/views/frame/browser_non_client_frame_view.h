@@ -36,9 +36,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
 
-  // Returns the padding on the sides of the tabstrip.
-  static int GetTabstripPadding();
-
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
 
@@ -78,9 +75,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // window is maximized. If true, the top frame is just the height of a tab,
   // rather than having extra vertical space above the tabs.
   virtual bool IsFrameCondensed() const;
-
-  // Returns whether the content is painted with a client edge or not.
-  virtual bool HasClientEdge() const;
 
   // Returns whether the shapes of background tabs are visible against the
   // frame, given an active state of |active|.
@@ -125,12 +119,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Provided for mus to update the minimum window size property.
   virtual void UpdateMinimumSize();
-
-  // Distance between the leading edge of the NonClientFrameView and the tab
-  // strip.
-  // TODO: Consider refactoring and unifying tabstrip bounds calculations.
-  // https://crbug.com/820485.
-  virtual int GetTabStripLeftInset() const;
 
   // Whether the special painting mode for one tab is allowed, regardless of how
   // many tabs there are right now.

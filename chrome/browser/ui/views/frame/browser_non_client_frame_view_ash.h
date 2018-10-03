@@ -65,7 +65,6 @@ class BrowserNonClientFrameViewAsh
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   void UpdateMinimumSize() override;
-  int GetTabStripLeftInset() const override;
   void OnTabsMaxXChanged() override;
 
   // views::NonClientFrameView:
@@ -179,8 +178,8 @@ class BrowserNonClientFrameViewAsh
   // example, in overview mode and tablet mode.
   bool ShouldShowCaptionButtons() const;
 
-  // Distance between the right edge of the NonClientFrameView and the tab
-  // strip.
+  // Distance between the edges of the NonClientFrameView and the tab strip.
+  int GetTabStripLeftInset() const;
   int GetTabStripRightInset() const;
 
   // Returns true if there is anything to paint. Some fullscreen windows do

@@ -27,7 +27,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -218,10 +217,6 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
   return layout_->GetMinimumSize(width());
 }
 
-int OpaqueBrowserFrameView::GetTabStripLeftInset() const {
-  return layout_->GetTabStripLeftInset();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::NonClientFrameView implementation:
 
@@ -242,9 +237,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  using MD = ui::MaterialDesignController;
-  if ((!MD::IsRefreshUi() || ShouldShowWindowIcon()) &&
-      frame_component != HTCLIENT) {
+  if (ShouldShowWindowIcon() && frame_component != HTCLIENT) {
     gfx::Rect sysmenu_rect(IconBounds());
     // In maximized mode we extend the rect to the screen corner to take
     // advantage of Fitts' Law.
@@ -291,7 +284,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // the 16 px at the end of each edge triggers diagonal resizing.
   constexpr int kResizeAreaCornerSize = 16;
   int window_component = GetHTComponentForFrame(
-      point, FrameTopBorderThickness(false), NonClientBorderThickness(),
+      point, FrameTopBorderThickness(false), FrameBorderThickness(false),
       kResizeAreaCornerSize, kResizeAreaCornerSize, delegate->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -458,10 +451,6 @@ bool OpaqueBrowserFrameView::IsMinimized() const {
 
 bool OpaqueBrowserFrameView::IsTabStripVisible() const {
   return browser_view()->IsTabStripVisible();
-}
-
-bool OpaqueBrowserFrameView::HasClientEdge() const {
-  return layout_->HasClientEdge();
 }
 
 bool OpaqueBrowserFrameView::IsToolbarVisible() const {
@@ -651,10 +640,6 @@ int OpaqueBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   return layout_->FrameTopBorderThickness(restored);
 }
 
-int OpaqueBrowserFrameView::NonClientBorderThickness() const {
-  return layout_->NonClientBorderThickness();
-}
-
 gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   return layout_->IconBounds();
 }
@@ -717,85 +702,34 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const bool tabstrip_visible = browser_view()->IsTabStripVisible();
   gfx::Rect client_bounds =
       layout_->CalculateClientAreaBounds(width(), height());
-  const int x = client_bounds.x();
   int y = client_bounds.y();
-  const int w = client_bounds.width();
   // If the toolbar isn't going to draw a top edge for us, draw one ourselves.
   if (!tabstrip_visible) {
-    const int edge_thickness =
-        browser_view()->HasClientEdge() ? kClientEdgeThickness : 0;
-    client_bounds.Inset(-edge_thickness, -1, -edge_thickness,
-                        client_bounds.height());
+    const gfx::Rect line_bounds(client_bounds.x(), client_bounds.y() - 1,
+                                client_bounds.width(), 1);
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                        client_bounds, true);
+                                        line_bounds, true);
   }
 
   // In maximized mode, the only edge to draw is the top one, so we're done.
   if (IsFrameCondensed())
     return;
 
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  const gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
-  const bool incognito = browser_view()->IsIncognito();
-  SkColor toolbar_color;
+  const gfx::Rect toolbar_bounds = browser_view()->toolbar()->bounds();
   if (tabstrip_visible) {
-    toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
-
-    // The client edge images start at the top of the toolbar.
+    // The client edges start at the top of the toolbar.
     y += toolbar_bounds.y();
-  } else {
-    // Note that windows without tabstrips are never themed, so we always use
-    // the default colors in this section.
-    toolbar_color = ThemeProperties::GetDefaultColor(
-        ThemeProperties::COLOR_TOOLBAR, incognito);
-  }
-
-  if (browser_view()->HasClientEdge()) {
-    // Draw the client edges.
-    const gfx::ImageSkia* const right_image =
-        tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-    const int img_w = right_image->width();
-    const int right = client_bounds.right();
-    const int bottom = std::max(y, height() - NonClientBorderThickness());
-    const int height = bottom - y;
-    canvas->TileImageInt(*right_image, right, y, img_w, height);
-    canvas->DrawImageInt(
-        *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER), right, bottom);
-    const gfx::ImageSkia* const bottom_image =
-        tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
-    canvas->TileImageInt(*bottom_image, x, bottom, w, bottom_image->height());
-    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER),
-                         x - img_w, bottom);
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE),
-                         x - img_w, y, img_w, height);
-    FillClientEdgeRects(x, y, w, height, true, toolbar_color, canvas);
   }
 
   // For popup windows, draw location bar sides.
   SkColor location_bar_border_color =
       browser_view()->toolbar()->location_bar()->GetOpaqueBorderColor(
-          incognito);
+          browser_view()->IsIncognito());
   if (!tabstrip_visible && IsToolbarVisible()) {
-    FillClientEdgeRects(x, y, w, toolbar_bounds.height(), false,
-                        location_bar_border_color, canvas);
+    gfx::Rect side(client_bounds.x() - kClientEdgeThickness, y,
+                   kClientEdgeThickness, toolbar_bounds.height());
+    canvas->FillRect(side, location_bar_border_color);
+    side.Offset(client_bounds.width() + kClientEdgeThickness, 0);
+    canvas->FillRect(side, location_bar_border_color);
   }
-}
-
-void OpaqueBrowserFrameView::FillClientEdgeRects(int x,
-                                                 int y,
-                                                 int w,
-                                                 int h,
-                                                 bool draw_bottom,
-                                                 SkColor color,
-                                                 gfx::Canvas* canvas) const {
-  x -= kClientEdgeThickness;
-  gfx::Rect side(x, y, kClientEdgeThickness, h);
-  canvas->FillRect(side, color);
-  if (draw_bottom) {
-    canvas->FillRect(gfx::Rect(x, y + h, w + (2 * kClientEdgeThickness),
-                               kClientEdgeThickness),
-                     color);
-  }
-  side.Offset(w + kClientEdgeThickness, 0);
-  canvas->FillRect(side, color);
 }

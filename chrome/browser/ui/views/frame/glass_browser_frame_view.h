@@ -39,11 +39,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
-  bool HasClientEdge() const override;
   bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
-  int GetTabStripLeftInset() const override;
   bool IsSingleTabModeAvailable() const override;
   bool ShouldDrawStrokes() const override;
 
@@ -90,12 +88,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // views::NonClientFrameView:
   void ActivationChanged(bool active) override;
 
-  // Returns the thickness of the border around the client area (web content,
-  // toolbar, and tabs) that separates it from the frame border. If |restored|
-  // is true, this is calculated as if the window was restored, regardless of
-  // its current state.
-  int ClientBorderThickness(bool restored) const;
-
   // Returns the thickness of the window border for the left, right, and bottom
   // edges of the frame. On Windows 10 this is a mostly-transparent handle that
   // allows you to resize the window.
@@ -128,10 +120,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // edge of the caption buttons.
   int MinimizeButtonX() const;
 
-  // Returns the spacing between the trailing edge of the tabstrip and the start
-  // of the caption buttons.
-  int TabStripCaptionSpacing() const;
-
   // Returns whether the toolbar is currently visible.
   bool IsToolbarVisible() const;
 
@@ -146,13 +134,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
-  void PaintClientEdge(gfx::Canvas* canvas) const;
-  void FillClientEdgeRects(int x,
-                           int y,
-                           int right,
-                           int bottom,
-                           SkColor color,
-                           gfx::Canvas* canvas) const;
 
   // Layout various sub-components of this view.
   void LayoutTitleBar();
@@ -164,9 +145,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the insets of the client area. If |restored| is true, this is
   // calculated as if the window was restored, regardless of its current state.
   gfx::Insets GetClientAreaInsets(bool restored) const;
-
-  // Returns the bounds of the client area for the specified view size.
-  gfx::Rect CalculateClientAreaBounds() const;
 
   // Starts/Stops the window throbber running.
   void StartThrobber();

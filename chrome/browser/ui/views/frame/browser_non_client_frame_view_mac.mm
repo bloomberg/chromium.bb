@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
@@ -82,9 +83,11 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
   // calling through private APIs.
   DCHECK(tabstrip);
 
-  const int x = GetTabStripLeftInset();
+  constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
+  // Do not draw caption buttons on fullscreen.
+  const int x = frame()->IsFullscreen() ? 0 : kTabstripLeftInset;
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
-  return gfx::Rect(x, GetTopInset(restored), width() - x - GetTabstripPadding(),
+  return gfx::Rect(x, GetTopInset(restored), width() - x,
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -168,12 +171,6 @@ bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
 }
 
 void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
-}
-
-int BrowserNonClientFrameViewMac::GetTabStripLeftInset() const {
-  constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
-  // Do not draw caption buttons on fullscreen.
-  return frame()->IsFullscreen() ? 0 : kTabstripLeftInset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,7 +258,7 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
     total_height += browser_view->GetTabStripHeight();
 
   if (browser_view->IsToolbarVisible())
-    total_height += browser_view->GetToolbarBounds().height();
+    total_height += browser_view->toolbar()->bounds().height();
 
   if (browser_view->IsBookmarkBarVisible() &&
       browser_view->GetBookmarkBarView()->IsDetached()) {

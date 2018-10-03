@@ -29,14 +29,13 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static const int kContentEdgeShadowThickness;
 
   // Constants public for testing only.
-  static constexpr int kRefreshNonClientExtraTopThickness = 1;
+  static constexpr int kNonClientExtraTopThickness = 1;
   static const int kFrameBorderThickness;
   static const int kTitlebarTopEdgeThickness;
   static const int kIconLeftSpacing;
   static const int kIconTitleSpacing;
   static const int kCaptionSpacing;
   static const int kCaptionButtonBottomPadding;
-  static const int kNewTabCaptionCondensedSpacing;
 
   OpaqueBrowserFrameViewLayout();
   ~OpaqueBrowserFrameViewLayout() override;
@@ -55,9 +54,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   gfx::Size GetMinimumSize(int available_width) const;
 
-  // Distance between the left edge of the NonClientFrameView and the tab strip.
-  int GetTabStripLeftInset() const;
-
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -72,10 +68,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // along the top of the frame. If |restored| is true, this acts as if the
   // window is restored regardless of the actual mode.
   int FrameTopBorderThickness(bool restored) const;
-
-  // Returns the thickness of the entire nonclient left, right, and bottom
-  // borders, including both the window frame and any client edge.
-  int NonClientBorderThickness() const;
 
   // Returns the height of the entire nonclient top border, from the edge of the
   // window to the top of the tabs. If |restored| is true, this is calculated as
@@ -133,11 +125,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   const gfx::Rect& client_view_bounds() const { return client_view_bounds_; }
 
-  // Returns the extra thickness of the area above the tabs. The value returned
-  // is dependent on whether in material refresh mode or not.
+  // Returns the extra thickness of the area above the tabs.
   int GetNonClientRestoredExtraThickness() const;
-
-  bool HasClientEdge() const;
 
  protected:
   // Whether a specific button should be inserted on the leading or trailing
@@ -167,10 +156,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   int minimum_size_for_buttons_;
 
  private:
-  // Determines the amount of spacing between the tabstrip and the caption
-  // buttons.
-  int TabStripCaptionSpacing() const;
-
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);

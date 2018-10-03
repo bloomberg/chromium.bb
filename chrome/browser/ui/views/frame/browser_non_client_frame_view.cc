@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -31,8 +30,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
 #endif
-
-using MD = ui::MaterialDesignController;
 
 // static
 constexpr int BrowserNonClientFrameView::kMinimumDragHeight;
@@ -58,13 +55,6 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
   }
 }
 
-// static
-int BrowserNonClientFrameView::GetTabstripPadding() {
-  // In Refresh, the apparent padding around the tabstrip is contained within
-  // the tabs and/or new tab button.
-  return MD::IsRefreshUi() ? 0 : 4;
-}
-
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   MaybeObserveTabstrip();
   OnSingleTabModeChanged();
@@ -88,17 +78,9 @@ bool BrowserNonClientFrameView::IsFrameCondensed() const {
   return frame_ && (frame_->IsMaximized() || frame_->IsFullscreen());
 }
 
-bool BrowserNonClientFrameView::HasClientEdge() const {
-  return !MD::IsRefreshUi();
-}
-
 bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
     ActiveState active_state) const {
   DCHECK(browser_view_->IsTabStripVisible());
-
-  // Pre-refresh, background tab shapes are always visible.
-  if (!MD::IsRefreshUi())
-    return true;
 
   bool has_custom_image;
   const int fill_id = browser_view_->tabstrip()->GetBackgroundResourceId(
@@ -178,15 +160,10 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
       ShouldPaintAsActive()
           ? ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR
           : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
-
-  SkColor paint_color = GetThemeOrDefaultColor(color_id);
-
-  // In refresh, the vertical tab separator might show through the stroke if the
-  // stroke color is translucent.  To prevent this, always use an opaque stroke
-  // color.
-  return MD::IsRefreshUi()
-             ? color_utils::GetResultingPaintColor(paint_color, GetFrameColor())
-             : paint_color;
+  // The vertical tab separator might show through the stroke if the stroke
+  // color is translucent.  To prevent this, always use an opaque stroke color.
+  return color_utils::GetResultingPaintColor(GetThemeOrDefaultColor(color_id),
+                                             GetFrameColor());
 }
 
 SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
@@ -204,10 +181,10 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
   // mode and custom window frame colors.
   const SkColor frame = GetFrameColor(active_state);
   const SkColor background =
-      (MD::IsRefreshUi() && !tp->HasCustomColor(color_id))
-          ? color_utils::HSLShift(
-                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
-          : GetThemeOrDefaultColor(color_id);
+      tp->HasCustomColor(color_id)
+          ? GetThemeOrDefaultColor(color_id)
+          : color_utils::HSLShift(
+                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
 
   return color_utils::GetResultingPaintColor(background, frame);
 }
@@ -224,16 +201,15 @@ SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
       ShouldPaintAsActive()
           ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
           : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
-  if (MD::IsRefreshUi() && !GetThemeProvider()->HasCustomColor(color_id)) {
-    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
-    const SkColor default_color = color_utils::IsDark(background_color)
-                                      ? gfx::kGoogleGrey500
-                                      : gfx::kGoogleGrey700;
-    return color_utils::GetColorWithMinimumContrast(default_color,
-                                                    background_color);
-  }
+  if (GetThemeProvider()->HasCustomColor(color_id))
+    return GetThemeOrDefaultColor(color_id);
 
-  return GetThemeOrDefaultColor(color_id);
+  const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor default_color = color_utils::IsDark(background_color)
+                                    ? gfx::kGoogleGrey500
+                                    : gfx::kGoogleGrey700;
+  return color_utils::GetColorWithMinimumContrast(default_color,
+                                                  background_color);
 }
 
 int BrowserNonClientFrameView::GetTabBackgroundResourceId(
@@ -266,10 +242,6 @@ void BrowserNonClientFrameView::UpdateClientArea() {}
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
-int BrowserNonClientFrameView::GetTabStripLeftInset() const {
-  return GetTabstripPadding();
-}
-
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   // UpdateTaskbarDecoration() calls DrawTaskbarDecoration(), but that does
@@ -285,28 +257,25 @@ void BrowserNonClientFrameView::OnSingleTabModeChanged() {
 }
 
 bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
-  // Single-tab mode is only available in Refresh and when the window is active.
-  // The special color we use won't be visible if there's a frame image, but
-  // since it's used to determine constrast of other UI elements, the theme
-  // color should be used instead.
+  // Single-tab mode is only available in when the window is active.  The
+  // special color we use won't be visible if there's a frame image, but since
+  // it's used to determine contrast of other UI elements, the theme color
+  // should be used instead.
   return base::FeatureList::IsEnabled(features::kSingleTabMode) &&
-         MD::IsRefreshUi() && ShouldPaintAsActive() && GetFrameImage().isNull();
+         ShouldPaintAsActive() && GetFrameImage().isNull();
 }
 
 bool BrowserNonClientFrameView::ShouldDrawStrokes() const {
-  if (!MD::IsRefreshUi())
-    return true;
-
   // In single-tab mode, the whole point is to have the active tab blend with
   // the frame.
   if (ShouldPaintAsSingleTabMode())
     return false;
 
-  // Refresh normally avoids strokes and relies on the active tab contrasting
-  // sufficiently with the frame background.  When there isn't enough contrast,
-  // fall back to a stroke.  Always compute the contrast ratio against the
-  // active frame color, to avoid toggling the stroke on and off as the window
-  // activation state changes.
+  // The tabstrip normally avoids strokes and relies on the active tab
+  // contrasting sufficiently with the frame background.  When there isn't
+  // enough contrast, fall back to a stroke.  Always compute the contrast ratio
+  // against the active frame color, to avoid toggling the stroke on and off as
+  // the window activation state changes.
   return color_utils::GetContrastRatio(
              GetTabBackgroundColor(TAB_ACTIVE, kActive),
              GetFrameColor(kActive)) < 1.3;
@@ -360,17 +329,11 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   // "correct" state as an override.
   set_active_state_override(&active);
 
-  if (MD::IsRefreshUi()) {
-    // Single-tab mode's availability depends on activation, but even if it's
-    // unavailable for other reasons the inactive tabs' text color still needs
-    // to be recalculated if the frame color changes. SingleTabModeChanged will
-    // handle both cases.
-    browser_view_->tabstrip()->SingleTabModeChanged();
-  } else {
-    // The toolbar top separator color (used as the stroke around the tabs and
-    // the new tab button) needs to be recalculated.
-    browser_view_->tabstrip()->FrameColorsChanged();
-  }
+  // Single-tab mode's availability depends on activation, but even if it's
+  // unavailable for other reasons the inactive tabs' text color still needs to
+  // be recalculated if the frame color changes. SingleTabModeChanged will
+  // handle both cases.
+  browser_view_->tabstrip()->SingleTabModeChanged();
 
   set_active_state_override(nullptr);
 
