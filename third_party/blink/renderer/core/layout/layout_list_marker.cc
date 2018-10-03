@@ -194,19 +194,19 @@ void LayoutListMarker::UpdateContent() {
     case ListStyleCategory::kNone:
       break;
     case ListStyleCategory::kSymbol:
-      text_ = ListMarkerText::GetText(StyleRef().ListStyleType(),
-                                      0);  // value is ignored for these types
+      text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
+                                        0);  // value is ignored for these types
       break;
     case ListStyleCategory::kLanguage:
-      text_ = ListMarkerText::GetText(StyleRef().ListStyleType(),
-                                      list_item_->Value());
+      text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
+                                        list_item_->Value());
       break;
   }
 }
 
 String LayoutListMarker::TextAlternative() const {
   UChar suffix =
-      ListMarkerText::Suffix(StyleRef().ListStyleType(), list_item_->Value());
+      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value());
   // Return suffix after the marker text, even in RTL, reflecting speech order.
   return text_ + suffix + ' ';
 }
@@ -219,7 +219,7 @@ LayoutUnit LayoutListMarker::GetWidthOfTextWithSuffix() const {
   // TODO(wkorman): Look into constructing a text run for both text and suffix
   // and painting them together.
   UChar suffix[2] = {
-      ListMarkerText::Suffix(StyleRef().ListStyleType(), list_item_->Value()),
+      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value()),
       ' '};
   TextRun run =
       ConstructTextRun(font, suffix, 2, StyleRef(), StyleRef().Direction());

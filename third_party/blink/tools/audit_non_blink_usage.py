@@ -423,6 +423,13 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/core/layout/',
+            'third_party/blink/renderer/core/paint/',
+        ],
+        'allowed': ['list_marker_text::.+'],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/crypto/',
         ],
         'allowed': ['crypto::.+'],
