@@ -70,8 +70,6 @@ struct ServiceWorkerTaskQueue::WaitingDidStartWorkerTask {
         thread_id(thread_id) {}
 
   WaitingDidStartWorkerTask(WaitingDidStartWorkerTask&& other) = default;
-  WaitingDidStartWorkerTask& operator=(WaitingDidStartWorkerTask&& other) =
-      default;
 
   LazyContextTaskQueue::PendingTask task;
   const ExtensionId extension_id;
