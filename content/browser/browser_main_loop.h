@@ -95,6 +95,7 @@ class LoaderDelegateImpl;
 class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
+class ScreenlockMonitor;
 class ServiceManagerContext;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
@@ -294,6 +295,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   std::unique_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<ScreenlockMonitor> screenlock_monitor_;
 
   // Per-process listener for online state changes.
   std::unique_ptr<BrowserOnlineStateObserver> online_state_observer_;

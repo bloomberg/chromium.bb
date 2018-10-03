@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
@@ -85,14 +86,23 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
 
 VideoCaptureManager::VideoCaptureManager(
     std::unique_ptr<VideoCaptureProvider> video_capture_provider,
-    base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
+    base::RepeatingCallback<void(const std::string&)> emit_log_message_cb,
+    ScreenlockMonitor* monitor)
     : new_capture_session_id_(1),
       video_capture_provider_(std::move(video_capture_provider)),
-      emit_log_message_cb_(std::move(emit_log_message_cb)) {}
+      emit_log_message_cb_(std::move(emit_log_message_cb)),
+      screenlock_monitor_(monitor) {
+  if (screenlock_monitor_) {
+    screenlock_monitor_->AddObserver(this);
+  }
+}
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(controllers_.empty());
   DCHECK(device_start_request_queue_.empty());
+  if (screenlock_monitor_) {
+    screenlock_monitor_->RemoveObserver(this);
+  }
 }
 
 void VideoCaptureManager::AddVideoCaptureObserver(
@@ -127,14 +137,15 @@ void VideoCaptureManager::UnregisterListener(
 }
 
 void VideoCaptureManager::EnumerateDevices(
-    const EnumerationCallback& client_callback) {
+    EnumerationCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   EmitLogMessage("VideoCaptureManager::EnumerateDevices", 1);
 
   // Pass a timer for UMA histogram collection.
-  video_capture_provider_->GetDeviceInfosAsync(media::BindToCurrentLoop(
-      base::Bind(&VideoCaptureManager::OnDeviceInfosReceived, this,
-                 base::Owned(new base::ElapsedTimer()), client_callback)));
+  video_capture_provider_->GetDeviceInfosAsync(
+      media::BindToCurrentLoop(base::BindOnce(
+          &VideoCaptureManager::OnDeviceInfosReceived, this,
+          base::Owned(new base::ElapsedTimer()), std::move(client_callback))));
 }
 
 int VideoCaptureManager::Open(const MediaStreamDevice& device) {
@@ -172,7 +183,6 @@ void VideoCaptureManager::Close(int capture_session_id) {
 
   SessionMap::iterator session_it = sessions_.find(capture_session_id);
   if (session_it == sessions_.end()) {
-    NOTREACHED();
     return;
   }
 
@@ -684,7 +694,7 @@ void VideoCaptureManager::OnClosed(
 
 void VideoCaptureManager::OnDeviceInfosReceived(
     base::ElapsedTimer* timer,
-    const EnumerationCallback& client_callback,
+    EnumerationCallback client_callback,
     const std::vector<media::VideoCaptureDeviceInfo>& device_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_TIMES(
@@ -715,7 +725,7 @@ void VideoCaptureManager::OnDeviceInfosReceived(
         descriptors_and_formats);
   }
 
-  client_callback.Run(devices);
+  std::move(client_callback).Run(devices);
 }
 
 void VideoCaptureManager::DestroyControllerIfNoClients(
@@ -888,6 +898,24 @@ void VideoCaptureManager::ResumeDevices() {
   }
 }
 #endif  // defined(OS_ANDROID)
+
+void VideoCaptureManager::OnScreenLocked() {
+#if !defined(OS_ANDROID)
+  // Stop screen sharing when screen is locked on desktop platforms only.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage("VideoCaptureManager::OnScreenLocked", 1);
+
+  std::vector<media::VideoCaptureSessionId> desktopcapture_session_ids;
+  for (auto it : sessions_) {
+    if (IsDesktopCaptureMediaType(it.second.type))
+      desktopcapture_session_ids.push_back(it.first);
+  }
+
+  for (auto session_id : desktopcapture_session_ids) {
+    Close(session_id);
+  }
+#endif  // OS_ANDROID
+}
 
 void VideoCaptureManager::EmitLogMessage(const std::string& message,
                                          int verbose_log_level) {

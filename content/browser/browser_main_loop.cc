@@ -86,6 +86,8 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/responsiveness/watcher.h"
+#include "content/browser/screenlock_monitor/screenlock_monitor.h"
+#include "content/browser/screenlock_monitor/screenlock_monitor_device_source.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_data_impl.h"
@@ -757,6 +759,13 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier");
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ScreenlockMonitor");
+    std::unique_ptr<ScreenlockMonitorSource> screenlock_monitor_source =
+        std::make_unique<ScreenlockMonitorDeviceSource>();
+    screenlock_monitor_ = std::make_unique<ScreenlockMonitor>(
+        std::move(screenlock_monitor_source));
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MediaFeatures");

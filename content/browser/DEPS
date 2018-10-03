@@ -12,6 +12,7 @@ include_rules = [
   "+components/services/filesystem",
   "+components/services/font/ppapi_fontconfig_matching.h",
   "+components/services/leveldb",
+  "+components/session_manager/core",
   "+components/link_header_util",
   "+components/metrics",
   "+components/metrics:single_sample_metrics",

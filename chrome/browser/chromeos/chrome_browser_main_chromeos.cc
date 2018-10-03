@@ -617,6 +617,10 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
+  // Initialize session manager in early stage in case others want to listen
+  // to session state change right after browser is started.
+  g_browser_process->platform_part()->InitializeSessionManager();
+
   // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
   // implementation. This must be done before BrowserMainLoop calls
   // net::NetworkChangeNotifier::Create() in MainMessageLoopStart().
@@ -717,7 +721,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- just before CreateProfile().
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
-  g_browser_process->platform_part()->InitializeSessionManager();
 
   ScreenLocker::InitClass();
 

@@ -41,6 +41,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1486,7 +1487,8 @@ void MediaStreamManager::InitializeMaybeAsync(
 
   video_capture_manager_ =
       new VideoCaptureManager(std::move(video_capture_provider),
-                              base::BindRepeating(&SendVideoCaptureLogMessage));
+                              base::BindRepeating(&SendVideoCaptureLogMessage),
+                              ScreenlockMonitor::Get());
   video_capture_manager_->RegisterListener(this);
 
   // Using base::Unretained(this) is safe because |this| owns and therefore

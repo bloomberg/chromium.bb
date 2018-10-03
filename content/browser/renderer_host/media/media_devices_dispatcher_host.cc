@@ -272,11 +272,12 @@ void MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats(
     bool try_in_use_first,
     const MediaDeviceSaltAndOrigin& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media_stream_manager_->video_capture_manager()->EnumerateDevices(base::Bind(
-      &MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats,
-      weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
-      try_in_use_first, salt_and_origin.device_id_salt,
-      salt_and_origin.origin));
+  media_stream_manager_->video_capture_manager()->EnumerateDevices(
+      base::BindOnce(
+          &MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats,
+          weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
+          try_in_use_first, salt_and_origin.device_id_salt,
+          salt_and_origin.origin));
 }
 
 void MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats(
