@@ -8,7 +8,10 @@
 #include <type_traits>
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 
 namespace blink {
@@ -111,6 +114,13 @@ class LayoutNGMixin : public Base {
 
   friend class NGBaseLayoutAlgorithmTest;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGMixin<LayoutBlockFlow>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGMixin<LayoutTableCaption>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGMixin<LayoutTableCell>;
 
 }  // namespace blink
 
