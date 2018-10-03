@@ -874,7 +874,8 @@ bool KURL::IsSafeToSendToAnotherThread() const {
 }
 
 KURL::operator GURL() const {
-  return GURL(string_.Utf8().data(), parsed_, is_valid_);
+  StringUTF8Adaptor utf8(string_);
+  return GURL(utf8.Data(), utf8.length(), parsed_, is_valid_);
 }
 
 }  // namespace blink
