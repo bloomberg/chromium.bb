@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -873,11 +874,9 @@ void MediaInternals::SaveEvent(int process_id,
     // Remove all events for a given player as soon as we have to remove a
     // single event for that player to avoid showing incomplete players.
     const int id_to_remove = saved_events.front().id;
-    saved_events.erase(std::remove_if(saved_events.begin(), saved_events.end(),
-                                      [&](const media::MediaLogEvent& event) {
-                                        return event.id == id_to_remove;
-                                      }),
-                       saved_events.end());
+    base::EraseIf(saved_events, [&](const media::MediaLogEvent& event) {
+      return event.id == id_to_remove;
+    });
   }
 }
 
