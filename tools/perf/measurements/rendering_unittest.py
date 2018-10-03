@@ -8,8 +8,9 @@ from telemetry.util import wpr_modes
 
 from measurements import rendering
 
-RENDERING_THREAD_GROUPS = ['all', 'browser', 'fast_path', 'gpu', 'io', 'other',
-                           'raster', 'renderer_compositor', 'renderer_main']
+# TODO(crbug.com/891546): add 'other' to the list.
+RENDERING_THREAD_GROUPS = ['all', 'browser', 'fast_path', 'gpu', 'io', 'raster',
+                           'renderer_compositor', 'renderer_main']
 
 THREAD_TIMES_THREAD_GROUPS = ['GPU', 'IO', 'browser', 'display_compositor',
                               'other', 'raster', 'renderer_compositor',
@@ -44,15 +45,11 @@ class RenderingUnitTest(page_test_test_case.PageTestTestCase):
         else:
           num_samples[histogram_name] = current_num_samples
 
-    # Check the existence of thread_*_cpu_time_per_second_tbmv2 metrics.
-    # TODO(crbug.com/876276): The following block should be uncommented after
-    # crrev.com/c/1181702 is rolled.
-    #
-    # for thread_group in RENDERING_THREAD_GROUPS:
-    #   # We should have at least two sample values for each metric, since
-    #   # pageset_repeat is 2.
-    #   histograme_name = 'thread_%s_cpu_time_per_second_tbmv2' % thread_group
-    #   self.assertGreater(num_samples.get(histogram_name, 0), 1)
+    for thread_group in RENDERING_THREAD_GROUPS:
+      # We should have at least two sample values for each metric, since
+      # pageset_repeat is 2.
+      histogram_name = 'thread_%s_cpu_time_per_frame_tbmv2' % thread_group
+      self.assertGreater(num_samples.get(histogram_name, 0), 1)
 
     # Check the existence of some of the legacy metrics.
     self.assertGreater(num_samples.get('frame_times', 0), 1)
