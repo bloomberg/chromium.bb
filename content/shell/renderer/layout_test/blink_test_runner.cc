@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -66,12 +65,12 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -892,7 +891,7 @@ scoped_refptr<base::SingleThreadTaskRunner> BlinkTestRunner::GetTaskRunner() {
         render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
     return main_frame->GetTaskRunner(blink::TaskType::kInternalTest);
   }
-  return Platform::Current()->CurrentThread()->GetTaskRunner();
+  return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 }
 
 }  // namespace content

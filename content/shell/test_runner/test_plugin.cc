@@ -20,12 +20,12 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/public/platform/web_touch_point.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -206,8 +206,8 @@ void TestPlugin::Destroy() {
 
   container_ = nullptr;
 
-  blink::Platform::Current()->MainThread()->GetTaskRunner()->DeleteSoon(
-      FROM_HERE, this);
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->DeleteSoon(FROM_HERE,
+                                                                      this);
 }
 
 blink::WebPluginContainer* TestPlugin::Container() const {
