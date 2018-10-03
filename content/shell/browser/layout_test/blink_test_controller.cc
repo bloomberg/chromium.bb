@@ -408,6 +408,14 @@ bool BlinkTestController::PrepareForLayoutTest(
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
     } else {
+      // Flush IPC messages on the widget.
+      base::RunLoop run_loop;
+      main_window_->web_contents()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->FlushForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+
       // Loading the URL will immediately start the layout test. Manually call
       // LoadURLWithParams on the WebContents to avoid extraneous calls from
       // content::Shell such as SetFocus(), which could race with the layout
