@@ -525,7 +525,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FolderShortcuts, /* folder_shortcuts.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("traverseFolderShortcuts"),
-                      TestCase("addRemoveFolderShortcuts")));
+                      TestCase("traverseFolderShortcuts").EnableDriveFs(),
+                      TestCase("addRemoveFolderShortcuts"),
+                      TestCase("addRemoveFolderShortcuts").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SortColumns, /* sort_columns.js */

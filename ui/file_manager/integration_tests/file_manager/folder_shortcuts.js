@@ -80,7 +80,8 @@ const DIRECTORY = {
  * @return {Promise} Promise fulfilled on success.
  */
 function expandTreeItem(appId, directory) {
-  const expandIcon = directory.treeItem + '> .tree-row > .expand-icon';
+  const expandIcon =
+      directory.treeItem + '> .tree-row[has-children=true] > .expand-icon';
   return remoteCall.waitForElement(appId, expandIcon).then(function() {
     return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [expandIcon]);
   }).then(function(result) {
