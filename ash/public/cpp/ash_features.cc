@@ -35,6 +35,9 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNewMessageListView{"NewMessageListView",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNewWallpaperPicker{"NewWallpaperPicker",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -83,6 +86,10 @@ bool IsLockScreenInlineReplyEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
+}
+
+bool IsNewMessageListViewEnabled() {
+  return base::FeatureList::IsEnabled(kNewMessageListView);
 }
 
 bool IsNewWallpaperPickerEnabled() {
