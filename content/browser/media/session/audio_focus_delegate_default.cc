@@ -23,9 +23,9 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   ~AudioFocusDelegateDefault() override;
 
   // AudioFocusDelegate implementation.
-  bool RequestAudioFocus(AudioFocusType audio_focus_type) override;
+  AudioFocusResult RequestAudioFocus(AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
-  AudioFocusType GetCurrentFocusType() const override;
+  base::Optional<AudioFocusType> GetCurrentFocusType() const override;
 
  private:
   // Holds the current audio focus request id for |media_session_|.
@@ -35,7 +35,7 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   MediaSessionImpl* media_session_;
 
   // The last requested AudioFocusType by the associated |media_session_|.
-  AudioFocusType audio_focus_type_if_disabled_;
+  base::Optional<AudioFocusType> audio_focus_type_if_disabled_;
 };
 
 }  // anonymous namespace
@@ -46,12 +46,12 @@ AudioFocusDelegateDefault::AudioFocusDelegateDefault(
 
 AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
 
-bool AudioFocusDelegateDefault::RequestAudioFocus(
-    AudioFocusType audio_focus_type) {
+AudioFocusDelegate::AudioFocusResult
+AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
   audio_focus_type_if_disabled_ = audio_focus_type;
 
   if (!media_session::IsAudioFocusEnabled())
-    return true;
+    return AudioFocusDelegate::AudioFocusResult::kSuccess;
 
   media_session::mojom::MediaSessionInfoPtr session_info =
       media_session_->GetMediaSessionInfoSync();
@@ -67,10 +67,14 @@ bool AudioFocusDelegateDefault::RequestAudioFocus(
           request_id_);
 
   request_id_ = response.first;
-  return response.second;
+
+  return response.second ? AudioFocusDelegate::AudioFocusResult::kSuccess
+                         : AudioFocusDelegate::AudioFocusResult::kFailed;
 }
 
 void AudioFocusDelegateDefault::AbandonAudioFocus() {
+  audio_focus_type_if_disabled_.reset();
+
   if (!request_id_.has_value())
     return;
 
@@ -78,13 +82,16 @@ void AudioFocusDelegateDefault::AbandonAudioFocus() {
   request_id_.reset();
 }
 
-AudioFocusType AudioFocusDelegateDefault::GetCurrentFocusType() const {
-  if (media_session::IsAudioFocusEnabled()) {
-    return AudioFocusManager::GetInstance()->GetFocusTypeForSession(
-        request_id_.value());
-  }
+base::Optional<AudioFocusType> AudioFocusDelegateDefault::GetCurrentFocusType()
+    const {
+  if (!media_session::IsAudioFocusEnabled())
+    return audio_focus_type_if_disabled_;
 
-  return audio_focus_type_if_disabled_;
+  if (!request_id_.has_value())
+    return base::Optional<AudioFocusType>();
+
+  return AudioFocusManager::GetInstance()->GetFocusTypeForSession(
+      request_id_.value());
 }
 
 // static
