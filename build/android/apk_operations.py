@@ -231,11 +231,9 @@ def _RunGdb(device, package_name, debug_process_name, pid, output_directory,
     debug_process_name = _NormalizeProcessName(debug_process_name, package_name)
     pid = device.GetApplicationPids(debug_process_name, at_most_one=True)
   if not pid:
-    logging.warning('App not running. Sending launch intent.')
-    _LaunchUrl([device], package_name)
-    pid = device.GetApplicationPids(debug_process_name, at_most_one=True)
-    if not pid:
-      raise Exception('Unable to find process "%s"' % debug_process_name)
+    # Attaching gdb makes the app run so slow that it takes *minutes* to start
+    # up (as of 2018). Better to just fail than to start & attach.
+    raise Exception('App not running.')
 
   gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
   cmd = [
