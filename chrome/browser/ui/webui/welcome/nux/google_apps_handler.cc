@@ -56,7 +56,7 @@ constexpr const char* kGoogleAppUrls[] = {
 
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 constexpr const int kGoogleAppIcons[] = {
-    IDR_NUX_GOOGLE_APPS_GMAIL_1X, IDR_NUX_GOOGLE_APPS_YOUTUBE_1X,
+    IDR_NUX_EMAIL_GMAIL_1X, IDR_NUX_GOOGLE_APPS_YOUTUBE_1X,
     IDR_NUX_GOOGLE_APPS_MAPS_1X,  IDR_NUX_GOOGLE_APPS_TRANSLATE_1X,
     IDR_NUX_GOOGLE_APPS_NEWS_1X,  IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X,
 };
@@ -162,10 +162,11 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X);
   html_source->AddResourcePath("apps/chrome_store_2x.png",
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X);
+  // TODO: rename and centralize to make it easier to share icons between NUX.
   html_source->AddResourcePath("apps/gmail_1x.png",
-                               IDR_NUX_GOOGLE_APPS_GMAIL_1X);
+                               IDR_NUX_EMAIL_GMAIL_1X);
   html_source->AddResourcePath("apps/gmail_2x.png",
-                               IDR_NUX_GOOGLE_APPS_GMAIL_2X);
+                               IDR_NUX_EMAIL_GMAIL_2X);
   html_source->AddResourcePath("apps/maps_1x.png", IDR_NUX_GOOGLE_APPS_MAPS_1X);
   html_source->AddResourcePath("apps/maps_2x.png", IDR_NUX_GOOGLE_APPS_MAPS_2X);
   html_source->AddResourcePath("apps/news_1x.png", IDR_NUX_GOOGLE_APPS_NEWS_1X);

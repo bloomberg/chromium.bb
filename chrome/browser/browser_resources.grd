@@ -699,18 +699,16 @@
         <include name="IDR_NUX_EMAIL_OUTLOOK_2X" file="resources\welcome\onboarding_welcome\images\outlook_2x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_YAHOO_1X" file="resources\welcome\onboarding_welcome\images\yahoo_1x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_YAHOO_2X" file="resources\welcome\onboarding_welcome\images\yahoo_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="resources\welcome\onboarding_welcome\images\chrome_store_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X" file="resources\welcome\onboarding_welcome\images\chrome_store_24dp_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_GMAIL_1X" file="resources\welcome\onboarding_welcome\images\gmail_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_GMAIL_2X" file="resources\welcome\onboarding_welcome\images\gmail_24dp_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X" file="resources\welcome\onboarding_welcome\images\maps_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X" file="resources\welcome\onboarding_welcome\images\maps_24dp_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X" file="resources\welcome\onboarding_welcome\images\news_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_NEWS_2X" file="resources\welcome\onboarding_welcome\images\news_24dp_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_1X" file="resources\welcome\onboarding_welcome\images\translate_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="resources\welcome\onboarding_welcome\images\translate_24dp_2x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="resources\welcome\onboarding_welcome\images\youtube_24dp_1x.png" type="BINDATA" />
-        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="resources\welcome\onboarding_welcome\images\youtube_24dp_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="resources\welcome\onboarding_welcome\images\chrome_store_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X" file="resources\welcome\onboarding_welcome\images\chrome_store_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X" file="resources\welcome\onboarding_welcome\images\maps_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X" file="resources\welcome\onboarding_welcome\images\maps_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X" file="resources\welcome\onboarding_welcome\images\news_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_NEWS_2X" file="resources\welcome\onboarding_welcome\images\news_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_1X" file="resources\welcome\onboarding_welcome\images\translate_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="resources\welcome\onboarding_welcome\images\translate_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="resources\welcome\onboarding_welcome\images\youtube_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="resources\welcome\onboarding_welcome\images\youtube_2x.png" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_WELCOME_WIN10_DEFAULT_WEBP" file="resources\welcome\default.webp" type="BINDATA" />
