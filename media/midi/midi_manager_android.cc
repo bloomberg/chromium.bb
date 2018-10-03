@@ -50,20 +50,16 @@ MidiManagerAndroid::MidiManagerAndroid(MidiService* service)
     : MidiManager(service) {}
 
 MidiManagerAndroid::~MidiManagerAndroid() {
-  // TODO(toyoshim): Remove following code once the dynamic instantiation mode
-  // is enabled by default.
-  base::AutoLock lock(lock_);
-  DCHECK(devices_.empty());
-  DCHECK(all_input_ports_.empty());
-  DCHECK(input_port_to_index_.empty());
-  DCHECK(all_output_ports_.empty());
-  DCHECK(output_port_to_index_.empty());
-  DCHECK(raw_manager_.is_null());
+  bool result = service()->task_service()->UnbindInstance();
+  CHECK(result);
 }
 
 void MidiManagerAndroid::StartInitialization() {
-  bool result = service()->task_service()->BindInstance();
-  DCHECK(result);
+  if (!service()->task_service()->BindInstance()) {
+    NOTREACHED();
+    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -71,21 +67,6 @@ void MidiManagerAndroid::StartInitialization() {
   raw_manager_.Reset(Java_MidiManagerAndroid_create(env, pointer));
 
   Java_MidiManagerAndroid_initialize(env, raw_manager_);
-}
-
-void MidiManagerAndroid::Finalize() {
-  bool result = service()->task_service()->UnbindInstance();
-  DCHECK(result);
-
-  // TODO(toyoshim): Remove following code once the dynamic instantiation mode
-  // is enabled by default.
-  base::AutoLock lock(lock_);
-  devices_.clear();
-  all_input_ports_.clear();
-  input_port_to_index_.clear();
-  all_output_ports_.clear();
-  output_port_to_index_.clear();
-  raw_manager_.Reset();
 }
 
 void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,

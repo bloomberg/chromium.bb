@@ -63,21 +63,6 @@ MidiManager::MidiManager(MidiService* service) : service_(service) {
 }
 
 MidiManager::~MidiManager() {
-  CHECK(finalized_);
-}
-
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && \
-    !(defined(USE_ALSA) && defined(USE_UDEV)) && !defined(OS_ANDROID)
-MidiManager* MidiManager::Create(MidiService* service) {
-  ReportUsage(Usage::CREATED_ON_UNSUPPORTED_PLATFORMS);
-  return new MidiManager(service);
-}
-#endif
-
-void MidiManager::Shutdown() {
-  Finalize();
-  finalized_ = true;
-
   base::AutoLock auto_lock(lock_);
   if (session_thread_runner_) {
     DCHECK(session_thread_runner_->BelongsToCurrentThread());
@@ -98,14 +83,19 @@ void MidiManager::Shutdown() {
   // Detach all clients so that they do not call MidiManager methods any more.
   for (auto* client : pending_clients_)
     client->Detach();
-  pending_clients_.clear();
   for (auto* client : clients_)
     client->Detach();
-  clients_.clear();
 }
 
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && \
+    !(defined(USE_ALSA) && defined(USE_UDEV)) && !defined(OS_ANDROID)
+MidiManager* MidiManager::Create(MidiService* service) {
+  ReportUsage(Usage::CREATED_ON_UNSUPPORTED_PLATFORMS);
+  return new MidiManager(service);
+}
+#endif
+
 void MidiManager::StartSession(MidiManagerClient* client) {
-  DCHECK(!finalized_);
   ReportUsage(Usage::SESSION_STARTED);
 
   bool needs_initialization = false;
@@ -197,7 +187,6 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(Result result) {
-  DCHECK(!finalized_);
   DCHECK_EQ(InitializationState::STARTED, initialization_state_);
 
   TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");

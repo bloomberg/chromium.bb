@@ -39,7 +39,6 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
 
   // MidiManager implementation.
   void StartInitialization() override;
-  void Finalize() override;
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,

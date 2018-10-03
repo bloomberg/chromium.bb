@@ -25,7 +25,6 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
 
   // MidiManager overrides:
   void StartInitialization() final;
-  void Finalize() final;
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
