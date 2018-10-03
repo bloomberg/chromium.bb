@@ -97,7 +97,6 @@
           "extensions.KeepAlive",
           "extensions.mime_handler.BeforeUnloadControl",
           "extensions.mime_handler.MimeHandlerService",
-          "extensions.mojom.InlineInstall",
           "media_router.mojom.MediaRouter",
           "page_load_metrics.mojom.PageLoadMetrics",
           "safe_browsing.mojom.PhishingDetectorClient",

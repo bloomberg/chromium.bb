@@ -309,8 +309,6 @@ jumbo_static_library("renderer") {
       "extensions/sync_file_system_custom_bindings.h",
       "extensions/tabs_hooks_delegate.cc",
       "extensions/tabs_hooks_delegate.h",
-      "extensions/webstore_bindings.cc",
-      "extensions/webstore_bindings.h",
       "media/cast_ipc_dispatcher.cc",
       "media/cast_ipc_dispatcher.h",
       "media/cast_receiver_audio_valve.cc",

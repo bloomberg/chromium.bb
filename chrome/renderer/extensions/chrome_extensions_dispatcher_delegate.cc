@@ -25,7 +25,6 @@
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
 #include "chrome/renderer/extensions/tabs_hooks_delegate.h"
-#include "chrome/renderer/extensions/webstore_bindings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -131,9 +130,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "page_capture", std::unique_ptr<NativeHandler>(
                           new extensions::PageCaptureCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "webstore", std::unique_ptr<NativeHandler>(
-                      new extensions::WebstoreBindings(context)));
   module_system->RegisterNativeHandler(
       "cast_streaming_natives",
       std::make_unique<extensions::CastStreamingNativeHandler>(

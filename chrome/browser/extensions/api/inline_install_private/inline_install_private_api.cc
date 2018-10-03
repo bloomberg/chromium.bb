@@ -30,10 +30,6 @@ class Installer : public WebstoreInstallWithPrompt {
   friend class base::RefCountedThreadSafe<Installer>;
   ~Installer() override;
 
-  // Needed so that we send the right referrer value in requests to the
-  // webstore.
-  const GURL& GetRequestorURL() const override { return requestor_url_; }
-
   std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
       const override;
 
@@ -58,7 +54,7 @@ std::unique_ptr<ExtensionInstallPrompt::Prompt> Installer::CreateInstallPrompt()
     const {
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
-          ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
+          ExtensionInstallPrompt::WEBSTORE_WIDGET_PROMPT));
   prompt->SetWebstoreData(localized_user_count(),
                           show_user_count(),
                           average_rating(),
