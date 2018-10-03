@@ -3679,7 +3679,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kNewNetErrorPageUI,
                                     kNewNetErrorPageUIVariations,
-                                    "NewNetErrorPageUI")},
+                                    "OfflineContentOnDinoPage")},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
