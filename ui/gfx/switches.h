@@ -25,6 +25,8 @@ namespace features {
 
 GFX_SWITCHES_EXPORT extern const base::Feature kLeftToRightUrls;
 
+GFX_SWITCHES_EXPORT extern const base::Feature kUsePaintRecordForImageSkia;
+
 }  // namespace features
 
 #endif  // UI_GFX_SWITCHES_H_

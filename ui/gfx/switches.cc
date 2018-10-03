@@ -31,4 +31,10 @@ namespace features {
 const base::Feature kLeftToRightUrls{"LeftToRightUrls",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the use of cc::PaintRecords as a backing store for
+// ImageSkiaReps. This may reduce load on the UI thread by moving rasterization
+// of drawables away from this thread.
+const base::Feature kUsePaintRecordForImageSkia{
+    "UsePaintRecordForImageSkia", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
