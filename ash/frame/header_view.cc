@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/client_image_registry.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_back_button.h"

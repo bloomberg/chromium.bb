@@ -20,7 +20,6 @@
           "ash.mojom.AssistantController",
           "ash.mojom.AssistantVolumeControl",
           "ash.mojom.CastConfig",
-          "ash.mojom.ClientImageRegistry",
           "ash.mojom.CrosDisplayConfigController",
           "ash.mojom.DockedMagnifierController",
           "ash.mojom.EventRewriterController",

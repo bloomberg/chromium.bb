@@ -242,8 +242,6 @@ component("ash") {
     "cancel_mode.h",
     "cast_config_controller.cc",
     "cast_config_controller.h",
-    "client_image_registry.cc",
-    "client_image_registry.h",
     "dbus/ash_dbus_services.cc",
     "dbus/ash_dbus_services.h",
     "dbus/display_service_provider.cc",
