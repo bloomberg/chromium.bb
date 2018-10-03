@@ -1361,45 +1361,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
-class StartupIncognitoBrowserCreatorTest : public InProcessBrowserTest {
- protected:
-  StartupIncognitoBrowserCreatorTest() = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kIncognito);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StartupIncognitoBrowserCreatorTest);
-};
-
-IN_PROC_BROWSER_TEST_F(StartupIncognitoBrowserCreatorTest,
-                       IncognitoStartupThenNormalStartup) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath dest_path = profile_manager->user_data_dir();
-  Profile* profile = nullptr;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    profile = Profile::CreateProfile(
-        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
-        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
-  }
-  ASSERT_TRUE(profile);
-  profile_manager->RegisterTestingProfile(profile, true, false);
-  SessionStartupPref::SetStartupPref(
-      profile, SessionStartupPref(SessionStartupPref::LAST));
-
-  EXPECT_FALSE(profile->restored_last_session());
-
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
-                                    chrome::startup::IS_NOT_FIRST_RUN);
-
-  EXPECT_TRUE(creator.Launch(profile, {}, false));
-
-  EXPECT_TRUE(profile->restored_last_session());
-}
-
 #endif  // !defined(OS_CHROMEOS)
 
 class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {

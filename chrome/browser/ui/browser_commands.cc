@@ -403,8 +403,7 @@ void NewEmptyWindow(Profile* profile) {
         SessionServiceFactory::GetForProfileForSessionRestore(
             profile->GetOriginalProfile());
     if (!session_service ||
-        !session_service->RestoreIfNecessary(
-            *base::CommandLine::ForCurrentProcess(), std::vector<GURL>())) {
+        !session_service->RestoreIfNecessary(std::vector<GURL>())) {
       OpenEmptyWindow(profile->GetOriginalProfile());
     }
   }
