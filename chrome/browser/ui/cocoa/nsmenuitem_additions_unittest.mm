@@ -342,6 +342,15 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   SetIsInputSourceCzechForTesting(false);
   ExpectKeyDoesntFireItem(key, MenuItem(@"1", NSCommandKeyMask),
                           /*compareCocoa=*/false);
+
+  // On Vietnamese layout, cmd + '' [vkeycode = 18] should instead trigger cmd +
+  // '1'. Ditto for other number keys.
+  key = KeyEvent(0x100108, @"1", @"", 18);
+  ExpectKeyFiresItem(key, MenuItem(@"1", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
+  key = KeyEvent(0x100108, @"4", @"", 21);
+  ExpectKeyFiresItem(key, MenuItem(@"4", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
