@@ -20,12 +20,12 @@
         {
           "object": "NGPhysicalTextFragment 'pservers-pattern-01-b \u2190'",
           "rect": [208, 972, 173, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment '\u2192 script-handle-01-b'",
           "rect": [427, 972, 150, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutInline A",
@@ -45,12 +45,12 @@
         {
           "object": "NGPhysicalTextFragment ' '",
           "rect": [423, 972, 5, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment ' '",
           "rect": [380, 972, 5, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ],
       "transform": 1

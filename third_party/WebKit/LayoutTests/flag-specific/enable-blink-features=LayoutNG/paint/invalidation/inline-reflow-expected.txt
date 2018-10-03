@@ -20,47 +20,47 @@
         {
           "object": "NGPhysicalTextFragment 'AAAAA AAAA AAAA'",
           "rect": [0, 120, 300, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'A A A A A AA AA'",
           "rect": [0, 0, 300, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AA AA AA A A A'",
           "rect": [0, 160, 280, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAA AAA AAA AA'",
           "rect": [0, 140, 280, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAAAAA AAAAAAA'",
           "rect": [0, 80, 280, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAA AAAA AAAA'",
           "rect": [0, 40, 260, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AA AA AAA AAA'",
           "rect": [0, 20, 260, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAAAAA AAAAA'",
           "rect": [0, 100, 240, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAAAA AAAAA'",
           "rect": [0, 60, 220, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AA AA AA A'",
@@ -80,7 +80,7 @@
         {
           "object": "NGPhysicalTextFragment 'A A A A A'",
           "rect": [0, 300, 180, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'AAAA AAA'",
@@ -95,7 +95,7 @@
         {
           "object": "NGPhysicalTextFragment 'A A'",
           "rect": [0, 180, 100, 20],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ]
     }

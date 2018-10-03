@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 52, 402, 402],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",

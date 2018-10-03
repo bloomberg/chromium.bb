@@ -253,13 +253,6 @@ void LayoutNGMixin<Base>::SetPaintFragment(
     NGPhysicalOffset offset,
     scoped_refptr<NGPaintFragment>* current) {
   DCHECK(current);
-
-  if (fragment) {
-    // When paint fragment is replaced, the subtree needs paint invalidation to
-    // re-compute paint properties in NGPaintFragment.
-    Base::SetSubtreeShouldDoFullPaintInvalidation();
-  }
-
   *current = fragment ? NGPaintFragment::Create(std::move(fragment), offset,
                                                 std::move(*current))
                       : nullptr;
