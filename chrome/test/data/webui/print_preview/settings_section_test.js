@@ -106,16 +106,6 @@ cr.define('settings_sections_tests', function() {
       moreSettingsElement.$.label.click();
     }
 
-    /**
-     * @param {!HTMLInputElement} element
-     * @param {!string} input The value to set for the input element.
-     */
-    function triggerInputEvent(element, input) {
-      element.value = input;
-      element.dispatchEvent(
-          new CustomEvent('input', {composed: true, bubbles: true}));
-    }
-
     test(assert(TestNames.Copies), function() {
       const copiesElement = page.$$('print-preview-copies-settings');
       assertFalse(copiesElement.hidden);
@@ -587,7 +577,7 @@ cr.define('settings_sections_tests', function() {
       // platforms.
       pagesElement.set('optionSelected_', pagesElement.pagesValueEnum_.CUSTOM);
 
-      triggerInputEvent(pagesInput, '1-2');
+      print_preview_test_utils.triggerInputEvent(pagesInput, '1-2');
       return test_util.eventToPromise('input-change', pagesElement)
           .then(function() {
             validateInputState(false, '1-2', true);
@@ -598,7 +588,7 @@ cr.define('settings_sections_tests', function() {
             assertTrue(page.settings.pages.valid);
 
             // Select pages 1 and 3
-            triggerInputEvent(pagesInput, '1, 3');
+            print_preview_test_utils.triggerInputEvent(pagesInput, '1, 3');
             return test_util.eventToPromise('input-change', pagesElement);
           })
           .then(function() {
@@ -612,7 +602,7 @@ cr.define('settings_sections_tests', function() {
             assertTrue(page.settings.pages.valid);
 
             // Enter an out of bounds value.
-            triggerInputEvent(pagesInput, '5');
+            print_preview_test_utils.triggerInputEvent(pagesInput, '5');
             return test_util.eventToPromise('input-change', pagesElement);
           })
           .then(function() {
@@ -635,7 +625,7 @@ cr.define('settings_sections_tests', function() {
       assertEquals(1, page.settings.copies.value);
 
       // Change to 2
-      triggerInputEvent(copiesInput, '2');
+      print_preview_test_utils.triggerInputEvent(copiesInput, '2');
       return test_util.eventToPromise('input-change', copiesElement)
           .then(function() {
             assertEquals(2, page.settings.copies.value);
@@ -650,6 +640,37 @@ cr.define('settings_sections_tests', function() {
             assertFalse(collateInput.checked);
             collateInput.dispatchEvent(new CustomEvent('change'));
             assertFalse(page.settings.collate.value);
+
+            // Set an empty value.
+            print_preview_test_utils.triggerInputEvent(copiesInput, '');
+            return test_util.eventToPromise('input-change', copiesElement);
+          })
+          .then(function() {
+            // Collate should be hidden now, but no update to the backing value
+            // occurs.
+            assertTrue(copiesElement.$$('.checkbox').hidden);
+            assertTrue(page.settings.copies.valid);
+            assertEquals(2, page.settings.copies.value);
+
+            // If the field is blurred, it will be reset to the default by the
+            // number-settings-section. Simulate this ocurring.
+            const numberSettingsSection =
+                copiesElement.$$('print-preview-number-settings-section');
+            numberSettingsSection.$.userValue.value = '1';
+            numberSettingsSection.currentValue = '1';
+            assertTrue(page.settings.copies.valid);
+            assertEquals(1, page.settings.copies.value);
+
+            // Enter an invalid value.
+            print_preview_test_utils.triggerInputEvent(copiesInput, '0');
+            return test_util.eventToPromise('input-change', copiesElement);
+          })
+          .then(function() {
+            // Collate should be hidden. Value is not updated to the invalid
+            // number. Setting is marked invalid.
+            assertTrue(copiesElement.$$('.checkbox').hidden);
+            assertFalse(page.settings.copies.valid);
+            assertEquals(1, page.settings.copies.value);
           });
     });
 
@@ -884,7 +905,7 @@ cr.define('settings_sections_tests', function() {
       validateScalingState('100', true, false, false);
 
       // Change to 105
-      triggerInputEvent(scalingInput, '105');
+      print_preview_test_utils.triggerInputEvent(scalingInput, '105');
       return test_util.eventToPromise('input-change', scalingElement)
           .then(function() {
             validateScalingState('105', true, false, false);
@@ -902,7 +923,7 @@ cr.define('settings_sections_tests', function() {
 
             // Set scaling. Should uncheck fit to page and set the settings for
             // scaling and fit to page.
-            triggerInputEvent(scalingInput, '95');
+            print_preview_test_utils.triggerInputEvent(scalingInput, '95');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -910,7 +931,7 @@ cr.define('settings_sections_tests', function() {
 
             // Set scaling to something invalid. Should change setting validity
             // but not value.
-            triggerInputEvent(scalingInput, '5');
+            print_preview_test_utils.triggerInputEvent(scalingInput, '5');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -951,7 +972,7 @@ cr.define('settings_sections_tests', function() {
             // change the stored value of scaling or fit to page, to avoid an
             // unnecessary preview regeneration, but should display fit to page
             // as unchecked.
-            triggerInputEvent(scalingInput, '9');
+            print_preview_test_utils.triggerInputEvent(scalingInput, '9');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -960,7 +981,7 @@ cr.define('settings_sections_tests', function() {
             // Enter a blank value in the scaling field. This should not
             // change the stored value of scaling or fit to page, to avoid an
             // unnecessary preview regeneration.
-            triggerInputEvent(scalingInput, '');
+            print_preview_test_utils.triggerInputEvent(scalingInput, '');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -968,7 +989,7 @@ cr.define('settings_sections_tests', function() {
 
             // Entering something valid unsets fit to page and sets scaling
             // valid to true.
-            triggerInputEvent(scalingInput, '90');
+            print_preview_test_utils.triggerInputEvent(scalingInput, '90');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
