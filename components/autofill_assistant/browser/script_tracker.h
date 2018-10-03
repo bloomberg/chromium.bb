@@ -66,6 +66,8 @@ class ScriptTracker {
   bool running() const { return executor_ != nullptr; }
 
  private:
+  typedef std::map<Script*, std::unique_ptr<Script>> AvailableScriptMap;
+
   void OnScriptRun(const std::string& script_path,
                    ScriptExecutor::RunScriptCallback original_callback,
                    ScriptExecutor::Result result);
@@ -73,7 +75,11 @@ class ScriptTracker {
 
   // Returns true if |runnable_| should be updated.
   bool RunnablesHaveChanged();
-  void OnPreconditionCheck(Script* script, bool met_preconditions);
+  void RunPreconditionChecksSequentially(
+      AvailableScriptMap::const_iterator step);
+  void OnPreconditionCheck(Script* script,
+                           AvailableScriptMap::const_iterator step,
+                           bool met_preconditions);
   void ClearAvailableScripts();
 
   ScriptExecutorDelegate* const delegate_;
@@ -89,14 +95,13 @@ class ScriptTracker {
 
   // Sets of available scripts. SetScripts resets this and interrupts
   // any pending check.
-  std::map<Script*, std::unique_ptr<Script>> available_scripts_;
+  AvailableScriptMap available_scripts_;
 
   // List of scripts that have been executed and their corresponding statuses.
   std::map<std::string, ScriptStatusProto> executed_scripts_;
 
-  // Number of precondition checks run for CheckScripts that are still
-  // pending.
-  int pending_precondition_check_count_;
+  // If true, a check is currently in progress.
+  bool running_checks_;
 
   // Scripts found to be runnable so far, in the current run of CheckScripts.
   std::vector<Script*> pending_runnable_scripts_;

@@ -17,7 +17,7 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
     : delegate_(delegate),
       listener_(listener),
-      pending_precondition_check_count_(0),
+      running_checks_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
@@ -35,27 +35,11 @@ void ScriptTracker::SetAndCheckScripts(
 }
 
 void ScriptTracker::CheckScripts() {
-  if (pending_precondition_check_count_ > 0)
+  if (running_checks_)
     return;
-  DCHECK_EQ(pending_precondition_check_count_, 0);
-  DCHECK(pending_runnable_scripts_.empty());
+  running_checks_ = true;
 
-  // pending_precondition_check_count_ lets OnPreconditionCheck know when to
-  // stop. It must be set before the callback can possibly be run.
-  pending_precondition_check_count_ = available_scripts_.size();
-  if (pending_precondition_check_count_ == 0) {
-    // Possibly report an empty set of runnable scripts.
-    UpdateRunnableScriptsIfNecessary();
-  } else {
-    for (const auto& entry : available_scripts_) {
-      Script* script = entry.first;
-      script->precondition->Check(
-          delegate_->GetWebController(), delegate_->GetParameters(),
-          executed_scripts_,
-          base::BindOnce(&ScriptTracker::OnPreconditionCheck,
-                         weak_ptr_factory_.GetWeakPtr(), script));
-    }
-  }
+  RunPreconditionChecksSequentially(available_scripts_.begin());
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
@@ -83,7 +67,6 @@ void ScriptTracker::OnScriptRun(
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
-  DCHECK_EQ(pending_precondition_check_count_, 0);
   bool runnables_changed = RunnablesHaveChanged();
   if (runnables_changed) {
     runnable_scripts_.clear();
@@ -103,6 +86,7 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   }
   pending_runnable_scripts_.clear();
 
+  running_checks_ = false;
   if (runnables_changed) {
     listener_->OnRunnableScriptsChanged(runnable_scripts_);
   }
@@ -123,26 +107,39 @@ bool ScriptTracker::RunnablesHaveChanged() {
   return pending_paths != current_paths;
 }
 
+void ScriptTracker::RunPreconditionChecksSequentially(
+    AvailableScriptMap::const_iterator step) {
+  if (step == available_scripts_.end()) {
+    UpdateRunnableScriptsIfNecessary();
+    return;
+  }
+
+  Script* script = step->first;
+  script->precondition->Check(
+      delegate_->GetWebController(), delegate_->GetParameters(),
+      executed_scripts_,
+      base::BindOnce(&ScriptTracker::OnPreconditionCheck,
+                     weak_ptr_factory_.GetWeakPtr(), script, step));
+}
+
 void ScriptTracker::OnPreconditionCheck(Script* script,
+                                        AvailableScriptMap::const_iterator step,
                                         bool met_preconditions) {
   if (available_scripts_.find(script) == available_scripts_.end()) {
     // Result is not relevant anymore.
     return;
   }
-
   if (met_preconditions)
     pending_runnable_scripts_.push_back(script);
-  pending_precondition_check_count_--;
-  if (pending_precondition_check_count_ > 0)
-    return;
-  UpdateRunnableScriptsIfNecessary();
+
+  RunPreconditionChecksSequentially(++step);
 }
 
 void ScriptTracker::ClearAvailableScripts() {
   available_scripts_.clear();
   // Clearing available_scripts_ has cancelled any pending precondition checks,
   // ending them.
-  pending_precondition_check_count_ = 0;
+  running_checks_ = false;
   pending_runnable_scripts_.clear();
 }
 

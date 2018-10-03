@@ -87,35 +87,8 @@ void ScriptPrecondition::Check(
     return;
   }
 
-  pending_preconditions_check_count_ =
-      elements_exist_.size() + form_value_match_.size();
-  if (!pending_preconditions_check_count_) {
-    std::move(callback).Run(true);
-    return;
-  }
-
-  // TODO(crbug.com/806868): Instead of running all checks in parallel and
-  // waiting for all of them to be finished, it might be better to check them
-  // one by one and fail the precondition early when one fails.
   check_preconditions_callback_ = std::move(callback);
-  all_preconditions_check_satisfied_ = true;
-
-  for (const auto& element : elements_exist_) {
-    web_controller->ElementExists(
-        element, base::BindOnce(&ScriptPrecondition::OnCheckElementExists,
-                                weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  for (const auto& value_match : form_value_match_) {
-    DCHECK(!value_match.element().selectors().empty());
-    std::vector<std::string> selectors;
-    for (const auto& selector : value_match.element().selectors()) {
-      selectors.emplace_back(selector);
-    }
-    web_controller->GetFieldValue(
-        selectors, base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
-                                  weak_ptr_factory_.GetWeakPtr()));
-  }
+  RunChecksSequentially(web_controller, 0);
 }
 
 ScriptPrecondition::ScriptPrecondition(
@@ -126,24 +99,12 @@ ScriptPrecondition::ScriptPrecondition(
     const std::vector<FormValueMatchProto>& form_value_match,
     const std::vector<ScriptStatusMatchProto>& status_match)
     : elements_exist_(elements_exist),
-      pending_preconditions_check_count_(0),
-      all_preconditions_check_satisfied_(false),
       domain_match_(domain_match),
       path_pattern_(std::move(path_pattern)),
       parameter_match_(parameter_match),
       form_value_match_(form_value_match),
       status_match_(status_match),
       weak_ptr_factory_(this) {}
-
-void ScriptPrecondition::OnCheckElementExists(bool result) {
-  DCHECK_LT(0u, pending_preconditions_check_count_);
-  pending_preconditions_check_count_--;
-  if (!result) {
-    all_preconditions_check_satisfied_ = false;
-  }
-
-  MaybeRunCheckPreconditionCallback();
-}
 
 bool ScriptPrecondition::MatchDomain(const GURL& url) const {
   if (domain_match_.empty())
@@ -210,21 +171,64 @@ bool ScriptPrecondition::MatchScriptStatus(
   return true;
 }
 
-void ScriptPrecondition::OnGetFieldValue(const std::string& value) {
-  DCHECK_LT(0u, pending_preconditions_check_count_);
-  pending_preconditions_check_count_--;
-  if (value.empty()) {
-    all_preconditions_check_satisfied_ = false;
+void ScriptPrecondition::RunChecksSequentially(
+    WebController* web_controller,
+    size_t check_precondition_count) {
+  if (check_precondition_count < elements_exist_.size()) {
+    web_controller->ElementExists(
+        elements_exist_[check_precondition_count],
+        base::BindOnce(
+            &ScriptPrecondition::OnCheckElementExists,
+            weak_ptr_factory_.GetWeakPtr(),
+            // web_controller must remain valid until the callback is run
+            base::Unretained(web_controller), check_precondition_count));
+    return;
   }
 
-  MaybeRunCheckPreconditionCallback();
+  // After checking elements existence, check form value match. This starts when
+  // check_precondition_count reaches element_exists_.size().
+  size_t form_value_match_index =
+      check_precondition_count - elements_exist_.size();
+  if (form_value_match_index < form_value_match_.size()) {
+    const auto& value_match = form_value_match_[form_value_match_index];
+    DCHECK(!value_match.element().selectors().empty());
+    std::vector<std::string> selectors;
+    for (const auto& selector : value_match.element().selectors()) {
+      selectors.emplace_back(selector);
+    }
+    web_controller->GetFieldValue(
+        selectors,
+        base::BindOnce(
+            &ScriptPrecondition::OnGetFieldValue,
+            weak_ptr_factory_.GetWeakPtr(),
+            // web_controller must remain valid until the callback is run
+            base::Unretained(web_controller), check_precondition_count));
+    return;
+  }
+  DCHECK_EQ(check_precondition_count,
+            elements_exist_.size() + form_value_match_.size());
+
+  std::move(check_preconditions_callback_).Run(true);
 }
 
-void ScriptPrecondition::MaybeRunCheckPreconditionCallback() {
-  if (!pending_preconditions_check_count_ && check_preconditions_callback_) {
-    std::move(check_preconditions_callback_)
-        .Run(all_preconditions_check_satisfied_);
+void ScriptPrecondition::OnCheckElementExists(WebController* web_controller,
+                                              size_t check_precondition_count,
+                                              bool exists) {
+  if (!exists) {
+    std::move(check_preconditions_callback_).Run(false);
+    return;
   }
+  RunChecksSequentially(web_controller, check_precondition_count + 1);
+}
+
+void ScriptPrecondition::OnGetFieldValue(WebController* web_controller,
+                                         size_t check_precondition_count,
+                                         const std::string& value) {
+  if (value.empty()) {
+    std::move(check_preconditions_callback_).Run(false);
+    return;
+  }
+  RunChecksSequentially(web_controller, check_precondition_count + 1);
 }
 
 }  // namespace autofill_assistant
