@@ -165,7 +165,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   Browser* browser = chrome::FindBrowserWithWindow(window);
   if (browser) {
     base::Optional<std::string> app_id =
-        CrostiniAppIdFromAppName(browser->app_name());
+        crostini::CrostiniAppIdFromAppName(browser->app_name());
     if (!app_id)
       return;
     RegisterAppWindow(window, app_id.value());

@@ -81,14 +81,16 @@ void RecordTimeFromDeviceSetupToInstallMetric() {
 
 }  // namespace
 
-void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface) {
+void crostini::ShowCrostiniInstallerView(
+    Profile* profile,
+    crostini::CrostiniUISurface ui_surface) {
   base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
-                                CrostiniUISurface::kCount);
+                                crostini::CrostiniUISurface::kCount);
   return CrostiniInstallerView::Show(profile);
 }
 
 void CrostiniInstallerView::Show(Profile* profile) {
-  DCHECK(IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
   if (!g_crostini_installer_view) {
     g_crostini_installer_view = new CrostiniInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
@@ -162,7 +164,8 @@ bool CrostiniInstallerView::Accept() {
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ =
       crostini::CrostiniManager::GetForProfile(profile_)->RestartCrostini(
-          kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName,
           base::BindOnce(&CrostiniInstallerView::MountContainerFinished,
                          weak_ptr_factory_.GetWeakPtr()),
           this);
@@ -448,9 +451,9 @@ void CrostiniInstallerView::ShowLoginShell() {
 
   crostini::CrostiniManager* crostini_manager =
       crostini::CrostiniManager::GetForProfile(profile_);
-  crostini_manager->LaunchContainerTerminal(kCrostiniDefaultVmName,
-                                            kCrostiniDefaultContainerName,
-                                            std::vector<std::string>());
+  crostini_manager->LaunchContainerTerminal(
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      std::vector<std::string>());
 
   StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);

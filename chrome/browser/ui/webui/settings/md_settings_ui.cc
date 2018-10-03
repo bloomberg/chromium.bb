@@ -204,7 +204,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
-  if (IsCrostiniUIAllowedForProfile(profile)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::CrostiniHandler>());
   }
@@ -323,7 +323,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           ash::stylus_utils::HasInternalStylus());
 
   html_source->AddBoolean("showCrostini",
-                          IsCrostiniUIAllowedForProfile(profile));
+                          crostini::IsCrostiniUIAllowedForProfile(profile));
 
   // TODO(crbug.com/868747): Show an explanatory message instead of hiding the
   // storage management info.

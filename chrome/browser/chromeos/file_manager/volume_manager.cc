@@ -557,7 +557,8 @@ void VolumeManager::AddSshfsCrostiniVolume(
   // Listen for crostini container shutdown and remove volume.
   crostini::CrostiniManager::GetForProfile(profile_)
       ->AddShutdownContainerCallback(
-          kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName,
           base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
                          weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path));
 }

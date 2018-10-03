@@ -31,15 +31,16 @@ constexpr char kCrostiniUninstallSourceHistogram[] = "Crostini.UninstallSource";
 
 }  // namespace
 
-void ShowCrostiniUninstallerView(Profile* profile,
-                                 CrostiniUISurface ui_surface) {
+void crostini::ShowCrostiniUninstallerView(
+    Profile* profile,
+    crostini::CrostiniUISurface ui_surface) {
   base::UmaHistogramEnumeration(kCrostiniUninstallSourceHistogram, ui_surface,
-                                CrostiniUISurface::kCount);
+                                crostini::CrostiniUISurface::kCount);
   return CrostiniUninstallerView::Show(profile);
 }
 
 void CrostiniUninstallerView::Show(Profile* profile) {
-  DCHECK(IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
   if (!g_crostini_uninstaller_view) {
     g_crostini_uninstaller_view = new CrostiniUninstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_crostini_uninstaller_view,
@@ -85,7 +86,7 @@ bool CrostiniUninstallerView::Accept() {
 
   // Kick off the Crostini Remove sequence.
   crostini::CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(&CrostiniUninstallerView::UninstallCrostiniFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 

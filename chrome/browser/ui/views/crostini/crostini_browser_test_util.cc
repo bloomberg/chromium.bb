@@ -74,7 +74,7 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
 
 void CrostiniDialogBrowserTest::SetUp() {
   InitCrosTermina();
-  SetCrostiniUIAllowedForTesting(true);
+  crostini::SetCrostiniUIAllowedForTesting(true);
   DialogBrowserTest::SetUp();
 }
 

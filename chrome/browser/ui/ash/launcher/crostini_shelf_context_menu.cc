@@ -59,7 +59,8 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
 
   if (command_id == ash::MENU_NEW_WINDOW) {
-    LaunchCrostiniApp(controller()->profile(), item().id.app_id, display_id());
+    crostini::LaunchCrostiniApp(controller()->profile(), item().id.app_id,
+                                display_id());
     return;
   }
   NOTREACHED();

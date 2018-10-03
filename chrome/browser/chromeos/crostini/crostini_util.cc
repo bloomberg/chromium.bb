@@ -82,7 +82,7 @@ void OnCrostiniRestarted(Profile* profile,
       browser->window()->Close();
     if (result ==
         crostini::ConciergeClientResult::OFFLINE_WHEN_UPGRADE_REQUIRED) {
-      ShowCrostiniUpgradeView(profile, CrostiniUISurface::kAppList);
+      ShowCrostiniUpgradeView(profile, crostini::CrostiniUISurface::kAppList);
     }
     return;
   }
@@ -209,6 +209,8 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
 };
 
 }  // namespace
+
+namespace crostini {
 
 void SetCrostiniUIAllowedForTesting(bool enabled) {
   g_crostini_ui_allowed_for_testing = enabled;
@@ -407,3 +409,5 @@ bool IsUnaffiliatedCrostiniAllowedByPolicy() {
   // If device policy is not set, allow Crostini.
   return true;
 }
+
+}  // namespace crostini
