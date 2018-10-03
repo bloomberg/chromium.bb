@@ -461,8 +461,6 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
     return &zwp_text_input_manager_v1_;
   }
 
-  wl_display* display() const { return display_.get(); }
-
  private:
   void DoPause();
 
