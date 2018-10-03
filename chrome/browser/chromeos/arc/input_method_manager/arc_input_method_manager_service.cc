@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -97,7 +98,17 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
   ~ArcProxyInputMethodObserver() override = default;
 
   // input_method::InputMethodEngineBase::Observer overrides:
-  void OnActivate(const std::string& engine_id) override {}
+  void OnActivate(const std::string& engine_id) override {
+    // ash::Shell is not created in the unit tests.
+    if (!ash::Shell::HasInstance())
+      return;
+    const bool was_enabled = keyboard::IsKeyboardEnabled();
+    // Disable fallback virtual keyboard while Android IME is activated.
+    keyboard::SetKeyboardShowOverride(
+        keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
+    if (was_enabled)
+      ash::Shell::Get()->DisableKeyboard();
+  }
   void OnFocus(
       const ui::IMEEngineHandlerInterface::InputContext& context) override {
     owner_->Focus(context.id);
@@ -108,7 +119,18 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
       const input_method::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
   void OnReset(const std::string& engine_id) override {}
-  void OnDeactivated(const std::string& engine_id) override {}
+  void OnDeactivated(const std::string& engine_id) override {
+    // ash::Shell is not created in the unit tests.
+    if (!ash::Shell::HasInstance())
+      return;
+    const bool was_enabled = keyboard::IsKeyboardEnabled();
+    // Stop overriding virtual keyboard availability.
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
+    // If the device is still in tablet mode, virtual keyboard may be enabled.
+    const bool is_enabled = keyboard::IsKeyboardEnabled();
+    if (!was_enabled && is_enabled)
+      ash::Shell::Get()->EnableKeyboard();
+  }
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
     owner_->UpdateTextInputState();
