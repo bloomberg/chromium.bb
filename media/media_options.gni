@@ -186,12 +186,20 @@ if (enable_mojo_media) {
     _default_mojo_media_host = "browser"
   } else if (is_android) {
     # Both chrome for Android and cast for Android belongs to this case
-    _default_mojo_media_services = [
-      "cdm",
-      "audio_decoder",
-      "video_decoder",
-    ]
-    _default_mojo_media_host = "gpu"
+    if (is_cast_audio_only) {
+      _default_mojo_media_services = [
+        "cdm",
+        "audio_decoder",
+      ]
+      _default_mojo_media_host = "browser"
+    } else {
+      _default_mojo_media_services = [
+        "cdm",
+        "audio_decoder",
+        "video_decoder",
+      ]
+      _default_mojo_media_host = "gpu"
+    }
   } else if (is_chromeos || is_mac || is_win) {
     _default_mojo_media_services = [ "video_decoder" ]
     _default_mojo_media_host = "gpu"
