@@ -624,8 +624,7 @@ void WebRtcAudioRenderer::OnPlayStateRemoved(PlayingState* state) {
        it != source_playing_states_.end();) {
     PlayingStates& states = it->second;
     // We cannot use RemovePlayingState as it might invalidate |it|.
-    states.erase(std::remove(states.begin(), states.end(), state),
-                 states.end());
+    base::Erase(states, state);
     if (states.empty())
       it = source_playing_states_.erase(it);
     else

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -587,11 +588,9 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
   video_capture_manager_->GetDeviceSupportedFormats(device_id, &formats);
   ReplaceInvalidFrameRatesWithFallback(&formats);
   // Remove formats that have zero resolution.
-  formats.erase(std::remove_if(formats.begin(), formats.end(),
-                               [](const media::VideoCaptureFormat& format) {
-                                 return format.frame_size.GetArea() <= 0;
-                               }),
-                formats.end());
+  base::EraseIf(formats, [](const media::VideoCaptureFormat& format) {
+    return format.frame_size.GetArea() <= 0;
+  });
 
   // If the device does not report any valid format, use a fallback list of
   // standard formats.
