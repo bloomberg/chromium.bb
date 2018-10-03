@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
 #include "chrome/browser/browser_process.h"
@@ -67,6 +68,7 @@ std::string GetCountry() {
 // proto format.
 const char kRequestContentType[] = "application/x-protobuf";
 const char kRequestMethod[] = "GET";
+const char kExperiment[] = "exp";
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("explore_sites", R"(
@@ -149,6 +151,13 @@ ExploreSitesFetcher::ExploreSitesFetcher(
   if (!accept_languages.empty()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAcceptLanguage, accept_languages);
+  }
+
+  // Get field trial value, if any.
+  std::string tag = base::GetFieldTrialParamValueByFeature(
+      chrome::android::kExploreSites, kExperiment);
+  if (!tag.empty()) {
+    resource_request->headers.SetHeader("X-Google-Chrome-Experiment-Tag", tag);
   }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
