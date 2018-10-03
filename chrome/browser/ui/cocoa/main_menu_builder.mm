@@ -141,8 +141,7 @@ base::scoped_nsobject<NSMenuItem> BuildEditMenu(NSApplication* nsapp,
                 Item(IDS_PASTE_MATCH_STYLE_MAC)
                     .action(@selector(pasteAndMatchStyle:))
                     .is_alternate()
-                    .key_equivalent(@"v", NSEventModifierFlagCommand |
-                                              NSEventModifierFlagShift |
+                    .key_equivalent(@"V", NSEventModifierFlagCommand |
                                               NSEventModifierFlagOption),
                 Item(IDS_EDIT_DELETE_MAC)
                     .tag(IDC_CONTENT_CONTEXT_DELETE)

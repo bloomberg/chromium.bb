@@ -195,6 +195,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return ui::TextEditCommand::COPY;
   if (action == @selector(paste:))
     return ui::TextEditCommand::PASTE;
+  if (action == @selector(pasteAndMatchStyle:))
+    return ui::TextEditCommand::PASTE;
   if (action == @selector(selectAll:))
     return ui::TextEditCommand::SELECT_ALL;
   return ui::TextEditCommand::INVALID_COMMAND;
@@ -260,6 +262,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)cut:(id)sender;
 - (void)copy:(id)sender;
 - (void)paste:(id)sender;
+- (void)pasteAndMatchStyle:(id)sender;
 - (void)selectAll:(id)sender;
 
 @end
@@ -658,6 +661,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
              keyCode:ui::VKEY_V
              domCode:ui::DomCode::US_V
           eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)pasteAndMatchStyle:(id)sender {
+  [self handleAction:ui::TextEditCommand::PASTE
+             keyCode:ui::VKEY_V
+             domCode:ui::DomCode::US_V
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)selectAll:(id)sender {
