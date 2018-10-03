@@ -371,8 +371,7 @@ autofillManagerFromWebState:(web::WebState*)webState
                       webState:(web::WebState*)webState
              completionHandler:(SuggestionsAvailableCompletion)completion {
   web::WebFrame* frame =
-      web::WebFramesManager::FromWebState(webState)->GetFrameWithId(
-          base::SysNSStringToUTF8(frameID));
+      GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
   autofill::AutofillManager* autofillManager =
       [self autofillManagerFromWebState:webState webFrame:frame];
   if (!autofillManager)
@@ -574,6 +573,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)processPage:(web::WebState*)webState {
   web::WebFramesManager* framesManager =
       web::WebFramesManager::FromWebState(webState);
+  DCHECK(framesManager);
   if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
   } else {
