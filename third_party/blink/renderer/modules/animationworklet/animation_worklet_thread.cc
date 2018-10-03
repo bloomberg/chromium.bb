@@ -31,12 +31,6 @@ AnimationWorkletThread::AnimationWorkletThread(
 
 AnimationWorkletThread::~AnimationWorkletThread() = default;
 
-WebThread* AnimationWorkletThread::GetSharedBackingThread() {
-  auto* instance = WorkletThreadHolder<AnimationWorkletThread>::GetInstance();
-  DCHECK(instance);
-  return &(instance->GetThread()->BackingThread().PlatformThread());
-}
-
 WorkerBackingThread& AnimationWorkletThread::GetWorkerBackingThread() {
   return *WorkletThreadHolder<AnimationWorkletThread>::GetInstance()
               ->GetThread();
@@ -66,11 +60,6 @@ void AnimationWorkletThread::EnsureSharedBackingThread() {
 
 void AnimationWorkletThread::ClearSharedBackingThread() {
   WorkletThreadHolder<AnimationWorkletThread>::ClearInstance();
-}
-
-void AnimationWorkletThread::CreateSharedBackingThreadForTest() {
-  WorkletThreadHolder<AnimationWorkletThread>::CreateForTest(
-      WebThreadCreationParams(WebThreadType::kAnimationWorkletThread));
 }
 
 WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(

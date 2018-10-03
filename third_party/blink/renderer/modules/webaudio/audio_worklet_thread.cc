@@ -82,18 +82,6 @@ void AudioWorkletThread::ClearSharedBackingThread() {
   WorkletThreadHolder<AudioWorkletThread>::ClearInstance();
 }
 
-WebThread* AudioWorkletThread::GetSharedBackingThread() {
-  DCHECK(IsMainThread());
-  WorkletThreadHolder<AudioWorkletThread>* instance =
-      WorkletThreadHolder<AudioWorkletThread>::GetInstance();
-  return &(instance->GetThread()->BackingThread().PlatformThread());
-}
-
-void AudioWorkletThread::CreateSharedBackingThreadForTest() {
-  WorkletThreadHolder<AudioWorkletThread>::CreateForTest(
-      WebThreadCreationParams(blink::WebThreadType::kWebAudioThread));
-}
-
 WorkerOrWorkletGlobalScope* AudioWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),

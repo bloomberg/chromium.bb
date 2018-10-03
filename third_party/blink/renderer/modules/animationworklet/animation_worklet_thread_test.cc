@@ -48,7 +48,7 @@ class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
 class AnimationWorkletThreadTest : public PageTestBase {
  public:
   void SetUp() override {
-    AnimationWorkletThread::CreateSharedBackingThreadForTest();
+    AnimationWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));

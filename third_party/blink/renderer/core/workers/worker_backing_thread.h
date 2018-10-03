@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class WebThread;
 class WebThreadSupportingGC;
 struct WebThreadCreationParams;
 struct WorkerBackingThreadStartupData;
@@ -30,9 +29,6 @@ class CORE_EXPORT WorkerBackingThread final {
   static std::unique_ptr<WorkerBackingThread> Create(
       const WebThreadCreationParams& params) {
     return base::WrapUnique(new WorkerBackingThread(params));
-  }
-  static std::unique_ptr<WorkerBackingThread> Create(WebThread* thread) {
-    return base::WrapUnique(new WorkerBackingThread(thread));
   }
 
   ~WorkerBackingThread();
@@ -58,11 +54,9 @@ class CORE_EXPORT WorkerBackingThread final {
 
  private:
   explicit WorkerBackingThread(const WebThreadCreationParams&);
-  explicit WorkerBackingThread(WebThread*);
 
   std::unique_ptr<WebThreadSupportingGC> backing_thread_;
   v8::Isolate* isolate_ = nullptr;
-  bool is_owning_thread_;
 };
 
 }  // namespace blink
