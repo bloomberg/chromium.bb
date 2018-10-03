@@ -24,7 +24,6 @@ mojom("interfaces_internal") {
     "assistant_setup.mojom",
     "assistant_volume_control.mojom",
     "cast_config.mojom",
-    "client_image_registry.mojom",
     "constants.mojom",
     "cros_display_config.mojom",
     "display_output_protection.mojom",
