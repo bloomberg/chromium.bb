@@ -299,7 +299,7 @@ bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
   // If we don't have the necessary pieces to calculate whether the event is
   // within the bounds of the button, default to yes.
   if (!mouse_event.HasPosition() || !isConnected() ||
-      !GetDocument().GetLayoutView()) {
+      !GetDocument().GetLayoutView() || !MediaElement().ShouldShowControls()) {
     return true;
   }
 
