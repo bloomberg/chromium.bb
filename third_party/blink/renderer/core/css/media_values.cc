@@ -172,7 +172,7 @@ DisplayShape MediaValues::CalculateDisplayShape(LocalFrame* frame) {
 ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  return ColorSpaceUtilities::GetColorSpaceGamut(
+  return color_space_utilities::GetColorSpaceGamut(
       frame->GetPage()->GetChromeClient().GetScreenInfo());
 }
 
