@@ -2937,6 +2937,12 @@ be describing additional metrics about the same event.
       meaningful input with longest queuing delay per navigation. In ms.
     </summary>
   </metric>
+  <metric name="Navigation.PageEndReason">
+    <summary>
+      The |page_load_metrics::PageEndReason| for the main frame navigation of
+      this page load.
+    </summary>
+  </metric>
   <metric name="Navigation.PageTransition">
     <summary>
       The |ui::PageTransition| for the main frame navigation of this page load.

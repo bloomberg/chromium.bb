@@ -243,5 +243,8 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   }
   // page_transition_ fits in a uint32_t, so we can safely cast to int64_t.
   builder.SetNavigation_PageTransition(static_cast<int64_t>(page_transition_));
+  // info.page_end_reason fits in a uint32_t, so we can safely cast to int64_t.
+  builder.SetNavigation_PageEndReason(
+      static_cast<int64_t>(info.page_end_reason));
   builder.Record(ukm::UkmRecorder::Get());
 }
