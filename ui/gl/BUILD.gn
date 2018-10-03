@@ -201,10 +201,6 @@ jumbo_component("gl") {
         "gl_surface_egl_surface_control.cc",
         "gl_surface_egl_surface_control.h",
       ]
-
-      if (use_static_angle) {
-        deps += [ "//third_party/angle:libEGL_static" ]
-      }
     }
 
     if (is_posix && !is_fuchsia && !is_mac) {
