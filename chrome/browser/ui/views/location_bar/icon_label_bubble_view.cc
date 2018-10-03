@@ -144,22 +144,17 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
         GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
   }
 
-  // Bubbles are given the full internal height of the location bar so that all
-  // child views in the location bar have the same height. The visible height of
-  // the bubble should be smaller, so use an empty border to shrink down the
-  // content bounds so the background gets painted correctly.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
+  UpdateBorder();
 
   set_notify_enter_exit_on_child(true);
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   separator_view_->EnableCanvasFlippingForRTLUI(true);
+
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
-IconLabelBubbleView::~IconLabelBubbleView() {
-}
+IconLabelBubbleView::~IconLabelBubbleView() {}
 
 void IconLabelBubbleView::InkDropAnimationStarted() {
   separator_view_->UpdateOpacity();
@@ -216,6 +211,16 @@ bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
 
 bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
+}
+
+void IconLabelBubbleView::UpdateBorder() {
+  // Bubbles are given the full internal height of the location bar so that all
+  // child views in the location bar have the same height. The visible height of
+  // the bubble should be smaller, so use an empty border to shrink down the
+  // content bounds so the background gets painted correctly.
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING),
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 }
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
@@ -417,6 +422,15 @@ void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {
 
 void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
+}
+
+void IconLabelBubbleView::OnMdModeChanged() {
+  UpdateBorder();
+
+  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
+  // only call it when this view is showing.
+  if (visible())
+    PreferredSizeChanged();
 }
 
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {

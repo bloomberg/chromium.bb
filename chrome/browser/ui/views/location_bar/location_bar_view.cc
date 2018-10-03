@@ -156,6 +156,7 @@ LocationBarView::LocationBarView(Browser* browser,
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
                  base::Unretained(this)));
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 LocationBarView::~LocationBarView() {}
@@ -659,10 +660,8 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
-  if (child != page_action_icon_container_view_)
-    return;
-
   Layout();
+  SchedulePaint();
 }
 
 void LocationBarView::Update(const WebContents* contents) {
@@ -1327,6 +1326,15 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, private ui::MaterialDesignControllerObserver implementation:
+
+void LocationBarView::OnMdModeChanged() {
+  RefreshLocationIcon();
+  Layout();
+  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
