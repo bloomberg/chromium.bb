@@ -1859,6 +1859,13 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
     return;
   }
 
+  // Skip key update when using PIN. The keys should wrap password instead of
+  // PIN.
+  if (user_context.IsUsingPin()) {
+    NotifyEasyUnlockKeyOpsFinished();
+    return;
+  }
+
   const base::ListValue* device_list = nullptr;
   EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
   if (easy_unlock_service) {
