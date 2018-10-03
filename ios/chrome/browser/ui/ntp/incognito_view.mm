@@ -314,7 +314,11 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  [self updateToolbarMargins];
+}
 
+- (void)safeAreaInsetsDidChange {
+  [super safeAreaInsetsDidChange];
   [self updateToolbarMargins];
 }
 
@@ -340,8 +344,13 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (IsRegularXRegularSizeClass(self)) {
     _topToolbarMarginHeight.constant = 0;
   } else {
-    _topToolbarMarginHeight.constant =
-        StatusBarHeight() + kAdaptiveToolbarHeight;
+    CGFloat topInset = 0;
+    if (@available(iOS 11, *)) {
+      topInset = self.safeAreaInsets.top;
+    } else {
+      topInset = StatusBarHeight();
+    }
+    _topToolbarMarginHeight.constant = topInset + kAdaptiveToolbarHeight;
   }
 
   if (IsSplitToolbarMode(self)) {

@@ -295,6 +295,7 @@ const CGFloat kCardBorderRadius = 11;
   [self correctMissingSafeArea];
   [self.headerSynchronizer
       updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
+  [self.headerSynchronizer updateConstraints];
 }
 
 #pragma mark - UICollectionViewDelegate

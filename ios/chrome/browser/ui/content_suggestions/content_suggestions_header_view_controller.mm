@@ -130,7 +130,6 @@ using base::UserMetricsAction;
         if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
-        [self updateConstraints];
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
@@ -193,33 +192,25 @@ using base::UserMetricsAction;
 // Update the doodle top margin to the new -doodleTopMargin value.
 - (void)updateConstraints {
   self.doodleTopMarginConstraint.constant =
-      content_suggestions::doodleTopMargin(YES);
+      content_suggestions::doodleTopMargin(YES, [self topInset]);
 }
 
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.logoIsShowing, self.promoCanShow, YES);
+      self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
 
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsRegularXRegularSizeClass(self)) {
-    CGFloat top = 0;
-    if (@available(iOS 11, *)) {
-      top = self.parentViewController.view.safeAreaInsets.top;
-    } else {
-      // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-      // BVC with |self.parentViewController.topLayoutGuide.length|.
-      top = StatusBarHeight();
-    }
-    offsetY -= ntp_header::ToolbarHeight() + top;
+    offsetY -= ntp_header::ToolbarHeight() + [self topInset];
   }
 
   return offsetY;
 }
 
 - (CGFloat)headerHeight {
-  return content_suggestions::heightForLogoHeader(self.logoIsShowing,
-                                                  self.promoCanShow, YES);
+  return content_suggestions::heightForLogoHeader(
+      self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
 }
 
 #pragma mark - ContentSuggestionsHeaderProvider
@@ -410,7 +401,8 @@ using base::UserMetricsAction;
                     andHeaderView:(UIView*)headerView {
   self.doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
-                     constant:content_suggestions::doodleTopMargin(YES)];
+                     constant:content_suggestions::doodleTopMargin(
+                                  YES, [self topInset])];
   self.doodleHeightConstraint = [logoView.heightAnchor
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoIsShowing)];
@@ -449,6 +441,15 @@ using base::UserMetricsAction;
     }
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
+}
+
+- (CGFloat)topInset {
+  if (@available(iOS 11, *))
+    return self.parentViewController.view.safeAreaInsets.top;
+
+  // TODO(crbug.com/826369) Replace this when the NTP is contained by the
+  // BVC with |self.parentViewController.topLayoutGuide.length|.
+  return StatusBarHeight();
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner
