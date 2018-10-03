@@ -73,6 +73,8 @@ gfx::Rect LoginKeyboardTestBase::GetKeyboardBoundsInScreen() const {
 void LoginKeyboardTestBase::ShowLockScreen() {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
+  // The lock screen can't be shown without a wallpaper.
+  Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
 
   base::Optional<bool> result;
   login_controller_->ShowLockScreen(base::BindOnce(
