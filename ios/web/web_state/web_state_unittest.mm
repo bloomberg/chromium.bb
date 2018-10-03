@@ -60,6 +60,8 @@ CRWSessionStorage* GetTestSessionStorage() {
 }
 }  // namespace
 
+using wk_navigation_util::IsWKInternalUrl;
+
 // WebStateTest is parameterized on this enum to test both the legacy
 // implementation of navigation manager and the experimental implementation.
 enum NavigationManagerChoice {
@@ -367,16 +369,13 @@ TEST_P(WebStateTest, RestoreLargeSession) {
       EXPECT_TRUE(last_committed_item);
       EXPECT_TRUE(last_committed_item &&
                   last_committed_item->GetURL() == "http://www.0.com/");
-      EXPECT_FALSE(navigation_manager->GetPendingItem());
       EXPECT_EQ(0, navigation_manager->GetLastCommittedItemIndex());
-      EXPECT_EQ(-1, navigation_manager->GetPendingItemIndex());
       EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
       EXPECT_EQ(std::max(navigation_manager->GetItemCount() - 1, 0),
                 static_cast<int>(navigation_manager->GetForwardItems().size()));
     }
     // TODO(crbug.com/877671): Ensure that the following API work correctly:
     //  - WebState::GetTitle
-    //  - WebState::IsLoading
     //  - WebState::GetLoadingProgress
     EXPECT_FALSE(web_state_ptr->IsCrashed());
     EXPECT_FALSE(web_state_ptr->IsEvicted());
@@ -386,6 +385,7 @@ TEST_P(WebStateTest, RestoreLargeSession) {
     EXPECT_TRUE(visible_item && visible_item->GetURL() == "http://www.0.com/");
     EXPECT_FALSE(navigation_manager->CanGoBack());
     EXPECT_FALSE(navigation_manager->GetTransientItem());
+    EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
 
     return restored;
   }));
@@ -397,6 +397,13 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     histogram_tester_.ExpectTotalCount(kRestoreNavigationTime, 1);
   }
+
+  // Now wait until the last committed item is fully loaded.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    EXPECT_FALSE(IsWKInternalUrl(web_state_ptr->GetVisibleURL()));
+
+    return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
+  }));
 }
 
 // Tests that if a saved session is provided when creating a new WebState, it is

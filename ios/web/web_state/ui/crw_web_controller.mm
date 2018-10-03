@@ -1994,6 +1994,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   } else if (!_currentURLLoadWasTrigerred) {
     [self ensureContainerViewCreated];
 
+    // This method reloads last committed item, so make than item also pending.
+    self.sessionController.pendingItemIndex =
+        self.sessionController.lastCommittedItemIndex;
+
     // TODO(crbug.com/796608): end the practice of calling |loadCurrentURL|
     // when it is possible there is no current URL. If the call performs
     // necessary initialization, break that out.

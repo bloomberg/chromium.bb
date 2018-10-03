@@ -499,14 +499,25 @@ ACTION_P4(VerifyRestorationStartedContext, web_state, url, context, nav_id) {
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
-  // This should be false. Navigation is determined as renderer initiated
-  // because there is no pending item during the restoration (crbug.com/888021).
-  EXPECT_TRUE((*context)->IsRendererInitiated());
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // This should be false. Navigation is determined as renderer initiated
+    // because there is no pending item during the restoration
+    // (crbug.com/888021).
+    EXPECT_TRUE((*context)->IsRendererInitiated());
+  } else {
+    EXPECT_FALSE((*context)->IsRendererInitiated());
+  }
   ASSERT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(web_state->IsLoading());
-  // Pending item is null during restoration (crbug.com/888021).
+
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
-  ASSERT_FALSE(navigation_manager->GetPendingItem());
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Pending item is null during restoration (crbug.com/888021).
+    ASSERT_FALSE(navigation_manager->GetPendingItem());
+  } else {
+    ASSERT_TRUE(navigation_manager->GetPendingItem());
+    EXPECT_EQ(url, navigation_manager->GetPendingItem()->GetURL());
+  }
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for restoration
@@ -534,9 +545,14 @@ ACTION_P5(VerifyRestorationFinishedContext,
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
-  // This should be false. Navigation is determined as renderer initiated
-  // because there is no pending item during the restoration (crbug.com/888021).
-  EXPECT_TRUE((*context)->IsRendererInitiated());
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // This should be false. Navigation is determined as renderer initiated
+    // because there is no pending item during the restoration
+    // (crbug.com/888021).
+    EXPECT_TRUE((*context)->IsRendererInitiated());
+  } else {
+    EXPECT_FALSE((*context)->IsRendererInitiated());
+  }
   ASSERT_TRUE((*context)->GetResponseHeaders());
   std::string actual_mime_type;
   (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
