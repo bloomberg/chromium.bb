@@ -29,6 +29,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -87,6 +88,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void construction_checks_active_tabbed_activities() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
     }
@@ -94,6 +96,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void activity_state_changes_increment_state_counters()
             throws InterruptedException, TimeoutException {
         assertEquals(0,
@@ -119,6 +122,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void ntp_opening_triggers_initialize_only_once() throws InterruptedException {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
@@ -137,6 +141,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void history_deletion_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onHistoryDeleted();
@@ -149,6 +154,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void cached_data_removal_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onCachedDataCleared();
@@ -161,6 +167,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void signout_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedOut();
@@ -173,6 +180,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void signin_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedIn();
@@ -185,6 +193,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void second_window_does_not_trigger_foreground_or_background()
             throws InterruptedException, TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
@@ -210,6 +219,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void multi_window_does_not_cause_multiple_initialize() throws InterruptedException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
@@ -224,6 +234,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @FlakyTest(message = "http://crbug.com/891419")
     public void resume_triggers_scheduler_foregrounded()
             throws InterruptedException, TimeoutException {
         // Starting mActivity in setUp() triggers a resume.
