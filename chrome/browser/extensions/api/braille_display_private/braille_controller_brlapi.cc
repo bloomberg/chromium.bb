@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
@@ -192,7 +193,7 @@ void BrailleControllerImpl::StartConnecting() {
 }
 
 void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
           brlapi_dir, false,
@@ -205,7 +206,7 @@ void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
 void BrailleControllerImpl::OnSocketDirChangedOnTaskThread(
     const base::FilePath& path,
     bool error) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   if (error) {
     LOG(ERROR) << "Error watching brlapi directory: " << path.value();
     return;
