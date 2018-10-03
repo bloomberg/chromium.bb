@@ -1222,6 +1222,12 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.setupCrostini_ = function() {
     chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+      // Check for 'crostini-files' cmd line flag.
+      chrome.commandLinePrivate.hasSwitch('crostini-files', (filesEnabled) => {
+        Crostini.IS_CROSTINI_FILES_ENABLED = filesEnabled;
+      });
+
+      // Setup Linux files fake root.
       this.directoryTree.dataModel.linuxFilesItem = enabled ?
           new NavigationModelFakeItem(
               str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
@@ -1229,6 +1235,7 @@ FileManager.prototype = /** @struct */ {
                   str('LINUX_FILES_ROOT_LABEL'),
                   VolumeManagerCommon.RootType.CROSTINI, true)) :
           null;
+
       // Redraw the tree even if not enabled.  This is required for testing.
       this.directoryTree.redraw(false);
 
@@ -1241,7 +1248,6 @@ FileManager.prototype = /** @struct */ {
           Crostini.registerSharedPath(entries[i], assert(this.volumeManager_));
         }
       });
-
     });
   };
 
