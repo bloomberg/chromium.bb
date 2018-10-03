@@ -59,7 +59,9 @@ class SharedWorkerScriptLoaderFactory
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
-  base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams();
+  base::WeakPtr<SharedWorkerScriptLoader> GetScriptLoader() {
+    return script_loader_;
+  }
 
  private:
   const int process_id_;

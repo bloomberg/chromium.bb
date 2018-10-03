@@ -117,6 +117,7 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
 
 void SharedWorkerScriptLoader::LoadFromNetwork(
     bool reset_subresource_loader_params) {
+  default_loader_used_ = true;
   network::mojom::URLLoaderClientPtr client;
   if (url_loader_client_binding_)
     url_loader_client_binding_.Unbind();
@@ -243,6 +244,24 @@ void SharedWorkerScriptLoader::OnComplete(
   if (status.error_code == net::OK)
     service_worker_provider_host_->CompleteSharedWorkerPreparation();
   client_->OnComplete(status);
+}
+
+bool SharedWorkerScriptLoader::MaybeCreateLoaderForResponse(
+    const network::ResourceResponseHead& response,
+    network::mojom::URLLoaderPtr* response_url_loader,
+    network::mojom::URLLoaderClientRequest* response_client_request,
+    ThrottlingURLLoader* url_loader) {
+  DCHECK(default_loader_used_);
+  for (auto& interceptor : interceptors_) {
+    if (interceptor->MaybeCreateLoaderForResponse(response, response_url_loader,
+                                                  response_client_request,
+                                                  url_loader)) {
+      subresource_loader_params_ =
+          interceptor->MaybeCreateSubresourceLoaderParams();
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace content

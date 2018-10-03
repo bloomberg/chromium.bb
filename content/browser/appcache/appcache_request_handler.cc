@@ -600,6 +600,8 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     return false;
   }
   DCHECK(was_called);
+  if (IsMainResourceType(resource_type_))
+    should_create_subresource_loader_ = true;
   return true;
 }
 

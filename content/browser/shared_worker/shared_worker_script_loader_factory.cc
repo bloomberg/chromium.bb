@@ -89,10 +89,4 @@ void SharedWorkerScriptLoaderFactory::Clone(
   NOTREACHED();
 }
 
-base::Optional<SubresourceLoaderParams>
-SharedWorkerScriptLoaderFactory::TakeSubresourceLoaderParams() {
-  DCHECK(script_loader_);
-  return script_loader_->TakeSubresourceLoaderParams();
-}
-
 }  // namespace content
