@@ -79,7 +79,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
 
   std::vector<web_app::PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(
-      chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
+      chromeos::android_sms::GetAndroidMessagesURLWithParams(),
       web_app::PendingAppManager::LaunchContainer::kWindow,
       web_app::PendingAppManager::InstallSource::kInternal,
       web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
