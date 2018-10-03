@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -198,9 +199,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
   }
 
   // Returns the mDNS API factory function (mock vs. real) to use for the test.
-  virtual BrowserContextKeyedServiceFactory::TestingFactoryFunction
-  GetMDnsFactory() {
-    return MDnsAPITestingFactoryFunction;
+  virtual BrowserContextKeyedServiceFactory::TestingFactory GetMDnsFactory() {
+    return base::BindRepeating(&MDnsAPITestingFactoryFunction);
   }
 
   void TearDown() override {
@@ -257,9 +257,8 @@ class MDnsAPIMaxServicesTest : public MDnsAPITest {
 
 class MDnsAPIDiscoveryTest : public MDnsAPITest {
  public:
-  BrowserContextKeyedServiceFactory::TestingFactoryFunction GetMDnsFactory()
-      override {
-    return MockedMDnsAPITestingFactoryFunction;
+  BrowserContextKeyedServiceFactory::TestingFactory GetMDnsFactory() override {
+    return base::BindRepeating(&MockedMDnsAPITestingFactoryFunction);
   }
 
   void SetUp() override {
