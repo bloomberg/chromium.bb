@@ -356,6 +356,13 @@ var CommandHandler = function(fileManager, selectionHandler) {
       'disable-zip-archiver-packer', function(disabled) {
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
       });
+  chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+    if (enabled) {
+      chrome.commandLinePrivate.hasSwitch('crostini-files', (enabled) => {
+        CommandHandler.IS_CROSTINI_FILES_ENABLED_ = enabled;
+      });
+    }
+  });
 };
 
 /**
@@ -364,6 +371,13 @@ var CommandHandler = function(fileManager, selectionHandler) {
  * @private
  */
 CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
+
+/**
+ * A flag that determines whether crostini file sharing is enabled.
+ * @type {boolean}
+ * @private
+ */
+CommandHandler.IS_CROSTINI_FILES_ENABLED_ = false;
 
 /**
  * Supported disk file system types for renaming.
@@ -1662,9 +1676,12 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     // Must be single directory subfolder of Downloads not already shared.
     const entries = CommandUtil.getCommandEntries(event.target);
-    event.canExecute = entries.length === 1 && entries[0].isDirectory &&
-        !Crostini.isPathShared(entries[0], fileManager.volumeManager) &&
-        Crostini.canSharePath(entries[0], fileManager.volumeManager);
+    event.canExecute = CommandHandler.IS_CROSTINI_FILES_ENABLED_ &&
+        entries.length === 1 && entries[0].isDirectory &&
+        !Crostini.isPathShared(entries[0], assert(fileManager.volumeManager)) &&
+        entries[0].fullPath !== '/' &&
+        fileManager.volumeManager.getLocationInfo(entries[0]).rootType ===
+            VolumeManagerCommon.RootType.DOWNLOADS;
     event.command.setHidden(!event.canExecute);
   }
 });

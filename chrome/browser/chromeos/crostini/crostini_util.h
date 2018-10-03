@@ -75,11 +75,7 @@ std::string CryptohomeIdForProfile(Profile* profile);
 std::string ContainerUserNameForProfile(Profile* profile);
 
 // Returns the home directory within the container for a given profile.
-base::FilePath ContainerHomeDirectoryForProfile(Profile* profile);
-
-// Returns the mount directory within the container where paths from the Chrome
-// OS host such as within Downloads are shared with the container.
-base::FilePath ContainerChromeOSBaseDirectory();
+base::FilePath HomeDirectoryForProfile(Profile* profile);
 
 // The Terminal opens Crosh but overrides the Browser's app_name so that we can
 // identify it as the Crostini Terminal. In the future, we will also use these

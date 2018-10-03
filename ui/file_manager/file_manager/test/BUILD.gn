@@ -8,6 +8,7 @@ action("create_test_main") {
   script = "//ui/file_manager/file_manager/test/scripts/create_test_main.py"
   output = "$target_gen_dir/../test.html"
   sources = [
+    "../../../webui/resources/css/text_defaults.css",
     "../background/js/background_common_scripts.js",
     "../background/js/background_scripts.js",
     "../foreground/elements/elements_bundle.html",
@@ -17,9 +18,6 @@ action("create_test_main") {
     "../foreground/js/elements_importer.js",
     "../foreground/js/main_scripts.js",
     "../main.html",
-    "//chrome/app/file_manager_strings.grdp",
-    "//chrome/browser/chromeos/extensions/file_manager/private_api_strings.cc",
-    "//ui/webui/resources/css/text_defaults.css",
     "check_select.js",
     "crostini.js",
     "js/strings.js",

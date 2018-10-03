@@ -1036,20 +1036,11 @@
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file outside the crostini container (e.g. in Downloads).  This message will be removed once we support this action.">
     Unable to open with $1
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file outside the crostini container (e.g. in Downloads).  This message will be removed once we support this action.">
     To open files with $1, first copy to Linux files folder.
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Share files with Linux
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_SINGLE" desc="Message shown when a user tries to use a crostini app to open a single file outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Let Linux apps open $1.
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE" desc="Message shown when a user tries to use a crostini app to multiple files outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Let Linux apps open $1 files.
   </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">

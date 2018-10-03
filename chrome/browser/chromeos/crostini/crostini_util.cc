@@ -376,12 +376,8 @@ std::string ContainerUserNameForProfile(Profile* profile) {
   return container_username;
 }
 
-base::FilePath ContainerHomeDirectoryForProfile(Profile* profile) {
+base::FilePath HomeDirectoryForProfile(Profile* profile) {
   return base::FilePath("/home/" + ContainerUserNameForProfile(profile));
-}
-
-base::FilePath ContainerChromeOSBaseDirectory() {
-  return base::FilePath("/ChromeOS/");
 }
 
 std::string AppNameFromCrostiniAppId(const std::string& id) {
