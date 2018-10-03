@@ -67,13 +67,13 @@ PresentationRequest* PresentationRequest::Create(
   }
 
   Vector<KURL> parsed_urls;
-  for (size_t i = 0; i < urls.size(); ++i) {
-    const KURL& parsed_url = KURL(execution_context->Url(), urls[i]);
+  for (const auto& url : urls) {
+    const KURL& parsed_url = KURL(execution_context->Url(), url);
 
     if (!parsed_url.IsValid()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
-          "'" + urls[i] + "' can't be resolved to a valid URL.");
+          "'" + url + "' can't be resolved to a valid URL.");
       return nullptr;
     }
 
@@ -81,7 +81,7 @@ PresentationRequest* PresentationRequest::Create(
         MixedContentChecker::IsMixedContent(
             execution_context->GetSecurityOrigin(), parsed_url)) {
       exception_state.ThrowSecurityError(
-          "Presentation of an insecure document [" + urls[i] +
+          "Presentation of an insecure document [" + url +
           "] is prohibited from a secure context.");
       return nullptr;
     }
