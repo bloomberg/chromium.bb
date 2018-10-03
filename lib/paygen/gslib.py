@@ -66,10 +66,6 @@ class CopyFail(GSLibError):
   """Raised if Copy fails in any way."""
 
 
-class URIError(GSLibError):
-  """Raised when URI does not behave as expected."""
-
-
 def RetryGSLib(func):
   """Decorator to retry function calls that throw an exception.
 
@@ -257,71 +253,3 @@ def Copy(src_path, dest_path, acl=None, **kwargs):
     args += ['-a', acl]
   args += [src_path, dest_path]
   RunGsutilCommand(args, failed_exception=CopyFail, **kwargs)
-
-
-@RetryGSLib
-def List(root_uri, recurse=False, filepattern=None, sort=False):
-  """Return list of file and directory paths under given root URI.
-
-  Args:
-    root_uri: e.g. gs://foo/bar
-    recurse: Look in subdirectories, as well
-    filepattern: glob pattern to match against basename of path
-    sort: If True then do a default sort on paths
-
-  Returns:
-    List of GS URIs to paths that matched
-  """
-  gs_uri = root_uri
-  if recurse:
-    # In gs file patterns '**' absorbs any number of directory names,
-    # including none.
-    gs_uri = gs_uri.rstrip('/') + '/**'
-
-  # Now match the filename itself at the end of the URI.
-  if filepattern:
-    gs_uri = gs_uri.rstrip('/') + '/' + filepattern
-
-  args = ['ls', gs_uri]
-
-  try:
-    result = RunGsutilCommand(args)
-    paths = [path for path in result.output.splitlines() if path]
-
-    if sort:
-      paths = sorted(paths)
-
-    return paths
-
-  except GSLibError as e:
-    # The ls command will fail under normal operation if there was just
-    # nothing to be found. That shows up like this to stderr:
-    # CommandException: One or more URLs matched no objects.
-    if 'CommandException: One or more URLs matched no objects.' not in str(e):
-      raise
-
-  # Otherwise, assume a normal error.
-  # TODO(mtennant): It would be more functionally correct to return this
-  # if and only if the error is identified as a "file not found" error.
-  # We simply have to determine how to do that reliably.
-  return []
-
-
-def ListFiles(root_uri, recurse=False, filepattern=None, sort=False):
-  """Return list of file paths under given root URI.
-
-  Directories are intentionally excluded.
-
-  Args:
-    root_uri: e.g. gs://foo/bar
-    recurse: Look for files in subdirectories, as well
-    filepattern: glob pattern to match against basename of file
-    sort: If True then do a default sort on paths
-
-  Returns:
-    List of GS URIs to files that matched
-  """
-  paths = List(root_uri, recurse=recurse, filepattern=filepattern, sort=sort)
-
-  # Directory paths should be excluded from output, per ListFiles guarantee.
-  return [path for path in paths if not path.endswith('/')]

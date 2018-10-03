@@ -37,19 +37,6 @@ TYPE_HTTPS = PROTOCOL_HTTPS
 TYPE_LOCAL = 'file'
 
 
-class NotSupportedForType(RuntimeError):
-  """Raised when operation is not supported for a particular file type"""
-
-  def __init__(self, uri_type, extra_msg=None):
-    # pylint: disable=protected-access
-    function = sys._getframe(1).f_code.co_name
-    msg = 'Function %s not supported for %s URIs' % (function, uri_type)
-    if extra_msg:
-      msg += ', ' + extra_msg
-
-    RuntimeError.__init__(self, msg)
-
-
 class NotSupportedForTypes(RuntimeError):
   """Raised when operation is not supported for all particular file type"""
 
@@ -189,32 +176,3 @@ def Copy(src_uri, dest_uri):
     return URLRetrieve(src_uri, dest_uri)
 
   raise NotSupportedBetweenTypes(uri_type1, uri_type2)
-
-
-def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
-  """Return list of file paths under given root path.
-
-  Directories are intentionally excluded from results.  The root_path
-  argument can be a local directory path, a Google storage directory URI,
-  or a Colossus (/cns) directory path.
-
-  Args:
-    root_path: A local path, CNS path, or GS path to directory.
-    recurse: Look for files in subdirectories, as well
-    filepattern: glob pattern to match against basename of file
-    sort: If True then do a default sort on paths
-
-  Returns:
-    List of paths to files that matched
-  """
-  uri_type = GetUriType(root_path)
-
-  if TYPE_GS == uri_type:
-    return gslib.ListFiles(root_path, recurse=recurse,
-                           filepattern=filepattern, sort=sort)
-
-  if TYPE_LOCAL == uri_type:
-    return filelib.ListFiles(root_path, recurse=recurse,
-                             filepattern=filepattern, sort=sort)
-
-  raise NotSupportedForType(uri_type)
