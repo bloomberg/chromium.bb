@@ -243,9 +243,6 @@ extern const char kEmbeddedExtensionOptionsDescription[];
 extern const char kEnableAccessibilityObjectModelName[];
 extern const char kEnableAccessibilityObjectModelDescription[];
 
-extern const char kEnableAsmWasmName[];
-extern const char kEnableAsmWasmDescription[];
-
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
 

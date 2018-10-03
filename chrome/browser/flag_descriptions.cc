@@ -346,12 +346,6 @@ const char kEnableAccessibilityObjectModelDescription[] =
     "Enables experimental support for Accessibility Object Model APIs "
     "that are in development.";
 
-const char kEnableAsmWasmName[] =
-    "Experimental Validate Asm.js and convert to WebAssembly when valid.";
-const char kEnableAsmWasmDescription[] =
-    R"*(Validate Asm.js when "use asm" is present and then convert to )*"
-    R"*(WebAssembly.)*";
-
 const char kEnableWebPaymentsSingleAppUiSkipName[] =
     "Enable Web Payments single app UI skip";
 const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
