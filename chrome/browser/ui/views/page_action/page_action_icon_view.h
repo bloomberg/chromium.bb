@@ -120,8 +120,10 @@ class PageActionIconView : public IconLabelBubbleView {
   // Gets the given vector icon in the correct color and size based on |active|.
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
-  // views::View:
+  // IconLabelBubbleView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnMdModeChanged() override;
+  void UpdateBorder() override;
 
   // Updates the icon image after some state has changed.
   void UpdateIconImage();

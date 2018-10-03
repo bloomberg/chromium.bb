@@ -53,8 +53,6 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {
-  SetBorder(views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
     // Ink drop ripple opacity.
     set_ink_drop_visible_opacity(
@@ -244,6 +242,17 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (bubble)
     bubble->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
+}
+
+void PageActionIconView::OnMdModeChanged() {
+  icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+  UpdateIconImage();
+  IconLabelBubbleView::OnMdModeChanged();
+}
+
+void PageActionIconView::UpdateBorder() {
+  SetBorder(views::CreateEmptyBorder(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {

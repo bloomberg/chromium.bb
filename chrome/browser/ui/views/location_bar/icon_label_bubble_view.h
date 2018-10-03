@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -33,7 +35,8 @@ class InkDropContainerView;
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
-                            public views::Button {
+                            public views::Button,
+                            public ui::MaterialDesignControllerObserver {
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
@@ -122,6 +125,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // prevent the bubble from reshowing on a mouse release.
   virtual bool IsBubbleShowing() const;
 
+  // Sets the border padding around this view.
+  virtual void UpdateBorder();
+
   // views::InkDropHostView:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -146,6 +152,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+
+  // ui::MaterialDesignControllerObserver:
+  void OnMdModeChanged() override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
@@ -245,6 +254,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool is_animation_paused_ = false;
   double pause_animation_state_ = 0.0;
   double open_state_fraction_ = 0.0;
+
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
+      md_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };

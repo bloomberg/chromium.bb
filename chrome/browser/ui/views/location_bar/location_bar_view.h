@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -78,7 +79,8 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
                         public ContentSettingImageView::Delegate,
-                        public PageActionIconView::Delegate {
+                        public PageActionIconView::Delegate,
+                        public ui::MaterialDesignControllerObserver {
  public:
   class Delegate {
    public:
@@ -386,6 +388,9 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
 
+  // ui::MaterialDesignControllerObserver:
+  void OnMdModeChanged() override;
+
   // Returns the total amount of space reserved above or below the content,
   // which is the vertical edge thickness plus the padding next to it.
   static int GetTotalVerticalPadding();
@@ -487,6 +492,10 @@ class LocationBarView : public LocationBar,
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;
+
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
+      md_observer_{this};
 
   // Used to scope the lifetime of asynchronous icon fetch callbacks to the
   // lifetime of the object. Weak pointers issued by this factory are
