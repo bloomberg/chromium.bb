@@ -108,8 +108,6 @@ _VERSION_SPECIFIC_FILTER['70'] = [
 ]
 
 _VERSION_SPECIFIC_FILTER['69'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
-    'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2515
     'HeadlessInvalidCertificateTest.*',
     # Feature not yet supported in this version
@@ -117,8 +115,6 @@ _VERSION_SPECIFIC_FILTER['69'] = [
 ]
 
 _VERSION_SPECIFIC_FILTER['68'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
-    'ChromeDriverTest.testWindowFullScreen',
     # Feature not yet supported in this version
     'ChromeDriverTest.testGenerateTestReport',
 ]
@@ -139,6 +135,16 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowMinimize',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2522
     'ChromeDriverTest.testWindowMaximize',
+]
+
+_OS_VERSION_SPECIFIC_FILTER = {}
+_OS_VERSION_SPECIFIC_FILTER['mac', '68'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
+]
+_OS_VERSION_SPECIFIC_FILTER['mac', '69'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -190,6 +196,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
 def _GetDesktopNegativeFilter(version_name):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
   os = util.GetPlatformName()
+  if (os, version_name) in _OS_VERSION_SPECIFIC_FILTER:
+    filter += _OS_VERSION_SPECIFIC_FILTER[os, version_name]
   if os in _OS_SPECIFIC_FILTER:
     filter += _OS_SPECIFIC_FILTER[os]
   if version_name in _VERSION_SPECIFIC_FILTER:
