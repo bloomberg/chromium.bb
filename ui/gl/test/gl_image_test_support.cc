@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/stl_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/half_float.h"
 #include "ui/gl/init/gl_factory.h"
@@ -33,8 +34,7 @@ void GLImageTestSupport::InitializeGL(
   DCHECK(!allowed_impls.empty());
 
   GLImplementation impl = prefered_impl ? *prefered_impl : allowed_impls[0];
-  DCHECK(std::find(allowed_impls.begin(), allowed_impls.end(), impl) !=
-         allowed_impls.end());
+  DCHECK(base::ContainsValue(allowed_impls, impl));
 
   GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
 #if defined(USE_OZONE)
