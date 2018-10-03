@@ -9,9 +9,6 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -376,8 +373,8 @@ void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
   NGPaintFragment::DirtyLinesFromChangedChild(child);
 }
 
-template class LayoutNGMixin<LayoutTableCaption>;
-template class LayoutNGMixin<LayoutTableCell>;
-template class LayoutNGMixin<LayoutBlockFlow>;
+template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;
+template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCell>;
+template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlockFlow>;
 
 }  // namespace blink
