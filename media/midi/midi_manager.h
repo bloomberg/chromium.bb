@@ -90,10 +90,6 @@ class MIDI_EXPORT MidiManager {
 
   static MidiManager* Create(MidiService* service);
 
-  // Shuts down this manager. This function is split from the destructor
-  // because it calls a virtual function.
-  void Shutdown();
-
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized
   // and the client is registered to receive MIDI data.
@@ -137,10 +133,6 @@ class MIDI_EXPORT MidiManager {
   // mojom::Result.
   virtual void StartInitialization();
 
-  // Finalizes the platform dependent MIDI system. After this method call,
-  // destructor will be called immediately and the I/O thread may stop.
-  virtual void Finalize() {}
-
   // Called from a platform dependent implementation of StartInitialization().
   // The method distributes |result| to MIDIManagerClient objects in
   // |pending_clients_|.
@@ -182,9 +174,6 @@ class MIDI_EXPORT MidiManager {
 
   // Tracks platform dependent initialization state.
   InitializationState initialization_state_ = InitializationState::NOT_STARTED;
-
-  // Keeps false until Finalize() is called.
-  bool finalized_ = false;
 
   // Keeps the platform dependent initialization result if initialization is
   // completed. Otherwise keeps mojom::Result::NOT_INITIALIZED.

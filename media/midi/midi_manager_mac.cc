@@ -117,7 +117,16 @@ MidiManager* MidiManager::Create(MidiService* service) {
 
 MidiManagerMac::MidiManagerMac(MidiService* service) : MidiManager(service) {}
 
-MidiManagerMac::~MidiManagerMac() = default;
+MidiManagerMac::~MidiManagerMac() {
+  bool result = service()->task_service()->UnbindInstance();
+  CHECK(result);
+
+  // Do not need to dispose |coremidi_input_| and |coremidi_output_| explicitly.
+  // CoreMIDI automatically disposes them on the client disposal.
+  base::AutoLock lock(midi_client_lock_);
+  if (midi_client_)
+    MIDIClientDispose(midi_client_);
+}
 
 void MidiManagerMac::StartInitialization() {
   if (!service()->task_service()->BindInstance()) {
@@ -127,19 +136,6 @@ void MidiManagerMac::StartInitialization() {
   service()->task_service()->PostBoundTask(
       kClientTaskRunner, base::BindOnce(&MidiManagerMac::InitializeCoreMIDI,
                                         base::Unretained(this)));
-}
-
-void MidiManagerMac::Finalize() {
-  if (!service()->task_service()->UnbindInstance()) {
-    NOTREACHED();
-  }
-
-  // Do not need to dispose |coremidi_input_| and |coremidi_output_| explicitly.
-  // CoreMIDI automatically disposes them on the client disposal.
-  base::AutoLock lock(midi_client_lock_);
-  if (midi_client_)
-    MIDIClientDispose(midi_client_);
-  midi_client_ = 0u;
 }
 
 void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,

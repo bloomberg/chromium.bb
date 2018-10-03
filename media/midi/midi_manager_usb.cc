@@ -24,37 +24,18 @@ MidiManagerUsb::MidiManagerUsb(MidiService* service,
     : MidiManager(service), device_factory_(std::move(factory)) {}
 
 MidiManagerUsb::~MidiManagerUsb() {
-  // TODO(toyoshim): Remove following DCHECKs once the dynamic instantiation
-  // mode is enabled by default.
-  base::AutoLock lock(lock_);
-  DCHECK(device_factory_);
-  DCHECK(devices_.empty());
-  DCHECK(output_streams_.empty());
-  DCHECK(!input_stream_);
-  DCHECK(input_jack_dictionary_.empty());
+  bool result = service()->task_service()->UnbindInstance();
+  CHECK(result);
 }
 
 void MidiManagerUsb::StartInitialization() {
-  bool result = service()->task_service()->BindInstance();
-  DCHECK(result);
+  if (!service()->task_service()->BindInstance()) {
+    NOTREACHED();
+    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return;
+  }
 
   Initialize();
-}
-
-void MidiManagerUsb::Finalize() {
-  bool result = service()->task_service()->UnbindInstance();
-  DCHECK(result);
-
-  // TODO(toyoshim): Remove following code once the dynamic instantiation mode
-  // is enabled by default.
-  base::AutoLock lock(lock_);
-  devices_.clear();
-  output_streams_.clear();
-  input_stream_.reset();
-  input_jack_dictionary_.clear();
-
-  // Do not reset |device_factory_| here because it is set on the thread on
-  // which the constructor runs.
 }
 
 void MidiManagerUsb::Initialize() {

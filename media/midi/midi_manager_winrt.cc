@@ -771,33 +771,28 @@ MidiManagerWinrt::MidiManagerWinrt(MidiService* service)
     : MidiManager(service) {}
 
 MidiManagerWinrt::~MidiManagerWinrt() {
-  base::AutoLock auto_lock(lazy_init_member_lock_);
-
-  CHECK(!port_manager_in_);
-  CHECK(!port_manager_out_);
-}
-
-void MidiManagerWinrt::StartInitialization() {
-  bool result = service()->task_service()->BindInstance();
-  DCHECK(result);
-
-  service()->task_service()->PostBoundTask(
-      kComTaskRunner, base::BindOnce(&MidiManagerWinrt::InitializeOnComRunner,
-                                     base::Unretained(this)));
-}
-
-void MidiManagerWinrt::Finalize() {
   // Unbind and take a lock to ensure that InitializeOnComRunner should not run
   // after here.
   bool result = service()->task_service()->UnbindInstance();
-  DCHECK(result);
+  CHECK(result);
 
   base::AutoLock auto_lock(lazy_init_member_lock_);
-
   service()->task_service()->PostStaticTask(
       kComTaskRunner,
       base::BindOnce(&FinalizeOnComRunner, std::move(port_manager_in_),
                      std::move(port_manager_out_)));
+}
+
+void MidiManagerWinrt::StartInitialization() {
+  if (!service()->task_service()->BindInstance()) {
+    NOTREACHED();
+    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return;
+  }
+
+  service()->task_service()->PostBoundTask(
+      kComTaskRunner, base::BindOnce(&MidiManagerWinrt::InitializeOnComRunner,
+                                     base::Unretained(this)));
 }
 
 void MidiManagerWinrt::DispatchSendMidiData(MidiManagerClient* client,
