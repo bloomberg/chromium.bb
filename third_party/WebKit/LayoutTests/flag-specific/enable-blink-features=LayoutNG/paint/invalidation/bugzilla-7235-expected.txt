@@ -25,7 +25,7 @@
         {
           "object": "NGPhysicalTextFragment '\u00A0'",
           "rect": [8, 156, 4, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ]
     }

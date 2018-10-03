@@ -36,7 +36,7 @@
         {
           "object": "NGPhysicalTextFragment 'test1'",
           "rect": [8, 508, 29, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutView #document",

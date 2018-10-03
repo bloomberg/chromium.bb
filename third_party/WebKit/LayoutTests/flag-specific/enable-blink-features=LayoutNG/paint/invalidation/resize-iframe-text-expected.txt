@@ -25,7 +25,7 @@
         {
           "object": "NGPhysicalTextFragment 'Test passes if you see \"Success\" after window resizes.'",
           "rect": [8, 8, 341, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutNGBlockFlow HTML",

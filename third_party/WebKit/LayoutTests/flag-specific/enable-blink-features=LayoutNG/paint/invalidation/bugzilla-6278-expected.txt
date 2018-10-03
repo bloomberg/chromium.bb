@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [10, 138, 292, 160],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutNGBlockFlow DIV",
@@ -30,37 +30,37 @@
         {
           "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
           "rect": [10, 178, 291, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
           "rect": [10, 198, 290, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
           "rect": [10, 238, 278, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
           "rect": [10, 218, 270, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
           "rect": [10, 258, 262, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
           "rect": [10, 158, 246, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [10, 138, 242, 200],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutNGBlockFlow DIV",
@@ -75,7 +75,7 @@
         {
           "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
           "rect": [10, 138, 235, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'nec ullamcorper lacus ante vulputate'",
@@ -85,7 +85,7 @@
         {
           "object": "NGPhysicalTextFragment 'vehicula, augue nibh molestie nisl,'",
           "rect": [10, 278, 217, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutNGTableCell TD id='col1'",

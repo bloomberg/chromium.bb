@@ -20,12 +20,12 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 8, 402, 402],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutEmbeddedObject object",
           "rect": [9, 9, 400, 400],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGRoot svg",

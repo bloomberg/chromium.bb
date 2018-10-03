@@ -124,6 +124,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       const LayoutSelectionStatus&) const;
   NGPhysicalOffsetRect ComputeLocalSelectionRectForReplaced() const;
 
+  // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
+  void SetShouldDoFullPaintInvalidation();
+
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject
   // recursively.
   void SetShouldDoFullPaintInvalidationRecursively();

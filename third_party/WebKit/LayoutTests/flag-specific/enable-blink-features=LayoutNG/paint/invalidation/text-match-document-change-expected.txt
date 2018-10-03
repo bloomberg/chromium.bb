@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalTextFragment 'After change'",
           "rect": [18, 130, 251, 19],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'Find-in-page 'findme', then click here)'",

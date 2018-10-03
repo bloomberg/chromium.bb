@@ -20,17 +20,17 @@
         {
           "object": "NGPhysicalTextFragment 'sollicitudin nisi ut urna blandit'",
           "rect": [8, 182, 195, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'adipiscing, enim in scelerisque'",
           "rect": [8, 102, 192, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'pulvinar velit. Integer'",
           "rect": [8, 162, 168, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'lacus, at sagittis eros leo'",
@@ -40,17 +40,17 @@
         {
           "object": "NGPhysicalTextFragment 'convallis.'",
           "rect": [8, 202, 139, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc'",
           "rect": [8, 82, 129, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'convallis, augue '",
           "rect": [8, 122, 106, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment ' eleifend lacus,'",

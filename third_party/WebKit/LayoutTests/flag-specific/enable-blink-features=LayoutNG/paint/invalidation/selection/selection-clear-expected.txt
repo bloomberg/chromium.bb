@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
           "rect": [8, 8, 100, 200],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment '\u00A0'",

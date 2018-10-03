@@ -166,6 +166,11 @@ NGPaintFragment::NGPaintFragment(
 
 NGPaintFragment::~NGPaintFragment() = default;
 
+void NGPaintFragment::SetShouldDoFullPaintInvalidation() {
+  if (LayoutObject* layout_object = GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
+}
+
 scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset,
@@ -186,6 +191,7 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       // No need to re-populate children because NGPhysicalFragment is
       // immutable and thus children should not have been changed.
       *populate_children = false;
+      previous_instance->SetShouldDoFullPaintInvalidation();
       return previous_instance;
     }
 
@@ -197,12 +203,15 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       previous_instance->next_for_same_layout_object_ = nullptr;
       if (!*populate_children)
         previous_instance->children_.clear();
+      previous_instance->SetShouldDoFullPaintInvalidation();
       return previous_instance;
     }
   }
 
-  return base::AdoptRef(
-      new NGPaintFragment(std::move(fragment), offset, parent));
+  scoped_refptr<NGPaintFragment> new_instance =
+      base::AdoptRef(new NGPaintFragment(std::move(fragment), offset, parent));
+  new_instance->SetShouldDoFullPaintInvalidation();
+  return new_instance;
 }
 
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
