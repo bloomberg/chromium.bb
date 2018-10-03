@@ -4,17 +4,65 @@
 
 #include "ash/system/message_center/unified_message_list_view.h"
 
+#include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/notification_view_md.h"
 
 using message_center::MessageCenter;
 using message_center::MessageView;
 using message_center::Notification;
 
 namespace ash {
+
+namespace {
+
+class TestNotificationView : public message_center::NotificationViewMD {
+ public:
+  TestNotificationView(const message_center::Notification& notification)
+      : NotificationViewMD(notification) {}
+  ~TestNotificationView() override = default;
+
+  // message_center::NotificationViewMD:
+  void UpdateCornerRadius(int top_radius, int bottom_radius) override {
+    top_radius_ = top_radius;
+    bottom_radius_ = bottom_radius;
+    message_center::NotificationViewMD::UpdateCornerRadius(top_radius,
+                                                           bottom_radius);
+  }
+
+  int top_radius() const { return top_radius_; }
+  int bottom_radius() const { return bottom_radius_; }
+
+ private:
+  int top_radius_ = 0;
+  int bottom_radius_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNotificationView);
+};
+
+class TestUnifiedMessageListView : public UnifiedMessageListView {
+ public:
+  TestUnifiedMessageListView() : UnifiedMessageListView(nullptr) {}
+
+  ~TestUnifiedMessageListView() override = default;
+
+  // UnifiedMessageListView:
+  message_center::MessageView* CreateMessageView(
+      const message_center::Notification& notification) const override {
+    auto* view = new TestNotificationView(notification);
+    view->SetIsNested();
+    return view;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestUnifiedMessageListView);
+};
+
+}  // namespace
 
 class UnifiedMessageListViewTest : public AshTestBase,
                                    public views::ViewObserver {
@@ -47,14 +95,16 @@ class UnifiedMessageListViewTest : public AshTestBase,
   }
 
   void CreateMessageListView() {
-    message_list_view_ = std::make_unique<UnifiedMessageListView>(nullptr);
+    message_list_view_ = std::make_unique<TestUnifiedMessageListView>();
+    message_list_view_->Init();
     message_list_view_->AddObserver(this);
     OnViewPreferredSizeChanged(message_list_view_.get());
     size_changed_count_ = 0;
   }
 
-  MessageView* GetMessageViewAt(int index) const {
-    return static_cast<MessageView*>(message_list_view()->child_at(index));
+  TestNotificationView* GetMessageViewAt(int index) const {
+    return static_cast<TestNotificationView*>(
+        message_list_view()->child_at(index));
   }
 
   UnifiedMessageListView* message_list_view() const {
@@ -67,7 +117,7 @@ class UnifiedMessageListViewTest : public AshTestBase,
   int id_ = 0;
   int size_changed_count_ = 0;
 
-  std::unique_ptr<UnifiedMessageListView> message_list_view_;
+  std::unique_ptr<TestUnifiedMessageListView> message_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListViewTest);
 };
@@ -92,6 +142,14 @@ TEST_F(UnifiedMessageListViewTest, Open) {
   EXPECT_EQ(GetMessageViewAt(1)->bounds().bottom(),
             GetMessageViewAt(2)->bounds().y());
 
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(2)->top_radius());
+
+  EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
+  EXPECT_EQ(0, GetMessageViewAt(1)->bottom_radius());
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(2)->bottom_radius());
+
   EXPECT_LT(0, message_list_view()->GetPreferredSize().height());
 }
 
@@ -104,6 +162,9 @@ TEST_F(UnifiedMessageListViewTest, AddNotifications) {
   EXPECT_EQ(1, message_list_view()->child_count());
   EXPECT_EQ(id0, GetMessageViewAt(0)->notification_id());
 
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->bottom_radius());
+
   int previous_height = message_list_view()->GetPreferredSize().height();
   EXPECT_LT(0, previous_height);
 
@@ -115,9 +176,17 @@ TEST_F(UnifiedMessageListViewTest, AddNotifications) {
   EXPECT_EQ(id1, GetMessageViewAt(1)->notification_id());
 
   EXPECT_LT(previous_height, message_list_view()->GetPreferredSize().height());
+  // 1dip larger because now it has separator border.
+  previous_bounds.Inset(gfx::Insets(0, 0, -1, 0));
   EXPECT_EQ(previous_bounds, GetMessageViewAt(0)->bounds());
   EXPECT_EQ(GetMessageViewAt(0)->bounds().bottom(),
             GetMessageViewAt(1)->bounds().y());
+
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
+
+  EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(1)->bottom_radius());
 }
 
 TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
@@ -127,12 +196,18 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   CreateMessageListView();
   int previous_height = message_list_view()->GetPreferredSize().height();
 
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
+
   gfx::Rect previous_bounds = GetMessageViewAt(0)->bounds();
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   EXPECT_EQ(1, size_changed_count());
   EXPECT_EQ(previous_bounds.y(), GetMessageViewAt(0)->bounds().y());
   EXPECT_LT(0, message_list_view()->GetPreferredSize().height());
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
+
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->bottom_radius());
 
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
   EXPECT_EQ(2, size_changed_count());

@@ -16,6 +16,8 @@ namespace ash {
 NewUnifiedMessageCenterView::NewUnifiedMessageCenterView()
     : scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this)) {
+  message_list_view_->Init();
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Need to set the transparent background explicitly, since ScrollView has

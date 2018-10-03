@@ -5,6 +5,7 @@
 #include "ash/system/message_center/unified_message_list_view.h"
 
 #include "ash/system/message_center/new_unified_message_center_view.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/auto_reset.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -25,7 +26,13 @@ UnifiedMessageListView::UnifiedMessageListView(
 
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+}
 
+UnifiedMessageListView::~UnifiedMessageListView() {
+  MessageCenter::Get()->RemoveObserver(this);
+}
+
+void UnifiedMessageListView::Init() {
   bool is_latest = true;
   for (auto* notification : MessageCenter::Get()->GetVisibleNotifications()) {
     auto* view = CreateMessageView(*notification);
@@ -36,10 +43,7 @@ UnifiedMessageListView::UnifiedMessageListView(
     MessageCenter::Get()->DisplayedNotification(
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   }
-}
-
-UnifiedMessageListView::~UnifiedMessageListView() {
-  MessageCenter::Get()->RemoveObserver(this);
+  UpdateBorders();
 }
 
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
@@ -66,6 +70,7 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
   // Expand the latest notification.
   view->SetExpanded(view->IsAutoExpandingAllowed());
   AddChildView(view);
+  UpdateBorders();
   PreferredSizeChanged();
 }
 
@@ -79,6 +84,7 @@ void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
     }
   }
 
+  UpdateBorders();
   PreferredSizeChanged();
 }
 
@@ -102,8 +108,6 @@ message_center::MessageView* UnifiedMessageListView::CreateMessageView(
     const Notification& notification) const {
   auto* view = message_center::MessageViewFactory::Create(notification);
   view->SetIsNested();
-  view->UpdateCornerRadius(0, 0);
-  view->SetBorder(views::NullBorder());
   if (message_center_view_)
     message_center_view_->ConfigureMessageView(view);
   return view;
@@ -115,6 +119,21 @@ void UnifiedMessageListView::CollapseAllNotifications() {
     auto* view = static_cast<message_center::MessageView*>(child_at(i));
     if (!view->IsManuallyExpandedOrCollapsed())
       view->SetExpanded(false);
+  }
+}
+
+void UnifiedMessageListView::UpdateBorders() {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = static_cast<message_center::MessageView*>(child_at(i));
+    const bool is_top = i == 0;
+    const bool is_bottom = i == child_count() - 1;
+    view->UpdateCornerRadius(is_top ? kUnifiedTrayCornerRadius : 0,
+                             is_bottom ? kUnifiedTrayCornerRadius : 0);
+    view->SetBorder(is_bottom
+                        ? views::NullBorder()
+                        : views::CreateSolidSidedBorder(
+                              0, 0, kUnifiedNotificationSeparatorThickness, 0,
+                              kUnifiedNotificationSeparatorColor));
   }
 }
 
