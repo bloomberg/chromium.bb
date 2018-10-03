@@ -1046,13 +1046,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(12u, count_client_hints_headers_seen());
 }
 
-// Ensure that when cookies are blocked, client hint preferences are not
+// Ensure that even when cookies are blocked, client hint preferences are
 // persisted.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsLifetimeNotPersistedCookiesBlocked) {
-  const GURL gurl_without = GetParam()
-                                ? http_equiv_accept_ch_without_lifetime_url()
-                                : accept_ch_without_lifetime_url();
+                       ClientHintsLifetimePersistedCookiesBlocked) {
   const GURL gurl_with = GetParam() ? http_equiv_accept_ch_with_lifetime()
                                     : accept_ch_with_lifetime_url();
 
@@ -1063,33 +1060,22 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Block cookies.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl_without, GURL(),
+      ->SetContentSettingDefaultScope(gurl_with, GURL(),
                                       CONTENT_SETTINGS_TYPE_COOKIES,
                                       std::string(), CONTENT_SETTING_BLOCK);
 
-  // Fetching |gurl_with| should not persist the request for client hints since
-  // cookies are blocked.
+  // Fetching |gurl_with| should persist the request for client hints.
   ui_test_utils::NavigateToURL(browser(), gurl_with);
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
-                              &host_settings);
-  EXPECT_EQ(0u, host_settings.size());
-  VerifyContentSettingsNotNotified();
-
-  // Allow cookies.
-  cookie_settings_->SetCookieSetting(gurl_without, CONTENT_SETTING_ALLOW);
-  // Fetching |gurl_with| should persist the request for client hints since
-  // cookies are allowed.
-  ui_test_utils::NavigateToURL(browser(), gurl_with);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 1);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
+  VerifyContentSettingsNotNotified();
 }
 
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsLifetimeNotAttachedCookiesBlocked) {
+                       ClientHintsLifetimeAttachedCookiesBlocked) {
   const GURL gurl_with = GetParam() ? http_equiv_accept_ch_with_lifetime()
                                     : accept_ch_with_lifetime_url();
   const GURL gurl_without = GetParam()
@@ -1121,22 +1107,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
-  // Block the cookies: Client hints should not be attached.
+  // Block the cookies: Client hints should be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(gurl_without, GURL(),
                                       CONTENT_SETTINGS_TYPE_COOKIES,
                                       std::string(), CONTENT_SETTING_BLOCK);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               without_accept_ch_without_lifetime_url());
-  EXPECT_EQ(0u, count_client_hints_headers_seen());
-  VerifyContentSettingsNotNotified();
-
-  // Allow the cookies: Client hints should now be attached.
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl_without, GURL(),
-                                      CONTENT_SETTINGS_TYPE_COOKIES,
-                                      std::string(), CONTENT_SETTING_ALLOW);
 
   SetClientHintExpectationsOnMainFrame(true);
   SetClientHintExpectationsOnSubresources(true);
@@ -1326,10 +1301,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
       ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
-// Ensure that when the cookies is blocked, client hints are not attached to the
+// Ensure that when the cookies is blocked, client hints are attached to the
 // request headers.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
-                       ClientHintsNoLifetimeCookiesNotAllowed) {
+                       ClientHintsLifetimeCookiesNotAllowed) {
   const GURL gurl = GetParam()
                         ? http_equiv_accept_ch_without_lifetime_img_localhost()
                         : accept_ch_without_lifetime_img_localhost();
@@ -1351,34 +1326,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                                       std::string(), CONTENT_SETTING_BLOCK);
   base::RunLoop().RunUntilIdle();
 
-  ui_test_utils::NavigateToURL(browser(), gurl);
-  EXPECT_EQ(0u, count_client_hints_headers_seen());
-  // Client hints are not attached to third party subresources even though
-  // cookies are allowed only for the first party origin.
-  EXPECT_EQ(0u, third_party_client_hints_count_seen());
-  VerifyContentSettingsNotNotified();
-
-  // Allow cookies.
-  cookie_settings_->SetCookieSetting(gurl, CONTENT_SETTING_ALLOW);
-  base::RunLoop().RunUntilIdle();
-
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(), gurl);
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-  EXPECT_EQ(2u, third_party_request_count_seen());
-  EXPECT_EQ(0u, third_party_client_hints_count_seen());
-
-  // Block cookies again.
-  SetClientHintExpectationsOnSubresources(false);
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSettingDefaultScope(gurl, GURL(),
-                                      CONTENT_SETTINGS_TYPE_COOKIES,
-                                      std::string(), CONTENT_SETTING_BLOCK);
-  base::RunLoop().RunUntilIdle();
-
-  ui_test_utils::NavigateToURL(browser(), gurl);
-  EXPECT_EQ(6u, count_client_hints_headers_seen());
-  EXPECT_EQ(3u, third_party_request_count_seen());
+  EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
 
   // Clear settings.
