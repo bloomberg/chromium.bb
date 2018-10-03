@@ -409,8 +409,9 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   // Test the case where a client is added after revalidation is completed.
   Persistent<MockResourceClient> client2 = new MockResourceClient;
-  resource->AddClient(
-      client2, Platform::Current()->CurrentThread()->GetTaskRunner().get());
+  auto* platform = static_cast<TestingPlatformSupportWithMockScheduler*>(
+      Platform::Current());
+  resource->AddClient(client2, platform->test_task_runner().get());
 
   // Because the client is added asynchronously,
   // |runUntilIdle()| is called to make |client2| to be notified.

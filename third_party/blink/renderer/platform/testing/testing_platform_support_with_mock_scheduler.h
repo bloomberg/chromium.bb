@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_MOCK_SCHEDULER_H_
 
 #include <memory>
+#include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -34,6 +35,10 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
  public:
   TestingPlatformSupportWithMockScheduler();
   ~TestingPlatformSupportWithMockScheduler() override;
+
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner() {
+    return test_task_runner_;
+  }
 
   // Runs a single task.
   void RunSingleTask();
