@@ -22,6 +22,9 @@ class MediaBrowserTest : public InProcessBrowserTest {
   MediaBrowserTest();
   ~MediaBrowserTest() override;
 
+  // InProcessBrowserTest implementation.
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
   // Runs a html page with a list of URL query parameters.
   // If http is true, the test starts a local http test server to load the test
   // page, otherwise a local file URL is loaded inside the content shell.
