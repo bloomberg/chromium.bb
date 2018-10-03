@@ -156,8 +156,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void CheckCompleted() override;
   void LoadHTMLString(const WebData& html,
                       const WebURL& base_url,
-                      const WebURL& unreachable_url,
-                      bool replace) override;
+                      const WebURL& unreachable_url) override;
   void StopLoading() override;
   WebDocumentLoader* GetProvisionalDocumentLoader() const override;
   WebDocumentLoader* GetDocumentLoader() const override;
@@ -282,7 +281,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebString& mime_type,
       const WebString& text_encoding,
       const WebURL& unreachable_url,
-      bool replace,
       WebFrameLoadType,
       const WebHistoryItem&,
       bool is_client_redirect,

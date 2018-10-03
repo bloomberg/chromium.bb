@@ -229,7 +229,8 @@ class CORE_EXPORT FrameLoader final {
 
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
-  WebFrameLoadType DetermineFrameLoadType(const FrameLoadRequest&);
+  WebFrameLoadType DetermineFrameLoadType(const FrameLoadRequest&,
+                                          WebFrameLoadType);
 
   SubstituteData DefaultSubstituteDataForURL(const KURL&);
 

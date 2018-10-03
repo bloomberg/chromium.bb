@@ -15,12 +15,10 @@ namespace blink {
 ScheduledNavigation::ScheduledNavigation(Reason reason,
                                          double delay,
                                          Document* origin_document,
-                                         bool replaces_current_item,
                                          bool is_location_change)
     : reason_(reason),
       delay_(delay),
       origin_document_(origin_document),
-      replaces_current_item_(replaces_current_item),
       is_location_change_(is_location_change) {
   if (LocalFrame::HasTransientUserActivation(
           origin_document ? origin_document->GetFrame() : nullptr))

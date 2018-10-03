@@ -2847,6 +2847,8 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
                     : blink::WebFrameLoadType::kStandard;
   const blink::WebHistoryItem& history_item =
       history_entry ? history_entry->root() : blink::WebHistoryItem();
+  if (replace && frame_load_type == WebFrameLoadType::kStandard)
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
 
   // Failed navigations will always provide a |failed_request|.  Error induced
   // by the client/renderer side after a commit won't have a |failed_request|.
@@ -2861,10 +2863,10 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
   // should not inherit the cache mode from |failed_request|).
   new_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
 
-  frame_->CommitDataNavigation(
-      new_request, error_html, "text/html", "UTF-8", error_url, replace,
-      frame_load_type, history_item, is_client_redirect,
-      std::move(navigation_params), std::move(navigation_data));
+  frame_->CommitDataNavigation(new_request, error_html, "text/html", "UTF-8",
+                               error_url, frame_load_type, history_item,
+                               is_client_redirect, std::move(navigation_params),
+                               std::move(navigation_data));
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -6889,14 +6891,12 @@ void RenderFrameImpl::LoadDataURL(
     const GURL base_url = common_params.base_url_for_data_url.is_empty()
                               ? common_params.url
                               : common_params.base_url_for_data_url;
-    bool replace = load_type == WebFrameLoadType::kReloadBypassingCache ||
-                   load_type == WebFrameLoadType::kReload;
 
     frame_->CommitDataNavigation(
         WebURLRequest(base_url), WebData(data.c_str(), data.length()),
         WebString::FromUTF8(mime_type), WebString::FromUTF8(charset),
         // Needed so that history-url-only changes don't become reloads.
-        common_params.history_url_for_data_url, replace, load_type,
+        common_params.history_url_for_data_url, load_type,
         item_for_history_navigation, is_client_redirect,
         BuildNavigationParams(
             common_params, request_params,

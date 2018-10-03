@@ -76,7 +76,6 @@ FrameLoadRequest::FrameLoadRequest(
       resource_request_(resource_request),
       frame_name_(frame_name),
       substitute_data_(substitute_data),
-      replaces_current_item_(false),
       client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
       should_send_referrer_(kMaybeSendReferrer),
       should_set_opener_(kMaybeSetOpener),

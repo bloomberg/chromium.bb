@@ -629,15 +629,27 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
 }
 
 WebFrameLoadType FrameLoader::DetermineFrameLoadType(
-    const FrameLoadRequest& request) {
-  if (frame_->Tree().Parent() &&
-      !state_machine_.CommittedFirstRealDocumentLoad())
-    return WebFrameLoadType::kReplaceCurrentItem;
-  if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
-    if (Opener() && request.GetResourceRequest().Url().IsEmpty())
+    const FrameLoadRequest& request,
+    WebFrameLoadType frame_load_type) {
+  // TODO(dgozman): this method is rewriting the load type, which makes it hard
+  // to reason about various navigations and their desired load type. We should
+  // untangle it and detect the load type at the proper place. See, for example,
+  // location.assign() block below.
+  // Achieving that is complicated due to similar conditions in many places
+  // both in the renderer and in the browser.
+  if (frame_load_type == WebFrameLoadType::kStandard ||
+      frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
+    if (frame_->Tree().Parent() &&
+        !state_machine_.CommittedFirstRealDocumentLoad())
       return WebFrameLoadType::kReplaceCurrentItem;
-    return WebFrameLoadType::kStandard;
+    if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
+      if (Opener() && request.GetResourceRequest().Url().IsEmpty())
+        return WebFrameLoadType::kReplaceCurrentItem;
+      return WebFrameLoadType::kStandard;
+    }
   }
+  if (frame_load_type != WebFrameLoadType::kStandard)
+    return frame_load_type;
   CHECK_NE(mojom::FetchCacheMode::kValidateCache,
            request.GetResourceRequest().GetCacheMode());
   CHECK_NE(mojom::FetchCacheMode::kBypassCache,
@@ -646,8 +658,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   // "If the browsing context's session history contains only one Document,
   // and that was the about:blank Document created when the browsing context
   // was created, then the navigation must be done with replacement enabled."
-  if (request.ReplacesCurrentItem() ||
-      (!state_machine_.CommittedMultipleRealLoads() &&
+  if ((!state_machine_.CommittedMultipleRealLoads() &&
        DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
     return WebFrameLoadType::kReplaceCurrentItem;
 
@@ -806,7 +817,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
 
     request.SetFrameName("_self");
-    target_frame->Navigate(request);
+    target_frame->Navigate(request, frame_load_type);
     Page* page = target_frame->GetPage();
     if (!was_in_same_page && page)
       page->GetChromeClient().Focus(frame_);
@@ -835,8 +846,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
-  if (frame_load_type == WebFrameLoadType::kStandard)
-    frame_load_type = DetermineFrameLoadType(request);
+  frame_load_type = DetermineFrameLoadType(request, frame_load_type);
 
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
@@ -934,7 +944,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
         nullptr, resource_request, AtomicString(),
         request.ShouldCheckMainWorldContentSecurityPolicy(),
         request.GetDevToolsNavigationToken());
-    new_request.SetReplacesCurrentItem(request.ReplacesCurrentItem());
     new_request.SetClientRedirect(request.ClientRedirect());
     CommitNavigation(new_request, frame_load_type, nullptr, nullptr, nullptr);
     return;
@@ -1000,8 +1009,7 @@ void FrameLoader::CommitNavigation(
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
 
-  if (frame_load_type == WebFrameLoadType::kStandard)
-    frame_load_type = DetermineFrameLoadType(request);
+  frame_load_type = DetermineFrameLoadType(request, frame_load_type);
 
   // Note: we might actually classify this navigation as same document
   // right here in the following circumstances:
@@ -1760,6 +1768,9 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
   bool replace_current_item =
       load_type == WebFrameLoadType::kReplaceCurrentItem &&
       (!Opener() || !request.Url().IsEmpty());
+  // TODO(dgozman): we should get rid of this boolean field, and make client
+  // responsible for it's own view of "replaces current item", based on the
+  // frame load type.
   loader->SetReplacesCurrentHistoryItem(replace_current_item);
 
   probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());

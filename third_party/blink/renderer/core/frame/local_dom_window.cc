@@ -1602,7 +1602,8 @@ DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
     if (url_string.IsEmpty())
       return target_frame->DomWindow();
 
-    target_frame->ScheduleNavigation(*active_document, completed_url, false,
+    target_frame->ScheduleNavigation(*active_document, completed_url,
+                                     WebFrameLoadType::kStandard,
                                      UserGestureStatus::kNone);
     return target_frame->DomWindow();
   }

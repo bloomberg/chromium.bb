@@ -140,9 +140,9 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
       WebData data(contents.data(), contents.length());
       GetMainFrame()->CommitDataNavigation(
           blink::WebURLRequest(base_url), data, "text/html", encoding_info,
-          WebURL(), false /* replace */, blink::WebFrameLoadType::kStandard,
-          blink::WebHistoryItem(), false /* is_client_redirect */,
-          nullptr /* navigation_params */, nullptr /* navigation_data */);
+          WebURL(), blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(),
+          false /* is_client_redirect */, nullptr /* navigation_params */,
+          nullptr /* navigation_data */);
     }
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();

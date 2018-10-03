@@ -299,7 +299,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
           SecurityOrigin::Create(KURL(drag_data->AsURL())));
       resource_request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(
           document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr));
-      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request));
+      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request),
+                                   WebFrameLoadType::kStandard);
     }
 
     // TODO(bokan): This case happens when we end a URL drag inside a guest

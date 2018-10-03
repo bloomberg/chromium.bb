@@ -99,10 +99,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // eventually fixed.
   virtual void ScheduleNavigation(Document& origin_document,
                                   const KURL&,
-                                  bool replace_current_item,
+                                  WebFrameLoadType,
                                   UserGestureStatus) = 0;
   // Synchronously begins a navigation.
-  virtual void Navigate(const FrameLoadRequest&) = 0;
+  virtual void Navigate(const FrameLoadRequest&, WebFrameLoadType) = 0;
 
   void Detach(FrameDetachType);
   void DisconnectOwnerElement();

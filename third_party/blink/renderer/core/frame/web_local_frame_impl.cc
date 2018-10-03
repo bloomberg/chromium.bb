@@ -949,12 +949,11 @@ void WebLocalFrameImpl::CheckCompleted() {
 
 void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
                                        const WebURL& base_url,
-                                       const WebURL& unreachable_url,
-                                       bool replace) {
+                                       const WebURL& unreachable_url) {
   DCHECK(GetFrame());
   CommitDataNavigation(
       WebURLRequest(base_url), data, WebString::FromUTF8("text/html"),
-      WebString::FromUTF8("UTF-8"), unreachable_url, replace,
+      WebString::FromUTF8("UTF-8"), unreachable_url,
       WebFrameLoadType::kStandard, WebHistoryItem(), false, nullptr, nullptr);
 }
 
@@ -2133,7 +2132,6 @@ void WebLocalFrameImpl::CommitDataNavigation(
     const WebString& mime_type,
     const WebString& text_encoding,
     const WebURL& unreachable_url,
-    bool replace,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& history_item,
     bool is_client_redirect,
@@ -2143,7 +2141,6 @@ void WebLocalFrameImpl::CommitDataNavigation(
       nullptr, request.ToResourceRequest(),
       SubstituteData(data, mime_type, text_encoding, unreachable_url));
   DCHECK(frame_request.GetSubstituteData().IsValid());
-  frame_request.SetReplacesCurrentItem(replace);
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
