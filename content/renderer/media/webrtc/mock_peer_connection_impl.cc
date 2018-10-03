@@ -270,11 +270,6 @@ void FakeRtpTransceiver::Stop() {
   NOTIMPLEMENTED();
 }
 
-void FakeRtpTransceiver::SetCodecPreferences(
-    rtc::ArrayView<webrtc::RtpCodecCapability> codecs) {
-  NOTIMPLEMENTED();
-}
-
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
