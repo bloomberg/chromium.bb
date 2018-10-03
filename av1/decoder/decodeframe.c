@@ -5067,6 +5067,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                   AOM_BORDER_IN_PIXELS, cm->byte_alignment,
                   &pool->frame_bufs[buf_idx].raw_frame_buffer, pool->get_fb_cb,
                   pool->cb_priv)) {
+            decrease_ref_count(buf_idx, frame_bufs, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
