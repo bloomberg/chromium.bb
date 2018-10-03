@@ -6,13 +6,28 @@
 
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
+
+namespace {
+
+// Time between two periodic script checks.
+static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
+    base::TimeDelta::FromSeconds(2);
+
+// Number of script checks to run after a call to StartPeriodicScriptChecks.
+static constexpr int kPeriodicScriptCheckCount = 10;
+
+}  // namespace
+
 // static
 void Controller::CreateAndStartForWebContents(
     content::WebContents* web_contents,
@@ -71,7 +86,10 @@ Controller::Controller(
                                                       /* listener= */ this)),
       parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
-      allow_autostart_(true) {
+      allow_autostart_(true),
+      periodic_script_check_scheduled_(false),
+      periodic_script_check_count_(false),
+      weak_ptr_factory_(this) {
   DCHECK(parameters_);
 
   GetUiController()->SetUiDelegate(this);
@@ -88,13 +106,48 @@ void Controller::GetOrCheckScripts(const GURL& url) {
     return;
 
   if (script_domain_ != url.host()) {
+    StopPeriodicScriptChecks();
     script_domain_ = url.host();
     service_->GetScriptsForUrl(
         url, *parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
     script_tracker_->CheckScripts();
+    StartPeriodicScriptChecks();
   }
+}
+
+void Controller::StartPeriodicScriptChecks() {
+  periodic_script_check_count_ = kPeriodicScriptCheckCount;
+  // If periodic checks are running, setting periodic_script_check_count_ keeps
+  // them running longer.
+  if (periodic_script_check_scheduled_)
+    return;
+  periodic_script_check_scheduled_ = true;
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kPeriodicScriptCheckInterval);
+}
+
+void Controller::StopPeriodicScriptChecks() {
+  periodic_script_check_count_ = 0;
+}
+
+void Controller::OnPeriodicScriptCheck() {
+  if (periodic_script_check_count_ <= 0) {
+    DCHECK_EQ(0, periodic_script_check_count_);
+    periodic_script_check_scheduled_ = false;
+    return;
+  }
+  periodic_script_check_count_--;
+  script_tracker_->CheckScripts();
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kPeriodicScriptCheckInterval);
 }
 
 void Controller::OnGetScripts(const GURL& url,
@@ -115,6 +168,7 @@ void Controller::OnGetScripts(const GURL& url,
   bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
   DCHECK(parse_result);
   script_tracker_->SetAndCheckScripts(std::move(scripts));
+  StartPeriodicScriptChecks();
 }
 
 void Controller::OnScriptExecuted(const std::string& script_path,
@@ -157,6 +211,7 @@ void Controller::OnScriptSelected(const std::string& script_path) {
 
   GetUiController()->ShowOverlay();
   allow_autostart_ = false;  // Only ever autostart the very first script.
+  StopPeriodicScriptChecks();
   script_tracker_->ExecuteScript(
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.
