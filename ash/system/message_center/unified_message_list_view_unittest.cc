@@ -83,6 +83,10 @@ TEST_F(UnifiedMessageListViewTest, Open) {
   EXPECT_EQ(id1, GetMessageViewAt(1)->notification_id());
   EXPECT_EQ(id2, GetMessageViewAt(2)->notification_id());
 
+  EXPECT_FALSE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(2)->IsExpanded());
+
   EXPECT_EQ(GetMessageViewAt(0)->bounds().bottom(),
             GetMessageViewAt(1)->bounds().y());
   EXPECT_EQ(GetMessageViewAt(1)->bounds().bottom(),
@@ -133,6 +137,30 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
   EXPECT_EQ(2, size_changed_count());
   EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
+}
+
+TEST_F(UnifiedMessageListViewTest, CollapseOlderNotifications) {
+  AddNotification();
+  CreateMessageListView();
+  EXPECT_TRUE(GetMessageViewAt(0)->IsExpanded());
+
+  AddNotification();
+  EXPECT_FALSE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(1)->IsExpanded());
+
+  AddNotification();
+  EXPECT_FALSE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(2)->IsExpanded());
+
+  GetMessageViewAt(1)->SetExpanded(true);
+  GetMessageViewAt(1)->SetManuallyExpandedOrCollapsed(true);
+
+  AddNotification();
+  EXPECT_FALSE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(2)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(3)->IsExpanded());
 }
 
 }  // namespace ash
