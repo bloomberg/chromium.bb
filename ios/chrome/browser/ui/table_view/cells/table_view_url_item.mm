@@ -88,8 +88,14 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 
 // Returns the text to use when configuring a TableViewURLCell's title label.
 - (NSString*)titleLabelText {
-  return self.title.length ? self.title
-                           : base::SysUTF8ToNSString(self.URL.host());
+  if (self.title.length) {
+    return self.title;
+  } else if (base::SysUTF8ToNSString(self.URL.host()).length) {
+    return base::SysUTF8ToNSString(self.URL.host());
+  } else {
+    // Backup in case host returns nothing (e.g. about:blank).
+    return base::SysUTF8ToNSString(self.URL.spec());
+  }
 }
 
 // Returns the text to use when configuring a TableViewURLCell's URL label.
