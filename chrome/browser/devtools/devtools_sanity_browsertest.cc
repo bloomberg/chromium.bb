@@ -566,9 +566,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     extensions::ProcessManager* manager =
         extensions::ProcessManager::Get(browser()->profile());
     extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
-    for (extensions::ProcessManager::FrameSet::const_iterator iter =
-             all_frames.begin();
-         iter != all_frames.end();) {
+    for (auto iter = all_frames.begin(); iter != all_frames.end();) {
       if (!content::WebContents::FromRenderFrameHost(*iter)->IsLoading())
         ++iter;
       else

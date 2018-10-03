@@ -505,8 +505,7 @@ DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
     return NULL;
   DevToolsUIBindingsList* instances =
       g_devtools_ui_bindings_instances.Pointer();
-  for (DevToolsUIBindingsList::iterator it(instances->begin());
-       it != instances->end(); ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->web_contents() == web_contents)
       return *it;
   }
@@ -550,8 +549,7 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   // Remove self from global list.
   DevToolsUIBindingsList* instances =
       g_devtools_ui_bindings_instances.Pointer();
-  DevToolsUIBindingsList::iterator it(
-      std::find(instances->begin(), instances->end(), this));
+  auto it(std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
 }
@@ -825,7 +823,7 @@ void DevToolsUIBindings::IndexPath(
 
 void DevToolsUIBindings::StopIndexing(int index_request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  IndexingJobsMap::iterator it = indexing_jobs_.find(index_request_id);
+  auto it = indexing_jobs_.find(index_request_id);
   if (it == indexing_jobs_.end())
     return;
   it->second->Stop();
@@ -1229,8 +1227,7 @@ void DevToolsUIBindings::SearchCompleted(
     const std::vector<std::string>& file_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue file_paths_value;
-  for (std::vector<std::string>::const_iterator it(file_paths.begin());
-       it != file_paths.end(); ++it) {
+  for (auto it(file_paths.begin()); it != file_paths.end(); ++it) {
     file_paths_value.AppendString(*it);
   }
   base::Value request_id_value(request_id);
