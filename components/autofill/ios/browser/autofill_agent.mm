@@ -711,11 +711,6 @@ autofillManagerFromWebState:(web::WebState*)webState
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame
                            inFrame:(web::WebFrame*)frame {
-  if (!formInMainFrame) {
-    // Saving from iframes is not implemented.
-    return;
-  }
-
   if (![self isAutofillEnabled])
     return;
 
