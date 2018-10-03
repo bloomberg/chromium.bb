@@ -6550,9 +6550,12 @@ class TestSubstituteDataWebFrameClient
   // FrameTestHelpers::TestWebFrameClient:
   void DidFailProvisionalLoad(const WebURLError& error,
                               WebHistoryCommitType) override {
-    Frame()->LoadHTMLString("This should appear",
-                            ToKURL("chrome-error://chromewebdata/"),
-                            error.url(), true);
+    Frame()->CommitDataNavigation(
+        WebURLRequest(ToKURL("chrome-error://chromewebdata/")),
+        WebData("This should appear"), WebString::FromUTF8("text/html"),
+        WebString::FromUTF8("UTF-8"), error.url(),
+        WebFrameLoadType::kReplaceCurrentItem, WebHistoryItem(),
+        false /* is_client_redirect */, nullptr, nullptr);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,

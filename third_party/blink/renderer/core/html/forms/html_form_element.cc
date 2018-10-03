@@ -490,7 +490,8 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
         LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
     // TODO(dgozman): we lose information about triggering event and desired
     // navigation policy here.
-    ToRemoteFrame(target_frame)->Navigate(frame_load_request);
+    ToRemoteFrame(target_frame)
+        ->Navigate(frame_load_request, WebFrameLoadType::kStandard);
   }
 }
 

@@ -127,9 +127,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void Trace(blink::Visitor*) override;
   void ScheduleNavigation(Document& origin_document,
                           const KURL&,
-                          bool replace_current_item,
+                          WebFrameLoadType,
                           UserGestureStatus) override;
-  void Navigate(const FrameLoadRequest&) override;
+  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);

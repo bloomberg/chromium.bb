@@ -272,14 +272,15 @@ bool LocalFrame::IsLocalRoot() const {
 
 void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
-                                    bool replace_current_item,
+                                    WebFrameLoadType frame_load_type,
                                     UserGestureStatus user_gesture_status) {
   navigation_scheduler_->ScheduleFrameNavigation(&origin_document, url,
-                                                 replace_current_item);
+                                                 frame_load_type);
 }
 
-void LocalFrame::Navigate(const FrameLoadRequest& request) {
-  loader_.StartNavigation(request);
+void LocalFrame::Navigate(const FrameLoadRequest& request,
+                          WebFrameLoadType frame_load_type) {
+  loader_.StartNavigation(request, frame_load_type);
 }
 
 void LocalFrame::DetachImpl(FrameDetachType type) {

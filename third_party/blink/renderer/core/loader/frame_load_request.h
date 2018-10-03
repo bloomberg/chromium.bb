@@ -76,11 +76,6 @@ struct CORE_EXPORT FrameLoadRequest {
 
   const SubstituteData& GetSubstituteData() const { return substitute_data_; }
 
-  bool ReplacesCurrentItem() const { return replaces_current_item_; }
-  void SetReplacesCurrentItem(bool replaces_current_item) {
-    replaces_current_item_ = replaces_current_item;
-  }
-
   ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
   void SetClientRedirect(ClientRedirectPolicy client_redirect) {
     client_redirect_ = client_redirect;
@@ -167,7 +162,6 @@ struct CORE_EXPORT FrameLoadRequest {
   AtomicString frame_name_;
   AtomicString href_translate_;
   SubstituteData substitute_data_;
-  bool replaces_current_item_;
   ClientRedirectPolicy client_redirect_;
   WebTriggeringEventInfo triggering_event_info_ =
       WebTriggeringEventInfo::kNotFromEvent;

@@ -234,8 +234,7 @@ class WebLocalFrame : public WebFrame {
   // TODO(dgozman): rename to CommitHTMLStringNavigation.
   virtual void LoadHTMLString(const WebData& html,
                               const WebURL& base_url,
-                              const WebURL& unreachable_url = WebURL(),
-                              bool replace = false) = 0;
+                              const WebURL& unreachable_url = WebURL()) = 0;
 
   // Navigates to the given |data| with specified |mime_type| and optional
   // |text_encoding|.
@@ -254,7 +253,6 @@ class WebLocalFrame : public WebFrame {
       const WebString& mime_type,
       const WebString& text_encoding,
       const WebURL& unreachable_url,
-      bool replace,
       WebFrameLoadType,
       const WebHistoryItem&,
       bool is_client_redirect,

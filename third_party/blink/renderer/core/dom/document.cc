@@ -7578,7 +7578,8 @@ void Document::NavigateLocalAdsFrames() {
     if (child->IsLocalFrame()) {
       if (ToLocalFrame(child)->IsAdSubframe()) {
         ToLocalFrame(child)->Navigate(
-            FrameLoadRequest(this, ResourceRequest(BlankURL())));
+            FrameLoadRequest(this, ResourceRequest(BlankURL())),
+            WebFrameLoadType::kStandard);
       }
     }
     // TODO(yuzus): Once AdsTracker for remote frames is implemented and OOPIF

@@ -451,10 +451,10 @@ DOMWindow* CreateWindow(const String& url_string,
     if (const WebInputEvent* input_event = CurrentInputEvent::Get()) {
       request.SetInputStartTime(input_event->TimeStamp());
     }
-    new_frame->Navigate(request);
+    new_frame->Navigate(request, WebFrameLoadType::kStandard);
   } else if (!url_string.IsEmpty()) {
     new_frame->ScheduleNavigation(*calling_window.document(), completed_url,
-                                  false,
+                                  WebFrameLoadType::kStandard,
                                   has_user_gesture ? UserGestureStatus::kActive
                                                    : UserGestureStatus::kNone);
   }

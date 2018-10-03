@@ -31,7 +31,6 @@ class ScheduledNavigation
   ScheduledNavigation(Reason,
                       double delay,
                       Document* origin_document,
-                      bool replaces_current_item,
                       bool is_location_change);
   virtual ~ScheduledNavigation();
 
@@ -44,7 +43,6 @@ class ScheduledNavigation
   Reason GetReason() const { return reason_; }
   double Delay() const { return delay_; }
   Document* OriginDocument() const { return origin_document_.Get(); }
-  bool ReplacesCurrentItem() const { return replaces_current_item_; }
   bool IsLocationChange() const { return is_location_change_; }
   std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator();
 
@@ -59,7 +57,6 @@ class ScheduledNavigation
   Reason reason_;
   double delay_;
   Member<Document> origin_document_;
-  bool replaces_current_item_;
   bool is_location_change_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
 
