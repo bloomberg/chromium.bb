@@ -1546,11 +1546,17 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   surface->Commit();
   EXPECT_TRUE(wide_frame->header_view()->in_immersive_mode());
 
+  // Switching to NONE means no frame so it should delete wide frame.
   surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
-  EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
-
-  EXPECT_EQ(custom_targeter, window->targeter());
+  EXPECT_FALSE(shell_surface->wide_frame_for_test());
+  {
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                         ui::EventTimeForNow(), 0, 0);
+    target =
+        static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  }
+  EXPECT_NE(surface->window(), target);
 
   // Unmaximize it and the frame should be normal.
   shell_surface->SetRestored();
