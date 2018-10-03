@@ -294,7 +294,8 @@ public final class DownloadNotificationFactory {
             setSubText(builder,
                     context.getResources().getString(
                             R.string.download_notification_incognito_subtext));
-        } else if (!TextUtils.isEmpty(downloadUpdate.getOriginalUrl())) {
+        } else if (downloadUpdate.getShouldPromoteOrigin()
+                && !TextUtils.isEmpty(downloadUpdate.getOriginalUrl())) {
             // Always show the origin URL if available (for normal profiles).
             String formattedUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                     downloadUpdate.getOriginalUrl());

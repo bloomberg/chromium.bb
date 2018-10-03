@@ -119,6 +119,9 @@ struct OfflineItem {
   // Whether there are new visuals available.
   bool refresh_visuals;
 
+  // Whether the origin should be displayed.
+  bool promote_origin;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.

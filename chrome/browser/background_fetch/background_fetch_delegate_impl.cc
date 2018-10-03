@@ -105,7 +105,7 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
       offline_items_collection::OfflineItemProgressUnit::PERCENTAGE;
 
   offline_item.title = fetch_description->title;
-
+  offline_item.promote_origin = true;
   offline_item.is_transient = true;
   offline_item.is_resumable = true;
 

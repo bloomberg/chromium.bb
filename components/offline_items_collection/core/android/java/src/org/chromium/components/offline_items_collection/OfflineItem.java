@@ -75,6 +75,7 @@ public class OfflineItem implements Cloneable {
     public boolean isSuggested;
     public boolean isAccelerated;
     public boolean refreshVisuals;
+    public boolean promoteOrigin;
 
     // Content Metadata.
     public long totalSizeBytes;
@@ -121,6 +122,7 @@ public class OfflineItem implements Cloneable {
         clone.isSuggested = isSuggested;
         clone.isAccelerated = isAccelerated;
         clone.refreshVisuals = refreshVisuals;
+        clone.promoteOrigin = promoteOrigin;
         clone.totalSizeBytes = totalSizeBytes;
         clone.externallyRemoved = externallyRemoved;
         clone.creationTimeMs = creationTimeMs;

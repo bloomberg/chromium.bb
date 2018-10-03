@@ -23,6 +23,7 @@ std::ostream& operator<<(std::ostream& os, const OfflineItem& item) {
   os << ", is_suggested: " << item.is_suggested;
   os << ", is_accelerated: " << item.is_accelerated;
   os << ", refresh_visuals: " << item.refresh_visuals;
+  os << ", promote_origin: " << item.promote_origin;
   os << ", total_size_bytes: " << item.total_size_bytes;
   os << ", externally_removed: " << item.externally_removed;
   os << ", creation_time: " << item.creation_time;

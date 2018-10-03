@@ -59,6 +59,7 @@ public final class DownloadInfo {
     private final int mPendingState;
     @FailState
     private final int mFailState;
+    private final boolean mShouldPromoteOrigin;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -97,6 +98,7 @@ public final class DownloadInfo {
         mIcon = builder.mIcon;
         mPendingState = builder.mPendingState;
         mFailState = builder.mFailState;
+        mShouldPromoteOrigin = builder.mShouldPromoteOrigin;
     }
 
     public String getUrl() {
@@ -226,6 +228,10 @@ public final class DownloadInfo {
         return mFailState;
     }
 
+    public boolean getShouldPromoteOrigin() {
+        return mShouldPromoteOrigin;
+    }
+
     /**
      * Helper method to build a {@link DownloadInfo} from an {@link OfflineItem}.
      * @param item The {@link OfflineItem} to mimic.
@@ -279,6 +285,7 @@ public final class DownloadInfo {
                 .setIcon(visuals == null ? null : visuals.icon)
                 .setPendingState(item.pendingState)
                 .setFailState(item.failState)
+                .setShouldPromoteOrigin(item.promoteOrigin)
                 .build();
     }
 
@@ -306,6 +313,7 @@ public final class DownloadInfo {
         offlineItem.progress = downloadInfo.getProgress();
         offlineItem.isDangerous = downloadInfo.getIsDangerous();
         offlineItem.failState = downloadInfo.getFailState();
+        offlineItem.promoteOrigin = downloadInfo.getShouldPromoteOrigin();
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED
@@ -389,6 +397,7 @@ public final class DownloadInfo {
         private int mPendingState;
         @FailState
         private int mFailState;
+        private boolean mShouldPromoteOrigin;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -545,6 +554,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setShouldPromoteOrigin(boolean shouldPromoteOrigin) {
+            mShouldPromoteOrigin = shouldPromoteOrigin;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -584,7 +598,8 @@ public final class DownloadInfo {
                     .setIsParallelDownload(downloadInfo.getIsParallelDownload())
                     .setIcon(downloadInfo.getIcon())
                     .setPendingState(downloadInfo.getPendingState())
-                    .setFailState(downloadInfo.getFailState());
+                    .setFailState(downloadInfo.getFailState())
+                    .setShouldPromoteOrigin(downloadInfo.getShouldPromoteOrigin());
             return builder;
         }
     }
