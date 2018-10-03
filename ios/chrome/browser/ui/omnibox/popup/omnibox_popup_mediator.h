@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 
-@protocol OmniboxPopupGenericPresenter;
+@class OmniboxPopupPresenter;
 
 namespace image_fetcher {
 class IOSImageDataFetcherWrapper;
@@ -54,7 +54,7 @@ class OmniboxPopupMediatorDelegate {
 @property(nonatomic, assign, getter=isOpen) BOOL open;
 // Presenter for the popup, handling the positioning and the presentation
 // animations.
-@property(nonatomic, strong) id<OmniboxPopupGenericPresenter> presenter;
+@property(nonatomic, strong) OmniboxPopupPresenter* presenter;
 
 @end
 

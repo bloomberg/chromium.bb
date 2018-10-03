@@ -16,8 +16,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_generic_coordinator.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
@@ -47,8 +45,7 @@
 // Redefined as PrimaryToolbarViewController.
 @property(nonatomic, strong) PrimaryToolbarViewController* viewController;
 // The coordinator for the location bar in the toolbar.
-@property(nonatomic, strong) id<LocationBarGenericCoordinator>
-    locationBarCoordinator;
+@property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 // Orchestrator for the expansion animation.
 @property(nonatomic, strong) OmniboxFocusOrchestrator* orchestrator;
 
@@ -84,17 +81,11 @@
 
   [self setUpLocationBar];
   self.viewController.locationBarView = self.locationBarCoordinator.view;
-  if ([self.locationBarCoordinator
-          respondsToSelector:@selector(locationBarAnimatee)]) {
-    self.orchestrator.locationBarAnimatee =
-        [self.locationBarCoordinator locationBarAnimatee];
-  }
+  self.orchestrator.locationBarAnimatee =
+      [self.locationBarCoordinator locationBarAnimatee];
 
-  if ([self.locationBarCoordinator
-          respondsToSelector:@selector(editViewAnimatee)]) {
-    self.orchestrator.editViewAnimatee =
-        [self.locationBarCoordinator editViewAnimatee];
-  }
+  self.orchestrator.editViewAnimatee =
+      [self.locationBarCoordinator editViewAnimatee];
 
   _fullscreenObserver =
       std::make_unique<FullscreenUIUpdater>(self.viewController);
@@ -230,12 +221,7 @@
 
 // Sets the location bar up.
 - (void)setUpLocationBar {
-  if (IsRefreshLocationBarEnabled()) {
-    self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
-  } else {
-    self.locationBarCoordinator = [[LocationBarLegacyCoordinator alloc] init];
-  }
-  DCHECK(self.locationBarCoordinator);
+  self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
 
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher =

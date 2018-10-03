@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
@@ -66,16 +65,10 @@
   BOOL isIncognito = self.browserState->IsOffTheRecord();
   self.mediator.incognito = isIncognito;
   self.mediator.consumer = self.popupViewController;
-  if (IsUIRefreshPhase1Enabled()) {
     self.mediator.presenter = [[OmniboxPopupPresenter alloc]
         initWithPopupPositioner:self.positioner
             popupViewController:self.popupViewController
                       incognito:isIncognito];
-  } else {
-    self.mediator.presenter = [[OmniboxPopupLegacyPresenter alloc]
-        initWithPopupPositioner:self.positioner
-            popupViewController:self.popupViewController];
-  }
   self.popupViewController.imageRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
   [self.dispatcher

@@ -11,7 +11,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_generic_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
