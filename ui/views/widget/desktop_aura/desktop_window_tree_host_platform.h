@@ -12,6 +12,8 @@
 
 namespace views {
 
+class WindowEventFilter;
+
 class VIEWS_EXPORT DesktopWindowTreeHostPlatform
     : public aura::WindowTreeHostPlatform,
       public DesktopWindowTreeHost {
@@ -90,13 +92,18 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   bool ShouldCreateVisibilityController() const override;
 
   // WindowTreeHostPlatform:
+  void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
   void OnActivationChanged(bool active) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest, HitTest);
+
   void Relayout();
+
+  void RemoveNonClientEventFilter();
 
   Widget* GetWidget();
 
@@ -112,6 +119,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   bool got_on_closed_ = false;
 
   bool is_active_ = false;
+
+  // A handler for events intended for non client area.
+  std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
 

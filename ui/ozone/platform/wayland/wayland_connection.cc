@@ -283,6 +283,11 @@ void WaylandConnection::RequestDragData(
   data_device_->RequestDragData(mime_type, std::move(callback));
 }
 
+void WaylandConnection::ResetPointerFlags() {
+  if (pointer_)
+    pointer_->ResetFlags();
+}
+
 void WaylandConnection::GetAvailableMimeTypes(
     ClipboardDelegate::GetMimeTypesClosure callback) {
   std::move(callback).Run(data_device_->GetAvailableMimeTypes());

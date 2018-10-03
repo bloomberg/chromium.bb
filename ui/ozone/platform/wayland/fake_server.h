@@ -59,6 +59,8 @@ class MockXdgSurface : public ServerObject {
   MOCK_METHOD1(SetParent, void(wl_resource* parent));
   MOCK_METHOD1(SetTitle, void(const char* title));
   MOCK_METHOD1(SetAppId, void(const char* app_id));
+  MOCK_METHOD1(Move, void(uint32_t serial));
+  MOCK_METHOD2(Resize, void(uint32_t serial, uint32_t edges));
   MOCK_METHOD1(AckConfigure, void(uint32_t serial));
   MOCK_METHOD4(SetWindowGeometry,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
