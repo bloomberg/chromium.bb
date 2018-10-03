@@ -119,7 +119,7 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
         gpu_preferences_.disable_gpu_shader_disk_cache ||
         workarounds.disable_program_disk_cache;
 
-    // Use the EGL cache control extension for the passthrough decoder.
+    // Use the EGL blob cache extension for the passthrough decoder.
     if (gpu_preferences_.use_passthrough_cmd_decoder &&
         gles2::PassthroughCommandDecoderSupported()) {
       program_cache_.reset(new gles2::PassthroughProgramCache(
