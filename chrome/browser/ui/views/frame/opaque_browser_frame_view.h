@@ -54,7 +54,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
-  int GetTabStripLeftInset() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -67,7 +66,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
   void ActivationChanged(bool active) override;
-  bool HasClientEdge() const override;
 
   // views::View:
   const char* GetClassName() const override;
@@ -164,10 +162,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // window is restored regardless of the actual mode.
   int FrameTopBorderThickness(bool restored) const;
 
-  // Returns the thickness of the entire nonclient left, right, and bottom
-  // borders, including both the window frame and any client edge.
-  int NonClientBorderThickness() const;
-
   // Returns the bounds of the titlebar icon (or where the icon would be if
   // there was one).
   gfx::Rect IconBounds() const;
@@ -185,13 +179,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintRestoredFrameBorder(gfx::Canvas* canvas) const;
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas) const;
   void PaintClientEdge(gfx::Canvas* canvas) const;
-  void FillClientEdgeRects(int x,
-                           int y,
-                           int w,
-                           int h,
-                           bool draw_bottom,
-                           SkColor color,
-                           gfx::Canvas* canvas) const;
 
   // Our layout manager also calculates various bounds.
   OpaqueBrowserFrameViewLayout* layout_;

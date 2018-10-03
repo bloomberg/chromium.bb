@@ -23,7 +23,6 @@
 #include "components/version_info/channel.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
@@ -94,16 +93,10 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Find bar host is at the front of the view hierarchy, followed by the
   // infobar container and then top container.
-  // TODO(lgrey): Fix this up when Material Refresh is the default and
-  // investigate if there's a better/more explicit way to test this.
   EXPECT_EQ(browser_view()->child_count() - 1,
             browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
   EXPECT_EQ(browser_view()->child_count() - 2,
             browser_view()->GetIndexOf(browser_view()->infobar_container()));
-  if (!ui::MaterialDesignController::IsRefreshUi()) {
-    EXPECT_EQ(browser_view()->child_count() - 3,
-              browser_view()->GetIndexOf(top_container));
-  }
 
   // Verify basic layout.
   EXPECT_EQ(0, top_container->x());
@@ -153,10 +146,6 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
             browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
   EXPECT_EQ(browser_view()->child_count() - 2,
             browser_view()->GetIndexOf(browser_view()->infobar_container()));
-  if (!ui::MaterialDesignController::IsRefreshUi()) {
-    EXPECT_EQ(browser_view()->child_count() - 3,
-              browser_view()->GetIndexOf(top_container));
-  }
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
@@ -174,11 +163,6 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_FALSE(bookmark_bar->IsDetached());
   EXPECT_EQ(top_container, bookmark_bar->parent());
-  // Top container is still third from front.
-  if (!ui::MaterialDesignController::IsRefreshUi()) {
-    EXPECT_EQ(browser_view()->child_count() - 3,
-              browser_view()->GetIndexOf(top_container));
-  }
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }

@@ -53,7 +53,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -77,6 +76,9 @@ constexpr SkColor kMdWebUiFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
 // Color for the window title text.
 constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
+
+// The indicator for teleported windows has 8 DIPs before and below it.
+constexpr int kProfileIndicatorPadding = 8;
 
 // The indicator for teleported windows is 24 DIP on a side.
 constexpr int kProfileIndicatorSize = 24;
@@ -109,12 +111,6 @@ bool IsSnappedInSplitView(aura::Window* window,
 
 const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
-}
-
-// Returns the padding on the left, right, and bottom of the profile
-// indicator.
-int GetProfileIndicatorPadding() {
-  return ui::MaterialDesignController::IsNewerMaterialUi() ? 8 : 4;
 }
 
 }  // namespace
@@ -302,14 +298,6 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
     frame_window->SetProperty(aura::client::kMinimumSize,
                               new gfx::Size(min_size));
   }
-}
-
-int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  int left_inset = BrowserNonClientFrameView::GetTabStripLeftInset() +
-                   frame_values().normal_insets.left();
-  if (profile_indicator_icon_)
-    left_inset += GetProfileIndicatorPadding() + kProfileIndicatorSize;
-  return left_inset;
 }
 
 void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
@@ -767,17 +755,15 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
          IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
 }
 
+int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
+  int left_inset = frame_values().normal_insets.left();
+  if (profile_indicator_icon_)
+    left_inset += kProfileIndicatorPadding + kProfileIndicatorSize;
+  return left_inset;
+}
+
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  int inset = caption_button_container_->GetPreferredSize().width();
-
-  // For Material Refresh, the end of the tabstrip contains empty space to
-  // ensure the window remains draggable, which is sufficient padding to the
-  // other tabstrip contents.
-  constexpr int kTabstripRightSpacing = 10;
-  if (!ui::MaterialDesignController::IsRefreshUi())
-    inset += kTabstripRightSpacing;
-
-  return inset;
+  return caption_button_container_->GetPreferredSize().width();
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
@@ -936,9 +922,9 @@ void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
 void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
   DCHECK(profile_indicator_icon_);
   const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                     GetProfileIndicatorPadding();
+                     kProfileIndicatorPadding;
   profile_indicator_icon_->SetBounds(
-      GetProfileIndicatorPadding(), bottom - kProfileIndicatorSize,
+      kProfileIndicatorPadding, bottom - kProfileIndicatorSize,
       kProfileIndicatorSize, kProfileIndicatorSize);
   profile_indicator_icon_->SetVisible(true);
 }

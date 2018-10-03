@@ -152,12 +152,6 @@ class BrowserView : public BrowserWindow,
   // to change some of the bubble's creation parameters.
   void InitStatusBubble();
 
-  // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
-  // These differ from |toolbar_.bounds()| in that they match where the toolbar
-  // background image is drawn -- slightly outside the "true" bounds
-  // horizontally. Note that this returns the bounds for the toolbar area.
-  gfx::Rect GetToolbarBounds() const;
-
   // Returns the constraining bounding box that should be used to lay out the
   // FindBar within. This is _not_ the size of the find bar, just the bounding
   // box it should be laid out within. The coordinate system of the returned
@@ -224,10 +218,6 @@ class BrowserView : public BrowserWindow,
   // Returns true if the profile associated with this Browser window is
   // not incognito or a guest session.
   bool IsRegularOrGuestSession() const;
-
-  // Returns whether or not a client edge (the border around the web content)
-  // should be laid out and drawn.
-  bool HasClientEdge() const;
 
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
