@@ -4075,6 +4075,24 @@ TEST_F(WebViewTest, PreferredSize) {
   EXPECT_EQ(2, size.height);
 }
 
+TEST_F(WebViewTest, PreferredMinimumSizeQuirksMode) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->Resize(WebSize(800, 600));
+  FrameTestHelpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      R"HTML(<html>
+        <body style="margin: 0px;">
+          <div style="width: 99px; height: 100px; display: inline-block;"></div>
+        </body>
+      </html>)HTML",
+      URLTestHelpers::ToKURL("http://example.com/"));
+
+  WebSize size = web_view->ContentsPreferredMinimumSize();
+  EXPECT_EQ(99, size.width);
+  // When in quirks mode the preferred height stretches to fill the viewport.
+  EXPECT_EQ(600, size.height);
+}
+
 TEST_F(WebViewTest, PreferredSizeWithGrid) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
