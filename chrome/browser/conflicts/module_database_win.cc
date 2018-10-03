@@ -39,6 +39,22 @@ constexpr uint32_t kFirstValidProcessType = content::PROCESS_TYPE_BROWSER;
 
 ModuleDatabase* g_module_database_win_instance = nullptr;
 
+#if defined(GOOGLE_CHROME_BUILD)
+// Returns true if either the IncompatibleApplicationsWarning or
+// ThirdPartyModulesBlocking features are enabled via the "enable-features"
+// command-line switch.
+bool AreThirdPartyFeaturesEnabledViaCommandLine() {
+  base::FeatureList* feature_list_instance = base::FeatureList::GetInstance();
+
+  return feature_list_instance->IsFeatureOverriddenFromCommandLine(
+             features::kIncompatibleApplicationsWarning.name,
+             base::FeatureList::OVERRIDE_ENABLE_FEATURE) ||
+         feature_list_instance->IsFeatureOverriddenFromCommandLine(
+             features::kThirdPartyModulesBlocking.name,
+             base::FeatureList::OVERRIDE_ENABLE_FEATURE);
+}
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 }  // namespace
 
 // static
@@ -344,11 +360,14 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
   // Temporarily disable this class on domain-joined machines because enterprise
   // clients depend on IAttachmentExecute::Save() to be invoked for downloaded
   // files, but that API call has a known issue (https://crbug.com/870998) with
-  // third-party modules blocking.
+  // third-party modules blocking. Can be Overridden by enabling the feature via
+  // the command-line.
   // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
   //                 remove this.
-  if (base::win::IsEnterpriseManaged())
+  if (base::win::IsEnterpriseManaged() &&
+      !AreThirdPartyFeaturesEnabledViaCommandLine()) {
     return;
+  }
 
   if (!IsThirdPartyBlockingPolicyEnabled())
     return;
