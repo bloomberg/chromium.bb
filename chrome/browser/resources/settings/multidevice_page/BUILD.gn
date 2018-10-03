@@ -12,7 +12,6 @@ js_type_check("closure_compile") {
     ":multidevice_feature_item",
     ":multidevice_feature_toggle",
     ":multidevice_page",
-    ":multidevice_page_container",
     ":multidevice_subpage",
     ":multidevice_tether_item",
   ]
@@ -61,15 +60,6 @@ js_library("multidevice_page") {
     ":multidevice_constants",
     ":multidevice_feature_behavior",
     "../controls:password_prompt_dialog",
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("multidevice_page_container") {
-  deps = [
-    ":multidevice_browser_proxy",
-    ":multidevice_constants",
-    ":multidevice_feature_behavior",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]

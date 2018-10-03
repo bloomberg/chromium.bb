@@ -11,7 +11,7 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page',
 
-  behaviors: [MultiDeviceFeatureBehavior],
+  behaviors: [MultiDeviceFeatureBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -72,8 +72,15 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  ready: function() {
     this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+
+    this.addWebUIListener(
+        'settings.updateMultidevicePageContentData',
+        this.onPageContentDataChanged_.bind(this));
+
+    this.browserProxy_.getPageContentData().then(
+        this.onPageContentDataChanged_.bind(this));
   },
 
   /**
@@ -306,5 +313,13 @@ Polymer({
   onForgetDeviceRequested_: function() {
     this.browserProxy_.removeHostDevice();
     settings.navigateTo(settings.routes.MULTIDEVICE);
+  },
+
+  /**
+   * @param {!MultiDevicePageContentData} newData
+   * @private
+   */
+  onPageContentDataChanged_: function(newData) {
+    this.pageContentData = newData;
   },
 });

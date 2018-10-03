@@ -89,16 +89,6 @@ Polymer({
       type: Boolean,
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
-
-    /**
-     * Whether the account supports the features controlled in the multidevice
-     * section.
-     * @private {boolean}
-     */
-    doesChromebookSupportMultiDeviceSection_: {
-      type: Boolean,
-      value: false,
-    },
     // </if>
 
     /** @private {!settings.Route|undefined} */
