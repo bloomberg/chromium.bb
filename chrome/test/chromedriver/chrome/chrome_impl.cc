@@ -27,8 +27,7 @@ const BrowserInfo* ChromeImpl::GetBrowserInfo() const {
 }
 
 bool ChromeImpl::HasCrashedWebView() {
-  for (WebViewList::iterator it = web_views_.begin();
-       it != web_views_.end(); ++it) {
+  for (auto it = web_views_.begin(); it != web_views_.end(); ++it) {
     if ((*it)->WasCrashed())
       return true;
   }
@@ -72,7 +71,7 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
                                 bool w3c_compliant) {
   // Check if some web views are closed (or in the case of background pages,
   // become inactive).
-  WebViewList::iterator it = web_views_.begin();
+  auto it = web_views_.begin();
   while (it != web_views_.end()) {
     const WebViewInfo* view = views_info.GetForId((*it)->GetId());
     if (!view || view->IsInactiveBackgroundPage()) {
@@ -112,8 +111,7 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
 }
 
 Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
-  for (WebViewList::iterator it = web_views_.begin();
-       it != web_views_.end(); ++it) {
+  for (auto it = web_views_.begin(); it != web_views_.end(); ++it) {
     if ((*it)->GetId() == id) {
       *web_view = (*it).get();
       return Status(kOk);
@@ -199,8 +197,7 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
   Status status = devtools_http_client_->CloseWebView(id);
   if (status.IsError())
     return status;
-  for (WebViewList::iterator iter = web_views_.begin();
-       iter != web_views_.end(); ++iter) {
+  for (auto iter = web_views_.begin(); iter != web_views_.end(); ++iter) {
     if ((*iter)->GetId() == id) {
       web_views_.erase(iter);
       break;

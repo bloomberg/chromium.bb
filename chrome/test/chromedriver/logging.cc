@@ -169,9 +169,7 @@ std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
 
 bool GetFirstErrorMessageFromList(const base::ListValue* list,
                                   std::string* message) {
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end();
-       ++it) {
+  for (auto it = list->begin(); it != list->end(); ++it) {
     const base::DictionaryValue* log_entry = NULL;
     it->GetAsDictionary(&log_entry);
     if (log_entry != NULL) {
@@ -314,9 +312,7 @@ Status CreateLogs(
   Log::Level browser_log_level = Log::kWarning;
   const LoggingPrefs& prefs = capabilities.logging_prefs;
 
-  for (LoggingPrefs::const_iterator iter = prefs.begin();
-       iter != prefs.end();
-       ++iter) {
+  for (auto iter = prefs.begin(); iter != prefs.end(); ++iter) {
     std::string type = iter->first;
     Log::Level level = iter->second;
     if (type == WebDriverLog::kPerformanceType) {

@@ -365,8 +365,7 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
 
   std::vector<PendingRequest> temp_pending_requests;
   temp_pending_requests.swap(pending_requests_);
-  for (std::vector<PendingRequest>::iterator iter =
-           temp_pending_requests.begin();
+  for (auto iter = temp_pending_requests.begin();
        iter != temp_pending_requests.end(); ++iter) {
     switch (iter->type) {
       case INVALID_REQUEST_TYPE:
@@ -664,8 +663,8 @@ void PepperFlashSettingsManager::Core::NotifyErrorFromIOThread() {
 
   state_ = STATE_ERROR;
   std::vector<std::pair<uint32_t, RequestType>> notifications;
-  for (std::vector<PendingRequest>::iterator iter = pending_requests_.begin();
-       iter != pending_requests_.end(); ++iter) {
+  for (auto iter = pending_requests_.begin(); iter != pending_requests_.end();
+       ++iter) {
     notifications.push_back(std::make_pair(iter->id, iter->type));
   }
   pending_requests_.clear();
@@ -749,9 +748,7 @@ void PepperFlashSettingsManager::Core::NotifyError(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<Core> protector(this);
-  for (std::vector<std::pair<uint32_t, RequestType>>::const_iterator iter =
-           notifications.begin();
-       iter != notifications.end(); ++iter) {
+  for (auto iter = notifications.begin(); iter != notifications.end(); ++iter) {
     // Check |manager_| for each iteration in case it is destroyed in one of
     // the callbacks.
     if (!manager_.get())
@@ -800,8 +797,7 @@ void PepperFlashSettingsManager::Core::OnDeauthorizeContentLicensesResult(
 
   DLOG_IF(ERROR, !success) << "DeauthorizeContentLicenses returned error";
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -825,8 +821,7 @@ void PepperFlashSettingsManager::Core::OnGetPermissionSettingsResult(
 
   DLOG_IF(ERROR, !success) << "GetPermissionSettings returned error";
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -848,8 +843,7 @@ void PepperFlashSettingsManager::Core::OnSetDefaultPermissionResult(
 
   DLOG_IF(ERROR, !success) << "SetDefaultPermission returned error";
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -871,8 +865,7 @@ void PepperFlashSettingsManager::Core::OnSetSitePermissionResult(
 
   DLOG_IF(ERROR, !success) << "SetSitePermission returned error";
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -892,8 +885,7 @@ void PepperFlashSettingsManager::Core::OnGetSitesWithDataResult(
   if (state_ == STATE_DETACHED)
     return;
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -915,8 +907,7 @@ void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
 
   DLOG_IF(ERROR, !success) << "ClearSiteData returned error";
 
-  std::map<uint32_t, RequestType>::iterator iter =
-      pending_responses_.find(request_id);
+  auto iter = pending_responses_.find(request_id);
   if (iter == pending_responses_.end())
     return;
 
@@ -957,8 +948,7 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
   plugin_service->GetPluginInfoArray(
       GURL(), content::kFlashPluginSwfMimeType, false, &plugins, NULL);
 
-  for (std::vector<content::WebPluginInfo>::iterator iter = plugins.begin();
-       iter != plugins.end(); ++iter) {
+  for (auto iter = plugins.begin(); iter != plugins.end(); ++iter) {
     if (iter->is_pepper_plugin() && plugin_prefs->IsPluginEnabled(*iter)) {
       if (plugin_info)
         *plugin_info = *iter;

@@ -175,7 +175,7 @@ TestingProfile* TestingProfileManager::CreateSystemProfile() {
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   DCHECK(called_set_up_);
 
-  TestingProfilesMap::iterator it = testing_profiles_.find(name);
+  auto it = testing_profiles_.find(name);
   DCHECK(it != testing_profiles_.end());
 
   TestingProfile* profile = it->second;
@@ -191,8 +191,8 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
 void TestingProfileManager::DeleteAllTestingProfiles() {
   ProfileAttributesStorage& storage =
       profile_manager_->GetProfileAttributesStorage();
-  for (TestingProfilesMap::iterator it = testing_profiles_.begin();
-       it != testing_profiles_.end(); ++it) {
+  for (auto it = testing_profiles_.begin(); it != testing_profiles_.end();
+       ++it) {
     TestingProfile* profile = it->second;
     storage.RemoveProfile(profile->GetPath());
   }
@@ -203,7 +203,7 @@ void TestingProfileManager::DeleteAllTestingProfiles() {
 void TestingProfileManager::DeleteGuestProfile() {
   DCHECK(called_set_up_);
 
-  TestingProfilesMap::iterator it = testing_profiles_.find(kGuestProfileName);
+  auto it = testing_profiles_.find(kGuestProfileName);
   DCHECK(it != testing_profiles_.end());
 
   profile_manager_->profiles_info_.erase(ProfileManager::GetGuestProfilePath());
@@ -212,7 +212,7 @@ void TestingProfileManager::DeleteGuestProfile() {
 void TestingProfileManager::DeleteSystemProfile() {
   DCHECK(called_set_up_);
 
-  TestingProfilesMap::iterator it = testing_profiles_.find(kSystemProfileName);
+  auto it = testing_profiles_.find(kSystemProfileName);
   DCHECK(it != testing_profiles_.end());
 
   profile_manager_->profiles_info_.erase(

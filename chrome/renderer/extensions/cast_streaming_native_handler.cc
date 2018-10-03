@@ -741,8 +741,7 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
 
-  RtpStreamCallbackMap::iterator it =
-      get_raw_events_callbacks_.find(transport_id);
+  auto it = get_raw_events_callbacks_.find(transport_id);
   if (it == get_raw_events_callbacks_.end())
     return;
   v8::Local<v8::Value> callback_args[] = {V8ValueConverter::Create()->ToV8Value(
@@ -759,7 +758,7 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
 
-  RtpStreamCallbackMap::iterator it = get_stats_callbacks_.find(transport_id);
+  auto it = get_stats_callbacks_.find(transport_id);
   if (it == get_stats_callbacks_.end())
     return;
 
@@ -772,8 +771,7 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
 
 CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(
     int transport_id) const {
-  RtpStreamMap::const_iterator iter = rtp_stream_map_.find(
-      transport_id);
+  auto iter = rtp_stream_map_.find(transport_id);
   if (iter != rtp_stream_map_.end())
     return iter->second.get();
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
@@ -786,8 +784,7 @@ CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(
 
 CastUdpTransport* CastStreamingNativeHandler::GetUdpTransportOrThrow(
     int transport_id) const {
-  UdpTransportMap::const_iterator iter = udp_transport_map_.find(
-      transport_id);
+  auto iter = udp_transport_map_.find(transport_id);
   if (iter != udp_transport_map_.end())
     return iter->second.get();
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();

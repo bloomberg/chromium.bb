@@ -59,8 +59,7 @@ void V8UnitTest::AddLibrary(const base::FilePath& library_path) {
 
 bool V8UnitTest::ExecuteJavascriptLibraries() {
   std::string utf8_content;
-  for (std::vector<base::FilePath>::iterator user_libraries_iterator =
-           user_libraries_.begin();
+  for (auto user_libraries_iterator = user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();
        ++user_libraries_iterator) {
     std::string library_content;

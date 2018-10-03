@@ -669,8 +669,8 @@ Status ScrollElementRegionIntoView(
       "  return document.evaluate(xpath, document, null,"
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "}";
-  for (std::list<FrameInfo>::reverse_iterator rit = session->frames.rbegin();
-       rit != session->frames.rend(); ++rit) {
+  for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
+       ++rit) {
     base::ListValue args;
     args.AppendString(
         base::StringPrintf("//*[@cd_frame_id_ = '%s']",

@@ -124,8 +124,7 @@ void MemoryDetails::CollectProcessData(
   current_browser.name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   current_browser.process_name = base::ASCIIToUTF16("chrome");
 
-  for (std::vector<ProcessMemoryInformation>::iterator
-       i = current_browser.processes.begin();
+  for (auto i = current_browser.processes.begin();
        i != current_browser.processes.end(); ++i) {
     // Check if this is one of the child processes whose data we collected
     // on the IO thread, and if so copy over that data.
