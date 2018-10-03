@@ -39,8 +39,6 @@ _log = logging.getLogger(__name__)
 
 RESULTS_URL_BASE = 'https://test-results.appspot.com/data/layout_results'
 
-DEFAULT_STEP_NAME = 'webkit_layout_tests (with patch)'
-
 
 class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
     """Represents a combination of builder and build number.
@@ -60,8 +58,7 @@ class BuildBot(object):
         https://www.chromium.org/developers/the-json-test-results-format
     """
 
-    def results_url(self, builder_name, build_number=None,
-                    step_name=DEFAULT_STEP_NAME):
+    def results_url(self, builder_name, build_number=None):
         """Returns a URL for one set of archived layout test results.
 
         If a build number is given, this will be results for a particular run;
@@ -69,11 +66,9 @@ class BuildBot(object):
         the latest results.
         """
         if build_number:
-            assert str(build_number).isdigit(), (
-                'expected numeric build number, got %s' % build_number)
+            assert str(build_number).isdigit(), 'expected numeric build number, got %s' % build_number
             url_base = self.builder_results_url_base(builder_name)
-            return '%s/%s/%s/layout-test-results' % (
-                url_base, build_number, step_name)
+            return '%s/%s/layout-test-results' % (url_base, build_number)
         return self.accumulated_results_url_base(builder_name)
 
     def builder_results_url_base(self, builder_name):
@@ -86,7 +81,7 @@ class BuildBot(object):
         return '%s/%s' % (RESULTS_URL_BASE, re.sub('[ .()]', '_', builder_name))
 
     @memoized
-    def fetch_retry_summary_json(self, build, step_name=DEFAULT_STEP_NAME):
+    def fetch_retry_summary_json(self, build):
         """Fetches and returns the text of the archived retry_summary file.
 
         This file is expected to contain the results of retrying layout tests
@@ -94,9 +89,7 @@ class BuildBot(object):
         that failed only with the patch ("failures"), and tests that failed
         both with and without ("ignored").
         """
-        url_base = '%s/%s/%s' % (
-            self.builder_results_url_base(build.builder_name),
-            build.build_number, step_name)
+        url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
         return NetworkTransaction(return_none_on_404=True).run(
             lambda: self.fetch_file(url_base, 'retry_summary.json'))
 
