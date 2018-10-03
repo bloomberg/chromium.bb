@@ -246,6 +246,9 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   bool response_intercepted_ = false;
 
+  // TODO(crbug.com/882661): Remove this when the linked bug is fixed.
+  bool sent_on_receive_response_ = false;
+
   base::Optional<std::vector<std::string>> to_be_removed_request_headers_;
   base::Optional<net::HttpRequestHeaders> modified_request_headers_;
 
