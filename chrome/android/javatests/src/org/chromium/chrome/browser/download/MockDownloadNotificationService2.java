@@ -77,32 +77,35 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
     public void notifyDownloadProgress(final ContentId id, final String fileName,
             final Progress progress, final long bytesReceived, final long timeRemainingInMillis,
             final long startTime, final boolean isOffTheRecord,
-            final boolean canDownloadWhileMetered, final boolean isTransient, final Bitmap icon) {
+            final boolean canDownloadWhileMetered, final boolean isTransient, final Bitmap icon,
+            final String originalUrl) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService2.super.notifyDownloadProgress(id,
                                 fileName, progress, bytesReceived, timeRemainingInMillis, startTime,
-                                isOffTheRecord, canDownloadWhileMetered, isTransient, icon));
+                                isOffTheRecord, canDownloadWhileMetered, isTransient, icon,
+                                originalUrl));
     }
 
     @Override
     void notifyDownloadPaused(ContentId id, String fileName, boolean isResumable,
             boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon,
-            boolean hasUserGesture, boolean forceRebuild, @PendingState int pendingState) {
+            final String originalUrl, boolean hasUserGesture, boolean forceRebuild,
+            @PendingState int pendingState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService2.super.notifyDownloadPaused(id, fileName,
                                 isResumable, isAutoResumable, isOffTheRecord, isTransient, icon,
-                                hasUserGesture, forceRebuild, pendingState));
+                                originalUrl, hasUserGesture, forceRebuild, pendingState));
     }
 
     @Override
     public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon,
-            boolean isOffTheRecord, @FailState int failState) {
+            final String originalUrl, boolean isOffTheRecord, @FailState int failState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService2.super.notifyDownloadFailed(
-                                id, fileName, icon, isOffTheRecord, failState));
+                                id, fileName, icon, originalUrl, isOffTheRecord, failState));
     }
 
     @Override

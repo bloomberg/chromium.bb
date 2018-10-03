@@ -233,12 +233,12 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                         info.getFileName(), info.getProgress(), info.getBytesReceived(),
                         info.getTimeRemainingInMillis(), notificationInfo.mStartTime,
                         info.isOffTheRecord(), notificationInfo.mCanDownloadWhileMetered,
-                        info.getIsTransient(), info.getIcon());
+                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl());
                 break;
             case NotificationType.PAUSED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),
                         info.getFileName(), true, false, info.isOffTheRecord(),
-                        info.getIsTransient(), info.getIcon(), false, false,
+                        info.getIsTransient(), info.getIcon(), info.getOriginalUrl(), false, false,
                         info.getPendingState());
                 break;
             case NotificationType.SUCCEEDED:
@@ -258,14 +258,14 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                 break;
             case NotificationType.FAILED:
                 getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
-                        info.getFileName(), info.getIcon(), info.isOffTheRecord(),
-                        info.getFailState());
+                        info.getFileName(), info.getIcon(), info.getOriginalUrl(),
+                        info.isOffTheRecord(), info.getFailState());
                 break;
             case NotificationType.INTERRUPTED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),
                         info.getFileName(), info.isResumable(), notificationInfo.mIsAutoResumable,
-                        info.isOffTheRecord(), info.getIsTransient(), info.getIcon(), false, false,
-                        notificationInfo.mPendingState);
+                        info.isOffTheRecord(), info.getIsTransient(), info.getIcon(),
+                        info.getOriginalUrl(), false, false, notificationInfo.mPendingState);
                 break;
         }
     }
