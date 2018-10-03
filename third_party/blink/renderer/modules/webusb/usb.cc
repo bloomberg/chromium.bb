@@ -114,9 +114,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
     if (execution_context && execution_context->IsDocument()) {
       ToDocument(execution_context)
-          ->GetFrame()
-          ->DeprecatedReportFeaturePolicyViolation(
-              mojom::FeaturePolicyFeature::kUsb);
+          ->ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature::kUsb);
     }
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -134,14 +132,14 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
 ScriptPromise USB::requestDevice(ScriptState* script_state,
                                  const USBDeviceRequestOptions& options) {
   LocalFrame* frame = GetFrame();
-  if (!frame) {
+  if (!frame || !frame->GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
-  if (!frame->DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb,
-                                         ReportOptions::kReportOnFailure)) {
+  if (!frame->GetDocument()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kUsb, ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
@@ -315,9 +313,8 @@ bool USB::IsContextSupported() const {
 }
 
 bool USB::IsFeatureEnabled() const {
-  ExecutionContext* context = GetExecutionContext();
-  FeaturePolicy* policy = context->GetSecurityContext().GetFeaturePolicy();
-  return policy->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb);
+  return GetExecutionContext()->GetSecurityContext().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kUsb);
 }
 
 void USB::Trace(blink::Visitor* visitor) {
