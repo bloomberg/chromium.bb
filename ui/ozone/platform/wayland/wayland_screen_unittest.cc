@@ -32,9 +32,17 @@ class TestDisplayObserver : public display::DisplayObserver {
     return changed_metrics;
   }
 
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {
+    display_ = new_display;
+  }
+
+  void OnDisplayRemoved(const display::Display& old_display) override {
+    display_ = old_display;
+  }
+
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
-    DCHECK(changed_metrics_ == 0);
     changed_metrics_ = changed_metrics;
     display_ = display;
   }
@@ -86,6 +94,55 @@ TEST_P(WaylandScreenTest, OutputBaseTest) {
   // Ensure the size property of the primary display.
   EXPECT_EQ(platform_screen->GetPrimaryDisplay().bounds(),
             gfx::Rect(0, 0, kOutputWidth, kOutputHeight));
+}
+
+TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
+  EXPECT_TRUE(output_manager_->IsPrimaryOutputReady());
+  std::unique_ptr<WaylandScreen> platform_screen =
+      output_manager_->CreateWaylandScreen();
+
+  TestDisplayObserver observer;
+  platform_screen->AddObserver(&observer);
+
+  // Add a second display.
+  wl::MockOutput output1;
+  output1.Initialize(server_.display());
+
+  Sync();
+
+  // Ensure that second display is not a primary one and have a different id.
+  int64_t added_display_id = observer.GetDisplay().id();
+  EXPECT_NE(platform_screen->GetPrimaryDisplay().id(), added_display_id);
+
+  // Remove the second output.
+  output_manager_->RemoveWaylandOutput(added_display_id);
+
+  Sync();
+
+  // Ensure that removed display has correct id.
+  int64_t removed_display_id = observer.GetDisplay().id();
+  EXPECT_EQ(added_display_id, removed_display_id);
+
+  // Add a second display again.
+  wl::MockOutput output2;
+  output2.Initialize(server_.display());
+
+  Sync();
+
+  // The newly added display is not a primary yet.
+  added_display_id = observer.GetDisplay().id();
+  EXPECT_NE(platform_screen->GetPrimaryDisplay().id(), added_display_id);
+
+  // Make sure the geometry changes are sent by syncing one more time again.
+  Sync();
+
+  int64_t old_primary_display_id = platform_screen->GetPrimaryDisplay().id();
+  output_manager_->RemoveWaylandOutput(old_primary_display_id);
+
+  // Ensure that previously added display is now a primary one.
+  EXPECT_EQ(platform_screen->GetPrimaryDisplay().id(), added_display_id);
+  // Ensure that the removed display was the one, which was a primary display.
+  EXPECT_EQ(observer.GetDisplay().id(), old_primary_display_id);
 }
 
 TEST_P(WaylandScreenTest, OutputPropertyChanges) {
