@@ -322,6 +322,9 @@ Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
 }
 
 void SVGUseElement::BuildPendingResource() {
+  // Do not build the shadow/instance tree for nested <use> elements
+  // because they will get expanded in a second pass -- see
+  // ExpandUseElementsInShadowTree().
   if (InUseShadowTree())
     return;
   // FIXME: We should try to optimize this, to at least allow partial reclones.
@@ -330,10 +333,10 @@ void SVGUseElement::BuildPendingResource() {
   CancelShadowTreeRecreation();
   if (!isConnected())
     return;
-  Element* target = ResolveTargetElement(kAddObserver);
+  SVGElement* target = ToSVGElementOrNull(ResolveTargetElement(kAddObserver));
   // TODO(fs): Why would the Element not be "connected" at this point?
-  if (target && target->isConnected() && target->IsSVGElement()) {
-    BuildShadowAndInstanceTree(ToSVGElement(*target));
+  if (target && target->isConnected()) {
+    BuildShadowAndInstanceTree(*target);
     InvalidateDependentShadowTrees();
   }
 
@@ -433,12 +436,7 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
 void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   DCHECK(!target_element_instance_);
   DCHECK(!needs_shadow_tree_recreation_);
-
-  // <use> creates a closed shadow root. Do not build the shadow/instance
-  // tree for <use> elements living in a closed tree because they
-  // will get expanded in a second pass -- see expandUseElementsInShadowTree().
-  if (InUseShadowTree())
-    return;
+  DCHECK(!InUseShadowTree());
 
   // Do not allow self-referencing.
   if (&target == this || IsDisallowedElement(target))
@@ -560,27 +558,18 @@ void SVGUseElement::CloneNonMarkupEventListeners() {
   }
 }
 
-bool SVGUseElement::HasCycleUseReferencing(SVGUseElement& use,
-                                           const ContainerNode& target_instance,
-                                           SVGElement*& new_target) const {
-  Element* target_element = use.ResolveTargetElement(kDontAddObserver);
-  new_target = nullptr;
-  if (target_element && target_element->IsSVGElement())
-    new_target = ToSVGElement(target_element);
-
-  if (!new_target)
-    return false;
-
+bool SVGUseElement::HasCycleUseReferencing(const ContainerNode& target_instance,
+                                           const SVGElement& target) const {
   // Shortcut for self-references
-  if (new_target == this)
+  if (&target == this)
     return true;
 
-  AtomicString target_id = new_target->GetIdAttribute();
+  AtomicString target_id = target.GetIdAttribute();
   ContainerNode* instance = target_instance.parentNode();
   while (instance && instance->IsSVGElement()) {
     SVGElement* element = ToSVGElement(instance);
     if (element->HasID() && element->GetIdAttribute() == target_id &&
-        element->GetDocument() == new_target->GetDocument())
+        element->GetDocument() == target.GetDocument())
       return true;
 
     instance = instance->parentNode();
@@ -615,12 +604,13 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
     DCHECK(!use->ResourceIsStillLoading());
 
     SVGUseElement& original_use = ToSVGUseElement(*use->CorrespondingElement());
-    SVGElement* target = nullptr;
-    if (HasCycleUseReferencing(original_use, *use, target))
-      return false;
+    SVGElement* target =
+        ToSVGElementOrNull(original_use.ResolveTargetElement(kDontAddObserver));
+    if (target) {
+      if (IsDisallowedElement(*target) || HasCycleUseReferencing(*use, *target))
+        return false;
+    }
 
-    if (target && IsDisallowedElement(*target))
-      return false;
     // Don't DCHECK(target) here, it may be "pending", too.
     // Setup sub-shadow tree root node
     SVGGElement* clone_parent = SVGGElement::Create(original_use.GetDocument());
