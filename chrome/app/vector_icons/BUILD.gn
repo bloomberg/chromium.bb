@@ -87,6 +87,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "smartphone.icon",
     "speaker.icon",
     "speaker_group.icon",
+    "stop.icon",
     "supervisor_account.icon",
     "supervisor_account_circle.icon",
     "sync.icon",
