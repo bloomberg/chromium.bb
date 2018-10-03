@@ -49,9 +49,9 @@ const char kLsbRelease[] =
 TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
   content::TestBrowserThreadBundle thread_bundle;
   content::TestServiceManagerContext service_manager_context;
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
 
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
-
   EXPECT_EQ("Downloads",
             GetDownloadLocationText(&profile, "/home/chronos/user/Downloads"));
   EXPECT_EQ("Downloads",
@@ -146,33 +146,6 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
       &profile,
       base::FilePath::FromUTF8Unsafe("/home/chronos/user/dl"),
       &path));
-}
-
-TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
-  content::TestBrowserThreadBundle thread_bundle;
-
-  TestingProfile profile;
-  storage::ExternalMountPoints* mount_points =
-      storage::ExternalMountPoints::GetSystemInstance();
-
-  // Register crostini and downloads.
-  mount_points->RegisterFileSystem(
-      GetCrostiniMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), GetCrostiniMountDirectory(&profile));
-  mount_points->RegisterFileSystem(
-      GetDownloadsMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), GetDownloadsFolderForProfile(&profile));
-
-  EXPECT_EQ("/home/testing_profile/path/in/crostini",
-            ConvertFileSystemURLToPathInsideCrostini(
-                &profile, mount_points->CreateExternalFileSystemURL(
-                              GURL(), "crostini_test_termina_penguin",
-                              base::FilePath("path/in/crostini"))));
-  EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads",
-            ConvertFileSystemURLToPathInsideCrostini(
-                &profile,
-                mount_points->CreateExternalFileSystemURL(
-                    GURL(), "Downloads", base::FilePath("path/in/downloads"))));
 }
 
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
