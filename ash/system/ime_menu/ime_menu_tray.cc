@@ -343,6 +343,10 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddIMEObserver(this);
   tray_notifier->AddVirtualKeyboardObserver(this);
+
+  // Show the tray even if virtual keyboard is shown. (Other tray buttons will
+  // be hidden).
+  set_show_with_virtual_keyboard(true);
 }
 
 ImeMenuTray::~ImeMenuTray() {

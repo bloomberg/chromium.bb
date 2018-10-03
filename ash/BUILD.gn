@@ -747,6 +747,8 @@ component("ash") {
     "system/model/tracing_model.h",
     "system/model/update_model.cc",
     "system/model/update_model.h",
+    "system/model/virtual_keyboard_model.cc",
+    "system/model/virtual_keyboard_model.h",
     "system/network/auto_connect_notifier.cc",
     "system/network/auto_connect_notifier.h",
     "system/network/network_feature_pod_button.cc",

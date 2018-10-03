@@ -31,6 +31,8 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/root_window_finder.h"
@@ -351,6 +353,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
   DCHECK(shelf_);
   DCHECK(shelf_widget_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
 }
@@ -359,6 +362,7 @@ ShelfView::~ShelfView() {
   // Shell destroys the TabletModeController before destroying all root windows.
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
@@ -649,6 +653,10 @@ void ShelfView::OnTabletModeEnded() {
   // consistent with device state.
   if (shelf_menu_model_adapter_)
     shelf_menu_model_adapter_->Cancel();
+}
+
+void ShelfView::OnVirtualKeyboardVisibilityChanged() {
+  LayoutToIdealBounds();
 }
 
 void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
@@ -990,10 +998,13 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
 
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
   const int separator_index = GetSeparatorIndex();
+  const bool virtual_keyboard_visible =
+      Shell::Get()->system_tray_model()->virtual_keyboard()->visible();
   // Don't show the separator if it isn't needed, or would appear after all
   // visible items.
   separator_->SetVisible(separator_index != -1 &&
-                         separator_index < last_visible_index_);
+                         separator_index < last_visible_index_ &&
+                         !virtual_keyboard_visible);
   int app_list_button_position;
 
   int x = 0;
@@ -1097,7 +1108,13 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     // FinalizeRipOffDrag().
     if (dragged_off_shelf_ && view_model_->view_at(i) == drag_view_)
       continue;
-    view_model_->view_at(i)->SetVisible(i <= last_visible_index_);
+    // If virtual keyboard is visible, only back button and app list button are
+    // shown.
+    const bool is_visible_item = !virtual_keyboard_visible ||
+                                 i == kBackButtonIndex ||
+                                 i == kAppListButtonIndex;
+    view_model_->view_at(i)->SetVisible(i <= last_visible_index_ &&
+                                        is_visible_item);
   }
 
   overflow_button_->SetVisible(show_overflow);
