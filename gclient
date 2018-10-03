@@ -5,7 +5,7 @@
 
 base_dir=$(dirname "$0")
 
-if [[ "#grep#fetch#cleanup#diff#" != *"#$1#"* ]]; then
+if [[ "#grep#fetch#cleanup#diff#setdep#" != *"#$1#"* ]]; then
   "$base_dir"/update_depot_tools "$@"
   case $? in
     123)
