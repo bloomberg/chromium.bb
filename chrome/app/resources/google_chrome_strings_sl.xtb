@@ -40,11 +40,13 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
 <translation id="1795405610103747296">Namestite Chrome v telefonu. V telefon bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Če to izklopite, se lahko prijavite na Googlovih spletnih mestih, kot je Gmail, ne da bi se morali prijaviti v Chrome</translation>
 <translation id="1860536484129686729">Chrome potrebuje dovoljenje za dostop do fotoaparata za to spletno mesto</translation>
 <translation id="1873233029667955273">Google Chrome ni privzeti brskalnik</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="1915828456209461693">Na voljo je nova posodobitev za Chrome, ki bo nameščena, takoj ko ga znova zaženete.</translation>
+<translation id="1919130412786645364">Omogočanje prijave v Chrome</translation>
 <translation id="2063848847527508675">Če želite namestiti posodobitev, morate znova zagnati OS Chrome.</translation>
 <translation id="2084710999043359739">Dodaj v Chrome</translation>
 <translation id="2094919256425865063">Želite vseeno zapreti Chrome?</translation>
@@ -294,6 +296,7 @@ Te storitve lahko morda onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name
 <translation id="9084668267983921457">Napaka potrdila za preverjanje pristnosti. Znova se prijavite v Google Chrome ali se obrnite na skrbnika, če želite več informacij. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{OS Chrome se bo znova zagnal čez eno uro}one{OS Chrome se bo znova zagnal čez # uro}two{OS Chrome se bo znova zagnal čez # uri}few{OS Chrome se bo znova zagnal čez # ure}other{OS Chrome se bo znova zagnal čez # ur}}</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
+<translation id="9138603949443464873">Če želite uporabiti spremembe, znova zaženite Chrome</translation>
 <translation id="919706545465235479">Posodobite Chrome, če želite začeti sinhronizacijo</translation>
 <translation id="924447568950697217">Nastavitev Chroma kot privzetega brskalnika</translation>
 <translation id="989369509083708165">Google Chrome je privzeti brskalnik</translation>

@@ -27,6 +27,7 @@
 <translation id="1869480248812203386">Você pode ajudar a tornar o Chromium mais seguro e mais fácil de usar ao informar automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
 <translation id="1881322772814446296">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Chromium separados. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{Uma atualização do Chromium está disponível}=1{Uma atualização do Chromium está disponível}one{Uma atualização do Chromium está disponível há # dia}other{Uma atualização do Chromium está disponível há # dias}}</translation>
+<translation id="1911763535808217981">Desative essa opção para fazer login em sites do Google, como o Gmail, sem fazer login no Chromium</translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
 <translation id="1966382378801805537">O Chromium não pode determinar ou definir o navegador padrão</translation>
 <translation id="2008474315282236005">Essa ação excluirá 1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
@@ -114,8 +115,10 @@
 <translation id="5032989939245619637">Salvar detalhes no Chromium</translation>
 <translation id="5045248521775609809">Leve o Chromium para todos os lugares</translation>
 <translation id="5116586539350239523">O Chromium armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
+<translation id="5277894862589591112">Para que as alterações sejam aplicadas, reinicie o Chromium</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atualizando o Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Permitir login no Chromium</translation>
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
 <translation id="5416696090975899932">O Chromium não pode mostrar a visualização de impressão sem o visualizador de PDF integrado.</translation>
 <translation id="5427571867875391349">Definir o Chromium como seu navegador padrão</translation>

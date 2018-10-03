@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏دریافت راهنمایی برای استفاده از سیستم عامل Chrome </translation>
 <translation id="1795405610103747296">‏Chrome را در تلفنتان نصب کنید. پیامکی به تلفنتان ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">‏با خاموش کردن این گزینه، می‌توانید بدون ورود به سیستم Chrome به سیستم سایت‌های Google مانند Gmail وارد شوید</translation>
 <translation id="1860536484129686729">‏Chrome برای این سایت به مجوز دسترسی به دوربین نیاز دارد</translation>
 <translation id="1873233029667955273">‏Google Chrome مرورگر پیش‌فرض شما نیست</translation>
 <translation id="1874309113135274312">‏Google Chrome نسخه بتا (mDNS-In)</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="1915828456209461693">‏به‌روزرسانی جدیدی برای Chrome دردسترس است و به‌محض راه‌اندازی مجدد اعمال خواهد شد.</translation>
+<translation id="1919130412786645364">‏مجاز کردن ورود به سیستم Chrome</translation>
 <translation id="2063848847527508675">‏برای اعمال به‌روزرسانی، سیستم‌عامل Chrome باید راه‌اندازی مجدد شود.</translation>
 <translation id="2084710999043359739">‏افزودن به Chrome</translation>
 <translation id="2094919256425865063">‏درهرصورت از Chrome خارج می‌شوید؟</translation>
@@ -286,6 +288,7 @@
 <translation id="9084668267983921457">‏گواهینامه احراز هویت تأیید نشد. لطفاً دوباره به سیستم Google Chrome وارد شوید یا برای دریافت اطلاعات بیشتر با سرپرستتان تماس بگیرید. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{‏سیستم‌عامل Chrome یک ساعت دیگر بازراه‌اندازی می‌شود}one{‏سیستم‌عامل Chrome # ساعت دیگر بازراه‌اندازی می‌شود}other{‏سیستم‌عامل Chrome # ساعت دیگر بازراه‌اندازی می‌شود}}</translation>
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
+<translation id="9138603949443464873">‏برای اعمال تغییراتتان، Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="919706545465235479">‏به‌روزرسانی Chrome برای شروع همگام‌سازی</translation>
 <translation id="924447568950697217">‏تنظیم Chrome به‌عنوان مرورگر پیش‌فرض</translation>
 <translation id="989369509083708165">‏Google Chrome مرورگر پیش‌فرضتان است</translation>

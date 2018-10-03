@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">বস্তুটি যখন পরিবর্তিত হয় তখন কীবোর্ড ফোকাসের মাধ্যমে একে হাইলাইট করুন</translation>
 <translation id="1173894706177603556">পুনঃনামকরণ</translation>
 <translation id="1174073918202301297">শর্টকাট যোগ করা হয়েছে</translation>
+<translation id="117445914942805388">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />সিঙ্ক সেটিংস দেখুন<ph name="END_LINK" />।</translation>
 <translation id="1175364870820465910">&amp;প্রিন্ট...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> অনুলিপি করা হচ্ছে...</translation>
 <translation id="1177138678118607465">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবাগুলি আপনার মতো করে সাজানোর জন্য Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে। আপনি এটি যেকোনও সময়ে myaccount.google.com/activitycontrols/search থেকে পরিবর্তন করতে পারেন</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">আপনার ডিভাইসের ব্যবহার আরও সহজ করতে অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি সক্ষম করুন৷</translation>
 <translation id="1190144681599273207">এই ফাইল আনয়ন করতে আনুমানিক মোবাইল ডেটার <ph name="FILE_SIZE" /> ব্যবহার করবে৷</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{আপনার কম্পিউটারে সঞ্চিত একটি ফাইল অ্যাক্সেস করে}one{আপনার কম্পিউটারে সঞ্চিত #টি ফাইল অ্যাক্সেস করে}other{আপনার কম্পিউটারে সঞ্চিত #টি ফাইল অ্যাক্সেস করে}}</translation>
+<translation id="119092896208640858">Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি না করে শুধুমাত্র এই ডিভাইস থেকে খালি করতে <ph name="BEGIN_LINK" />সাইন-আউট করুন<ph name="END_LINK" />।</translation>
 <translation id="1195076408729068893">Smart Lock শুরু করতে আপনার পাসওয়ার্ড লিখুন। পরের বার আপনার <ph name="DEVICE_TYPE" /> আনলক করতে নিজের ফোন ব্যবহার করতে পারবেন।</translation>
 <translation id="1195447618553298278">অজানা ত্রুটি৷</translation>
 <translation id="119738088725604856">স্ক্রীনশট উইন্ডো</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">তাকের আইটেম নম্বর ৫</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" এর সাথে সংযুক্ত হওয়ার সময় প্রমাণীকরণ ব্যার্থ হয়েছে৷</translation>
 <translation id="1230807973377071856">সিস্টেম মেনু</translation>
+<translation id="1231733316453485619">সিঙ্ক চালু করবেন?</translation>
 <translation id="123186018454553812">একটি ভিন্ন উপায়ে চেষ্টা করুন</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1233721473400465416">স্থানীয়</translation>
@@ -987,6 +990,7 @@
 <translation id="247949520305900375">অডিও ভাগ করুন</translation>
 <translation id="2480868415629598489">আপনি যে ডেটা কপি করে আটকান তা সংশোধন করুন</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
+<translation id="2484959914739448251">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />আপনার পাসফ্রেজ লিখুন<ph name="END_LINK" />।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2487067538648443797">নতুন বুকমার্ক যোগ করুন</translation>
 <translation id="248861575772995840">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। নিশ্চিত করুন আপনার <ph name="DEVICE_TYPE" /> এর ব্লুটুথ চালু আছে। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
@@ -1637,6 +1641,7 @@
 <translation id="3459697287128633276">আপনার অ্যাকাউন্ট থেকে Google Play স্টোর অ্যাক্সেস করার জন্য অনুগ্রহ করে পরিচয় প্রদানকারীর মাধ্যমে প্রমাণীকরণ দিন।</translation>
 <translation id="3459774175445953971">সর্বশেষ সংশোধিত:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> আপনার ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখতে চায়</translation>
+<translation id="3462311546193741693">আপনাকে অধিকাংশ সাইট থেকে সাইন-আউট করে দেয়। আপনি আপনার Google অ্যাকাউন্টে সাইন-ইন করে থাকুন যাতে আপনার সিঙ্ক হওয়া ডেটা খালি করা যায়।</translation>
 <translation id="3462413494201477527">অ্যাকাউন্ট সেট আপ বাতিল করবেন?</translation>
 <translation id="346431825526753">এইটি হল বাচ্চাদের জন্য <ph name="CUSTODIAN_EMAIL" /> এর দ্বারা পরিচালিত একটি অ্যাকাউন্ট৷</translation>
 <translation id="3465566417615315331">আপনার ফটোতে ক্লিক করুন</translation>
@@ -1901,6 +1906,7 @@
 <translation id="38275787300541712">সম্পূর্ণ হলে Enter টিপুন</translation>
 <translation id="3827774300009121996">&amp;পূর্ণ স্ক্রীণ</translation>
 <translation id="3828029223314399057">বুকমার্কগুলি খুঁজুন</translation>
+<translation id="3829765597456725595">SMB ফাইল শেয়ার</translation>
 <translation id="3830674330436234648">কোনো প্লেব্যাক উপলব্ধ নেই</translation>
 <translation id="3831436149286513437">Google ড্রাইভ সার্চ সাজেশন</translation>
 <translation id="3831486154586836914">প্রবেশ করা উইন্ডোর ওভারভিউ মোড</translation>
@@ -2622,6 +2628,7 @@
 <translation id="4974733135013075877">প্রস্থান এবং চাইল্ডলক করুন</translation>
 <translation id="4977942889532008999">অ্যাক্সেস নিশ্চিত করুন</translation>
 <translation id="4980805016576257426">এই এক্সটেনশনটিতে ম্যালওয়্যার আছে।</translation>
+<translation id="4981449534399733132">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />সাইন-ইন করুন<ph name="END_LINK" />।</translation>
 <translation id="498294082491145744">কুকিজ, JavaScript, প্লাগ ইন, ভূ-লোকেশন, মাইক্রোফোন, ক্যামেরা ইত্যাদির মতো বৈশিষ্ট্যগুলিতে ওয়েবসাইটগুলির অ্যাক্সেস নিয়ন্ত্রণ করে, আপনার সেই সেটিংস পরিবর্তন করুন।</translation>
 <translation id="4988526792673242964">পৃষ্ঠাসমূহ</translation>
 <translation id="49896407730300355">ঘড়ির কাঁটার &amp;বিপরীত দিকে ঘোরান</translation>
@@ -3421,6 +3428,7 @@
 <translation id="6146563240635539929">ভিডিও</translation>
 <translation id="6147020289383635445">প্রিন্ট পূর্বরূপ ব্যর্থ হয়েছে৷</translation>
 <translation id="6148052338549899048">কোনও উপযুক্ত ডিভাইস নেই। <ph name="LINK_BEGIN" />আরও জানুন।<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">এই ডিভাইস থেকে ইতিহাস খালি করা হয়।</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6150853954427645995">অফলাইনে ব্যবহারের জন্য এই ফাইলটি সেভ করুন, অনলাইন ফিরে পেতে, ফাইলের ডানদিকে ক্লিক করুন, এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্প নির্বাচন করুন৷</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> সার্চের জন্য <ph name="SEARCH_KEY" /> টিপুন</translation>
@@ -3493,6 +3501,7 @@
 <translation id="6251870443722440887">GDI হ্যান্ডলগুলি</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> পরিষেবার শর্তাবলী</translation>
 <translation id="6254503684448816922">মূল সমঝোতা</translation>
+<translation id="6257602895346497974">সিঙ্ক চালু করুন...</translation>
 <translation id="6259104249628300056">আপনার স্থানীয় নেটওয়ার্কে ডিভাইসসমূহ আবিষ্কার করুন</translation>
 <translation id="6263082573641595914">Microsoft CA সংস্করণ</translation>
 <translation id="6263284346895336537">জটিল নয়</translation>
@@ -5025,6 +5034,7 @@
 <translation id="8606726445206553943">আপনার MIDI ডিভাইসসমূহ ব্যবহার করুন</translation>
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8615618338313291042">ছদ্মবেশী অ্যাপ্লিকেশান: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">সিঙ্ক করা হচ্ছে না</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">রোমিং স্থিতি</translation>
 <translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>

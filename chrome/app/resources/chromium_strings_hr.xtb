@@ -27,6 +27,7 @@
 <translation id="1869480248812203386">Možete pomoći da Chromium bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="1881322772814446296">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chromium zasebno. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{Dostupno je ažuriranje Chromiuma}=1{Dostupno je ažuriranje Chromiuma}one{Ažuriranje Chromiuma dostupno je # dan}few{Ažuriranje Chromiuma dostupno je # dana}other{Ažuriranje Chromiuma dostupno je # dana}}</translation>
+<translation id="1911763535808217981">Ako isključite tu opciju, možete se prijaviti na Googleove web-lokacije kao što je Gmail bez prijavljivanja u Chromium</translation>
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="1966382378801805537">Chromium ne može utvrditi niti postaviti zadani preglednik</translation>
 <translation id="2008474315282236005">Time će se izbrisati jedna stavka s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chromium kao <ph name="USER_EMAIL" />.</translation>
@@ -116,8 +117,10 @@
 <translation id="5032989939245619637">Spremi pojedinosti u sustavu Chromium</translation>
 <translation id="5045248521775609809">Ponesite Chromium svugdje</translation>
 <translation id="5116586539350239523">Chromium će pohraniti vaše osobne podatke na siguran način tako da ih ne morate ponovo upisivati.</translation>
+<translation id="5277894862589591112">Da bi se vaše promjene primijenile, ponovo pokrenite Chromium</translation>
 <translation id="5358375970380395591">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Ažuriranje Chromiuma (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Dopusti prijavu u Chromium</translation>
 <translation id="5398878173008909840">Dostupna je nova verzija preglednika Chromium.</translation>
 <translation id="5416696090975899932">Chromium ne može prikazati pregled ispisa kad nedostaje ugrađeni PDF preglednik.</translation>
 <translation id="5427571867875391349">Postavite Chrome kao zadani preglednik</translation>

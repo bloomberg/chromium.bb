@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">I-highlight ang object gamit ang keyboard focus kapag nagbago ito</translation>
 <translation id="1173894706177603556">Pangalanang muli</translation>
 <translation id="1174073918202301297">Naidagdag na ang shortcut</translation>
+<translation id="117445914942805388">Para i-clear ang data mula sa pag-browse sa lahat ng iyong naka-sync na device at sa Google Account mo, <ph name="BEGIN_LINK" />bisitahin ang mga setting ng pag-sync<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;I-print...</translation>
 <translation id="117624967391683467">Kinokopya ang <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Maaaring gamitin ng Google ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at iba pang serbisyo ng Google. Maaari mo itong baguhin anumang oras sa myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Paganahin ang mga tampok ng accessibility upang maging mas madaling gamitin ang iyong device.</translation>
 <translation id="1190144681599273207">Ang pagkuha sa file na ito ay gagamit ng humigit-kumulang <ph name="FILE_SIZE" /> (na) mobile data.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Mag-access ng file na nakaimbak sa iyong computer}one{Mag-access ng # file na nakaimbak sa iyong computer}other{Mag-access ng # na file na nakaimbak sa iyong computer}}</translation>
+<translation id="119092896208640858">Para i-clear ang data mula sa pag-browse sa device lang na ito, habang pinapanatili ito sa iyong Google Account, <ph name="BEGIN_LINK" />mag-sign out<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Upang simulan ang Smart Lock, ilagay ang iyong password. Sa susunod, maaari mong gamitin ang iyong telepono upang i-unlock ang <ph name="DEVICE_TYPE" /> mo.</translation>
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
 <translation id="119738088725604856">Screenshot window</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Item 5 sa shelf</translation>
 <translation id="1227507814927581609">Nabigo ang pagpapatunay habang kumokonekta sa "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">menu ng system</translation>
+<translation id="1231733316453485619">I-on ang pag-sync?</translation>
 <translation id="123186018454553812">Sumubok ng ibang key</translation>
 <translation id="1232569758102978740">Walang pamagat</translation>
 <translation id="1233721473400465416">Lokal</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Ibahagi ang audio</translation>
 <translation id="2480868415629598489">Baguhin ang data na kinokopya at pine-paste mo</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
+<translation id="2484959914739448251">Para i-clear ang data mula sa pag-browse sa lahat ng iyong naka-sync na device at sa Google Account mo, <ph name="BEGIN_LINK" />ilagay ang iyong passphrase<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2487067538648443797">Magdagdag ng bagong bookmark</translation>
 <translation id="248861575772995840">Hindi mahanap ang iyong telepono. Siguraduhing naka-on ang Bluetooth ng <ph name="DEVICE_TYPE" /> mo. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Upang i-enable ang iyong account na i-access ang Google Play Store, paki-authenticate gamit ang Identity Provider mo.</translation>
 <translation id="3459774175445953971">Huling binago:</translation>
 <translation id="3461266716147554923">Gustong makita ng <ph name="URL" /> ang text at mga larawang kinopya sa clipboard</translation>
+<translation id="3462311546193741693">Sina-sign out ka sa karamihan ng mga site. Hindi ka masa-sign out sa iyong Google Account kaya maki-clear ang naka-sync mong data.</translation>
 <translation id="3462413494201477527">Kanselahin ang pag-setup ng account?</translation>
 <translation id="346431825526753">Isa itong account para sa mga bata na pinamamahalaan ni <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">I-click ang iyong larawan</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Pindutin ang Enter kapag tapos na</translation>
 <translation id="3827774300009121996">&amp;Full Screen</translation>
 <translation id="3828029223314399057">Bookmark sa paghahanap</translation>
+<translation id="3829765597456725595">File share ng SMB</translation>
 <translation id="3830674330436234648">Walang available na playback</translation>
 <translation id="3831436149286513437">Mga suhestyon sa paghahanap sa Google Drive</translation>
 <translation id="3831486154586836914">Pumasok ka sa overview mode ng window</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Lumabas at i-childlock</translation>
 <translation id="4977942889532008999">Kumpirmahin ang Pag-access</translation>
 <translation id="4980805016576257426">May malware ang extension na ito.</translation>
+<translation id="4981449534399733132">Para i-clear ang data mula sa pag-browse sa lahat ng iyong naka-sync na device at sa Google Account mo, <ph name="BEGIN_LINK" />mag-sign in<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Baguhin ang iyong mga setting na nagkokontrol sa access ng mga website sa mga feature gaya ng cookies, JavaScript, mga plugin, geolocation, mikropono, camera atbp.</translation>
 <translation id="4988526792673242964">Mga Page</translation>
 <translation id="49896407730300355">I-rotate p&amp;akaliwa</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">Mga Video</translation>
 <translation id="6147020289383635445">Nabigo ang preview ng pag-print.</translation>
 <translation id="6148052338549899048">Walang kwalipikadong device. <ph name="LINK_BEGIN" />Matuto pa.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Kini-clear ang history sa device na ito.</translation>
 <translation id="614940544461990577">Subukang:</translation>
 <translation id="6150853954427645995">Upang i-save ang file na ito para sa offline na paggamit, mag-online muli, i-right click ang file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pindutin <ph name="SEARCH_KEY" /> upang maghanap <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">Mga GDI handle</translation>
 <translation id="6251889282623539337">Mga Tuntunin ng Serbisyo ng <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Kompromisong Key</translation>
+<translation id="6257602895346497974">I-on ang pag-sync...</translation>
 <translation id="6259104249628300056">Tumuklas ng mga device sa iyong lokal na network</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
 <translation id="6263284346895336537">Hindi Kritikal</translation>
@@ -5030,6 +5039,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8606726445206553943">Gamitin ang iyong mga MIDI device</translation>
 <translation id="8609465669617005112">Lumipat</translation>
 <translation id="8615618338313291042">Incognito App: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Hindi nagsi-sync</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status ng roaming</translation>
 <translation id="8620765578342452535">I-configure ang mga koneksyon sa network</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Objekt mit Tastaturfokus bei Änderung hervorheben</translation>
 <translation id="1173894706177603556">Umbenennen</translation>
 <translation id="1174073918202301297">Verknüpfung hinzugefügt</translation>
+<translation id="117445914942805388">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />rufen Sie die Synchronisierungseinstellungen auf<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> wird kopiert...</translation>
 <translation id="1177138678118607465">Google kann die Google-Suche, Werbung und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren. Dies lässt sich jederzeit unter myaccount.google.com/activitycontrols/search ändern.</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Aktivieren Sie die Bedienungshilfe-Funktionen, damit Ihr Gerät leichter zu verwenden ist.</translation>
 <translation id="1190144681599273207">Zum Abrufen dieser Datei werden etwa <ph name="FILE_SIZE" /> mobile Daten benötigt.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Zugriff auf eine Datei auf Ihrem Computer}other{Zugriff auf # Dateien auf Ihrem Computer}}</translation>
+<translation id="119092896208640858">Wenn Sie Browserdaten nur von diesem Gerät, aber nicht aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />melden Sie sich ab<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Geben Sie Ihr Passwort ein, um Smart Lock zu aktivieren. Beim nächsten Mal können Sie Ihr Smartphone verwenden, um <ph name="DEVICE_TYPE" /> zu entsperren.</translation>
 <translation id="1195447618553298278">Unbekannter Fehler.</translation>
 <translation id="119738088725604856">Screenshot von Fenster</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Ablageartikel 5</translation>
 <translation id="1227507814927581609">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" ist ein Authentifizierungsfehler aufgetreten.</translation>
 <translation id="1230807973377071856">Systemmenü</translation>
+<translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="123186018454553812">Anderen Schlüssel verwenden</translation>
 <translation id="1232569758102978740">Unbenannt</translation>
 <translation id="1233721473400465416">Sprache</translation>
@@ -985,6 +988,7 @@
 <translation id="247949520305900375">Audio freigeben</translation>
 <translation id="2480868415629598489">Daten ändern, die Sie kopieren und einfügen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
+<translation id="2484959914739448251">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />geben Sie Ihre Passphrase ein<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2487067538648443797">Neues Lesezeichen hinzufügen</translation>
 <translation id="248861575772995840">Smartphone wurde nicht gefunden. Vergewissern Sie sich, dass auf Ihrem <ph name="DEVICE_TYPE" /> Bluetooth aktiviert ist. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
@@ -1635,6 +1639,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Damit Ihr Konto Zugriff auf den Google Play Store hat, müssen Sie sich bei Ihrem Identitätsanbieter authentifizieren.</translation>
 <translation id="3459774175445953971">Zuletzt geändert am:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> möchte Texte und Bilder aus der Zwischenablage abrufen</translation>
+<translation id="3462311546193741693">Hiermit werden Sie von den meisten Websites abgemeldet. Sie bleiben jedoch in Ihrem Google-Konto angemeldet, sodass Ihre synchronisierten Daten gelöscht werden können.</translation>
 <translation id="3462413494201477527">Kontoeinrichtung abbrechen?</translation>
 <translation id="346431825526753">Dies ist ein Konto für Kinder, das von <ph name="CUSTODIAN_EMAIL" /> verwaltet wird.</translation>
 <translation id="3465566417615315331">Klicken Sie auf Ihr Foto.</translation>
@@ -1899,6 +1904,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="38275787300541712">Drücken Sie die Eingabetaste, wenn Sie fertig sind.</translation>
 <translation id="3827774300009121996">&amp;Vollbildmodus</translation>
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
+<translation id="3829765597456725595">SMB-Netzwerkfreigabe</translation>
 <translation id="3830674330436234648">Keine Wiedergabe verfügbar</translation>
 <translation id="3831436149286513437">Google Drive-Suchvorschläge</translation>
 <translation id="3831486154586836914">Sie befinden sich nun im Modus "Fensterübersicht".</translation>
@@ -2621,6 +2627,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4974733135013075877">Beenden und Kindersicherung aktivieren</translation>
 <translation id="4977942889532008999">Zugriff bestätigen</translation>
 <translation id="4980805016576257426">Diese Erweiterung enthält Malware.</translation>
+<translation id="4981449534399733132">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />melden Sie sich an<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Einstellungen ändern, über die der Websitezugriff auf Cookies, JavaScript, Plug-ins, Standort, Mikrofon, Kamera und ähnliche Funktionen gesteuert wird</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="49896407730300355">&amp;Gegen den Uhrzeigersinn drehen</translation>
@@ -3421,6 +3428,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6146563240635539929">Videos</translation>
 <translation id="6147020289383635445">Druckvorschau fehlgeschlagen</translation>
 <translation id="6148052338549899048">Keine geeigneten Geräte vorhanden. <ph name="LINK_BEGIN" />Weitere Informationen.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Löscht den Verlauf von diesem Gerät.</translation>
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6150853954427645995">Wenn Sie diese Datei zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
 <translation id="6151323131516309312">Drücken Sie <ph name="SEARCH_KEY" />, um <ph name="SITE_NAME" /> zu durchsuchen.</translation>
@@ -3492,6 +3500,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6251870443722440887">GDI-Handles</translation>
 <translation id="6251889282623539337">Nutzungsbedingungen für <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Kompromittierung des Schlüssels</translation>
+<translation id="6257602895346497974">Synchronisierung aktivieren…</translation>
 <translation id="6259104249628300056">Geräte in Ihrem lokalen Netzwerk finden</translation>
 <translation id="6263082573641595914">Microsoft - Version der Zertifizierungsstelle</translation>
 <translation id="6263284346895336537">Nicht kritisch</translation>
@@ -5026,6 +5035,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8606726445206553943">Ihre MIDI-Geräte verwenden</translation>
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8615618338313291042">Anonyme App: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Keine Synchronisierung</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Roaming-Status</translation>
 <translation id="8620765578342452535">Netzwerkverbindungen konfigurieren</translation>

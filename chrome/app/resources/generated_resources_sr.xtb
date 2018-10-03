@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Истакни објекат помоћу фокуса тастатуре када се промени</translation>
 <translation id="1173894706177603556">Преименуј</translation>
 <translation id="1174073918202301297">Пречица је додата</translation>
+<translation id="117445914942805388">Да бисте обрисали податке прегледања са свих синхронизованих уређаја и са Google налога, <ph name="BEGIN_LINK" />идите у подешавања синхронизације<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Одштампај...</translation>
 <translation id="117624967391683467">Копирање датотеке <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google може да персонализује Претрагу, огласе и друге Google услуге помоћу историје прегледања. То подешавање можете да промените у било ком тренутку на myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Омогућите функције приступачности да бисте лакше користили уређај.</translation>
 <translation id="1190144681599273207">Преузимање ове датотеке ће искористити око <ph name="FILE_SIZE" /> података за мобилне уређаје.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Приступ датотеци сачуваној на рачунару}one{Приступ # датотеци сачуваној на рачунару}few{Приступ за # датотеке сачуване на рачунару}other{Приступ за # датотека сачуваних на рачунару}}</translation>
+<translation id="119092896208640858">Да бисте обрисали податке прегледања само са овог уређаја, али не и са Google налога, <ph name="BEGIN_LINK" />одјавите се<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Да бисте покренули Smart Lock, унесите лозинку. Следећи пут можете да откључате <ph name="DEVICE_TYPE" /> помоћу телефона.</translation>
 <translation id="1195447618553298278">Непозната грешка.</translation>
 <translation id="119738088725604856">Прозор снимка екрана</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">5. ставка на полици</translation>
 <translation id="1227507814927581609">Потврда аутентичности током повезивања са „<ph name="DEVICE_NAME" />“ није успела.</translation>
 <translation id="1230807973377071856">системски мени</translation>
+<translation id="1231733316453485619">Желите ли да укључите синхронизацију?</translation>
 <translation id="123186018454553812">Пробајте други кључ</translation>
 <translation id="1232569758102978740">Без наслова</translation>
 <translation id="1233721473400465416">Локалитет</translation>
@@ -985,6 +988,7 @@
 <translation id="247949520305900375">Дели звук</translation>
 <translation id="2480868415629598489">Мењање података које прекопирате</translation>
 <translation id="2482878487686419369">Обавештења</translation>
+<translation id="2484959914739448251">Да бисте обрисали податке прегледања са свих синхронизованих уређаја и са Google налога, <ph name="BEGIN_LINK" />унесите приступну фразу<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2487067538648443797">Додај нови обележивач</translation>
 <translation id="248861575772995840">Не можемо да пронађемо телефон. Проверите да ли је на <ph name="DEVICE_TYPE" />-у укључен Bluetooth. &lt;a&gt;Сазнајте више&lt;/a&gt;</translation>
@@ -1635,6 +1639,7 @@
 <translation id="3459697287128633276">Да бисте омогућили налогу да приступа Google Play продавници, потврдите идентитет помоћу добављача идентитета.</translation>
 <translation id="3459774175445953971">Последњи пут измењено:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> жели да види текст и слике који су копирани у привремену меморију</translation>
+<translation id="3462311546193741693">Одјављује вас са већине сајтова. Не одјављује вас са Google налога, па синхронизовани подаци могу да се обришу.</translation>
 <translation id="3462413494201477527">Желите ли да откажете подешавање налога?</translation>
 <translation id="346431825526753">Ово је налог за децу којим управља <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Кликните на своју слику</translation>
@@ -1899,6 +1904,7 @@
 <translation id="38275787300541712">Притисните Enter када завршите</translation>
 <translation id="3827774300009121996">&amp;Цео екран</translation>
 <translation id="3828029223314399057">Претражи обележиваче</translation>
+<translation id="3829765597456725595">Дељење SMB датотека</translation>
 <translation id="3830674330436234648">Репродукција није доступна</translation>
 <translation id="3831436149286513437">Предлози за претрагу Google диска</translation>
 <translation id="3831486154586836914">Ушли сте у режим прегледа прозора</translation>
@@ -2621,6 +2627,7 @@
 <translation id="4974733135013075877">Изађи и закључај за децу</translation>
 <translation id="4977942889532008999">Потврдите приступ</translation>
 <translation id="4980805016576257426">Овај додатак садржи малвер.</translation>
+<translation id="4981449534399733132">Да бисте обрисали податке прегледања са свих синхронизованих уређаја и са Google налога, <ph name="BEGIN_LINK" />пријавите се<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Промените подешавања која контролишу приступ веб-сајтова функцијама попут колачића, JavaScript-а, додатних компонената, географске локације, микрофона, камере итд.</translation>
 <translation id="4988526792673242964">Странице</translation>
 <translation id="49896407730300355">Окрећи у с&amp;меру супротном од кретања казаљке на сату</translation>
@@ -3423,6 +3430,7 @@
 <translation id="6146563240635539929">Видео снимци</translation>
 <translation id="6147020289383635445">Преглед пре штампања није успео.</translation>
 <translation id="6148052338549899048">Нема уређаја који испуњавају услове. <ph name="LINK_BEGIN" />Сазнајте више.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Брише историју са овог уређаја.</translation>
 <translation id="614940544461990577">Покушајте:</translation>
 <translation id="6150853954427645995">Да бисте сачували ову датотеку за офлајн коришћење, повежите се поново на интернет, кликните десним тастером на датотеку и изаберите опцију <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Притисните <ph name="SEARCH_KEY" /> да бисте претражили <ph name="SITE_NAME" /> сајт</translation>
@@ -3494,6 +3502,7 @@
 <translation id="6251870443722440887">GDI надимци</translation>
 <translation id="6251889282623539337">Услови коришћења услуге домена <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Кључ је компромитован</translation>
+<translation id="6257602895346497974">Укључи синхронизацију...</translation>
 <translation id="6259104249628300056">Откривање уређаја на локалној мрежи</translation>
 <translation id="6263082573641595914">Верзија Microsoft CA</translation>
 <translation id="6263284346895336537">Није од пресудне важности</translation>
@@ -5026,6 +5035,7 @@
 <translation id="8606726445206553943">користи MIDI уређаје</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8615618338313291042">Апл. у режиму без архивирања: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Не синхронизује се</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Статус роминга</translation>
 <translation id="8620765578342452535">Конфигуриши мрежне везе</translation>

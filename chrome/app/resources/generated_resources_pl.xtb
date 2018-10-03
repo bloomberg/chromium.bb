@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Gdy obiekt wybrany za pomocą klawiatury zmienia się, podświetlaj go</translation>
 <translation id="1173894706177603556">Zmień nazwę</translation>
 <translation id="1174073918202301297">Skrót został dodany</translation>
+<translation id="117445914942805388">Aby wyczyścić dane przeglądania ze wszystkich swoich zsynchronizowanych urządzeń i z konta Google, <ph name="BEGIN_LINK" />otwórz ustawienia synchronizacji<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Drukuj...</translation>
 <translation id="117624967391683467">Kopiuję <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług. W dowolnym momencie możesz to zmienić na myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Włącz ułatwienia dostępu, aby uprościć obsługę urządzenia.</translation>
 <translation id="1190144681599273207">Pobranie tego pliku spowoduje przesłanie <ph name="FILE_SIZE" /> przy użyciu komórkowej transmisji danych.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Dostęp do pliku zapisanego na Twoim komputerze}few{Dostęp do # plików zapisanych na Twoim komputerze}many{Dostęp do # plików zapisanych na Twoim komputerze}other{Dostęp do # pliku zapisanego na Twoim komputerze}}</translation>
+<translation id="119092896208640858">Aby wyczyścić dane przeglądania tylko z tego urządzenia, zachowując je na swoim koncie Google, <ph name="BEGIN_LINK" />wyloguj się<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Wpisz hasło, by aktywować Smart Lock. Następnym razem urządzenie <ph name="DEVICE_TYPE" /> będzie można odblokować przy użyciu telefonu.</translation>
 <translation id="1195447618553298278">Nieznany błąd.</translation>
 <translation id="119738088725604856">Okno zrzutu ekranu</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">5 element na półce</translation>
 <translation id="1227507814927581609">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME" />” nie powiodło się uwierzytelnianie.</translation>
 <translation id="1230807973377071856">menu systemowe</translation>
+<translation id="1231733316453485619">Włączyć synchronizację?</translation>
 <translation id="123186018454553812">Użyj innego klucza</translation>
 <translation id="1232569758102978740">Bez tytułu</translation>
 <translation id="1233721473400465416">Ustawienia lokalne</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Udostępnij dźwięk</translation>
 <translation id="2480868415629598489">Modyfikowanie danych, które kopiujesz i wklejasz</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="2484959914739448251">Aby wyczyścić dane przeglądania ze wszystkich swoich zsynchronizowanych urządzeń i z konta Google, <ph name="BEGIN_LINK" />wpisz hasło<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="2487067538648443797">Dodaj nową zakładkę</translation>
 <translation id="248861575772995840">Nie można znaleźć telefonu. Upewnij się, że <ph name="DEVICE_TYPE" /> ma włączony Bluetooth. &lt;a&gt;Więcej informacji&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Aby Twoje konto miało dostęp do Sklepu Google Play, uwierzytelnij je za pomocą dostawcy tożsamości.</translation>
 <translation id="3459774175445953971">Ostatnia modyfikacja:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> chce mieć dostęp do tekstu i obrazów skopiowanych do schowka</translation>
+<translation id="3462311546193741693">Spowoduje wylogowanie Cię z większości stron internetowych. Nie nastąpi wylogowanie z konta Google, więc będzie można wyczyścić zsynchronizowane dane.</translation>
 <translation id="3462413494201477527">Anulować konfigurowanie konta?</translation>
 <translation id="346431825526753">To jest konto dla dzieci, którym zarządza <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Kliknij swoje zdjęcie</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Naciśnij Enter po zakończeniu.</translation>
 <translation id="3827774300009121996">&amp;Pełny ekran</translation>
 <translation id="3828029223314399057">Przeszukaj zakładki</translation>
+<translation id="3829765597456725595">Magazyn plików SMB</translation>
 <translation id="3830674330436234648">Odtwarzanie jest niedostępne</translation>
 <translation id="3831436149286513437">Podpowiedzi z Dysku Google podczas wyszukiwania</translation>
 <translation id="3831486154586836914">Jesteś w trybie przeglądu okien</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Wyjdź i aktywuj blokadę dostępu dla dzieci</translation>
 <translation id="4977942889532008999">Potwierdź dostęp</translation>
 <translation id="4980805016576257426">To rozszerzenie zawiera złośliwe oprogramowanie.</translation>
+<translation id="4981449534399733132">Aby wyczyścić dane przeglądania ze wszystkich zsynchronizowanych urządzeń i z konta Google, <ph name="BEGIN_LINK" />zaloguj się<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Zmiana ustawień kontrolujących dostęp stron internetowych do takich funkcji jak pliki cookie, JavaScript, wtyczki, geolokalizacja, mikrofon, kamera itp.</translation>
 <translation id="4988526792673242964">Strony</translation>
 <translation id="49896407730300355">&amp;Obróć w lewo</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">Filmy</translation>
 <translation id="6147020289383635445">Wyświetlenie podglądu wydruku nie powiodło się.</translation>
 <translation id="6148052338549899048">Brak odpowiednich urządzeń. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Usuwa historię z tego urządzenia.</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6150853954427645995">Aby zapisać ten plik i używać go offline, przejdź do trybu online, kliknij plik prawym przyciskiem myszy i wybierz opcję <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Kliknij przycisk <ph name="SEARCH_KEY" />, aby przeszukać witrynę <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">Uchwyty GDI</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> – warunki korzystania</translation>
 <translation id="6254503684448816922">Złamanie klucza</translation>
+<translation id="6257602895346497974">Włącz synchronizację…</translation>
 <translation id="6259104249628300056">Wykrywanie urządzeń w sieci lokalnej</translation>
 <translation id="6263082573641595914">Wersja urzędu certyfikacji firmy Microsoft</translation>
 <translation id="6263284346895336537">Niekrytyczne</translation>
@@ -5030,6 +5039,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8606726445206553943">Korzystać z urządzeń MIDI</translation>
 <translation id="8609465669617005112">W górę</translation>
 <translation id="8615618338313291042">Aplikacja w trybie incognito: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Niezsynchronizowane</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stan roamingu</translation>
 <translation id="8620765578342452535">Konfigurowanie połączenia sieciowego</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">鍵盤焦點所在物件變更時醒目顯示</translation>
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1174073918202301297">已新增捷徑</translation>
+<translation id="117445914942805388">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請<ph name="BEGIN_LINK" />前往同步處理設定<ph name="END_LINK" />。</translation>
 <translation id="1175364870820465910">列印(&amp;P)...</translation>
 <translation id="117624967391683467">正在複製 <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google 可能會使用你的瀏覽記錄，為你提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。你隨時可以前往 myaccount.google.com/activitycontrols/search 變更這項設定</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">啟用協助功能，讓你使用裝置更輕鬆。</translation>
 <translation id="1190144681599273207">擷取這個檔案大約會使用 <ph name="FILE_SIZE" /> 行動數據流量。</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{存取 1 個儲存在您電腦上的檔案}other{存取 # 個儲存在您電腦上的檔案}}</translation>
+<translation id="119092896208640858">如果只要清除這個裝置中的瀏覽資料，並保留 Google 帳戶中的資料，請先<ph name="BEGIN_LINK" />登出<ph name="END_LINK" />。</translation>
 <translation id="1195076408729068893">如要啟動 Smart Lock，請輸入你的密碼。下次即可使用手機為你的 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
 <translation id="1195447618553298278">未知的錯誤。</translation>
 <translation id="119738088725604856">螢幕擷取畫面視窗</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">檔案櫃項目 5</translation>
 <translation id="1227507814927581609">驗證在連線至「<ph name="DEVICE_NAME" />」時失敗。</translation>
 <translation id="1230807973377071856">系統選單</translation>
+<translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="123186018454553812">改用其他金鑰</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1233721473400465416">語言代碼</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">分享音訊</translation>
 <translation id="2480868415629598489">修改你複製和貼上的資料</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2484959914739448251">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請<ph name="BEGIN_LINK" />輸入通關密語<ph name="END_LINK" />。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2487067538648443797">新增書籤</translation>
 <translation id="248861575772995840">找不到你的手機。請確定已開啟 <ph name="DEVICE_TYPE" /> 的藍牙功能。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">如要使用你的帳戶存取 Google Play 商店，請透過識別資訊提供者進行驗證。</translation>
 <translation id="3459774175445953971">最後修改日期：</translation>
 <translation id="3461266716147554923"><ph name="URL" /> 要求讀取已複製到剪貼簿的文字和圖片</translation>
+<translation id="3462311546193741693">你會從大多數網站登出，但不會因此登出 Google 帳戶，所以仍可清除同步資料。</translation>
 <translation id="3462413494201477527">取消設定帳戶？</translation>
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
 <translation id="3465566417615315331">點選您的相片</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">完成時請按下 Enter 鍵</translation>
 <translation id="3827774300009121996">全螢幕(&amp;F)</translation>
 <translation id="3828029223314399057">搜尋書籤</translation>
+<translation id="3829765597456725595">SMB 檔案共用</translation>
 <translation id="3830674330436234648">無法播放</translation>
 <translation id="3831436149286513437">Google 雲端硬碟搜尋建議</translation>
 <translation id="3831486154586836914">已進入視窗總覽模式</translation>
@@ -2624,6 +2630,7 @@
 <translation id="4974733135013075877">結束並執行 Childlock</translation>
 <translation id="4977942889532008999">確認存取權</translation>
 <translation id="4980805016576257426">這個擴充功能含有惡意軟體。</translation>
+<translation id="4981449534399733132">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請先<ph name="BEGIN_LINK" />登入<ph name="END_LINK" />。</translation>
 <translation id="498294082491145744">變更 Cookie、JavaScript、外掛程式、地理位置、麥克風、攝影機等功能的網站存取權控制設定。</translation>
 <translation id="4988526792673242964">頁數</translation>
 <translation id="49896407730300355">逆時針旋轉(&amp;O)</translation>
@@ -3423,6 +3430,7 @@
 <translation id="6146563240635539929">影片</translation>
 <translation id="6147020289383635445">列印預覽失敗。</translation>
 <translation id="6148052338549899048">沒有適用裝置。<ph name="LINK_BEGIN" />瞭解詳情。<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">清除這個裝置上的歷史記錄。</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6150853954427645995">如要儲存這個檔案以供離線使用，請重新上網，在檔案上按一下滑鼠右鍵，然後選取 [<ph name="OFFLINE_CHECKBOX_NAME" />] 選項。</translation>
 <translation id="6151323131516309312">按一下 <ph name="SEARCH_KEY" /> 以搜尋 <ph name="SITE_NAME" /></translation>
@@ -3494,6 +3502,7 @@
 <translation id="6251870443722440887">GDI 控制代碼</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> 服務條款</translation>
 <translation id="6254503684448816922">金鑰洩露</translation>
+<translation id="6257602895346497974">開啟同步處理功能...</translation>
 <translation id="6259104249628300056">探索您區域網路中的裝置</translation>
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
 <translation id="6263284346895336537">非重要</translation>
@@ -5025,6 +5034,7 @@
 <translation id="8606726445206553943">使用您的 MIDI 裝置</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">未同步處理</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
 <translation id="8620765578342452535">設定網路連線</translation>

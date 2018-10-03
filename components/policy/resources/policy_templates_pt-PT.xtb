@@ -2173,7 +2173,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política estiver definida como falsa ou não estiver definida, não são comunicadas quaisquer informações
       de utilização. Se estiver definida como verdadeira, são comunicadas informações de utilização.
 
-      Esta política aplica-se apenas se o apoio técnico de aplicações Linux estiver ativado.</translation>
+      Esta política aplica-se apenas se o apoio técnico para aplicações Linux estiver ativado.</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se é permitido que um modelo de escurecimento inteligente prolongue o tempo que precede o escurecimento do ecrã.

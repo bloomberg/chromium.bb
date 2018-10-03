@@ -2253,13 +2253,7 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 
       En cas de non-configuration de cette règle, la valeur par défaut de 32 est utilisée.</translation>
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
-<translation id="6944167205014013774">Cette règle renvoie au serveur des informations sur l'utilisation des applications
-      Linux.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'utilisation
-      ne sont pas transmises. Si cette règle est définie sur "True", les informations sur l'utilisation sont transmises.
-
-      Cette règle ne s'applique que si la compatibilité avec les applications Linux est activée.</translation>
+<translation id="6944167205014013774">Cette règle renvoie au serveur des informations sur l'utilisation des applications Linux. Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'utilisation ne sont pas transmises. Si cette règle est définie sur "True", les informations sur l'utilisation sont transmises. Cette règle ne s'applique que si la compatibilité avec les applications Linux est activée.</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
 <translation id="6965859329738616662">Détermine si un modèle de réduction intelligente de la luminosité peut augmenter le délai d'assombrissement de l'écran.

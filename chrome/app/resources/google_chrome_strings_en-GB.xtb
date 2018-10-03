@@ -40,11 +40,13 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
 <translation id="1795405610103747296">Install Chrome on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">By turning this off, you can sign in to Google sites such as Gmail, without signing in to Chrome</translation>
 <translation id="1860536484129686729">Chrome needs permission to access your camera for this site</translation>
 <translation id="1873233029667955273">Google Chrome isn't your default browser</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="1915828456209461693">A new update for Chrome is available and will be applied as soon as you relaunch.</translation>
+<translation id="1919130412786645364">Allow Chrome sign-in</translation>
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
 <translation id="2094919256425865063">Quit Chrome anyway?</translation>
@@ -293,6 +295,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="9084668267983921457">Authentication certificate failed. Please sign in to Google Chrome again or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS will restart in an hour}other{Chrome OS will restart in # hours}}</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
+<translation id="9138603949443464873">To apply your changes, relaunch Chrome</translation>
 <translation id="919706545465235479">Update Chrome to start sync</translation>
 <translation id="924447568950697217">Make Chrome your default browser</translation>
 <translation id="989369509083708165">Google Chrome is your default browser</translation>

@@ -29,6 +29,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1869480248812203386">Makakatulong ka na gawing mas ligtas at mas madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pag-uulat sa Google ng mga detalye ng mga posibleng isyu sa seguridad.</translation>
 <translation id="1881322772814446296">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chromium. Permanenteng mauugnay ang iyong data sa Chromium, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang mga setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. Maaari ka ring gumawa ng bagong profile upang ihiwalay ang iyong umiiral na data sa Chromium. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{May available na update sa Chromium}=1{May available na update sa Chromium}one{# araw nang may available na update sa Chromium}other{# na araw nang may available na update sa Chromium}}</translation>
+<translation id="1911763535808217981">Kapag na-off ito, maaari kang mag-sign in sa mga site ng Google tulad ng Gmail nang hindi nagsa-sign in sa Chromium</translation>
 <translation id="1929939181775079593">Hindi gumagana ang Chromium. Muling ilunsad ngayon?</translation>
 <translation id="1966382378801805537">Hindi matukoy o maitakda ng Chromium ang default na browser</translation>
 <translation id="2008474315282236005">Magde-delete ito ng 1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang <ph name="USER_EMAIL" />.</translation>
@@ -118,8 +119,10 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5032989939245619637">I-save ang mga detalye sa Chromium</translation>
 <translation id="5045248521775609809">Dalhin ang Chromium sa lahat ng lugar</translation>
 <translation id="5116586539350239523">Secure na iiimbak ng Chromium ang iyong mga personal na detalye nang sa gayon ay hindi mo na kailangang i-type muli ang mga ito.</translation>
+<translation id="5277894862589591112">Para ilapat ang iyong mga pagbabago, muling ilunsad ang Chromium</translation>
 <translation id="5358375970380395591">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chromium. Permanenteng mauugnay ang iyong data sa Chromium, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang mga setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Ina-update ang Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Pagayan ang pag-sign in sa Chromium</translation>
 <translation id="5398878173008909840">May available na isang bagong bersyon ng Chromium.</translation>
 <translation id="5416696090975899932">Hindi maipapakita ng Chromium ang preview ng pag-print kapag nawawala ang built-in na PDF viewer.</translation>
 <translation id="5427571867875391349">Itakda ang Chromium bilang iyong default na browser</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Değiştiğinde nesneyi klavye odağıyla vurgula</translation>
 <translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="1174073918202301297">Kısayol eklendi</translation>
+<translation id="117445914942805388">Tarama verilerini senkronize edilmiş tüm cihazlarınızdan ve Google Hesabınızdan temizlemek için <ph name="BEGIN_LINK" />senkronizasyon ayarlarına gidin<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Ya&amp;zdır...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopyalanıyor...</translation>
 <translation id="1177138678118607465">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir. Bunu istediğiniz zaman myaccount.google.com/activitycontrols/search adresinden değiştirebilirsiniz</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Cihazınızı daha kolay kullanılır duruma getirmek için erişilebilirlik özelliklerini etkinleştirin.</translation>
 <translation id="1190144681599273207">Bu dosyayı getirmek için yaklaşık olarak <ph name="FILE_SIZE" /> mobil veri kullanılacak.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Bilgisayarınızda depolanan bir dosyaya erişim}other{Bilgisayarınızda depolanan # dosyaya erişim}}</translation>
+<translation id="119092896208640858">Tarama verilerini yalnızca bu cihazdan temizleyip Google Hesabınızda tutmak için <ph name="BEGIN_LINK" />oturumu kapatın<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Smart Lock'u başlatmak için şifrenizi girin. Böylece, bir dahaki sefere telefonunuzu kullanarak <ph name="DEVICE_TYPE" /> cihazınızın kilidini açabilirsiniz.</translation>
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="119738088725604856">Ekran görüntüsü penceresi</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Raf öğesi 5</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" cihazına bağlanırken kimlik doğrulaması başarısız oldu.</translation>
 <translation id="1230807973377071856">sistem menüsü</translation>
+<translation id="1231733316453485619">Senkronizasyon açılsın mı?</translation>
 <translation id="123186018454553812">Başka bir anahtar deneyin</translation>
 <translation id="1232569758102978740">Adsız</translation>
 <translation id="1233721473400465416">Yerel ayar</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Sesi paylaş</translation>
 <translation id="2480868415629598489">Kopyaladığınız ve yapıştırdığınız verileri değiştirme</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
+<translation id="2484959914739448251">Tarama verilerini senkronize edilmiş tüm cihazlarınızdan ve Google Hesabınızdan temizlemek için <ph name="BEGIN_LINK" />senkronizasyon ayarlarına gidin<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2487067538648443797">Yeni yer işareti ekle</translation>
 <translation id="248861575772995840">Telefonunuz bulunamıyor. <ph name="DEVICE_TYPE" /> cihazınızın Bluetooth'unun açık olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Hesabınızın Google Play Store'a erişmesini sağlamak için lütfen Kimlik Sağlayıcınızı kullanarak kimliğinizi doğrulayın.</translation>
 <translation id="3459774175445953971">Son değiştirildiği tarih:</translation>
 <translation id="3461266716147554923"><ph name="URL" />, panoya kopyalanan metin ve resimleri görmek istiyor</translation>
+<translation id="3462311546193741693">Bu işlem, çoğu sitedeki oturumunuzu kapatır. Google Hesabınızda oturumunuz açık kalacağından senkronize edilmiş verileriniz temizlenebilecektir.</translation>
 <translation id="3462413494201477527">Hesap kurulumu iptal edilsin mi?</translation>
 <translation id="346431825526753">Bu hesap çocuklar içindir ve <ph name="CUSTODIAN_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="3465566417615315331">Fotoğrafınızı tıklayın</translation>
@@ -1903,6 +1908,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="38275787300541712">Bittiğinde Enter tuşuna basın</translation>
 <translation id="3827774300009121996">&amp;Tam Ekran</translation>
 <translation id="3828029223314399057">Yer işaretlerinde ara</translation>
+<translation id="3829765597456725595">SMB dosya paylaşımı</translation>
 <translation id="3830674330436234648">Oynatma mevcut değil</translation>
 <translation id="3831436149286513437">Google Drive arama önerileri</translation>
 <translation id="3831486154586836914">Pencere genel bakış moduna girildi</translation>
@@ -2625,6 +2631,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4974733135013075877">Çıkış ve çocuk kilidi</translation>
 <translation id="4977942889532008999">Erişimi Onaylayın</translation>
 <translation id="4980805016576257426">Bu uzantı kötü amaçlı yazılım içeriyor.</translation>
+<translation id="4981449534399733132">Tarama verilerini senkronize edilmiş tüm cihazlarınızdan ve Google Hesabınızdan temizlemek için <ph name="BEGIN_LINK" />oturum açın<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Web sitelerinin çerezler, JavaScript, eklentiler, coğrafi konum, mikrofon, kamera vb. özelliklere erişimini denetleyen ayarlarınızı değiştirme</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
 <translation id="49896407730300355">Saat yönünün &amp;tersine döndür</translation>
@@ -3426,6 +3433,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6146563240635539929">Videolar</translation>
 <translation id="6147020289383635445">Yazdırma önizleme başarısız oldu.</translation>
 <translation id="6148052338549899048">Uygun cihaz yok. <ph name="LINK_BEGIN" />Daha fazla bilgi.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Geçmişi bu cihazdan temizler.</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6150853954427645995">Bu dosyayı çevrimdışı kullanım için kaydetmek üzere tekrar çevrimiçi olun, dosyayı sağ tıklayın ve <ph name="OFFLINE_CHECKBOX_NAME" /> seçeneğini belirleyin.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> sitesinde arama yapmak için <ph name="SEARCH_KEY" /> düğmesine basın</translation>
@@ -3497,6 +3505,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6251870443722440887">GDI işleyicileri</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> Hizmet Şartları</translation>
 <translation id="6254503684448816922">Anahtar Uzlaşması</translation>
+<translation id="6257602895346497974">Senkronizasyonu aç...</translation>
 <translation id="6259104249628300056">Yerel ağınızdaki cihazları keşfetme</translation>
 <translation id="6263082573641595914">Microsoft CA Sürümü</translation>
 <translation id="6263284346895336537">Çok önemli değil</translation>
@@ -5029,6 +5038,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8606726445206553943">MIDI cihazlarınızı kullanma</translation>
 <translation id="8609465669617005112">Yukarı taşı</translation>
 <translation id="8615618338313291042">Gizli Mod Uygulaması: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Senkronize edilmiyor</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Dolaşım durumu</translation>
 <translation id="8620765578342452535">Ağ bağlantılarını yapılandırma</translation>

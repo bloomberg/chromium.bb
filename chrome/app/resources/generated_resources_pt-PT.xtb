@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Realçar o objeto com o foco do teclado quando é alterado</translation>
 <translation id="1173894706177603556">Mudar nome</translation>
 <translation id="1174073918202301297">Atalho adicionado</translation>
+<translation id="117445914942805388">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />aceda às definições de sincronização<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="117624967391683467">A copiar <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">A Google pode utilizar o seu histórico de navegação para personalizar a Pesquisa, os anúncios e outros serviços Google. Pode alterar esta definição em qualquer altura em myaccount.google.com/activitycontrols/search.</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Ativa as funcionalidades de acessibilidade para facilitar a utilização do dispositivo.</translation>
 <translation id="1190144681599273207">A obtenção deste ficheiro utilizará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acesso a um ficheiro armazenado no computador}other{Acesso a # ficheiros armazenados no computador}}</translation>
+<translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta Google, <ph name="BEGIN_LINK" />termine sessão<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, introduza a sua palavra-passe. Da próxima vez, pode utilizar o telemóvel para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="119738088725604856">Janela de captura de ecrã</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Artigo de prateleira 5</translation>
 <translation id="1227507814927581609">A autenticação falhou ao ligar a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">menu do sistema</translation>
+<translation id="1231733316453485619">Pretende ativar a sincronização?</translation>
 <translation id="123186018454553812">Experimentar uma chave diferente</translation>
 <translation id="1232569758102978740">Sem nome</translation>
 <translation id="1233721473400465416">Local</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Partilhar áudio</translation>
 <translation id="2480868415629598489">Modificar os dados que copia e cola</translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="2484959914739448251">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />introduza a sua frase de acesso<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2487067538648443797">Adicionar novo marcador</translation>
 <translation id="248861575772995840">Não é possível localizar o telemóvel. Certifique-se de que o Bluetooth de <ph name="DEVICE_TYPE" /> está ativado. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
@@ -1640,6 +1644,7 @@ Pretende pará-lo?</translation>
 <translation id="3459697287128633276">Para permitir que a sua conta aceda à Google Play Store, realize a autenticação junto do seu Fornecedor de identidade.</translation>
 <translation id="3459774175445953971">Última modificação:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> pretende ver o texto e as imagens copiados para a área de transferência.</translation>
+<translation id="3462311546193741693">A sua sessão é terminada na maioria dos sites. Continua com sessão iniciada na sua Conta Google para poder limpar os dados sincronizados.</translation>
 <translation id="3462413494201477527">Pretende cancelar a configuração da conta?</translation>
 <translation id="346431825526753">Esta é uma conta para crianças gerida por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Clique na sua foto</translation>
@@ -1904,6 +1909,7 @@ Pretende pará-lo?</translation>
 <translation id="38275787300541712">Prima Enter quando terminar</translation>
 <translation id="3827774300009121996">&amp;Ecrã inteiro</translation>
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
+<translation id="3829765597456725595">Partilha de ficheiros SMB</translation>
 <translation id="3830674330436234648">Reprodução não disponível</translation>
 <translation id="3831436149286513437">Sugestões de pesquisa do Google Drive</translation>
 <translation id="3831486154586836914">Modo de vista geral de janelas introduzido</translation>
@@ -2626,6 +2632,7 @@ Pretende pará-lo?</translation>
 <translation id="4974733135013075877">Sair e bloqueio para crianças</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém um software malicioso.</translation>
+<translation id="4981449534399733132">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />inicie sessão<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Altere as definições que controlam o acesso dos Sites a funcionalidades como cookies, JavaScript, plug-ins, geolocalização, microfone, câmara, etc.</translation>
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="49896407730300355">Rodar para a &amp;esquerda</translation>
@@ -3427,6 +3434,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">A pré-visualização da impressão falhou.</translation>
 <translation id="6148052338549899048">Nenhum dispositivo elegível. <ph name="LINK_BEGIN" />Saiba mais.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Limpa o histórico deste dispositivo.</translation>
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6150853954427645995">Para guardar este ficheiro para utilização offline, ligue-se novamente à Internet, clique com o botão direito do rato no ficheiro e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Prima <ph name="SEARCH_KEY" /> para pesquisar no <ph name="SITE_NAME" /></translation>
@@ -3498,6 +3506,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6251870443722440887">Identificadores de GDI</translation>
 <translation id="6251889282623539337">Termos de Utilização de <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Chave violada</translation>
+<translation id="6257602895346497974">Ativar a sincronização</translation>
 <translation id="6259104249628300056">Procurar dispositivos na rede local</translation>
 <translation id="6263082573641595914">Versão de AC Microsoft</translation>
 <translation id="6263284346895336537">Não crítica</translation>
@@ -5031,6 +5040,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8606726445206553943">Utilizar os seus dispositivos MIDI</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8615618338313291042">Aplicação em navegação anónima: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Não está a sincronizar</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Estado do roaming</translation>
 <translation id="8620765578342452535">Configurar ligações de rede</translation>

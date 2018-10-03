@@ -40,11 +40,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS ഉപയോഗിച്ച് സഹായം തേടുക</translation>
 <translation id="1795405610103747296">നിങ്ങളുടെ ഫോണിൽ Chrome ഇൻസ്‌റ്റാൾ ചെയ്യുക. ഫോണിലേക്ക് ഞങ്ങളൊരു SMS അയയ്‌ക്കും: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">ഇത് ഓഫാക്കുന്നതിലൂടെ, Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യാതെ തന്നെ Gmail പോലുള്ള Google സൈറ്റുകളിൽ നിങ്ങൾക്ക് സൈൻ ഇൻ ചെയ്യാനാവും</translation>
 <translation id="1860536484129686729">ഈ സൈറ്റിനായി, Chrome-ന് നിങ്ങളുടെ ക്യാമറ ആക്‌സസ് ചെയ്യാനുള്ള അനുമതി ആവശ്യമാണ്</translation>
 <translation id="1873233029667955273">നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസർ Google Chrome അല്ല.</translation>
 <translation id="1874309113135274312">Google Chrome ബീറ്റ (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome കാലഹരണപ്പെട്ടതാണ്</translation>
 <translation id="1915828456209461693">Chrome-നായുള്ള പുതിയൊരു അപ്ഡേറ്റ് ലഭ്യമാണ്, നിങ്ങൾ വീണ്ടും സമാരംഭിക്കുമ്പോൾ ഉടൻ അത് പ്രാബല്യത്തിലാകും.</translation>
+<translation id="1919130412786645364">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യാൻ അനുവദിക്കുക</translation>
 <translation id="2063848847527508675">അപ്‌ഡേറ്റ് പ്രയോഗത്തിൽ വരുത്താൻ Chrome OS പുനഃരാരംഭിക്കേണ്ടതുണ്ട്.</translation>
 <translation id="2084710999043359739">Chrome-ലേക്ക് ചേർക്കുക</translation>
 <translation id="2094919256425865063">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
@@ -293,6 +295,7 @@
 <translation id="9084668267983921457">സർട്ടിഫിക്കറ്റ് പരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു. Google Chrome-ൽ വീണ്ടും സൈൻ ഇൻ ചെയ്യുക അല്ലെങ്കിൽ കൂടുതൽ വിവരങ്ങൾക്ക് നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററെ ബന്ധപ്പെടുക. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{ഒരു മണിക്കൂറിൽ Chrome OS പുനഃരാരംഭിക്കും}other{Chrome OS # മണിക്കൂറിൽ പുനഃരാരംഭിക്കും}}</translation>
 <translation id="911206726377975832">നിങ്ങളുടെ ബ്രൌസിംഗ് ഡാറ്റയും ഇതോടൊപ്പം ഇല്ലാതാക്കണോ?</translation>
+<translation id="9138603949443464873">നിങ്ങളുടെ മാറ്റങ്ങൾ ബാധകമാക്കാൻ Chrome വീണ്ടും സമാരംഭിക്കുക</translation>
 <translation id="919706545465235479">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന് Chrome അപ്‌ഡേറ്റുചെയ്യുക</translation>
 <translation id="924447568950697217">Chrome-നെ നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറാക്കുക</translation>
 <translation id="989369509083708165">Google Chrome നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറാണ്</translation>

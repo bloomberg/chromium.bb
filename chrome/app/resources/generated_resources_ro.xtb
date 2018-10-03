@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Evidențiază obiectul focalizat de la tastatură când se schimbă</translation>
 <translation id="1173894706177603556">Redenumește</translation>
 <translation id="1174073918202301297">Comanda rapidă a fost adăugată</translation>
+<translation id="117445914942805388">Pentru a șterge datele de navigare de pe toate dispozitivele sincronizate și din Contul Google, <ph name="BEGIN_LINK" />accesează setările de sincronizare<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Printează...</translation>
 <translation id="117624967391683467">Se copiază <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google poate folosi istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google. Poți schimba oricând această opțiune la myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Activați funcțiile de accesibilitate, pentru a face dispozitivul mai ușor de utilizat.</translation>
 <translation id="1190144681599273207">Preluarea acestui fișier va utiliza aproximativ <ph name="FILE_SIZE" /> din datele mobile.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Accesează un fișier stocat pe computer}few{Accesează # fișiere stocate pe computer}other{Accesează # de fișiere stocate pe computer}}</translation>
+<translation id="119092896208640858">Pentru a șterge datele de navigare doar de pe acest dispozitiv, dar nu și din Contul Google, <ph name="BEGIN_LINK" />deconectează-te<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Pentru a porni Smart Lock, introdu parola. Data viitoare, poți folosi telefonul pentru a debloca dispozitivul <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Eroare necunoscută.</translation>
 <translation id="119738088725604856">Face o captură de ecran a ferestrei</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Elementul 5 din raft</translation>
 <translation id="1227507814927581609">Autentificarea nu a reușit în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="1230807973377071856">meniul sistem</translation>
+<translation id="1231733316453485619">Activezi sincronizarea?</translation>
 <translation id="123186018454553812">Încearcă altă cheie</translation>
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1233721473400465416">Limbă</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Trimite conținutul audio</translation>
 <translation id="2480868415629598489">Modifică datele pe care le copiezi și le inserezi</translation>
 <translation id="2482878487686419369">Notificări</translation>
+<translation id="2484959914739448251">Pentru a șterge datele de navigare de pe toate dispozitivele sincronizate și din Contul Google, <ph name="BEGIN_LINK" />introdu expresia de acces<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2487067538648443797">Adaugă un marcaj nou</translation>
 <translation id="248861575772995840">Telefonul nu poate fi găsit. Asigură-te că dispozitivul <ph name="DEVICE_TYPE" /> are conexiunea Bluetooth activată. &lt;a&gt;Află mai multe&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3459697287128633276">Pentru a permite contului să acceseze Magazinul Google Play, autentifică-te folosind Furnizorul de identitate.</translation>
 <translation id="3459774175445953971">Ultima modificare:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> dorește să vadă textul și imaginile copiate în clipboard</translation>
+<translation id="3462311546193741693">Te deconectează de pe majoritatea site-urilor. Vei rămâne conectat(ă) la Contul Google, astfel încât datele sincronizate să poată fi șterse.</translation>
 <translation id="3462413494201477527">Anulezi configurarea contului?</translation>
 <translation id="346431825526753">Acesta este un cont pentru copii gestionat de <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Dă clic pe fotografia ta</translation>
@@ -1903,6 +1908,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="38275787300541712">Apăsați pe Enter când ați terminat</translation>
 <translation id="3827774300009121996">&amp;Ecran complet</translation>
 <translation id="3828029223314399057">Căutați în marcaje</translation>
+<translation id="3829765597456725595">Spații comune de stocare fișiere IMM</translation>
 <translation id="3830674330436234648">Nicio redare disponibilă</translation>
 <translation id="3831436149286513437">Sugestii de căutare în Google Drive</translation>
 <translation id="3831486154586836914">S-a trecut în modul de prezentare a ferestrei</translation>
@@ -2625,6 +2631,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4974733135013075877">Ieși și blochează</translation>
 <translation id="4977942889532008999">Confirmați accesul</translation>
 <translation id="4980805016576257426">Această extensie conține programe malware.</translation>
+<translation id="4981449534399733132">Pentru a șterge datele de navigare de pe toate dispozitivele sincronizate și din Contul Google, <ph name="BEGIN_LINK" />conectează-te<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Modifică setările care controlează accesul site-ului la funcții cum ar fi cookie-urile, JavaScript, pluginurile, localizarea geografică, microfonul, camera foto etc.</translation>
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="49896407730300355">Rotiți în sens &amp;invers acelor de ceasornic</translation>
@@ -3425,6 +3432,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6146563240635539929">Videoclipuri</translation>
 <translation id="6147020289383635445">Previzualizarea înainte de printare nu a reușit.</translation>
 <translation id="6148052338549899048">Nu există dispozitive eligibile. <ph name="LINK_BEGIN" />Află mai multe.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Șterge istoricul de pe acest dispozitiv.</translation>
 <translation id="614940544461990577">Încearcă:</translation>
 <translation id="6150853954427645995">Pentru a salva acest fișier pentru utilizare offline, revino online, dă clic dreapta pe fișier și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Apasă pe <ph name="SEARCH_KEY" /> pentru a căuta în <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6251870443722440887">Handle-uri GDI</translation>
 <translation id="6251889282623539337">Termenii și condițiile <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Compromiterea cheii</translation>
+<translation id="6257602895346497974">Activează sincronizarea...</translation>
 <translation id="6259104249628300056">Găsește dispozitive în rețeaua locală</translation>
 <translation id="6263082573641595914">Versiune CA Microsoft</translation>
 <translation id="6263284346895336537">Non-critic</translation>
@@ -5029,6 +5038,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8606726445206553943">Folosească dispozitive MIDI</translation>
 <translation id="8609465669617005112">Mutați mai sus</translation>
 <translation id="8615618338313291042">Aplicație incognito: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Nu se sincronizează</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stare roaming</translation>
 <translation id="8620765578342452535">Configurează conexiunile la rețea</translation>

@@ -27,6 +27,7 @@
 <translation id="1869480248812203386">Bạn có thể giúp Chromium an toàn và dễ sử dụng hơn bằng cách tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra.</translation>
 <translation id="1881322772814446296">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo cấu hình mới để giữ cho dữ liệu Chromium hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{Đã có bản cập nhật Chromium}=1{Đã có bản cập nhật Chromium}other{Đã có bản cập nhật Chromium từ # ngày trước}}</translation>
+<translation id="1911763535808217981">Bằng việc tắt tính năng này, bạn có thể đăng nhập vào các trang web của Google, chẳng hạn như Gmail mà không cần đăng nhập vào Chromium</translation>
 <translation id="1929939181775079593">Chromium không phản hồi. Chạy lại ngay bây giờ?</translation>
 <translation id="1966382378801805537">Chromium không thể xác định hoặc đặt trình duyệt mặc định</translation>
 <translation id="2008474315282236005">Thao tác này sẽ xóa 1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
@@ -116,8 +117,10 @@
 <translation id="5032989939245619637">Lưu chi tiết trong Chromium</translation>
 <translation id="5045248521775609809">Mang Chrome tới mọi nơi</translation>
 <translation id="5116586539350239523">Chromium sẽ lưu trữ an toàn chi tiết cá nhân của bạn nên bạn không cần nhập lại thông tin này.</translation>
+<translation id="5277894862589591112">Để áp dụng các mục thay đổi của bạn, hãy chạy lại Chromium</translation>
 <translation id="5358375970380395591">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Đang cập nhật Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Cho phép đăng nhập vào Chromium</translation>
 <translation id="5398878173008909840">Hiện đã có phiên bản Chromium mới.</translation>
 <translation id="5416696090975899932">Chromium không thể hiển thị chế độ xem trước bản in khi thiếu trình xem PDF tích hợp.</translation>
 <translation id="5427571867875391349">Đặt Chromium là trình duyệt mặc định của bạn</translation>

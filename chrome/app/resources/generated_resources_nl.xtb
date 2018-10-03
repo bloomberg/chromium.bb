@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Markeer het object met toetsenbordfocus wanneer dit wordt gewijzigd</translation>
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="1174073918202301297">Snelkoppeling toegevoegd</translation>
+<translation id="117445914942805388">Als je browsergegevens wilt wissen van al je gesynchroniseerde apparaten en je Google-account, <ph name="BEGIN_LINK" />ga je naar synchronisatie-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Afdrukken...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopiëren...</translation>
 <translation id="1177138678118607465">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren. Je kunt dit op elk gewenst moment wijzigen via myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Schakel toegankelijkheidsfuncties in om je apparaat gebruiksvriendelijker te maken.</translation>
 <translation id="1190144681599273207">Voor het ophalen van dit bestand wordt ongeveer <ph name="FILE_SIZE" /> aan mobiele data gebruikt.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Toegang tot een bestand dat op je computer is opgeslagen}other{Toegang tot # bestanden die op je computer zijn opgeslagen}}</translation>
+<translation id="119092896208640858">Als je browsergegevens alleen van dit apparaat wilt wissen, maar ze wilt behouden in je Google-account, <ph name="BEGIN_LINK" />log je uit<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Als je Smart Lock wilt starten, geef je je wachtwoord op. De volgende keer kun je je <ph name="DEVICE_TYPE" /> ontgrendelen met je telefoon.</translation>
 <translation id="1195447618553298278">Onbekende fout</translation>
 <translation id="119738088725604856">Screenshot van venster</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Plankartikel 5</translation>
 <translation id="1227507814927581609">Verificatie mislukt tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="1230807973377071856">systeemmenu</translation>
+<translation id="1231733316453485619">Synchronisatie inschakelen?</translation>
 <translation id="123186018454553812">Een andere sleutel proberen</translation>
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1233721473400465416">Landinstelling</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Audio delen</translation>
 <translation id="2480868415629598489">Gegevens aanpassen die je kopieert en plakt</translation>
 <translation id="2482878487686419369">Meldingen</translation>
+<translation id="2484959914739448251">Als je browsergegevens wilt wissen van al je gesynchroniseerde apparaten en je Google-account, <ph name="BEGIN_LINK" />geef je je wachtwoordzin op<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2487067538648443797">Nieuwe bladwijzer toevoegen</translation>
 <translation id="248861575772995840">Kan je telefoon niet vinden. Zorg ervoor dat Bluetooth is ingeschakeld op je <ph name="DEVICE_TYPE" />. &lt;a&gt;Meer informatie&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Als je je account wilt inschakelen voor toegang tot de Google Play Store, moet je verifiëren via je identiteitsprovider.</translation>
 <translation id="3459774175445953971">Laatst bijgewerkt:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> wil tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd</translation>
+<translation id="3462311546193741693">Hiermee word je uitgelogd bij de meeste sites. Je blijft ingelogd op je Google-account zodat je gesynchroniseerde gegevens kunnen worden gewist.</translation>
 <translation id="3462413494201477527">Accountconfiguratie annuleren?</translation>
 <translation id="346431825526753">Dit is een account voor kinderen dat wordt beheerd door <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Klik op je foto</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Druk op Enter als je klaar bent</translation>
 <translation id="3827774300009121996">&amp;Volledig scherm</translation>
 <translation id="3828029223314399057">Zoeken in bladwijzers</translation>
+<translation id="3829765597456725595">SMB-fileshare</translation>
 <translation id="3830674330436234648">Afspelen is niet beschikbaar</translation>
 <translation id="3831436149286513437">Zoeksuggesties voor Google Drive</translation>
 <translation id="3831486154586836914">Modus Vensteroverzicht ingeschakeld</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Afsluiten en kinderslot</translation>
 <translation id="4977942889532008999">Toegang bevestigen</translation>
 <translation id="4980805016576257426">Deze extensie bevat malware.</translation>
+<translation id="4981449534399733132">Als je browsergegevens wilt wissen van al je gesynchroniseerde apparaten en je Google-account, <ph name="BEGIN_LINK" />log je in<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Je instellingen wijzigen die de toegang van websites bepalen tot functies zoals cookies, JavaScript, plug-ins, geografische locatie, microfoon, camera, enzovoort</translation>
 <translation id="4988526792673242964">Pagina's</translation>
 <translation id="49896407730300355">Linksom &amp;draaien</translation>
@@ -3426,6 +3433,7 @@
 <translation id="6146563240635539929">Video's</translation>
 <translation id="6147020289383635445">Kan afdrukvoorbeeld niet weergeven.</translation>
 <translation id="6148052338549899048">Geen geschikte apparaten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Hiermee wordt de geschiedenis van dit apparaat gewist.</translation>
 <translation id="614940544461990577">Probeer het volgende:</translation>
 <translation id="6150853954427645995">Als je dit bestand wilt opslaan voor offline gebruik, ga je weer online, klik je met de rechtermuisknop op het bestand en selecteer je de optie <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Druk op <ph name="SEARCH_KEY" /> om <ph name="SITE_NAME" /> te doorzoeken</translation>
@@ -3497,6 +3505,7 @@
 <translation id="6251870443722440887">GDI-handles</translation>
 <translation id="6251889282623539337">Servicevoorwaarden voor <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Inbreuk op sleutel</translation>
+<translation id="6257602895346497974">Synchronisatie inschakelen...</translation>
 <translation id="6259104249628300056">Apparaten ontdekken in je lokale netwerk</translation>
 <translation id="6263082573641595914">CA-versie van Microsoft</translation>
 <translation id="6263284346895336537">Niet kritiek</translation>
@@ -5029,6 +5038,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8606726445206553943">Je MIDI-apparaten gebruiken</translation>
 <translation id="8609465669617005112">Omhoog</translation>
 <translation id="8615618338313291042">Incognitotoepassing: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Wordt niet gesynchroniseerd</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8620765578342452535">Netwerkverbindingen configureren</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">键盘焦点所在对象有变更时突出显示</translation>
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1174073918202301297">快捷方式已添加</translation>
+<translation id="117445914942805388">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />访问同步设置<ph name="END_LINK" />。</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="117624967391683467">正在复制<ph name="FILE_NAME" />…</translation>
 <translation id="1177138678118607465">Google 可能会使用您的浏览记录为您量身定制 Google 搜索、广告和其他 Google 服务。您随时可通过 myaccount.google.com/activitycontrols/search 更改此设置</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">启用辅助功能，以便更轻松地使用您的设备。</translation>
 <translation id="1190144681599273207">抓取此文件将使用约 <ph name="FILE_SIZE" /> 移动数据。</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{可访问您计算机上存储的 1 个文件}other{可访问您计算机上存储的 # 个文件}}</translation>
+<translation id="119092896208640858">要想仅清除此设备中的浏览数据而保留您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />退出<ph name="END_LINK" />。</translation>
 <translation id="1195076408729068893">要启动 Smart Lock，请输入您的密码。下次，您就能使用配对手机来解锁您的 <ph name="DEVICE_TYPE" /> 了。</translation>
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="119738088725604856">窗口的屏幕截图</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">栏中第 5 项</translation>
 <translation id="1227507814927581609">连接到“<ph name="DEVICE_NAME" />”时身份验证失败。</translation>
 <translation id="1230807973377071856">系统菜单</translation>
+<translation id="1231733316453485619">开启同步功能？</translation>
 <translation id="123186018454553812">试试其他密钥</translation>
 <translation id="1232569758102978740">无标题</translation>
 <translation id="1233721473400465416">语言区域</translation>
@@ -985,6 +988,7 @@
 <translation id="247949520305900375">分享音频</translation>
 <translation id="2480868415629598489">修改您复制和粘贴的数据</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2484959914739448251">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />输入您的密码<ph name="END_LINK" />。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2487067538648443797">添加新书签</translation>
 <translation id="248861575772995840">找不到您的手机。请确保已为您的 <ph name="DEVICE_TYPE" /> 开启蓝牙。&lt;a&gt;了解详情&lt;/a&gt;</translation>
@@ -1633,6 +1637,7 @@
 <translation id="3459697287128633276">若想让您的帐号有权访问 Google Play 商店，请通过您的身份提供商进行身份验证。</translation>
 <translation id="3459774175445953971">最后修改日期：</translation>
 <translation id="3461266716147554923"><ph name="URL" /> 想查看复制到剪贴板的文字和图片</translation>
+<translation id="3462311546193741693">会致使您从大多数网站退出。但您的 Google 帐号仍会保持登录状态，以便清除您的已同步数据。</translation>
 <translation id="3462413494201477527">要取消帐号设置吗？</translation>
 <translation id="346431825526753">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
 <translation id="3465566417615315331">点击您的照片</translation>
@@ -1897,6 +1902,7 @@
 <translation id="38275787300541712">完成后按 Enter</translation>
 <translation id="3827774300009121996">全屏幕(&amp;F)</translation>
 <translation id="3828029223314399057">搜索书签</translation>
+<translation id="3829765597456725595">SMB 文件共享</translation>
 <translation id="3830674330436234648">无法播放</translation>
 <translation id="3831436149286513437">Google 云端硬盘搜索建议</translation>
 <translation id="3831486154586836914">已进入窗口概览模式</translation>
@@ -2618,6 +2624,7 @@
 <translation id="4974733135013075877">退出并启用 childlock 功能</translation>
 <translation id="4977942889532008999">确认访问</translation>
 <translation id="4980805016576257426">此扩展程序包含恶意软件。</translation>
+<translation id="4981449534399733132">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />登录<ph name="END_LINK" />。</translation>
 <translation id="498294082491145744">更改您用于控制以下内容的设置：网站对 Cookie、JavaScript、插件、地理位置信息、麦克风、摄像头等功能的使用权限。</translation>
 <translation id="4988526792673242964">页码</translation>
 <translation id="49896407730300355">逆时针旋转(&amp;O)</translation>
@@ -3412,6 +3419,7 @@
 <translation id="6146563240635539929">视频</translation>
 <translation id="6147020289383635445">打印预览失败。</translation>
 <translation id="6148052338549899048">没有任何符合条件的设备。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" />。</translation>
+<translation id="6148716538476291841">清除此设备中的历史记录。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6150853954427645995">要保存此文件以供离线使用，请恢复联网状态，右键点击文件，然后选择<ph name="OFFLINE_CHECKBOX_NAME" />选项。</translation>
 <translation id="6151323131516309312">按 <ph name="SEARCH_KEY" /> 可通过 <ph name="SITE_NAME" /> 进行搜索</translation>
@@ -3483,6 +3491,7 @@
 <translation id="6251870443722440887">GDI处理函数</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> 服务条款</translation>
 <translation id="6254503684448816922">密钥泄漏</translation>
+<translation id="6257602895346497974">开启同步功能…</translation>
 <translation id="6259104249628300056">在您的本地网络中查找设备</translation>
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
 <translation id="6263284346895336537">非关键</translation>
@@ -5013,6 +5022,7 @@
 <translation id="8606726445206553943">使用您的 MIDI 设备</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8615618338313291042">隐身模式下使用的应用...<ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">未同步</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫游状态</translation>
 <translation id="8620765578342452535">配置网络连接</translation>

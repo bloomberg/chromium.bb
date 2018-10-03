@@ -2213,7 +2213,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="6944167205014013774">Informatie over het gebruik van Linux-apps wordt teruggestuurd naar de server.
 
-      Als het beleid is ingesteld op 'False' of niet is ingesteld, wordt er geen gebruiksinformatie gerapporteerd. Als het beleid is ingesteld op 'True', wordt er gebruiksinformatie gerapporteerd.
+      Als het beleid is ingesteld op False of niet is ingesteld, wordt er geen gebruiksinformatie gerapporteerd. Als het beleid is ingesteld op True, wordt er gebruiksinformatie gerapporteerd.
 
       Dit beleid is alleen van toepassing als ondersteuning voor Linux-apps is ingeschakeld.</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>

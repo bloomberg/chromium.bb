@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Pri zmene zvýrazňovať objekt so zameraním klávesnice</translation>
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="1174073918202301297">Odkaz bol pridaný</translation>
+<translation id="117445914942805388">Ak chcete vymazať dáta prehliadania zo všetkých synchronizovaných zariadení a účtu Google, <ph name="BEGIN_LINK" />prejdite do nastavení synchronizácie<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Tlačiť...</translation>
 <translation id="117624967391683467">Prebieha kopírovanie súboru <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google môže použiť vašu históriu prehliadania na prispôsobenie reklám vo vyhľadávaní a ďalších služieb Googlu. Môžete to kedykoľvek zmeniť na adrese myaccount.google.com/activitycontrols/search.</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Povoliť funkcie zjednodušenia prístupu na jednoduchšie používanie zariadenia.</translation>
 <translation id="1190144681599273207">Načítanie tohto súboru spotrebuje približne <ph name="FILE_SIZE" /> mobilných dát.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Pristupujte k súboru uloženému vo vašom počítači}few{Pristupujte k # súborom uloženým vo vašom počítači}many{Pristupujte k # súboru uloženému vo vašom počítači}other{Pristupujte k # súborom uloženým vo vašom počítači}}</translation>
+<translation id="119092896208640858">Ak chcete vymazať dáta prehliadania iba z tohto zariadenia a ponechať ich v účte Google, <ph name="BEGIN_LINK" />odhláste sa<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Ak chcete spustiť Smart Lock, zadajte heslo. Nabudúce budete môcť svoje zariadenie <ph name="DEVICE_TYPE" /> odomknúť telefónom.</translation>
 <translation id="1195447618553298278">Neznáma chyba.</translation>
 <translation id="119738088725604856">Okno snímky obrazovky</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">5. položka na poličke</translation>
 <translation id="1227507814927581609">Overenie totožnosti počas pripájania k zariadeniu <ph name="DEVICE_NAME" /> zlyhalo.</translation>
 <translation id="1230807973377071856">ponuka systému</translation>
+<translation id="1231733316453485619">Chcete zapnúť synchronizáciu?</translation>
 <translation id="123186018454553812">Skúste použiť iný kľúč</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1233721473400465416">Jazyk</translation>
@@ -989,6 +992,7 @@ dotyku</translation>
 <translation id="247949520305900375">Zdieľať zvuk</translation>
 <translation id="2480868415629598489">Upravovať dáta, ktoré kopírujete a prilepujete</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
+<translation id="2484959914739448251">Ak chcete vymazať dáta prehliadania zo všetkých synchronizovaných zariadení a účtu Google, <ph name="BEGIN_LINK" />zadajte prístupovú frázu<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
 <translation id="2487067538648443797">Pridať novú záložku</translation>
 <translation id="248861575772995840">Telefón sa nedarí nájsť. Skontrolujte, či je v zariadení <ph name="DEVICE_TYPE" /> zapnuté rozhranie Bluetooth. &lt;a&gt;Ďalšie informácie&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@ dotyku</translation>
 <translation id="3459697287128633276">Ak chcete povoliť účtu prístup do Obchodu Google Play, overte svoju totožnosť pomocou poskytovateľa identity.</translation>
 <translation id="3459774175445953971">Posledná úprava:</translation>
 <translation id="3461266716147554923">Web <ph name="URL" /> chce získať prístup k textu a obrázkom pridaným do schránky</translation>
+<translation id="3462311546193741693">Odhlási vás z väčšiny webov, ale nie z účtu Google, takže sa synchronizované dáta budú dať vymazať.</translation>
 <translation id="3462413494201477527">Zrušiť založenie účtu?</translation>
 <translation id="346431825526753">Toto je detský účet spravovaný používateľom <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Kliknite na svoju fotku</translation>
@@ -1903,6 +1908,7 @@ dotyku</translation>
 <translation id="38275787300541712">Po dokončení stlačte kláves Enter</translation>
 <translation id="3827774300009121996">&amp;Celá obrazovka</translation>
 <translation id="3828029223314399057">Prehľadať záložky</translation>
+<translation id="3829765597456725595">Zdieľané úložisko SMB</translation>
 <translation id="3830674330436234648">Prehrávanie nie je k dispozícii</translation>
 <translation id="3831436149286513437">Návrhy vyhľadávania z Disku Google</translation>
 <translation id="3831486154586836914">Vstúpili ste do režimu prehľadu okien</translation>
@@ -2625,6 +2631,7 @@ dotyku</translation>
 <translation id="4974733135013075877">Ukončiť a aktivovať detskú zámku</translation>
 <translation id="4977942889532008999">Potvrdenie prístupu</translation>
 <translation id="4980805016576257426">Toto rozšírenie obsahuje malvér.</translation>
+<translation id="4981449534399733132">Ak chcete vymazať dáta prehliadania zo všetkých synchronizovaných zariadení a účtu Google, <ph name="BEGIN_LINK" />prihláste sa<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Meniť nastavenia, ktoré ovládajú prístup webových stránok k funkciám, ako sú súbory cookie, JavaScript, doplnky, geolokácia, mikrofón, fotoaparát atď.</translation>
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="49896407730300355">Otočiť &amp;proti smeru hodinových ručičiek</translation>
@@ -3425,6 +3432,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6146563240635539929">Videá</translation>
 <translation id="6147020289383635445">Ukážka pred tlačou zlyhala</translation>
 <translation id="6148052338549899048">Žiadne zariadenia spĺňajúce kritériá. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Vymaže históriu z tohto zariadenia.</translation>
 <translation id="614940544461990577">Vyskúšajte:</translation>
 <translation id="6150853954427645995">Ak chcete tento súbor uložiť na použitie offline, prejdite online, kliknite na súbor pravým tlačidlom a vyberte možnosť <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Stlačte kláves <ph name="SEARCH_KEY" /> na prehľadanie webu <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6251870443722440887">GDI – popisovače</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> – Zmluvné podmienky</translation>
 <translation id="6254503684448816922">Ohrozenie zabezpečenia kľúča</translation>
+<translation id="6257602895346497974">Zapnúť synchronizáciu…</translation>
 <translation id="6259104249628300056">Objavovať zariadenia vo vašej miestnej sieti</translation>
 <translation id="6263082573641595914">Certifikačná autorita spoločnosti Microsoft – verzia</translation>
 <translation id="6263284346895336537">Nie je kritický</translation>
@@ -5029,6 +5038,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8606726445206553943">Používať zariadenia MIDI</translation>
 <translation id="8609465669617005112">Presunúť nahor</translation>
 <translation id="8615618338313291042">Aplikácia inkognito: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Nesynchronizuje sa</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Stav roamingu</translation>
 <translation id="8620765578342452535">Konfigurovať sieťové pripojenia</translation>

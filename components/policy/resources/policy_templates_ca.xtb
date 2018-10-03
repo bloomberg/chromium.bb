@@ -2126,7 +2126,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política s'estableix en "false" o es deixa sense establir, no es proporciona
       informació d'ús. Si s'estableix en "true", es proporciona informació d'ús.
 
-      Aquesta política només s'aplica si l'assistència de l'aplicació per a Linux està activada.</translation>
+      Aquesta política només s'aplica si la compatibilitat amb les aplicacions per a Linux està activada.</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
 <translation id="6965859329738616662">Especifica si es permet que un model d'atenuació intel·ligent ampliï el temps fins que s'atenua la pantalla.

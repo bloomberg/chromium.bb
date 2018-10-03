@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1795405610103747296">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a következő telefonszámra: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">A beállítás kikapcsolásával anélkül jelentkezhet be a Google-webhelyekre (pl. Gmail), hogy a Chrome-ba is bejelentkezne</translation>
 <translation id="1860536484129686729">A Chrome-nak engedélyre van szüksége ahhoz, hogy hozzáférjen a kamerához ennél a webhelynél</translation>
 <translation id="1873233029667955273">Nem a Google Chrome az alapértelmezett böngésző</translation>
 <translation id="1874309113135274312">Google Chrome Béta (mDNS-In)</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="1915828456209461693">Új Chrome-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép.</translation>
+<translation id="1919130412786645364">Chrome-bejelentkezés engedélyezése</translation>
 <translation id="2063848847527508675">A frissítés alkalmazásához újra kell indítani a Chrome OS-t.</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="2094919256425865063">Biztosan kilép a Chrome-ból?</translation>
@@ -285,6 +287,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="9084668267983921457">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{A Chrome OS 1 órán belül újraindul}other{A Chrome OS # órán belül újraindul}}</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
+<translation id="9138603949443464873">A módosítások alkalmazásához indítsa újra a Chrome-ot</translation>
 <translation id="919706545465235479">Frissítse a Chrome-ot a szinkronizálás megkezdéséhez</translation>
 <translation id="924447568950697217">A Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="989369509083708165">A Google Chrome az alapértelmezett böngésző</translation>

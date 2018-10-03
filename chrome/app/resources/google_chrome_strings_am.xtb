@@ -40,11 +40,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome ስርዓተ ክወናን መጠቀም ላይ እገዛን ያግኙ</translation>
 <translation id="1795405610103747296">Chromeን በእርስዎ ስልክ ላይ ይጫኑት። አንድ ኤስኤምኤስ ወደ ስልክዎ እንልካለን። <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">ይህንን በማጥፋት፣ እንደ Gmail ወደ መሰሉ የGoogle ጣቢያዎች ወደ Chrome በመለያ ሳይገቡ መግባት ይችላሉ</translation>
 <translation id="1860536484129686729">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ ለመድረስ ፈቃድ ያስፈልገዋል</translation>
 <translation id="1873233029667955273">Google Chrome ነባሪ አሳሽዎ አይደለም</translation>
 <translation id="1874309113135274312">Google Chrome ቅድመ-ይሁነታ (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ጊዜው አልፎበታል</translation>
 <translation id="1915828456209461693">ለChrome አዲስ ዝማኔ ይገኛል እና ልክ ዳግም ሲያስጀምሩት ይተገበራል።</translation>
+<translation id="1919130412786645364">የChrome በመለያ መግባትን ይፍቀዱ</translation>
 <translation id="2063848847527508675">Chrome OS ዝማኔውን ለመተግበር ዳግም መጀመር አለበት።</translation>
 <translation id="2084710999043359739">ወደ Chrome አክል</translation>
 <translation id="2094919256425865063">የሆነው ሆኖ Chrome ይቁም?</translation>
@@ -293,6 +295,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="9084668267983921457">የማረጋገጫ ዕውቅና ማረጋገጫ አልተሳካም። እባክዎ እንደ እንደገና ወደ Google Chrome ይግቡ ወይም ለተጨማሪ መረጃ አስተዳዳሪዎን ያነጋግሩ። <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS በአንድ ሰዓት ውስጥ ዳግም ይጀምራልx}one{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}other{Chrome OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
+<translation id="9138603949443464873">የእርስዎን ለውጦች ተፈጻሚ ለማድረግ፣ Chromeን ዳግም ያስጀምሩ</translation>
 <translation id="919706545465235479">ስምረትን ለመጀመር Chromeን ያዘምኑ</translation>
 <translation id="924447568950697217">Chromeን የእርስዎ ነባሪ አሳሽ ያድርጉት</translation>
 <translation id="989369509083708165">Google Chrome ነባሪ አሳሽዎ ነው</translation>

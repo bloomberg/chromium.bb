@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Выделять элементы, выбранные с помощью клавиатуры</translation>
 <translation id="1173894706177603556">Переименовать</translation>
 <translation id="1174073918202301297">Ярлык добавлен</translation>
+<translation id="117445914942805388">Чтобы удалить данные о работе в браузере со всех синхронизированных устройств и из аккаунта Google, перейдите в <ph name="BEGIN_LINK" />настройки синхронизации<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="117624967391683467">Копирование файла "<ph name="FILE_NAME" />"…</translation>
 <translation id="1177138678118607465">Google может использовать историю просмотров, чтобы персонализировать объявления, а также Поиск и другие сервисы. Чтобы настроить эту функцию, перейдите на страницу myaccount.google.com/activitycontrols/search.</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Включите специальные возможности, чтобы сделать устройство более удобным.</translation>
 <translation id="1190144681599273207">При загрузке этого файла по мобильному каналу передачи данных будет использовано около <ph name="FILE_SIZE" /> трафика.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Доступен 1 файл на компьютере}one{Доступен # файл на компьютере}few{Доступно # файла на компьютере}many{Доступно # файлов на компьютере}other{Доступно # файла на компьютере}}</translation>
+<translation id="119092896208640858">Чтобы удалить данные о работе в браузере с этого устройства, но сохранить их в аккаунте Google, <ph name="BEGIN_LINK" />выйдите из системы<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Чтобы включить Smart Lock, введите пароль. После этого вы сможете снимать блокировку устройства <ph name="DEVICE_TYPE" /> с помощью телефона.</translation>
 <translation id="1195447618553298278">Неизвестная ошибка.</translation>
 <translation id="119738088725604856">Скриншот окна</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">5-й объект на панели запуска</translation>
 <translation id="1227507814927581609">При подключении к "<ph name="DEVICE_NAME" />" произошла ошибка аутентификации.</translation>
 <translation id="1230807973377071856">Системное меню</translation>
+<translation id="1231733316453485619">Включить синхронизацию?</translation>
 <translation id="123186018454553812">Используйте другой ключ</translation>
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1233721473400465416">Региональные настройки</translation>
@@ -987,6 +990,7 @@
 <translation id="247949520305900375">Общий доступ к аудио</translation>
 <translation id="2480868415629598489">Изменение копируемых и вставляемых данных</translation>
 <translation id="2482878487686419369">Уведомления</translation>
+<translation id="2484959914739448251">Чтобы удалить данные о работе в браузере со всех синхронизированных устройств и из аккаунта Google, <ph name="BEGIN_LINK" />введите кодовую фразу<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2487067538648443797">Новая закладка</translation>
 <translation id="248861575772995840">Телефон не обнаружен. Убедитесь, что на устройстве <ph name="DEVICE_TYPE" /> включен Bluetooth. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
@@ -1640,6 +1644,7 @@
 <translation id="3459697287128633276">Чтобы предоставить аккаунту доступ к Google Play, введите данные, полученные от поставщика идентификационной информации.</translation>
 <translation id="3459774175445953971">Изменен:</translation>
 <translation id="3461266716147554923">Сайт <ph name="URL" /> запрашивает доступ к тексту и изображениям, скопированным в буфер обмена.</translation>
+<translation id="3462311546193741693">Вы выйдете из системы на большинстве сайтов, но останетесь в аккаунте Google и сможете удалить синхронизированные данные.</translation>
 <translation id="3462413494201477527">Отменить создание аккаунта?</translation>
 <translation id="346431825526753">Этим детским аккаунтом управляет <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Нажмите на свое фото</translation>
@@ -1904,6 +1909,7 @@
 <translation id="38275787300541712">После завершения нажмите клавишу Enter</translation>
 <translation id="3827774300009121996">Полноэкранный режим</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
+<translation id="3829765597456725595">Общая папка SMB</translation>
 <translation id="3830674330436234648">Воспроизведение невозможно</translation>
 <translation id="3831436149286513437">Автозаполнение при поиске на Google Диске</translation>
 <translation id="3831486154586836914">Активирован режим обзора.</translation>
@@ -2626,6 +2632,7 @@
 <translation id="4974733135013075877">Выйти и заблокировать</translation>
 <translation id="4977942889532008999">Подтверждение доступа</translation>
 <translation id="4980805016576257426">Это расширение содержит вредоносное ПО.</translation>
+<translation id="4981449534399733132">Чтобы удалить данные о работе в браузере со всех синхронизированных устройств и из аккаунта Google, <ph name="BEGIN_LINK" />войдите в систему<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Изменить настройки доступа сайтов к файлам cookie, JavaScript, плагинам, геоданным, микрофону, камере и другим функциям</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="49896407730300355">Повернуть п&amp;ротив часовой стрелки</translation>
@@ -3426,6 +3433,7 @@
 <translation id="6146563240635539929">Видео</translation>
 <translation id="6147020289383635445">Произошла ошибка предварительного просмотра печати.</translation>
 <translation id="6148052338549899048">Нет подходящих устройств. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Удаляет историю с этого устройства.</translation>
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
 <translation id="6150853954427645995">Чтобы работать с этим файлом в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
 <translation id="6151323131516309312">Нажмите <ph name="SEARCH_KEY" /> для поиска на <ph name="SITE_NAME" /></translation>
@@ -3497,6 +3505,7 @@
 <translation id="6251870443722440887">GDI-дескрипторы</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> – Условия использования</translation>
 <translation id="6254503684448816922">Ключ скомпрометирован</translation>
+<translation id="6257602895346497974">Включить синхронизацию</translation>
 <translation id="6259104249628300056">обнаружение устройств в вашей локальной сети</translation>
 <translation id="6263082573641595914">Версия ЦС Microsoft</translation>
 <translation id="6263284346895336537">Не критично</translation>
@@ -5030,6 +5039,7 @@
 <translation id="8606726445206553943">использование MIDI-устройств</translation>
 <translation id="8609465669617005112">Переместить вверх</translation>
 <translation id="8615618338313291042">Приложение в режиме инкогнито: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Синхронизация отключена</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Статус роуминга</translation>
 <translation id="8620765578342452535">Настройка сетевых подключений</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Istaknite objekt fokusom na tipkovnici kada se promijeni</translation>
 <translation id="1173894706177603556">Preimenuj</translation>
 <translation id="1174073918202301297">Prečac je dodan</translation>
+<translation id="117445914942805388">Da biste izbrisali podatke o pregledavanju sa svih svojih sinkroniziranih uređaja i svojeg Google računa, <ph name="BEGIN_LINK" />otvorite postavke sinkronizacije<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Ispis...</translation>
 <translation id="117624967391683467">Kopiranje datoteke <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google može upotrebljavati vašu povijest pregledavanja za prilagodbu pretraživanja, oglasa i drugih Googleovih usluga. To možete promijeniti u bilo kojem trenutku na stranici myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Omogućite značajke pristupačnosti radi jednostavnije upotrebe uređaja.</translation>
 <translation id="1190144681599273207">Dohvaćanje te datoteke potrošit će približno <ph name="FILE_SIZE" /> mobilnih podataka.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Pristup datoteci spremljenoj na računalu}one{Pristup do # datoteke spremljene na računalu}few{Pristup do # datoteke spremljene na računalu}other{Pristup do # datoteka spremljenih na računalu}}</translation>
+<translation id="119092896208640858">Da biste podatke o pregledavanju izbrisali samo s ovog uređaja, a zadržali ih na svojem Google računu, <ph name="BEGIN_LINK" />odjavite se<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Da biste pokrenuli Smart Lock, unesite zaporku. Sljedeći ćete put <ph name="DEVICE_TYPE" /> moći otključati telefonom.</translation>
 <translation id="1195447618553298278">Nepoznata pogreška.</translation>
 <translation id="119738088725604856">Prozor snimke zaslona</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Stavka police 5</translation>
 <translation id="1227507814927581609">Autentifikacija nije uspjela prilikom povezivanja s uređajem "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">Izbornik sustava</translation>
+<translation id="1231733316453485619">Želite li uključiti sinkronizaciju?</translation>
 <translation id="123186018454553812">Pokušajte s nekim drugim ključem</translation>
 <translation id="1232569758102978740">Neimenovano</translation>
 <translation id="1233721473400465416">Oznaka zemlje/jezika</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Podijeli zvuk</translation>
 <translation id="2480868415629598489">izmjenjivati podatke koje kopirate i lijepite</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
+<translation id="2484959914739448251">Da biste izbrisali podatke o pregledavanju sa svih svojih sinkroniziranih uređaja i svojeg Google računa, <ph name="BEGIN_LINK" />unesite svoju šifru<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2487067538648443797">Dodaj novu oznaku</translation>
 <translation id="248861575772995840">Telefon nije moguće pronaći. Provjerite je li na uređaju <ph name="DEVICE_TYPE" /> uključen Bluetooth. &lt;a&gt;Saznajte više&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Da biste omogućili računu pristup Trgovini Google Play, autentificirajte se pri Davatelju identiteta.</translation>
 <translation id="3459774175445953971">Zadnje izmjene:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> želi vidjeti tekst i slike kopirane u međuspremnik</translation>
+<translation id="3462311546193741693">Odjavit ćete se s većine web-lokacija. Ostat ćete prijavljeni na Google račun kako bi se sinkronizirani podaci mogli izbrisati.</translation>
 <translation id="3462413494201477527">Želite li otkazati izradu računa?</translation>
 <translation id="346431825526753">Ovo je račun za djecu kojim upravlja <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Kliknite svoju fotografiju</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Na kraju pritisnite Enter</translation>
 <translation id="3827774300009121996">&amp;Cijeli zaslon</translation>
 <translation id="3828029223314399057">Pretraži oznake</translation>
+<translation id="3829765597456725595">SMB dijeljenje datoteka</translation>
 <translation id="3830674330436234648">Nema dostupnih reprodukcija</translation>
 <translation id="3831436149286513437">Prijedlozi za pretraživanje Google diska</translation>
 <translation id="3831486154586836914">Otvoren je način pregleda u prozoru</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Zatvori i zaključaj</translation>
 <translation id="4977942889532008999">Potvrdite pristup</translation>
 <translation id="4980805016576257426">Proširenje sadrži zlonamjerni softver.</translation>
+<translation id="4981449534399733132">Da biste izbrisali podatke o pregledavanju sa svih svojih sinkroniziranih uređaja i svojeg Google računa, <ph name="BEGIN_LINK" />prijavite se<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Mijenja postavke koje upravljaju pristupom web-lokacija značajkama kao što su kolačići, JavaScript, priključci, geolokacija, mikrofon, fotoaparat itd.</translation>
 <translation id="4988526792673242964">Stranice</translation>
 <translation id="49896407730300355">Zakreni u smjeru suprotnom od &amp;kretanja kazaljke na satu</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">Videozapisi</translation>
 <translation id="6147020289383635445">Pregled ispisa neuspješan.</translation>
 <translation id="6148052338549899048">Nema uređaja koji ispunjavaju uvjete. <ph name="LINK_BEGIN" />Saznajte više.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Briše povijest na ovom uređaju.</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
 <translation id="6150853954427645995">Da biste spremili tu datoteku za izvanmrežnu upotrebu, ponovo se povežite s internetom, kliknite datoteku desnom tipkom i odaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pritisnite <ph name="SEARCH_KEY" />da biste pretražili <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">Rukuje GDI</translation>
 <translation id="6251889282623539337">Uvjeti pružanja usluge domene <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Kompromis ključa</translation>
+<translation id="6257602895346497974">Uključite sinkronizaciju...</translation>
 <translation id="6259104249628300056">otkrivati uređaje na vašoj lokalnoj mreži</translation>
 <translation id="6263082573641595914">Microsoft CA verzija</translation>
 <translation id="6263284346895336537">Nije kritično</translation>
@@ -5030,6 +5039,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8606726445206553943">upotrebljavati vaše MIDI uređaje</translation>
 <translation id="8609465669617005112">Premjesti gore</translation>
 <translation id="8615618338313291042">Anonimna aplikacija: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Ne sinkronizira se</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status roaminga</translation>
 <translation id="8620765578342452535">Konfiguracija mrežnih veza</translation>

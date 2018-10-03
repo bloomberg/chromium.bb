@@ -39,11 +39,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS वापरून मदत मिळवा </translation>
 <translation id="1795405610103747296">Chrome तुमच्या फोनवर इंस्टॉल करा. आम्ही तुमच्या या फोनवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">हे बंद करून, तुम्ही Chrome वर साइन इन न करता Gmail सारख्या Google सायटींवर साइन इन करू शकता</translation>
 <translation id="1860536484129686729">या साइटसाठी Chrome ला तुमचा कॅमेरा अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="1873233029667955273">Google Chrome तुमचा डीफॉल्ट ब्राउझर नाही</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome कालबाह्य आहे</translation>
 <translation id="1915828456209461693">Chrome साठी नवीन अपडेट उपलब्ध आहे आणि तुम्ही रीलाँच करताच ते लागू केले जाईल.</translation>
+<translation id="1919130412786645364">Chrome मध्ये साइन इन करण्यासाठी अनुमती द्या</translation>
 <translation id="2063848847527508675">अपडेट लागू करण्यासाठी Chrome OS रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="2084710999043359739">Chrome मध्ये जोडा</translation>
 <translation id="2094919256425865063">तरीही Chrome बंद करायचे?</translation>
@@ -290,6 +292,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="9084668267983921457">अॉथेंटिकेशन सर्टिफिकेट अयशस्वी झाले. कृपया Google Chrome मध्ये पुन्हा साइन इन करा किंवा आणखी माहितीसाठी तुमच्या अॅडमिनिस्ट्रेटरशी संपर्क साधा. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{ Chrome OS एका तासात रीस्टार्ट होईल}one{ Chrome OS # तासात रीस्टार्ट होईल}other{ Chrome OS # तासांमध्ये रीस्टार्ट होईल}}</translation>
 <translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
+<translation id="9138603949443464873">तुम्ही केलेले बदल लागू करण्यासाठी, Chrome रीलाँच करा</translation>
 <translation id="919706545465235479">सिंक सुरू करण्यासाठी अपडेट करा</translation>
 <translation id="924447568950697217">Chrome ला आपला डीफॉल्ट ब्राउझर बनवा</translation>
 <translation id="989369509083708165">Google Chrome आपला डीफॉल्ट ब्राउझर आहे</translation>

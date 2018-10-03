@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OSని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="1795405610103747296">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">దీనిని ఆఫ్ చేయడం ద్వారా, మీరు Chromeకి సైన్ ఇన్ చేయకుండానే Gmail లాంటి Google సైట్‌లలో సైన్ ఇన్ చేయగలరు</translation>
 <translation id="1860536484129686729">ఈ సైట్ కోసం మీ కెమెరాని ఉపయోగించడానికి Chromeకి అనుమతి అవసరం</translation>
 <translation id="1873233029667955273">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు</translation>
 <translation id="1874309113135274312">Google Chrome బీటా (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
 <translation id="1915828456209461693">Chrome కోసం కొత్త అప్‌డేట్ అందుబాటులో ఉంది మరియు మీరు పునఃప్రారంభించిన వెంటనే వర్తించబడుతుంది.</translation>
+<translation id="1919130412786645364">Chrome సైన్-ఇన్‌ని అనుమతించండి</translation>
 <translation id="2063848847527508675">అప్‌డేట్‌ను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
 <translation id="2094919256425865063">ఏదేమైనా Chromeని మూసివేయాలా?</translation>
@@ -285,6 +287,7 @@
 <translation id="9084668267983921457">ప్రమాణీకరణ ప్రమాణపత్రం విఫలమైంది. దయచేసి Google Chromeలో మళ్లీ సైన్ ఇన్ చేయండి లేదా మరింత సమాచారం కోసం మీ నిర్వాహకులను సంప్రదించండి. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS గంటలో మళ్లీ ప్రారంభించబడుతుంది}other{Chrome OS # గంటల్లో మళ్లీ ప్రారంభించబడుతుంది}}</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
+<translation id="9138603949443464873">మీ మార్పులను వర్తింపజేయడానికి, Chromeని పునఃప్రారంభించండి</translation>
 <translation id="919706545465235479">సమకాలీకరణను ప్రారంభించడానికి Chromeని నవీకరించాలి</translation>
 <translation id="924447568950697217">Chromeని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయండి</translation>
 <translation id="989369509083708165">మీ డిఫాల్ట్ బ్రౌజర్ Google Chrome</translation>

@@ -29,6 +29,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1869480248812203386">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chromium varnejši in preprostejši za uporabo.</translation>
 <translation id="1881322772814446296">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromiumu ostali ločeni. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{Na voljo je posodobitev za Chromium}=1{Na voljo je posodobitev za Chromium}one{Posodobitev za Chromium je na voljo že # dan}two{Posodobitev za Chromium je na voljo že # dneva}few{Posodobitev za Chromium je na voljo že # dni}other{Posodobitev za Chromium je na voljo že # dni}}</translation>
+<translation id="1911763535808217981">Če to izklopite, se lahko prijavite na Googlovih spletnih mestih, kot je Gmail, ne da bi se morali prijaviti v Chromium</translation>
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="1966382378801805537">Chromium ne more določiti ali nastaviti privzetega brskalnika</translation>
 <translation id="2008474315282236005">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
@@ -119,8 +120,10 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5032989939245619637">Shrani podrobnosti v Chromium</translation>
 <translation id="5045248521775609809">Naj vas Chromium spremlja povsod</translation>
 <translation id="5116586539350239523">Chromium bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
+<translation id="5277894862589591112">Če želite uporabiti spremembe, znova zaženite Chromium</translation>
 <translation id="5358375970380395591">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Posodabljanje Chromiuma (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Omogočanje prijave v Chromium</translation>
 <translation id="5398878173008909840">Na voljo je nova različica Chromiuma.</translation>
 <translation id="5416696090975899932">Chromium ne more pokazati predogleda tiskanja, če ni vgrajenega pregledovalnika datotek PDF.</translation>
 <translation id="5427571867875391349">Nastavitev Chromiuma za privzeti brskalnik</translation>

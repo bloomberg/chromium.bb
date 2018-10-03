@@ -40,11 +40,13 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtener ayuda de Chrome OS</translation>
 <translation id="1795405610103747296">Instala Chrome en tu teléfono. Te enviaremos un SMS al siguiente número: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Si esta opción está desactivada, puedes iniciar sesión en sitios de Google, como Gmail, sin hacerlo en Chrome</translation>
 <translation id="1860536484129686729">Chrome necesita permiso para acceder a la cámara en este sitio web</translation>
 <translation id="1873233029667955273">Google Chrome no es tu navegador predeterminado</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="1915828456209461693">Hay una nueva actualización de Chrome disponible que se aplicará cuando reinicies el dispositivo.</translation>
+<translation id="1919130412786645364">Permitir el inicio de sesión en Chrome</translation>
 <translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
 <translation id="2094919256425865063">¿Quieres cerrar Chrome de todas formas?</translation>
@@ -293,6 +295,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="9084668267983921457">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Google Chrome o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS se reiniciará en una hora}other{Chrome OS se reiniciará en # horas}}</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
+<translation id="9138603949443464873">Reinicia Chrome para aplicar los cambios</translation>
 <translation id="919706545465235479">Actualiza Chrome para iniciar la sincronización</translation>
 <translation id="924447568950697217">Establece Chrome como navegador predeterminado</translation>
 <translation id="989369509083708165">Google Chrome es tu navegador predeterminado</translation>

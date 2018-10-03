@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">விசைப்பலகை ஃபோகஸ் மாறும் போது, ஃபோகஸைக் கொண்டுள்ள பொருளைத்  தனிப்படுத்து.</translation>
 <translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1174073918202301297">ஷார்ட்கட் சேர்க்கப்பட்டது</translation>
+<translation id="117445914942805388">உங்கள் ஒத்திசைக்கப்பட்ட அனைத்துச் சாதனங்களிலிருந்தும் உங்கள் Google கணக்கிலிருந்தும் உலாவல் தரவைச் சுத்தமாக்க, <ph name="BEGIN_LINK" />ஒத்திசைவு அமைப்புகளைப் பார்க்கவும்<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;அச்சிடு...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ஐ நகலெடுக்கிறது...</translation>
 <translation id="1177138678118607465">தேடல், விளம்பரங்கள் மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் உலாவல் வரலாற்றை Google பயன்படுத்தக்கூடும். myaccount.google.com/activitycontrols/search எனும் இணைப்பில் எப்போது வேண்டுமானாலும் இதை மாற்றலாம்</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">உங்கள் சாதனத்தை எளிதாகப் பயன்படுத்த அணுகல்தன்மை அம்சங்களை இயக்கவும்.</translation>
 <translation id="1190144681599273207">இந்த கோப்பைப் பெற்றால், மொபைல் டேட்டாவில் தோராயமாக <ph name="FILE_SIZE" /> ஐப் பயன்படுத்தும்.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{கணினியில் சேமிக்கப்பட்ட ஒரு கோப்பை அணுகும்}other{கணினியில் சேமிக்கப்பட்ட # கோப்புகளை அணுகும்}}</translation>
+<translation id="119092896208640858">உலாவல் தரவை உங்கள் Google கணக்கில் தக்கவைத்துக்கொண்டு, அதை இந்தச் சாதனத்திலிருந்து மட்டும் அழிக்க, <ph name="BEGIN_LINK" />வெளியேறவும்<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Smart Lockஐத் தொடங்க, கடவுச்சொல்லை உள்ளிடவும். அடுத்த முறை, உங்கள் மொபைலைப் பயன்படுத்தி <ph name="DEVICE_TYPE" /> சாதனத்தைத் திறக்கலாம்.</translation>
 <translation id="1195447618553298278">தெரியாத பிழை.</translation>
 <translation id="119738088725604856">ஸ்க்ரீன்ஷாட் சாளரம்</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">ஷெல்ஃப் உருப்படி 5</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" உடன் இணைக்கும்போது அங்கீகரிப்புத் தோல்வியடைந்தது.</translation>
 <translation id="1230807973377071856">சிஸ்டம் மெனு</translation>
+<translation id="1231733316453485619">ஒத்திசைவை இயக்கவா?</translation>
 <translation id="123186018454553812">வேறொரு பாதுகாப்பு விசையைப் பயன்படுத்தவும்</translation>
 <translation id="1232569758102978740">தலைப்பிடாதது</translation>
 <translation id="1233721473400465416">மொழி</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">ஆடியோவைப் பகிர்</translation>
 <translation id="2480868415629598489">நீங்கள் நகலெடுத்து ஒட்டும் தரவைத் திருத்தலாம்</translation>
 <translation id="2482878487686419369">அறிவிப்புகள்</translation>
+<translation id="2484959914739448251">உங்கள் ஒத்திசைக்கப்பட்ட அனைத்துச் சாதனங்களிலிருந்தும் உங்கள் Google கணக்கிலிருந்தும் உலாவல் தரவைச் சுத்தமாக்க, <ph name="BEGIN_LINK" />உங்கள் கடவுச்சொற்றொடரை உள்ளிடவும்<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">நிறுவல் நீக்கு</translation>
 <translation id="2487067538648443797">புதிய புத்தகக்குறியைச் சேர்</translation>
 <translation id="248861575772995840">மொபைலைக் கண்டறிய முடியவில்லை. <ph name="DEVICE_TYPE" /> இன் புளூடூத் இயக்கப்பட்டிருப்பதை உறுதிப்படுத்திக்கொள்ளவும். &lt;a&gt;மேலும் அறிக&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Google Play ஸ்டோரை அணுகும் வகையில் உங்கள் கணக்கை இயக்க, அடையாள வழங்குநர் மூலம் அங்கீகரிக்கவும்.</translation>
 <translation id="3459774175445953971">கடைசியாக மாற்றப்பட்டது:</translation>
 <translation id="3461266716147554923">கிளிப்போர்டுக்கு நகலெடுத்த உரையையும் படங்களையும், <ph name="URL" /> என்ற இணைப்பு பார்க்க விரும்புகிறது</translation>
+<translation id="3462311546193741693">இது உங்களைப் பெரும்பாலான தளங்களிலிருந்து வெளியேற்றும். எனினும் உங்கள் Google கணக்கிலிருந்து வெளியேற்றப்பட மாட்டீர்கள் என்பதால் உங்கள் ஒத்திசைக்கப்பட்ட தரவை அழிக்கலாம்.</translation>
 <translation id="3462413494201477527">கணக்கு அமைவை ரத்துசெய்யவா?</translation>
 <translation id="346431825526753">இது <ph name="CUSTODIAN_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்.</translation>
 <translation id="3465566417615315331">உங்கள் படத்தைக் கிளிக் செய்யவும்</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">முடிந்ததும், Enter அழுத்துக</translation>
 <translation id="3827774300009121996">&amp;முழுத்திரை</translation>
 <translation id="3828029223314399057">புக்மார்க்ஸை தேடுதல்</translation>
+<translation id="3829765597456725595">SMB கோப்புப் பகிர்வு</translation>
 <translation id="3830674330436234648">பிளேபேக் இல்லை</translation>
 <translation id="3831436149286513437">Google இயக்ககத் தேடல் பரிந்துரைகள்</translation>
 <translation id="3831486154586836914">சாளர மேலோட்ட பயன்முறைக்குள் நுழைந்துவிட்டீர்கள்</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">வெளியேறி குழந்தைப்பூட்டிடு</translation>
 <translation id="4977942889532008999">அணுகலை உறுதிசெய்</translation>
 <translation id="4980805016576257426">இந்த நீட்டிப்பில் தீப்பொருள் உள்ளது.</translation>
+<translation id="4981449534399733132">உங்கள் ஒத்திசைக்கப்பட்ட அனைத்துச் சாதனங்களிலிருந்தும் உங்கள் Google கணக்கிலிருந்தும் உலாவல் தரவைச் சுத்தமாக்க, <ph name="BEGIN_LINK" />உள்நுழையவும்<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">குக்கீகள், JavaScript, செருகுநிரல்கள், புவிஇருப்பிடம், மைக்ரோஃபோன் கேமரா போன்ற இணையதளத்தின் அம்சங்களுக்கான அணுகலைக் கட்டுப்படுத்தும் அமைப்புகளை மாற்றலாம்</translation>
 <translation id="4988526792673242964">பக்கங்கள்</translation>
 <translation id="49896407730300355">இ&amp;டஞ்சுழியாகச் சுற்று</translation>
@@ -3426,6 +3433,7 @@
 <translation id="6146563240635539929">வீடியோக்கள்</translation>
 <translation id="6147020289383635445">அச்சு மாதிரிக்காட்சி தோல்வி.</translation>
 <translation id="6148052338549899048">தகுதியான சாதனங்கள் இல்லை. <ph name="LINK_BEGIN" />மேலும் அறிக.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">இந்தச் சாதனத்திலிருந்து வரலாற்றை அழிக்கும்.</translation>
 <translation id="614940544461990577">இவற்றைச் செய்து பார்க்கவும்:</translation>
 <translation id="6150853954427645995">இந்தக் கோப்பை ஆஃப்லைனில் பயன்படுத்துவதற்காகச் சேமிப்பதற்கு, இணைய இணைப்பை இயக்கி, கோப்பில் வலது கிளிக் செய்யவும், பின்னர் <ph name="OFFLINE_CHECKBOX_NAME" /> விருப்பத்தைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> ஐத் தேட <ph name="SEARCH_KEY" /> ஐ அழுத்துக</translation>
@@ -3497,6 +3505,7 @@
 <translation id="6251870443722440887">GDI ஹேண்டில்ஸ்</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> சேவை விதிமுறைகள்</translation>
 <translation id="6254503684448816922">விசை இணக்கம்</translation>
+<translation id="6257602895346497974">ஒத்திசைவை இயக்கு...</translation>
 <translation id="6259104249628300056">உங்கள் அக நெட்வொர்க்கில் உள்ள சாதனங்களைக் கண்டறியும்</translation>
 <translation id="6263082573641595914">Microsoft CA பதிப்பு</translation>
 <translation id="6263284346895336537">சிக்கலானதல்ல</translation>
@@ -5032,6 +5041,7 @@
 <translation id="8606726445206553943">MIDI சாதனங்களைப் பயன்படுத்தவும்</translation>
 <translation id="8609465669617005112">மேலே நகர்த்து</translation>
 <translation id="8615618338313291042">மறைநிலை பயன்பாடு: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">ஒத்திசைக்கப்படவில்லை</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">ரோமிங் நிலை</translation>
 <translation id="8620765578342452535">நெட்வொர்க் இணைப்புகளை உள்ளமைக்கவும்</translation>

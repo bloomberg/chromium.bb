@@ -2141,7 +2141,7 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
 <translation id="6944167205014013774">Informasi tentang penggunaan aplikasi Linux dikirim kembali ke server.
 
-Jika kebijakan disetel ke SALAH atau tidak disetel, tidak ada informasi penggunaan yang dilaporkan. Jika disetel ke BENAR, informasi penggunaan akan dilaporkan.
+Jika kebijakan disetel ke false atau tidak disetel, tidak ada informasi penggunaan yang dilaporkan. Jika disetel ke true, informasi penggunaan akan dilaporkan.
 
 Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>

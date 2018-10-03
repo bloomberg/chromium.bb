@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">ไฮไลต์วัตถุที่มีโฟกัสของแป้นพิมพ์เมื่อมีการเปลี่ยนแปลง</translation>
 <translation id="1173894706177603556">เปลี่ยนชื่อ</translation>
 <translation id="1174073918202301297">เพิ่มทางลัดแล้ว</translation>
+<translation id="117445914942805388"><ph name="BEGIN_LINK" />ไปที่การตั้งค่าการซิงค์<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์ทุกเครื่องที่ซิงค์และบัญชี Google</translation>
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="117624967391683467">กำลังคัดลอก <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ให้เหมาะกับคุณ โดยคุณเปลี่ยนการตั้งค่านี้ได้ทุกเมื่อที่ myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">เปิดใช้งานฟีเจอร์การเข้าถึงเพื่อให้อุปกรณ์ใช้งานง่ายยิ่งขึ้น</translation>
 <translation id="1190144681599273207">การดึงไฟล์นี้จะใช้ข้อมูลมือถือขนาดประมาณ <ph name="FILE_SIZE" /></translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{เข้าถึง 1 ไฟล์ที่จัดเก็บไว้บนคอมพิวเตอร์}other{เข้าถึง # ไฟล์ที่จัดเก็บไว้บนคอมพิวเตอร์}}</translation>
+<translation id="119092896208640858"><ph name="BEGIN_LINK" />ออกจากระบบ<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์นี้เท่านั้น แต่ยังเก็บข้อมูลดังกล่าวไว้ในบัญชี Google</translation>
 <translation id="1195076408729068893">ป้อนรหัสผ่านเพื่อเริ่มใช้ Smart Lock คุณสามารถใช้โทรศัพท์เพื่อปลดล็อก <ph name="DEVICE_TYPE" /> ได้ในครั้งถัดไป</translation>
 <translation id="1195447618553298278">ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="119738088725604856">จับภาพหน้าจอของหน้าต่าง</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">รายการชั้นวาง 5</translation>
 <translation id="1227507814927581609">การตรวจสอบสิทธิ์ล้มเหลวขณะที่เชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1230807973377071856">เมนูระบบ</translation>
+<translation id="1231733316453485619">เปิดการซิงค์ไหม</translation>
 <translation id="123186018454553812">ลองใช้คีย์อื่น</translation>
 <translation id="1232569758102978740">ไม่ระบุชื่อ</translation>
 <translation id="1233721473400465416">ภาษา</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">แชร์เสียง</translation>
 <translation id="2480868415629598489">แก้ไขข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
+<translation id="2484959914739448251"><ph name="BEGIN_LINK" />ป้อนรหัสผ่าน<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์ทุกเครื่องที่ซิงค์และบัญชี Google</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="2487067538648443797">เพิ่มบุ๊กมาร์กใหม่</translation>
 <translation id="248861575772995840">ไม่พบโทรศัพท์ของคุณ โปรดตรวจสอบว่า <ph name="DEVICE_TYPE" /> เปิดบลูทูธอยู่ &lt;a&gt;ดูข้อมูลเพิ่มเติม&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">หากต้องการเปิดใช้การเข้าถึง Google Play Store ให้แก่บัญชี โปรดใช้ผู้ให้บริการข้อมูลประจำตัวเพื่อตรวจสอบสิทธิ์ของคุณ</translation>
 <translation id="3459774175445953971">ปรับปรุงล่าสุด:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> ต้องการดูข้อความและรูปภาพที่คัดลอกไปยังคลิปบอร์ด</translation>
+<translation id="3462311546193741693">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะยังลงชื่อเข้าใช้บัญชี Google อยู่เพื่อให้ล้างข้อมูลที่ซิงค์ได้</translation>
 <translation id="3462413494201477527">ยกเลิกการสร้างบัญชีใช่ไหม</translation>
 <translation id="346431825526753">นี่เป็นบัญชีสำหรับเด็กที่จัดการโดย <ph name="CUSTODIAN_EMAIL" /></translation>
 <translation id="3465566417615315331">คลิกรูปภาพของคุณ</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">กด Enter เมื่อเสร็จ</translation>
 <translation id="3827774300009121996">เ&amp;ต็มหน้าจอ</translation>
 <translation id="3828029223314399057">ค้นหาบุ๊กมาร์ก</translation>
+<translation id="3829765597456725595">พื้นที่แชร์ไฟล์ SMB</translation>
 <translation id="3830674330436234648">ไม่สามารถเล่นได้</translation>
 <translation id="3831436149286513437">คำแนะนำในการค้นหา Google ไดรฟ์</translation>
 <translation id="3831486154586836914">เข้าสู่โหมดภาพรวมหน้าต่างแล้ว</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">ออกและล็อกป้องกันเด็ก</translation>
 <translation id="4977942889532008999">ยืนยันการเข้าถึง</translation>
 <translation id="4980805016576257426">ส่วนขยายนี้มีมัลแวร์</translation>
+<translation id="4981449534399733132"><ph name="BEGIN_LINK" />ลงชื่อเข้าใช้<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์ทุกเครื่องที่ซิงค์และบัญชี Google</translation>
 <translation id="498294082491145744">เปลี่ยนการตั้งค่าที่ควบคุมสิทธิ์ของเว็บไซต์ในการเข้าถึงฟีเจอร์อย่างเช่นคุกกี้, JavaScript, ปลั๊กอิน, ตำแหน่งทางภูมิศาสตร์, ไมโครโฟน, กล้องถ่ายรูป ฯลฯ</translation>
 <translation id="4988526792673242964">หน้า</translation>
 <translation id="49896407730300355">หมุน&amp;ทวนเข็มนาฬิกา</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">วิดีโอ</translation>
 <translation id="6147020289383635445">หน้าตัวอย่างก่อนพิมพ์ล้มเหลว</translation>
 <translation id="6148052338549899048">ไม่มีอุปกรณ์ที่มีสิทธิ์ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">ล้างประวัติในอุปกรณ์นี้</translation>
 <translation id="614940544461990577">ลอง:</translation>
 <translation id="6150853954427645995">หากต้องการบันทึกไฟล์นี้เพื่อการใช้งานแบบออฟไลน์ ให้คลิกขวาที่ไฟล์ แล้วเลือกตัวเลือก <ph name="OFFLINE_CHECKBOX_NAME" /></translation>
 <translation id="6151323131516309312">กด <ph name="SEARCH_KEY" /> เพื่อค้นหา <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">GDI จัดการ</translation>
 <translation id="6251889282623539337">ข้อกำหนดในการให้บริการของ <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">คีย์ไม่สมบูรณ์</translation>
+<translation id="6257602895346497974">เปิดการซิงค์...</translation>
 <translation id="6259104249628300056">สำรวจอุปกรณ์บนเครือข่ายท้องถิ่นของคุณ</translation>
 <translation id="6263082573641595914">รุ่นของผู้มีสิทธิ์ออกใบรับรองของ Microsoft</translation>
 <translation id="6263284346895336537">ไม่สำคัญ</translation>
@@ -5029,6 +5038,7 @@
 <translation id="8606726445206553943">ใช้อุปกรณ์ MIDI ของคุณ</translation>
 <translation id="8609465669617005112">เลื่อนขึ้น</translation>
 <translation id="8615618338313291042">แอปพลิเคชันที่ไม่ระบุตัวตน: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">ไม่ได้ซิงค์</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">สถานะการโรมมิ่ง</translation>
 <translation id="8620765578342452535">กำหนดค่าการเชื่อมต่อเครือข่าย</translation>

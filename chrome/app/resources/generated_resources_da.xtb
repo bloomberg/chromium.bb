@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Fremhæv elementet med tastaturfokus, når det ændres.</translation>
 <translation id="1173894706177603556">Omdøb</translation>
 <translation id="1174073918202301297">Genvejen blev tilføjet</translation>
+<translation id="117445914942805388"><ph name="BEGIN_LINK" />Gå til indstillingerne for synkronisering<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
 <translation id="117624967391683467">Kopierer <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google kan bruge din browserhistorik til at tilpasse Søgning, annoncer og andre Google-tjenester. Du kan til enhver tid ændre dette på myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Aktivér hjælpefunktioner for at gøre din enhed nemmere at bruge.</translation>
 <translation id="1190144681599273207">Hvis du henter denne fil, bruger du ca. <ph name="FILE_SIZE" /> mobildata.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Få adgang til en fil, der er gemt på din computer}one{Få adgang # filer, der er gemt på din computer}other{Få adgang # filer, der er gemt på din computer}}</translation>
+<translation id="119092896208640858"><ph name="BEGIN_LINK" />Log ud<ph name="END_LINK" /> for kun at rydde browserdata fra denne enhed uden at slette dataene på din Google-konto.</translation>
 <translation id="1195076408729068893">Hvis du vil starte Smart Lock, skal du angive din adgangskode. Næste gang kan du bruge din telefon til at låse din <ph name="DEVICE_TYPE" /> op.</translation>
 <translation id="1195447618553298278">Ukendt fejl.</translation>
 <translation id="119738088725604856">Tag screenshot af vindue</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Hyldeelement 5</translation>
 <translation id="1227507814927581609">Godkendelsen mislykkedes under oprettelse af forbindelse til "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">systemmenu</translation>
+<translation id="1231733316453485619">Vil du aktivere synkronisering?</translation>
 <translation id="123186018454553812">Prøv en anden nøgle</translation>
 <translation id="1232569758102978740">Unavngivet</translation>
 <translation id="1233721473400465416">Landestandard</translation>
@@ -985,6 +988,7 @@
 <translation id="247949520305900375">Del lyd</translation>
 <translation id="2480868415629598489">Redigere data, du kopierer og indsætter</translation>
 <translation id="2482878487686419369">Underretninger</translation>
+<translation id="2484959914739448251"><ph name="BEGIN_LINK" />Angiv din adgangssætning<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
 <translation id="2487067538648443797">Tilføj nyt bogmærke</translation>
 <translation id="248861575772995840">Din telefon blev ikke fundet. Sørg for, at Bluetooth er slået til på din <ph name="DEVICE_TYPE" />. &lt;a&gt;Få flere oplysninger&lt;/a&gt;</translation>
@@ -1637,6 +1641,7 @@
 <translation id="3459697287128633276">Du skal godkende hos din identitetsudbyder, før du kan give din konto adgang til Google Play Butik.</translation>
 <translation id="3459774175445953971">Sidst ændret:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> vil gerne se tekst og billeder, der er kopieret til udklipsholderen</translation>
+<translation id="3462311546193741693">Logger dig ud af de fleste websites. Du forbliver logget ind på din Google-konto, så dine synkroniserede data kan ryddes.</translation>
 <translation id="3462413494201477527">Vil du annullere konfigurationen af kontoen?</translation>
 <translation id="346431825526753">Dette er en børnekonto, som administreres af <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Klik på dit foto</translation>
@@ -1901,6 +1906,7 @@
 <translation id="38275787300541712">Tryk på Enter, når du er færdig</translation>
 <translation id="3827774300009121996">&amp;Fuld skærm</translation>
 <translation id="3828029223314399057">Søg i bogmærker</translation>
+<translation id="3829765597456725595">SMV-fildeling</translation>
 <translation id="3830674330436234648">Der er ingen tilgængelig afspilning.</translation>
 <translation id="3831436149286513437">Google Drev-søgeforslag</translation>
 <translation id="3831486154586836914">Tilstanden for vinduesoversigt er aktiveret</translation>
@@ -2623,6 +2629,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4974733135013075877">Afslut, og aktivér børnesikring</translation>
 <translation id="4977942889532008999">Bekræft adgang</translation>
 <translation id="4980805016576257426">Denne udvidelse indeholder malware.</translation>
+<translation id="4981449534399733132"><ph name="BEGIN_LINK" />Log ind<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
 <translation id="498294082491145744">Skift de indstillinger, der kontrollerer websites' adgang til funktioner, som f.eks. cookies, JavaScript, plugins, geoplacering, mikrofon, kamera osv.</translation>
 <translation id="4988526792673242964">Sider</translation>
 <translation id="49896407730300355">Roter m&amp;od uret</translation>
@@ -3423,6 +3430,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6146563240635539929">Videoer</translation>
 <translation id="6147020289383635445">Visning af udskrift mislykkedes.</translation>
 <translation id="6148052338549899048">Der er ingen kvalificerede enheder. <ph name="LINK_BEGIN" />Få flere oplysninger.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Rydder historikken fra denne enhed.</translation>
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6150853954427645995">Hvis du vil gemme denne fil til offlinebrug, skal du gå online igen, højreklikke på filerne og vælge indstillingen <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Tryk på <ph name="SEARCH_KEY" /> for at søge på <ph name="SITE_NAME" /></translation>
@@ -3495,6 +3503,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6251870443722440887">GDI-håndtag</translation>
 <translation id="6251889282623539337">Servicevilkår for <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Sammensat nøgle</translation>
+<translation id="6257602895346497974">Aktivér synkronisering...</translation>
 <translation id="6259104249628300056">Find enheder på dit lokale netværk</translation>
 <translation id="6263082573641595914">Version af Microsoft-nøglecenter</translation>
 <translation id="6263284346895336537">Ikke kritisk</translation>
@@ -5027,6 +5036,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8606726445206553943">Brug dine MIDI-enheder</translation>
 <translation id="8609465669617005112">Flyt op</translation>
 <translation id="8615618338313291042">Inkognitoprogram: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Der synkroniseres ikke</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
 <translation id="8620765578342452535">Konfigurere netværksforbindelser</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">ነገርየው በሚለወጥበት ጊዜ በቁልፍ ሰሌዳ ትኩረት አድምቅ</translation>
 <translation id="1173894706177603556">ዳግም ሰይም</translation>
 <translation id="1174073918202301297">አቋራጭ ታክሏል</translation>
+<translation id="117445914942805388">ከሁሉም የእርስዎ የተመሳሰሉ መሣሪያዎች እና የእርስዎ የGoogle መለያ ላይ የአሰሳ ውሂብን ለማጽዳት፣ <ph name="BEGIN_LINK" />የአስምር ቅንብሮችን ይጎብኙ<ph name="END_LINK" />።</translation>
 <translation id="1175364870820465910">&amp;አትም…</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />ን በመቅዳት ላይ</translation>
 <translation id="1177138678118607465">Google ፍለጋን፣ ማስታወቂያን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ ሲባል የእርስዎን የአሰሳ ታሪክ ሊጠቀም ይችል ይሆናል። ይህንን በማናቸውም ጊዜ በmyaccount.google.com/activitycontrols/search ላይ መለወጥ ይችላሉ።</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">መሣሪያዎን ለመጠቀም ይበልጥ ቀላል ለማድረግ የተደራሽነት ባህሪያትን ያንቁ።</translation>
 <translation id="1190144681599273207">ይህን ፋይል ማምጣት <ph name="FILE_SIZE" /> አካባቢ የተንቀሳቃሽ ውሂብ ይጠቀማል።</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{ኮምፒውተርዎ ላይ የተከማቸ ፋይልን ይድርሱበት}one{ኮምፒውተርዎ ላይ የተከማቹ  # ፋይሎችን ይድረሱባቸው}other{ኮምፒውተርዎ ላይ የተከማቹ # ፋይሎችን ይድረሱባቸው}}</translation>
+<translation id="119092896208640858">በእርስዎ የGoogle መለያ ውስጥ እንዳለ ሆኖ ከዚህ መሣሪያ ብቻ የአሰሳ ውሂብን ለማጽዳት <ph name="BEGIN_LINK" />ዘግተው ይውጡ<ph name="END_LINK" />።</translation>
 <translation id="1195076408729068893">Smart Lockን ለመጀመር የእርስዎን የይለፍ ቃል ያስገቡ። በሚቀጥለው ጊዜ የእርስዎን <ph name="DEVICE_TYPE" /> ለመክፈት ስልክዎን መጠቀም ይችላሉ።</translation>
 <translation id="1195447618553298278">ያልታወቀ ስህተት።</translation>
 <translation id="119738088725604856">የቅጽበታዊ ገጽ እይታ መስኮት</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">የመደርደሪያ ንጥል 5</translation>
 <translation id="1227507814927581609">ከ«<ph name="DEVICE_NAME" />» ጋር በመገናኘት ላይ ሳለ ማረጋገጥ አልተሳካም።</translation>
 <translation id="1230807973377071856">የስርዓት ዝማኔ</translation>
+<translation id="1231733316453485619">አስምር ይብራ?</translation>
 <translation id="123186018454553812">የተለየ ቁልፍ ይሞክሩ</translation>
 <translation id="1232569758102978740">ርዕስ አልባ</translation>
 <translation id="1233721473400465416">አካባቢ</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">ኦዲዮ አጋራ</translation>
 <translation id="2480868415629598489">እርስዎ የሚቀዱትን እና የሚለጥፉትን ውሂብ መቀየር</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
+<translation id="2484959914739448251">ከሁሉም የእርስዎ የተመሳሰሉ መሣሪያዎች እና የእርስዎ የGoogle መለያ ላይ የአሰሳ ውሂብን ለማጽዳት፣ <ph name="BEGIN_LINK" />የእርስዎን የይለፍ ሐረግ ያስገቡ<ph name="END_LINK" />።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="2487067538648443797">አዲስ ዕልባት ያክሉ</translation>
 <translation id="248861575772995840">የእርስዎን ስልክ ማግኘት አልተቻለም። የእርስዎ <ph name="DEVICE_TYPE" /> ብሉቱዝ መብራቱን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">የእርስዎ መለያ የGoogle Play መደብርን እንዲደርስ ለማንቃት እባክዎ በእርስዎ የማንነት አቅራቢ በኩል ያረጋግጡ።</translation>
 <translation id="3459774175445953971">ለመጨረሻ ጊዜ የተሻሻለው፦</translation>
 <translation id="3461266716147554923"><ph name="URL" /> ወደ ቅንጥብ ሰሌዳው የተቀዱ ጽሑፍን እና ምስሎችን መመልከት ይፈልጋል</translation>
+<translation id="3462311546193741693">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። በእርስዎ የGoogle መለያ ውስጥ በመለያ እንደገቡ ስለሚቆዩ የእርስዎ የሰመረ ውሂብ ሊጸዳ ይችላል።</translation>
 <translation id="3462413494201477527">የመለያ ቅንብር ይተው?</translation>
 <translation id="346431825526753">ይሄ በ<ph name="CUSTODIAN_EMAIL" /> የሚቀናበር የህጻናት መለያ ነው።</translation>
 <translation id="3465566417615315331">ፎቶዎ ላይ ጠቅ ያድርጉ</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">ሲከናወን Enterን ይጫኑ</translation>
 <translation id="3827774300009121996">&amp;በሙሉ ገጽ ማያ አሳይ</translation>
 <translation id="3828029223314399057">ዕልባቶች ፈልግ</translation>
+<translation id="3829765597456725595">SMB ፋይል ማጋራት</translation>
 <translation id="3830674330436234648">መልሶ ማጫወት አይገኝም</translation>
 <translation id="3831436149286513437">Google Drive የፍለጋ የጥቆማ ሐሳቦች</translation>
 <translation id="3831486154586836914">የአጠቃላይ እይታ ሁኔታ መስኮት ገብቷል</translation>
@@ -2623,6 +2629,7 @@
 <translation id="4974733135013075877">ውጣ እና ከልጅ ቆልፍ</translation>
 <translation id="4977942889532008999">መዳረሻ ያረጋግጡ</translation>
 <translation id="4980805016576257426">ይህ ቅጥያ ተንኮል-አዘል ዌር ይዟል።</translation>
+<translation id="4981449534399733132">ከሁሉም የእርስዎ የተመሳሰሉ መሣሪያዎች እና የእርስዎ የGoogle መለያ ላይ የአሰሳ ውሂብን ለማጽዳት፣ <ph name="BEGIN_LINK" />በመለያ ይግቡ<ph name="END_LINK" />።</translation>
 <translation id="498294082491145744">የድር ጣቢያዎችን መዳረሻ የሚቆጣጠሩ እንደ ኩኪዎች፣ ጃቫስክሪፕት፣ ተሰኪዎች፣ የስነምድራዊ መገኛ ቦታ፣ ማይክራፎን፣ ካሜራ ወዘተ የመሳሰሉ ባህሪዎች  የእርስዎን ቅንብሮች ይለውጡ።</translation>
 <translation id="4988526792673242964">ገፆች</translation>
 <translation id="49896407730300355">በሰዓት መዞሪያ አቅጣጫ &amp;ተቃራኒ አሽከርክር</translation>
@@ -3422,6 +3429,7 @@
 <translation id="6146563240635539929">ቪዲዮዎች</translation>
 <translation id="6147020289383635445">የህትመት ቅድመ-እይታ አልተሳካም።</translation>
 <translation id="6148052338549899048">ምንም ብቁ የሆኑ መሣሪያዎች የሉም። <ph name="LINK_BEGIN" />የበለጠ ለመረዳት።<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">ከዚህ መሣሪያ ላይ ታሪክን ያጸዳል።</translation>
 <translation id="614940544461990577">ይሞክሩ፦</translation>
 <translation id="6150853954427645995">ይህን ፋይል ከመስመር ውጪ ለመጠቀም መስመር ላይ ተመልሰው ይሂዱ፣ ፋይሉን በቀኝ ጠቅ ያድርጉትና የ<ph name="OFFLINE_CHECKBOX_NAME" /> አማራጩን ይምረጡ።</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" />ን ለመፈለግ <ph name="SEARCH_KEY" /> ይጫኑ</translation>
@@ -3493,6 +3501,7 @@
 <translation id="6251870443722440887">የGDI መያዣዎች</translation>
 <translation id="6251889282623539337">የ<ph name="DOMAIN" /> አገልግሎት ውል</translation>
 <translation id="6254503684448816922">ቁልፍ ስምምነት ማድረግ</translation>
+<translation id="6257602895346497974">አስምርን አብራ...</translation>
 <translation id="6259104249628300056">በአካባቢዎ አውታረ መረብ ላይ መሣሪያዎችን ያግኙ</translation>
 <translation id="6263082573641595914">Microsoft CA ቅጂ</translation>
 <translation id="6263284346895336537">ዋነኛ ያልሆነ</translation>
@@ -5031,6 +5040,7 @@ nil</translation>
 <translation id="8606726445206553943">የእርስዎን የ MIDI መሣሪያዎች ይጠቀሙ</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
 <translation id="8615618338313291042">ማንነትን የማያሳውቅ መተግበሪያ፦ <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">እያሰመረ አይደለም</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />፦ <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">የውሂብ ዝውውር ሁኔታ</translation>
 <translation id="8620765578342452535">የአውታረ መረብ ግንኙነቶችን ያዋቅራል</translation>

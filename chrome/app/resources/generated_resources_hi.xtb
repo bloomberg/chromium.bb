@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">ऑब्जेक्ट के बदलने पर उसे कीबोर्ड फ़ोकस के साथ हाइलाइट करें</translation>
 <translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="1174073918202301297">शॉर्टकट जोड़ा गया</translation>
+<translation id="117445914942805388">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />सिंक सेटिंग पर जाएं<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;प्रिंट करें...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> की कॉपी बन रही है...</translation>
 <translation id="1177138678118607465">खोज विज्ञापन और दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए Google आपके ब्राउज़िंग इतिहास का इस्तेमाल कर सकता है. आप myaccount.google.com/activitycontrols/search में इसे कभी भी बदल सकते हैं</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">अपने डिवाइस को उपयोग में आसान बनाने के लिए पहुंच-योग्यता सुविधाएं सक्षम करें.</translation>
 <translation id="1190144681599273207">इस फ़ाइल को लाने में मोबाइल डेटा का लगभग <ph name="FILE_SIZE" /> उपयोग होगा.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{अपने कंप्‍यूटर पर संग्रहित कोई फ़ाइल ऐक्‍सेस करें}one{अपने कंप्‍यूटर पर संग्रहित # फ़ाइलें ऐक्‍सेस करें}other{अपने कंप्‍यूटर पर संग्रहित # फ़ाइलें ऐक्‍सेस करें}}</translation>
+<translation id="119092896208640858">डेटा को सिर्फ़ इस डिवाइस से साफ़ करने और अपने 'Google खाते' में रखने के लिए, <ph name="BEGIN_LINK" />साइन आउट करें<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Smart Lock शुरू करने के लिए, अपना पासवर्ड डालें. अगली बार, आप अपने <ph name="DEVICE_TYPE" /> को अनलॉक करने के लिए अपने फ़ोन का उपयोग कर सकते हैं.</translation>
 <translation id="1195447618553298278">अज्ञात गड़बड़ी.</translation>
 <translation id="119738088725604856">स्क्रीनशॉट विंडो</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">अलमारी आइटम 5</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" से कनेक्ट होते समय प्रमाणीकरण विफल रहा.</translation>
 <translation id="1230807973377071856">सिस्टम मेनू</translation>
+<translation id="1231733316453485619">क्या सिंक करना चालू करें?</translation>
 <translation id="123186018454553812">कोई दूसरी चाबी आज़माएं</translation>
 <translation id="1232569758102978740">शीर्षक रहित</translation>
 <translation id="1233721473400465416">स्थान</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">ऑडियो शेयर करें</translation>
 <translation id="2480868415629598489">अपने कॉपी किए हुए और चिपकाए हुए डेटा में बदलाव करें</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
+<translation id="2484959914739448251">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />अपना पासफ़्रेज़ डालें<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">विस्थापित करें</translation>
 <translation id="2487067538648443797">नया बुकमार्क जोड़ें</translation>
 <translation id="248861575772995840">आपका फ़ोन नहीं मिल पा रहा है. पक्का करें कि आपके <ph name="DEVICE_TYPE" /> का ब्लूटूथ चालू है. &lt;a&gt;अधिक जानें&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Google Play स्टोर एक्सेस करने को अपना खाता सक्षम करने के लिए, कृपया अपने पहचान प्रदाता के ज़रिए प्रमाणीकृत करें.</translation>
 <translation id="3459774175445953971">अंतिम बार संशोधित:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> वे लेख और इमेज देखना चाहता है जिन्हें क्लिपबोर्ड पर कॉपी किया गया है</translation>
+<translation id="3462311546193741693">आपको अधिकतर साइटों से साइन आउट कर देता है. आप अपने 'Google खाते' में साइन इन रहते हैं ताकि आपका सिंक किया हुआ डेटा साफ़ हो जाए.</translation>
 <translation id="3462413494201477527">खाता सेटअप रहने दें?</translation>
 <translation id="346431825526753">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="CUSTODIAN_EMAIL" /> द्वारा प्रबंधित किया जाता है.</translation>
 <translation id="3465566417615315331">अपनी फ़ोटो क्‍लिक करें</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">पूरा हो जाने पर Enter दबाएं</translation>
 <translation id="3827774300009121996">&amp;पूर्ण स्क्रीन</translation>
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
+<translation id="3829765597456725595">एसएमबी फ़ाइल शेयर</translation>
 <translation id="3830674330436234648">कोई प्लेबैक उपलब्ध नहीं है</translation>
 <translation id="3831436149286513437">'Google डिस्क' के खोज सुझाव</translation>
 <translation id="3831486154586836914">विंडो संक्षिप्त विवरण मोड में प्रवेश किया</translation>
@@ -2624,6 +2630,7 @@
 <translation id="4974733135013075877">बाहर निकलें और चाइल्‍ड लॉक करें</translation>
 <translation id="4977942889532008999">एक्सेस की दुबारा पूछें</translation>
 <translation id="4980805016576257426">इस एक्सटेंशन में मैलवेयर है.</translation>
+<translation id="4981449534399733132">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />साइन इन करें<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">कुकी, JavaScript, प्‍लग इन, भू-स्‍थान, माइक्रोफ़ोन, कैमरा आदि जैसी सुविधाओं तक वेबसाइट की ऐक्‍सेस नियंत्रित करने वाली सेटिंग में बदलाव करें.</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="49896407730300355">घड़ी की &amp;विपरीत दिशा में घुमाएं</translation>
@@ -3424,6 +3431,7 @@
 <translation id="6146563240635539929">वीडियो</translation>
 <translation id="6147020289383635445">प्रिंट करें पूर्वावलोकन विफल.</translation>
 <translation id="6148052338549899048">कोई लायक डिवाइस नहीं है. <ph name="LINK_BEGIN" />ज़्यादा जानें.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">इस डिवाइस से इतिहास साफ़ करता है.</translation>
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
 <translation id="6150853954427645995">इस फ़ाइल को ऑफ़लाइन उपयोग हेतु सहेजने के लिए, वापस ऑनलाइन हों, फ़ाइल पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प को चुनें.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> पर खोजने के लिए <ph name="SEARCH_KEY" /> दबाएं</translation>
@@ -3495,6 +3503,7 @@
 <translation id="6251870443722440887">GDI हैंडल</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> सेवा की शर्तें</translation>
 <translation id="6254503684448816922">कुंजी समझौता</translation>
+<translation id="6257602895346497974">'सिंक करें' चालू करें...</translation>
 <translation id="6259104249628300056">अपने स्‍थानीय नेटवर्क पर डिवाइस खोजें</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
 <translation id="6263284346895336537">महत्वपूर्ण नहीं</translation>
@@ -5028,6 +5037,7 @@
 <translation id="8606726445206553943">अपने MIDI डिवाइस का उपयोग करें</translation>
 <translation id="8609465669617005112">ऊपर जाएं</translation>
 <translation id="8615618338313291042">गुप्‍त ऐप्स : <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">सिंक नहीं हो रहा है</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">रोमिंग की स्‍थिति</translation>
 <translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्‍फ़िगर करें</translation>

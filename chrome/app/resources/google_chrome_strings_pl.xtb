@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chrome</translation>
 <translation id="1795405610103747296">Zainstaluj Chrome na telefonie. Wyślemy SMS-a na Twój telefon: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Jeśli wyłączysz tę opcję, możesz logować się na stronach Google takich jak Gmail bez logowania się w Chrome</translation>
 <translation id="1860536484129686729">Chrome potrzebuje uprawnień dostępu do aparatu na tej stronie</translation>
 <translation id="1873233029667955273">Google Chrome nie jest domyślną przeglądarką</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="1915828456209461693">Dostępna jest aktualizacja Chrome, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
+<translation id="1919130412786645364">Zezwalaj na logowanie w Chrome</translation>
 <translation id="2063848847527508675">Żeby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
 <translation id="2094919256425865063">Zamknąć Chrome mimo to?</translation>
@@ -286,6 +288,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="9084668267983921457">Błąd certyfikatu uwierzytelniania. Jeszcze raz zaloguj się w Google Chrome lub skontaktuj się z administratorem, by uzyskać więcej informacji. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS uruchomi się ponownie za godzinę}few{Chrome OS uruchomi się ponownie za # godziny}many{Chrome OS uruchomi się ponownie za # godzin}other{Chrome OS uruchomi się ponownie za # godziny}}</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
+<translation id="9138603949443464873">Aby zastosować zmiany, uruchom ponownie Chrome</translation>
 <translation id="919706545465235479">Aby rozpocząć synchronizację, zaktualizuj Chrome</translation>
 <translation id="924447568950697217">Ustawianie Chrome jako przeglądarki domyślnej</translation>
 <translation id="989369509083708165">Google Chrome jest domyślną przeglądarką</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Destacar el objeto con el enfoque del teclado cuando cambia</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1174073918202301297">Acceso directo agregado</translation>
+<translation id="117445914942805388">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />revisa la configuración de sincronización<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="117624967391683467">Copiando <ph name="FILE_NAME" />…</translation>
 <translation id="1177138678118607465">Es posible que Google use tu historial de navegación para personalizar Búsqueda, los anuncios y otros servicios de Google. Puedes cambiar esta configuración en cualquier momento en myaccount.google.com.</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Permite habilitar las funciones de accesibilidad para que tu dispositivo sea más fácil de usar.</translation>
 <translation id="1190144681599273207">Para recuperar este archivo, se utilizará aproximadamente <ph name="FILE_SIZE" /> de los datos móviles.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acceso a un archivo almacenado en la computadora}other{Acceso a # archivos almacenados en la computadora}}</translation>
+<translation id="119092896208640858">Para borrar los datos de navegación solo de este dispositivo y conservarlos en tu Cuenta de Google, <ph name="BEGIN_LINK" />sal de ella<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Para iniciar Smart Lock, ingresa tu contraseña. La próxima vez, puedes usar el teléfono para desbloquear tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Error desconocido.</translation>
 <translation id="119738088725604856">Ventana de captura de pantalla</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Elemento 5 de la biblioteca</translation>
 <translation id="1227507814927581609">Error de autenticación al establecer la conexión con "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">menú del sistema</translation>
+<translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="123186018454553812">Probar una llave diferente</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233721473400465416">Configuración regional</translation>
@@ -985,6 +988,7 @@
 <translation id="247949520305900375">Compartir audio</translation>
 <translation id="2480868415629598489">Modificar los datos copiados y pegados</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="2484959914739448251">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />ingresa la frase de contraseña<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2487067538648443797">Agregar un favorito nuevo</translation>
 <translation id="248861575772995840">No se puede encontrar el teléfono. Asegúrate de que tu dispositivo <ph name="DEVICE_TYPE" /> tenga Bluetooth encendido. &lt;a&gt;Más información&lt;/a&gt;</translation>
@@ -1636,6 +1640,7 @@
 <translation id="3459697287128633276">A fin de habilitar tu cuenta para acceder a Google Play Store, autentícala con el Proveedor de identidad.</translation>
 <translation id="3459774175445953971">Última modificación:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> desea ver el texto y las imágenes copiados en el portapapeles</translation>
+<translation id="3462311546193741693">Saldrás de la mayoría de los sitios, pero permanecerás en tu Cuenta de Google para que puedan borrarse tus datos sincronizados.</translation>
 <translation id="3462413494201477527">¿Cancelar la configuración de la cuenta?</translation>
 <translation id="346431825526753">Esta es una cuenta para niños administrada por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Haz clic en tu foto.</translation>
@@ -1900,6 +1905,7 @@
 <translation id="38275787300541712">Presiona Intro al terminar</translation>
 <translation id="3827774300009121996">&amp;Pantalla completa</translation>
 <translation id="3828029223314399057">Buscar favoritos</translation>
+<translation id="3829765597456725595">Archivos compartidos mediante SMB</translation>
 <translation id="3830674330436234648">No hay reproducciones disponibles</translation>
 <translation id="3831436149286513437">Sugerencias de búsqueda de Google Drive</translation>
 <translation id="3831486154586836914">Modo de vista general de ventana activado</translation>
@@ -2622,6 +2628,7 @@
 <translation id="4974733135013075877">Salir y bloquear para niños</translation>
 <translation id="4977942889532008999">Confirmar acceso</translation>
 <translation id="4980805016576257426">Esta extensión contiene software malicioso.</translation>
+<translation id="4981449534399733132">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />accede a ella<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Permite cambiar la configuración que controla el acceso de los sitios web a ciertas funciones, como las cookies, JavaScript, los complementos, la geolocalización, el micrófono, la cámara, etc.</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar &amp;a la izquierda</translation>
@@ -3422,6 +3429,7 @@
 <translation id="6146563240635539929">Videos</translation>
 <translation id="6147020289383635445">Error al imprimir vista previa</translation>
 <translation id="6148052338549899048">No hay dispositivos compatibles. <ph name="LINK_BEGIN" />Obtén más información<ph name="LINK_END" />.</translation>
+<translation id="6148716538476291841">Borra el historial de este dispositivo.</translation>
 <translation id="614940544461990577">Intenta:</translation>
 <translation id="6150853954427645995">Para guardar este archivo para su uso sin conexión, conéctate nuevamente, haz clic con el botón secundario en el archivo y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Haz clic en <ph name="SEARCH_KEY" /> para buscar <ph name="SITE_NAME" /></translation>
@@ -3493,6 +3501,7 @@
 <translation id="6251870443722440887">A cargo de GDI</translation>
 <translation id="6251889282623539337">Condiciones del servicio de <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Compromiso de la clave</translation>
+<translation id="6257602895346497974">Activar la sincronización…</translation>
 <translation id="6259104249628300056">Mostrar los dispositivos de la red local</translation>
 <translation id="6263082573641595914">Versión de entidad de certificación de Microsoft</translation>
 <translation id="6263284346895336537">No crítico</translation>
@@ -5027,6 +5036,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8606726445206553943">Usar tus dispositivos MIDI</translation>
 <translation id="8609465669617005112">Subir</translation>
 <translation id="8615618338313291042">Aplicación de incógnito: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">No se está sincronizando</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Estado de roaming</translation>
 <translation id="8620765578342452535">Configurar las conexiones de red</translation>

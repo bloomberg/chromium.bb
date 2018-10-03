@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Đánh dấu đối tượng bằng tiêu điểm bàn phím khi đối tượng thay đổi</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
 <translation id="1174073918202301297">Đã thêm phím tắt</translation>
+<translation id="117445914942805388">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />truy cập vào các tùy chọn cài đặt đồng bộ hóa<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;In...</translation>
 <translation id="117624967391683467">Đang sao chép <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">Google có thể sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google. Bạn có thể thay đổi cài đặt này bất cứ lúc nào tại myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Bật các tính năng trợ năng để giúp thiết bị của bạn dễ sử dụng hơn.</translation>
 <translation id="1190144681599273207">Tìm nạp tệp này sẽ sử dụng khoảng <ph name="FILE_SIZE" /> dữ liệu di động.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Truy cập một tệp được lưu trữ trên máy tính của bạn}other{Truy cập # tệp được lưu trữ trên máy tính của bạn}}</translation>
+<translation id="119092896208640858">Để chỉ xóa dữ liệu duyệt web khỏi thiết bị này nhưng vẫn lưu giữ trong Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />đăng xuất<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Để bắt đầu Smart Lock, hãy nhập mật khẩu của bạn. Lần tới, bạn có thể sử dụng điện thoại để mở khóa <ph name="DEVICE_TYPE" /> của mình.</translation>
 <translation id="1195447618553298278">Lỗi chưa biết.</translation>
 <translation id="119738088725604856">Cửa sổ ảnh chụp màn hình</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Mục giá 5</translation>
 <translation id="1227507814927581609">Xác thực không thành công trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">menu hệ thống</translation>
+<translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="123186018454553812">Thử khóa khác</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1233721473400465416">Ngôn ngữ</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Chia sẻ âm thanh</translation>
 <translation id="2480868415629598489">Sửa đổi dữ liệu bạn sao chép và dán</translation>
 <translation id="2482878487686419369">Thông báo</translation>
+<translation id="2484959914739448251">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />nhập cụm mật khẩu<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2487067538648443797">Thêm dấu trang mới</translation>
 <translation id="248861575772995840">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo Bluetooth của <ph name="DEVICE_TYPE" /> đang bật. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Để cho phép tài khoản của bạn truy cập vào Cửa hàng Google Play, vui lòng xác thực với Nhà cung cấp danh tính của bạn.</translation>
 <translation id="3459774175445953971">Sửa đổi lần cuối:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> muốn xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm</translation>
+<translation id="3462311546193741693">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ vẫn duy trì trạng thái đăng nhập vào Tài khoản Google nên dữ liệu đã đồng bộ hóa của của bạn có thể xóa được.</translation>
 <translation id="3462413494201477527">Hủy thiết lập tài khoản?</translation>
 <translation id="346431825526753">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> quản lý.</translation>
 <translation id="3465566417615315331">Nhấp vào ảnh của bạn</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Nhấn Enter khi hoàn tất</translation>
 <translation id="3827774300009121996">&amp;Toàn Màn hình</translation>
 <translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
+<translation id="3829765597456725595">Chia sẻ tệp SMB</translation>
 <translation id="3830674330436234648">Không thể phát lại</translation>
 <translation id="3831436149286513437">Đề xuất tìm kiếm của Google Drive</translation>
 <translation id="3831486154586836914">Đã vào chế độ tổng quan cửa sổ</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Thoát và khóa chặn trẻ em</translation>
 <translation id="4977942889532008999">Xác nhận truy cập</translation>
 <translation id="4980805016576257426">Tiện ích này có chứa phần mềm độc hại.</translation>
+<translation id="4981449534399733132">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />đăng nhập<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Thay đổi cài đặt của bạn để kiểm soát quyền truy cập của trang web vào các tính năng như cookie, JavaScript, plugin, vị trí địa lý, micrô, máy ảnh, v.v.</translation>
 <translation id="4988526792673242964">Trang</translation>
 <translation id="49896407730300355">Xoay &amp;ngược chiều kim đồng hồ</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">Video</translation>
 <translation id="6147020289383635445">Không thể xem trước bản in.</translation>
 <translation id="6148052338549899048">Không có thiết bị nào đủ điều kiện. <ph name="LINK_BEGIN" />Tìm hiểu thêm.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Xóa lịch sử khỏi thiết bị này.</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
 <translation id="6150853954427645995">Để lưu tệp này để sử dụng ngoại tuyến, hãy trực tuyến trở lại, nhấp chuột phải vào tệp và chọn tùy chọn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Nhấp vào <ph name="SEARCH_KEY" /> để tìm kiếm <ph name="SITE_NAME" /></translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">Quản lý GDI</translation>
 <translation id="6251889282623539337">Điều khoản dịch vụ <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Lộ Khoá</translation>
+<translation id="6257602895346497974">Bật tính năng đồng bộ hóa...</translation>
 <translation id="6259104249628300056">Khám phá các thiết bị trên mạng cục bộ của bạn</translation>
 <translation id="6263082573641595914">Phiên bản CA của Microsoft</translation>
 <translation id="6263284346895336537">Không Quan trọng</translation>
@@ -5029,6 +5038,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8606726445206553943">Sử dụng các thiết bị MIDI của bạn</translation>
 <translation id="8609465669617005112">Di chuyển lên</translation>
 <translation id="8615618338313291042">Ứng dụng Ẩn danh: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Không đồng bộ hóa</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Trạng thái chuyển vùng</translation>
 <translation id="8620765578342452535">Định cấu hình kết nối mạng</translation>

@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">Επισήμανση του αντικειμένου με εστίαση στο πληκτρολόγιο όταν αλλάζει</translation>
 <translation id="1173894706177603556">Μετονομασία</translation>
 <translation id="1174073918202301297">Η συντόμευση προστέθηκε</translation>
+<translation id="117445914942805388">Για να διαγράψετε τα δεδομένα περιήγησης από όλες τις συγχρονισμένες συσκευές σας και τον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />μεταβείτε στις ρυθμίσεις συγχρονισμού<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Εκτύπωση...</translation>
 <translation id="117624967391683467">Αντιγραφή αρχείου <ph name="FILE_NAME" />…</translation>
 <translation id="1177138678118607465">Η Google μπορεί να χρησιμοποιεί το ιστορικό περιήγησής σας για να εξατομικεύει την Αναζήτηση, τις διαφημίσεις και άλλες υπηρεσίες Google. Μπορείτε να αλλάξετε αυτήν τη ρύθμιση ανά πάσα στιγμή στο myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">Ενεργοποιήστε τις λειτουργίες προσβασιμότητας για να κάνετε τη συσκευή σας πιο εύχρηστη.</translation>
 <translation id="1190144681599273207">Για την ανάκτηση αυτού του αρχείου θα χρησιμοποιηθούν περίπου <ph name="FILE_SIZE" /> δεδομένων κινητής τηλεφωνίας.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Πρόσβαση σε ένα αρχείο που είναι αποθηκευμένο στον υπολογιστή σας}other{Πρόσβαση σε # αρχεία που είναι αποθηκευμένα στον υπολογιστή σας}}</translation>
+<translation id="119092896208640858">Για να διαγράψετε τα δεδομένα περιήγησης μόνο από αυτήν τη συσκευή, διατηρώντας τα στον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />αποσυνδεθείτε<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Για να ξεκινήσετε το Smart Lock, καταχωρίστε τον κωδικό πρόσβασης. Την επόμενη φορά μπορείτε να χρησιμοποιήσετε το τηλέφωνό σας, για να ξεκλειδώσετε το <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Άγνωστο σφάλμα.</translation>
 <translation id="119738088725604856">Παράθυρο στιγμιότυπου οθόνης</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">Στοιχείο ραφιού 5</translation>
 <translation id="1227507814927581609">Ο έλεγχος ταυτότητας απέτυχε κατά τη σύνδεση στη συσκευή "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">μενού συστήματος</translation>
+<translation id="1231733316453485619">Ενεργοποίηση συγχρονισμού;</translation>
 <translation id="123186018454553812">Δοκιμάστε ένα άλλο κλειδί</translation>
 <translation id="1232569758102978740">Χωρίς τίτλο</translation>
 <translation id="1233721473400465416">Τοπικές ρυθμίσεις</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">Κοινοποίηση ήχου</translation>
 <translation id="2480868415629598489">Τροποποίηση των δεδομένων που αντιγράφετε και επικολλάτε</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
+<translation id="2484959914739448251">Για να διαγράψετε τα δεδομένα περιήγησης από όλες τις συγχρονισμένες συσκευές σας και τον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />εισαγάγετε τη φράση πρόσβασής σας<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Απεγκατάσταση</translation>
 <translation id="2487067538648443797">Προσθήκη νέου σελιδοδείκτη</translation>
 <translation id="248861575772995840">Δεν είναι δυνατή η εύρεση του τηλεφώνου σας. Βεβαιωθείτε ότι το Bluetooth του <ph name="DEVICE_TYPE" /> είναι ενεργοποιημένο. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">Για να είναι δυνατή η πρόσβαση του λογαριασμού σας στο Google Play Store, πραγματοποιήστε έλεγχο ταυτότητας με τον Πάροχο ταυτότητας.</translation>
 <translation id="3459774175445953971">Τελευταία τροποποίηση:</translation>
 <translation id="3461266716147554923">Το <ph name="URL" /> θέλει να δει κείμενο και εικόνες που αντιγράφηκαν στο πρόχειρο</translation>
+<translation id="3462311546193741693">Θα αποσυνδεθείτε από τους περισσότερους ιστοτόπους. Θα παραμείνετε συνδεδεμένοι στον Λογαριασμό σας Google, για να μπορέσετε να διαγράψετε τα συγχρονισμένα δεδομένα σας.</translation>
 <translation id="3462413494201477527">Ακύρωση ρύθμισης λογαριασμού;</translation>
 <translation id="346431825526753">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζεται ο χρήστης <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Κάντε κλικ στη φωτογραφία σας</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">Πατήστε το πλήκτρο Enter όταν τελειώσετε</translation>
 <translation id="3827774300009121996">&amp;Πλήρης Οθόνη</translation>
 <translation id="3828029223314399057">Αναζήτηση σελιδοδεικτών</translation>
+<translation id="3829765597456725595">Κοινή χρήση αρχείου SMB</translation>
 <translation id="3830674330436234648">Δεν διατίθεται αναπαραγωγή</translation>
 <translation id="3831436149286513437">Προτάσεις αναζήτησης Google Drive</translation>
 <translation id="3831486154586836914">Έχετε μεταβεί στη λειτουργία προεπισκόπησης παράθυρου</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">Έξοδος και κλείδωμα για παιδιά</translation>
 <translation id="4977942889532008999">Επιβεβαίωση πρόσβασης</translation>
 <translation id="4980805016576257426">Αυτή η επέκταση περιέχει κακόβουλο πρόγραμμα.</translation>
+<translation id="4981449534399733132">Για να διαγράψετε τα δεδομένα περιήγησης από όλες τις συγχρονισμένες συσκευές σας και τον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />συνδεθείτε<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Αλλάξτε τις ρυθμίσεις που ελέγχουν την πρόσβαση των ιστοτόπων σε δυνατότητες, όπως είναι τα cookie, η JavaScript, οι προσθήκες, η γεωγραφική τοποθεσία, το μικρόφωνο, η κάμερα, κ.λπ.</translation>
 <translation id="4988526792673242964">Σελίδες</translation>
 <translation id="49896407730300355">Περιστροφή προς τα &amp;αριστερά</translation>
@@ -3426,6 +3433,7 @@
 <translation id="6146563240635539929">Βίντεο</translation>
 <translation id="6147020289383635445">Η προεπισκόπηση εκτύπωσης απέτυχε.</translation>
 <translation id="6148052338549899048">Δεν υπάρχουν κατάλληλες συσκευές. <ph name="LINK_BEGIN" />Μάθετε περισσότερα.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">Διαγράφει το ιστορικό από αυτήν τη συσκευή.</translation>
 <translation id="614940544461990577">Δοκιμάστε να κάνετε τα εξής:</translation>
 <translation id="6150853954427645995">Για να αποθηκεύσετε αυτό το αρχείο για χρήση εκτός σύνδεσης, συνδεθείτε ξανά στο διαδίκτυο, κάντε δεξί κλικ στο αρχείο και ενεργοποιήστε την επιλογή <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Πατήστε <ph name="SEARCH_KEY" /> για αναζήτηση <ph name="SITE_NAME" /></translation>
@@ -3497,6 +3505,7 @@
 <translation id="6251870443722440887">Χειρισμοί GDI</translation>
 <translation id="6251889282623539337">Όροι Παροχής Υπηρεσιών <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Παραβίαση κλειδιού</translation>
+<translation id="6257602895346497974">Ενεργοποίηση συγχρονισμού…</translation>
 <translation id="6259104249628300056">Ανακάλυψη συσκευών στο τοπικό δίκτυό σας</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
 <translation id="6263284346895336537">Δεν είναι κρίσιμη</translation>
@@ -5030,6 +5039,7 @@
 <translation id="8606726445206553943">Χρήση των συσκευών σας MIDI</translation>
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>
 <translation id="8615618338313291042">Εφαρμογή ανώνυμης περιήγησης: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Δεν συγχρονίζεται</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Κατάσταση περιαγωγής</translation>
 <translation id="8620765578342452535">Διαμόρφωση συνδέσεων δικτύου</translation>

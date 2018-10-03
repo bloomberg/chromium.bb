@@ -123,6 +123,7 @@
 <translation id="1171135284592304528">కీబోర్డ్ దృష్టి కేంద్రీకరణ గల ఆబ్జెక్ట్ మారినప్పుడు దాన్ని హైలైట్ చేస్తుంది</translation>
 <translation id="1173894706177603556">పేరుమార్చు</translation>
 <translation id="1174073918202301297">షార్ట్‌కట్ జోడించబడింది</translation>
+<translation id="117445914942805388">మీ అన్ని సమకాలీకరించబడుతున్న పరికరాలతో సహా, మీ Google ఖాతా నుండి బ్రౌజింగ్ డేటాను తీసివేయడానికి, <ph name="BEGIN_LINK" />సమకాలీకరణ సెట్టింగ్‌లను సందర్శించండి<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />ను కాపీ చేస్తోంది...</translation>
 <translation id="1177138678118607465">శోధన, ప్రకటనలు మరియు ఇతర Google సేవలను వ్యక్తిగతీకరించడం కోసం Google మీ బ్రౌజింగ్ చరిత్రను ఉపయోగించవచ్చు. మీరు ఏ సమయంలో అయినా myaccount.google.com/activitycontrols/searchలో దీనిని మార్చవచ్చు</translation>
@@ -137,6 +138,7 @@
 <translation id="1189418886587279221">మీ పరికరాన్ని సులభంగా ఉపయోగించడానికి ప్రాప్యత లక్షణాలను ప్రారంభించండి.</translation>
 <translation id="1190144681599273207">ఈ ఫైల్‌ను పొందడానికి మొబైల్ డేటాలో సుమారుగా <ph name="FILE_SIZE" /> ఉపయోగించబడుతుంది.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{మీ కంప్యూటర్‌లో నిల్వ చేసిన ఫైల్‌ను ప్రాప్యత చేయండి}other{మీ కంప్యూటర్‌లో నిల్వ చేసిన # ఫైల్‌లను ప్రాప్యత చేయండి}}</translation>
+<translation id="119092896208640858">బ్రౌజింగ్ డేటాను మీ Google ఖాతాలో అలాగే ఉంచి, కేవలం ఈ పరికరం నుండి మాత్రమే తీసివేయడానికి <ph name="BEGIN_LINK" />సైన్ అవుట్ చేయండి<ph name="END_LINK" />.</translation>
 <translation id="1195076408729068893">Smart Lockను ప్రారంభించడానికి, మీ పాస్‌వర్డ్‌ను నమోదు చేయండి. తదుపరిసారి, మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీరు మీ ఫోన్‌ను ఉపయోగించవచ్చు.</translation>
 <translation id="1195447618553298278">తెలియని లోపం.</translation>
 <translation id="119738088725604856">స్క్రీన్‌షాట్ విండో</translation>
@@ -168,6 +170,7 @@
 <translation id="1225211345201532184">అర అంశం 5</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తున్నప్పుడు ప్రామాణీకరణ విఫలమైంది.</translation>
 <translation id="1230807973377071856">సిస్టమ్ మెను</translation>
+<translation id="1231733316453485619">సమకాలీకరణను ఆన్ చేయాలా?</translation>
 <translation id="123186018454553812">మరొక కీని ప్రయత్నించండి</translation>
 <translation id="1232569758102978740">శీర్షికలేనిది</translation>
 <translation id="1233721473400465416">లొకేల్</translation>
@@ -988,6 +991,7 @@
 <translation id="247949520305900375">ఆడియోను భాగస్వామ్యం చేయి</translation>
 <translation id="2480868415629598489">మీరు కాపీ చేసి, అతికించే డేటాను సవరించడం</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
+<translation id="2484959914739448251">మీ అన్ని సమకాలీకరించబడుతున్న పరికరాలతో సహా, మీ Google ఖాతా నుండి బ్రౌజింగ్ డేటాను తీసివేయడానికి, <ph name="BEGIN_LINK" />మీ రహస్య పదబంధాన్ని నమోదు చేయండి<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
 <translation id="2487067538648443797">కొత్త బుక్‌మార్క్‌ను జోడించు</translation>
 <translation id="248861575772995840">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" /> యొక్క బ్లూటూత్ ఆన్ చేసి ఉన్నట్లు నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
@@ -1639,6 +1643,7 @@
 <translation id="3459697287128633276">మీ ఖాతాలో Google Play స్టోర్ యాక్సెస్‌ని ఆరంభించాలంటే, దయచేసి మీ గుర్తింపు ప్రదాతతో ప్రమాణీకరించండి.</translation>
 <translation id="3459774175445953971">చివరగా సవరించబడింది:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను చూడాలనుకుంటోంది.</translation>
+<translation id="3462311546193741693">చాలా సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది. మీరు మీ Google ఖాతాలో అలాగే సైన్ ఇన్ చేసి ఉంటారు, కనుక మీ సమకాలీకరించిన డేటాను తీసివేయవచ్చు.</translation>
 <translation id="3462413494201477527">ఖాతా సెటప్‌ను రద్దు చేయాలా?</translation>
 <translation id="346431825526753">ఇది <ph name="CUSTODIAN_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా.</translation>
 <translation id="3465566417615315331">మీ ఫోటోను క్లిక్ చేయండి</translation>
@@ -1903,6 +1908,7 @@
 <translation id="38275787300541712">పూర్తయినప్పుడు Enter నొక్కండి</translation>
 <translation id="3827774300009121996">&amp;పూర్తి స్క్రీన్</translation>
 <translation id="3828029223314399057">బుక్‌మార్క్‌లను శోధించు</translation>
+<translation id="3829765597456725595">SMB ఫైల్ షేర్</translation>
 <translation id="3830674330436234648">ప్లేబ్యాక్ అందుబాటులో లేదు</translation>
 <translation id="3831436149286513437">Google డిస్క్ శోధన సూచనలు</translation>
 <translation id="3831486154586836914">విండో స్థూలదృష్టి మోడ్‌లోకి ప్రవేశించారు</translation>
@@ -2625,6 +2631,7 @@
 <translation id="4974733135013075877">నిష్క్రమించు మరియు చైల్డ్ లాక్ చేయి</translation>
 <translation id="4977942889532008999">ప్రాప్యతను నిర్ధారించండి</translation>
 <translation id="4980805016576257426">ఈ పొడిగింపు మాల్వేర్‌ను కలిగి ఉంది.</translation>
+<translation id="4981449534399733132">మీ అన్ని సమకాలీకరించబడుతున్న పరికరాలతో సహా, మీ Google ఖాతా నుండి బ్రౌజింగ్ డేటాను తీసివేయడానికి, <ph name="BEGIN_LINK" />సైన్ ఇన్ చేయండి<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">కుక్కీలు, జావాస్క్రిప్ట్, ప్లగిన్‌లు, భౌగోళిక స్థానం, మైక్రోఫోన్, కెమెరా మొదలైన లక్షణాలకు వెబ్‌సైట్‌ల యాక్సెస్‌ను నియంత్రించే మీ సెట్టింగ్‌లను మార్చండి.</translation>
 <translation id="4988526792673242964">పేజీలు</translation>
 <translation id="49896407730300355">అ&amp;పసవ్యదిశలో తిప్పు</translation>
@@ -3425,6 +3432,7 @@
 <translation id="6146563240635539929">వీడియోలు</translation>
 <translation id="6147020289383635445">ముద్రణా పరిదృశ్యం విఫలమైంది.</translation>
 <translation id="6148052338549899048">అర్హతగల పరికరాలు లేవు. <ph name="LINK_BEGIN" /> మరింత తెలుసుకోండి.<ph name="LINK_END" /></translation>
+<translation id="6148716538476291841">ఈ పరికరం నుండి చరిత్రను తీసివేస్తుంది.</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
 <translation id="6150853954427645995">ఆఫ్‌లైన్ వినియోగం కోసం ఈ ఫైల్‌ను సేవ్ చేయడానికి, ఆన్‌లైన్‌లోకి తిరిగి వచ్చి, ఫైల్‌పై కుడి క్లిక్ చేసి, ఆపై <ph name="OFFLINE_CHECKBOX_NAME" /> ఎంపికను ఎంచుకోండి.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" />ను శోధించడానికి <ph name="SEARCH_KEY" />ని నొక్కండి</translation>
@@ -3496,6 +3504,7 @@
 <translation id="6251870443722440887">GDI నిర్వహించేవి</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> సేవా నిబంధనలు</translation>
 <translation id="6254503684448816922">కీ రాజీ</translation>
+<translation id="6257602895346497974">సమకాలీకరణను ఆన్ చేయి...</translation>
 <translation id="6259104249628300056">మీ స్థానిక నెట్‌వర్క్‌లో పరికరాలను కనుగొనండి</translation>
 <translation id="6263082573641595914">Microsoft CA సంస్కరణ</translation>
 <translation id="6263284346895336537">క్లిష్టమైనది కాదు</translation>
@@ -5026,6 +5035,7 @@
 <translation id="8606726445206553943">మీ MIDI పరికరాలను ఉపయోగించాలనుకుంటోంది</translation>
 <translation id="8609465669617005112">పైకి తరలించు</translation>
 <translation id="8615618338313291042">అజ్ఞాత అనువర్తనం: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">సమకాలీకరించడం లేదు</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">రోమింగ్ స్థితి</translation>
 <translation id="8620765578342452535">నెట్‌వర్క్ కనెక్షన్‌లను కాన్ఫిగర్ చేయడానికి అనుమతి</translation>

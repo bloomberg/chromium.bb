@@ -27,6 +27,7 @@
 <translation id="1869480248812203386">Anda dapat membantu membuat Chromium lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
 <translation id="1881322772814446296">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. Secara opsional, Anda dapat membuat profil untuk menjaga data Chromium Anda yang sudah ada tetap terpisah. <ph name="LEARN_MORE" /></translation>
 <translation id="1895626441344023878">{0,plural, =0{Update Chromium tersedia}=1{Update Chromium tersedia}other{Update Chromium telah tersedia selama # hari}}</translation>
+<translation id="1911763535808217981">Dengan menonaktifkan ini, Anda dapat login ke situs Google seperti Gmail tanpa harus login ke Chromium</translation>
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
@@ -116,8 +117,10 @@
 <translation id="5032989939245619637">Simpan detail di Chromium</translation>
 <translation id="5045248521775609809">Bawa Chromium ke mana saja</translation>
 <translation id="5116586539350239523">Chromium akan meyimpan informasi pribadi Anda dengan aman sehingga Anda tidak perlu mengetiknya lagi.</translation>
+<translation id="5277894862589591112">Untuk menerapkan perubahan Anda, luncurkan ulang Chromium</translation>
 <translation id="5358375970380395591">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Memperbarui Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="538767207339317086">Izinkan login Chromium</translation>
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>
 <translation id="5416696090975899932">Chromium tidak dapat menampilkan pratinjau cetak jika penampil PDF bawaan tidak ada.</translation>
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>
