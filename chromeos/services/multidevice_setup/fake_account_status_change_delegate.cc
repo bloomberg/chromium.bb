@@ -28,7 +28,8 @@ void FakeAccountStatusChangeDelegate::OnConnectedHostSwitchedForExistingUser(
   ++num_existing_user_host_switched_events_handled_;
 }
 
-void FakeAccountStatusChangeDelegate::OnNewChromebookAddedForExistingUser() {
+void FakeAccountStatusChangeDelegate::OnNewChromebookAddedForExistingUser(
+    const std::string& new_host_device_name) {
   ++num_existing_user_chromebook_added_events_handled_;
 }
 

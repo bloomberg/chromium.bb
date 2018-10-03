@@ -184,7 +184,8 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
 
   void ShowExistingUserNewChromebookNotification() {
     EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
-    fake_multidevice_setup_->delegate()->OnNewChromebookAddedForExistingUser();
+    fake_multidevice_setup_->delegate()->OnNewChromebookAddedForExistingUser(
+        kTestHostDeviceName);
     InvokePendingMojoCalls();
   }
 
@@ -285,8 +286,9 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
         break;
       case MultiDeviceNotificationPresenter::Status::
           kExistingUserNewChromebookNotificationVisible:
-        title = l10n_util::GetStringUTF16(
-            IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE);
+        title = l10n_util::GetStringFUTF16(
+            IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE,
+            base::ASCIIToUTF16(kTestHostDeviceName));
         message = l10n_util::GetStringUTF16(
             IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE);
         break;

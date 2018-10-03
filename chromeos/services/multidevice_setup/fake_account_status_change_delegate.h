@@ -36,7 +36,8 @@ class FakeAccountStatusChangeDelegate
   void OnPotentialHostExistsForNewUser() override;
   void OnConnectedHostSwitchedForExistingUser(
       const std::string& new_host_device_name) override;
-  void OnNewChromebookAddedForExistingUser() override;
+  void OnNewChromebookAddedForExistingUser(
+      const std::string& new_host_device_name) override;
 
  private:
   size_t num_new_user_events_handled_ = 0u;

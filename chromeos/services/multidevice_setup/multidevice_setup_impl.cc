@@ -251,7 +251,8 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
           kTestDeviceNameForDebugNotification);
       break;
     case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
-      delegate->OnNewChromebookAddedForExistingUser();
+      delegate->OnNewChromebookAddedForExistingUser(
+          kTestDeviceNameForDebugNotification);
       break;
     default:
       NOTREACHED();

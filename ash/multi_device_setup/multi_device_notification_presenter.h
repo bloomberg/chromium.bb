@@ -61,7 +61,8 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   void OnPotentialHostExistsForNewUser() override;
   void OnConnectedHostSwitchedForExistingUser(
       const std::string& new_host_device_name) override;
-  void OnNewChromebookAddedForExistingUser() override;
+  void OnNewChromebookAddedForExistingUser(
+      const std::string& new_host_device_name) override;
 
   // SessionObserver:
   void OnUserSessionAdded(const AccountId& account_id) override;
