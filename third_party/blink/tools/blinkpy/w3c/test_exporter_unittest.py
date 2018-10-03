@@ -379,6 +379,7 @@ class TestExporterTest(LoggingTestCase):
 
         self.assertFalse(success)
         self.assertLog(['INFO: Cloning GitHub web-platform-tests/wpt into /tmp/wpt\n',
+                        'INFO: Setting git user name & email in /tmp/wpt\n',
                         'INFO: Searching for exportable in-flight CLs.\n',
                         'INFO: In-flight CLs cannot be exported due to the following error:\n',
                         'ERROR: Gerrit API fails.\n',
@@ -393,6 +394,7 @@ class TestExporterTest(LoggingTestCase):
 
         self.assertFalse(success)
         self.assertLog(['INFO: Cloning GitHub web-platform-tests/wpt into /tmp/wpt\n',
+                        'INFO: Setting git user name & email in /tmp/wpt\n',
                         'INFO: Searching for exportable in-flight CLs.\n',
                         'INFO: Searching for exportable Chromium commits.\n',
                         'INFO: Attention: The following errors have prevented some commits from being exported:\n',
