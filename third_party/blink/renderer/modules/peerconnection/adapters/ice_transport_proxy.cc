@@ -33,8 +33,8 @@ IceTransportProxy::IceTransportProxy(
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(
-      new IceTransportHost(proxy_thread_, weak_ptr_factory_.GetWeakPtr()));
+  host_.reset(new IceTransportHost(proxy_thread_, host_thread_,
+                                   weak_ptr_factory_.GetWeakPtr()));
   PostCrossThreadTask(*host_thread_, FROM_HERE,
                       CrossThreadBind(&IceTransportHost::Initialize,
                                       CrossThreadUnretained(host_.get()),

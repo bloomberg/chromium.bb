@@ -44,6 +44,9 @@ class MODULES_EXPORT RTCQuicTransport final
 
   ~RTCQuicTransport() override;
 
+  RTCQuicStream* AddStream(QuicStreamProxy* stream_proxy);
+  void RemoveStream(RTCQuicStream* stream);
+
   // https://w3c.github.io/webrtc-quic/#quic-transport*
   RTCIceTransport* transport() const;
   String state() const;
@@ -57,6 +60,7 @@ class MODULES_EXPORT RTCQuicTransport final
   RTCQuicStream* createStream(ExceptionState& exception_state);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream);
 
   // Called by the RTCIceTransport when its start() method is called.
   void OnTransportStarted();
@@ -85,6 +89,7 @@ class MODULES_EXPORT RTCQuicTransport final
   void OnConnectionFailed(const std::string& error_details,
                           bool from_remote) override;
   void OnRemoteStopped() override;
+  void OnStream(QuicStreamProxy* stream_proxy) override;
 
   bool IsClosed() const { return state_ == RTCQuicTransportState::kClosed; }
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;

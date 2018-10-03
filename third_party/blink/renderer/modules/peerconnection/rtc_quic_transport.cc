@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
 
 namespace blink {
 
@@ -199,12 +200,29 @@ void RTCQuicTransport::stop() {
 }
 
 RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
-  if (RaiseExceptionIfClosed(exception_state)) {
+  // TODO(github.com/w3c/webrtc-quic/issues/50): Maybe support createStream in
+  // the 'new' or 'connecting' states.
+  if (state_ != RTCQuicTransportState::kConnected) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "RTCQuicTransport.createStream() is only "
+                                      "valid in the 'connected' state.");
     return nullptr;
   }
-  RTCQuicStream* stream = new RTCQuicStream(this);
+  return AddStream(proxy_->CreateStream());
+}
+
+RTCQuicStream* RTCQuicTransport::AddStream(QuicStreamProxy* stream_proxy) {
+  auto* stream = new RTCQuicStream(GetExecutionContext(), this, stream_proxy);
+  stream_proxy->set_delegate(stream);
   streams_.insert(stream);
   return stream;
+}
+
+void RTCQuicTransport::RemoveStream(RTCQuicStream* stream) {
+  DCHECK(stream);
+  auto it = streams_.find(stream);
+  DCHECK(it != streams_.end());
+  streams_.erase(it);
 }
 
 void RTCQuicTransport::OnConnected() {
@@ -221,6 +239,11 @@ void RTCQuicTransport::OnConnectionFailed(const std::string& error_details,
 void RTCQuicTransport::OnRemoteStopped() {
   Close(RTCQuicTransportState::kClosed);
   DispatchEvent(*Event::Create(EventTypeNames::statechange));
+}
+
+void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
+  RTCQuicStream* stream = AddStream(stream_proxy);
+  DispatchEvent(*RTCQuicStreamEvent::Create(stream));
 }
 
 bool RTCQuicTransport::RaiseExceptionIfClosed(
