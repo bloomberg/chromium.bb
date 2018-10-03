@@ -118,8 +118,13 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
   // there, let's try a pragmatic hack.
   if ([eventString characterAtIndex:0] > 0x7f &&
       [[event characters] length] > 0 &&
-      [[event characters] characterAtIndex:0] <= 0x7f)
+      [[event characters] characterAtIndex:0] <= 0x7f) {
     eventString = [event characters];
+
+    // Process the shift if necessary.
+    if (eventModifiers & NSShiftKeyMask)
+      eventString = [eventString uppercaseString];
+  }
 
   // We intentionally leak this object.
   static __attribute__((unused)) KeyboardInputSourceListener* listener =
