@@ -40,6 +40,10 @@ void MediaInternalsProxy::GetEverything() {
 
   MediaInternals::GetInstance()->SendHistoricalMediaEvents();
 
+#if !defined(OS_ANDROID)
+  MediaInternals::GetInstance()->SendAudioFocusState();
+#endif
+
   // Ask MediaInternals for its data on IO thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -51,10 +55,6 @@ void MediaInternalsProxy::GetEverythingOnIOThread() {
   // TODO(xhwang): Investigate whether we can update on UI thread directly.
   MediaInternals::GetInstance()->SendAudioStreamData();
   MediaInternals::GetInstance()->SendVideoCaptureDeviceCapabilities();
-
-#if !defined(OS_ANDROID)
-  MediaInternals::GetInstance()->SendAudioFocusState();
-#endif
 }
 
 void MediaInternalsProxy::UpdateUIOnUIThread(const base::string16& update) {

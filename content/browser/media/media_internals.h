@@ -121,10 +121,15 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   MediaInternals();
 
   // AudioFocusObserver implementation.
-  void OnFocusGained(media_session::mojom::MediaSessionPtr media_session,
+  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr media_session,
                      media_session::mojom::AudioFocusType type) override;
   void OnFocusLost(
-      media_session::mojom::MediaSessionPtr media_session) override;
+      media_session::mojom::MediaSessionInfoPtr media_session) override;
+
+  // Called when we receive audio focus debug info to display.
+  void DidGetAudioFocusDebugInfo(
+      int id,
+      media_session::mojom::MediaSessionDebugInfoPtr info);
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.
@@ -162,6 +167,9 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   base::ListValue video_capture_capabilities_cached_data_;
 
   NotificationRegistrar registrar_;
+
+  // Must only be accessed on the UI thread.
+  base::DictionaryValue audio_focus_data_;
 
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;

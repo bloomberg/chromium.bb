@@ -46,7 +46,7 @@ class MediaInternalsTestBase {
 
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
-  void UpdateCallbackImpl(const base::string16& update) {
+  virtual void UpdateCallbackImpl(const base::string16& update) {
     // Each update string looks like "<JavaScript Function Name>({<JSON>});"
     // or for video capabilities: "<JavaScript Function Name>([{<JSON>}]);".
     // In the second case we will be able to extract the dictionary if it is the
@@ -312,6 +312,8 @@ class MediaInternalsAudioFocusTest : public testing::Test,
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
         media_session::switches::kEnableAudioFocus);
 
+    run_loop_ = std::make_unique<base::RunLoop>();
+
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
     browser_context_.reset(new TestBrowserContext());
   }
@@ -322,10 +324,21 @@ class MediaInternalsAudioFocusTest : public testing::Test,
   }
 
  protected:
-  void ExpectValue(base::ListValue expected_list) {
+  void UpdateCallbackImpl(const base::string16& update) override {
+    MediaInternalsTestBase::UpdateCallbackImpl(update);
+    run_loop_->Quit();
+  }
+
+  void ExpectValueAndReset(base::ListValue expected_list) {
     base::DictionaryValue expected_data;
     expected_data.SetKey("sessions", std::move(expected_list));
     EXPECT_EQ(expected_data, update_data_);
+    Reset();
+  }
+
+  void Reset() {
+    update_data_.Clear();
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   std::unique_ptr<TestWebContents> CreateWebContents() {
@@ -344,13 +357,16 @@ class MediaInternalsAudioFocusTest : public testing::Test,
   }
 
   void WaitForCallback() {
-    AudioFocusManager::GetInstance()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    if (!update_data_.empty())
+      return;
+
+    run_loop_->Run();
   }
 
   MediaInternals::UpdateCallback update_cb_;
 
  private:
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 };
@@ -366,13 +382,14 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session;
+    expected_session.SetKey("id", base::Value(0));
     expected_session.SetKey("name", GetAddressAsValue(media_session1));
     expected_session.SetKey("owner", base::Value(kTestTitle1));
     expected_session.SetKey("state", base::Value("Active"));
 
     base::ListValue expected_list;
     expected_list.GetList().push_back(std::move(expected_session));
-    ExpectValue(std::move(expected_list));
+    ExpectValueAndReset(std::move(expected_list));
   }
 
   // Create another media session.
@@ -382,15 +399,19 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   media_session2->RequestSystemAudioFocus(
       AudioFocusType::kGainTransientMayDuck);
   WaitForCallback();
+  Reset();
+  WaitForCallback();
 
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session1;
+    expected_session1.SetKey("id", base::Value(1));
     expected_session1.SetKey("name", GetAddressAsValue(media_session2));
     expected_session1.SetKey("owner", base::Value(kTestTitle2));
     expected_session1.SetKey("state", base::Value("Active"));
 
     base::DictionaryValue expected_session2;
+    expected_session2.SetKey("id", base::Value(0));
     expected_session2.SetKey("name", GetAddressAsValue(media_session1));
     expected_session2.SetKey("owner", base::Value(kTestTitle1));
     expected_session2.SetKey("state", base::Value("Active Ducked"));
@@ -398,7 +419,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
     base::ListValue expected_list;
     expected_list.GetList().push_back(std::move(expected_session1));
     expected_list.GetList().push_back(std::move(expected_session2));
-    ExpectValue(std::move(expected_list));
+    ExpectValueAndReset(std::move(expected_list));
   }
 
   // Abandon audio focus.
@@ -408,13 +429,14 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session;
+    expected_session.SetKey("id", base::Value(0));
     expected_session.SetKey("name", GetAddressAsValue(media_session1));
     expected_session.SetKey("owner", base::Value(kTestTitle1));
     expected_session.SetKey("state", base::Value("Active"));
 
     base::ListValue expected_list;
     expected_list.GetList().push_back(std::move(expected_session));
-    ExpectValue(std::move(expected_list));
+    ExpectValueAndReset(std::move(expected_list));
   }
 
   // Abandon audio focus.
@@ -424,7 +446,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   // Check JSON is what we expect.
   {
     base::ListValue expected_list;
-    ExpectValue(std::move(expected_list));
+    ExpectValueAndReset(std::move(expected_list));
   }
 }
 

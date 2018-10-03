@@ -118,6 +118,10 @@ bool IsIncognito(int render_process_id) {
 const char kAudioLogStatusKey[] = "status";
 const char kAudioLogUpdateFunction[] = "media.updateAudioComponent";
 
+const char kAudioFocusFunction[] = "media.onReceiveAudioFocusState";
+const char kAudioFocusIdKey[] = "id";
+const char kAudioFocusSessionsKey[] = "sessions";
+
 }  // namespace
 
 namespace content {
@@ -716,30 +720,31 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
 
 void MediaInternals::SendAudioFocusState() {
 #if !defined(OS_ANDROID)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!CanUpdate())
     return;
 
-  base::DictionaryValue audio_focus_data;
-  const std::list<AudioFocusManager::StackRow>& stack =
-      AudioFocusManager::GetInstance()->audio_focus_stack_;
+  audio_focus_data_.Clear();
+
+  auto& stack = AudioFocusManager::GetInstance()->audio_focus_stack_;
 
   // We should go backwards through the stack so the top of the stack is always
   // shown first in the list.
   base::ListValue stack_data;
   for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
-    MediaSessionImpl::DebugInfo debug_info =
-        (*iter).media_session->GetDebugInfo();
     base::DictionaryValue media_session_data;
-    media_session_data.SetKey("name", base::Value(debug_info.name));
-    media_session_data.SetKey("owner", base::Value(debug_info.owner));
-    media_session_data.SetKey("state", base::Value(debug_info.state));
+    media_session_data.SetKey(kAudioFocusIdKey, base::Value((*iter)->id()));
     stack_data.GetList().push_back(std::move(media_session_data));
+
+    (*iter)->session()->GetDebugInfo(
+        base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
+                       base::Unretained(this), (*iter)->id()));
   }
 
-  audio_focus_data.SetKey("sessions", std::move(stack_data));
+  audio_focus_data_.SetKey(kAudioFocusSessionsKey, std::move(stack_data));
 
-  SendUpdate(
-      SerializeUpdate("media.onReceiveAudioFocusState", &audio_focus_data));
+  if (stack.empty())
+    SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -824,7 +829,7 @@ void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
 }
 
 void MediaInternals::OnFocusGained(
-    media_session::mojom::MediaSessionPtr media_session,
+    media_session::mojom::MediaSessionInfoPtr media_session,
     media_session::mojom::AudioFocusType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -834,12 +839,41 @@ void MediaInternals::OnFocusGained(
 }
 
 void MediaInternals::OnFocusLost(
-    media_session::mojom::MediaSessionPtr media_session) {
+    media_session::mojom::MediaSessionInfoPtr media_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&MediaInternals::SendAudioFocusState,
                                           base::Unretained(this)));
+}
+
+void MediaInternals::DidGetAudioFocusDebugInfo(
+    int id,
+    media_session::mojom::MediaSessionDebugInfoPtr info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!CanUpdate())
+    return;
+
+  base::Value* sessions_list =
+      audio_focus_data_.FindKey(kAudioFocusSessionsKey);
+  DCHECK(sessions_list);
+
+  bool updated = false;
+  for (auto& session : sessions_list->GetList()) {
+    if (session.FindKey(kAudioFocusIdKey)->GetInt() != id)
+      continue;
+
+    session.SetKey("name", base::Value(info->name));
+    session.SetKey("owner", base::Value(info->owner));
+    session.SetKey("state", base::Value(info->state));
+    updated = true;
+  }
+
+  if (!updated)
+    return;
+
+  SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {

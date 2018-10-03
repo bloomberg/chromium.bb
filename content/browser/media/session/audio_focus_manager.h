@@ -11,25 +11,38 @@
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
 
-class MediaSessionImpl;
-
 class CONTENT_EXPORT AudioFocusManager {
  public:
+  using RequestId = int;
+  using RequestResponse = std::pair<RequestId, bool>;
+
   // Returns Chromium's internal AudioFocusManager.
   static AudioFocusManager* GetInstance();
 
-  void RequestAudioFocus(MediaSessionImpl* media_session,
-                         media_session::mojom::AudioFocusType type);
+  // Requests audio focus with |type| for the |media_session| with
+  // |session_info|. The function will return a |RequestResponse| which contains
+  // a |RequestId| and a boolean as to whether the request was successful. If a
+  // session wishes to request a different focus type it should provide its
+  // previous request id as |previous_id|.
+  RequestResponse RequestAudioFocus(
+      media_session::mojom::MediaSessionPtr media_session,
+      media_session::mojom::MediaSessionInfoPtr session_info,
+      media_session::mojom::AudioFocusType type,
+      base::Optional<RequestId> previous_id);
 
-  void AbandonAudioFocus(MediaSessionImpl* media_session);
+  // Abandons audio focus for a request with |id|. The next request on top of
+  // the stack will be granted audio focus.
+  void AbandonAudioFocus(RequestId id);
 
-  media_session::mojom::AudioFocusType GetFocusTypeForSession(
-      MediaSessionImpl* media_session) const;
+  // Returns the current audio focus type for a request with |id|.
+  media_session::mojom::AudioFocusType GetFocusTypeForSession(RequestId id);
 
   // Adds/removes audio focus observers.
   mojo::InterfacePtrSetElementId AddObserver(
@@ -53,22 +66,57 @@ class CONTENT_EXPORT AudioFocusManager {
   AudioFocusManager();
   ~AudioFocusManager();
 
-  void MaybeRemoveFocusEntry(MediaSessionImpl* media_session);
+  void RemoveFocusEntryIfPresent(RequestId id);
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.
   mojo::InterfacePtrSet<media_session::mojom::AudioFocusObserver> observers_;
 
-  // Weak reference of managed MediaSessions and their requested focus type.
-  // A MediaSession must abandon audio focus before its destruction.
-  struct StackRow {
-    StackRow(MediaSessionImpl* media_session,
-             media_session::mojom::AudioFocusType audio_focus_type)
-        : media_session(media_session), audio_focus_type(audio_focus_type) {}
-    MediaSessionImpl* media_session;
-    media_session::mojom::AudioFocusType audio_focus_type;
+  // StackRow is a MediaSessionObserver and holds a cached copy of the latest
+  // MediaSessionInfo associated with the MediaSession. By keeping the info
+  // cached and readily available we can make audio focus decisions quickly
+  // without waiting on MediaSessions.
+  class StackRow : public media_session::mojom::MediaSessionObserver {
+   public:
+    StackRow(media_session::mojom::MediaSessionPtr session,
+             media_session::mojom::MediaSessionInfoPtr current_info,
+             media_session::mojom::AudioFocusType audio_focus_type,
+             RequestId id);
+    ~StackRow() override;
+
+    // media_session::mojom::MediaSessionObserver.
+    void MediaSessionInfoChanged(
+        media_session::mojom::MediaSessionInfoPtr info) override;
+
+    media_session::mojom::MediaSession* session();
+    const media_session::mojom::MediaSessionInfoPtr& info() const;
+    media_session::mojom::AudioFocusType audio_focus_type() const {
+      return audio_focus_type_;
+    }
+
+    bool IsActive() const;
+    int id() { return id_; }
+
+    // Flush any pending mojo messages for testing.
+    void FlushForTesting();
+
+   private:
+    void OnConnectionError();
+
+    int id_;
+    media_session::mojom::MediaSessionPtr session_;
+    media_session::mojom::MediaSessionInfoPtr current_info_;
+    media_session::mojom::AudioFocusType audio_focus_type_;
+    mojo::Binding<media_session::mojom::MediaSessionObserver> binding_;
+
+    DISALLOW_COPY_AND_ASSIGN(StackRow);
   };
-  std::list<StackRow> audio_focus_stack_;
+
+  // A stack of Mojo interface pointers and their requested audio focus type.
+  // A MediaSession must abandon audio focus before its destruction.
+  std::list<std::unique_ptr<StackRow>> audio_focus_stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioFocusManager);
 };
 
 }  // namespace content

@@ -29,6 +29,7 @@
 namespace content {
 
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
+using media_session::mojom::MediaSessionInfo;
 
 namespace {
 
@@ -448,6 +449,7 @@ void MediaSessionImpl::StartDucking() {
     return;
   is_ducking_ = true;
   UpdateVolumeMultiplier();
+  NotifyObserversInfoChanged();
 }
 
 void MediaSessionImpl::StopDucking() {
@@ -455,6 +457,7 @@ void MediaSessionImpl::StopDucking() {
     return;
   is_ducking_ = false;
   UpdateVolumeMultiplier();
+  NotifyObserversInfoChanged();
 }
 
 void MediaSessionImpl::UpdateVolumeMultiplier() {
@@ -605,13 +608,19 @@ bool MediaSessionImpl::RequestSystemAudioFocus(
   return result;
 }
 
-const MediaSessionImpl::DebugInfo MediaSessionImpl::GetDebugInfo() {
-  MediaSessionImpl::DebugInfo debug_info;
+void MediaSessionImpl::BindToMojoRequest(
+    mojo::InterfaceRequest<media_session::mojom::MediaSession> request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
+  media_session::mojom::MediaSessionDebugInfoPtr info(
+      media_session::mojom::MediaSessionDebugInfo::New());
 
   // Convert the address of |this| to a string and use it as the name.
   std::stringstream stream;
   stream << this;
-  debug_info.name = stream.str();
+  info->name = stream.str();
 
   // Add the title and the url to the owner.
   std::vector<std::string> owner_parts;
@@ -619,21 +628,53 @@ const MediaSessionImpl::DebugInfo MediaSessionImpl::GetDebugInfo() {
                       base::UTF16ToUTF8(web_contents()->GetTitle()));
   MaybePushBackString(owner_parts,
                       web_contents()->GetLastCommittedURL().spec());
-  debug_info.owner = base::JoinString(owner_parts, kDebugInfoOwnerSeparator);
+  info->owner = base::JoinString(owner_parts, kDebugInfoOwnerSeparator);
 
   // Add the ducking state to state.
   std::vector<std::string> state_parts;
   MaybePushBackString(state_parts,
                       IsActive() ? kDebugInfoActive : kDebugInfoInactive);
   MaybePushBackString(state_parts, is_ducking_ ? kDebugInfoDucked : "");
-  debug_info.state = base::JoinString(state_parts, kDebugInfoStateSeparator);
+  info->state = base::JoinString(state_parts, kDebugInfoStateSeparator);
 
-  return debug_info;
+  std::move(callback).Run(std::move(info));
 }
 
-void MediaSessionImpl::BindToMojoRequest(
-    mojo::InterfaceRequest<media_session::mojom::MediaSession> request) {
-  bindings_.AddBinding(this, std::move(request));
+media_session::mojom::MediaSessionInfoPtr
+MediaSessionImpl::GetMediaSessionInfoSync() {
+  media_session::mojom::MediaSessionInfoPtr info(
+      media_session::mojom::MediaSessionInfo::New());
+
+  switch (audio_focus_state_) {
+    case State::ACTIVE:
+      info->state = MediaSessionInfo::SessionState::kActive;
+      break;
+    case State::SUSPENDED:
+      info->state = MediaSessionInfo::SessionState::kSuspended;
+      break;
+    case State::INACTIVE:
+      info->state = MediaSessionInfo::SessionState::kInactive;
+      break;
+  }
+
+  // The state should always be kDucked if we are ducked.
+  if (is_ducking_)
+    info->state = MediaSessionInfo::SessionState::kDucking;
+
+  // If we have Pepper players then we should force ducking.
+  info->force_duck = HasPepper();
+  return info;
+}
+
+void MediaSessionImpl::GetMediaSessionInfo(
+    GetMediaSessionInfoCallback callback) {
+  std::move(callback).Run(GetMediaSessionInfoSync());
+}
+
+void MediaSessionImpl::AddObserver(
+    media_session::mojom::MediaSessionObserverPtr observer) {
+  observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+  mojo_observers_.AddPtr(std::move(observer));
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
@@ -672,6 +713,22 @@ void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
       uma_helper_.OnSessionInactive();
       break;
   }
+
+  NotifyObserversInfoChanged();
+}
+
+void MediaSessionImpl::FlushForTesting() {
+  mojo_observers_.FlushForTesting();
+}
+
+void MediaSessionImpl::NotifyObserversInfoChanged() {
+  media_session::mojom::MediaSessionInfoPtr current_info =
+      GetMediaSessionInfoSync();
+
+  mojo_observers_.ForAllPtrs(
+      [&current_info](media_session::mojom::MediaSessionObserver* observer) {
+        observer->MediaSessionInfoChanged(current_info.Clone());
+      });
 }
 
 bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
