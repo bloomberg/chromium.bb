@@ -89,7 +89,7 @@ void FindCrostiniTasks(Profile* profile,
                        const std::vector<extensions::EntryInfo>& entries,
                        std::vector<FullTaskDescriptor>* result_list,
                        base::OnceClosure completion_closure) {
-  if (!IsCrostiniUIAllowedForProfile(profile)) {
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile)) {
     std::move(completion_closure).Run();
     return;
   }
@@ -138,7 +138,7 @@ void FindCrostiniTasks(Profile* profile,
 
   ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors().back();
 
-  LoadIcons(
+  crostini::LoadIcons(
       profile, result_app_ids, kIconSizeInDip, scale_factor, kIconLoadTimeout,
       base::BindOnce(OnAppIconsLoaded, profile, result_app_ids, scale_factor,
                      result_list, std::move(completion_closure)));
@@ -149,7 +149,7 @@ void ExecuteCrostiniTask(
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_system_urls,
     FileTaskFinishedCallback done) {
-  DCHECK(IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
 
   std::vector<std::string> files;
   for (const storage::FileSystemURL& file_system_url : file_system_urls) {
@@ -157,7 +157,8 @@ void ExecuteCrostiniTask(
         profile, file_system_url));
   }
 
-  LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId, files);
+  crostini::LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId,
+                              files);
 }
 
 }  // namespace file_tasks

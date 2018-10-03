@@ -921,7 +921,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
-          } else if (app == kCrostiniTerminalId) {
+          } else if (app == crostini::kCrostiniTerminalId) {
             result += "Terminal";
           } else {
             bool arc_app_found = false;
@@ -4638,7 +4638,7 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
 TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   InitLauncherController();
 
-  const std::string app_id = kCrostiniTerminalId;
+  const std::string app_id = crostini::kCrostiniTerminalId;
   EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
 
   // Load pinned Terminal from prefs without Crostini UI being allowed

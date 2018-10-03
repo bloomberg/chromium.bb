@@ -645,8 +645,9 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsCrostiniEnabledFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      IsCrostiniEnabled(Profile::FromBrowserContext(browser_context())))));
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(crostini::IsCrostiniEnabled(
+          Profile::FromBrowserContext(browser_context())))));
 }
 
 FileManagerPrivateMountCrostiniFunction::
@@ -660,9 +661,9 @@ bool FileManagerPrivateMountCrostiniFunction::RunAsync() {
   // files into Linux files should still work.
   Profile* profile =
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
-  DCHECK(IsCrostiniEnabled(profile));
+  DCHECK(crostini::IsCrostiniEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
                      this));
   return true;
@@ -693,7 +694,7 @@ FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
       file_system_context->CrackURL(GURL(params->url));
 
   crostini::SharePath(
-      profile, kCrostiniDefaultVmName, cracked.path(),
+      profile, crostini::kCrostiniDefaultVmName, cracked.path(),
       base::BindOnce(&FileManagerPrivateInternalSharePathWithCrostiniFunction::
                          SharePathCallback,
                      this));
@@ -762,7 +763,8 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
           profile, file_system_context->CrackURL(GURL(params->url)));
   crostini::CrostiniPackageInstallerService::GetForProfile(profile)
       ->InstallLinuxPackage(
-          kCrostiniDefaultVmName, kCrostiniDefaultContainerName, url,
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName, url,
           base::BindOnce(
               &FileManagerPrivateInternalInstallLinuxPackageFunction::
                   OnInstallLinuxPackage,

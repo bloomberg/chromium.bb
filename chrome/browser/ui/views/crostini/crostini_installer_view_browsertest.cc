@@ -91,7 +91,7 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   // CrostiniDialogBrowserTest:
   void ShowUi(const std::string& name) override {
     ShowCrostiniInstallerView(browser()->profile(),
-                              CrostiniUISurface::kSettings);
+                              crostini::CrostiniUISurface::kSettings);
   }
 
   void SetUpOnMainThread() override {

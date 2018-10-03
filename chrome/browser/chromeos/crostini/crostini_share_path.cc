@@ -76,7 +76,7 @@ void CallSeneschalSharePath(
   request.mutable_shared_path()->set_writable(true);
   request.set_storage_location(
       vm_tools::seneschal::SharePathRequest::DOWNLOADS);
-  request.set_owner_id(CryptohomeIdForProfile(profile));
+  request.set_owner_id(crostini::CryptohomeIdForProfile(profile));
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request, base::BindOnce(&OnSeneschalSharePathResponse, std::move(path),
                               std::move(callback)));

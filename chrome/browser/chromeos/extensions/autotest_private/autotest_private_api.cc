@@ -695,7 +695,7 @@ AutotestPrivateSetCrostiniEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetCrostiniEnabledFunction " << params->enabled;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!IsCrostiniUIAllowedForProfile(profile))
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Set the preference to indicate Crostini is enabled/disabled.
@@ -721,7 +721,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateInstallCrostiniFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!IsCrostiniUIAllowedForProfile(profile))
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Run GUI installer which will install crostini vm / container and
@@ -731,7 +731,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   CrostiniInstallerView::Show(profile);
   CrostiniInstallerView::GetActiveViewForTesting()->Accept();
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(
           &AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted,
           this));
@@ -760,7 +760,7 @@ AutotestPrivateRunCrostiniUninstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateRunCrostiniUninstallerFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!IsCrostiniUIAllowedForProfile(profile))
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Run GUI uninstaller which will remove crostini vm / container. We then

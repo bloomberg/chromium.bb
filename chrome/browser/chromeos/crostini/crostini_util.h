@@ -22,6 +22,8 @@ class ImageSkia;
 
 class Profile;
 
+namespace crostini {
+
 // Enables/disables overriding IsCrostiniUIAllowedForProfile's normal
 // behaviour and returning true instead.
 void SetCrostiniUIAllowedForTesting(bool enabled);
@@ -123,5 +125,7 @@ constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 // Whether running Crostini is allowed for unaffiliated users per enterprise
 // policy.
 bool IsUnaffiliatedCrostiniAllowedByPolicy();
+
+}  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_

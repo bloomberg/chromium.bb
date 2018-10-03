@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
       crostini::CrostiniManager::GetForProfile(browser()->profile());
   crostini_manager->set_skip_restart_for_testing();
   vm_tools::concierge::VmInfo vm_info;
-  crostini_manager->AddRunningVmForTesting(kCrostiniDefaultVmName,
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
                                            std::move(vm_info));
 
   ExpectCrostiniMount();

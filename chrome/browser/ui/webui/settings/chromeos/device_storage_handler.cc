@@ -328,7 +328,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
 }
 
 void StorageHandler::UpdateCrostiniSize() {
-  if (!IsCrostiniEnabled(profile_)) {
+  if (!crostini::IsCrostiniEnabled(profile_)) {
     return;
   }
 

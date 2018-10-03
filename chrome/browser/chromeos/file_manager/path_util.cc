@@ -151,8 +151,9 @@ const std::string GetAndroidFilesMountPointName() {
 std::string GetCrostiniMountPointName(Profile* profile) {
   // crostini_<hash>_termina_penguin
   return base::JoinString(
-      {"crostini", CryptohomeIdForProfile(profile), kCrostiniDefaultVmName,
-       kCrostiniDefaultContainerName},
+      {"crostini", crostini::CryptohomeIdForProfile(profile),
+       crostini::kCrostiniDefaultVmName,
+       crostini::kCrostiniDefaultContainerName},
       "_");
 }
 
@@ -198,10 +199,11 @@ std::string ConvertFileSystemURLToPathInsideCrostini(
   base::FilePath folder;
   if (id == mount_point_name_crostini) {
     folder = base::FilePath(mount_point_name_crostini);
-    result = ContainerHomeDirectoryForProfile(profile);
+    result = crostini::ContainerHomeDirectoryForProfile(profile);
   } else if (id == mount_point_name_downloads) {
     folder = base::FilePath(mount_point_name_downloads);
-    result = ContainerChromeOSBaseDirectory().Append(kDownloadsFolderName);
+    result =
+        crostini::ContainerChromeOSBaseDirectory().Append(kDownloadsFolderName);
   } else {
     NOTREACHED();
   }

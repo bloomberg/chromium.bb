@@ -396,7 +396,7 @@ void AppListSyncableService::BuildModel() {
   apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
-  if (IsCrostiniUIAllowedForProfile(profile_)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
     crostini_apps_builder_ =
         std::make_unique<CrostiniAppModelBuilder>(controller);
   }

@@ -1432,7 +1432,7 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   crostini::CrostiniManager* crostini_manager =
       crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile());
   vm_tools::concierge::VmInfo vm_info;
-  crostini_manager->AddRunningVmForTesting(kCrostiniDefaultVmName,
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
                                            std::move(vm_info));
   return crostini_volume_->mount_path();
 }
