@@ -4986,29 +4986,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGFloat newPageOffset = 0;
   UIView* newPage = nil;
   CGFloat offset = 0;
+  GURL tabURL = tab.webState->GetVisibleURL();
   // Toolbar snapshot is only used for the UIRefresh animation.
   UIView* toolbarSnapshot;
-
-  GURL tabURL = tab.webState->GetLastCommittedURL();
-  BOOL expectingPageLoad = NO;
-  if (_browserState && !_isShutdown) {
-    WebStateListWebUsageEnabler* webUsageEnabler =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            _browserState);
-    expectingPageLoad = webUsageEnabler->IsWebUsageEnabled() &&
-                        webUsageEnabler->TriggersInitialLoad();
-  }
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
-      expectingPageLoad) {
-    // The visible URL is more correct here.  However, the last committed URL
-    // has been used historically, and it's unclear if there are unintended side
-    // effects from from using the visible URL in all situations.  In order to
-    // mitigate the risk from using the visible URL, additional checks are used
-    // here to only update the URL for known conditions in which the last-
-    // committed URL is incorrect.
-    // TODO(crbug.com/880262): Update to use visible URL for all new tabs.
-    tabURL = tab.webState->GetVisibleURL();
-  }
 
   if (tabURL == kChromeUINewTabURL && !_isOffTheRecord &&
       ![self canShowTabStrip]) {
