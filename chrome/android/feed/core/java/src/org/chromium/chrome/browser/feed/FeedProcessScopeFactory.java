@@ -123,9 +123,10 @@ public class FeedProcessScopeFactory {
 
     private static Configuration createConfiguration() {
         return new Configuration.Builder()
-                .put(ConfigKey.FEED_SERVER_HOST, "https://www.google.com")
-                .put(ConfigKey.FEED_SERVER_PATH_AND_PARAMS,
-                        "/httpservice/noretry/NowStreamService/FeedQuery")
+                .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
+                .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerEndpoint())
+                .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
+                        FeedConfiguration.getFeedServerReponseLengthPrefixed())
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
                 .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
                 .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
