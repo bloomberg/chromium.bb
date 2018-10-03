@@ -1838,6 +1838,8 @@ jumbo_split_static_library("ui") {
       "ash/network/network_state_notifier.h",
       "ash/network/tether_notification_presenter.cc",
       "ash/network/tether_notification_presenter.h",
+      "ash/screen_orientation_delegate_chromeos.cc",
+      "ash/screen_orientation_delegate_chromeos.h",
       "ash/session_controller_client.cc",
       "ash/session_controller_client.h",
       "ash/session_util.cc",
