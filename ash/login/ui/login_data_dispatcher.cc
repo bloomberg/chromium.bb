@@ -39,7 +39,8 @@ void LoginDataDispatcher::Observer::OnShowWarningBanner(
 
 void LoginDataDispatcher::Observer::OnHideWarningBanner() {}
 
-void LoginDataDispatcher::Observer::OnDevChannelInfoChanged(
+void LoginDataDispatcher::Observer::OnSystemInfoChanged(
+    bool show,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {}
@@ -133,13 +134,14 @@ void LoginDataDispatcher::HideWarningBanner() {
     observer.OnHideWarningBanner();
 }
 
-void LoginDataDispatcher::SetDevChannelInfo(
+void LoginDataDispatcher::SetSystemInfo(
+    bool show_if_hidden,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
   for (auto& observer : observers_) {
-    observer.OnDevChannelInfoChanged(os_version_label_text,
-                                     enterprise_info_text, bluetooth_name);
+    observer.OnSystemInfoChanged(show_if_hidden, os_version_label_text,
+                                 enterprise_info_text, bluetooth_name);
   }
 }
 

@@ -19,7 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
-#include "chrome/browser/chromeos/login/mojo_version_info_dispatcher.h"
+#include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -91,10 +91,9 @@ void StartGraphIfNeeded(chromeos::MediaAnalyticsClient* client,
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
-      version_info_updater_(std::make_unique<MojoVersionInfoDispatcher>()),
+      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
       media_analytics_client_(
-          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()),
-      weak_factory_(this) {
+          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
   user_selection_screen_ =
@@ -139,8 +138,7 @@ void ViewsScreenLocker::Init() {
     }
   }
 
-  // Start to request version info.
-  version_info_updater_->StartUpdate();
+  system_info_updater_->StartRequest();
 }
 
 void ViewsScreenLocker::OnLockScreenReady() {
