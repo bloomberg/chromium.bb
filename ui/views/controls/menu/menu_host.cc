@@ -86,7 +86,7 @@ void TransferGesture(Widget* source, Widget* target) {
 #else   // !defined(OS_MACOSX)
   source->GetGestureRecognizer()->TransferEventsTo(
       source->GetNativeView(), target->GetNativeView(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      ui::TransferTouchesBehavior::kDontCancel);
 #endif  // defined(OS_MACOSX)
 }
 
