@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
@@ -74,6 +73,9 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 namespace {
+
+// The global instance of the SystemNetworkContextmanager.
+SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
 // Called on IOThread to disable QUIC for HttpNetworkSessions not using the
 // network service. Note that re-enabling QUIC dynamically is not supported for
@@ -223,9 +225,6 @@ bool ShouldEnableAsyncDns() {
 
 }  // namespace
 
-base::LazyInstance<SystemNetworkContextManager>::Leaky
-    g_system_network_context_manager = LAZY_INSTANCE_INITIALIZER;
-
 // SharedURLLoaderFactory backed by a SystemNetworkContextManager and its
 // network context. Transparently handles crashes.
 class SystemNetworkContextManager::URLLoaderFactoryForSystem
@@ -340,6 +339,26 @@ void SystemNetworkContextManager::SetUp(
   *http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
   GetStubResolverConfig(local_state_, stub_resolver_enabled,
                         dns_over_https_servers);
+}
+
+// static
+SystemNetworkContextManager* SystemNetworkContextManager::CreateInstance(
+    PrefService* pref_service) {
+  DCHECK(!g_system_network_context_manager);
+  g_system_network_context_manager =
+      new SystemNetworkContextManager(pref_service);
+  return g_system_network_context_manager;
+}
+
+// static
+SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
+  return g_system_network_context_manager;
+}
+
+// static
+void SystemNetworkContextManager::DeleteInstance() {
+  DCHECK(g_system_network_context_manager);
+  delete g_system_network_context_manager;
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager(

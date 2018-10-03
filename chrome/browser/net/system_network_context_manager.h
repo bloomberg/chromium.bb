@@ -49,9 +49,17 @@ class SharedURLLoaderFactory;
 // to being compatible with the network service.
 class SystemNetworkContextManager {
  public:
-  // Constructor. |pref_service| must out live this object.
-  explicit SystemNetworkContextManager(PrefService* pref_service);
   ~SystemNetworkContextManager();
+
+  // Creates the global instance of SystemNetworkContextManager. If an
+  // instance already exists, this will cause a DCHECK failure.
+  static SystemNetworkContextManager* CreateInstance(PrefService* pref_service);
+
+  // Gets the global SystemNetworkContextManager instance.
+  static SystemNetworkContextManager* GetInstance();
+
+  // Destroys the global SystemNetworkContextManager instance.
+  static void DeleteInstance();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -139,6 +147,9 @@ class SystemNetworkContextManager {
 
  private:
   class URLLoaderFactoryForSystem;
+
+  // Constructor. |pref_service| must out live this object.
+  explicit SystemNetworkContextManager(PrefService* pref_service);
 
   void UpdateReferrersEnabled();
 
