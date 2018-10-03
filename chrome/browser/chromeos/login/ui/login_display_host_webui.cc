@@ -590,13 +590,15 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   else
     finalize_animation_type_ = ANIMATION_NONE;
 
-  // Observe the user switch animation and defer the deletion of itself only
-  // after the animation is finished.
-  MultiUserWindowManager* window_manager =
-      MultiUserWindowManager::GetInstance();
-  // MultiUserWindowManager instance might be nullptr in a unit test.
-  if (window_manager)
-    window_manager->AddObserver(this);
+  if (finalize_animation_type_ == ANIMATION_ADD_USER) {
+    // Observe the user switch animation and defer the deletion of itself only
+    // after the animation is finished.
+    MultiUserWindowManager* window_manager =
+        MultiUserWindowManager::GetInstance();
+    // MultiUserWindowManager instance might be nullptr in a unit test.
+    if (window_manager)
+      window_manager->AddObserver(this);
+  }
 
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
