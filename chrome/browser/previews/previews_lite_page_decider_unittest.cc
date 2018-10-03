@@ -141,6 +141,8 @@ class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
     return decider_.get();
   }
 
+  PreviewsLitePageDecider* decider() { return decider_.get(); }
+
  private:
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
@@ -176,7 +178,8 @@ TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledThenNotify) {
       GetManagerWithDRPEnabled(true);
   EXPECT_TRUE(manager->NeedsToNotifyUser());
 
-  manager->NotifyUser(web_contents());
+  // Simulate the callback being run.
+  decider()->SetUserHasSeenUINotification();
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));

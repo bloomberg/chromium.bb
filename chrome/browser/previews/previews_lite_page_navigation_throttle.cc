@@ -213,7 +213,16 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
                               reason);
   }
 
-  return blacklist_reasons.empty();
+  if (!blacklist_reasons.empty())
+    return false;
+
+  if (manager_->NeedsToNotifyUser()) {
+    manager_->NotifyUser(navigation_handle()->GetWebContents());
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
+                              IneligibleReason::kInfoBarNotSeen);
+    return false;
+  }
+  return true;
 }
 
 // static

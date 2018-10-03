@@ -40567,6 +40567,11 @@ Called by update_net_trust_anchors.py.-->
       label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
+<enum name="PreviewsLitePageInfoBarAction">
+  <int value="0" label="Infobar shown"/>
+  <int value="1" label="Infobar dismissed by user"/>
+</enum>
+
 <enum name="PreviewsOptimizationFilterStatus">
   <int value="0" label="Found a server blacklist configuration">
     Found configuration data for a server blacklist.
@@ -40610,6 +40615,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="HTTP POST"/>
   <int value="2" label="Subframe navigation"/>
   <int value="3" label="Server Unavailable"/>
+  <int value="4" label="Infobar hasn't been seen by the user and needs to be"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

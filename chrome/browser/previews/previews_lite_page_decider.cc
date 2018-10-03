@@ -10,6 +10,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_lite_page_infobar_delegate.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -66,8 +67,7 @@ class UserNotificationWebContentsObserver
 
   void DidFinishNavigation(content::NavigationHandle* handle) override {
     if (ui_shown_callback_ && handle->GetNetErrorCode() == net::OK) {
-      // TODO(robertogden): Call PreviewsLitePageInfobarDelegate::Create and
-      // pass it the callback instead.
+      PreviewsLitePageInfoBarDelegate::Create(web_contents());
       std::move(ui_shown_callback_).Run();
     }
     DestroySelf();
