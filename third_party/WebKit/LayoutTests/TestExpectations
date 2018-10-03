@@ -5237,3 +5237,6 @@ crbug.com/887659 animations/animationworklet/worklet-animation-responsive-to-zoo
 
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
+
+# Sheriff 2018-10-03
+crbug.com/891530 [ Linux ] virtual/android/rootscroller/remove-rootscroller-crash.html [ Pass Timeout ]
