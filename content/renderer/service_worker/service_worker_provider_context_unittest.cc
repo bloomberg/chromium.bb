@@ -318,7 +318,7 @@ class FakeServiceWorkerContainerHost
       mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
-  void CloneForWorker(
+  void CloneContainerHost(
       mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

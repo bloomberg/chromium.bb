@@ -139,11 +139,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
   // S13nServiceWorker:
-  // For service worker clients. Creates a ServiceWorkerContainerHostPtrInfo
-  // which can be bound to a ServiceWorkerContainerHostPtr in a (dedicated or
-  // shared) worker thread. WebWorkerFetchContextImpl will use the host pointer
-  // to get the controller service worker by GetControllerServiceWorker() and
-  // send FetchEvents to the service worker.
+  // For service worker clients. Returns a ServiceWorkerContainerHostPtrInfo
+  // to this client's container host.
   mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
 
   // For service worker clients. Returns the registration object described by

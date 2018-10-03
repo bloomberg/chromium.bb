@@ -541,7 +541,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void EnsureControllerServiceWorker(
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ControllerServiceWorkerPurpose purpose) override;
-  void CloneForWorker(
+  void CloneContainerHost(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
@@ -673,17 +673,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // content::ServiceWorkerProviderHost will be destroyed.
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 
-  // Mojo bindings for provider host pointers which are used from (dedicated or
-  // shared) worker threads.
-  // When this is hosting a shared worker, |bindings_for_worker_threads_|
-  // contains exactly one element for the shared worker thread. This binding is
-  // needed because the host pointer which is bound to |binding_| can only be
-  // used from the main thread.
-  // When this is hosting a document, |bindings_for_worker_threads_| contains
-  // all dedicated workers associated with the document. This binding is needed
-  // for the host pointers which are used from the dedicated worker threads.
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost>
-      bindings_for_worker_threads_;
+  // Container host bindings other than the original |binding_|. These include
+  // bindings for container host pointers used from (dedicated or shared) worker
+  // threads, or from ServiceWorkerSubresourceLoaderFactory.
+  mojo::BindingSet<mojom::ServiceWorkerContainerHost> additional_bindings_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
