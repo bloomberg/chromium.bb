@@ -32,6 +32,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/public/cpp/network_switches.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "base/command_line.h"
@@ -71,7 +72,6 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     : io_task_runner_(std::move(io_task_runner)),
       accept_language_(options->accept_language()),
       user_agent_(options->user_agent()),
-      host_resolver_rules_(options->host_resolver_rules()),
       proxy_config_(options->proxy_config()),
       request_interceptors_(std::move(request_interceptors)),
       user_data_path_(std::move(user_data_path)) {
@@ -86,6 +86,9 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   prefs_.SetServerWhitelist(
       command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist));
+
+  host_resolver_rules_ = command_line->GetSwitchValueASCII(
+      ::network::switches::kHostResolverRules);
 
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
@@ -226,10 +229,6 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessURLRequestContextGetter::GetNetworkTaskRunner() const {
   return io_task_runner_;
-}
-
-net::HostResolver* HeadlessURLRequestContextGetter::host_resolver() const {
-  return url_request_context_->host_resolver();
 }
 
 void HeadlessURLRequestContextGetter::NotifyContextShuttingDown() {

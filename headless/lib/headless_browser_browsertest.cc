@@ -231,30 +231,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyConfig) {
   EXPECT_TRUE(browser_context->GetAllWebContents().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetHostResolverRules) {
-  EXPECT_TRUE(embedded_test_server()->Start());
-
-  std::string host_resolver_rules =
-      base::StringPrintf("MAP not-an-actual-domain.tld 127.0.0.1:%d",
-                         embedded_test_server()->host_port_pair().port());
-
-  HeadlessBrowserContext* browser_context =
-      browser()
-          ->CreateBrowserContextBuilder()
-          .SetHostResolverRules(host_resolver_rules)
-          .Build();
-
-  // Load a page which doesn't actually exist, but which is turned into a valid
-  // address by our host resolver rules.
-  HeadlessWebContents* web_contents =
-      browser_context->CreateWebContentsBuilder()
-          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
-          .Build();
-  EXPECT_TRUE(web_contents);
-
-  EXPECT_TRUE(WaitForLoad(web_contents));
-}
-
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
