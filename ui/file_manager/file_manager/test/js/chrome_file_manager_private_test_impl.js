@@ -277,8 +277,9 @@ var webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
       }
     }
   }
-  var error =
-      new Error('webkitResolveLocalFileSystemURL not found: [' + url + ']');
+  const message = `webkitResolveLocalFileSystemURL not found: ${url}`;
+  console.warn(message);
+  const error = new DOMException(message, 'NotFoundError');
   if (errorCallback) {
     setTimeout(errorCallback, 0, error);
   } else {
