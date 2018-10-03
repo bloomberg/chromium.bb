@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_VR_WEB_CONTENTS_OBSERVER_H_
-#define CHROME_BROWSER_ANDROID_VR_VR_WEB_CONTENTS_OBSERVER_H_
+#ifndef CHROME_BROWSER_VR_VR_WEB_CONTENTS_OBSERVER_H_
+#define CHROME_BROWSER_VR_VR_WEB_CONTENTS_OBSERVER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -16,18 +18,14 @@ namespace vr {
 
 class BrowserUiInterface;
 class ToolbarHelper;
-class VrShell;
 
-class CONTENT_EXPORT VrWebContentsObserver
-    : public content::WebContentsObserver {
+class VR_EXPORT VrWebContentsObserver : public content::WebContentsObserver {
  public:
   VrWebContentsObserver(content::WebContents* web_contents,
-                        VrShell* vr_shell,
                         BrowserUiInterface* ui_interface,
-                        ToolbarHelper* toolbar);
+                        ToolbarHelper* toolbar,
+                        base::OnceClosure on_destroy);
   ~VrWebContentsObserver() override;
-
-  void SetUiInterface(BrowserUiInterface* ui_interface);
 
  private:
   // WebContentsObserver implementation.
@@ -47,13 +45,14 @@ class CONTENT_EXPORT VrWebContentsObserver
                              content::RenderViewHost* new_host) override;
 
   // This class does not own these pointers.
-  VrShell* vr_shell_;
   BrowserUiInterface* ui_interface_;
   ToolbarHelper* toolbar_;
+
+  base::OnceClosure on_destroy_;
 
   DISALLOW_COPY_AND_ASSIGN(VrWebContentsObserver);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_VR_WEB_CONTENTS_OBSERVER_H_
+#endif  // CHROME_BROWSER_VR_VR_WEB_CONTENTS_OBSERVER_H_

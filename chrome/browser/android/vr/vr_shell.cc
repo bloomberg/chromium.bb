@@ -27,7 +27,6 @@
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
-#include "chrome/browser/android/vr/vr_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/vr/vr_web_contents_observer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -252,7 +252,9 @@ void VrShell::SwapContents(JNIEnv* env,
   }
 
   vr_web_contents_observer_ = std::make_unique<VrWebContentsObserver>(
-      web_contents_, this, ui_, toolbar_.get());
+      web_contents_, ui_, toolbar_.get(),
+      base::BindOnce(&VrShell::ContentWebContentsDestroyed,
+                     base::Unretained(this)));
 
   // TODO(https://crbug.com/684661): Make SessionMetricsHelper tab-aware and
   // able to track multiple tabs.
@@ -563,10 +565,6 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
         Mode::kWebXrVrPresentation);
   }
-}
-
-void VrShell::OnFullscreenChanged(bool enabled) {
-  ui_->SetFullscreen(enabled);
 }
 
 bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {

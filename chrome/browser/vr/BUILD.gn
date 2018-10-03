@@ -259,6 +259,8 @@ component("vr_common") {
     "toolbar_helper.h",
     "ui_factory.cc",
     "ui_factory.h",
+    "vr_web_contents_observer.cc",
+    "vr_web_contents_observer.h",
   ]
 
   public_deps = [
