@@ -236,6 +236,9 @@ message RemountOptionsProto {
   // Authentication parameters.
   optional string workgroup = 3;
   optional string username = 4;
+
+  // Mount options set by the client.
+  optional MountConfigProto mount_config = 5;
 }
 
 // Used for returning a list of hostnames from a parsed NetBios response packet.
