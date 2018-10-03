@@ -110,9 +110,10 @@ void DumpHungRendererProcessImpl(const base::Process& renderer) {
 }
 
 // gfx::Font callbacks
-void AdjustUIFont(LOGFONT* logfont) {
-  display::win::AdjustFontForAccessibility(logfont);
-  l10n_util::AdjustUIFont(logfont);
+void AdjustUIFont(gfx::PlatformFontWin::FontAdjustment* font_adjustment) {
+  l10n_util::NeedOverrideDefaultUIFont(&font_adjustment->font_family_override,
+                                       &font_adjustment->font_scale);
+  font_adjustment->font_scale *= display::win::GetAccessibilityFontScale();
 }
 
 int GetMinimumFontSize() {
