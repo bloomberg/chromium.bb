@@ -48,10 +48,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -288,7 +284,6 @@ class UserSessionManager
 
   // Returns the auth request context/URLLoaderFactory associated with auth
   // data.
-  net::URLRequestContextGetter* GetAuthRequestContext() const;
   scoped_refptr<network::SharedURLLoaderFactory> GetAuthURLLoaderFactory()
       const;
 
