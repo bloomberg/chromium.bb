@@ -5036,21 +5036,6 @@
             ]
         }
     ],
-    "ViewsBrowserWindows": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20180703",
-                    "enable_features": [
-                        "ViewsBrowserWindows"
-                    ]
-                }
-            ]
-        }
-    ],
     "VizDisplayCompositor": [
         {
             "platforms": [
