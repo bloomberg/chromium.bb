@@ -1222,9 +1222,10 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     customBackgrounds.showCollectionSelectionDialog(
         customBackgrounds.dialogCollectionsSource);
   };
-  $(customBackgrounds.IDS.BACK).onclick = backInteraction;
+  $(customBackgrounds.IDS.BACK_CIRCLE).onclick = backInteraction;
   $(customBackgrounds.IDS.BACK_CIRCLE).onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
       backInteraction(event);
     }
   };
