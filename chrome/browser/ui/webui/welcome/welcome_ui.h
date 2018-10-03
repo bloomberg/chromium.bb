@@ -19,7 +19,9 @@ class WelcomeUI : public content::WebUIController {
   ~WelcomeUI() override;
 
  private:
-  void StorePageSeen(Profile* profile, const GURL& url);
+  void StorePageSeen(Profile* profile);
+
+  DISALLOW_COPY_AND_ASSIGN(WelcomeUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_UI_H_

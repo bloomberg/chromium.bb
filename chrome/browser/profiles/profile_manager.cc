@@ -1092,9 +1092,6 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // Enterprise users should not be included in any NUX flow.
     if (!base::win::IsEnterpriseManaged()) {
-      profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage,
-                                      false);
-      profile->GetPrefs()->SetBoolean(prefs::kHasSeenEmailPromoPage, false);
       profile->GetPrefs()->SetBoolean(prefs::kOnboardDuringNUX, true);
     }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
