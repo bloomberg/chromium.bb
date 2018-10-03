@@ -19,7 +19,7 @@ namespace chromeos {
 
 class UserBoardViewMojo;
 class UserSelectionScreen;
-class MojoVersionInfoDispatcher;
+class MojoSystemInfoDispatcher;
 
 // ViewsScreenLocker acts like LoginScreenClient::Delegate which handles method
 // calls coming from ash into chrome.
@@ -113,15 +113,15 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
 
-  // Updates UI when version info is changed.
-  std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
+  // Fetches system information and sends it to the UI over mojo.
+  std::unique_ptr<MojoSystemInfoDispatcher> system_info_updater_;
 
   chromeos::MediaAnalyticsClient* media_analytics_client_;
 
   ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
       scoped_observer_{this};
 
-  base::WeakPtrFactory<ViewsScreenLocker> weak_factory_;
+  base::WeakPtrFactory<ViewsScreenLocker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ViewsScreenLocker);
 };

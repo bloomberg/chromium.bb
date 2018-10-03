@@ -78,11 +78,11 @@ class ASH_EXPORT LoginDataDispatcher {
     // Called when a warning banner message should be hidden.
     virtual void OnHideWarningBanner();
 
-    // Called when the info shown for dev and canary channels are changed.
-    virtual void OnDevChannelInfoChanged(
-        const std::string& os_version_label_text,
-        const std::string& enterprise_info_text,
-        const std::string& bluetooth_name);
+    // Called when the system info has changed.
+    virtual void OnSystemInfoChanged(bool show,
+                                     const std::string& os_version_label_text,
+                                     const std::string& enterprise_info_text,
+                                     const std::string& bluetooth_name);
 
     // Called when public session display name is changed for user with
     // |account_id|.
@@ -134,9 +134,10 @@ class ASH_EXPORT LoginDataDispatcher {
                           const mojom::EasyUnlockIconOptionsPtr& icon);
   void ShowWarningBanner(const base::string16& message);
   void HideWarningBanner();
-  void SetDevChannelInfo(const std::string& os_version_label_text,
-                         const std::string& enterprise_info_text,
-                         const std::string& bluetooth_name);
+  void SetSystemInfo(bool show_if_hidden,
+                     const std::string& os_version_label_text,
+                     const std::string& enterprise_info_text,
+                     const std::string& bluetooth_name);
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name);
   void SetPublicSessionLocales(const AccountId& account_id,

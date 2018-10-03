@@ -44,7 +44,7 @@ enum {
   kGlobalToggleBlur,
   kGlobalToggleNoteAction,
   kGlobalToggleCapsLock,
-  kGlobalAddDevChannelInfo,
+  kGlobalAddSystemInfo,
   kGlobalToggleAuth,
   kGlobalAddKioskApp,
   kGlobalRemoveKioskApp,
@@ -408,11 +408,11 @@ class LockDebugView::DebugDataDispatcherTransformer
     shelf_widget->login_shelf_view()->SetKioskApps(mojo::Clone(kiosk_apps_));
   }
 
-  void AddLockScreenDevChannelInfo(const std::string& os_version,
-                                   const std::string& enterprise_info,
-                                   const std::string& bluetooth_name) {
-    debug_dispatcher_.SetDevChannelInfo(os_version, enterprise_info,
-                                        bluetooth_name);
+  void AddSystemInfo(const std::string& os_version,
+                     const std::string& enterprise_info,
+                     const std::string& bluetooth_name) {
+    debug_dispatcher_.SetSystemInfo(true /*show_if_hidden*/, os_version,
+                                    enterprise_info, bluetooth_name);
   }
 
   void ShowWarningBanner(const base::string16& message) {
@@ -681,7 +681,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
             toggle_container);
   AddButton("Toggle caps lock", ButtonId::kGlobalToggleCapsLock,
             toggle_container);
-  AddButton("Add dev channel info", ButtonId::kGlobalAddDevChannelInfo,
+  AddButton("Add system info", ButtonId::kGlobalAddSystemInfo,
             toggle_container);
   global_action_toggle_auth_ = AddButton(
       "Auth (allowed)", ButtonId::kGlobalToggleAuth, toggle_container);
@@ -819,22 +819,21 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  // Iteratively adds more info to the dev channel labels to test 7 permutations
+  // Iteratively adds more info to the system info labels to test 7 permutations
   // and then disables the button.
-  if (sender->id() == ButtonId::kGlobalAddDevChannelInfo) {
-    DCHECK_LT(num_dev_channel_info_clicks_, 7u);
-    ++num_dev_channel_info_clicks_;
-    if (num_dev_channel_info_clicks_ == 7u)
+  if (sender->id() == ButtonId::kGlobalAddSystemInfo) {
+    DCHECK_LT(num_system_info_clicks_, 7u);
+    ++num_system_info_clicks_;
+    if (num_system_info_clicks_ == 7u)
       sender->SetEnabled(false);
 
-    std::string os_version =
-        num_dev_channel_info_clicks_ / 4 ? kDebugOsVersion : "";
+    std::string os_version = num_system_info_clicks_ / 4 ? kDebugOsVersion : "";
     std::string enterprise_info =
-        (num_dev_channel_info_clicks_ % 4) / 2 ? kDebugEnterpriseInfo : "";
+        (num_system_info_clicks_ % 4) / 2 ? kDebugEnterpriseInfo : "";
     std::string bluetooth_name =
-        num_dev_channel_info_clicks_ % 2 ? kDebugBluetoothName : "";
-    debug_data_dispatcher_->AddLockScreenDevChannelInfo(
-        os_version, enterprise_info, bluetooth_name);
+        num_system_info_clicks_ % 2 ? kDebugBluetoothName : "";
+    debug_data_dispatcher_->AddSystemInfo(os_version, enterprise_info,
+                                          bluetooth_name);
     return;
   }
 

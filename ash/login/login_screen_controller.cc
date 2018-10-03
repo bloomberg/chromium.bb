@@ -386,13 +386,14 @@ void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
     observer.OnFocusLeavingLockScreenApps(reverse);
 }
 
-void LoginScreenController::SetDevChannelInfo(
+void LoginScreenController::SetSystemInfo(
+    bool show_if_hidden,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
   if (DataDispatcher()) {
-    DataDispatcher()->SetDevChannelInfo(os_version_label_text,
-                                        enterprise_info_text, bluetooth_name);
+    DataDispatcher()->SetSystemInfo(show_if_hidden, os_version_label_text,
+                                    enterprise_info_text, bluetooth_name);
   }
 }
 
