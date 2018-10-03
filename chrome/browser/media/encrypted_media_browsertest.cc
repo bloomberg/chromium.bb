@@ -315,11 +315,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
   void SetUpCommandLineForKeySystem(const std::string& key_system,
                                     base::CommandLine* command_line) {
-    if (GetServerConfig(key_system))
+    if (GetServerConfig(key_system)) {
       // Since the web and license servers listen on different ports, we need to
       // disable web-security to send license requests to the license server.
       // TODO(shadi): Add port forwarding to the test web server configuration.
       command_line->AppendSwitch(switches::kDisableWebSecurity);
+    }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     if (IsExternalClearKey(key_system)) {
