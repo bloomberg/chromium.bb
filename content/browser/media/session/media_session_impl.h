@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
 #include "content/common/content_export.h"
@@ -40,7 +41,6 @@ enum class MediaContentType;
 
 namespace content {
 
-class AudioFocusDelegate;
 class AudioFocusManagerTest;
 class MediaSessionImplServiceRoutingTest;
 class MediaSessionImplStateObserver;
@@ -158,7 +158,7 @@ class MediaSessionImpl : public MediaSession,
 
   // Requests audio focus to the AudioFocusDelegate.
   // Returns whether the request was granted.
-  CONTENT_EXPORT bool RequestSystemAudioFocus(
+  CONTENT_EXPORT AudioFocusDelegate::AudioFocusResult RequestSystemAudioFocus(
       media_session::mojom::AudioFocusType audio_focus_type);
 
   // Creates a binding between |this| and |request|.
@@ -222,6 +222,12 @@ class MediaSessionImpl : public MediaSession,
   void AddObserver(
       media_session::mojom::MediaSessionObserverPtr observer) override;
 
+  // Called by |AudioFocusDelegate| when an async audio focus request is
+  // completed.
+  CONTENT_EXPORT void FinishSystemAudioFocusRequest(
+      media_session::mojom::AudioFocusType type,
+      bool result);
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
@@ -245,6 +251,7 @@ class MediaSessionImpl : public MediaSession,
 
     void operator=(const PlayerIdentifier&) = delete;
     bool operator==(const PlayerIdentifier& player_identifier) const;
+    bool operator<(const PlayerIdentifier&) const;
 
     // Hash operator for base::hash_map<>.
     struct Hash {
@@ -260,6 +267,10 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);
 
   void Initialize();
+
+  // Called when system audio focus has been requested and whether the request
+  // was granted.
+  void OnSystemAudioFocusRequested(bool result);
 
   CONTENT_EXPORT void OnSuspendInternal(MediaSession::SuspendType suspend_type,
                                         State new_state);
@@ -316,7 +327,8 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
 
   std::unique_ptr<AudioFocusDelegate> delegate_;
-  PlayersMap normal_players_;
+  std::map<PlayerIdentifier, media_session::mojom::AudioFocusType>
+      normal_players_;
   PlayersMap pepper_players_;
   PlayersMap one_shot_players_;
 

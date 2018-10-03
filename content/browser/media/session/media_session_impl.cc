@@ -44,6 +44,11 @@ const char kDebugInfoStateSeparator[] = " ";
 
 using MapRenderFrameHostToDepth = std::map<RenderFrameHost*, size_t>;
 
+using media_session::mojom::AudioFocusType;
+
+using MediaSessionSuspendedSource =
+    MediaSessionUmaHelper::MediaSessionSuspendedSource;
+
 size_t ComputeFrameDepth(RenderFrameHost* rfh,
                          MapRenderFrameHostToDepth* map_rfh_to_depth) {
   DCHECK(rfh);
@@ -91,11 +96,6 @@ void MaybePushBackString(std::vector<std::string>& vector,
 
 }  // anonymous namespace
 
-using media_session::mojom::AudioFocusType;
-
-using MediaSessionSuspendedSource =
-    MediaSessionUmaHelper::MediaSessionSuspendedSource;
-
 MediaSessionImpl::PlayerIdentifier::PlayerIdentifier(
     MediaSessionPlayerObserver* observer,
     int player_id)
@@ -104,6 +104,12 @@ MediaSessionImpl::PlayerIdentifier::PlayerIdentifier(
 bool MediaSessionImpl::PlayerIdentifier::operator==(
     const PlayerIdentifier& other) const {
   return this->observer == other.observer && this->player_id == other.player_id;
+}
+
+bool MediaSessionImpl::PlayerIdentifier::operator<(
+    const PlayerIdentifier& other) const {
+  return MediaSessionImpl::PlayerIdentifier::Hash()(*this) <
+         MediaSessionImpl::PlayerIdentifier::Hash()(other);
 }
 
 size_t MediaSessionImpl::PlayerIdentifier::Hash::operator()(
@@ -152,6 +158,7 @@ void MediaSessionImpl::WebContentsDestroyed() {
   normal_players_.clear();
   pepper_players_.clear();
   one_shot_players_.clear();
+
   AbandonSystemAudioFocusIfNeeded();
 }
 
@@ -218,19 +225,27 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   else
     required_audio_focus_type = AudioFocusType::kGainTransientMayDuck;
 
+  PlayerIdentifier key(observer, player_id);
+
   // If the audio focus is already granted and is of type Content, there is
   // nothing to do. If it is granted of type Transient the requested type is
   // also transient, there is also nothing to do. Otherwise, the session needs
   // to request audio focus again.
   if (audio_focus_state_ == State::ACTIVE) {
-    AudioFocusType current_focus_type = delegate_->GetCurrentFocusType();
+    base::Optional<AudioFocusType> current_focus_type =
+        delegate_->GetCurrentFocusType();
     if (current_focus_type == AudioFocusType::kGain ||
         current_focus_type == required_audio_focus_type) {
-      normal_players_.insert(PlayerIdentifier(observer, player_id));
+      auto iter = normal_players_.find(key);
+      if (iter == normal_players_.end())
+        normal_players_.emplace(std::move(key), required_audio_focus_type);
+      else
+        iter->second = required_audio_focus_type;
       return true;
     }
   }
 
+  bool old_controllable = IsControllable();
   State old_audio_focus_state = audio_focus_state_;
   RequestSystemAudioFocus(required_audio_focus_type);
 
@@ -242,10 +257,19 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   if (old_audio_focus_state != State::ACTIVE)
     normal_players_.clear();
 
-  normal_players_.insert(PlayerIdentifier(observer, player_id));
+  auto iter = normal_players_.find(key);
+  if (iter == normal_players_.end())
+    normal_players_.emplace(std::move(key), required_audio_focus_type);
+  else
+    iter->second = required_audio_focus_type;
 
   UpdateRoutedService();
-  NotifyAboutStateChange();
+
+  if (old_audio_focus_state != audio_focus_state_ ||
+      old_controllable != IsControllable()) {
+    NotifyAboutStateChange();
+  }
+
   return true;
 }
 
@@ -255,11 +279,11 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
 
   PlayerIdentifier identifier(observer, player_id);
 
-  auto it = normal_players_.find(identifier);
-  if (it != normal_players_.end())
-    normal_players_.erase(it);
+  auto iter = normal_players_.find(identifier);
+  if (iter != normal_players_.end())
+    normal_players_.erase(iter);
 
-  it = pepper_players_.find(identifier);
+  auto it = pepper_players_.find(identifier);
   if (it != pepper_players_.end())
     pepper_players_.erase(it);
 
@@ -281,7 +305,7 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
   bool was_controllable = IsControllable();
 
   for (auto it = normal_players_.begin(); it != normal_players_.end();) {
-    if (it->observer == observer)
+    if (it->first.observer == observer)
       normal_players_.erase(it++);
     else
       ++it;
@@ -362,11 +386,14 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
   // must be requested.
   if (suspend_type != SuspendType::kSystem) {
     // Request audio focus again in case we lost it because another app started
-    // playing while the playback was paused.
-    State audio_focus_state = RequestSystemAudioFocus(desired_audio_focus_type_)
-                                  ? State::ACTIVE
-                                  : State::INACTIVE;
-    SetAudioFocusState(audio_focus_state);
+    // playing while the playback was paused. If the audio focus request is
+    // delayed we will resume the player when the request completes.
+    AudioFocusDelegate::AudioFocusResult result =
+        RequestSystemAudioFocus(desired_audio_focus_type_);
+
+    SetAudioFocusState(result != AudioFocusDelegate::AudioFocusResult::kFailed
+                           ? State::ACTIVE
+                           : State::INACTIVE);
 
     if (audio_focus_state_ != State::ACTIVE)
       return;
@@ -414,12 +441,12 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
 
 void MediaSessionImpl::SeekForward(base::TimeDelta seek_time) {
   for (const auto& it : normal_players_)
-    it.observer->OnSeekForward(it.player_id, seek_time);
+    it.first.observer->OnSeekForward(it.first.player_id, seek_time);
 }
 
 void MediaSessionImpl::SeekBackward(base::TimeDelta seek_time) {
   for (const auto& it : normal_players_)
-    it.observer->OnSeekBackward(it.player_id, seek_time);
+    it.first.observer->OnSeekBackward(it.first.player_id, seek_time);
 }
 
 bool MediaSessionImpl::IsControllable() const {
@@ -461,8 +488,11 @@ void MediaSessionImpl::StopDucking() {
 }
 
 void MediaSessionImpl::UpdateVolumeMultiplier() {
-  for (const auto& it : normal_players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
+  for (const auto& it : normal_players_) {
+    it.first.observer->OnSetVolumeMultiplier(it.first.player_id,
+                                             GetVolumeMultiplier());
+  }
+
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 }
@@ -503,6 +533,12 @@ void MediaSessionImpl::RemoveAllPlayersForTest() {
   pepper_players_.clear();
   one_shot_players_.clear();
   AbandonSystemAudioFocusIfNeeded();
+}
+
+void MediaSessionImpl::OnSystemAudioFocusRequested(bool result) {
+  uma_helper_.RecordRequestAudioFocusResult(result);
+  if (result)
+    StopDucking();
 }
 
 void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
@@ -551,7 +587,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
     // the page in which case the player is already paused.
     // Otherwise, the players need to be paused.
     for (const auto& it : normal_players_)
-      it.observer->OnSuspend(it.player_id);
+      it.first.observer->OnSuspend(it.first.player_id);
   }
 
   for (const auto& it : pepper_players_)
@@ -568,7 +604,7 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
   SetAudioFocusState(State::ACTIVE);
 
   for (const auto& it : normal_players_)
-    it.observer->OnResume(it.player_id);
+    it.first.observer->OnResume(it.first.player_id);
 
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
@@ -592,19 +628,21 @@ void MediaSessionImpl::Initialize() {
   delegate_ = AudioFocusDelegate::Create(this);
 }
 
-bool MediaSessionImpl::RequestSystemAudioFocus(
+AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
     AudioFocusType audio_focus_type) {
-  bool result = delegate_->RequestAudioFocus(audio_focus_type);
-  uma_helper_.RecordRequestAudioFocusResult(result);
-
-  // Make sure we are unducked.
-  if (result)
-    StopDucking();
-
-  // MediaSessionImpl must change its state & audio focus type AFTER requesting
-  // audio focus.
-  SetAudioFocusState(result ? State::ACTIVE : State::INACTIVE);
+  AudioFocusDelegate::AudioFocusResult result =
+      delegate_->RequestAudioFocus(audio_focus_type);
   desired_audio_focus_type_ = audio_focus_type;
+
+  bool success = result != AudioFocusDelegate::AudioFocusResult::kFailed;
+  SetAudioFocusState(success ? State::ACTIVE : State::INACTIVE);
+
+  // If we are delayed then we should return now and wait for the response from
+  // the audio focus delegate.
+  if (result == AudioFocusDelegate::AudioFocusResult::kDelayed)
+    return result;
+
+  OnSystemAudioFocusRequested(success);
   return result;
 }
 
@@ -677,6 +715,37 @@ void MediaSessionImpl::AddObserver(
   mojo_observers_.AddPtr(std::move(observer));
 }
 
+void MediaSessionImpl::FinishSystemAudioFocusRequest(
+    AudioFocusType audio_focus_type,
+    bool result) {
+  // If the media session is not active then we do not need to enforce the
+  // result of the audio focus request.
+  if (audio_focus_state_ != State::ACTIVE) {
+    AbandonSystemAudioFocusIfNeeded();
+    return;
+  }
+
+  OnSystemAudioFocusRequested(result);
+
+  if (!result) {
+    switch (audio_focus_type) {
+      case AudioFocusType::kGain:
+        // If the gain audio focus request failed then we should suspend the
+        // media session.
+        OnSuspendInternal(SuspendType::kSystem, State::SUSPENDED);
+        break;
+      case AudioFocusType::kGainTransientMayDuck:
+        // The focus request failed, we should suspend any players that have
+        // the same audio focus type.
+        for (auto& player : normal_players_) {
+          if (audio_focus_type == player.second)
+            player.first.observer->OnSuspend(player.first.player_id);
+        }
+        break;
+    }
+  }
+}
+
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE || !normal_players_.empty() ||
       !pepper_players_.empty() || !one_shot_players_.empty()) {
@@ -733,20 +802,24 @@ void MediaSessionImpl::NotifyObserversInfoChanged() {
 
 bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id) {
-  bool success = RequestSystemAudioFocus(AudioFocusType::kGain);
-  DCHECK(success);
+  AudioFocusDelegate::AudioFocusResult result =
+      RequestSystemAudioFocus(AudioFocusType::kGain);
+  DCHECK_NE(AudioFocusDelegate::AudioFocusResult::kFailed, result);
 
   pepper_players_.insert(PlayerIdentifier(observer, player_id));
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
   NotifyAboutStateChange();
-  return success;
+  return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
 
 bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
                                         int player_id) {
-  if (!RequestSystemAudioFocus(AudioFocusType::kGain))
+  AudioFocusDelegate::AudioFocusResult result =
+      RequestSystemAudioFocus(AudioFocusType::kGain);
+
+  if (result == AudioFocusDelegate::AudioFocusResult::kFailed)
     return false;
 
   one_shot_players_.insert(PlayerIdentifier(observer, player_id));
@@ -819,8 +892,8 @@ void MediaSessionImpl::DidReceiveAction(
     RenderFrameHost* rfh_of_routed_service =
         routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
     for (const auto& player : normal_players_) {
-      if (player.observer->render_frame_host() != rfh_of_routed_service)
-        player.observer->OnSuspend(player.player_id);
+      if (player.first.observer->render_frame_host() != rfh_of_routed_service)
+        player.first.observer->OnSuspend(player.first.player_id);
     }
     for (const auto& player : pepper_players_) {
       if (player.observer->render_frame_host() != rfh_of_routed_service) {
@@ -863,7 +936,7 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   // prefer the top-most frame.
   std::set<RenderFrameHost*> frames;
   for (const auto& player : normal_players_) {
-    RenderFrameHost* frame = player.observer->render_frame_host();
+    RenderFrameHost* frame = player.first.observer->render_frame_host();
     if (frame)
       frames.insert(frame);
   }

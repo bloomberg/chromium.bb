@@ -27,10 +27,11 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
 
   void Initialize();
 
-  bool RequestAudioFocus(
+  AudioFocusResult RequestAudioFocus(
       media_session::mojom::AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
-  media_session::mojom::AudioFocusType GetCurrentFocusType() const override;
+  base::Optional<media_session::mojom::AudioFocusType> GetCurrentFocusType()
+      const override;
 
   // Called when the Android system requests the MediaSession to be suspended.
   // Called by Java through JNI.
