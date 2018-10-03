@@ -45,6 +45,11 @@ class VariationsServiceClient {
   // Gets the channel of the embedder.
   virtual version_info::Channel GetChannel() = 0;
 
+  // Gets whether this platform supports experiments which retain their group
+  // assignments across runs.
+  // TODO(paulmiller): Remove this once https://crbug.com/866722 is resolved.
+  virtual bool GetSupportsPermanentConsistency();
+
   // Returns whether the embedder overrides the value of the restrict parameter.
   // |parameter| is an out-param that will contain the value of the restrict
   // parameter if true is returned.
