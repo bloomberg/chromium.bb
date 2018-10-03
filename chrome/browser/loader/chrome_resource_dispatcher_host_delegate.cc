@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/client_hints/client_hints.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
@@ -344,7 +343,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (safe_browsing_.get())
     safe_browsing_->OnResourceRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  client_hints::RequestBeginning(request, io_data->GetCookieSettings());
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES) || BUILDFLAG(ENABLE_NACL)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
