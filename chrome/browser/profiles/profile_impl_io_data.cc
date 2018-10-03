@@ -244,6 +244,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
           base::FeatureList::IsEnabled(network::features::kNetworkService)
               ? nullptr
               : main_request_context_getter_.get(),
+          profile_,
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetURLLoaderFactoryForBrowserProcess(),
           std::move(store),

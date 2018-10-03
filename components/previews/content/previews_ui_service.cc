@@ -124,6 +124,17 @@ PreviewsLogger* PreviewsUIService::previews_logger() const {
   return logger_.get();
 }
 
+// When triggering previews, prevent long term black list rules.
+void PreviewsUIService::SetIgnoreLongTermBlackListForServerPreviews(
+    bool ignore_long_term_black_list_rules_allowed) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &PreviewsDeciderImpl::SetIgnoreLongTermBlackListForServerPreviews,
+          previews_decider_impl_, ignore_long_term_black_list_rules_allowed));
+}
+
 void PreviewsUIService::ClearBlackList(base::Time begin_time,
                                        base::Time end_time) {
   DCHECK(thread_checker_.CalledOnValidThread());

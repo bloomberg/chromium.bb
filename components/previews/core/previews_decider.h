@@ -26,12 +26,15 @@ class PreviewsDecider {
   // preview will be disallowed; preview types that check network quality before
   // calling ShouldAllowPreviewAtECT should pass in
   // EFFECTIVE_CONNECTION_TYPE_4G.
+  // |is_server_preview| means that the blacklist does
+  // not need to be checked for long term rules when Previews has been
+  // configured to allow skipping the blacklist.
   virtual bool ShouldAllowPreviewAtECT(
       const net::URLRequest& request,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
       const std::vector<std::string>& host_blacklist_from_finch,
-      bool ignore_long_term_black_list_rules) const = 0;
+      bool is_server_preview) const = 0;
 
   // Same as ShouldAllowPreviewAtECT, but uses the previews default
   // EffectiveConnectionType and no blacklisted hosts from the server.

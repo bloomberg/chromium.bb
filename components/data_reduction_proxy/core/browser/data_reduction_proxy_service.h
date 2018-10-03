@@ -143,6 +143,9 @@ class DataReductionProxyService
   // cleared.
   void OnCacheCleared(const base::Time start, const base::Time end);
 
+  // When triggering previews, prevent long term black list rules.
+  void SetIgnoreLongTermBlackListRules(bool ignore_long_term_black_list_rules);
+
   // Returns the current network quality estimates.
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;

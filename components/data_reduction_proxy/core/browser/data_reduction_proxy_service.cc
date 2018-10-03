@@ -275,6 +275,12 @@ void DataReductionProxyService::SetProxyRequestHeadersOnUI(
   settings_->SetProxyRequestHeaders(headers);
 }
 
+void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  settings_->SetIgnoreLongTermBlackListRules(ignore_long_term_black_list_rules);
+}
+
 void DataReductionProxyService::LoadHistoricalDataUsage(
     const HistoricalDataUsageCallback& load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(

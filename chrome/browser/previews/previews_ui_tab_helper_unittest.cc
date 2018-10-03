@@ -19,6 +19,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -80,7 +81,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
             drp_test_context_->GetDataReductionProxyEnabledPrefName());
     data_reduction_proxy_settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        drp_test_context_->request_context_getter(),
+        drp_test_context_->request_context_getter(), profile(),
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
         base::WrapUnique(new data_reduction_proxy::DataStore()),
         base::ThreadTaskRunnerHandle::Get(),

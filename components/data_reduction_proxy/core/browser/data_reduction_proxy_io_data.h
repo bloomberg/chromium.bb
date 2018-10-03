@@ -41,10 +41,6 @@ namespace network {
 class NetworkConnectionTracker;
 }
 
-namespace previews {
-class PreviewsDecider;
-}
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyBypassStats;
@@ -107,12 +103,10 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Applies a serialized Data Reduction Proxy configuration.
   void SetDataReductionProxyConfiguration(const std::string& serialized_config);
 
-  // Returns true when server previews should be activated. When server previews
-  // are active, URL requests are modified to request low fidelity versions of
-  // the resources.|previews_decider| is a non-null object that determines
-  // eligibility of showing the preview based on past opt outs.
-  bool ShouldAcceptServerPreview(const net::URLRequest& request,
-                                 previews::PreviewsDecider* previews_decider);
+  // When triggering previews, prevent long term black list rules. Overridden in
+  // testing.
+  virtual void SetIgnoreLongTermBlackListRules(
+      bool ignore_long_term_black_list_rules);
 
   // Bridge methods to safely call to the UI thread objects.
   void UpdateDataUseForHost(int64_t network_bytes,

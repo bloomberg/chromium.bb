@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
@@ -117,9 +118,15 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
       const std::vector<std::string>& host_blacklist_from_finch,
-      bool ignore_long_term_black_list_rules) const override;
+      bool is_server_preview) const override;
   bool IsURLAllowedForPreview(const net::URLRequest& request,
                               PreviewsType type) const override;
+
+  // Set whether ignoring the long term blacklist rules is allowed for calls to
+  // ShouldAllowPreviewAtECT that have |can_ignore_long_term_black_list_rules|
+  // set to true.
+  void SetIgnoreLongTermBlackListForServerPreviews(
+      bool ignore_long_term_blacklist_for_server_previews);
 
   void LoadResourceHints(const net::URLRequest& request) override;
 
@@ -176,7 +183,14 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // Whether the decisions made by PreviewsBlackList should be ignored or not.
   // This can be changed by chrome://interventions-internals to test/debug the
   // behavior of Previews decisions.
+  // This is related to a test flag and should only be true when the user has
+  // set it in flags. See previews::IsPreviewsBlacklistIgnoredViaFlag.
   bool blacklist_ignored_;
+
+  // Whether ignoring the blacklist is allowed for calls to
+  // ShouldAllowPreviewAtECT that have
+  // |is_server_preview| true.
+  bool ignore_long_term_blacklist_for_server_previews_ = false;
 
   base::Clock* clock_;
 
@@ -191,6 +205,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsIsEnabledCallback is_enabled_callback_;
 
   uint64_t page_id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PreviewsDeciderImpl> weak_factory_;
 

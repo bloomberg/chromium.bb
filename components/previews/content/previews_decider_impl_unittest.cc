@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -105,13 +106,14 @@ class TestPreviewsBlackList : public PreviewsBlackList {
       PreviewsType type,
       bool ignore_long_term_black_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const override {
-    PreviewsEligibilityReason ordered_reasons[] = {
+    std::vector<PreviewsEligibilityReason> ordered_reasons = {
         PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-        PreviewsEligibilityReason::USER_BLACKLISTED,
-        PreviewsEligibilityReason::HOST_BLACKLISTED,
-        PreviewsEligibilityReason::ALLOWED,
-    };
+        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT};
+
+    if (!ignore_long_term_black_list_rules) {
+      ordered_reasons.push_back(PreviewsEligibilityReason::USER_BLACKLISTED);
+      ordered_reasons.push_back(PreviewsEligibilityReason::HOST_BLACKLISTED);
+    }
 
     for (auto reason : ordered_reasons) {
       if (status_ == reason) {
@@ -119,8 +121,8 @@ class TestPreviewsBlackList : public PreviewsBlackList {
       }
       passed_reasons->push_back(reason);
     }
-    NOTREACHED();
-    return status_;
+
+    return PreviewsEligibilityReason::ALLOWED;
   }
 
  private:
@@ -1783,6 +1785,33 @@ TEST_F(PreviewsDeciderImplTest, GeneratePageIdMakesUniqueNonZero) {
   }
   EXPECT_EQ(number_of_generated_ids, page_id_set.size());
   EXPECT_EQ(page_id_set.end(), page_id_set.find(0u));
+}
+
+TEST_F(PreviewsDeciderImplTest, TestIgnoreLongTermRule) {
+  // Verify that when long term rules can be ignored, and the caller is fine
+  // with ignoring long term rules, they are not checked.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  InitializeUIService();
+
+  previews_decider_impl()->SetIgnoreLongTermBlackListForServerPreviews(true);
+
+  std::unique_ptr<TestPreviewsBlackList> blacklist =
+      std::make_unique<TestPreviewsBlackList>(
+          PreviewsEligibilityReason::HOST_BLACKLISTED, previews_decider_impl());
+  previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
+
+  // LoFi and LitePage check NQE on their own.
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LITE_PAGE,
+      net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(), false));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LITE_PAGE,
+      net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(), true));
 }
 
 }  // namespace

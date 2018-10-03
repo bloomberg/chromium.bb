@@ -700,8 +700,15 @@ ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
   if (data_reduction_proxy_io_data && previews_decider_impl) {
     previews::PreviewsUserData::Create(url_request,
                                        previews_decider_impl->GeneratePageId());
-    if (data_reduction_proxy_io_data->ShouldAcceptServerPreview(
-            *url_request, previews_decider_impl)) {
+    if (url_request->url().SchemeIsHTTPOrHTTPS() &&
+        previews_decider_impl->ShouldAllowPreviewAtECT(
+            *url_request, previews::PreviewsType::LITE_PAGE,
+            net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
+            true) &&
+        previews_decider_impl->ShouldAllowPreviewAtECT(
+            *url_request, previews::PreviewsType::LOFI,
+            net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
+            true)) {
       previews_state |= content::SERVER_LOFI_ON;
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }

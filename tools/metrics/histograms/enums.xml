@@ -9845,6 +9845,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataReductionProxyProtocolNotAcceptingTransformReason">
+  <obsolete>
+    Deprecated 10/2018.
+  </obsolete>
   <int value="0"
       label="Not accepting proxy transforms, transforms disabled on client"/>
   <int value="1"

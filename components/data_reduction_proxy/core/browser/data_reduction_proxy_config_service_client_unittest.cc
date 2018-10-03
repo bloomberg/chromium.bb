@@ -348,6 +348,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->io_data()->pingback_reporting_fraction();
   }
 
+  bool ignore_blacklist() const {
+    return test_context_->io_data()->ignore_blacklist();
+  }
+
   void RunUntilIdle() {
     test_context_->RunUntilIdle();
   }
@@ -1358,7 +1362,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   config_client()->ApplySerializedConfig(
       half_reporting_fraction_encoded_config());
   EXPECT_EQ(0.5f, pingback_reporting_fraction());
-  EXPECT_FALSE(config()->IgnoreBlackListLongTermRulesForTesting());
+  EXPECT_FALSE(ignore_blacklist());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest,
@@ -1366,7 +1370,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   Init(true);
 
   config_client()->ApplySerializedConfig(ignore_black_list_encoded_config());
-  EXPECT_TRUE(config()->IgnoreBlackListLongTermRulesForTesting());
+  EXPECT_TRUE(ignore_blacklist());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, EmptyConfigDisablesDRP) {
