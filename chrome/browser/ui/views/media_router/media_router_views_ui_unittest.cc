@@ -279,4 +279,39 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
   ui_->RemoveObserver(&observer);
 }
 
+TEST_F(MediaRouterViewsUITest, ShowDomainForHangouts) {
+  const std::string domain1 = "domain1.com";
+  const std::string domain2 = "domain2.com";
+  MediaSinkWithCastModes available_hangout(
+      MediaSink("sink1", "Hangout 1", SinkIconType::HANGOUT));
+  MediaSinkWithCastModes connected_hangout(
+      MediaSink("sink2", "Hangout 2", SinkIconType::HANGOUT));
+  available_hangout.sink.set_domain(domain1);
+  connected_hangout.sink.set_domain(domain2);
+  available_hangout.cast_modes = {MediaCastMode::TAB_MIRROR};
+  connected_hangout.cast_modes = {MediaCastMode::TAB_MIRROR};
+
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+  const std::string route_description = "route 1";
+  MediaRoute route(kRouteId, MediaSource(kSourceId), "sink2", route_description,
+                   true, true);
+  ui_->OnRoutesUpdated({route}, {});
+
+  // The domain should be used as the status text only if the sink is available.
+  // If the sink has a route, the route description is used.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>([&](const CastDialogModel& model) {
+        EXPECT_EQ(2u, model.media_sinks().size());
+        EXPECT_EQ(model.media_sinks()[0].id, available_hangout.sink.id());
+        EXPECT_EQ(base::UTF8ToUTF16(domain1),
+                  model.media_sinks()[0].status_text);
+        EXPECT_EQ(model.media_sinks()[1].id, connected_hangout.sink.id());
+        EXPECT_EQ(base::UTF8ToUTF16(route_description),
+                  model.media_sinks()[1].status_text);
+      }));
+  ui_->OnResultsUpdated({available_hangout, connected_hangout});
+  ui_->RemoveObserver(&observer);
+}
+
 }  // namespace media_router

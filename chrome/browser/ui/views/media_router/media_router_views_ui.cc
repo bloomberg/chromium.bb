@@ -147,6 +147,10 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
                         : UIMediaSinkState::AVAILABLE;
     ui_sink.cast_modes = sink.cast_modes;
   }
+  if (ui_sink.icon_type == SinkIconType::HANGOUT &&
+      ui_sink.state == UIMediaSinkState::AVAILABLE && sink.sink.domain()) {
+    ui_sink.status_text = base::UTF8ToUTF16(*sink.sink.domain());
+  }
   if (issue && IssueMatches(*issue, ui_sink))
     ui_sink.issue = issue;
   return ui_sink;

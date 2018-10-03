@@ -37,6 +37,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ConnectingState);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, DisconnectingState);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, AddAndRemoveIssue);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ShowDomainForHangouts);
 
   // MediaRouterUIBase:
   void InitCommon(content::WebContents* initiator) override;
