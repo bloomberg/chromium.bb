@@ -430,3 +430,60 @@ testcase.openQuickViewScrollHtml = function() {
     },
   ]);
 };
+
+/**
+ * Tests opening Quick View on an html document to verify that the background
+ * color of the <files-safe-media type="html"> that contains the <webview> is
+ * solid white.
+ */
+testcase.openQuickViewBackgroundColorHtml = function() {
+  const caller = getCaller();
+  let appId;
+
+  /**
+   * The <webview> resides in the <files-safe-media type="html"> shadow DOM,
+   * which is a child of the #quick-view shadow DOM. This test only needs to
+   * examine the <files-safe-media> element.
+   */
+  const fileSafeMedia = ['#quick-view', 'files-safe-media[type="html"]'];
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.tallHtml.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.tallHtml], []);
+    },
+    // Open the file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.tallHtml.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Get the <files-safe-media type='html'> backgroundColor style.
+    function() {
+      function getFileSafeMediaBackgroundColor(elements) {
+        let haveElements = Array.isArray(elements) && elements.length === 1;
+        if (haveElements)
+          haveElements = elements[0].styles.display.includes('block');
+        if (!haveElements || !elements[0].styles.backgroundColor)
+          return pending(caller, 'Waiting for <file-safe-media> element.');
+        return elements[0].styles.backgroundColor;
+      }
+      repeatUntil(function() {
+        const styles = ['display', 'backgroundColor'];
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepQueryAllElements', appId, [fileSafeMedia, styles])
+            .then(getFileSafeMediaBackgroundColor);
+      }).then(this.next);
+    },
+    // Check: the <files-safe-media> backgroundColor should be solid white.
+    function(backgroundColor) {
+      chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor);
+      this.next();
+    },
+    function(results) {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
