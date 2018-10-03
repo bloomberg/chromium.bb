@@ -121,16 +121,18 @@ void MultiDeviceNotificationPresenter::OnConnectedHostSwitchedForExistingUser(
     const std::string& new_host_device_name) {
   base::string16 title = l10n_util::GetStringFUTF16(
       IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE,
-      base::UTF8ToUTF16(new_host_device_name));
+      base::ASCIIToUTF16(new_host_device_name));
   base::string16 message = l10n_util::GetStringUTF16(
       IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE);
   ShowNotification(Status::kExistingUserHostSwitchedNotificationVisible, title,
                    message);
 }
 
-void MultiDeviceNotificationPresenter::OnNewChromebookAddedForExistingUser() {
-  base::string16 title = l10n_util::GetStringUTF16(
-      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE);
+void MultiDeviceNotificationPresenter::OnNewChromebookAddedForExistingUser(
+    const std::string& new_host_device_name) {
+  base::string16 title = l10n_util::GetStringFUTF16(
+      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE,
+      base::ASCIIToUTF16(new_host_device_name));
   base::string16 message = l10n_util::GetStringUTF16(
       IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE);
   ShowNotification(Status::kExistingUserNewChromebookNotificationVisible, title,

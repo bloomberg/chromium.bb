@@ -94,14 +94,13 @@ interface AccountStatusChangeDelegate {
   // Callback which indicates that the currently-connected MultiDevice host has
   // changed. This likely means that the user has changed MultiDevice settings
   // on another device. This function is only called if the current user has
-  // already set up MultiDevice features. Note: |new_host_device_name| is
-  // expected to be a UTF-8 string.
+  // already set up MultiDevice features.
   OnConnectedHostSwitchedForExistingUser(string new_host_device_name);
 
   // Callback which indicates that a new Chromebook was added to the account of
   // the current user. This function is only called if the current user has
   // already set up MultiDevice features.
-  OnNewChromebookAddedForExistingUser();
+  OnNewChromebookAddedForExistingUser(string new_host_device_name);
 };
 
 interface HostStatusObserver {

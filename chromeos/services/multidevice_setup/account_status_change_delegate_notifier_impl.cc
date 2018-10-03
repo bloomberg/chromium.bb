@@ -156,7 +156,8 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
   CheckForNewUserPotentialHostExistsEvent(host_status_with_device);
   CheckForExistingUserHostSwitchedEvent(host_status_with_device,
                                         host_device_id_before_update);
-  CheckForExistingUserChromebookAddedEvent(host_device_id_before_update);
+  CheckForExistingUserChromebookAddedEvent(host_status_with_device,
+                                           host_device_id_before_update);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::
@@ -207,6 +208,7 @@ void AccountStatusChangeDelegateNotifierImpl::
 
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserChromebookAddedEvent(
+        const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
         const base::Optional<std::string>& host_device_id_before_update) {
   // The Chromebook added event requires that a set host was found by the
   // update, i.e. there was no host before the host status update but afterward
@@ -214,7 +216,8 @@ void AccountStatusChangeDelegateNotifierImpl::
   if (!host_device_id_from_most_recent_update_ || host_device_id_before_update)
     return;
 
-  delegate()->OnNewChromebookAddedForExistingUser();
+  delegate()->OnNewChromebookAddedForExistingUser(
+      host_status_with_device.host_device()->name());
   pref_service_->SetInt64(kExistingUserChromebookAddedPrefName,
                           clock_->Now().ToJavaTime());
 }

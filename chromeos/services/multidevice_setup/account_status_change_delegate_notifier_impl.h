@@ -86,6 +86,7 @@ class AccountStatusChangeDelegateNotifierImpl
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
       const base::Optional<std::string>& host_device_id_before_update);
   void CheckForExistingUserChromebookAddedEvent(
+      const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
       const base::Optional<std::string>& host_device_id_before_update);
 
   // Loads data from previous session using PrefService.
