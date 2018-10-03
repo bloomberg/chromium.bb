@@ -1450,6 +1450,15 @@
     <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE" desc="The message shown when mounting a new SMB share fails because the URL is an invalid format.">
       Invalid URL format. Supported formats are \\server\share and smb://server/share.
     </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_AUTHENTICATION_METHOD" desc="Title for the input that lets users specify their authentication method for an SMB Share.">
+      Authentication Method
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_STANDARD_AUTHENTICATION" desc="Authentication method option indicating that fields for username and password should be shown to the user.">
+      Standard
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_KERBEROS_AUTHENTICATION" desc="Authentication method option to use a users Kerberos ticket to authenticate. Only availible for Active Directory users.">
+      SSO
+    </message>
 
     <!-- Date/Time Page -->
     <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">

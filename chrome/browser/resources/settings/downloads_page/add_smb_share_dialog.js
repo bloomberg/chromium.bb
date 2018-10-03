@@ -6,6 +6,13 @@
  * @fileoverview 'settings-add-smb-share-dialog' is a component for adding
  * an SMB Share.
  */
+
+/** @enum {string} */
+settings.SmbAuthMethod = {
+  KERBEROS: 'kerberos',
+  CREDENTIALS: 'credentials',
+};
+
 Polymer({
   is: 'settings-add-smb-share-dialog',
 
@@ -40,6 +47,24 @@ Polymer({
       type: Array,
       value: function() {
         return [];
+      },
+    },
+
+    /** @private */
+    isActiveDirectory_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isActiveDirectoryUser');
+      },
+    },
+
+    /** @private */
+    authenticationMethod_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getBoolean('isActiveDirectoryUser') ?
+            settings.SmbAuthMethod.KERBEROS :
+            settings.SmbAuthMethod.CREDENTIALS;
       },
     },
   },
@@ -88,4 +113,11 @@ Polymer({
     this.discoveredShares_ = this.discoveredShares_.concat(shares);
   },
 
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowCredentialUI_: function() {
+    return this.authenticationMethod_ == settings.SmbAuthMethod.CREDENTIALS;
+  },
 });
