@@ -786,7 +786,9 @@
 
       If this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will never check if it is the default browser and will disable user controls for setting this option.
 
-      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.''',
+      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.
+
+      Note for administrators of <ph name="MS_WIN_NAME">Microsoft® Windows</ph>: Enabling this setting will only work for machines running Windows 7. For versions of Windows starting with Windows 8, you must deploy a "default application associations" file that makes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> the handler for the <ph name="HHTPS_PROTOCOL">https</ph> and <ph name="HTTP_PROTOCOL">http</ph> protocols (and, optionally, the <ph name="FTP_PROTOCOL">ftp</ph> protocol and file formats such as <ph name="HTML_EXTENSION">.html</ph>, <ph name="HTM_EXTENSION">.htm</ph>, <ph name="PDF_EXTENSION">.pdf</ph>, <ph name="SVG_EXTENSION">.svg</ph>, <ph name="WEBP_EXTENSION">.webp</ph>, etc...). See <ph name="SUPPORT_URL">https://support.google.com/chrome?p=make_chrome_default_win</ph> for more information.''',
       'label': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
     },
     {
