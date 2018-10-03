@@ -40,13 +40,20 @@ struct NonNestable {};
 // Posting to a WebThread must only be done after it was initialized (ref.
 // WebMainLoop::CreateThreads() phase).
 class WebTaskTraitsExtension {
+  using WebThreadIDFilter =
+      base::trait_helpers::RequiredEnumTraitFilter<WebThread::ID>;
+  using NonNestableFilter =
+      base::trait_helpers::BooleanTraitFilter<NonNestable>;
+
  public:
   static constexpr uint8_t kExtensionId =
       base::TaskTraitsExtensionStorage::kFirstEmbedderExtensionId;
 
-  struct ValidTrait {
-    ValidTrait(WebThread::ID) {}
-    ValidTrait(NonNestable) {}
+  struct ValidTrait : public base::TaskTraits::ValidTrait {
+    using base::TaskTraits::ValidTrait::ValidTrait;
+
+    ValidTrait(WebThread::ID);
+    ValidTrait(NonNestable);
   };
 
   template <
@@ -54,11 +61,9 @@ class WebTaskTraitsExtension {
       class CheckArgumentsAreValid = std::enable_if_t<
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr WebTaskTraitsExtension(ArgTypes... args)
-      : web_thread_(base::trait_helpers::GetValueFromArgList(
-            base::trait_helpers::RequiredEnumArgGetter<WebThread::ID>(),
+      : web_thread_(base::trait_helpers::GetTraitFromArgList<WebThreadIDFilter>(
             args...)),
-        nestable_(!base::trait_helpers::GetValueFromArgList(
-            base::trait_helpers::BooleanArgGetter<NonNestable>(),
+        nestable_(!base::trait_helpers::GetTraitFromArgList<NonNestableFilter>(
             args...)) {}
 
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
