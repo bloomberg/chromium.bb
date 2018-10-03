@@ -621,3 +621,223 @@ int64_t av1_lowbd_pixel_proj_error_avx2(
   err += sum[0] + sum[1] + sum[2] + sum[3];
   return err;
 }
+
+int64_t av1_highbd_pixel_proj_error_avx2(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int xq[2], const sgr_params_type *params) {
+  int i, j, k;
+  const int32_t shift = SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS;
+  const __m256i rounding = _mm256_set1_epi32(1 << (shift - 1));
+  __m256i sum64 = _mm256_setzero_si256();
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  int64_t err = 0;
+  if (params->r[0] > 0 && params->r[1] > 0) {  // Both filters are enabled
+    const __m256i xq0 = _mm256_set1_epi32(xq[0]);
+    const __m256i xq1 = _mm256_set1_epi32(xq[1]);
+    for (i = 0; i < height; ++i) {
+      __m256i sum32 = _mm256_setzero_si256();
+      for (j = 0; j <= width - 16; j += 16) {  // Process 16 pixels at a time
+        // Load 16 pixels each from source image and corrupted image
+        const __m256i s0 = yy_loadu_256(src + j);
+        const __m256i d0 = yy_loadu_256(dat + j);
+        // s0 = [15 14 13 12 11 10 9 8] [7 6 5 4 3 2 1 0] as u16 (indices)
+
+        // Shift-up each pixel to match filtered image scaling
+        const __m256i u0 = _mm256_slli_epi16(d0, SGRPROJ_RST_BITS);
+
+        // Split u0 into two halves and pad each from u16 to i32
+        const __m256i u0l = _mm256_cvtepu16_epi32(_mm256_castsi256_si128(u0));
+        const __m256i u0h =
+            _mm256_cvtepu16_epi32(_mm256_extracti128_si256(u0, 1));
+        // u0h, u0l = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0] as u32
+
+        // Load 16 pixels from each filtered image
+        const __m256i flt0l = yy_loadu_256(flt0 + j);
+        const __m256i flt0h = yy_loadu_256(flt0 + j + 8);
+        const __m256i flt1l = yy_loadu_256(flt1 + j);
+        const __m256i flt1h = yy_loadu_256(flt1 + j + 8);
+        // flt?l, flt?h = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0] as u32
+
+        // Subtract shifted corrupt image from each filtered image
+        const __m256i flt0l_subu = _mm256_sub_epi32(flt0l, u0l);
+        const __m256i flt0h_subu = _mm256_sub_epi32(flt0h, u0h);
+        const __m256i flt1l_subu = _mm256_sub_epi32(flt1l, u0l);
+        const __m256i flt1h_subu = _mm256_sub_epi32(flt1h, u0h);
+
+        // Multiply basis vectors by appropriate coefficients
+        const __m256i v0l = _mm256_mullo_epi32(flt0l_subu, xq0);
+        const __m256i v0h = _mm256_mullo_epi32(flt0h_subu, xq0);
+        const __m256i v1l = _mm256_mullo_epi32(flt1l_subu, xq1);
+        const __m256i v1h = _mm256_mullo_epi32(flt1h_subu, xq1);
+
+        // Add together the contributions from the two basis vectors
+        const __m256i vl = _mm256_add_epi32(v0l, v1l);
+        const __m256i vh = _mm256_add_epi32(v0h, v1h);
+
+        // Right-shift v with appropriate rounding
+        const __m256i vrl =
+            _mm256_srai_epi32(_mm256_add_epi32(vl, rounding), shift);
+        const __m256i vrh =
+            _mm256_srai_epi32(_mm256_add_epi32(vh, rounding), shift);
+        // vrh, vrl = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0]
+
+        // Saturate each i32 to an i16 then combine both halves
+        // The permute (control=[3 1 2 0]) fixes weird ordering from AVX lanes
+        const __m256i vr =
+            _mm256_permute4x64_epi64(_mm256_packs_epi32(vrl, vrh), 0xd8);
+        // intermediate = [15 14 13 12 7 6 5 4] [11 10 9 8 3 2 1 0]
+        // vr = [15 14 13 12 11 10 9 8] [7 6 5 4 3 2 1 0]
+
+        // Add twin-subspace-sgr-filter to corrupt image then subtract source
+        const __m256i e0 = _mm256_sub_epi16(_mm256_add_epi16(vr, d0), s0);
+
+        // Calculate squared error and add adjacent values
+        const __m256i err0 = _mm256_madd_epi16(e0, e0);
+
+        sum32 = _mm256_add_epi32(sum32, err0);
+      }
+
+      const __m256i sum32l =
+          _mm256_cvtepu32_epi64(_mm256_castsi256_si128(sum32));
+      sum64 = _mm256_add_epi64(sum64, sum32l);
+      const __m256i sum32h =
+          _mm256_cvtepu32_epi64(_mm256_extracti128_si256(sum32, 1));
+      sum64 = _mm256_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels in this row (modulo 16)
+      for (k = j; k < width; ++k) {
+        const int32_t u = (int32_t)(dat[k] << SGRPROJ_RST_BITS);
+        int32_t v = xq[0] * (flt0[k] - u) + xq[1] * (flt1[k] - u);
+        const int32_t e = ROUND_POWER_OF_TWO(v, shift) + dat[k] - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+      flt0 += flt0_stride;
+      flt1 += flt1_stride;
+    }
+  } else if (params->r[0] > 0 || params->r[1] > 0) {  // Only one filter enabled
+    const int32_t xq_on = (params->r[0] > 0) ? xq[0] : xq[1];
+    const __m256i xq_active = _mm256_set1_epi32(xq_on);
+    const __m256i xq_inactive =
+        _mm256_set1_epi32(-xq_on * (1 << SGRPROJ_RST_BITS));
+    const int32_t *flt = (params->r[0] > 0) ? flt0 : flt1;
+    const int flt_stride = (params->r[0] > 0) ? flt0_stride : flt1_stride;
+    for (i = 0; i < height; ++i) {
+      __m256i sum32 = _mm256_setzero_si256();
+      for (j = 0; j <= width - 16; j += 16) {
+        // Load 16 pixels from source image
+        const __m256i s0 = yy_loadu_256(src + j);
+        // s0 = [15 14 13 12 11 10 9 8] [7 6 5 4 3 2 1 0] as u16
+
+        // Load 16 pixels from corrupted image and pad each u16 to i32
+        const __m256i d0 = yy_loadu_256(dat + j);
+        const __m256i d0h =
+            _mm256_cvtepu16_epi32(_mm256_extracti128_si256(d0, 1));
+        const __m256i d0l = _mm256_cvtepu16_epi32(_mm256_castsi256_si128(d0));
+        // d0 = [15 14 13 12 11 10 9 8] [7 6 5 4 3 2 1 0] as u16
+        // d0h, d0l = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0] as i32
+
+        // Load 16 pixels from the filtered image
+        const __m256i flth = yy_loadu_256(flt + j + 8);
+        const __m256i fltl = yy_loadu_256(flt + j);
+        // flth, fltl = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0] as i32
+
+        const __m256i flth_xq = _mm256_mullo_epi32(flth, xq_active);
+        const __m256i fltl_xq = _mm256_mullo_epi32(fltl, xq_active);
+        const __m256i d0h_xq = _mm256_mullo_epi32(d0h, xq_inactive);
+        const __m256i d0l_xq = _mm256_mullo_epi32(d0l, xq_inactive);
+
+        const __m256i vh = _mm256_add_epi32(flth_xq, d0h_xq);
+        const __m256i vl = _mm256_add_epi32(fltl_xq, d0l_xq);
+
+        // Shift this down with appropriate rounding
+        const __m256i vrh =
+            _mm256_srai_epi32(_mm256_add_epi32(vh, rounding), shift);
+        const __m256i vrl =
+            _mm256_srai_epi32(_mm256_add_epi32(vl, rounding), shift);
+        // vrh, vrl = [15 14 13 12] [11 10 9 8], [7 6 5 4] [3 2 1 0] as i32
+
+        // Saturate each i32 to an i16 then combine both halves
+        // The permute (control=[3 1 2 0]) fixes weird ordering from AVX lanes
+        const __m256i vr =
+            _mm256_permute4x64_epi64(_mm256_packs_epi32(vrl, vrh), 0xd8);
+        // intermediate = [15 14 13 12 7 6 5 4] [11 10 9 8 3 2 1 0] as u16
+        // vr = [15 14 13 12 11 10 9 8] [7 6 5 4 3 2 1 0] as u16
+
+        // Subtract twin-subspace-sgr filtered from source image to get error
+        const __m256i e0 = _mm256_sub_epi16(_mm256_add_epi16(vr, d0), s0);
+
+        // Calculate squared error and add adjacent values
+        const __m256i err0 = _mm256_madd_epi16(e0, e0);
+
+        sum32 = _mm256_add_epi32(sum32, err0);
+      }
+
+      const __m256i sum32l =
+          _mm256_cvtepu32_epi64(_mm256_castsi256_si128(sum32));
+      sum64 = _mm256_add_epi64(sum64, sum32l);
+      const __m256i sum32h =
+          _mm256_cvtepu32_epi64(_mm256_extracti128_si256(sum32, 1));
+      sum64 = _mm256_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels in this row (modulo 16)
+      for (k = j; k < width; ++k) {
+        const int32_t u = (int32_t)(dat[k] << SGRPROJ_RST_BITS);
+        int32_t v = xq_on * (flt[k] - u);
+        const int32_t e = ROUND_POWER_OF_TWO(v, shift) + dat[k] - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+      flt += flt_stride;
+    }
+  } else {  // Neither filter is enabled
+    for (i = 0; i < height; ++i) {
+      __m256i sum32 = _mm256_setzero_si256();
+      for (j = 0; j <= width - 32; j += 32) {
+        // Load 2x16 u16 from source image
+        const __m256i s0l = yy_loadu_256(src + j);
+        const __m256i s0h = yy_loadu_256(src + j + 16);
+
+        // Load 2x16 u16 from corrupted image
+        const __m256i d0l = yy_loadu_256(dat + j);
+        const __m256i d0h = yy_loadu_256(dat + j + 16);
+
+        // Subtract corrupted image from source image
+        const __m256i diffl = _mm256_sub_epi16(d0l, s0l);
+        const __m256i diffh = _mm256_sub_epi16(d0h, s0h);
+
+        // Square error and add adjacent values
+        const __m256i err0l = _mm256_madd_epi16(diffl, diffl);
+        const __m256i err0h = _mm256_madd_epi16(diffh, diffh);
+
+        sum32 = _mm256_add_epi32(sum32, err0l);
+        sum32 = _mm256_add_epi32(sum32, err0h);
+      }
+
+      const __m256i sum32l =
+          _mm256_cvtepu32_epi64(_mm256_castsi256_si128(sum32));
+      sum64 = _mm256_add_epi64(sum64, sum32l);
+      const __m256i sum32h =
+          _mm256_cvtepu32_epi64(_mm256_extracti128_si256(sum32, 1));
+      sum64 = _mm256_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels (modulu 16)
+      for (k = j; k < width; ++k) {
+        const int32_t e = (int32_t)(dat[k]) - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+    }
+  }
+
+  // Sum 4 values from sum64l and sum64h into err
+  int64_t sum[4];
+  yy_storeu_256(sum, sum64);
+  err += sum[0] + sum[1] + sum[2] + sum[3];
+  return err;
+}

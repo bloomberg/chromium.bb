@@ -621,3 +621,209 @@ int64_t av1_lowbd_pixel_proj_error_sse4_1(
   err += sum[0] + sum[1];
   return err;
 }
+
+int64_t av1_highbd_pixel_proj_error_sse4_1(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int xq[2], const sgr_params_type *params) {
+  int i, j, k;
+  const int32_t shift = SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS;
+  const __m128i rounding = _mm_set1_epi32(1 << (shift - 1));
+  __m128i sum64 = _mm_setzero_si128();
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  int64_t err = 0;
+  if (params->r[0] > 0 && params->r[1] > 0) {  // Both filters are enabled
+    const __m128i xq0 = _mm_set1_epi32(xq[0]);
+    const __m128i xq1 = _mm_set1_epi32(xq[1]);
+
+    for (i = 0; i < height; ++i) {
+      __m128i sum32 = _mm_setzero_si128();
+      for (j = 0; j <= width - 8; j += 8) {
+        // Load 8x pixels from source image
+        const __m128i s0 = xx_loadu_128(src + j);
+        // s0 = [7 6 5 4 3 2 1 0] as i16 (indices of src[])
+
+        // Load 8x pixels from corrupted image
+        const __m128i d0 = xx_loadu_128(dat + j);
+        // d0 = [7 6 5 4 3 2 1 0] as i16 (indices of dat[])
+
+        // Shift each pixel value up by SGRPROJ_RST_BITS
+        const __m128i u0 = _mm_slli_epi16(d0, SGRPROJ_RST_BITS);
+
+        // Split u0 into two halves and pad each from u16 to i32
+        const __m128i u0l = _mm_cvtepu16_epi32(u0);
+        const __m128i u0h = _mm_cvtepu16_epi32(_mm_srli_si128(u0, 8));
+        // u0h = [7 6 5 4] as i32, u0l = [3 2 1 0] as i32, all dat[] indices
+
+        // Load 8 pixels from first and second filtered images
+        const __m128i flt0l = xx_loadu_128(flt0 + j);
+        const __m128i flt0h = xx_loadu_128(flt0 + j + 4);
+        const __m128i flt1l = xx_loadu_128(flt1 + j);
+        const __m128i flt1h = xx_loadu_128(flt1 + j + 4);
+        // flt0 = [7 6 5 4] [3 2 1 0] as i32 (indices of flt0+j)
+        // flt1 = [7 6 5 4] [3 2 1 0] as i32 (indices of flt1+j)
+
+        // Subtract shifted corrupt image from each filtered image
+        // This gives our two basis vectors for the projection
+        const __m128i flt0l_subu = _mm_sub_epi32(flt0l, u0l);
+        const __m128i flt0h_subu = _mm_sub_epi32(flt0h, u0h);
+        const __m128i flt1l_subu = _mm_sub_epi32(flt1l, u0l);
+        const __m128i flt1h_subu = _mm_sub_epi32(flt1h, u0h);
+        // flt?h_subu = [ f[7]-u[7] f[6]-u[6] f[5]-u[5] f[4]-u[4] ] as i32
+        // flt?l_subu = [ f[3]-u[3] f[2]-u[2] f[1]-u[1] f[0]-u[0] ] as i32
+
+        // Multiply each basis vector by the corresponding coefficient
+        const __m128i v0l = _mm_mullo_epi32(flt0l_subu, xq0);
+        const __m128i v0h = _mm_mullo_epi32(flt0h_subu, xq0);
+        const __m128i v1l = _mm_mullo_epi32(flt1l_subu, xq1);
+        const __m128i v1h = _mm_mullo_epi32(flt1h_subu, xq1);
+
+        // Add together the contribution from each scaled basis vector
+        const __m128i vl = _mm_add_epi32(v0l, v1l);
+        const __m128i vh = _mm_add_epi32(v0h, v1h);
+
+        // Right-shift v with appropriate rounding
+        const __m128i vrl = _mm_srai_epi32(_mm_add_epi32(vl, rounding), shift);
+        const __m128i vrh = _mm_srai_epi32(_mm_add_epi32(vh, rounding), shift);
+
+        // Saturate each i32 value to i16 and combine lower and upper halves
+        const __m128i vr = _mm_packs_epi32(vrl, vrh);
+
+        // Add twin-subspace-sgr-filter to corrupt image then subtract source
+        const __m128i e0 = _mm_sub_epi16(_mm_add_epi16(vr, d0), s0);
+
+        // Calculate squared error and add adjacent values
+        const __m128i err0 = _mm_madd_epi16(e0, e0);
+
+        sum32 = _mm_add_epi32(sum32, err0);
+      }
+
+      const __m128i sum32l = _mm_cvtepu32_epi64(sum32);
+      sum64 = _mm_add_epi64(sum64, sum32l);
+      const __m128i sum32h = _mm_cvtepu32_epi64(_mm_srli_si128(sum32, 8));
+      sum64 = _mm_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels in this row (modulo 8)
+      for (k = j; k < width; ++k) {
+        const int32_t u = (int32_t)(dat[k] << SGRPROJ_RST_BITS);
+        int32_t v = xq[0] * (flt0[k] - u) + xq[1] * (flt1[k] - u);
+        const int32_t e = ROUND_POWER_OF_TWO(v, shift) + dat[k] - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+      flt0 += flt0_stride;
+      flt1 += flt1_stride;
+    }
+  } else if (params->r[0] > 0 || params->r[1] > 0) {  // Only one filter enabled
+    const int32_t xq_on = (params->r[0] > 0) ? xq[0] : xq[1];
+    const __m128i xq_active = _mm_set1_epi32(xq_on);
+    const __m128i xq_inactive =
+        _mm_set1_epi32(-xq_on * (1 << SGRPROJ_RST_BITS));
+    const int32_t *flt = (params->r[0] > 0) ? flt0 : flt1;
+    const int flt_stride = (params->r[0] > 0) ? flt0_stride : flt1_stride;
+    for (i = 0; i < height; ++i) {
+      __m128i sum32 = _mm_setzero_si128();
+      for (j = 0; j <= width - 8; j += 8) {
+        // Load 8x pixels from source image
+        const __m128i s0 = xx_loadu_128(src + j);
+        // s0 = [7 6 5 4 3 2 1 0] as u16 (indices of src[])
+
+        // Load 8x pixels from corrupted image and pad each u16 to i32
+        const __m128i d0 = xx_loadu_128(dat + j);
+        const __m128i d0h = _mm_cvtepu16_epi32(_mm_srli_si128(d0, 8));
+        const __m128i d0l = _mm_cvtepu16_epi32(d0);
+        // d0h, d0l = [7 6 5 4], [3 2 1 0] as u32 (indices of dat[])
+
+        // Load 8 pixels from the filtered image
+        const __m128i flth = xx_loadu_128(flt + j + 4);
+        const __m128i fltl = xx_loadu_128(flt + j);
+        // flth, fltl = [7 6 5 4], [3 2 1 0] as i32 (indices of flt+j)
+
+        const __m128i flth_xq = _mm_mullo_epi32(flth, xq_active);
+        const __m128i fltl_xq = _mm_mullo_epi32(fltl, xq_active);
+        const __m128i d0h_xq = _mm_mullo_epi32(d0h, xq_inactive);
+        const __m128i d0l_xq = _mm_mullo_epi32(d0l, xq_inactive);
+
+        const __m128i vh = _mm_add_epi32(flth_xq, d0h_xq);
+        const __m128i vl = _mm_add_epi32(fltl_xq, d0l_xq);
+        // vh = [ xq0(f[7]-d[7]) xq0(f[6]-d[6]) xq0(f[5]-d[5]) xq0(f[4]-d[4]) ]
+        // vl = [ xq0(f[3]-d[3]) xq0(f[2]-d[2]) xq0(f[1]-d[1]) xq0(f[0]-d[0]) ]
+
+        // Shift this down with appropriate rounding
+        const __m128i vrh = _mm_srai_epi32(_mm_add_epi32(vh, rounding), shift);
+        const __m128i vrl = _mm_srai_epi32(_mm_add_epi32(vl, rounding), shift);
+
+        // Saturate vr0 and vr1 from i32 to i16 then pack together
+        const __m128i vr = _mm_packs_epi32(vrl, vrh);
+
+        // Subtract twin-subspace-sgr filtered from source image to get error
+        const __m128i e0 = _mm_sub_epi16(_mm_add_epi16(vr, d0), s0);
+
+        // Calculate squared error and add adjacent values
+        const __m128i err0 = _mm_madd_epi16(e0, e0);
+
+        sum32 = _mm_add_epi32(sum32, err0);
+      }
+
+      const __m128i sum32l = _mm_cvtepu32_epi64(sum32);
+      sum64 = _mm_add_epi64(sum64, sum32l);
+      const __m128i sum32h = _mm_cvtepu32_epi64(_mm_srli_si128(sum32, 8));
+      sum64 = _mm_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels in this row (modulo 8)
+      for (k = j; k < width; ++k) {
+        const int32_t u = (int32_t)(dat[k] << SGRPROJ_RST_BITS);
+        int32_t v = xq_on * (flt[k] - u);
+        const int32_t e = ROUND_POWER_OF_TWO(v, shift) + dat[k] - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+      flt += flt_stride;
+    }
+  } else {  // Neither filter is enabled
+    for (i = 0; i < height; ++i) {
+      __m128i sum32 = _mm_setzero_si128();
+      for (j = 0; j <= width - 16; j += 16) {
+        // Load 2x8 u16 from source image
+        const __m128i s0 = xx_loadu_128(src + j);
+        const __m128i s1 = xx_loadu_128(src + j + 8);
+        // Load 2x8 u16 from corrupted image
+        const __m128i d0 = xx_loadu_128(dat + j);
+        const __m128i d1 = xx_loadu_128(dat + j + 8);
+
+        // Subtract corrupted image from source image
+        const __m128i diff0 = _mm_sub_epi16(d0, s0);
+        const __m128i diff1 = _mm_sub_epi16(d1, s1);
+
+        // Square error and add adjacent values
+        const __m128i err0 = _mm_madd_epi16(diff0, diff0);
+        const __m128i err1 = _mm_madd_epi16(diff1, diff1);
+
+        sum32 = _mm_add_epi32(sum32, err0);
+        sum32 = _mm_add_epi32(sum32, err1);
+      }
+
+      const __m128i sum32l = _mm_cvtepu32_epi64(sum32);
+      sum64 = _mm_add_epi64(sum64, sum32l);
+      const __m128i sum32h = _mm_cvtepu32_epi64(_mm_srli_si128(sum32, 8));
+      sum64 = _mm_add_epi64(sum64, sum32h);
+
+      // Process remaining pixels (modulu 8)
+      for (k = j; k < width; ++k) {
+        const int32_t e = (int32_t)(dat[k]) - src[k];
+        err += e * e;
+      }
+      dat += dat_stride;
+      src += src_stride;
+    }
+  }
+
+  // Sum 4 values from sum64l and sum64h into err
+  int64_t sum[2];
+  xx_storeu_128(sum, sum64);
+  err += sum[0] + sum[1];
+  return err;
+}
