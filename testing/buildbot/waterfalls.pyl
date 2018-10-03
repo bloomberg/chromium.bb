@@ -139,10 +139,19 @@
       },
       'Android WebView L (dbg)': {
         'test_suites': {
-          'cts_tests': 'android_l_cts_tests',
+          'isolated_scripts': 'webview_cts_tests_isolated_scripts',
           'instrumentation_tests': 'system_webview_shell_instrumentation_tests',
         },
-        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'LMY47I',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'use_swarming': True,
         'os_type': 'android',
       },
       'Android WebView M (dbg)': {

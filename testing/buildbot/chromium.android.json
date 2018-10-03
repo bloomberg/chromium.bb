@@ -544,15 +544,34 @@
     ]
   },
   "Android WebView L (dbg)": {
-    "cts_tests": [
-      {
-        "arch": "arm64",
-        "platform": "L"
-      }
-    ],
     "instrumentation_tests": [
       {
         "test": "system_webview_shell_layout_test_apk"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webview_cts_tests",
+        "name": "webview_cts_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "../../android_webview/tools/cts_archive",
+              "revision": "version:1.0"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "LMY47I",
+              "device_type": "hammerhead",
+              "os": "Android"
+            }
+          ],
+          "hard_timeout": 960,
+          "shards": 3
+        }
       }
     ]
   },
