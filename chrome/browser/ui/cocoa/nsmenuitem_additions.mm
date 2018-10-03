@@ -86,6 +86,23 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
   NSUInteger eventModifiers =
       [event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
 
+  // cmd-opt-a gives some weird char as characters and "a" as
+  // charactersWithoutModifiers with an US layout, but an "a" as characters and
+  // a weird char as "charactersWithoutModifiers" with a cyrillic layout. Oh,
+  // Cocoa! Instead of getting the current layout from Text Input Services,
+  // and then requesting the kTISPropertyUnicodeKeyLayoutData and looking in
+  // there, let's try a pragmatic hack.
+  if ([eventString length] == 0 ||
+      ([eventString characterAtIndex:0] > 0x7f &&
+       [[event characters] length] > 0 &&
+       [[event characters] characterAtIndex:0] <= 0x7f)) {
+    eventString = [event characters];
+
+    // Process the shift if necessary.
+    if (eventModifiers & NSShiftKeyMask)
+      eventString = [eventString uppercaseString];
+  }
+
   if ([eventString length] == 0 || [[self keyEquivalent] length] == 0)
     return NO;
 
@@ -116,22 +133,6 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
 
     // Make sure "shift" is not removed from modifiers below.
     eventModifiers |= NSFunctionKeyMask;
-  }
-
-  // cmd-opt-a gives some weird char as characters and "a" as
-  // charactersWithoutModifiers with an US layout, but an "a" as characters and
-  // a weird char as "charactersWithoutModifiers" with a cyrillic layout. Oh,
-  // Cocoa! Instead of getting the current layout from Text Input Services,
-  // and then requesting the kTISPropertyUnicodeKeyLayoutData and looking in
-  // there, let's try a pragmatic hack.
-  if ([eventString characterAtIndex:0] > 0x7f &&
-      [[event characters] length] > 0 &&
-      [[event characters] characterAtIndex:0] <= 0x7f) {
-    eventString = [event characters];
-
-    // Process the shift if necessary.
-    if (eventModifiers & NSShiftKeyMask)
-      eventString = [eventString uppercaseString];
   }
 
   // We intentionally leak this object.
