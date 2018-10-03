@@ -162,10 +162,7 @@ std::string MemoryDetails::ToLogString() {
   // Sort by memory consumption, low to high.
   std::sort(processes.begin(), processes.end());
   // Print from high to low.
-  for (ProcessMemoryInformationList::reverse_iterator iter1 =
-          processes.rbegin();
-       iter1 != processes.rend();
-       ++iter1) {
+  for (auto iter1 = processes.rbegin(); iter1 != processes.rend(); ++iter1) {
     log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
             iter1->process_type, iter1->renderer_type);
     if (!iter1->titles.empty()) {

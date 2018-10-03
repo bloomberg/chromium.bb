@@ -610,9 +610,8 @@ void Switches::SetSwitch(const std::string& name, const base::FilePath& value) {
 }
 
 void Switches::SetFromSwitches(const Switches& switches) {
-  for (SwitchMap::const_iterator iter = switches.switch_map_.begin();
-       iter != switches.switch_map_.end();
-       ++iter) {
+  for (auto iter = switches.switch_map_.begin();
+       iter != switches.switch_map_.end(); ++iter) {
     switch_map_[iter->first] = iter->second;
   }
 }
@@ -651,7 +650,7 @@ std::string Switches::GetSwitchValue(const std::string& name) const {
 
 Switches::NativeString Switches::GetSwitchValueNative(
     const std::string& name) const {
-  SwitchMap::const_iterator iter = switch_map_.find(name);
+  auto iter = switch_map_.find(name);
   if (iter == switch_map_.end())
     return NativeString();
   return iter->second;
@@ -662,16 +661,14 @@ size_t Switches::GetSize() const {
 }
 
 void Switches::AppendToCommandLine(base::CommandLine* command) const {
-  for (SwitchMap::const_iterator iter = switch_map_.begin();
-       iter != switch_map_.end();
-       ++iter) {
+  for (auto iter = switch_map_.begin(); iter != switch_map_.end(); ++iter) {
     command->AppendSwitchNative(iter->first, iter->second);
   }
 }
 
 std::string Switches::ToString() const {
   std::string str;
-  SwitchMap::const_iterator iter = switch_map_.begin();
+  auto iter = switch_map_.begin();
   while (iter != switch_map_.end()) {
     str += "--" + iter->first;
     std::string value = GetSwitchValue(iter->first);
@@ -756,8 +753,7 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
         base::BindRepeating(&ParseBoolean, &network_emulation_enabled);
   }
 
-  for (std::map<std::string, Parser>::iterator it = parser_map.begin();
-       it != parser_map.end(); ++it) {
+  for (auto it = parser_map.begin(); it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;
     if (desired_caps.Get(it->first, &capability)) {
       Status status = it->second.Run(*capability, this);

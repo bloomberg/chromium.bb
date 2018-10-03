@@ -868,8 +868,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   to_send.append(current_dir.value());
 
   const std::vector<std::string>& argv = cmd_line.argv();
-  for (std::vector<std::string>::const_iterator it = argv.begin();
-      it != argv.end(); ++it) {
+  for (auto it = argv.begin(); it != argv.end(); ++it) {
     to_send.push_back(kTokenDelimiter);
     to_send.append(*it);
   }
