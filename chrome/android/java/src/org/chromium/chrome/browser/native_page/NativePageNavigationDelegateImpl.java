@@ -26,6 +26,7 @@ import org.chromium.ui.widget.Toast;
  * {@link NativePageNavigationDelegate} implementation.
  */
 public class NativePageNavigationDelegateImpl implements NativePageNavigationDelegate {
+    private static final String TAG = "PageNavDelegate";
     private final Profile mProfile;
     private final TabModelSelector mTabModelSelector;
 

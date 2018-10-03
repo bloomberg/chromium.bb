@@ -29,12 +29,14 @@ class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFac
         View view;
         switch (viewType) {
             case CategoryCardAdapter.ViewType.HEADER:
-                TextView titleView = new TextView(parent.getContext());
-                view = new TextView(parent.getContext());
+                view = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.explore_sites_title_card, parent,
+                                       /* attachToRoot = */ false);
                 break;
             case CategoryCardAdapter.ViewType.CATEGORY:
-                view = (ExploreSitesCategoryCardView) LayoutInflater.from(parent.getContext())
-                               .inflate(R.layout.explore_sites_category_card_view, null);
+                view = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.explore_sites_category_card_view, parent,
+                                       /* attachToRoot = */ false);
                 break;
             case CategoryCardAdapter.ViewType.LOADING: // inflate loading spinny
             case CategoryCardAdapter.ViewType.ERROR: // inflate error
