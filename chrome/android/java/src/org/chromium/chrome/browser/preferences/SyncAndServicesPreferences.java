@@ -20,6 +20,7 @@ import android.preference.PreferenceGroup;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ArraySet;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -690,45 +691,49 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      */
     private void updateDataTypeState() {
         boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        boolean passwordSyncConfigurable = mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isCryptographerReady();
-        boolean hasCustomPassphrase = mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
-        Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
+        if (syncEverything) {
+            for (CheckBoxPreference pref : mSyncAllTypes) {
+                pref.setChecked(true);
+                pref.setEnabled(false);
+            }
+            return;
+        }
+
+        Set<Integer> syncTypes =
+                mIsSyncEnabled ? mProfileSyncService.getPreferredDataTypes() : new ArraySet<>();
+        mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
+        mSyncAutofill.setEnabled(true);
+        mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
+        mSyncBookmarks.setEnabled(true);
+        mSyncHistory.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
+        mSyncHistory.setEnabled(true);
+        mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
+        mSyncRecentTabs.setEnabled(true);
+        mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
+        mSyncSettings.setEnabled(true);
+
+        // Payments integration requires AUTOFILL model type
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
-        boolean syncHistory = syncTypes.contains(ModelType.TYPED_URLS);
-        for (CheckBoxPreference pref : mSyncAllTypes) {
-            // Set the default state of each data type checkbox.
-            boolean canSyncType = true;
-            if (pref == mSyncPasswords) canSyncType = passwordSyncConfigurable;
-            if (pref == mSyncPaymentsIntegration) {
-                canSyncType = syncAutofill || syncEverything;
-            }
-            if (pref == mSyncActivityAndInteractions) {
-                canSyncType = syncHistory && !hasCustomPassphrase;
-            }
+        mSyncPaymentsIntegration.setChecked(
+                syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
+        mSyncPaymentsIntegration.setEnabled(syncAutofill);
 
-            if (syncEverything) {
-                pref.setChecked(canSyncType);
-            }
+        boolean passwordsConfigurable = mProfileSyncService.isEngineInitialized()
+                && mProfileSyncService.isCryptographerReady();
+        mSyncPasswords.setChecked(passwordsConfigurable && syncTypes.contains(ModelType.PASSWORDS));
+        mSyncPasswords.setEnabled(passwordsConfigurable);
 
-            pref.setEnabled(!syncEverything && canSyncType);
-        }
-        if (mIsSyncEnabled && !syncEverything) {
-            // If "Use sync and all services" is off, check/uncheck the individual checkboxes
-            // to match the prefs.
-            mSyncAutofill.setChecked(syncAutofill);
-            mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
-            mSyncPaymentsIntegration.setChecked(
-                    syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
-            mSyncHistory.setChecked(syncHistory);
-            mSyncPasswords.setChecked(
-                    passwordSyncConfigurable && syncTypes.contains(ModelType.PASSWORDS));
-            mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
-            mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
-            mSyncActivityAndInteractions.setChecked(syncHistory && !hasCustomPassphrase
-                    && syncTypes.contains(ModelType.USER_EVENTS));
-        }
+        // USER_EVENTS sync type doesn't work with custom passphrase and needs history sync
+        boolean userEventsConfigurable =
+                !hasCustomPassphrase() && syncTypes.contains(ModelType.TYPED_URLS);
+        mSyncActivityAndInteractions.setChecked(
+                userEventsConfigurable && syncTypes.contains(ModelType.USER_EVENTS));
+        mSyncActivityAndInteractions.setEnabled(userEventsConfigurable);
+    }
+
+    private boolean hasCustomPassphrase() {
+        return mProfileSyncService.isEngineInitialized()
+                && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
     }
 
     private void updateSyncErrorCard() {
@@ -866,9 +871,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             getPreferenceScreen().addPreference(mUseSyncAndAllServices);
 
             mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
-            boolean hasCustomPassphrase = mProfileSyncService.isEngineInitialized()
-                    && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
-            mUseSyncAndAllServices.setEnabled(!hasCustomPassphrase);
+            mUseSyncAndAllServices.setEnabled(!hasCustomPassphrase());
             mSyncGroup.setEnabled(true);
 
             mGoogleActivityControls.setOnPreferenceClickListener(
