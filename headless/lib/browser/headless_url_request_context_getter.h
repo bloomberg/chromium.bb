@@ -22,7 +22,6 @@
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
-class HostResolver;
 class ProxyConfigService;
 }
 
@@ -43,8 +42,6 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   net::URLRequestContext* GetURLRequestContext() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
-
-  net::HostResolver* host_resolver() const;
 
   void NotifyContextShuttingDown();
 

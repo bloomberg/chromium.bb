@@ -99,11 +99,6 @@ Builder& Builder::SetProxyConfig(
   return *this;
 }
 
-Builder& Builder::SetHostResolverRules(const std::string& host_resolver_rules) {
-  options_.host_resolver_rules = host_resolver_rules;
-  return *this;
-}
-
 Builder& Builder::SetSingleProcessMode(bool single_process_mode) {
   options_.single_process_mode = single_process_mode;
   return *this;

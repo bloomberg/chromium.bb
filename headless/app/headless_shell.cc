@@ -721,11 +721,6 @@ int HeadlessShellMain(int argc, const char** argv) {
     builder.SetProxyConfig(std::move(proxy_config));
   }
 
-  if (command_line.HasSwitch(::network::switches::kHostResolverRules)) {
-    builder.SetHostResolverRules(command_line.GetSwitchValueASCII(
-        ::network::switches::kHostResolverRules));
-  }
-
   if (command_line.HasSwitch(switches::kUseGL)) {
     builder.SetGLImplementation(
         command_line.GetSwitchValueASCII(switches::kUseGL));

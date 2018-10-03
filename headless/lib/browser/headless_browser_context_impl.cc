@@ -405,13 +405,6 @@ HeadlessBrowserContext::Builder::SetProxyConfig(
   return *this;
 }
 
-HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetHostResolverRules(
-    const std::string& host_resolver_rules) {
-  options_->host_resolver_rules_ = host_resolver_rules;
-  return *this;
-}
-
 HeadlessBrowserContext::Builder& HeadlessBrowserContext::Builder::SetWindowSize(
     const gfx::Size& window_size) {
   options_->window_size_ = window_size;
