@@ -411,6 +411,9 @@ extern const char kEnableNightLightDescription[];
 extern const char kEnableNotificationScrollBarName[];
 extern const char kEnableNotificationScrollBarDescription[];
 
+extern const char kEnableNewMessageListViewName[];
+extern const char kEnableNewMessageListViewDescription[];
+
 extern const char kEnableNupPrintingName[];
 extern const char kEnableNupPrintingDescription[];
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/unified/unified_message_center_view.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 
 #include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/strings/grit/ash_strings.h"

@@ -29694,6 +29694,7 @@ from previous Chrome versions.
   <int value="178337215" label="enable-md-history"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
+  <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
@@ -30244,6 +30245,7 @@ from previous Chrome versions.
   <int value="1269940659" label="EnumerateAudioDevices:enabled"/>
   <int value="1269952439" label="AndroidAIAFetching:disabled"/>
   <int value="1272699563" label="enable-hosted-mode"/>
+  <int value="1272923911" label="NewMessageListView:disabled"/>
   <int value="1275507565" label="OfflinePagesRenovations:enabled"/>
   <int value="1276209777" label="ntp-switch-to-existing-tab"/>
   <int value="1277386636" label="QueryInOmnibox:disabled"/>

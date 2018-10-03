@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_UNIFIED_UNIFIED_MESSAGE_CENTER_VIEW_H_
-#define ASH_SYSTEM_UNIFIED_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_
 
 #include <stddef.h>
 
@@ -137,4 +137,4 @@ class ASH_EXPORT UnifiedMessageCenterView
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_UNIFIED_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_

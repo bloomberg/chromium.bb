@@ -637,6 +637,10 @@ const char kEnableNotificationScrollBarName[] =
 const char kEnableNotificationScrollBarDescription[] =
     "Enable the scroll bar of the notification list in Unified System Tray.";
 
+const char kEnableNewMessageListViewName[] = "Enable new message list view";
+const char kEnableNewMessageListViewDescription[] =
+    "Enable new implementation of message list view.";
+
 const char kEnableNupPrintingName[] = "Enable N-up printing";
 const char kEnableNupPrintingDescription[] =
     "Enable N-up printing in the print preview panel.";
