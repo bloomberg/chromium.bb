@@ -1,0 +1,21 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library fidljstest;
+
+enum Blorp : int8 {
+  ALPHA = 1;
+  BETA = 2;
+  GAMMA = 0x48;
+};
+
+interface Testola {
+  1: DoSomething();
+
+  2: PrintInt(int32 num);
+
+  3: PrintMsg(string msg);
+
+  4: VariousArgs(Blorp blorp, string:32 msg, vector<uint32> stuff);
+};

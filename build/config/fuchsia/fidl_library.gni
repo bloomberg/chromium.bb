@@ -14,12 +14,14 @@ assert(is_fuchsia)
 #   namespace      - (optional) Namespace for the library.
 #   deps           - (optional) List of other fidl_library() targets that this
 #                    FIDL library depends on.
+#   languages      - Generate bindings for the given languages, defaults to
+#                    [ "cpp" ]. "js" also supported.
 #
 # $namespace.$library_name must match the the library name specified in the FIDL
 # files.
 
 template("fidl_library") {
-  forward_variables_from(invoker, [ "namespace" ])
+  forward_variables_from(invoker, [ "namespace", "languages" ])
 
   _library_basename = target_name
   if (defined(invoker.library_name)) {
@@ -33,6 +35,10 @@ template("fidl_library") {
   } else {
     _library_name = _library_basename
     _library_path = _library_basename
+  }
+
+  if (!defined(invoker.languages)) {
+    languages = [ "cpp" ]
   }
 
   _response_file = "$target_gen_dir/$target_name.rsp"
@@ -131,6 +137,7 @@ template("fidl_library") {
 
   action("${target_name}_cpp_gen") {
     visibility = [ ":${invoker.target_name}" ]
+    forward_variables_from(invoker, [ "testonly" ])
 
     deps = [
       ":${invoker.target_name}_compile",
@@ -162,6 +169,40 @@ template("fidl_library") {
     ]
   }
 
+  _output_js_path = "$_output_gen_dir/${_library_path}/js/fidl.js"
+  action("${target_name}_js_gen") {
+    visibility = [ ":${invoker.target_name}" ]
+    forward_variables_from(invoker, [ "testonly" ])
+
+    deps = [
+      ":${invoker.target_name}_compile",
+    ]
+
+    inputs = [
+      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
+      rebase_path("$fuchsia_sdk/.hash"),
+      _json_representation,
+      "//tools/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
+    ]
+
+    outputs = [
+      _output_js_path,
+    ]
+
+    script = "//tools/fuchsia/fidlgen_js/gen.py"
+
+    args = [
+      rebase_path(_json_representation),
+      "--output",
+      rebase_path("${_output_js_path}"),
+    ]
+
+    data = []
+    foreach(o, outputs) {
+      data += [ rebase_path(o) ]
+    }
+  }
+
   config("${target_name}_config") {
     visibility = [ ":${invoker.target_name}" ]
     include_dirs = [ _output_gen_dir ]
@@ -185,10 +226,11 @@ template("fidl_library") {
     if (!defined(deps)) {
       deps = []
     }
-    deps += [
-      ":${invoker.target_name}_compile",
-      ":${invoker.target_name}_cpp_gen",
-    ]
+    deps += [ ":${invoker.target_name}_compile" ]
+
+    foreach(language, languages) {
+      deps += [ ":${invoker.target_name}_${language}_gen" ]
+    }
 
     if (!defined(public_deps)) {
       public_deps = []
