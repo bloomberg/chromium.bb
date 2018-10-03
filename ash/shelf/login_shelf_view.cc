@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -78,14 +79,33 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
   return LoginMetricsRecorder::ShelfButtonClickTarget::kTargetCount;
 }
 
+// The margins of the button contents.
+constexpr int kButtonMarginTopDp = 18;
+constexpr int kButtonMarginLeftDp = 18;
+constexpr int kButtonMarginBottomDp = 18;
+constexpr int kButtonMarginRightDp = 16;
+
+// The margins of the button background.
+constexpr int kButtonBackgroundMarginTopDp = 8;
+constexpr int kButtonBackgroundMarginLeftDp = 8;
+constexpr int kButtonBackgroundMarginBottomDp = 8;
+constexpr int kButtonBackgroundMarginRightDp = 0;
+
 // Spacing between the button image and label.
-constexpr int kImageLabelSpacingDp = 8;
+constexpr int kImageLabelSpacingDp = 10;
 
-// The width of the four margins of each button.
-constexpr int kButtonMarginDp = 13;
+// The border radius of the button background.
+constexpr int kButtonRoundedBorderRadiusDp = 20;
 
-// The size of the icons in the apps menu.
-constexpr gfx::Size kAppIconSize(16, 16);
+// The color of the button background.
+constexpr SkColor kButtonBackgroundColor =
+    SkColorSetARGB(0x19, 0xF1, 0xF3, 0xF4);
+
+// The color of the button text.
+constexpr SkColor kButtonTextColor = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+
+// The color of the button icon.
+constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
 
 class LoginShelfButton : public views::LabelButton {
  public:
@@ -95,10 +115,10 @@ class LoginShelfButton : public views::LabelButton {
       : LabelButton(listener, text) {
     SetAccessibleName(text);
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, login_constants::kButtonEnabledColor));
+             gfx::CreateVectorIcon(icon, kButtonIconColor));
     SetImage(views::Button::STATE_DISABLED,
              gfx::CreateVectorIcon(
-                 icon, SkColorSetA(login_constants::kButtonEnabledColor,
+                 icon, SkColorSetA(kButtonIconColor,
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
@@ -116,24 +136,39 @@ class LoginShelfButton : public views::LabelButton {
     SetTextSubpixelRenderingEnabled(false);
 
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL,
-                 login_constants::kButtonEnabledColor);
-    SetTextColor(views::Button::STATE_HOVERED,
-                 login_constants::kButtonEnabledColor);
-    SetTextColor(views::Button::STATE_PRESSED,
-                 login_constants::kButtonEnabledColor);
-    SetTextColor(views::Button::STATE_DISABLED,
-                 SkColorSetA(login_constants::kButtonEnabledColor,
-                             login_constants::kButtonDisabledAlpha));
+    SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
+    SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
+    SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
+    SetTextColor(
+        views::Button::STATE_DISABLED,
+        SkColorSetA(kButtonTextColor, login_constants::kButtonDisabledAlpha));
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
 
   ~LoginShelfButton() override = default;
 
+  gfx::Insets GetBackgroundInsets() const {
+    return gfx::Insets(
+        kButtonBackgroundMarginTopDp, kButtonBackgroundMarginLeftDp,
+        kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
+  }
+
   // views::View:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kButtonMarginDp);
+    return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
+                       kButtonMarginBottomDp, kButtonMarginRightDp);
+  }
+
+  // views::Button:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kButtonBackgroundColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.Inset(GetBackgroundInsets());
+    canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
   }
 
   // views::InkDropHostView:
@@ -144,9 +179,8 @@ class LoginShelfButton : public views::LabelButton {
     return ink_drop;
   }
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    gfx::InsetsF insets(ash::kHitRegionPadding, ash::kHitRegionPadding);
     return std::make_unique<views::RoundRectInkDropMask>(
-        size(), insets, kTrayRoundedBorderRadius);
+        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
  private:
@@ -182,12 +216,9 @@ class KioskAppsButton : public views::MenuButton,
 
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL,
-                 login_constants::kButtonEnabledColor);
-    SetTextColor(views::Button::STATE_HOVERED,
-                 login_constants::kButtonEnabledColor);
-    SetTextColor(views::Button::STATE_PRESSED,
-                 login_constants::kButtonEnabledColor);
+    SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
+    SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
+    SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
@@ -196,6 +227,7 @@ class KioskAppsButton : public views::MenuButton,
   void SetApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
     kiosk_apps_ = std::move(kiosk_apps);
     Clear();
+    const gfx::Size kAppIconSize(16, 16);
     for (size_t i = 0; i < kiosk_apps_.size(); ++i) {
       gfx::ImageSkia icon = gfx::ImageSkiaOperations::CreateResizedImage(
           kiosk_apps_[i]->icon, skia::ImageOperations::RESIZE_GOOD,
@@ -205,6 +237,29 @@ class KioskAppsButton : public views::MenuButton,
   }
 
   bool HasApps() const { return !kiosk_apps_.empty(); }
+
+  gfx::Insets GetBackgroundInsets() const {
+    return gfx::Insets(
+        kButtonBackgroundMarginTopDp, kButtonBackgroundMarginLeftDp,
+        kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
+  }
+
+  // views::View:
+  gfx::Insets GetInsets() const override {
+    return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
+                       kButtonMarginBottomDp, kButtonMarginRightDp);
+  }
+
+  // views::Button:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kButtonBackgroundColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.Inset(GetBackgroundInsets());
+    canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
+  }
 
   // views::MenuButton:
   void SetVisible(bool visible) override {
@@ -265,11 +320,9 @@ class KioskAppsButton : public views::MenuButton,
     ink_drop->SetShowHighlightOnFocus(false);
     return ink_drop;
   }
-
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    gfx::InsetsF insets(ash::kHitRegionPadding, ash::kHitRegionPadding);
     return std::make_unique<views::RoundRectInkDropMask>(
-        size(), insets, kTrayRoundedBorderRadius);
+        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
  private:
@@ -307,8 +360,7 @@ LoginShelfView::LoginShelfView(
              kShelfShutdownButtonIcon);
   kiosk_apps_button_ = new KioskAppsButton(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON),
-      CreateVectorIcon(kShelfAppsButtonIcon,
-                       login_constants::kButtonEnabledColor));
+      CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
   kiosk_apps_button_->set_id(kApps);
   AddChildView(kiosk_apps_button_);
   add_button(kRestart, IDS_ASH_SHELF_RESTART_BUTTON, kShelfShutdownButtonIcon);
