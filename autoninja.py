@@ -38,6 +38,9 @@ for index, arg in enumerate(input_args[1:]):
   if arg == '-C':
     # + 1 to get the next argument and +1 because we trimmed off input_args[0]
     output_dir = input_args[index + 2]
+  elif arg.startswith('-C'):
+    # Support -Cout/Default
+    output_dir = arg[2:]
 
 use_goma = False
 try:
