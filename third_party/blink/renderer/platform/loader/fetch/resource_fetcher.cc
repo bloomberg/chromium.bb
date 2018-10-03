@@ -958,6 +958,8 @@ void ResourceFetcher::InitializeRevalidation(
   // RawResource doesn't support revalidation.
   CHECK(!IsRawResource(*resource));
 
+  revalidating_request.SetIsRevalidating(true);
+
   const AtomicString& last_modified =
       resource->GetResponse().HttpHeaderField(HTTPNames::Last_Modified);
   const AtomicString& e_tag =

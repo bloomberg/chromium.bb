@@ -342,6 +342,9 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT bool SupportsAsyncRevalidation() const;
 
+  // Returns true when the request is for revalidation.
+  BLINK_PLATFORM_EXPORT bool IsRevalidating() const;
+
   // Returns the DevTools ID to throttle the network request.
   BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&
   GetDevToolsToken() const;

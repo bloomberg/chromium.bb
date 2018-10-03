@@ -166,6 +166,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(previews_state)
   IPC_STRUCT_TRAITS_MEMBER(initiated_in_secure_context)
   IPC_STRUCT_TRAITS_MEMBER(upgrade_if_insecure)
+  IPC_STRUCT_TRAITS_MEMBER(is_revalidating)
   IPC_STRUCT_TRAITS_MEMBER(throttling_profile_id)
 IPC_STRUCT_TRAITS_END()
 

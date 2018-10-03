@@ -217,6 +217,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // HTTPS due to an Upgrade-Insecure-Requests requirement.
   bool upgrade_if_insecure = false;
 
+  // True when the request is revalidating.
+  // Some users, notably blink, has its own cache. This flag is set to exempt
+  // some CORS logic for a revalidating request.
+  bool is_revalidating = false;
+
   // The profile ID of network conditions to throttle the network request.
   base::Optional<base::UnguessableToken> throttling_profile_id;
 };

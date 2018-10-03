@@ -368,6 +368,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool UpgradeIfInsecure() const { return upgrade_if_insecure_; }
 
+  bool IsRevalidating() const { return is_revalidating_; }
+  void SetIsRevalidating(bool value) { is_revalidating_ = value; }
+
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
@@ -447,6 +450,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebContentSecurityPolicyList initiator_csp_;
 
   bool upgrade_if_insecure_ = false;
+  bool is_revalidating_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
