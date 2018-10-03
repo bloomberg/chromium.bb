@@ -17,7 +17,6 @@
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
 namespace feed {
-namespace metrics {
 
 namespace {
 
@@ -70,16 +69,23 @@ int ToUMAScore(float score) {
 
 }  // namespace
 
-void OnPageShown(const int suggestions_count) {
+FeedLoggingMetrics::FeedLoggingMetrics(
+    HistoryURLCheckCallback history_url_check_callback)
+    : history_url_check_callback_(std::move(history_url_check_callback)),
+      weak_ptr_factory_(this) {}
+
+FeedLoggingMetrics::~FeedLoggingMetrics() = default;
+
+void FeedLoggingMetrics::OnPageShown(const int suggestions_count) {
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible",
       suggestions_count, kMaxSuggestionsTotal);
 }
 
-void OnSuggestionShown(int position,
-                       base::Time publish_date,
-                       float score,
-                       base::Time fetch_date) {
+void FeedLoggingMetrics::OnSuggestionShown(int position,
+                                           base::Time publish_date,
+                                           float score,
+                                           base::Time fetch_date) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Shown", position,
                              kMaxSuggestionsTotal);
 
@@ -106,10 +112,10 @@ void OnSuggestionShown(int position,
   }
 }
 
-void OnSuggestionOpened(int position,
-                        base::Time publish_date,
-                        float score,
-                        WindowOpenDisposition disposition) {
+void FeedLoggingMetrics::OnSuggestionOpened(int position,
+                                            base::Time publish_date,
+                                            float score,
+                                            WindowOpenDisposition disposition) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Opened", position,
                              kMaxSuggestionsTotal);
 
@@ -134,9 +140,9 @@ void OnSuggestionOpened(int position,
   base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
 }
 
-void OnSuggestionMenuOpened(int position,
-                            base::Time publish_date,
-                            float score) {
+void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
+                                                base::Time publish_date,
+                                                float score) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.MenuOpened",
                              position, kMaxSuggestionsTotal);
 
@@ -150,7 +156,35 @@ void OnSuggestionMenuOpened(int position,
       ToUMAScore(score), 11);
 }
 
-void OnSuggestionDismissed(int position, bool visited) {
+void FeedLoggingMetrics::OnSuggestionDismissed(int position, const GURL& url) {
+  history_url_check_callback_.Run(
+      url, base::BindOnce(&FeedLoggingMetrics::CheckURLVisitedDone,
+                          weak_ptr_factory_.GetWeakPtr(), position));
+}
+
+void FeedLoggingMetrics::OnSuggestionArticleVisited(
+    base::TimeDelta visit_time) {
+  base::UmaHistogramLongTimes(
+      "NewTabPage.ContentSuggestions.VisitDuration.Articles", visit_time);
+}
+
+void FeedLoggingMetrics::OnMoreButtonShown(int position) {
+  // The "more" card can appear in addition to the actual suggestions, so add
+  // one extra bucket to this histogram.
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "NewTabPage.ContentSuggestions.MoreButtonShown.Articles", position,
+      kMaxSuggestionsForArticle + 1);
+}
+
+void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
+  // The "more" card can appear in addition to the actual suggestions, so add
+  // one extra bucket to this histogram.
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "NewTabPage.ContentSuggestions.MoreButtonClicked.Articles", position,
+      kMaxSuggestionsForArticle + 1);
+}
+
+void FeedLoggingMetrics::CheckURLVisitedDone(int position, bool visited) {
   if (visited) {
     UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.DismissedVisited",
                                position, kMaxSuggestionsTotal);
@@ -161,26 +195,4 @@ void OnSuggestionDismissed(int position, bool visited) {
   }
 }
 
-void OnSuggestionArticleVisited(base::TimeDelta visit_time) {
-  base::UmaHistogramLongTimes(
-      "NewTabPage.ContentSuggestions.VisitDuration.Articles", visit_time);
-}
-
-void OnMoreButtonShown(int position) {
-  // The "more" card can appear in addition to the actual suggestions, so add
-  // one extra bucket to this histogram.
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "NewTabPage.ContentSuggestions.MoreButtonShown.Articles", position,
-      kMaxSuggestionsForArticle + 1);
-}
-
-void OnMoreButtonClicked(int position) {
-  // The "more" card can appear in addition to the actual suggestions, so add
-  // one extra bucket to this histogram.
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "NewTabPage.ContentSuggestions.MoreButtonClicked.Articles", position,
-      kMaxSuggestionsForArticle + 1);
-}
-
-}  // namespace metrics
 }  // namespace feed
