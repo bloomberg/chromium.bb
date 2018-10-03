@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.content.res.Configuration;
 import android.view.Gravity;
 import android.view.WindowManager;
 
@@ -28,18 +29,7 @@ public class PaymentHandlerActivity extends CustomTabActivity {
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
-
-        int heightInPhysicalPixels = (int) (getWindowAndroid().getDisplay().getDisplayHeight()
-                * BOTTOM_SHEET_HEIGHT_RATIO);
-        int minimumHeightInPhysicalPixels = getResources().getDimensionPixelSize(
-                R.dimen.payments_handler_window_minimum_height);
-        if (heightInPhysicalPixels < minimumHeightInPhysicalPixels)
-            heightInPhysicalPixels = minimumHeightInPhysicalPixels;
-
-        WindowManager.LayoutParams attributes = getWindow().getAttributes();
-        attributes.height = heightInPhysicalPixels;
-        attributes.gravity = Gravity.BOTTOM;
-        getWindow().setAttributes(attributes);
+        updateHeight();
     }
 
     @Override
@@ -52,5 +42,34 @@ public class PaymentHandlerActivity extends CustomTabActivity {
         }
 
         super.handleFinishAndClose();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateHeight();
+    }
+
+    private void updateHeight() {
+        int displayHeightInPixels = getWindowAndroid().getDisplay().getDisplayHeight();
+        int heightInPhysicalPixels = (int) (displayHeightInPixels * BOTTOM_SHEET_HEIGHT_RATIO);
+        int minimumHeightInPhysicalPixels = getResources().getDimensionPixelSize(
+                R.dimen.payments_handler_window_minimum_height);
+
+        if (heightInPhysicalPixels < minimumHeightInPhysicalPixels) {
+            heightInPhysicalPixels = minimumHeightInPhysicalPixels;
+        }
+
+        if (heightInPhysicalPixels > displayHeightInPixels) {
+            heightInPhysicalPixels = WindowManager.LayoutParams.MATCH_PARENT;
+        }
+
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+
+        if (attributes.height == heightInPhysicalPixels) return;
+
+        attributes.height = heightInPhysicalPixels;
+        attributes.gravity = Gravity.BOTTOM;
+        getWindow().setAttributes(attributes);
     }
 }
