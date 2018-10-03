@@ -719,7 +719,8 @@ bool StartupBrowserCreatorImpl::MaybeAsyncRestore(const StartupTabs& tabs,
   SessionService* service =
       SessionServiceFactory::GetForProfileForSessionRestore(profile_);
 
-  return service && service->RestoreIfNecessary(TabsToUrls(tabs));
+  return service &&
+         service->RestoreIfNecessary(command_line_, TabsToUrls(tabs));
 }
 
 Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
