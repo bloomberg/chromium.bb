@@ -428,7 +428,8 @@ void WaylandConnection::Global(void* data,
       connection->wayland_output_manager_ =
           std::make_unique<WaylandOutputManager>();
     }
-    connection->wayland_output_manager_->AddWaylandOutput(output.release());
+    connection->wayland_output_manager_->AddWaylandOutput(name,
+                                                          output.release());
   } else if (!connection->data_device_manager_ &&
              strcmp(interface, "wl_data_device_manager") == 0) {
     wl::Object<wl_data_device_manager> data_device_manager =
@@ -469,7 +470,15 @@ void WaylandConnection::Global(void* data,
 void WaylandConnection::GlobalRemove(void* data,
                                      wl_registry* registry,
                                      uint32_t name) {
-  NOTIMPLEMENTED();
+  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
+  // The Wayland protocol distinguishes global objects by unique numeric names,
+  // which the WaylandOutputManager uses as unique output ids. But, it is only
+  // possible to figure out, what global object is going to be removed on the
+  // WaylandConnection::GlobalRemove call. Thus, whatever unique |name| comes,
+  // it's forwarded to the WaylandOutputManager, which checks if such a global
+  // output object exists and removes it.
+  if (connection->wayland_output_manager_)
+    connection->wayland_output_manager_->RemoveWaylandOutput(name);
 }
 
 // static
