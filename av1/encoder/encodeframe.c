@@ -2352,6 +2352,17 @@ static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->cb_search_range = SEARCH_FULL_PLANE;
   pc_tree->none.skip = 0;
 
+  pc_tree->pc_tree_stats.valid = 0;
+  pc_tree->pc_tree_stats.split = 0;
+  pc_tree->pc_tree_stats.skip = 0;
+  pc_tree->pc_tree_stats.rdcost = INT64_MAX;
+
+  for (int i = 0; i < 4; i++) {
+    pc_tree->pc_tree_stats.sub_block_split[i] = 0;
+    pc_tree->pc_tree_stats.sub_block_skip[i] = 0;
+    pc_tree->pc_tree_stats.sub_block_rdcost[i] = INT64_MAX;
+  }
+
   if (bsize >= BLOCK_8X8) {
     BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     for (int idx = 0; idx < 4; ++idx)
@@ -4417,15 +4428,6 @@ static void init_first_partition_pass_stats_tables(
   }
 }
 
-// clear pc_tree_stats
-static INLINE void clear_pc_tree_stats(PC_TREE *pt) {
-  if (pt == NULL) return;
-  pt->pc_tree_stats.valid = 0;
-  for (int i = 0; i < 4; ++i) {
-    clear_pc_tree_stats(pt->split[i]);
-  }
-}
-
 // Minimum number of samples to trigger the
 // mode_pruning_based_on_two_pass_partition_search feature.
 #define FIRST_PARTITION_PASS_MIN_SAMPLES 16
@@ -4659,7 +4661,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         // Reset the stats tables.
         if (sf->mode_pruning_based_on_two_pass_partition_search)
           av1_zero(x->first_partition_pass_stats);
-        clear_pc_tree_stats(pc_root);
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                               cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
                               pc_root, NULL);
