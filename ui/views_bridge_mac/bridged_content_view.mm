@@ -865,6 +865,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
+  if (theEvent.keyCode == 0) {
+    // An event like this gets sent when sending some key commands via
+    // AppleScript. Since 0 is VKEY_A, we end up interpreting this as Cmd+A
+    // which is incorrect. The correct event for command up/down (keyCode = 55)
+    // is also sent, so we should drop this one. See https://crbug.com/889618
+    return;
+  }
   ui::KeyEvent event(theEvent);
   [self handleKeyEvent:&event];
 }
