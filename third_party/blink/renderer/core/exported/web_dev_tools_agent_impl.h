@@ -33,11 +33,11 @@
 
 #include <memory>
 
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -48,6 +48,8 @@ namespace blink {
 class ClientMessageLoopAdapter;
 class GraphicsLayer;
 class InspectedFrames;
+class InspectorNetworkAgent;
+class InspectorOverlayAgent;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class LocalFrame;
@@ -55,7 +57,7 @@ class WebLocalFrameImpl;
 
 class CORE_EXPORT WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
-      public mojom::blink::DevToolsAgent,
+      public DevToolsAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
@@ -88,18 +90,16 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
  private:
   friend class ClientMessageLoopAdapter;
-  class Session;
 
   WebDevToolsAgentImpl(WebLocalFrameImpl*,
                        bool include_view_agents,
                        WorkerClient*);
 
-  // mojom::blink::DevToolsAgent implementation.
-  void AttachDevToolsSession(
-      mojom::blink::DevToolsSessionHostAssociatedPtrInfo,
-      mojom::blink::DevToolsSessionAssociatedRequest main_session,
-      mojom::blink::DevToolsSessionRequest io_session,
+  // DevToolsAgent::Client implementation.
+  InspectorSession* AttachSession(
+      InspectorSession::Client*,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
+  void DetachSession(InspectorSession*) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
 
   // InspectorPageAgent::Client implementation.
@@ -112,10 +112,14 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void WillProcessTask() override;
   void DidProcessTask() override;
 
-  void DetachSession(Session*);
-
-  mojo::AssociatedBinding<mojom::blink::DevToolsAgent> binding_;
-  HeapHashSet<Member<Session>> sessions_;
+  Member<DevToolsAgent> agent_;
+  HeapHashSet<Member<InspectorSession>> sessions_;
+  HeapHashMap<Member<InspectorSession>, Member<InspectorNetworkAgent>>
+      network_agents_;
+  HeapHashMap<Member<InspectorSession>, Member<InspectorPageAgent>>
+      page_agents_;
+  HeapHashMap<Member<InspectorSession>, Member<InspectorOverlayAgent>>
+      overlay_agents_;
   WorkerClient* worker_client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;
   Member<CoreProbeSink> probe_sink_;
