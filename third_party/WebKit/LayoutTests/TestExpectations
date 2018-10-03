@@ -3917,7 +3917,6 @@ crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failu
 
 
 crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
-crbug.com/765738 [ Linux Win Mac ] virtual/enable_wasm/http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
@@ -4065,14 +4064,10 @@ crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-m
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
-crbug.com/874302 virtual/enable_wasm/external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success.html [ Timeout ]
-crbug.com/874302 virtual/enable_wasm/external/wpt/wasm/serialization/broadcastchannel-success.html [ Timeout ]
 
 crbug.com/877286 external/wpt/wasm/serialization/no-transferring.html [ Failure ]
-crbug.com/877286 virtual/enable_wasm/external/wpt/wasm/serialization/no-transferring.html [ Failure ]
 crbug.com/877296 external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
-crbug.com/877296 virtual/enable_wasm/external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
 
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
