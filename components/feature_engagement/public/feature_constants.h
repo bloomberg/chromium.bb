@@ -48,6 +48,7 @@ extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 extern const base::Feature kIPHBookmarkFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
+extern const base::Feature kIPHReopenTabFeature;
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
