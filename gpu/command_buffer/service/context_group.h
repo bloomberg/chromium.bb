@@ -188,6 +188,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     program_cache_ = program_cache;
   }
 
+  ProgramCache* get_program_cache() { return program_cache_; }
+
   ShaderManager* shader_manager() const {
     return shader_manager_.get();
   }

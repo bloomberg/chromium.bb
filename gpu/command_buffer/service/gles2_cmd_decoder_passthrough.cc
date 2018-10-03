@@ -15,11 +15,8 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "ui/gl/gl_version_info.h"
-
-#if defined(USE_EGL)
-#include "ui/gl/angle_platform_impl.h"
-#endif  // defined(USE_EGL)
 
 namespace gpu {
 namespace gles2 {
@@ -1006,12 +1003,9 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   surface_ = nullptr;
 
   if (group_) {
-#if defined(USE_EGL)
-    // Clear the program binary caching callback.
     if (group_->has_program_cache()) {
-      angle::ResetCacheProgramCallback();
+      group_->get_program_cache()->ResetCacheProgramCallback();
     }
-#endif  // defined(USE_EGL)
 
     group_->Destroy(this, have_context);
     group_ = nullptr;
@@ -1177,14 +1171,12 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
     return false;
   }
 
-#if defined(USE_EGL)
   // Establish the program binary caching callback.
   if (group_->has_program_cache()) {
     auto program_callback = base::BindRepeating(&DecoderClient::CacheShader,
                                                 base::Unretained(client_));
-    angle::SetCacheProgramCallback(program_callback);
+    group_->get_program_cache()->SetCacheProgramCallback(program_callback);
   }
-#endif  // defined(USE_EGL)
 
   ProcessReadPixels(false);
   ProcessQueries(false);
