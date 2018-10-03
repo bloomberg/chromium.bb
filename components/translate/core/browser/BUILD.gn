@@ -78,13 +78,6 @@ static_library("browser") {
     ]
     deps += [ "//components/infobars/core" ]
   }
-
-  if (is_mac) {
-    sources += [
-      "options_menu_model.cc",
-      "options_menu_model.h",
-    ]
-  }
 }
 
 source_set("unit_tests") {
