@@ -253,8 +253,7 @@ void InsertNodesForRasterTask(TaskGraph* graph,
   size_t dependencies = 0u;
 
   // Insert image decode tasks.
-  for (TileTask::Vector::const_iterator it = decode_tasks.begin();
-       it != decode_tasks.end(); ++it) {
+  for (auto it = decode_tasks.begin(); it != decode_tasks.end(); ++it) {
     TileTask* decode_task = it->get();
 
     // Skip if already decoded.
@@ -264,11 +263,10 @@ void InsertNodesForRasterTask(TaskGraph* graph,
     dependencies++;
 
     // Add decode task if it doesn't already exist in graph.
-    TaskGraph::Node::Vector::iterator decode_it =
-        std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                     [decode_task](const TaskGraph::Node& node) {
-                       return node.task == decode_task;
-                     });
+    auto decode_it = std::find_if(graph->nodes.begin(), graph->nodes.end(),
+                                  [decode_task](const TaskGraph::Node& node) {
+                                    return node.task == decode_task;
+                                  });
 
     // In rare circumstances, a background category task may come in before a
     // foreground category task. In these cases, upgrade any background category

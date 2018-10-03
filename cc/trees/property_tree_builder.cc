@@ -1404,7 +1404,7 @@ static void CheckClipPointersForLayer(Layer* layer) {
     return;
 
   if (layer->clip_children()) {
-    for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
+    for (auto it = layer->clip_children()->begin();
          it != layer->clip_children()->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), layer);
     }

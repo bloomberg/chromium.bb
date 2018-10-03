@@ -245,8 +245,8 @@ void Layer::RemoveChildOrDependent(Layer* child) {
     return;
   }
 
-  for (LayerList::iterator iter = inputs_.children.begin();
-       iter != inputs_.children.end(); ++iter) {
+  for (auto iter = inputs_.children.begin(); iter != inputs_.children.end();
+       ++iter) {
     if (iter->get() != child)
       continue;
 
@@ -1469,7 +1469,7 @@ ElementListType Layer::GetElementTypeForAnimation() const {
 void Layer::RemoveFromClipTree() {
   if (clip_children_.get()) {
     std::set<Layer*> copy = *clip_children_;
-    for (std::set<Layer*>::iterator it = copy.begin(); it != copy.end(); ++it)
+    for (auto it = copy.begin(); it != copy.end(); ++it)
       (*it)->SetClipParent(nullptr);
   }
 

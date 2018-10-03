@@ -3095,8 +3095,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   std::vector<Tile*> high_res_tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
-  for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();
-       tile_it != high_res_tiles.end();
+  for (auto tile_it = high_res_tiles.begin(); tile_it != high_res_tiles.end();
        ++tile_it) {
     Tile* tile = *tile_it;
     TileDrawInfo& draw_info = tile->draw_info();
