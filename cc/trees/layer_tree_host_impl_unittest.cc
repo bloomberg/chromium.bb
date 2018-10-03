@@ -11344,6 +11344,28 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
+// This test verifies that the viewport damage rect is the full viewport and not
+// just part of the viewport in the presence of an external viewport.
+TEST_F(LayerTreeHostImplTest, FullViewportDamageAfterOnDraw) {
+  SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  const gfx::Size viewport_size(100, 100);
+  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+
+  const gfx::Transform draw_transform;
+  const gfx::Rect draw_viewport(gfx::Point(5, 5), viewport_size);
+  bool resourceless_software_draw = false;
+
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,
+                     false);
+  EXPECT_EQ(draw_viewport, host_impl_->active_tree()->GetDeviceViewport());
+
+  host_impl_->SetFullViewportDamage();
+  EXPECT_EQ(gfx::Rect(viewport_size),
+            host_impl_->viewport_damage_rect_for_testing());
+}
+
 class ResourcelessSoftwareLayerTreeHostImplTest : public LayerTreeHostImplTest {
  protected:
   std::unique_ptr<LayerTreeFrameSink> CreateLayerTreeFrameSink() override {

@@ -304,6 +304,10 @@ class CC_EXPORT LayerTreeHostImpl
     resourceless_software_draw_ = true;
   }
 
+  const gfx::Rect& viewport_damage_rect_for_testing() const {
+    return viewport_damage_rect_;
+  }
+
   virtual void DidSendBeginMainFrame() {}
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
