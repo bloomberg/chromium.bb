@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
@@ -337,24 +336,6 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
     }
   }
   return false;
-}
-
-std::unique_ptr<content::WebContents> TabAndroid::SwapTabContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_swapWebContents(env, weak_java_tab_.get(env),
-                           new_contents->GetJavaWebContents(), did_start_load,
-                           did_finish_load);
-  new_contents.release();
-  return base::WrapUnique(old_contents);
 }
 
 void TabAndroid::Observe(int type,

@@ -149,18 +149,6 @@ const char* WebView::GetClassName() const {
   return kViewClassName;
 }
 
-std::unique_ptr<content::WebContents> WebView::SwapWebContents(
-    std::unique_ptr<content::WebContents> new_web_contents) {
-  if (wc_owner_)
-    wc_owner_->SetDelegate(NULL);
-  std::unique_ptr<content::WebContents> old_web_contents(std::move(wc_owner_));
-  wc_owner_ = std::move(new_web_contents);
-  if (wc_owner_)
-    wc_owner_->SetDelegate(this);
-  SetWebContents(wc_owner_.get());
-  return old_web_contents;
-}
-
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (crashed_overlay_view_)
     crashed_overlay_view_->SetBoundsRect(gfx::Rect(size()));
