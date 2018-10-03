@@ -77,8 +77,8 @@ bool ProtocolUtils::ParseScripts(
     const auto& presentation = script_proto.presentation();
     script->handle.name = presentation.name();
     script->handle.autostart = presentation.autostart();
-    script->precondition =
-        ScriptPrecondition::FromProto(presentation.precondition());
+    script->precondition = ScriptPrecondition::FromProto(
+        script_proto.path(), presentation.precondition());
     script->priority = presentation.priority();
 
     if (script->handle.name.empty() || script->handle.path.empty() ||

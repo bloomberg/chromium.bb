@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -15,12 +16,19 @@
 namespace autofill_assistant {
 // Static
 std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
+    const std::string& script_path,
     const ScriptPreconditionProto& script_precondition_proto) {
   std::vector<std::vector<std::string>> elements_exist;
   for (const auto& element : script_precondition_proto.elements_exist()) {
     std::vector<std::string> selectors;
     for (const auto& selector : element.selectors()) {
       selectors.emplace_back(selector);
+    }
+    if (selectors.empty()) {
+      DLOG(WARNING)
+          << "Empty selectors in script precondition for script path: "
+          << script_path << ".";
+      continue;
     }
     elements_exist.emplace_back(selectors);
   }
@@ -34,7 +42,8 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
-      LOG(ERROR) << "Invalid regexp in script precondition '" << pattern;
+      DLOG(ERROR) << "Invalid regexp in script precondition '" << pattern
+                  << "' for script path: " << script_path << ".";
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));
@@ -140,7 +149,10 @@ bool ScriptPrecondition::MatchDomain(const GURL& url) const {
   if (domain_match_.empty())
     return true;
 
-  return domain_match_.find(url.host()) != domain_match_.end();
+  // We require the scheme and host parts to match.
+  // TODO(crbug.com/806868): Consider using Origin::IsSameOriginWith here.
+  std::string scheme_domain = base::StrCat({url.scheme(), "://", url.host()});
+  return domain_match_.find(scheme_domain) != domain_match_.end();
 }
 
 bool ScriptPrecondition::MatchPath(const GURL& url) const {
