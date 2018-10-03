@@ -97,7 +97,7 @@ crostini.testMountCrostiniError = (done) => {
       .then(() => {
         // Click OK button to close.
         assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
-        return test.waitForElementLost('.cr-dialog-container.shown');
+        return test.waitForElementLost('.cr-dialog-container');
       })
       .then(() => {
         // Reset chrome.fileManagerPrivate.mountCrostini.
@@ -133,7 +133,7 @@ crostini.testCrostiniMountOnDrag = (done) => {
       });
 };
 
-crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
+crostini.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
   // Save old fmp.getFileTasks and replace with version that returns
   // crostini app and chrome Text app.
   let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
@@ -152,11 +152,40 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
     ]);
   };
 
-  test.setupAndWaitUntilReady()
+  // Save old fmp.sharePathWitCrostini.
+  const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
+  let sharePathCalled = false;
+  chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
+    sharePathCalled = true;
+    oldSharePath(entry, callback);
+  };
+
+  // Save old fmp.executeTask.
+  const oldExecuteTask = chrome.fileManagerPrivate.executeTask;
+  let executeTaskCalled = false;
+  chrome.fileManagerPrivate.executeTask = (taskId, entries, callback) => {
+    executeTaskCalled = true;
+    oldExecuteTask(taskId, entries, callback);
+  };
+
+  test.setupAndWaitUntilReady([], [], [])
+      .then(() => {
+        // Add '/A', and '/A/hello.txt', refresh, 'A' is shown.
+        test.addEntries(
+            [test.ENTRIES.directoryA, test.ENTRIES.helloInA], [], []);
+        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows([test.ENTRIES.directoryA]));
+      })
+      .then(() => {
+        // Change to 'A' directory, hello.txt is shown.
+        assertTrue(test.fakeMouseDoubleClick('[file-name="A"]'));
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows([test.ENTRIES.hello]));
+      })
       .then(() => {
         // Right click on 'hello.txt' file, wait for dialog with 'Open with'.
-        assertTrue(
-            test.fakeMouseRightClick('#listitem-' + test.maxListItemId()));
+        assertTrue(test.fakeMouseRightClick('[file-name="hello.txt"]'));
         return test.waitForElement(
             'cr-menu-item[command="#open-with"]:not([hidden]');
       })
@@ -167,7 +196,7 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
       })
       .then(() => {
         // Ensure picker shows both options.  Click on 'Crostini App'.  Ensure
-        // error is shown.
+        // share path dialog is shown.
         const list = document.querySelectorAll('#default-tasks-list li div');
         assertEquals(2, list.length);
         assertEquals('Open with Crostini App', list[0].innerText);
@@ -175,27 +204,36 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
         assertTrue(test.fakeMouseClick('#default-tasks-list li'));
         return test.repeatUntil(() => {
           return document.querySelector('.cr-dialog-title').innerText ===
-              'Unable to open with Crostini App' ||
-              test.pending('Waiting for Unable to open dialog');
+              'Share files with Linux' ||
+              test.pending('Waiting for share before open dialog');
         });
       })
       .then(() => {
-        // Validate error messages, click 'OK' to close.  Ensure dialog closes.
+        // Validate dialog messages, click 'OK' to share and open.  Ensure
+        // dialog closes.
         assertEquals(
-            'To open files with Crostini App, ' +
-                'first copy to Linux files folder.',
-            document.querySelector('.cr-dialog-text').innerText);
+            'Let Linux apps open <b>hello.txt</b>.',
+            document.querySelector('.cr-dialog-text').innerHTML);
         assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
-        return test.waitForElementLost('.cr-dialog-container.shown');
+        return test.waitForElementLost('.cr-dialog-container');
       })
       .then(() => {
-        // Restore fmp.getFileTasks.
+        // Ensure fmp.sharePathWithCrostini, fmp.executeTask called.
+        return test.repeatUntil(() => {
+          return sharePathCalled && executeTaskCalled ||
+              test.pending('Waiting to share and open');
+        });
+      })
+      .then(() => {
+        // Restore fmp.*.
         chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
+        chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
+        chrome.fileManagerPrivate.executeTask = oldExecuteTask;
         done();
       });
 };
 
-crostini.testErrorOpeningDownloadsWithDefaultCrostiniApp = (done) => {
+crostini.testErrorOpeningDownloadsRootWithDefaultCrostiniApp = (done) => {
   // Save old fmp.getFileTasks and replace with version that returns
   // crostini app and chrome Text app.
   let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
@@ -237,7 +275,7 @@ crostini.testErrorOpeningDownloadsWithDefaultCrostiniApp = (done) => {
                 'first copy to Linux files folder.',
             document.querySelector('.cr-dialog-text').innerText);
         assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
-        return test.waitForElementLost('.cr-dialog-container.shown');
+        return test.waitForElementLost('.cr-dialog-container');
       })
       .then(() => {
         // Restore fmp.getFileTasks.
@@ -247,9 +285,11 @@ crostini.testErrorOpeningDownloadsWithDefaultCrostiniApp = (done) => {
 };
 
 crostini.testSharePathCrostiniSuccess = (done) => {
+  const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
   let sharePathCalled = false;
-  chrome.fileManagerPrivate.sharePathWithCrostini = (callback) => {
+  chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
     sharePathCalled = true;
+    oldSharePath(entry, callback);
   };
   test.setupAndWaitUntilReady()
       .then(() => {
@@ -273,6 +313,7 @@ crostini.testSharePathCrostiniSuccess = (done) => {
       .then(() => {
         // Check sharePathWithCrostini is called.
         assertTrue(sharePathCalled);
+        chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
         done();
       });
 };
