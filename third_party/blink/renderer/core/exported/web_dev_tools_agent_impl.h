@@ -83,6 +83,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);
+  void DidFailProvisionalLoad(LocalFrame*);
   void DidStartProvisionalLoad(LocalFrame*);
   bool ScreencastEnabled();
   String NavigationInitiatorInfo(LocalFrame*);
