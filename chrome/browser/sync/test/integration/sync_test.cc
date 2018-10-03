@@ -693,19 +693,20 @@ void SyncTest::SetUpInvalidations(int index) {
     }
     case SERVER_TYPE_UNDECIDED:
     case LOCAL_PYTHON_SERVER:
-      BrowserContextKeyedServiceFactory::TestingFactoryFunction
-          invalidation_provider =
+      BrowserContextKeyedServiceFactory::TestingFactory invalidation_provider =
+          base::BindRepeating(
               TestUsesSelfNotifications()
-                  ? BuildSelfNotifyingP2PProfileInvalidationProvider
-                  : BuildRealisticP2PProfileInvalidationProvider;
+                  ? &BuildSelfNotifyingP2PProfileInvalidationProvider
+                  : &BuildRealisticP2PProfileInvalidationProvider);
       if (fcm_invalidations_enabled) {
         invalidation::ProfileInvalidationProviderFactory::GetInstance()
-            ->SetTestingFactoryAndUse(GetProfile(index), invalidation_provider);
+            ->SetTestingFactoryAndUse(GetProfile(index),
+                                      std::move(invalidation_provider));
       } else {
         invalidation::DeprecatedProfileInvalidationProviderFactory::
             GetInstance()
                 ->SetTestingFactoryAndUse(GetProfile(index),
-                                          invalidation_provider);
+                                          std::move(invalidation_provider));
       }
   }
 }
