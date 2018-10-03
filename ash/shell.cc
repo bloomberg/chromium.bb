@@ -423,9 +423,21 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
 void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
   wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
       std::move(file_helper), aura_env_);
+  if (wayland_server_controller_) {
+    system_tray_model()
+        ->virtual_keyboard()
+        ->SetInputMethodSurfaceManagerObserver(
+            wayland_server_controller_->arc_input_method_surface_manager());
+  }
 }
 
 void Shell::DestroyWaylandServer() {
+  if (wayland_server_controller_) {
+    system_tray_model()
+        ->virtual_keyboard()
+        ->RemoveInputMethodSurfaceManagerObserver(
+            wayland_server_controller_->arc_input_method_surface_manager());
+  }
   wayland_server_controller_.reset();
 }
 

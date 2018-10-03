@@ -96,6 +96,8 @@ void StatusAreaWidget::Initialize() {
   if (notification_tray_) {
     system_tray_->InitializeTrayItems(notification_tray_.get());
     notification_tray_->Initialize();
+  } else {
+    unified_system_tray_->Initialize();
   }
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();

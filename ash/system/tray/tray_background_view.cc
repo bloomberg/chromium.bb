@@ -17,6 +17,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -177,6 +178,8 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
       background_(new TrayBackground(this)),
       is_active_(false),
       separator_visible_(true),
+      visible_preferred_(false),
+      show_with_virtual_keyboard_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(shelf_);
   set_notify_enter_exit_on_child(true);
@@ -197,6 +200,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
+  Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
   if (GetWidget())
     GetWidget()->RemoveObserver(widget_observer_.get());
   StopObservingImplicitAnimations();
@@ -204,6 +208,7 @@ TrayBackgroundView::~TrayBackgroundView() {
 
 void TrayBackgroundView::Initialize() {
   GetWidget()->AddObserver(widget_observer_.get());
+  Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
 }
 
 // static
@@ -218,6 +223,16 @@ void TrayBackgroundView::InitializeBubbleAnimations(
 }
 
 void TrayBackgroundView::SetVisible(bool visible) {
+  visible_preferred_ = visible;
+
+  // If virtual keyboard is visible and TrayBackgroundView is hidden because of
+  // that, ignore SetVisible() call. |visible_preferred_|  will be restored
+  // in OnVirtualKeyboardVisibilityChanged() when virtual keyboard is hidden.
+  if (!show_with_virtual_keyboard_ &&
+      Shell::Get()->system_tray_model()->virtual_keyboard()->visible()) {
+    return;
+  }
+
   if (visible == layer()->GetTargetVisibility())
     return;
 
@@ -391,6 +406,18 @@ void TrayBackgroundView::PaintButtonContents(gfx::Canvas* canvas) {
 void TrayBackgroundView::ProcessGestureEventForBubble(ui::GestureEvent* event) {
   if (drag_controller())
     drag_controller_->ProcessGestureEvent(event, this);
+}
+
+void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
+  if (show_with_virtual_keyboard_)
+    return;
+
+  // If virtual keyboard is hidden and current preferred visibility is true,
+  // set the visibility to true. We call base class' SetVisible because we don't
+  // want |visible_preferred_| to be updated here.
+  views::View::SetVisible(
+      !Shell::Get()->system_tray_model()->virtual_keyboard()->visible() &&
+      visible_preferred_);
 }
 
 TrayBubbleView* TrayBackgroundView::GetBubbleView() {

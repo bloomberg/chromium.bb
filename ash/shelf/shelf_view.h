@@ -16,6 +16,7 @@
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -112,7 +113,8 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost,
-                             public ash::TabletModeObserver {
+                             public ash::TabletModeObserver,
+                             public VirtualKeyboardModel::Observer {
  public:
   ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
   ~ShelfView() override;
@@ -188,6 +190,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
+
+  // Overridden from VirtualKeyboardModel::Observer:
+  void OnVirtualKeyboardVisibilityChanged() override;
 
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,

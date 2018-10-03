@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray_drag_controller.h"
@@ -29,7 +30,8 @@ class TrayEventFilter;
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                       public ui::ImplicitAnimationObserver,
                                       public ShelfBackgroundAnimatorObserver,
-                                      public TrayBubbleView::Delegate {
+                                      public TrayBubbleView::Delegate,
+                                      public VirtualKeyboardModel::Observer {
  public:
   static const char kViewClassName[];
 
@@ -59,6 +61,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // TrayBubbleView::Delegate:
   void ProcessGestureEventForBubble(ui::GestureEvent* event) override;
+
+  // VirtualKeyboardModel::Observer:
+  void OnVirtualKeyboardVisibilityChanged() override;
 
   // Returns the associated tray bubble view, if one exists. Otherwise returns
   // nullptr.
@@ -156,6 +161,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     drag_controller_ = std::move(drag_controller);
   }
 
+  void set_show_with_virtual_keyboard(bool show_with_virtual_keyboard) {
+    show_with_virtual_keyboard_ = show_with_virtual_keyboard;
+  }
+
  private:
   class TrayWidgetObserver;
 
@@ -187,6 +196,14 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Visibility of this tray's separator which is a line of 1x32px and 4px to
   // right of tray.
   bool separator_visible_;
+
+  // During virtual keyboard is shown, visibility changes to TrayBackgroundView
+  // are ignored. In such case, preferred visibility is reflected after the
+  // virtual keyboard is hidden.
+  bool visible_preferred_;
+
+  // If true, ignores virtual keyboard visibility changes.
+  bool show_with_virtual_keyboard_;
 
   // Handles touch drag gestures on the tray area and its associated bubble.
   std::unique_ptr<TrayDragController> drag_controller_;
