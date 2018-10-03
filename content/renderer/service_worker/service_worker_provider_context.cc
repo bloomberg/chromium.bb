@@ -204,8 +204,8 @@ ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
-  // TODO(kinuko): rename this, now this can be used for non-worker clients.
-  container_host_->CloneForWorker(mojo::MakeRequest(&container_host_ptr_info));
+  container_host_->CloneContainerHost(
+      mojo::MakeRequest(&container_host_ptr_info));
   return container_host_ptr_info;
 }
 

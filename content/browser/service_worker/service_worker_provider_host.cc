@@ -1218,11 +1218,10 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
                      AsWeakPtr(), std::move(controller_request)));
 }
 
-void ServiceWorkerProviderHost::CloneForWorker(
+void ServiceWorkerProviderHost::CloneContainerHost(
     mojom::ServiceWorkerContainerHostRequest container_host_request) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  bindings_for_worker_threads_.AddBinding(this,
-                                          std::move(container_host_request));
+  additional_bindings_.AddBinding(this, std::move(container_host_request));
 }
 
 void ServiceWorkerProviderHost::Ping(PingCallback callback) {

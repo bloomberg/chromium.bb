@@ -4,6 +4,11 @@
 
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -377,7 +382,7 @@ class FakeServiceWorkerContainerHost
       return;
     fake_controller_->Clone(std::move(request));
   }
-  void CloneForWorker(
+  void CloneContainerHost(
       mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -432,7 +437,8 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
     if (!connector_) {
       mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
-      fake_container_host_.CloneForWorker(mojo::MakeRequest(&host_ptr_info));
+      fake_container_host_.CloneContainerHost(
+          mojo::MakeRequest(&host_ptr_info));
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(host_ptr_info), nullptr /*controller_ptr*/,
           "" /*client_id*/);

@@ -3744,11 +3744,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
     service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
     provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
 
-    // TODO(horo): Use this host pointer also when S13nServiceWorker is not
-    // enabled once we support navigator.serviceWorker on dedicated workers:
-    // crbug.com/371690. Currently we use this only to call
-    // GetControllerServiceWorker() from the worker thread if S13nServiceWorker
-    // is enabled.
     if (blink::ServiceWorkerUtils::IsServicificationEnabled())
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
