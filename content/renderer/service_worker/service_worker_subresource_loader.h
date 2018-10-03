@@ -182,9 +182,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // default URLLoaderFactory for network fallback. This should be the
   // URLLoaderFactory that directly goes to network without going through
   // any custom URLLoader factories.
-  // |task_runner| is the runner where this loader runs. (We need to pass
-  // this around because calling base::SequencedTaskRunnerHandle is
-  // prohibited in the renderer :()
+  // |task_runner| is the runner where this loader runs. In production it runs,
+  // on a background thread.
   static void Create(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
