@@ -150,7 +150,7 @@ inline DataPipe::DataPipe() {
   MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  CHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
@@ -163,14 +163,14 @@ inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
   MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  CHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
   MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  CHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline DataPipe::~DataPipe() {
