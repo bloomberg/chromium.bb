@@ -77,6 +77,9 @@ class IceTransportHost final : public IceTransportAdapter::Delegate {
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;
   void OnStateChanged(cricket::IceTransportState new_state) override;
+  void OnSelectedCandidatePairChanged(
+      const std::pair<cricket::Candidate, cricket::Candidate>&
+          selected_candidate_pair) override;
 
   const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
