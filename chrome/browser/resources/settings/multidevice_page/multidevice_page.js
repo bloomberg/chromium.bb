@@ -183,7 +183,13 @@ Polymer({
   },
 
   /** @private */
-  handleItemClick_: function() {
+  handleItemClick_: function(event) {
+    // We do not open the subpage if the click was on a link.
+    if (event.path[0].tagName === 'A') {
+      event.stopPropagation();
+      return;
+    }
+
     if (!this.isHostSet())
       return;
 
