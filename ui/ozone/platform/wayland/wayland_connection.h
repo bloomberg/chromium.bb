@@ -26,8 +26,9 @@
 
 namespace ui {
 
-class WaylandWindow;
 class WaylandBufferManager;
+class WaylandOutputManager;
+class WaylandWindow;
 
 class WaylandConnection : public PlatformEventSource,
                           public ClipboardDelegate,
@@ -86,10 +87,6 @@ class WaylandConnection : public PlatformEventSource,
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
-  int64_t get_next_display_id() { return next_display_id_++; }
-  const std::vector<std::unique_ptr<WaylandOutput>>& GetOutputList() const;
-  WaylandOutput* PrimaryOutput() const;
-
   void set_serial(uint32_t serial) { serial_ = serial; }
   uint32_t serial() { return serial_; }
 
@@ -102,6 +99,10 @@ class WaylandConnection : public PlatformEventSource,
   WaylandPointer* pointer() { return pointer_.get(); }
 
   WaylandDataSource* drag_data_source() { return drag_data_source_.get(); }
+
+  WaylandOutputManager* wayland_output_manager() const {
+    return wayland_output_manager_.get();
+  }
 
   // Clipboard implementation.
   ClipboardDelegate* GetClipboardDelegate();
@@ -198,8 +199,9 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandDataSource> data_source_;
   std::unique_ptr<WaylandDataSource> drag_data_source_;
-  std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandKeyboard> keyboard_;
+  std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
+  std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandTouch> touch_;
 
   // Objects that are using when GPU runs in own process.
@@ -210,9 +212,6 @@ class WaylandConnection : public PlatformEventSource,
   base::MessagePumpLibevent::FdWatchController controller_;
 
   uint32_t serial_ = 0;
-
-  int64_t next_display_id_ = 0;
-  std::vector<std::unique_ptr<WaylandOutput>> output_list_;
 
   // Holds a temporary instance of the client's clipboard content
   // so that we can asynchronously write to it.

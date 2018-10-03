@@ -15,12 +15,13 @@
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_connection_connector.h"
 #include "ui/ozone/platform/wayland/wayland_input_method_context_factory.h"
-#include "ui/ozone/platform/wayland/wayland_native_display_delegate.h"
+#include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_screen.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -99,7 +100,14 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return std::make_unique<WaylandNativeDisplayDelegate>(connection_.get());
+    return std::make_unique<display::FakeDisplayDelegate>();
+  }
+
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    // The WaylandConnection and the WaylandOutputManager must be created before
+    // PlatformScreen.
+    DCHECK(connection_ && connection_->wayland_output_manager());
+    return connection_->wayland_output_manager()->CreateWaylandScreen();
   }
 
   void InitializeUI(const InitParams& args) override {
