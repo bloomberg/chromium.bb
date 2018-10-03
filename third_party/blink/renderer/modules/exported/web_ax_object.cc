@@ -90,8 +90,7 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
                                 HeapVector<Member<AXObject>>& value) override {
     WebVector<WebAXObject> result(value.size());
-    for (size_t i = 0; i < value.size(); i++)
-      result[i] = WebAXObject(value[i]);
+    std::copy(value.begin(), value.end(), result.begin());
     attribute_map_.AddObjectVectorAttribute(
         static_cast<WebAXObjectVectorAttribute>(attribute), result);
   }
@@ -718,8 +717,8 @@ WebVector<WebAXObject> WebAXObject::RadioButtonsInGroup() const {
 
   AXObject::AXObjectVector radio_buttons = private_->RadioButtonsInGroup();
   WebVector<WebAXObject> web_radio_buttons(radio_buttons.size());
-  for (size_t i = 0; i < radio_buttons.size(); ++i)
-    web_radio_buttons[i] = WebAXObject(radio_buttons[i]);
+  std::copy(radio_buttons.begin(), radio_buttons.end(),
+            web_radio_buttons.begin());
   return web_radio_buttons;
 }
 
@@ -915,10 +914,9 @@ WebString WebAXObject::GetName(ax::mojom::NameFrom& out_name_from,
   WebString result = private_->GetName(name_from, &name_objects);
   out_name_from = name_from;
 
-  WebVector<WebAXObject> web_name_objects(name_objects.size());
-  for (size_t i = 0; i < name_objects.size(); i++)
-    web_name_objects[i] = WebAXObject(name_objects[i]);
-  out_name_objects.Swap(web_name_objects);
+  out_name_objects.reserve(name_objects.size());
+  out_name_objects.resize(name_objects.size());
+  std::copy(name_objects.begin(), name_objects.end(), out_name_objects.begin());
 
   return result;
 }
@@ -946,10 +944,10 @@ WebString WebAXObject::Description(
       private_->Description(name_from, description_from, &description_objects);
   out_description_from = description_from;
 
-  WebVector<WebAXObject> web_description_objects(description_objects.size());
-  for (size_t i = 0; i < description_objects.size(); i++)
-    web_description_objects[i] = WebAXObject(description_objects[i]);
-  out_description_objects.Swap(web_description_objects);
+  out_description_objects.reserve(description_objects.size());
+  out_description_objects.resize(description_objects.size());
+  std::copy(description_objects.begin(), description_objects.end(),
+            out_description_objects.begin());
 
   return result;
 }
@@ -1076,13 +1074,7 @@ bool WebAXObject::LineBreaks(WebVector<int>& result) const {
 
   Vector<int> line_breaks_vector;
   private_->LineBreaks(line_breaks_vector);
-
-  size_t vector_size = line_breaks_vector.size();
-  WebVector<int> line_breaks_web_vector(vector_size);
-  for (size_t i = 0; i < vector_size; i++)
-    line_breaks_web_vector[i] = line_breaks_vector[i];
-  result.Swap(line_breaks_web_vector);
-
+  result = line_breaks_vector;
   return true;
 }
 
@@ -1169,14 +1161,9 @@ void WebAXObject::RowHeaders(
 
   AXObject::AXObjectVector headers;
   private_->RowHeaders(headers);
-
-  size_t header_count = headers.size();
-  WebVector<WebAXObject> result(header_count);
-
-  for (size_t i = 0; i < header_count; i++)
-    result[i] = WebAXObject(headers[i]);
-
-  row_header_elements.Swap(result);
+  row_header_elements.reserve(headers.size());
+  row_header_elements.resize(headers.size());
+  std::copy(headers.begin(), headers.end(), row_header_elements.begin());
 }
 
 unsigned WebAXObject::ColumnIndex() const {
@@ -1209,14 +1196,9 @@ void WebAXObject::ColumnHeaders(
 
   AXObject::AXObjectVector headers;
   private_->ColumnHeaders(headers);
-
-  size_t header_count = headers.size();
-  WebVector<WebAXObject> result(header_count);
-
-  for (size_t i = 0; i < header_count; i++)
-    result[i] = WebAXObject(headers[i]);
-
-  column_header_elements.Swap(result);
+  column_header_elements.reserve(headers.size());
+  column_header_elements.resize(headers.size());
+  std::copy(headers.begin(), headers.end(), column_header_elements.begin());
 }
 
 unsigned WebAXObject::CellColumnIndex() const {
@@ -1307,7 +1289,7 @@ void WebAXObject::Markers(WebVector<ax::mojom::MarkerType>& types,
   WebVector<ax::mojom::MarkerType> web_marker_types(marker_types.size());
   WebVector<int> start_offsets(marker_ranges.size());
   WebVector<int> end_offsets(marker_ranges.size());
-  for (size_t i = 0; i < marker_types.size(); ++i) {
+  for (wtf_size_t i = 0; i < marker_types.size(); ++i) {
     web_marker_types[i] = ToAXMarkerType(marker_types[i]);
     DCHECK(marker_ranges[i].IsValid());
     DCHECK_EQ(marker_ranges[i].Start().ContainerObject(),
@@ -1327,12 +1309,7 @@ void WebAXObject::CharacterOffsets(WebVector<int>& offsets) const {
 
   Vector<int> offsets_vector;
   private_->TextCharacterOffsets(offsets_vector);
-
-  size_t vector_size = offsets_vector.size();
-  WebVector<int> offsets_web_vector(vector_size);
-  for (size_t i = 0; i < vector_size; i++)
-    offsets_web_vector[i] = offsets_vector[i];
-  offsets.Swap(offsets_web_vector);
+  offsets = offsets_vector;
 }
 
 void WebAXObject::GetWordBoundaries(WebVector<int>& starts,
@@ -1345,7 +1322,7 @@ void WebAXObject::GetWordBoundaries(WebVector<int>& starts,
 
   WebVector<int> word_start_offsets(word_boundaries.size());
   WebVector<int> word_end_offsets(word_boundaries.size());
-  for (size_t i = 0; i < word_boundaries.size(); ++i) {
+  for (wtf_size_t i = 0; i < word_boundaries.size(); ++i) {
     DCHECK(word_boundaries[i].IsValid());
     DCHECK_EQ(word_boundaries[i].Start().ContainerObject(),
               word_boundaries[i].End().ContainerObject());

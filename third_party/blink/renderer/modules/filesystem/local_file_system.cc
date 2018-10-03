@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/content_setting_callbacks.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -125,7 +126,7 @@ class ChooseEntryCallbacks : public WebFileSystem::ChooseEntryCallbacks {
     ScriptState::Scope scope(resolver_->GetScriptState());
     if (return_multiple_) {
       Vector<ScriptPromise> result;
-      result.ReserveInitialCapacity(entries.size());
+      result.ReserveInitialCapacity(SafeCast<wtf_size_t>(entries.size()));
       for (const auto& entry : entries)
         result.emplace_back(CreateFileHandle(entry));
       resolver_->Resolve(ScriptPromise::All(resolver_->GetScriptState(), result)

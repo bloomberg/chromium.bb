@@ -29,6 +29,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
@@ -568,8 +569,10 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
         script_state->GetIsolate(), *it.value, clone));
   }
   // Records 1KB to 1GB.
-  UMA_HISTOGRAM_COUNTS_1M("WebCore.IndexedDB.PutValueSize2",
-                          value_wrapper.DataLengthBeforeWrapInBytes() / 1024);
+  UMA_HISTOGRAM_COUNTS_1M(
+      "WebCore.IndexedDB.PutValueSize2",
+      base::saturated_cast<base::HistogramBase::Sample>(
+          value_wrapper.DataLengthBeforeWrapInBytes() / 1024));
 
   IDBRequest* request = IDBRequest::Create(
       script_state, source, transaction_.Get(), std::move(metrics));

@@ -179,7 +179,7 @@ void FileWriter::DidWriteImpl(int64_t bytes, bool complete) {
     operation_in_progress_ = kOperationNone;
   }
 
-  int num_aborts = num_aborts_;
+  long long num_aborts = num_aborts_;
   // We could get an abort in the handler for this event. If we do, it's
   // already handled the cleanup and signalCompletion call.
   double now = CurrentTimeMS();

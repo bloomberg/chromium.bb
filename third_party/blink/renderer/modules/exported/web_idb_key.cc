@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -36,7 +37,7 @@ size_t WebIDBKeyArrayView::size() const {
 }
 
 WebIDBKeyView WebIDBKeyArrayView::operator[](size_t index) const {
-  return WebIDBKeyView(private_->Array()[index].get());
+  return WebIDBKeyView(private_->Array()[SafeCast<wtf_size_t>(index)].get());
 }
 
 WebIDBKeyType WebIDBKeyView::KeyType() const {
@@ -69,7 +70,7 @@ double WebIDBKeyView::Number() const {
 
 WebIDBKey WebIDBKey::CreateArray(WebVector<WebIDBKey> array) {
   IDBKey::KeyArray keys;
-  keys.ReserveCapacity(array.size());
+  keys.ReserveCapacity(SafeCast<wtf_size_t>(array.size()));
   for (WebIDBKey& key : array) {
     DCHECK(key.View().KeyType() != kWebIDBKeyTypeNull);
     keys.emplace_back(key.ReleaseIdbKey());

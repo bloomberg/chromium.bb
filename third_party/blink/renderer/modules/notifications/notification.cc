@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -346,7 +347,7 @@ Vector<v8::Local<v8::Value>> Notification::actions(
   const Vector<mojom::blink::NotificationActionPtr>& actions =
       data_->actions.value();
   result.Grow(actions.size());
-  for (size_t i = 0; i < actions.size(); ++i) {
+  for (wtf_size_t i = 0; i < actions.size(); ++i) {
     NotificationAction action;
 
     switch (actions[i]->type) {
