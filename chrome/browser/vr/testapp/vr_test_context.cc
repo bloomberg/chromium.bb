@@ -228,9 +228,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_A:
         if (model_->platform_toast) {
-          ui_->CancelPlatformToast();
+          browser_ui->CancelPlatformToast();
         } else {
-          ui_->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
+          browser_ui->ShowPlatformToast(base::UTF8ToUTF16("Downloading"));
         }
         break;
       case ui::DomCode::US_H:

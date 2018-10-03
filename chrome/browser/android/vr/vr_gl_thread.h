@@ -147,6 +147,12 @@ class VrGLThread : public base::android::JavaHandlerThread,
                              int selection_end,
                              int composition_start,
                              int composition_end) override;
+  void OnSwapContents(int new_content_id) override;
+  void SetDialogLocation(float x, float y) override;
+  void SetDialogFloating(bool floating) override;
+  void ShowPlatformToast(const base::string16& text) override;
+  void CancelPlatformToast() override;
+  void OnContentBoundsChanged(int width, int height) override;
   void AddOrUpdateTab(int id,
                       bool incognito,
                       const base::string16& title) override;
