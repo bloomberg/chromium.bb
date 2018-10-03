@@ -231,6 +231,5 @@
 -WebUIResourceBrowserTest.*
 -WebViewTest.*
 -WebrtcLoggingPrivateApiTest.*
--WebstoreInlineInstallerTest.*
 -WindowAppleScriptTest.*
 -WindowOpenApiTest.*

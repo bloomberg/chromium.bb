@@ -15,9 +15,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/extension_reenabler.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "chrome/common/extensions/mojom/inline_install.mojom.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents_binding_set.h"
@@ -43,14 +41,12 @@ namespace extensions {
 class ExtensionActionRunner;
 class BookmarkAppHelper;
 class Extension;
-class WebstoreInlineInstallerFactory;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
                   public ExtensionRegistryObserver,
-                  public content::WebContentsUserData<TabHelper>,
-                  public mojom::InlineInstaller {
+                  public content::WebContentsUserData<TabHelper> {
  public:
   ~TabHelper() override;
 
@@ -101,14 +97,7 @@ class TabHelper : public content::WebContentsObserver,
     return active_tab_permission_granter_.get();
   }
 
-  // Sets the factory used to create inline webstore item installers.
-  // Used for testing. Takes ownership of the factory instance.
-  void SetWebstoreInlineInstallerFactoryForTests(
-      WebstoreInlineInstallerFactory* factory);
-
  private:
-  class InlineInstallObserver;
-
   // Utility function to invoke member functions on all relevant
   // ContentRulesRegistries.
   template <class Func>
@@ -148,13 +137,6 @@ class TabHelper : public content::WebContentsObserver,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  // mojom::InlineInstall:
-  void DoInlineInstall(
-      const std::string& webstore_item_id,
-      int listeners_mask,
-      mojom::InlineInstallProgressListenerPtr install_progress_listener,
-      DoInlineInstallCallback callback) override;
-
   // Message handlers.
   void OnDidGetWebApplicationInfo(
       chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
@@ -178,16 +160,6 @@ class TabHelper : public content::WebContentsObserver,
   const Extension* GetExtension(const ExtensionId& extension_app_id);
 
   void OnImageLoaded(const gfx::Image& image);
-
-  // WebstoreStandaloneInstaller::Callback.
-  void OnInlineInstallComplete(const ExtensionId& extension_id,
-                               bool success,
-                               const std::string& error,
-                               webstore_install::Result result);
-
-  // ExtensionReenabler::Callback.
-  void OnReenableComplete(const ExtensionId& extension_id,
-                          ExtensionReenabler::ReenableResult result);
 
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetWebApplicationInfo when
@@ -231,29 +203,8 @@ class TabHelper : public content::WebContentsObserver,
 
   std::unique_ptr<BookmarkAppHelper> bookmark_app_helper_;
 
-  // Creates WebstoreInlineInstaller instances for inline install triggers.
-  std::unique_ptr<WebstoreInlineInstallerFactory>
-      webstore_inline_installer_factory_;
-
-  // The reenable prompt for disabled extensions, if any.
-  std::unique_ptr<ExtensionReenabler> extension_reenabler_;
-
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
-
-  // Map of InlineInstallObservers for inline installations that have progress
-  // listeners.
-  std::map<ExtensionId, std::unique_ptr<InlineInstallObserver>>
-      install_observers_;
-
-  // Map of function callbacks that are invoked when the inline installation for
-  // a particular extension (hence ExtensionId) completes.
-  std::map<ExtensionId, DoInlineInstallCallback> install_callbacks_;
-
-  content::WebContentsFrameBindingSet<mojom::InlineInstaller> bindings_;
-
-  std::map<ExtensionId, mojom::InlineInstallProgressListenerPtr>
-      inline_install_progress_listeners_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
