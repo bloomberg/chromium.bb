@@ -85,6 +85,8 @@ using CameraCalibration =
 CONTENT_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsVideoInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsDesktopCaptureMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsTabCaptureMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsDeviceMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.

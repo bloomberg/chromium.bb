@@ -735,8 +735,8 @@ void MediaDevicesManager::DoEnumerateDevices(MediaDeviceType type) {
       break;
     case MEDIA_DEVICE_TYPE_VIDEO_INPUT:
       video_capture_manager_->EnumerateDevices(
-          base::Bind(&MediaDevicesManager::VideoInputDevicesEnumerated,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&MediaDevicesManager::VideoInputDevicesEnumerated,
+                         weak_factory_.GetWeakPtr()));
       break;
     case MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
       EnumerateAudioDevices(false /* is_input */);

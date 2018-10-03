@@ -1556,6 +1556,7 @@ test("content_unittests") {
     "../browser/scheduler/responsiveness/calculator_unittest.cc",
     "../browser/scheduler/responsiveness/watcher_unittest.cc",
     "../browser/screen_orientation/screen_orientation_provider_unittest.cc",
+    "../browser/screenlock_monitor/screenlock_monitor_unittest.cc",
     "../browser/service_worker/embedded_worker_instance_unittest.cc",
     "../browser/service_worker/service_worker_cache_writer_unittest.cc",
     "../browser/service_worker/service_worker_context_core_unittest.cc",
@@ -2001,6 +2002,7 @@ test("content_unittests") {
 
   # Screen capture unit tests.
   if (is_linux || is_mac || is_win) {
+    defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
     deps += [
       "//media/capture:test_support",
       "//third_party/libyuv",
@@ -2027,7 +2029,10 @@ test("content_unittests") {
       "//third_party/blink/public/common",
       "//third_party/iaccessible2",
     ]
-    libs = [ "dwrite.lib" ]
+    libs = [
+      "dwrite.lib",
+      "wtsapi32.lib",
+    ]
   }
   if (is_mac) {
     deps += [
