@@ -1370,7 +1370,6 @@
           # software fallback, SwiftShader, isn't yet for 32-bit ARM.
           '--additional-driver-flag=--use-gpu-in-tests',
         ],
-        'experiment_percentage': 100, # crbug.com/824539
       },
       # chromium.fyi
       'linux-blink-animation-use-time-delta': {
