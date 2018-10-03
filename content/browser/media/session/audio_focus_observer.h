@@ -23,11 +23,11 @@ class CONTENT_EXPORT AudioFocusObserver
   ~AudioFocusObserver() override;
 
   // The given media session gained audio focus with the specified type.
-  void OnFocusGained(::media_session::mojom::MediaSessionPtr,
+  void OnFocusGained(::media_session::mojom::MediaSessionInfoPtr,
                      media_session::mojom::AudioFocusType) override {}
 
   // The given media session lost audio focus.
-  void OnFocusLost(::media_session::mojom::MediaSessionPtr) override {}
+  void OnFocusLost(::media_session::mojom::MediaSessionInfoPtr) override {}
 
  protected:
   // Called by subclasses to (un-)register the observer with AudioFocusManager.

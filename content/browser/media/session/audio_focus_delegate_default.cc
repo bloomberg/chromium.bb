@@ -5,6 +5,7 @@
 #include "content/browser/media/session/audio_focus_delegate.h"
 
 #include "content/browser/media/session/audio_focus_manager.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
@@ -27,6 +28,9 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   AudioFocusType GetCurrentFocusType() const override;
 
  private:
+  // Holds the current audio focus request id for |media_session_|.
+  base::Optional<AudioFocusManager::RequestId> request_id_;
+
   // Weak pointer because |this| is owned by |media_session_|.
   MediaSessionImpl* media_session_;
 
@@ -49,19 +53,35 @@ bool AudioFocusDelegateDefault::RequestAudioFocus(
   if (!media_session::IsAudioFocusEnabled())
     return true;
 
-  AudioFocusManager::GetInstance()->RequestAudioFocus(media_session_,
-                                                      audio_focus_type);
-  return true;
+  media_session::mojom::MediaSessionInfoPtr session_info =
+      media_session_->GetMediaSessionInfoSync();
+
+  // Create a mojo interface pointer to our media session. This will allow the
+  // AudioFocusManager to interact with the media session across processes.
+  media_session::mojom::MediaSessionPtr media_session;
+  media_session_->BindToMojoRequest(mojo::MakeRequest(&media_session));
+
+  AudioFocusManager::RequestResponse response =
+      AudioFocusManager::GetInstance()->RequestAudioFocus(
+          std::move(media_session), std::move(session_info), audio_focus_type,
+          request_id_);
+
+  request_id_ = response.first;
+  return response.second;
 }
 
 void AudioFocusDelegateDefault::AbandonAudioFocus() {
-  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_);
+  if (!request_id_.has_value())
+    return;
+
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(request_id_.value());
+  request_id_.reset();
 }
 
 AudioFocusType AudioFocusDelegateDefault::GetCurrentFocusType() const {
   if (media_session::IsAudioFocusEnabled()) {
     return AudioFocusManager::GetInstance()->GetFocusTypeForSession(
-        media_session_);
+        request_id_.value());
   }
 
   return audio_focus_type_if_disabled_;

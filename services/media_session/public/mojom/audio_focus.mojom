@@ -21,8 +21,8 @@ enum AudioFocusType {
 // The observer for audio focus events.
 interface AudioFocusObserver {
   // The given |session| gained audio focus with the specified |type|.
-  OnFocusGained(MediaSession session, AudioFocusType type);
+  OnFocusGained(MediaSessionInfo session, AudioFocusType type);
 
   // The given |session| lost audio focus.
-  OnFocusLost(MediaSession session);
+  OnFocusLost(MediaSessionInfo session);
 };

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "content/browser/media/session/audio_focus_test_util.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,21 +24,33 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
         player_observer(new MockMediaSessionPlayerObserver);
 
     MediaSessionImpl* media_session = MediaSessionImpl::Get(start_contents);
-    ASSERT_TRUE(media_session);
+    EXPECT_TRUE(media_session);
 
     MediaSessionImpl* other_media_session =
         MediaSessionImpl::Get(interrupt_contents);
-    ASSERT_TRUE(other_media_session);
+    EXPECT_TRUE(other_media_session);
 
     player_observer->StartNewPlayer();
-    media_session->AddPlayer(player_observer.get(), 0,
-                             media::MediaContentType::Persistent);
+
+    {
+      test::TestAudioFocusObserver observer;
+      media_session->AddPlayer(player_observer.get(), 0,
+                               media::MediaContentType::Persistent);
+      observer.WaitForGainedEvent();
+    }
+
     EXPECT_TRUE(media_session->IsActive());
     EXPECT_FALSE(other_media_session->IsActive());
 
     player_observer->StartNewPlayer();
-    other_media_session->AddPlayer(player_observer.get(), 1,
-                                   media::MediaContentType::Persistent);
+
+    {
+      test::TestAudioFocusObserver observer;
+      other_media_session->AddPlayer(player_observer.get(), 1,
+                                     media::MediaContentType::Persistent);
+      observer.WaitForGainedEvent();
+    }
+
     EXPECT_FALSE(media_session->IsActive());
     EXPECT_TRUE(other_media_session->IsActive());
 
