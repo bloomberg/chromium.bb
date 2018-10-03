@@ -28,6 +28,8 @@ class ChromeFeatureListCreator {
 
   void CreatePrefServiceForTesting();
 
+  PrefService* simple_local_state() { return simple_local_state_.get(); }
+
  private:
   void CreatePrefService();
 

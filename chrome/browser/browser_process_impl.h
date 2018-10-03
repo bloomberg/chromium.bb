@@ -133,6 +133,8 @@ class BrowserProcessImpl : public BrowserProcess,
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
   IOThread* io_thread() override;
+  // TODO(qinmin): Remove this method as callers can retrieve the global
+  // instance from SystemNetworkContextManager directly.
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
@@ -255,8 +257,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<ProfileManager> profile_manager_;
 
   std::unique_ptr<PrefService> local_state_;
-
-  std::unique_ptr<SystemNetworkContextManager> system_network_context_manager_;
 
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
 

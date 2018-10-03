@@ -440,7 +440,7 @@ void BrowserProcessImpl::StartTearDown() {
     local_state_->CommitPendingWrite();
 
   // This expects to be destroyed before the task scheduler is torn down.
-  system_network_context_manager_.reset();
+  SystemNetworkContextManager::DeleteInstance();
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {
@@ -643,8 +643,8 @@ IOThread* BrowserProcessImpl::io_thread() {
 SystemNetworkContextManager*
 BrowserProcessImpl::system_network_context_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(system_network_context_manager_.get());
-  return system_network_context_manager_.get();
+  DCHECK(SystemNetworkContextManager::GetInstance());
+  return SystemNetworkContextManager::GetInstance();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1173,12 +1173,12 @@ void BrowserProcessImpl::PreCreateThreads(
   // Must be created before the IOThread.
   // TODO(mmenke): Once IOThread class is no longer needed (not the thread
   // itself), this can be created on first use.
-  system_network_context_manager_ =
-      std::make_unique<SystemNetworkContextManager>(local_state_.get());
+  if (!SystemNetworkContextManager::GetInstance())
+    SystemNetworkContextManager::CreateInstance(local_state_.get());
   io_thread_ = std::make_unique<IOThread>(
       local_state(), policy_service(), net_log_.get(),
       extension_event_router_forwarder(),
-      system_network_context_manager_.get());
+      SystemNetworkContextManager::GetInstance());
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {
