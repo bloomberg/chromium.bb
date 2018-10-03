@@ -17,6 +17,7 @@
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
+#include "android_webview/browser/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
@@ -753,6 +754,29 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // require returning true below).  Adding OOPIF support for AW is tracked by
   // https://crbug.com/869494.
   return false;
+}
+
+bool AwContentBrowserClient::WillCreateURLLoaderFactory(
+    content::BrowserContext* browser_context,
+    content::RenderFrameHost* frame,
+    bool is_navigation,
+    const url::Origin& request_initiator,
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    bool* bypass_redirect_checks) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto proxied_request = std::move(*factory_request);
+  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+  *factory_request = mojo::MakeRequest(&target_factory_info);
+
+  // Android WebView has one non off-the-record browser context.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                     std::move(proxied_request), std::move(target_factory_info),
+                     nullptr /* AwInterceptedRequestHandler */));
+  return true;
 }
 
 // static
