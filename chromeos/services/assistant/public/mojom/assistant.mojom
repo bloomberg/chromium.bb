@@ -154,6 +154,9 @@ interface DeviceActions {
   // Sets the screen brightness level (0-1.0).  If |gradual| is true, the
   // transition will be animated.
   SetScreenBrightnessLevel(double level, bool gradual);
+
+  // Enables or disables Night Light.
+  SetNightLightEnabled(bool enabled);
 };
 
 // Enumeration of possible completions for an Assistant interaction.

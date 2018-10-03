@@ -48,6 +48,7 @@ constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
 constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
+constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
 constexpr base::Feature kAssistantTimerNotificationFeature{
@@ -618,6 +619,12 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
         },
         weak_factory_.GetWeakPtr(), modify_setting_args));
   }
+
+  if (modify_setting_args.setting_id() == kNightLightDeviceSettingId) {
+    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
+      this->service_->device_actions()->SetNightLightEnabled(enabled);
+    });
+  }
 }
 
 ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
@@ -636,7 +643,8 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId ||
           setting_id == kVolumeLevelDeviceSettingId ||
-          setting_id == kScreenBrightnessDeviceSettingId);
+          setting_id == kScreenBrightnessDeviceSettingId ||
+          setting_id == kNightLightDeviceSettingId);
 }
 
 bool AssistantManagerServiceImpl::SupportsModifySettings() {

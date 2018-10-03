@@ -142,6 +142,7 @@ class FakeDeviceActions : mojom::DeviceActions {
     std::move(callback).Run(true, 1.0);
   }
   void SetScreenBrightnessLevel(double level, bool gradual) override {}
+  void SetNightLightEnabled(bool enabled) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 
