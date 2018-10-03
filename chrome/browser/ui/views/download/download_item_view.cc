@@ -21,6 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -40,6 +41,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -236,7 +238,7 @@ void DownloadItemView::OnDownloadUpdated() {
   if (IsShowingWarningDialog() != model_->IsDangerous()) {
     ToggleWarningDialog();
   } else {
-    status_text_ = model_->GetStatusText();
+    status_text_ = GetStatusText();
     switch (model_->GetState()) {
       case DownloadItem::IN_PROGRESS:
         // No need to send accessible alert for "paused", as the button ends
@@ -1166,4 +1168,21 @@ SkColor DownloadItemView::GetTextColor() const {
 
 SkColor DownloadItemView::GetDimmedTextColor() const {
   return SkColorSetA(GetTextColor(), 0xC7);
+}
+
+base::string16 DownloadItemView::GetStatusText() const {
+  if (!model_->ShouldPromoteOrigin() ||
+      model_->GetOriginalURL().GetOrigin().is_empty()) {
+    // Use the default status text.
+    return model_->GetStatusText();
+  }
+
+#if !defined(OS_ANDROID)
+  return url_formatter::ElideUrl(model_->GetOriginalURL().GetOrigin(),
+                                 status_font_list_, kTextWidth,
+                                 gfx::Typesetter::BROWSER);
+#else
+  NOTREACHED();
+  return base::string16();
+#endif
 }

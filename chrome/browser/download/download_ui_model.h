@@ -278,6 +278,13 @@ class DownloadUIModel {
   // |FailState::NO_FAILURE| if there is no previous failure reason.
   virtual offline_items_collection::FailState GetLastFailState() const;
 
+  // Returns the URL of the orginiating request.
+  virtual GURL GetOriginalURL() const;
+
+  // Whether the Origin should be clearly displayed in the notification for
+  // security reasons.
+  virtual bool ShouldPromoteOrigin() const;
+
 #if !defined(OS_ANDROID)
   // Methods related to DownloadCommands.
   // Returns whether the given download command is enabled for this download.

@@ -57,6 +57,8 @@ class OfflineItemModel : public DownloadUIModel,
   GURL GetURL() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
   offline_items_collection::FailState GetLastFailState() const override;
+  GURL GetOriginalURL() const override;
+  bool ShouldPromoteOrigin() const override;
 
 #if !defined(OS_ANDROID)
   bool IsCommandEnabled(const DownloadCommands* download_commands,

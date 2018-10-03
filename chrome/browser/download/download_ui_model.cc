@@ -461,6 +461,14 @@ GURL DownloadUIModel::GetURL() const {
   return GURL();
 }
 
+GURL DownloadUIModel::GetOriginalURL() const {
+  return GURL();
+}
+
+bool DownloadUIModel::ShouldPromoteOrigin() const {
+  return false;
+}
+
 #if !defined(OS_ANDROID)
 bool DownloadUIModel::IsCommandEnabled(
     const DownloadCommands* download_commands,
