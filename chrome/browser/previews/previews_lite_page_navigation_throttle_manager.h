@@ -41,7 +41,6 @@ class PreviewsLitePageNavigationThrottleManager {
   // Note: |NeedsToToNotify| is intentionally separate from |NotifyUser| for
   // ease of testing and metrics collection without changing the notification
   // state.
-
   // Returns true if the UI notification needs to be shown to the user before
   // this preview can be shown.
   virtual bool NeedsToNotifyUser() = 0;

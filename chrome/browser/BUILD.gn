@@ -1209,6 +1209,8 @@ jumbo_split_static_library("browser") {
     "previews/previews_infobar_delegate.h",
     "previews/previews_lite_page_decider.cc",
     "previews/previews_lite_page_decider.h",
+    "previews/previews_lite_page_infobar_delegate.cc",
+    "previews/previews_lite_page_infobar_delegate.h",
     "previews/previews_lite_page_navigation_throttle.cc",
     "previews/previews_lite_page_navigation_throttle.h",
     "previews/previews_lite_page_navigation_throttle_manager.h",

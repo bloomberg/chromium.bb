@@ -18,6 +18,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/mock_infobar_service.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -27,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/infobars/core/infobar.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -58,7 +62,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
-    SetUpLitePageTest(false);
+    SetUpLitePageTest(false /* use_timeout */);
 
     InProcessBrowserTest::SetUp();
   }
@@ -152,10 +156,22 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+    // Some tests shouldn't bother with the notification InfoBar. Just set the
+    // state on the decider so it isn't required.
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+    PreviewsLitePageDecider* decider =
+        previews_service->previews_lite_page_decider();
+    decider->SetUserHasSeenUINotification();
   }
 
   content::WebContents* GetWebContents() const {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  InfoBarService* GetInfoBarService() {
+    return InfoBarService::FromWebContents(GetWebContents());
   }
 
   void ExecuteScript(const std::string& script) const {
@@ -650,7 +666,7 @@ class PreviewsLitePageServerTimeoutBrowserTest
   ~PreviewsLitePageServerTimeoutBrowserTest() override = default;
 
   void SetUp() override {
-    SetUpLitePageTest(true);
+    SetUpLitePageTest(true /* use_timeout */);
 
     InProcessBrowserTest::SetUp();
   }
@@ -798,4 +814,103 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
   VerifyPreviewNotLoaded();
+}
+
+class PreviewsLitePageNotificationDSEnabledBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageNotificationDSEnabledBrowserTest() = default;
+
+  ~PreviewsLitePageNotificationDSEnabledBrowserTest() override = default;
+
+  void SetUp() override {
+    SetUpLitePageTest(false /* use_timeout */);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+  }
+};
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsInfoBarDataSaverUser \
+  LitePagePreviewsInfoBarDataSaverUser
+#else
+#define MAYBE_LitePagePreviewsInfoBarDataSaverUser \
+  DISABLED_LitePagePreviewsInfoBarDataSaverUser
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSEnabledBrowserTest,
+                       MAYBE_LitePagePreviewsInfoBarDataSaverUser) {
+  // Ensure the preview is not shown the first time before the infobar is shown
+  // for users who have DRP enabled.
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+
+  VerifyPreviewNotLoaded();
+  EXPECT_EQ(1U, GetInfoBarService()->infobar_count());
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.IneligibleReasons",
+      PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen, 1);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+  EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
+  VerifyPreviewLoaded();
+}
+
+class PreviewsLitePageNotificationDSDisabledBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageNotificationDSDisabledBrowserTest() = default;
+
+  ~PreviewsLitePageNotificationDSDisabledBrowserTest() override = default;
+
+  void SetUp() override {
+    SetUpLitePageTest(false /* use_timeout */);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+  }
+
+  // Overrides the cmd line in PreviewsLitePageServerBrowserTest and leave out
+  // the flag to enable DataSaver.
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
+    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
+    // DNS resolver doesn't get upset.
+    cmd->AppendSwitchASCII(
+        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+  }
+};
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsInfoBarNonDataSaverUser \
+  LitePagePreviewsInfoBarNonDataSaverUser
+#else
+#define MAYBE_LitePagePreviewsInfoBarNonDataSaverUser \
+  DISABLED_LitePagePreviewsInfoBarNonDataSaverUser
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSDisabledBrowserTest,
+                       MAYBE_LitePagePreviewsInfoBarNonDataSaverUser) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+  VerifyPreviewNotLoaded();
+  EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
 }
