@@ -165,6 +165,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void Focus() = 0;
   virtual void Blur() = 0;
 
+  // Tests may need to flush IPCs to ensure deterministic behavior.
+  using FlushForTestingCallback = base::OnceClosure;
+  virtual void FlushForTesting(FlushForTestingCallback callback) = 0;
+
   // Sets whether the renderer should show controls in an active state.  On all
   // platforms except mac, that's the same as focused. On mac, the frontmost
   // window will show active controls even if the focus is not in the web
