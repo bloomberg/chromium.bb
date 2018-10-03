@@ -34,6 +34,8 @@ using testing::SaveArg;
 
 namespace {
 const char kAcceptLanguages[] = "en-US,en;q=0.5";
+const char kCountryOverride[] = "country_override";
+const char kExperimentData[] = "FooBar";
 }  // namespace
 
 namespace explore_sites {
@@ -51,15 +53,14 @@ class ExploreSitesFetcherTest : public testing::Test {
   ExploreSitesRequestStatus RunFetcherWithData(const std::string& response_data,
                                                std::string* data_received);
 
-  void SetUpExperimentOption(std::string country_code) {
+  void SetUpExperimentOption(std::string option, std::string data) {
     const std::string kTrialName = "trial_name";
     const std::string kGroupName = "group_name";
 
     scoped_refptr<base::FieldTrial> trial =
         base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
 
-    std::map<std::string, std::string> params = {
-        {"country_override", country_code}};
+    std::map<std::string, std::string> params = {{option, data}};
     base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
 
     std::unique_ptr<base::FeatureList> feature_list =
@@ -90,9 +91,9 @@ class ExploreSitesFetcherTest : public testing::Test {
   ExploreSitesRequestStatus last_status_;
   std::unique_ptr<std::string> last_data_;
   base::MessageLoopForIO message_loop_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 };
 
 ExploreSitesFetcher::Callback ExploreSitesFetcherTest::StoreResult() {
@@ -261,7 +262,7 @@ TEST_F(ExploreSitesFetcherTest, Success) {
 }
 
 TEST_F(ExploreSitesFetcherTest, DefaultCountry) {
-  SetUpExperimentOption("KZ");
+  SetUpExperimentOption(kCountryOverride, "KZ");
   std::string data;
   EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
             RunFetcherWithData("Any data.", &data));
@@ -298,6 +299,26 @@ TEST_F(ExploreSitesFetcherTest, TestHeaders) {
       headers.GetHeader(net::HttpRequestHeaders::kAcceptLanguage, &languages);
   EXPECT_TRUE(success);
   EXPECT_EQ(languages, kAcceptLanguages);
+
+  // The finch header should not be set since the experiment is not on.
+  success = headers.HasHeader("X-Google-Chrome-Experiment-Tag");
+  EXPECT_FALSE(success);
+}
+
+TEST_F(ExploreSitesFetcherTest, TestFinchHeader) {
+  // Set up the Finch experiment.
+  SetUpExperimentOption("exp", kExperimentData);
+
+  std::string data;
+  EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
+            RunFetcherWithData("Any data.", &data));
+
+  net::HttpRequestHeaders headers = last_resource_request.headers;
+  std::string header_text;
+  bool success;
+
+  success = headers.GetHeader("X-Google-Chrome-Experiment-Tag", &header_text);
+  EXPECT_EQ(std::string(kExperimentData), header_text);
 }
 
 }  // namespace explore_sites
