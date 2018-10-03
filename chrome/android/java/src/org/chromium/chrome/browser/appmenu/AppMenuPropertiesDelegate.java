@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.appmenu;
 import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -17,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -143,14 +140,6 @@ public class AppMenuPropertiesDelegate {
                 if (offlineMenuItem != null) {
                     offlineMenuItem.setEnabled(
                             DownloadUtils.isAllowedToDownloadPage(currentTab));
-
-                    Drawable drawable = offlineMenuItem.getIcon();
-                    if (drawable != null) {
-                        int iconTint = ApiCompatibilityUtils.getColor(
-                                mActivity.getResources(), R.color.default_icon_color);
-                        drawable.mutate();
-                        drawable.setColorFilter(iconTint, PorterDuff.Mode.SRC_ATOP);
-                    }
                 }
             }
 
