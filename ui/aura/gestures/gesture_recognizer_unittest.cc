@@ -4705,8 +4705,7 @@ TEST_F(GestureRecognizerTest, TransferEventsToRoutesAckCorrectly) {
 
   // Transfer event sequence from previous window to the new window.
   aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
-      window_1.get(), window_2.get(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      window_1.get(), window_2.get(), ui::TransferTouchesBehavior::kDontCancel);
 
   delegate_1->Reset();
   delegate_1->ReceivedAck();

@@ -759,7 +759,7 @@ TabDragController::DragBrowserToNewTabStrip(TabStrip* target_tabstrip,
   GetAttachedBrowserWidget()->GetGestureRecognizer()->TransferEventsTo(
       GetAttachedBrowserWidget()->GetNativeView(),
       target_tabstrip->GetWidget()->GetNativeView(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
   if (is_dragging_window_) {
@@ -1236,7 +1236,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   gfx::NativeView attached_native_view = attached_widget->GetNativeView();
   attached_widget->GetGestureRecognizer()->TransferEventsTo(
       attached_native_view, dragged_widget->GetNativeView(),
-      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+      ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);

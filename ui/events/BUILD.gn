@@ -170,7 +170,9 @@ jumbo_component("events") {
     "event_targeter.h",
     "event_utils.h",
     "events_export.h",
+    "gestures/gesture_recognizer.h",
     "gestures/gesture_recognizer_impl_mac.h",
+    "gestures/gesture_recognizer_observer.h",
     "gestures/gesture_types.h",
     "keyboard_hook.h",
     "null_event_targeter.h",
@@ -193,7 +195,9 @@ jumbo_component("events") {
     "event_target.cc",
     "event_utils.cc",
     "events_stub.cc",
+    "gestures/gesture_recognizer.cc",
     "gestures/gesture_recognizer_impl_mac.cc",
+    "gestures/gesture_recognizer_observer.cc",
     "gestures/gesture_types.cc",
     "keyboard_hook_base.cc",
     "keyboard_hook_base.h",
@@ -270,7 +274,6 @@ jumbo_component("events") {
   if (use_aura) {
     public += [
       "gestures/gesture_provider_aura.h",
-      "gestures/gesture_recognizer.h",
       "gestures/gesture_recognizer_impl.h",
       "gestures/motion_event_aura.h",
     ]
@@ -592,6 +595,7 @@ if (!is_ios) {
     if (use_aura) {
       sources += [
         "gestures/gesture_provider_aura_unittest.cc",
+        "gestures/gesture_recognizer_impl_unittest.cc",
         "gestures/motion_event_aura_unittest.cc",
       ]
     }
