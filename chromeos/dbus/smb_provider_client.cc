@@ -520,6 +520,12 @@ class SmbProviderClientImpl : public SmbProviderClient {
   // Handles D-Bus callback for SetupKerberos.
   void HandleSetupKerberosCallback(SetupKerberosCallback callback,
                                    dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "SetupKerberos: failed to call smbprovider";
+      std::move(callback).Run(false /* success */);
+      return;
+    }
+
     dbus::MessageReader reader(response);
     bool result;
     if (!reader.PopBool(&result)) {
