@@ -294,7 +294,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--benchmarks=blink_perf.layout_ng",
+          "--benchmarks=blink_perf.layout_ng,blink_perf.paint_layout_ng,loading.desktop_layout_ng",
           "-v",
           "--upload-results",
           "--output-format=histograms",
