@@ -357,7 +357,7 @@ public class ChromeFullscreenManager
 
     @Override
     public int getBottomControlsHeight() {
-        return VrModuleProvider.getDelegate().isInVr() ? 0 : mBottomControlContainerHeight;
+        return mBottomControlContainerHeight;
     }
 
     /**
