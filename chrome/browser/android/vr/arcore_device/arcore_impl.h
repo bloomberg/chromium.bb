@@ -89,9 +89,6 @@ class ARCoreImpl : public ARCore {
                                  const gfx::Size& image_size,
                                  gfx::PointF* screen_point);
 
-  bool ArHitResultToXRHitResult(ArHitResult* ar_hit,
-                                mojom::XRHitResult* hit_result);
-
   bool IsOnGlThread();
   base::WeakPtr<ARCoreImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
