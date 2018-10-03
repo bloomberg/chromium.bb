@@ -39,9 +39,6 @@ std::string GetOriginServerHost();
 // If |WHATS_NEW_DEFAULT| is returned, no promo is force enabled.
 WhatsNewPromoStatus GetWhatsNewPromoStatus();
 
-// Whether the lru snapshot cache experiment is enabled.
-bool IsLRUSnapshotCacheEnabled();
-
 // Whether memory debugging tools are enabled.
 bool IsMemoryDebuggingEnabled();
 
