@@ -766,14 +766,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for unload handler processing.
   void SetSubframeUnloadTimeoutForTesting(const base::TimeDelta& timeout);
 
-  bool received_post_message_from_non_descendant() const {
-    return received_post_message_from_non_descendant_;
-  }
-
-  void did_receive_post_message_from_non_descendant() {
-    received_post_message_from_non_descendant_ = true;
-  }
-
   // Returns the list of NavigationEntry ids corresponding to NavigationRequests
   // waiting to commit in this RenderFrameHost.
   std::set<int> GetNavigationEntryIdsPendingCommit();
@@ -1436,12 +1428,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // allows us to send things like title and state updates to the latest
   // relevant NavigationEntry.
   int nav_entry_id_;
-
-  // Tracks if a frame has been influenced by post message from
-  // non-descendant frames. Useful for determining if silently reloading a
-  // crashed frame is safe. Post messages from descendants to not matter for
-  // this decision since they will be reloaded as well.
-  bool received_post_message_from_non_descendant_ = false;
 
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the

@@ -381,11 +381,6 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
             ->SynchronizeVisualPropertiesIgnoringPendingAck();
       }
 
-      if (!source_rfh->frame_tree_node()->IsDescendantOf(
-              target_rfh->frame_tree_node())) {
-        target_rfh->did_receive_post_message_from_non_descendant();
-      }
-
       // Ensure that we have a swapped-out RVH and proxy for the source frame
       // in the target SiteInstance. If it doesn't exist, create it on demand
       // and also create its opener chain, since that will also be accessible
