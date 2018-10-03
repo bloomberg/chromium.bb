@@ -428,7 +428,7 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedDeviceInfo(
   scoped_refptr<RemoteDevice> remote_device =
       new RemoteDevice(device->serial(), device_info);
   complete_devices_.push_back(std::make_pair(device, remote_device));
-  for (RemoteBrowsers::iterator it = remote_device->browsers().begin();
+  for (auto it = remote_device->browsers().begin();
        it != remote_device->browsers().end(); ++it) {
     device->SendJsonRequest(
         (*it)->socket(),
@@ -563,10 +563,8 @@ DevToolsDeviceDiscovery::RemoteDevice::RemoteDevice(
       model_(device_info.model),
       connected_(device_info.connected),
       screen_size_(device_info.screen_size) {
-  for (std::vector<AndroidDeviceManager::BrowserInfo>::const_iterator it =
-      device_info.browser_info.begin();
-      it != device_info.browser_info.end();
-      ++it) {
+  for (auto it = device_info.browser_info.begin();
+       it != device_info.browser_info.end(); ++it) {
     browsers_.push_back(new RemoteBrowser(serial, *it));
   }
 }

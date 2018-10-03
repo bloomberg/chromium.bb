@@ -621,9 +621,9 @@ void AndroidUsbDevice::HandleIncoming(std::unique_ptr<AdbMessage> message) {
     case AdbMessage::kCommandWRTE:
     case AdbMessage::kCommandCLSE:
       {
-        AndroidUsbSockets::iterator it = sockets_.find(message->arg1);
-        if (it != sockets_.end())
-          it->second->HandleIncoming(std::move(message));
+      auto it = sockets_.find(message->arg1);
+      if (it != sockets_.end())
+        it->second->HandleIncoming(std::move(message));
       }
       break;
     default:
@@ -652,8 +652,7 @@ void AndroidUsbDevice::TerminateIfReleased(
 void AndroidUsbDevice::Terminate() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  std::vector<AndroidUsbDevice*>::iterator it =
-      std::find(g_devices.Get().begin(), g_devices.Get().end(), this);
+  auto it = std::find(g_devices.Get().begin(), g_devices.Get().end(), this);
   if (it != g_devices.Get().end())
     g_devices.Get().erase(it);
 
@@ -667,8 +666,7 @@ void AndroidUsbDevice::Terminate() {
 
   // Iterate over copy.
   AndroidUsbSockets sockets(sockets_);
-  for (AndroidUsbSockets::iterator it = sockets.begin();
-       it != sockets.end(); ++it) {
+  for (auto it = sockets.begin(); it != sockets.end(); ++it) {
     it->second->Terminated(true);
   }
   DCHECK(sockets_.empty());

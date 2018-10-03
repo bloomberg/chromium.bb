@@ -36,8 +36,7 @@ DevToolsWindowTesting::DevToolsWindowTesting(DevToolsWindow* window)
 DevToolsWindowTesting::~DevToolsWindowTesting() {
   DevToolsWindowTestings* instances =
       g_devtools_window_testing_instances.Pointer();
-  DevToolsWindowTestings::iterator it(
-      std::find(instances->begin(), instances->end(), this));
+  auto it(std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
   if (!close_callback_.is_null()) {
@@ -64,9 +63,7 @@ DevToolsWindowTesting* DevToolsWindowTesting::Find(DevToolsWindow* window) {
     return NULL;
   DevToolsWindowTestings* instances =
       g_devtools_window_testing_instances.Pointer();
-  for (DevToolsWindowTestings::iterator it(instances->begin());
-       it != instances->end();
-       ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->devtools_window_ == window)
       return *it;
   }
