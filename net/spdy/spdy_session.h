@@ -317,31 +317,21 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   const SpdySessionKey& spdy_session_key() const {
     return spdy_session_key_;
   }
-  // Get a pushed stream for a given |url|.  If the server initiates a
-  // stream, it might already exist for a given path.  The server
-  // might also not have initiated the stream yet, but indicated it
-  // will via X-Associated-Content.  Returns OK if a stream was found
-  // and put into |spdy_stream|, or if one was not found but it is
-  // okay to create a new stream (in which case |spdy_stream| is
-  // reset).  Returns an error (not ERR_IO_PENDING) otherwise, and
-  // resets |spdy_stream|.
+
+  // Get a pushed stream for a given |url| with stream ID |pushed_stream_id|.
+  // The caller must have already claimed the stream from Http2PushPromiseIndex.
+  // |pushed_stream_id| must not be kNoPushedStreamFound.
   //
-  // If |pushed_stream_id != kNoPushedStreamFound|, then the pushed stream with
-  // pushed_stream_id is used.  An error is returned if that stream is not
-  // available.
-  //
-  // If |pushed_stream_id == kNoPushedStreamFound|, then any matching pushed
-  // stream that has not been claimed by another request can be used.  This can
-  // happen, for example, with http scheme pushed streams, or if the pushed
-  // stream was received from the server in the meanwhile.
-  //
-  // If a stream was found and the stream is still open, the priority
-  // of that stream is updated to match |priority|.
+  // Returns ERR_CONNECTION_CLOSED if the connection is being closed.
+  // Returns ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE if the pushed stream is not
+  //   available any longer, for example, if the server has reset it.
+  // Returns OK if the stream is still available, and returns the stream in
+  //   |*spdy_stream|.  If the stream is still open, updates its priority to
+  //   |priority|.
   int GetPushedStream(const GURL& url,
                       spdy::SpdyStreamId pushed_stream_id,
                       RequestPriority priority,
-                      SpdyStream** spdy_stream,
-                      const NetLogWithSource& stream_net_log);
+                      SpdyStream** spdy_stream);
 
   // Called when the pushed stream should be cancelled. If the pushed stream is
   // not claimed and active, sends RST to the server to cancel the stream.
