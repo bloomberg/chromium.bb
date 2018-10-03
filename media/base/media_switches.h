@@ -107,6 +107,7 @@ MEDIA_EXPORT extern const base::Feature kD3D11EncryptedMedia;
 MEDIA_EXPORT extern const base::Feature kD3D11VP9Decoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
+MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kLimitParallelMediaPreloading;
 MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;

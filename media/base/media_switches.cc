@@ -284,6 +284,14 @@ const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
 const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Falls back to other decoders after audio/video decode error happens. The
+// implementation may choose different strategies on when to fallback. See
+// DecoderStream for details. When disabled, playback will fail immediately
+// after a decode error happens. This can be useful in debugging and testing
+// because the behavior is simpler and more predictable.
+const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

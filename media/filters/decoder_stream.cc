@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -17,6 +18,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
@@ -519,7 +521,8 @@ void DecoderStream<StreamType>::OnDecodeDone(
 
   switch (status) {
     case DecodeStatus::DECODE_ERROR:
-      if (!decoder_produced_a_frame_) {
+      if (!decoder_produced_a_frame_ &&
+          base::FeatureList::IsEnabled(kFallbackAfterDecodeError)) {
         pending_decode_requests_ = 0;
 
         // Prevent all pending decode requests and outputs from those requests
