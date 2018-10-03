@@ -1825,7 +1825,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
       "<html><body></body><script src=\"script.js\"></script></html>");
   main_html_response->Send(std::string(1000, ' '));
   main_html_response->Done();
-  waiter->AddCompleteResourcesExpectation(1);
+  waiter->AddMinimumCompleteResourcesExpectation(1);
   waiter->AddMinimumResourceBytesExpectation(1000);
   waiter->Wait();
 
@@ -1837,11 +1837,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
       "document.body.appendChild(iframe);");
   script_response->Send(std::string(1000, ' '));
   // Data received but resource not complete
-  waiter->AddCompleteResourcesExpectation(1);
+  waiter->AddMinimumCompleteResourcesExpectation(1);
   waiter->AddMinimumResourceBytesExpectation(2000);
   waiter->Wait();
   script_response->Done();
-  waiter->AddCompleteResourcesExpectation(2);
+  waiter->AddMinimumCompleteResourcesExpectation(2);
   waiter->Wait();
 
   // Make sure main resources are loaded correctly
@@ -1849,7 +1849,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   iframe_response->Send(kHttpResponseHeader);
   iframe_response->Send(std::string(2000, ' '));
   iframe_response->Done();
-  waiter->AddCompleteResourcesExpectation(3);
+  waiter->AddMinimumCompleteResourcesExpectation(3);
   waiter->AddMinimumResourceBytesExpectation(4000);
   waiter->Wait();
 }
