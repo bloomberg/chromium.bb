@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.common.functional.Consumer;
+import com.google.android.libraries.feed.host.imageloader.BundledAssets;
 import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.junit.Before;
@@ -44,19 +45,22 @@ import java.util.Arrays;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class FeedImageLoaderTest {
-    public static final String HTTP_STRING1 = "http://www.test1.com";
-    public static final String HTTP_STRING2 = "http://www.test2.com";
-    public static final String HTTP_STRING3 = "http://www.test3.com";
-    public static final String ASSET_STRING = "asset://logo_avatar_anonymous";
-    public static final String BAD_ASSET_STRING = "asset://does_not_exist";
-    public static final String OVERLAY_IMAGE_START =
+    private static final String HTTP_STRING1 = "http://www.test1.com";
+    private static final String HTTP_STRING2 = "http://www.test2.com";
+    private static final String HTTP_STRING3 = "http://www.test3.com";
+
+    private static final String ASSET_PREFIX = "asset://";
+    private static final String ASSET_STRING = ASSET_PREFIX + "logo_avatar_anonymous";
+    private static final String BAD_ASSET_STRING = ASSET_PREFIX + "does_not_exist";
+
+    private static final String OVERLAY_IMAGE_START =
             "overlay-image://?direction=start&url=http://www.test1.com";
-    public static final String OVERLAY_IMAGE_END =
+    private static final String OVERLAY_IMAGE_END =
             "overlay-image://?direction=end&url=http://www.test1.com";
-    public static final String OVERLAY_IMAGE_MISSING_URL = "overlay-image://?direction=end";
-    public static final String OVERLAY_IMAGE_MISSING_DIRECTION =
+    private static final String OVERLAY_IMAGE_MISSING_URL = "overlay-image://?direction=end";
+    private static final String OVERLAY_IMAGE_MISSING_DIRECTION =
             "overlay-image://?url=http://www.test1.com";
-    public static final String OVERLAY_IMAGE_BAD_DIRECTION =
+    private static final String OVERLAY_IMAGE_BAD_DIRECTION =
             "overlay-image://?direction=east&url=http://www.test1.com";
 
     @Rule
@@ -225,5 +229,19 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_BadDirection() {
         loadDrawable(OVERLAY_IMAGE_BAD_DIRECTION);
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadOfflineBadge() {
+        loadDrawable(ASSET_PREFIX + BundledAssets.OFFLINE_INDICATOR_BADGE);
+        verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadVideoBadge() {
+        loadDrawable(ASSET_PREFIX + BundledAssets.VIDEO_INDICATOR_BADGE);
+        verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 }

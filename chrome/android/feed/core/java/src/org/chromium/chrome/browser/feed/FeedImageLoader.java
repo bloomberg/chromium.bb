@@ -9,13 +9,16 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
 import com.google.android.libraries.feed.common.functional.Consumer;
+import com.google.android.libraries.feed.host.imageloader.BundledAssets;
 import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 
@@ -129,9 +132,25 @@ public class FeedImageLoader implements ImageLoaderApi {
      */
     private Drawable getAssetDrawable(String url) {
         String resourceName = url.substring(ASSET_PREFIX.length());
-        int id = mActivityContext.getResources().getIdentifier(
-                resourceName, DRAWABLE_RESOURCE_TYPE, mActivityContext.getPackageName());
+        @DrawableRes
+        int id = lookupDrawableIdenfier(resourceName);
         return id == 0 ? null : AppCompatResources.getDrawable(mActivityContext, id);
+    }
+
+    /**
+     * @param resourceName The name of the drawable asset.
+     * @return The id of the drawable asset. May be 0 if it could not be found.
+     */
+    private @DrawableRes int lookupDrawableIdenfier(String resourceName) {
+        switch (resourceName) {
+            case BundledAssets.OFFLINE_INDICATOR_BADGE:
+                return R.drawable.offline_pin_round;
+            case BundledAssets.VIDEO_INDICATOR_BADGE:
+                return R.drawable.ic_play_circle_filled_grey;
+            default:
+                return mActivityContext.getResources().getIdentifier(
+                        resourceName, DRAWABLE_RESOURCE_TYPE, mActivityContext.getPackageName());
+        }
     }
 
     /**
