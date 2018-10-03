@@ -142,11 +142,6 @@ ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
   }
   PartitionCookieWriteValue(char_ret + kCookieSize + no_cookie_size);
 #else
-#if defined(OS_MACOSX)
-  // TODO(https://crbug.com/890752): Remove this when we figure out and fix
-  // whatever is breaking on macOS.
-  is_already_zeroed = false;
-#endif
   if (ret && zero_fill && !is_already_zeroed) {
     memset(ret, 0, size);
   }
