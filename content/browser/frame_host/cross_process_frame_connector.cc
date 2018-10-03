@@ -556,16 +556,6 @@ void CrossProcessFrameConnector::MaybeLogCrash(CrashVisibility visibility) {
 
   // Actually log the UMA.
   UMA_HISTOGRAM_ENUMERATION("Stability.ChildFrameCrash.Visibility", visibility);
-
-  if (visibility == CrashVisibility::kShownAfterCrashing) {
-    auto* rfh = frame_proxy_in_parent_renderer_->frame_tree_node()
-                    ->current_frame_host();
-    if (rfh->GetParent() && rfh->is_local_root()) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "RenderFrameHostImpl.ReceivedPostMessageFromNonDescendant",
-          rfh->received_post_message_from_non_descendant());
-    }
-  }
 }
 
 bool CrossProcessFrameConnector::IsVisible() {
