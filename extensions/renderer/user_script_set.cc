@@ -212,13 +212,11 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     injection_host.reset(new WebUIInjectionHost(host_id));
   }
 
-  if (web_frame->Parent() && !script->match_all_frames())
-    return injection;  // Only match subframes if the script declared it.
-
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, document_url, script->match_about_blank());
 
-  if (!script->MatchesURL(effective_document_url))
+  bool is_subframe = web_frame->Parent();
+  if (!script->MatchesDocument(effective_document_url, is_subframe))
     return injection;
 
   std::unique_ptr<ScriptInjector> injector(

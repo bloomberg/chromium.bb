@@ -30,6 +30,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
   TrackedChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
       SchemeMap scheme_specific_factory_infos,
+      OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
       bool bypass_redirect_checks);

@@ -19,6 +19,7 @@
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -172,6 +173,8 @@ void ExtensionWebContentsObserver::RenderFrameHostChanged(
 
 void ExtensionWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  URLLoaderFactoryManager::ReadyToCommitNavigation(navigation_handle);
+
   if (navigation_handle->IsInMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     ExtensionApiFrameIdMap::Get()->OnMainFrameReadyToCommitNavigation(

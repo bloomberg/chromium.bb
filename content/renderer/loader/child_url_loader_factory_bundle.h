@@ -33,6 +33,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
       SchemeMap scheme_specific_factory_infos,
+      OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
       bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
@@ -101,7 +102,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   ~ChildURLLoaderFactoryBundle() override;
 
   // URLLoaderFactoryBundle overrides.
-  network::mojom::URLLoaderFactory* GetFactoryForURL(const GURL& url) override;
+  network::mojom::URLLoaderFactory* GetFactory(
+      const network::ResourceRequest& request) override;
 
  private:
   void InitDirectNetworkFactoryIfNecessary();

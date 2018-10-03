@@ -4,6 +4,9 @@
 
 #include "extensions/browser/script_executor.h"
 
+#include <set>
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/hash.h"
@@ -17,6 +20,7 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/script_execution_observer.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -125,6 +129,7 @@ class Handler : public content::WebContentsObserver {
     if (!root_is_main_frame_ && !ShouldIncludeFrame(frame))
       return;
     pending_render_frames_.insert(frame);
+    URLLoaderFactoryManager::WillExecuteCode(frame, host_id_);
     frame->Send(new ExtensionMsg_ExecuteCode(frame->GetRoutingID(), params));
   }
 

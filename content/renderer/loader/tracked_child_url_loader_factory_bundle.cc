@@ -16,13 +16,16 @@ TrackedChildURLLoaderFactoryBundleInfo::
 TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
     SchemeMap scheme_specific_factory_infos,
+    OriginMap initiator_specific_factory_infos,
     PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
     std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
     bool bypass_redirect_checks)
-    : ChildURLLoaderFactoryBundleInfo(std::move(default_factory_info),
-                                      std::move(scheme_specific_factory_infos),
-                                      std::move(direct_network_factory_info),
-                                      bypass_redirect_checks),
+    : ChildURLLoaderFactoryBundleInfo(
+          std::move(default_factory_info),
+          std::move(scheme_specific_factory_infos),
+          std::move(initiator_specific_factory_infos),
+          std::move(direct_network_factory_info),
+          bypass_redirect_checks),
       main_thread_host_bundle_(std::move(main_thread_host_bundle)) {}
 
 TrackedChildURLLoaderFactoryBundleInfo::
@@ -34,6 +37,8 @@ TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->default_factory_info_ = std::move(default_factory_info_);
   other->scheme_specific_factory_infos_ =
       std::move(scheme_specific_factory_infos_);
+  other->initiator_specific_factory_infos_ =
+      std::move(initiator_specific_factory_infos_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
   other->main_thread_host_bundle_ = std::move(main_thread_host_bundle_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
@@ -69,6 +74,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
+      std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
       std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }
@@ -132,6 +138,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
+      std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
       std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }
@@ -149,6 +156,7 @@ HostChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory() {
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
+      std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
       std::move(main_thread_host_bundle_clone), info->bypass_redirect_checks());
 }

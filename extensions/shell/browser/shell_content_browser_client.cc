@@ -38,6 +38,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -310,6 +311,15 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture) {
   return false;
+}
+
+network::mojom::URLLoaderFactoryPtrInfo
+ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+    content::RenderProcessHost* process,
+    network::mojom::NetworkContext* network_context,
+    const url::Origin& request_initiator) {
+  return URLLoaderFactoryManager::CreateFactory(process, network_context,
+                                                request_initiator);
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

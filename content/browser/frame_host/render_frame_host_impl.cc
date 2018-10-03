@@ -148,6 +148,7 @@
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -884,6 +885,31 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   return CreateNetworkServiceDefaultFactoryInternal(
       last_committed_origin_, std::move(default_factory_request));
+}
+
+void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+    std::vector<url::Origin> request_initiators,
+    bool push_to_renderer_now) {
+  size_t old_size = initiators_requiring_separate_url_loader_factory_.size();
+  initiators_requiring_separate_url_loader_factory_.insert(
+      request_initiators.begin(), request_initiators.end());
+  size_t new_size = initiators_requiring_separate_url_loader_factory_.size();
+  bool insertion_took_place = (old_size != new_size);
+  if (push_to_renderer_now && insertion_took_place)
+    UpdateSubresourceLoaderFactories();
+}
+
+URLLoaderFactoryBundleInfo::OriginMap
+RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories() {
+  URLLoaderFactoryBundleInfo::OriginMap result;
+  for (const url::Origin& initiator :
+       initiators_requiring_separate_url_loader_factory_) {
+    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    CreateNetworkServiceDefaultFactoryInternal(
+        initiator, mojo::MakeRequest(&factory_info));
+    result[initiator] = std::move(factory_info);
+  }
+  return result;
 }
 
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
@@ -4123,6 +4149,9 @@ void RenderFrameHostImpl::CommitNavigation(
       subresource_loader_factories->scheme_specific_factory_infos().emplace(
           factory.first, std::move(factory_proxy_info));
     }
+
+    subresource_loader_factories->initiator_specific_factory_infos() =
+        CreateInitiatorSpecificURLLoaderFactories();
   }
 
   // It is imperative that cross-document navigations always provide a set of
@@ -4255,7 +4284,8 @@ void RenderFrameHostImpl::FailedNavigation(
         origin, mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
         std::move(default_factory_info),
-        URLLoaderFactoryBundleInfo::SchemeMap(), bypass_redirect_checks);
+        URLLoaderFactoryBundleInfo::SchemeMap(),
+        URLLoaderFactoryBundleInfo::OriginMap(), bypass_redirect_checks);
   }
   SaveSubresourceFactories(std::move(subresource_loader_factories));
 
@@ -4798,7 +4828,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
-          URLLoaderFactoryBundleInfo::SchemeMap(), bypass_redirect_checks);
+          URLLoaderFactoryBundleInfo::SchemeMap(),
+          CreateInitiatorSpecificURLLoaderFactories(), bypass_redirect_checks);
   SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       CloneSubresourceFactories());
@@ -4843,14 +4874,6 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     const url::Origin& origin,
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = GetProcess()->GetID();
-  params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
-  SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
-
   auto* context = GetSiteInstance()->GetBrowserContext();
   bool bypass_redirect_checks = false;
 
@@ -4860,23 +4883,24 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
         &default_factory_request, &bypass_redirect_checks);
   }
 
-  // Keep DevTools proxy lasy, i.e. closest to the network.
+  // Keep DevTools proxy last, i.e. closest to the network.
   RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
       &default_factory_request);
-  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartition(context, GetSiteInstance()));
+
+  // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
   if (g_create_network_factory_callback_for_test.Get().is_null()) {
-    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        std::move(default_factory_request), std::move(params));
+    GetProcess()->CreateURLLoaderFactory(origin,
+                                         std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&original_factory), std::move(params));
+    GetProcess()->CreateURLLoaderFactory(origin,
+                                         mojo::MakeRequest(&original_factory));
     g_create_network_factory_callback_for_test.Get().Run(
         std::move(default_factory_request), GetProcess()->GetID(),
         original_factory.PassInterface());
   }
+
   return bypass_redirect_checks;
 }
 

@@ -59,6 +59,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -848,6 +849,17 @@ void ChromeContentBrowserClientExtensionsPart::
   rappor::SampleString(rappor::GetDefaultService(),
                        "Extensions.CrossOriginFetchFromContentScript2",
                        rappor::UMA_RAPPOR_TYPE, extension_id);
+}
+
+// static
+network::mojom::URLLoaderFactoryPtrInfo
+ChromeContentBrowserClientExtensionsPart::
+    CreateURLLoaderFactoryForNetworkRequests(
+        content::RenderProcessHost* process,
+        network::mojom::NetworkContext* network_context,
+        const url::Origin& request_initiator) {
+  return URLLoaderFactoryManager::CreateFactory(process, network_context,
+                                                request_initiator);
 }
 
 // static

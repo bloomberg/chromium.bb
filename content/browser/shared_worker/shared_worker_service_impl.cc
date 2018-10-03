@@ -105,9 +105,16 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   // NetworkService is off. If NetworkService is on the default factory is
   // set in CreateScriptLoaderOnIO().
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Using an opaque origin here should be safe - the URLLoaderFactory created
+    // for such origin shouldn't have any special privileges.  Additionally, the
+    // origin should not be inspected at all in the legacy, non-NetworkService
+    // path.
+    const url::Origin kSafeOrigin = url::Origin();
+
     network::mojom::URLLoaderFactoryPtr default_factory;
     RenderProcessHost::FromID(process_id)
-        ->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory));
+        ->CreateURLLoaderFactory(kSafeOrigin,
+                                 mojo::MakeRequest(&default_factory));
     factory_bundle->default_factory_info() = default_factory.PassInterface();
   }
 

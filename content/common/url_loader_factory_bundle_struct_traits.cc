@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "url/mojom/origin_mojom_traits.h"
+
 namespace mojo {
 
 using Traits =
@@ -26,6 +28,12 @@ Traits::scheme_specific_factories(BundleInfoType& bundle) {
 }
 
 // static
+content::URLLoaderFactoryBundleInfo::OriginMap
+Traits::initiator_specific_factories(BundleInfoType& bundle) {
+  return std::move(bundle->initiator_specific_factory_infos());
+}
+
+// static
 bool Traits::bypass_redirect_checks(BundleInfoType& bundle) {
   return bundle->bypass_redirect_checks();
 }
@@ -39,6 +47,9 @@ bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
       data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtrInfo>();
   if (!data.ReadSchemeSpecificFactories(
           &(*out_bundle)->scheme_specific_factory_infos()))
+    return false;
+  if (!data.ReadInitiatorSpecificFactories(
+          &(*out_bundle)->initiator_specific_factory_infos()))
     return false;
 
   (*out_bundle)->set_bypass_redirect_checks(data.bypass_redirect_checks());

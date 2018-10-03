@@ -322,11 +322,6 @@ struct URLLoaderFactoryParams {
   // (even as an opaque int) in //services/network.  See also the TODO comment
   // for network::ResourceRequest::resource_type.
   int32 corb_excluded_resource_type = -1;
-  // TODO(lukasza): https://crbug.com/846346: Replace the field below with a
-  // granular list of origins that content scripts can XHR into (based on
-  // extension manifest V3 / assumming that content scripts have a
-  // URLLoaderFactory separate from the rest of the renderer).
-  string corb_excluded_initiator_scheme;
 
   // True if web related security (e.g., CORS) should be disabled. This is
   // mainly used by people testing their sites, via a command line switch.

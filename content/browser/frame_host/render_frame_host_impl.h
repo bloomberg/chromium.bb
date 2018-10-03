@@ -18,6 +18,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -252,6 +253,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::WebMediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) override;
+  void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+      std::vector<url::Origin> request_initiators,
+      bool push_to_renderer_now) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1291,6 +1295,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
 
+  // Creates initiator-specific URLLoaderFactory objects for intiator origins
+  // registered via MarkInitiatorAsRequiringSeparateURLLoaderFactory method.
+  URLLoaderFactoryBundleInfo::OriginMap
+  CreateInitiatorSpecificURLLoaderFactories();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -1700,6 +1709,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |RenderFrame|.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
+
+  // Set of request-initiator-origins that require a separate URLLoaderFactory
+  // (e.g. for handling requests initiated by extension content scripts that
+  // require relaxed CORS/CORB rules).
+  base::flat_set<url::Origin> initiators_requiring_separate_url_loader_factory_;
 
   // Holds the renderer generated ID and global request ID for the main frame
   // request.

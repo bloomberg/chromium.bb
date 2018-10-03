@@ -126,6 +126,14 @@ void ContentBrowserClient::LogInitiatorSchemeBypassingDocumentBlocking(
     int render_process_id,
     ResourceType resource_type) {}
 
+network::mojom::URLLoaderFactoryPtrInfo
+ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+    RenderProcessHost* process,
+    network::mojom::NetworkContext* network_context,
+    const url::Origin& request_initiator) {
+  return network::mojom::URLLoaderFactoryPtrInfo();
+}
+
 void ContentBrowserClient::GetAdditionalViewSourceSchemes(
     std::vector<std::string>* additional_schemes) {
   GetAdditionalWebUISchemes(additional_schemes);

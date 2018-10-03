@@ -321,6 +321,15 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) = 0;
 
+  // Requests that future URLLoaderFactoryBundle(s) sent to the renderer should
+  // use a separate URLLoaderFactory for requests initiated by any of the
+  // origins listed in |request_initiators|.  The URLLoaderFactory(s) for each
+  // origin will be created via
+  // ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests method.
+  virtual void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+      std::vector<url::Origin> request_initiators,
+      bool push_to_renderer_now) = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;
