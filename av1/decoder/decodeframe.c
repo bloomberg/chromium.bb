@@ -4750,17 +4750,18 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   int i;
 
-  memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+  // We have not stored any references to frame buffers in
+  // cm->next_ref_frame_map, so we can directly reset it to all -1.
   memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
 
   lock_buffer_pool(cm->buffer_pool);
+  reset_ref_frame_map(cm);
+  assert(frame_bufs[cm->new_fb_idx].ref_count == 1);
   for (i = 0; i < FRAME_BUFFERS; ++i) {
-    if (i != cm->new_fb_idx) {
-      frame_bufs[i].ref_count = 0;
-      cm->buffer_pool->release_fb_cb(cm->buffer_pool->cb_priv,
-                                     &frame_bufs[i].raw_frame_buffer);
-    } else {
-      assert(frame_bufs[i].ref_count == 1);
+    // Reset all unreferenced frame buffers. We can also reset cm->new_fb_idx
+    // because we are the sole owner of cm->new_fb_idx.
+    if (frame_bufs[i].ref_count > 0 && i != cm->new_fb_idx) {
+      continue;
     }
     frame_bufs[i].cur_frame_offset = 0;
     av1_zero(frame_bufs[i].ref_frame_offset);
