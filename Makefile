@@ -97,8 +97,6 @@ SRC_RESOURCES= \
 	src/js/models/file_system.js \
 	src/js/router.js \
 	src/js/scrollbar.js \
-	src/js/test.js \
-	src/js/test_cases.js \
         src/js/tooltip.js \
 	src/js/util.js \
 	src/js/view.js \
@@ -124,10 +122,6 @@ SRC_PATH=src/
 
 # Manifest file for the camera.crx package.
 SRC_MANIFEST=src/manifest.json
-
-# Manifest file for the tests.crx package.
-# TODO(yuli): Remove tests.crx
-SRC_TESTS_MANIFEST=src/manifest-tests.json
 
 # Builds camera.crx
 all: build/camera.crx
@@ -172,25 +166,6 @@ build/camera-dev.crx: build/camera-dev
 	$(CHROME) --pack-extension=build/camera-dev \
 	  --pack-extension-key=dev-keys/camera.pem
 
-# Builds the tests version.
-build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST)
-	mkdir -p build/tests
-	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
-	  $(SRC_RESOURCES)) ../build/tests
-	cp $(SRC_TESTS_MANIFEST) build/tests/manifest.json
-
-# Builds the tests.crx package.
-build/tests.crx: build/tests
-	$(CHROME) --pack-extension=build/tests \
-	  --pack-extension-key=dev-keys/camera.pem
-
-# Alias for build/tests.crx.
-tests: build/tests.crx
-
 # Cleans the workspace from build files files.
 clean:
 	rm -rf build
-
-# Builds the tests.crx package and performs tests on it.
-run-tests: build/tests.crx
-	tests/run_all_tests.py

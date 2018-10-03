@@ -182,12 +182,6 @@ camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
     entry.callback(opt_result);
 };
 
-camera.Camera.prototype = {
-  get cameraView() {
-    return this.cameraView_;
-  }
-};
-
 /**
  * Starts the app by initializing views and showing the camera view.
  */
