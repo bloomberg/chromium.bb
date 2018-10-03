@@ -739,17 +739,22 @@ void ValidateAndConvertPaymentMethodData(
   }
 }
 
-bool AllowedToUsePaymentRequest(const Frame* frame) {
+bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
   // To determine whether a Document object |document| is allowed to use the
   // feature indicated by attribute name |allowpaymentrequest|, run these steps:
 
+  // If this context is not a document, return false.
+  if (!execution_context->IsDocument())
+    return false;
+
   // 1. If |document| has no browsing context, then return false.
-  if (!frame)
+  const Document* document = ToDocument(execution_context);
+  if (!document->GetFrame())
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return frame->DeprecatedIsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
+  return document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment,
+                                    ReportOptions::kReportOnFailure);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(
@@ -1056,7 +1061,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
           &PaymentRequest::OnCompleteTimeout) {
   DCHECK(GetExecutionContext()->IsSecureContext());
 
-  if (!AllowedToUsePaymentRequest(GetFrame())) {
+  if (!AllowedToUsePaymentRequest(execution_context)) {
     exception_state.ThrowSecurityError(
         "Must be in a top-level browsing context or an iframe needs to specify "
         "'allowpaymentrequest' explicitly");
