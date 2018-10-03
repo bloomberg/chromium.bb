@@ -41,13 +41,20 @@ struct NonNestable {};
 // Posting to a BrowserThread must only be done after it was initialized (ref.
 // BrowserMainLoop::CreateThreads() phase).
 class CONTENT_EXPORT BrowserTaskTraitsExtension {
+  using BrowserThreadIDFilter =
+      base::trait_helpers::RequiredEnumTraitFilter<BrowserThread::ID>;
+  using NonNestableFilter =
+      base::trait_helpers::BooleanTraitFilter<NonNestable>;
+
  public:
   static constexpr uint8_t kExtensionId =
       base::TaskTraitsExtensionStorage::kFirstEmbedderExtensionId;
 
-  struct ValidTrait {
-    ValidTrait(BrowserThread::ID) {}
-    ValidTrait(NonNestable) {}
+  struct ValidTrait : public base::TaskTraits::ValidTrait {
+    using base::TaskTraits::ValidTrait::ValidTrait;
+
+    ValidTrait(BrowserThread::ID);
+    ValidTrait(NonNestable);
   };
 
   template <
@@ -55,11 +62,10 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
       class CheckArgumentsAreValid = std::enable_if_t<
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr BrowserTaskTraitsExtension(ArgTypes... args)
-      : browser_thread_(base::trait_helpers::GetValueFromArgList(
-            base::trait_helpers::RequiredEnumArgGetter<BrowserThread::ID>(),
-            args...)),
-        nestable_(!base::trait_helpers::GetValueFromArgList(
-            base::trait_helpers::BooleanArgGetter<NonNestable>(),
+      : browser_thread_(
+            base::trait_helpers::GetTraitFromArgList<BrowserThreadIDFilter>(
+                args...)),
+        nestable_(!base::trait_helpers::GetTraitFromArgList<NonNestableFilter>(
             args...)) {}
 
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
