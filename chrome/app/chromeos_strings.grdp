@@ -3559,16 +3559,16 @@
     Google assistant logo
   </message>
   <message name="IDS_ASSISTANT_HOTWORD_TITLE" desc="Title for assistant hotword optin.">
-    Ok Google
+    "Ok Google"
   </message>
   <message name="IDS_ASSISTANT_HOTWORD_DESC" desc="Description for assistant hotword optin.">
-    Access your Assistant anytime you say "Ok Google" when your device is awake and unlocked.
+    Access your Assistant any time you say "Ok Google" when your screen is on
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin.">
-    Get info for what's on screen
+    Related info
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
-    See relevant suggestions from your Assistant related to what's on your screen.
+    Let the Assistant give suggestions based on what's on your screen
   </message>
   <message name="IDS_ASSISTANT_GET_MORE_SCREEN_TITLE" desc="Title for assistant get more screen.">
     Get the most out of your Assistant
