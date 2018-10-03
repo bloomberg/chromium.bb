@@ -532,7 +532,7 @@ static void RunAutofocusTask(ExecutionContext* context) {
   if (!context)
     return;
 
-  Document* document = ToDocument(context);
+  Document* document = To<Document>(context);
   if (Element* element = document->AutofocusElement()) {
     document->SetAutofocusElement(nullptr);
     element->focus();
@@ -563,7 +563,7 @@ class Document::NetworkStateObserver final
   void OnLineStateChange(bool on_line) override {
     AtomicString event_name =
         on_line ? EventTypeNames::online : EventTypeNames::offline;
-    Document* document = ToDocument(GetExecutionContext());
+    Document* document = To<Document>(GetExecutionContext());
     if (!document->domWindow())
       return;
     document->domWindow()->DispatchEvent(*Event::Create(event_name));

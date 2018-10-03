@@ -33,7 +33,7 @@ namespace {
 Settings* GetSettings(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
   return document->GetSettings();
 }
 
@@ -59,7 +59,7 @@ PresentationRequest* PresentationRequest::Create(
     ExecutionContext* execution_context,
     const Vector<String>& urls,
     ExceptionState& exception_state) {
-  if (ToDocument(execution_context)
+  if (To<Document>(execution_context)
           ->IsSandboxed(kSandboxPresentationController)) {
     exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the 'allow-presentation' flag.");
@@ -148,14 +148,14 @@ void PresentationRequest::RecordStartOriginTypeAccess(
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {
   ExecutionContext* execution_context = GetExecutionContext();
   Settings* context_settings = GetSettings(execution_context);
-  Document* doc = ToDocumentOrNull(execution_context);
+  Document* doc = To<Document>(execution_context);
 
   bool is_user_gesture_required =
       !context_settings ||
       context_settings->GetPresentationRequiresUserGesture();
 
   if (is_user_gesture_required &&
-      !LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr))
+      !LocalFrame::HasTransientUserActivation(doc->GetFrame()))
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

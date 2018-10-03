@@ -854,10 +854,9 @@ std::unique_ptr<TracedValue> InspectorResourceFinishEvent::Data(
 }
 
 static LocalFrame* FrameForExecutionContext(ExecutionContext* context) {
-  LocalFrame* frame = nullptr;
-  if (context->IsDocument())
-    frame = ToDocument(context)->GetFrame();
-  return frame;
+  if (auto* document = DynamicTo<Document>(context))
+    return document->GetFrame();
+  return nullptr;
 }
 
 static std::unique_ptr<TracedValue> GenericTimerData(ExecutionContext* context,
@@ -900,9 +899,9 @@ std::unique_ptr<TracedValue> InspectorAnimationFrameEvent::Data(
     int callback_id) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("id", callback_id);
-  if (context->IsDocument()) {
-    value->SetString(
-        "frame", IdentifiersFactory::FrameId(ToDocument(context)->GetFrame()));
+  if (auto* document = DynamicTo<Document>(context)) {
+    value->SetString("frame",
+                     IdentifiersFactory::FrameId(document->GetFrame()));
   } else if (context->IsWorkerGlobalScope()) {
     value->SetString("worker", ToHexString(ToWorkerGlobalScope(context)));
   }

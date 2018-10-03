@@ -255,15 +255,15 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
-  if (!task_context || !task_context->IsDocument() ||
-      !ToDocument(task_context)->GetFrame()) {
+  Document* document = DynamicTo<Document>(task_context);
+  if (!document || !document->GetFrame()) {
     // Unable to attribute as no script was involved.
     DEFINE_STATIC_LOCAL(const AtomicString, kUnknownAttribution, ("unknown"));
     return std::make_pair(kUnknownAttribution, nullptr);
   }
 
   // Exactly one culprit location, attribute based on origin boundary.
-  Frame* culprit_frame = ToDocument(task_context)->GetFrame();
+  Frame* culprit_frame = document->GetFrame();
   DCHECK(culprit_frame);
   if (CanAccessOrigin(observer_frame, culprit_frame)) {
     // From accessible frames or same origin, return culprit location URL.

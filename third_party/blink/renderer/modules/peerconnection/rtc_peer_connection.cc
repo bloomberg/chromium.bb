@@ -583,7 +583,7 @@ RTCPeerConnection::RTCPeerConnection(
       closed_(false),
       has_data_channels_(false),
       sdp_semantics_(configuration.sdp_semantics) {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
@@ -2349,7 +2349,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   ukm::SourceId source_id = document->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
@@ -2474,7 +2474,7 @@ void RTCPeerConnection::CloseInternal() {
     transceiver->OnPeerConnectionClosed();
   }
 
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
 
@@ -2511,7 +2511,7 @@ void RTCPeerConnection::DispatchScheduledEvent() {
 }
 
 void RTCPeerConnection::RecordRapporMetrics() {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   for (const auto& component : tracks_.Keys()) {
     switch (component->Source()->GetType()) {
       case MediaStreamSource::kTypeAudio:

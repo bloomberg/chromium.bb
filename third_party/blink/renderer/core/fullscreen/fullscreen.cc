@@ -533,7 +533,7 @@ Fullscreen::Fullscreen(Document& document)
 Fullscreen::~Fullscreen() = default;
 
 Document* Fullscreen::GetDocument() {
-  return ToDocument(LifecycleContext());
+  return To<Document>(LifecycleContext());
 }
 
 void Fullscreen::ContextDestroyed(ExecutionContext*) {

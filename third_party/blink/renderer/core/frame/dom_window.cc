@@ -375,7 +375,7 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
     DCHECK(IsMainThread());
     allow_focus =
         opener() && (opener() != this) &&
-        (ToDocument(incumbent_execution_context)->domWindow() == opener());
+        (To<Document>(incumbent_execution_context)->domWindow() == opener());
   }
 
   // If we're a top level window, bring the window to the front.

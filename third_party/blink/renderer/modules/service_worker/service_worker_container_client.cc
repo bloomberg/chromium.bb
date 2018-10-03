@@ -27,7 +27,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
     ExecutionContext* context) {
   if (!context)
     return nullptr;
-  Document* document = ToDocument(context);
+  Document* document = To<Document>(context);
   if (!document->GetFrame() || !document->GetFrame()->Client())
     return nullptr;
 

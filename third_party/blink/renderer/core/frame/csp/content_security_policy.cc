@@ -252,9 +252,7 @@ void ContentSecurityPolicy::Trace(blink::Visitor* visitor) {
 }
 
 Document* ContentSecurityPolicy::GetDocument() const {
-  return (execution_context_ && execution_context_->IsDocument())
-             ? ToDocument(execution_context_)
-             : nullptr;
+  return DynamicTo<Document>(execution_context_.Get());
 }
 
 void ContentSecurityPolicy::CopyStateFrom(const ContentSecurityPolicy* other) {
@@ -1244,9 +1242,7 @@ static void GatherSecurityPolicyViolationEventData(
 
   // TODO(mkwst): We only have referrer and status code information for
   // Documents. It would be nice to get them for Workers as well.
-  if (context->IsDocument()) {
-    Document* document = ToDocument(context);
-    DCHECK(document);
+  if (auto* document = DynamicTo<Document>(*context)) {
     init->setReferrer(document->referrer());
     if (!SecurityOrigin::IsSecure(context->Url()) && document->Loader())
       init->setStatusCode(document->Loader()->GetResponse().HttpStatusCode());
@@ -1445,8 +1441,7 @@ void ContentSecurityPolicy::DispatchViolationEvents(
       EventTypeNames::securitypolicyviolation, violation_data);
   DCHECK(event.bubbles());
 
-  if (execution_context_->IsDocument()) {
-    Document* document = ToDocument(execution_context_);
+  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
     if (element && element->isConnected() && element->GetDocument() == document)
       element->EnqueueEvent(event, TaskType::kInternalDefault);
     else
@@ -1681,8 +1676,7 @@ const String& ContentSecurityPolicy::GetSelfProtocol() const {
 
 bool ContentSecurityPolicy::ShouldBypassMainWorld(
     const ExecutionContext* context) {
-  if (context && context->IsDocument()) {
-    const Document* document = ToDocument(context);
+  if (const auto* document = DynamicTo<Document>(context)) {
     if (document->GetFrame()) {
       return document->GetFrame()
           ->GetScriptController()

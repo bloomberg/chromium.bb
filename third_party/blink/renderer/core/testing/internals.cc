@@ -286,7 +286,7 @@ void Internals::ResetToConsistentState(Page* page) {
 
 Internals::Internals(ExecutionContext* context)
     : runtime_flags_(InternalRuntimeFlags::create()),
-      document_(ToDocument(context)) {
+      document_(To<Document>(context)) {
   document_->Fetcher()->EnableIsPreloadedForTest();
 }
 
@@ -512,14 +512,14 @@ unsigned short Internals::compareTreeScopePosition(
     ExceptionState& exception_state) const {
   DCHECK(node1 && node2);
   const TreeScope* tree_scope1 =
-      node1->IsDocumentNode()
-          ? static_cast<const TreeScope*>(ToDocument(node1))
+      IsA<Document>(node1)
+          ? static_cast<const TreeScope*>(To<Document>(node1))
           : node1->IsShadowRoot()
                 ? static_cast<const TreeScope*>(ToShadowRoot(node1))
                 : nullptr;
   const TreeScope* tree_scope2 =
-      node2->IsDocumentNode()
-          ? static_cast<const TreeScope*>(ToDocument(node2))
+      IsA<Document>(node2)
+          ? static_cast<const TreeScope*>(To<Document>(node2))
           : node2->IsShadowRoot()
                 ? static_cast<const TreeScope*>(ToShadowRoot(node2))
                 : nullptr;
@@ -2583,8 +2583,8 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
   Document* document = nullptr;
   if (!node) {
     document = document_;
-  } else if (node->IsDocumentNode()) {
-    document = ToDocument(node);
+  } else if (IsA<Document>(node)) {
+    document = To<Document>(node);
   } else if (auto* iframe = ToHTMLIFrameElementOrNull(*node)) {
     document = iframe->contentDocument();
   }

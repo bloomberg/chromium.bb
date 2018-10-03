@@ -48,8 +48,8 @@ SubresourceFilter::SubresourceFilter(
   DCHECK(subresource_filter_);
   // Report the main resource as an ad if the subresource filter is
   // associated with an ad subframe.
-  if (execution_context_->IsDocument()) {
-    auto* loader = ToDocument(execution_context_)->Loader();
+  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+    auto* loader = document->Loader();
     if (subresource_filter_->GetIsAssociatedWithAdSubframe()) {
       ReportAdRequestId(loader->GetResponse().RequestId());
     }
@@ -139,8 +139,8 @@ void SubresourceFilter::ReportLoad(
       // TODO(csharrison): Consider posting a task to the main thread from
       // worker thread, or adding support for DidObserveLoadingBehavior to
       // ExecutionContext.
-      if (execution_context_->IsDocument()) {
-        if (DocumentLoader* loader = ToDocument(execution_context_)->Loader()) {
+      if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+        if (DocumentLoader* loader = document->Loader()) {
           loader->DidObserveLoadingBehavior(
               kWebLoadingBehaviorSubresourceFilterMatch);
         }

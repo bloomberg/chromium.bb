@@ -112,9 +112,8 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
   }
   if (!IsFeatureEnabled()) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    if (execution_context && execution_context->IsDocument()) {
-      ToDocument(execution_context)
-          ->ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature::kUsb);
+    if (auto* document = DynamicTo<Document>(execution_context)) {
+      document->ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature::kUsb);
     }
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,

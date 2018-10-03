@@ -43,7 +43,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
   worklet_object_proxy_ =
       CreateObjectProxy(this, GetParentExecutionContextTaskRunners());
 
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
 

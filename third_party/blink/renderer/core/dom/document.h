@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
@@ -1912,13 +1913,6 @@ inline void Document::ScheduleLayoutTreeUpdateIfNeeded() {
     ScheduleLayoutTreeUpdate();
 }
 
-DEFINE_TYPE_CASTS(Document,
-                  ExecutionContext,
-                  context,
-                  context->IsDocument(),
-                  context.IsDocument());
-DEFINE_NODE_TYPE_CASTS(Document, IsDocumentNode());
-
 #define DEFINE_DOCUMENT_TYPE_CASTS(thisType)                                \
   DEFINE_TYPE_CASTS(thisType, Document, document, document->Is##thisType(), \
                     document.Is##thisType())
@@ -1936,7 +1930,13 @@ inline bool Node::IsDocumentNode() const {
 
 Node* EventTargetNodeForDocument(Document*);
 
-DEFINE_TYPE_CASTS(TreeScope, Document, document, true, true);
+template <>
+struct DowncastTraits<Document> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsDocument();
+  }
+  static bool AllowFrom(const Node& node) { return node.IsDocumentNode(); }
+};
 
 }  // namespace blink
 

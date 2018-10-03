@@ -26,7 +26,7 @@ WakeLock::~WakeLock() = default;
 WakeLock::WakeLock(ScriptState* script_state, LockType type)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       PageVisibilityObserver(
-          ToDocument(blink::ExecutionContext::From(script_state))->GetPage()),
+          To<Document>(blink::ExecutionContext::From(script_state))->GetPage()),
       type_(type) {
   DCHECK(type == LockType::kScreen);
 }
@@ -79,7 +79,7 @@ void WakeLock::BindToServiceIfNeeded() {
   if (wake_lock_service_)
     return;
 
-  LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+  LocalFrame* frame = To<Document>(GetExecutionContext())->GetFrame();
   frame->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&wake_lock_service_));
   wake_lock_service_.set_connection_error_handler(

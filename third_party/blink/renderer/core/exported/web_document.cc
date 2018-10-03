@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace {
 
@@ -294,7 +295,7 @@ WebDocument& WebDocument::operator=(Document* elem) {
 }
 
 WebDocument::operator Document*() const {
-  return ToDocument(private_.Get());
+  return blink::To<Document>(private_.Get());
 }
 
 }  // namespace blink

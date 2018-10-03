@@ -306,8 +306,7 @@ XMLHttpRequest::~XMLHttpRequest() {
 }
 
 Document* XMLHttpRequest::GetDocument() const {
-  DCHECK(GetExecutionContext()->IsDocument());
-  return ToDocument(GetExecutionContext());
+  return To<Document>(GetExecutionContext());
 }
 
 const SecurityOrigin* XMLHttpRequest::GetSecurityOrigin() const {

@@ -657,7 +657,7 @@ void BaseAudioContext::NotifySourceNodeFinishedProcessing(
 }
 
 Document* BaseAudioContext::GetDocument() const {
-  return ToDocument(GetExecutionContext());
+  return To<Document>(GetExecutionContext());
 }
 
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {

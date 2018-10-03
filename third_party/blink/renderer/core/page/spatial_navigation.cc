@@ -177,8 +177,8 @@ bool IsOffscreen(const Node* node) {
   // into account - now we only need to ensure that this node isn't clipped by
   // a frame.
   IntRect rect_in_root_frame;
-  if (node->IsDocumentNode() && ToDocument(*node).body())
-    node = ToDocument(*node).body();
+  if (auto* document = DynamicTo<Document>(node))
+    node = document->body();
   if (node->IsElementNode())
     rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
   return rect_in_root_frame.IsEmpty();
@@ -277,8 +277,8 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
 
 bool ScrollInDirection(Node* container, WebFocusType direction) {
   DCHECK(container);
-  if (container->IsDocumentNode())
-    return ScrollInDirection(ToDocument(container)->GetFrame(), direction);
+  if (auto* document = DynamicTo<Document>(container))
+    return ScrollInDirection(document->GetFrame(), direction);
 
   if (!container->GetLayoutBox())
     return false;
@@ -356,8 +356,8 @@ Node* ScrollableAreaOrDocumentOf(Node* node) {
   Node* parent = node;
   do {
     // FIXME: Spatial navigation is broken for OOPI.
-    if (parent->IsDocumentNode())
-      parent = ToDocument(parent)->GetFrame()->DeprecatedLocalOwner();
+    if (auto* document = DynamicTo<Document>(parent))
+      parent = document->GetFrame()->DeprecatedLocalOwner();
     else
       parent = parent->ParentOrShadowHostNode();
   } while (parent && !IsScrollableAreaOrDocument(parent));
@@ -387,8 +387,8 @@ bool IsNavigableContainer(const Node* node, WebFocusType direction) {
 
 bool CanScrollInDirection(const Node* container, WebFocusType direction) {
   DCHECK(container);
-  if (container->IsDocumentNode())
-    return CanScrollInDirection(ToDocument(container)->GetFrame(), direction);
+  if (auto* document = DynamicTo<Document>(container))
+    return CanScrollInDirection(document->GetFrame(), direction);
 
   if (!IsScrollableNode(container))
     return false;

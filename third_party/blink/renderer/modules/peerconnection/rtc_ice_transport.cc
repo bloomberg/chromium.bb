@@ -79,7 +79,7 @@ class DefaultIceTransportAdapterCrossThreadFactory
 }  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  LocalFrame* frame = ToDocument(context)->GetFrame();
+  LocalFrame* frame = To<Document>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
@@ -111,7 +111,7 @@ RTCIceTransport::RTCIceTransport(
   DCHECK(adapter_factory);
   DCHECK(proxy_thread->BelongsToCurrentThread());
 
-  LocalFrame* frame = ToDocument(context)->GetFrame();
+  LocalFrame* frame = To<Document>(context)->GetFrame();
   DCHECK(frame);
   proxy_.reset(new IceTransportProxy(
       frame->GetFrameScheduler(), std::move(proxy_thread),

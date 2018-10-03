@@ -85,12 +85,12 @@ PositionError* CreatePositionError(
   return PositionError::Create(error_code, error);
 }
 
-static void ReportGeolocationViolation(ExecutionContext* context) {
-  Document* doc = ToDocumentOrNull(context);
+static void ReportGeolocationViolation(Document* doc) {
+  // TODO(dcheng): |doc| probably can't be null here.
   if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                   : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
-        context, PerformanceMonitor::kDiscouragedAPIUse,
+        doc, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
         base::TimeDelta(), nullptr);
   }
@@ -122,7 +122,7 @@ void Geolocation::Trace(blink::Visitor* visitor) {
 }
 
 Document* Geolocation::GetDocument() const {
-  return ToDocument(GetExecutionContext());
+  return To<Document>(GetExecutionContext());
 }
 
 LocalFrame* Geolocation::GetFrame() const {

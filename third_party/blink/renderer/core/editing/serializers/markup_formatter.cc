@@ -157,7 +157,7 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
       AppendComment(result, ToComment(node).data());
       break;
     case Node::kDocumentNode:
-      AppendXMLDeclaration(result, ToDocument(node));
+      AppendXMLDeclaration(result, To<Document>(node));
       break;
     case Node::kDocumentFragmentNode:
       break;

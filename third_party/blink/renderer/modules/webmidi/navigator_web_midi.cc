@@ -89,7 +89,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                                            "The frame is not working."));
   }
 
-  Document& document = *ToDocument(ExecutionContext::From(script_state));
+  Document& document = *To<Document>(ExecutionContext::From(script_state));
   if (options.hasSysex() && options.sysex()) {
     UseCounter::Count(
         document,

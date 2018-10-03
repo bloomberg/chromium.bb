@@ -4012,9 +4012,9 @@ AtomicString Element::ComputeInheritedLanguage() const {
                      attributes.Find(HTMLNames::langAttr))
           value = attribute->Value();
       }
-    } else if (n->IsDocumentNode()) {
+    } else if (auto* document = DynamicTo<Document>(n)) {
       // checking the MIME content-language
-      value = ToDocument(n)->ContentLanguage();
+      value = document->ContentLanguage();
     }
 
     n = n->ParentOrShadowHostNode();

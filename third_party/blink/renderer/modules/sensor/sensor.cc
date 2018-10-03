@@ -45,7 +45,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // [SecureContext] in idl.
   DCHECK(execution_context->IsSecureContext());
   DCHECK(!features.IsEmpty());
-  Document* document = ToDocument(execution_context);
+  Document* document = To<Document>(execution_context);
 
   if (!AreFeaturesEnabled(document, features)) {
     exception_state.ThrowSecurityError(
@@ -173,7 +173,7 @@ void Sensor::InitSensorProxyIfNeeded() {
   if (sensor_proxy_)
     return;
 
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = To<Document>(GetExecutionContext());
   if (!document || !document->GetFrame())
     return;
 

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -58,7 +59,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
-            ToDocument(target)->GetFrame(),
+            To<Document>(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
       UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
       return new ScheduledAction(script_state);
@@ -73,7 +74,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
-            ToDocument(target)->GetFrame(),
+            To<Document>(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
       UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
       return new ScheduledAction(script_state);
@@ -108,8 +109,8 @@ void ScheduledAction::Execute(ExecutionContext* context) {
   // determine if it is allowed. Enter the scope here.
   ScriptState::Scope scope(script_state_->Get());
 
-  if (context->IsDocument()) {
-    LocalFrame* frame = ToDocument(context)->GetFrame();
+  if (auto* document = DynamicTo<Document>(context)) {
+    LocalFrame* frame = document->GetFrame();
     if (!frame) {
       DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
       return;

@@ -247,13 +247,13 @@ bool V8AbstractEventHandler::BelongsToTheCurrentWorld(
     return true;
   // If currently parsing, the parser could be accessing this listener
   // outside of any v8 context; check if it belongs to the main world.
-  if (!GetIsolate()->InContext() && execution_context &&
-      execution_context->IsDocument()) {
-    Document* document = ToDocument(execution_context);
-    if (document->Parser() && document->Parser()->IsParsing())
-      return World().IsMainWorld();
-  }
-  return false;
+  if (GetIsolate()->InContext())
+    return false;
+  auto* document = DynamicTo<Document>(execution_context);
+  if (!document)
+    return false;
+  return document->Parser() && document->Parser()->IsParsing() &&
+         World().IsMainWorld();
 }
 
 void V8AbstractEventHandler::ClearListenerObject() {

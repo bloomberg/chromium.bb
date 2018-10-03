@@ -18,14 +18,11 @@ AudioOutputDeviceClientImpl::AudioOutputDeviceClientImpl(LocalFrame& frame)
 AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl() = default;
 
 void AudioOutputDeviceClientImpl::CheckIfAudioSinkExistsAndIsAuthorized(
-    ExecutionContext* context,
+    Document& document,
     const WebString& sink_id,
     std::unique_ptr<WebSetSinkIdCallbacks> callbacks) {
-  DCHECK(context);
-  DCHECK(context->IsDocument());
-  Document* document = ToDocument(context);
   WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
+      WebLocalFrameImpl::FromFrame(document.GetFrame());
   web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
       sink_id, callbacks.release());
 }

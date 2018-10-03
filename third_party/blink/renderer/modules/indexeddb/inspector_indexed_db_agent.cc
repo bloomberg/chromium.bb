@@ -608,7 +608,7 @@ class OpenCursorCallback final : public EventListener {
       return;
     }
 
-    Document* document = ToDocument(ExecutionContext::From(script_state_));
+    Document* document = To<Document>(ExecutionContext::From(script_state_));
     if (!document)
       return;
     ScriptState::Scope scope(script_state_);

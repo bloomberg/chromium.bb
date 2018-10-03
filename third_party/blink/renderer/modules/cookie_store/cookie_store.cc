@@ -195,10 +195,8 @@ void ToCookieChangeSubscription(
 const KURL& DefaultCookieURL(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (execution_context->IsDocument()) {
-    Document* document = ToDocument(execution_context);
+  if (auto* document = DynamicTo<Document>(execution_context))
     return document->CookieURL();
-  }
 
   DCHECK(execution_context->IsServiceWorkerGlobalScope());
   ServiceWorkerGlobalScope* scope =
@@ -209,10 +207,8 @@ const KURL& DefaultCookieURL(ExecutionContext* execution_context) {
 KURL DefaultSiteForCookies(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (execution_context->IsDocument()) {
-    Document* document = ToDocument(execution_context);
+  if (auto* document = DynamicTo<Document>(execution_context))
     return document->SiteForCookies();
-  }
 
   DCHECK(execution_context->IsServiceWorkerGlobalScope());
   ServiceWorkerGlobalScope* scope =

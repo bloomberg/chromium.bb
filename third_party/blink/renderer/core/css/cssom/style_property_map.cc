@@ -308,9 +308,9 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
 
   const PropertyRegistration* registration = nullptr;
 
-  if (property_id == CSSPropertyVariable && execution_context->IsDocument()) {
+  if (property_id == CSSPropertyVariable && IsA<Document>(execution_context)) {
     const PropertyRegistry* registry =
-        ToDocument(*execution_context).GetPropertyRegistry();
+        To<Document>(*execution_context).GetPropertyRegistry();
     if (registry) {
       registration = registry->Registration(AtomicString(property_name));
     }

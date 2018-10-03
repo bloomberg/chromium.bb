@@ -98,10 +98,11 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!execution_context->IsDocument())
+  auto* document = DynamicTo<Document>(execution_context);
+  if (!document)
     return v8::Local<v8::Value>();
 
-  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
+  LocalFrame* frame = document->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
@@ -110,6 +111,8 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
 
   v8::Local<v8::Value> parameters[1] = {js_event};
   v8::Local<v8::Value> result;
+  // TODO(dcheng): document.GetFrame()->GetDocument() == document should always
+  // hold if GetFrame() is non-null.
   if (!V8ScriptRunner::CallFunction(handler_function, frame->GetDocument(),
                                     receiver, base::size(parameters),
                                     parameters, script_state->GetIsolate())
@@ -134,11 +137,9 @@ v8::Local<v8::Object> V8LazyEventListener::GetListenerObjectInternal(
   if (!script_state->ContextIsValid())
     return v8::Local<v8::Object>();
 
-  if (!execution_context->IsDocument())
-    return v8::Local<v8::Object>();
-
-  if (!ToDocument(execution_context)
-           ->AllowInlineEventHandler(node_, this, source_url_, position_.line_))
+  Document* document = DynamicTo<Document>(execution_context);
+  if (!document || !document->AllowInlineEventHandler(node_, this, source_url_,
+                                                      position_.line_))
     return v8::Local<v8::Object>();
 
   // All checks passed and it's now okay to return the function object.

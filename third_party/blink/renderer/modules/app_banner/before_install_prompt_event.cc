@@ -80,7 +80,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = ToDocumentOrNull(context);
+  Document* doc = To<Document>(context);
 
   if (require_gesture_ && !LocalFrame::ConsumeTransientUserActivation(
                               doc ? doc->GetFrame() : nullptr)) {

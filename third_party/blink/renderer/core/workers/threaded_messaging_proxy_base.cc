@@ -64,8 +64,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   KURL script_url = global_scope_creation_params->script_url.Copy();
 
   std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context;
-  if (execution_context_->IsDocument()) {
-    LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
+  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+    LocalFrame* frame = document->GetFrame();
     web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
     // |web_worker_fetch_context| is null in some unit tests.
     if (web_worker_fetch_context) {

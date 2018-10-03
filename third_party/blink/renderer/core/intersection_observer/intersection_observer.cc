@@ -353,7 +353,7 @@ DOMHighResTimeStamp IntersectionObserver::GetEffectiveDelay() const {
 }
 
 DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
-  if (Document* document = ToDocument(delegate_->GetExecutionContext())) {
+  if (Document* document = To<Document>(delegate_->GetExecutionContext())) {
     if (LocalDOMWindow* dom_window = document->domWindow())
       return DOMWindowPerformance::performance(*dom_window)->now();
   }

@@ -153,7 +153,7 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
 
 void ThreadDebugger::beginUserGesture() {
   ExecutionContext* ec = CurrentExecutionContext(isolate_);
-  Document* document = ec && ec->IsDocument() ? ToDocument(ec) : nullptr;
+  Document* document = DynamicTo<Document>(ec);
   user_gesture_indicator_ = LocalFrame::NotifyUserActivation(
       document ? document->GetFrame() : nullptr);
 }

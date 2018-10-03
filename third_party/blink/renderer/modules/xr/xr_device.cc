@@ -97,7 +97,7 @@ int64_t XRDevice::GetSourceId() const {
 ScriptPromise XRDevice::requestSession(
     ScriptState* script_state,
     const XRSessionCreationOptions& options) {
-  Document* doc = ToDocumentOrNull(ExecutionContext::From(script_state));
+  Document* doc = To<Document>(ExecutionContext::From(script_state));
 
   if (options.immersive() && !did_log_request_immersive_session_ && doc) {
     ukm::builders::XR_WebXR(GetSourceId())

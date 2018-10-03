@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class Document;
 class WebString;
 
 class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
@@ -26,14 +26,14 @@ class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
   // Checks that a given sink exists and has permissions to be used from the
   // origin of the current frame.
   virtual void CheckIfAudioSinkExistsAndIsAuthorized(
-      ExecutionContext*,
+      Document&,
       const WebString& sink_id,
       std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
 
   void Trace(blink::Visitor*) override;
 
   // Supplement requirements.
-  static AudioOutputDeviceClient* From(ExecutionContext*);
+  static AudioOutputDeviceClient* From(Document&);
 };
 
 MODULES_EXPORT void ProvideAudioOutputDeviceClientTo(LocalFrame&,
