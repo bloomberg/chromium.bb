@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/proxy_server.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_headers.h"
@@ -113,6 +114,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
 
   // True if the response was delivered through a proxy.
   bool was_fetched_via_proxy;
+
+  // The proxy server used for this request, if any.
+  net::ProxyServer proxy_server;
 
   // True if the response was fetched by a ServiceWorker.
   bool was_fetched_via_service_worker;

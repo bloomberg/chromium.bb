@@ -13,6 +13,7 @@
 #include "ipc/param_traits_macros.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
@@ -113,6 +114,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::HttpRequestHeaders> {
 };
 
 template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::ProxyServer> {
+  typedef net::ProxyServer param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::OCSPVerifyResult> {
   typedef net::OCSPVerifyResult param_type;
   static void Write(base::Pickle* m, const param_type& p);
@@ -203,6 +214,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<url::Origin> {
 IPC_ENUM_TRAITS_MAX_VALUE(
     net::ct::CTPolicyCompliance,
     net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE)
+
+IPC_ENUM_TRAITS(net::ProxyServer::Scheme);  // BitMask.
+
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
                           net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,

@@ -222,6 +222,47 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Log(
   l->append("<HttpResponseHeaders>");
 }
 
+void ParamTraits<net::ProxyServer>::Write(base::Pickle* m,
+                                          const param_type& p) {
+  net::ProxyServer::Scheme scheme = p.scheme();
+  WriteParam(m, scheme);
+  // When scheme is either 'direct' or 'invalid' |host_port_pair|
+  // should not be called, as per the method implementation body.
+  if (scheme != net::ProxyServer::SCHEME_DIRECT &&
+      scheme != net::ProxyServer::SCHEME_INVALID) {
+    WriteParam(m, p.host_port_pair());
+  }
+  WriteParam(m, p.is_trusted_proxy());
+}
+
+bool ParamTraits<net::ProxyServer>::Read(const base::Pickle* m,
+                                         base::PickleIterator* iter,
+                                         param_type* r) {
+  net::ProxyServer::Scheme scheme;
+  bool is_trusted_proxy = false;
+  if (!ReadParam(m, iter, &scheme))
+    return false;
+
+  // When scheme is either 'direct' or 'invalid' |host_port_pair|
+  // should not be called, as per the method implementation body.
+  net::HostPortPair host_port_pair;
+  if (scheme != net::ProxyServer::SCHEME_DIRECT &&
+      scheme != net::ProxyServer::SCHEME_INVALID &&
+      !ReadParam(m, iter, &host_port_pair)) {
+    return false;
+  }
+
+  if (!ReadParam(m, iter, &is_trusted_proxy))
+    return false;
+
+  *r = net::ProxyServer(scheme, host_port_pair, is_trusted_proxy);
+  return true;
+}
+
+void ParamTraits<net::ProxyServer>::Log(const param_type& p, std::string* l) {
+  l->append("<ProxyServer>");
+}
+
 void ParamTraits<net::OCSPVerifyResult>::Write(base::Pickle* m,
                                                const param_type& p) {
   WriteParam(m, p.response_status);

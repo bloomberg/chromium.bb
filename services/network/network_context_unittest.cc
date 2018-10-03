@@ -3760,6 +3760,72 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
             "Failed: FindProxyForURL(url=http://server.bad.dns/)");
 }
 
+// Test ensures that ProxyServer data is populated correctly across Mojo calls.
+// Basically it performs a set of URLLoader network requests, whose requests
+// configure proxies. Then it checks whether the expected proxy scheme is
+// respected.
+TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  struct ProxyConfigSet {
+    net::ProxyConfig proxy_config;
+    GURL url;
+    net::ProxyServer::Scheme expected_proxy_config_scheme;
+  } proxy_config_set[2];
+
+  proxy_config_set[0].proxy_config.proxy_rules().ParseFromString(
+      base::StringPrintf("http=%s",
+                         test_server.host_port_pair().ToString().c_str()));
+  // The domain here is irrelevant, and it is the path that matters.
+  proxy_config_set[0].url = GURL("http://does.not.matter/echo");
+  proxy_config_set[0].expected_proxy_config_scheme =
+      net::ProxyServer::SCHEME_HTTP;
+
+  proxy_config_set[1].proxy_config.proxy_rules().ParseFromString(
+      "http=direct://");
+  proxy_config_set[1].url = test_server.GetURL("/echo");
+  proxy_config_set[1].expected_proxy_config_scheme =
+      net::ProxyServer::SCHEME_DIRECT;
+
+  for (const auto& proxy_data : proxy_config_set) {
+    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+    context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+        proxy_data.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
+    mojom::ProxyConfigClientPtr config_client;
+    context_params->proxy_config_client_request =
+        mojo::MakeRequest(&config_client);
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(context_params));
+
+    mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = 0;
+    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                            std::move(params));
+
+    ResourceRequest request;
+    // The domain here is irrelevant, and it is the path that matters.
+    request.url = proxy_data.url;  // test_server.GetURL("/echo");
+
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        0 /* options */, request, client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+
+    EXPECT_TRUE(client.has_received_completion());
+    EXPECT_EQ(client.response_head().proxy_server.scheme(),
+              proxy_data.expected_proxy_config_scheme);
+  }
+}
+
 }  // namespace
 
 }  // namespace network

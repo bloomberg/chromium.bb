@@ -68,6 +68,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.socket_address = response_info.socket_address;
   response->head.was_fetched_via_cache = request->was_cached();
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
