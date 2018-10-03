@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/page_info/page_info_bubble_controller.h"
+#import "chrome/browser/ui/page_info/page_info_dialog.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,11 +24,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/url_constants.h"
-
-@interface PageInfoBubbleController (ExposedForTesting)
-+ (PageInfoBubbleController*)getPageInfoBubbleForTest;
-- (void)performLayout;
-@end
 
 namespace {
 
