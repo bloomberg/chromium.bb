@@ -78,11 +78,15 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   // WebRTCDTMFSenderHandlerClient
   void DidPlayTone(const WebString& tone,
                    const WebString& tone_buffer) override;
+  void PlayoutTask();
 
   std::unique_ptr<WebRTCDTMFSenderHandler> handler_;
 
   bool stopped_;
   String tone_buffer_;
+  int duration_;
+  int inter_tone_gap_;
+  bool playout_task_is_scheduled_ = false;
 };
 
 }  // namespace blink
