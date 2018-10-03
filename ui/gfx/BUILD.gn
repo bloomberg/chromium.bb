@@ -105,7 +105,6 @@ jumbo_component("gfx") {
     "image/image_png_rep.h",
     "image/image_skia.cc",
     "image/image_skia.h",
-    "image/image_skia_rep.cc",
     "image/image_skia_rep.h",
     "image/image_skia_source.cc",
     "image/image_skia_source.h",
@@ -213,6 +212,8 @@ jumbo_component("gfx") {
       "image/image_generic.cc",
       "image/image_skia_operations.cc",
       "image/image_skia_operations.h",
+      "image/image_skia_rep_default.cc",
+      "image/image_skia_rep_default.h",
       "paint_throbber.cc",
       "paint_throbber.h",
       "scoped_canvas.cc",
@@ -226,6 +227,11 @@ jumbo_component("gfx") {
       "skia_vector_animation_observer.h",
       "skottie_wrapper.cc",
       "skottie_wrapper.h",
+    ]
+  } else {
+    sources += [
+      "image/image_skia_rep_ios.cc",
+      "image/image_skia_rep_ios.h",
     ]
   }
 

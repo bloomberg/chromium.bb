@@ -26,6 +26,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -357,8 +358,17 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   ScopedCanvas scoper(this);
   canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
                  SkFloatToScalar(1.0f / bitmap_scale));
-  canvas_->drawImage(image_rep.paint_image(), SkFloatToScalar(x * bitmap_scale),
-                     SkFloatToScalar(y * bitmap_scale), &flags);
+  if (base::FeatureList::IsEnabled(features::kUsePaintRecordForImageSkia)) {
+    canvas_->translate(std::round(x * bitmap_scale),
+                       std::round(y * bitmap_scale));
+    canvas_->saveLayer(nullptr, &flags);
+    canvas_->drawPicture(image_rep.GetPaintRecord());
+    canvas_->restore();
+  } else {
+    canvas_->drawImage(image_rep.paint_image(),
+                       SkFloatToScalar(x * bitmap_scale),
+                       SkFloatToScalar(y * bitmap_scale), &flags);
+  }
 }
 
 void Canvas::DrawImageInt(const ImageSkia& image,

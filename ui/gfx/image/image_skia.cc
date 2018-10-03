@@ -186,11 +186,11 @@ void ImageSkiaStorage::AddRepresentation(const ImageSkiaRep& image) {
   DCHECK(!HasRepresentationAtAllScales());
 
   if (image.scale() != 1.0f) {
-    for (ImageSkia::ImageSkiaReps::iterator it = image_reps_.begin();
-         it < image_reps_.end(); ++it) {
+    ImageSkia::ImageSkiaReps::iterator it;
+    for (it = image_reps_.begin(); it < image_reps_.end(); ++it) {
       if (it->unscaled()) {
         DCHECK_EQ(1.0f, it->scale());
-        it->SetScaled();
+        *it = ImageSkiaRep(it->GetBitmap(), it->scale());
         break;
       }
     }
