@@ -31,6 +31,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -812,9 +813,8 @@ bool CanHandleToggleDictation() {
 
 void HandleToggleDictation() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
-  UserMetricsRecorder::RecordUserToggleDictation(
-      DictationToggleMethod::kToggleByKeyboard);
-  Shell::Get()->accessibility_controller()->ToggleDictation();
+  Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
+      mojom::DictationToggleSource::kKeyboard);
 }
 
 bool CanHandleToggleDockedMagnifier() {

@@ -251,8 +251,9 @@ class AutomationManager {
   getRelevantMenuActions_() {
     // TODO(crbug/881080): determine relevant actions programmatically.
     let actions = [
-      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS,
-      ContextMenuManager.Action.SCROLL_UP, ContextMenuManager.Action.SCROLL_DOWN
+      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.DICTATION,
+      ContextMenuManager.Action.OPTIONS, ContextMenuManager.Action.SCROLL_UP,
+      ContextMenuManager.Action.SCROLL_DOWN
     ];
     return actions;
   }

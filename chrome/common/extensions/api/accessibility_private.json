@@ -225,6 +225,13 @@
           }
         ],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "toggleDictation",
+        "type": "function",
+        "description": "Toggles dictation between active and inactive states.",
+        "parameters": [],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [

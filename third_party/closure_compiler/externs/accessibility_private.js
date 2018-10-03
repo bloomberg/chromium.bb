@@ -208,3 +208,8 @@ chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
+
+/**
+ * Called when a Switch Access user activates dictation from the context menu.
+ */
+chrome.accessibilityPrivate.toggleDictation = function() {};

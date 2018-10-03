@@ -97,6 +97,17 @@ class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.onSelectToSpeakStateChanged",
                              ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED)
 };
+
+// API function that is called when a SwitchAccess user toggles Dictation from
+// the context menu.
+class AccessibilityPrivateToggleDictationFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateToggleDictationFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.toggleDictation",
+                             ACCESSIBILITY_PRIVATE_TOGGLEDICTATION)
+};
+
 #endif  // defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

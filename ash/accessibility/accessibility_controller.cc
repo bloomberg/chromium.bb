@@ -27,6 +27,7 @@
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -646,6 +647,14 @@ void AccessibilityController::ToggleDictation() {
         },
         base::Unretained(this)));
   }
+}
+
+void AccessibilityController::ToggleDictationFromSource(
+    mojom::DictationToggleSource source) {
+  base::RecordAction(base::UserMetricsAction("Accel_Toggle_Dictation"));
+  UserMetricsRecorder::RecordUserToggleDictation(source);
+
+  ToggleDictation();
 }
 
 void AccessibilityController::SilenceSpokenFeedback() {
