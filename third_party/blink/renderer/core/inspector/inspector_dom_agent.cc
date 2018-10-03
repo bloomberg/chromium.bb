@@ -1315,22 +1315,18 @@ Response InspectorDOMAgent::getNodeForLocation(
     int x,
     int y,
     Maybe<bool> optional_include_user_agent_shadow_dom,
-    int* node_id) {
-  if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
+    int* backend_node_id,
+    Maybe<int>* node_id) {
   bool include_user_agent_shadow_dom =
       optional_include_user_agent_shadow_dom.fromMaybe(false);
-  Response response = PushDocumentUponHandlelessOperation();
-  if (!response.isSuccess())
-    return response;
-
+  Document* document = inspected_frames_->Root()->GetDocument();
   LayoutPoint document_point(x * inspected_frames_->Root()->PageZoomFactor(),
                              y * inspected_frames_->Root()->PageZoomFactor());
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
-  HitTestLocation location(document_->View()->DocumentToFrame(document_point));
+  HitTestLocation location(document->View()->DocumentToFrame(document_point));
   HitTestResult result(request, location);
-  document_->GetFrame()->ContentLayoutObject()->HitTest(location, result);
+  document->GetFrame()->ContentLayoutObject()->HitTest(location, result);
   if (!include_user_agent_shadow_dom)
     result.SetToShadowHostIfInRestrictedShadowRoot();
   Node* node = result.InnerPossiblyPseudoNode();
@@ -1338,7 +1334,13 @@ Response InspectorDOMAgent::getNodeForLocation(
     node = node->parentNode();
   if (!node)
     return Response::Error("No node found at given location");
-  *node_id = PushNodePathToFrontend(node);
+  *backend_node_id = DOMNodeIds::IdForNode(node);
+  if (enabled_.Get()) {
+    Response response = PushDocumentUponHandlelessOperation();
+    if (!response.isSuccess())
+      return response;
+    *node_id = PushNodePathToFrontend(node);
+  }
   return Response::OK();
 }
 
@@ -2143,6 +2145,11 @@ Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>>* result) {
   if (!enabled_.Get())
     return Response::Error("DOM agent is not enabled");
+
+  Response response = PushDocumentUponHandlelessOperation();
+  if (!response.isSuccess())
+    return response;
+
   *result = protocol::Array<int>::create();
   for (size_t index = 0; index < backend_node_ids->length(); ++index) {
     Node* node = DOMNodeIds::NodeForId(backend_node_ids->get(index));

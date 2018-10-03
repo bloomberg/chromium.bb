@@ -200,7 +200,8 @@ class CORE_EXPORT InspectorDOMAgent final
       int x,
       int y,
       protocol::Maybe<bool> include_user_agent_shadow_dom,
-      int* out_node_id) override;
+      int* backend_node_id,
+      protocol::Maybe<int>* node_id) override;
   protocol::Response getRelayoutBoundary(int node_id,
                                          int* out_node_id) override;
   protocol::Response describeNode(
