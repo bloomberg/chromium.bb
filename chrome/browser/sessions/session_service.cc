@@ -124,8 +124,9 @@ bool SessionService::ShouldNewWindowStartSession() {
   return false;
 }
 
-bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open) {
-  return RestoreIfNecessary(urls_to_open, NULL);
+bool SessionService::RestoreIfNecessary(const base::CommandLine& command_line,
+                                        const std::vector<GURL>& urls_to_open) {
+  return RestoreIfNecessary(command_line, urls_to_open, NULL);
 }
 
 void SessionService::ResetFromCurrentBrowsers() {
@@ -230,7 +231,8 @@ void SessionService::WindowOpened(Browser* browser) {
   if (!ShouldTrackBrowser(browser))
     return;
 
-  RestoreIfNecessary(std::vector<GURL>(), browser);
+  RestoreIfNecessary(*base::CommandLine::ForCurrentProcess(),
+                     std::vector<GURL>(), browser);
   SetWindowType(browser->session_id(),
                 browser->type(),
                 browser->is_app() ? TYPE_APP : TYPE_NORMAL);
@@ -566,7 +568,8 @@ void SessionService::RemoveUnusedRestoreWindows(
   }
 }
 
-bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+bool SessionService::RestoreIfNecessary(const base::CommandLine& command_line,
+                                        const std::vector<GURL>& urls_to_open,
                                         Browser* browser) {
   if (ShouldNewWindowStartSession()) {
     // We're going from no tabbed browsers to a tabbed browser (and not in
@@ -576,8 +579,8 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       MoveCurrentSessionToLastSession();
       move_on_new_browser_ = false;
     }
-    SessionStartupPref pref = StartupBrowserCreator::GetSessionStartupPref(
-        *base::CommandLine::ForCurrentProcess(), profile());
+    SessionStartupPref pref =
+        StartupBrowserCreator::GetSessionStartupPref(command_line, profile());
     sessions::TabRestoreService* tab_restore_service =
         TabRestoreServiceFactory::GetForProfileIfExisting(profile());
     if (pref.type == SessionStartupPref::LAST &&
