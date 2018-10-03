@@ -10,9 +10,9 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 
 from chromite.lib.paygen import filelib
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import urilib
 
 
@@ -94,7 +94,7 @@ index %s..%s 100644
     local_path = '/some/local/path'
     http_path = 'http://host.domain/some/path'
 
-    gs_mock = self.PatchObject(gslib, 'Copy')
+    gs_mock = self.PatchObject(gs.GSContext, 'Copy')
     file_mock = self.PatchObject(filelib, 'Copy')
     urlretrieve_mock = self.PatchObject(urilib, 'URLRetrieve')
 
