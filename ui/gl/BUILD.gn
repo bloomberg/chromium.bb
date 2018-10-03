@@ -128,6 +128,7 @@ jumbo_component("gl") {
     "gpu_switching_manager.h",
     "gpu_timing.cc",
     "gpu_timing.h",
+    "progress_reporter.h",
     "scoped_binders.cc",
     "scoped_binders.h",
     "scoped_make_current.cc",

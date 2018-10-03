@@ -24,6 +24,10 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 
+namespace gl {
+class ProgressReporter;
+}
+
 namespace gpu {
 
 class ImageFactory;
@@ -41,7 +45,6 @@ class ImageManager;
 class RenderbufferManager;
 class PathManager;
 class ProgramManager;
-class ProgressReporter;
 class SamplerManager;
 class ShaderManager;
 class TextureManager;
@@ -67,7 +70,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
                bool bind_generates_resource,
                ImageManager* image_manager,
                gpu::ImageFactory* image_factory,
-               ProgressReporter* progress_reporter,
+               gl::ProgressReporter* progress_reporter,
                const GpuFeatureInfo& gpu_feature_info,
                ServiceDiscardableManager* discardable_manager);
 
@@ -313,7 +316,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when
   // using in-process command buffer.
-  ProgressReporter* progress_reporter_;
+  gl::ProgressReporter* progress_reporter_;
 
   GpuFeatureInfo gpu_feature_info_;
 
