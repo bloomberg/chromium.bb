@@ -1317,14 +1317,14 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     const bool transfer_auth_cookies_and_channel_ids_on_first_login =
         has_auth_cookies_;
 
-    net::URLRequestContextGetter* auth_request_context =
-        GetAuthRequestContext();
+    content::StoragePartition* signin_partition = login::GetSigninPartition();
 
     // Authentication request context may be missing especially if user didn't
     // sign in using GAIA (webview) and webview didn't yet initialize.
-    if (auth_request_context) {
+    if (signin_partition) {
       ProfileAuthData::Transfer(
-          auth_request_context, profile->GetRequestContext(),
+          signin_partition,
+          content::BrowserContext::GetDefaultStoragePartition(profile),
           transfer_auth_cookies_and_channel_ids_on_first_login,
           transfer_saml_auth_cookies_on_subsequent_login,
           base::Bind(
@@ -1879,15 +1879,6 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
       user_context, *device_list,
       base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished, AsWeakPtr(),
                  user_context.GetAccountId().GetUserEmail()));
-}
-
-net::URLRequestContextGetter* UserSessionManager::GetAuthRequestContext()
-    const {
-  content::StoragePartition* signin_partition = login::GetSigninPartition();
-  if (!signin_partition)
-    return nullptr;
-
-  return signin_partition->GetURLRequestContext();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

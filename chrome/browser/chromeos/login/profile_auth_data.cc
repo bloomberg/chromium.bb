@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_cache.h"
@@ -59,8 +60,8 @@ void ImportCookies(const net::CookieList& cookies,
 class ProfileAuthDataTransferer {
  public:
   ProfileAuthDataTransferer(
-      net::URLRequestContextGetter* from_context,
-      net::URLRequestContextGetter* to_context,
+      content::StoragePartition* from_partition,
+      content::StoragePartition* to_partition,
       bool transfer_auth_cookies_and_channel_ids_on_first_login,
       bool transfer_saml_auth_cookies_on_subsequent_login,
       const base::Closure& completion_callback);
@@ -138,13 +139,13 @@ class ProfileAuthDataTransferer {
 };
 
 ProfileAuthDataTransferer::ProfileAuthDataTransferer(
-    net::URLRequestContextGetter* from_context,
-    net::URLRequestContextGetter* to_context,
+    content::StoragePartition* from_partition,
+    content::StoragePartition* to_partition,
     bool transfer_auth_cookies_and_channel_ids_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback)
-    : from_context_(from_context),
-      to_context_(to_context),
+    : from_context_(from_partition->GetURLRequestContext()),
+      to_context_(to_partition->GetURLRequestContext()),
       transfer_auth_cookies_and_channel_ids_on_first_login_(
           transfer_auth_cookies_and_channel_ids_on_first_login),
       transfer_saml_auth_cookies_on_subsequent_login_(
@@ -332,14 +333,14 @@ void ProfileAuthDataTransferer::Finish() {
 }  // namespace
 
 void ProfileAuthData::Transfer(
-    net::URLRequestContextGetter* from_context,
-    net::URLRequestContextGetter* to_context,
+    content::StoragePartition* from_partition,
+    content::StoragePartition* to_partition,
     bool transfer_auth_cookies_and_channel_ids_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (new ProfileAuthDataTransferer(
-       from_context, to_context,
+       from_partition, to_partition,
        transfer_auth_cookies_and_channel_ids_on_first_login,
        transfer_saml_auth_cookies_on_subsequent_login, completion_callback))
       ->BeginTransfer();

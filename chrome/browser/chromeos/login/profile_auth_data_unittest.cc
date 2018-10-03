@@ -125,8 +125,10 @@ void ProfileAuthDataTest::Transfer(
     bool transfer_saml_auth_cookies_on_subsequent_login) {
   base::RunLoop run_loop;
   ProfileAuthData::Transfer(
-      login_browser_context_.GetRequestContext(),
-      user_browser_context_.GetRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(
+          &login_browser_context_),
+      content::BrowserContext::GetDefaultStoragePartition(
+          &user_browser_context_),
       transfer_auth_cookies_and_channel_ids_on_first_login,
       transfer_saml_auth_cookies_on_subsequent_login, run_loop.QuitClosure());
   run_loop.Run();
