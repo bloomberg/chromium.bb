@@ -81,7 +81,7 @@ cr.define('settings_payments_section', function() {
           createPaymentsSection([], {credit_card_enabled: {value: false}});
 
       assertFalse(section.$$('#autofillCreditCardToggle').disabled);
-      assertTrue(section.$$('#addCreditCard').disabled);
+      assertTrue(section.$$('#addCreditCard').hidden);
     });
 
     test('verifyCreditCardCount', function() {
