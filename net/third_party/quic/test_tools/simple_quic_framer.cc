@@ -127,6 +127,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override {
+    new_token_frames_.push_back(frame);
+    return true;
+  }
+
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
     stop_sending_frames_.push_back(frame);
     return true;
@@ -249,6 +254,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicWindowUpdateFrame> window_update_frames_;
   std::vector<QuicBlockedFrame> blocked_frames_;
   std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
+  std::vector<QuicNewTokenFrame> new_token_frames_;
   std::vector<QuicMessageFrame> message_frames_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
 };

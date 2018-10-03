@@ -172,6 +172,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override { return true; }
+
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return true;
   }

@@ -465,6 +465,8 @@ size_t QuicFramer::GetRetransmittableControlFrameSize(
                  frame.application_close_frame->error_details);
     case NEW_CONNECTION_ID_FRAME:
       return GetNewConnectionIdFrameSize(*frame.new_connection_id_frame);
+    case NEW_TOKEN_FRAME:
+      return GetNewTokenFrameSize(*frame.new_token_frame);
     case MAX_STREAM_ID_FRAME:
       return GetMaxStreamIdFrameSize(version, frame.max_stream_id_frame);
     case STREAM_ID_BLOCKED_FRAME:
@@ -533,6 +535,13 @@ size_t QuicFramer::GetNewConnectionIdFrameSize(
          QuicDataWriter::GetVarInt62Len(frame.sequence_number) +
          kConnectionIdLengthSize + kQuicConnectionIdLength +
          sizeof(frame.stateless_reset_token);
+}
+
+// static
+size_t QuicFramer::GetNewTokenFrameSize(const QuicNewTokenFrame& frame) {
+  return kQuicFrameTypeSize +
+         QuicDataWriter::GetVarInt62Len(frame.token.length()) +
+         frame.token.length();
 }
 
 // static
@@ -718,6 +727,10 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         set_detailed_error(
             "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
         return RaiseError(QUIC_INTERNAL_ERROR);
+      case NEW_TOKEN_FRAME:
+        set_detailed_error(
+            "Attempt to append NEW_TOKEN_ID frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
       case MAX_STREAM_ID_FRAME:
         set_detailed_error(
             "Attempt to append MAX_STREAM_ID frame and not in version 99.");
@@ -872,6 +885,12 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         if (!AppendNewConnectionIdFrame(*frame.new_connection_id_frame,
                                         &writer)) {
           QUIC_BUG << "AppendNewConnectionIdFrame failed";
+          return 0;
+        }
+        break;
+      case NEW_TOKEN_FRAME:
+        if (!AppendNewTokenFrame(*frame.new_token_frame, &writer)) {
+          QUIC_BUG << "AppendNewTokenFrame failed";
           return 0;
         }
         break;
@@ -2313,6 +2332,18 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
+        case IETF_NEW_TOKEN: {
+          QuicNewTokenFrame frame;
+          if (!ProcessNewTokenFrame(reader, &frame)) {
+            return RaiseError(QUIC_INVALID_NEW_TOKEN);
+          }
+          if (!visitor_->OnNewTokenFrame(frame)) {
+            QUIC_DVLOG(1) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          break;
+        }
         case IETF_STOP_SENDING: {
           QuicStopSendingFrame frame;
           if (!ProcessStopSendingFrame(reader, &frame)) {
@@ -3407,6 +3438,10 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
       set_detailed_error(
           "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
       return RaiseError(QUIC_INTERNAL_ERROR);
+    case NEW_TOKEN_FRAME:
+      set_detailed_error(
+          "Attempt to append NEW_TOKEN frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
     case MAX_STREAM_ID_FRAME:
       set_detailed_error(
           "Attempt to append MAX_STREAM_ID frame and not in version 99.");
@@ -3496,6 +3531,9 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       break;
     case NEW_CONNECTION_ID_FRAME:
       type_byte = IETF_NEW_CONNECTION_ID;
+      break;
+    case NEW_TOKEN_FRAME:
+      type_byte = IETF_NEW_TOKEN;
       break;
     case MAX_STREAM_ID_FRAME:
       type_byte = IETF_MAX_STREAM_ID;
@@ -3640,6 +3678,40 @@ bool QuicFramer::AppendIetfConnectionId(
       !writer->WriteConnectionId(source_connection_id)) {
     return false;
   }
+  return true;
+}
+bool QuicFramer::AppendNewTokenFrame(const QuicNewTokenFrame& frame,
+                                     QuicDataWriter* writer) {
+  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.token.length()))) {
+    set_detailed_error("Writing token length failed.");
+    return false;
+  }
+  if (!writer->WriteBytes(frame.token.data(), frame.token.length())) {
+    set_detailed_error("Writing token buffer failed.");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::ProcessNewTokenFrame(QuicDataReader* reader,
+                                      QuicNewTokenFrame* frame) {
+  uint64_t length;
+  if (!reader->ReadVarInt62(&length)) {
+    set_detailed_error("Unable to read new token length.");
+    return false;
+  }
+  if (length > kMaxNewTokenTokenLength) {
+    set_detailed_error("Token length larger than maximum.");
+    return false;
+  }
+
+  // TODO(ianswett): Don't use QuicStringPiece as an intermediary.
+  QuicStringPiece data;
+  if (!reader->ReadStringPiece(&data, length)) {
+    set_detailed_error("Unable to read new token data.");
+    return false;
+  }
+  frame->token = QuicString(data);
   return true;
 }
 

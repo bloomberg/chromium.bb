@@ -152,13 +152,14 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // there are pending retransmissions prior to calling this function.
   QuicPendingRetransmission NextPendingRetransmission();
 
-  bool HasUnackedPackets() const {
-    return unacked_packets_.HasUnackedPackets();
-  }
-
   // Returns true if there's outstanding crypto data.
   bool HasUnackedCryptoPackets() const {
     return unacked_packets_.HasPendingCryptoPackets();
+  }
+
+  // Returns true if there are packets in flight expecting to be acknowledged.
+  bool HasInFlightPackets() const {
+    return unacked_packets_.HasInFlightPackets();
   }
 
   // Returns the smallest packet number of a serialized packet which has not

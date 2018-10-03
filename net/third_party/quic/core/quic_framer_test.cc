@@ -329,6 +329,11 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override {
+    new_token_ = frame;
+    return true;
+  }
+
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return token == kTestStatelessResetToken;
   }
@@ -370,6 +375,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   QuicStreamIdBlockedFrame stream_id_blocked_frame_;
   QuicMaxStreamIdFrame max_stream_id_frame_;
   QuicNewConnectionIdFrame new_connection_id_;
+  QuicNewTokenFrame new_token_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
 };
 
@@ -9267,6 +9273,98 @@ TEST_P(QuicFramerTest, BuildNewConnectionIdFramePacket) {
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(packet99),
                                       QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, NewTokenFrame) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is only for version 99.
+    return;
+  }
+  // clang-format off
+  PacketFragments packet = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (new token frame)
+      {"",
+       {0x19}},
+      // Length
+      {"Unable to read new token length.",
+       {kVarInt62OneByte + 0x08}},
+      {"Unable to read new token data.",
+       {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}}
+  };
+  // clang-format on
+  uint8_t expected_token_value[] = {0x00, 0x01, 0x02, 0x03,
+                                    0x04, 0x05, 0x06, 0x07};
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0u, visitor_.stream_frames_.size());
+
+  EXPECT_EQ(sizeof(expected_token_value), visitor_.new_token_.token.length());
+  EXPECT_EQ(0, memcmp(expected_token_value, visitor_.new_token_.token.data(),
+                      sizeof(expected_token_value)));
+
+  CheckFramingBoundaries(packet, QUIC_INVALID_NEW_TOKEN);
+}
+
+TEST_P(QuicFramerTest, BuildNewTokenFramePacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is only for version 99.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  uint8_t expected_token_value[] = {0x00, 0x01, 0x02, 0x03,
+                                    0x04, 0x05, 0x06, 0x07};
+
+  QuicNewTokenFrame frame(0, QuicString((const char*)(expected_token_value),
+                                        sizeof(expected_token_value)));
+
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (new token frame)
+    0x19,
+    // Length and token
+    kVarInt62OneByte + 0x08,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
 }
 
 TEST_P(QuicFramerTest, IetfStopSendingFrame) {

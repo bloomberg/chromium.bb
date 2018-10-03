@@ -14,7 +14,7 @@ namespace quic {
 QuicFrame::QuicFrame() {}
 
 QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
-    : type(PADDING_FRAME), padding_frame(padding_frame) {}
+    : padding_frame(padding_frame) {}
 
 QuicFrame::QuicFrame(QuicStreamFrame stream_frame)
     : stream_frame(stream_frame) {}
@@ -25,13 +25,12 @@ QuicFrame::QuicFrame(QuicCryptoFrame* crypto_frame)
 QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicMtuDiscoveryFrame frame)
-    : type(MTU_DISCOVERY_FRAME), mtu_discovery_frame(frame) {}
+    : mtu_discovery_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicStopWaitingFrame* frame)
     : type(STOP_WAITING_FRAME), stop_waiting_frame(frame) {}
 
-QuicFrame::QuicFrame(QuicPingFrame frame)
-    : type(PING_FRAME), ping_frame(frame) {}
+QuicFrame::QuicFrame(QuicPingFrame frame) : ping_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicRstStreamFrame* frame)
     : type(RST_STREAM_FRAME), rst_stream_frame(frame) {}
@@ -54,11 +53,10 @@ QuicFrame::QuicFrame(QuicApplicationCloseFrame* frame)
 QuicFrame::QuicFrame(QuicNewConnectionIdFrame* frame)
     : type(NEW_CONNECTION_ID_FRAME), new_connection_id_frame(frame) {}
 
-QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame)
-    : type(MAX_STREAM_ID_FRAME), max_stream_id_frame(frame) {}
+QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame) : max_stream_id_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicStreamIdBlockedFrame frame)
-    : type(STREAM_ID_BLOCKED_FRAME), stream_id_blocked_frame(frame) {}
+    : stream_id_blocked_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicPathResponseFrame* frame)
     : type(PATH_RESPONSE_FRAME), path_response_frame(frame) {}
@@ -71,6 +69,9 @@ QuicFrame::QuicFrame(QuicStopSendingFrame* frame)
 
 QuicFrame::QuicFrame(QuicMessageFrame* frame)
     : type(MESSAGE_FRAME), message_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicNewTokenFrame* frame)
+    : type(NEW_TOKEN_FRAME), new_token_frame(frame) {}
 
 void DeleteFrames(QuicFrames* frames) {
   for (QuicFrame& frame : *frames) {
@@ -130,6 +131,9 @@ void DeleteFrame(QuicFrame* frame) {
       break;
     case CRYPTO_FRAME:
       delete frame->crypto_frame;
+      break;
+    case NEW_TOKEN_FRAME:
+      delete frame->new_token_frame;
       break;
 
     case NUM_FRAME_TYPES:
@@ -309,6 +313,9 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case MESSAGE_FRAME:
       os << "type { MESSAGE_FRAME }" << *(frame.message_frame);
+      break;
+    case NEW_TOKEN_FRAME:
+      os << "type { NEW_TOKEN_FRAME }" << *(frame.new_token_frame);
       break;
     default: {
       QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;

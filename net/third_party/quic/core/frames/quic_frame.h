@@ -18,6 +18,7 @@
 #include "net/third_party/quic/core/frames/quic_message_frame.h"
 #include "net/third_party/quic/core/frames/quic_mtu_discovery_frame.h"
 #include "net/third_party/quic/core/frames/quic_new_connection_id_frame.h"
+#include "net/third_party/quic/core/frames/quic_new_token_frame.h"
 #include "net/third_party/quic/core/frames/quic_padding_frame.h"
 #include "net/third_party/quic/core/frames/quic_path_challenge_frame.h"
 #include "net/third_party/quic/core/frames/quic_path_response_frame.h"
@@ -53,6 +54,7 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicBlockedFrame* frame);
   explicit QuicFrame(QuicApplicationCloseFrame* frame);
   explicit QuicFrame(QuicNewConnectionIdFrame* frame);
+  explicit QuicFrame(QuicNewTokenFrame* frame);
   explicit QuicFrame(QuicPathResponseFrame* frame);
   explicit QuicFrame(QuicPathChallengeFrame* frame);
   explicit QuicFrame(QuicStopSendingFrame* frame);
@@ -63,10 +65,18 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
                                                       const QuicFrame& frame);
 
   union {
+    // Inlined frames.
     // Overlapping inlined frames have a |type| field at the same 0 offset as
-    // QuicFrame does below, allowing use of the remaining 7 bytes after offset
-    // for frame-type specific fields.
+    // QuicFrame does for out of line frames below, allowing use of the
+    // remaining 7 bytes after offset for frame-type specific fields.
+    QuicPaddingFrame padding_frame;
+    QuicMtuDiscoveryFrame mtu_discovery_frame;
+    QuicPingFrame ping_frame;
+    QuicMaxStreamIdFrame max_stream_id_frame;
+    QuicStreamIdBlockedFrame stream_id_blocked_frame;
     QuicStreamFrame stream_frame;
+
+    // Out of line frames.
     struct {
       QuicFrameType type;
 
@@ -75,14 +85,6 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
       // QuicWindowUpdateFrame, QuicBlockedFrame, QuicPathResponseFrame,
       // QuicPathChallengeFrame and QuicStopSendingFrame.
       union {
-        // Inlined frames.
-        QuicPaddingFrame padding_frame;
-        QuicMtuDiscoveryFrame mtu_discovery_frame;
-        QuicPingFrame ping_frame;
-        QuicMaxStreamIdFrame max_stream_id_frame;
-        QuicStreamIdBlockedFrame stream_id_blocked_frame;
-
-        // Out of line frames.
         QuicAckFrame* ack_frame;
         QuicStopWaitingFrame* stop_waiting_frame;
         QuicRstStreamFrame* rst_stream_frame;
@@ -97,17 +99,16 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
         QuicStopSendingFrame* stop_sending_frame;
         QuicMessageFrame* message_frame;
         QuicCryptoFrame* crypto_frame;
+        QuicNewTokenFrame* new_token_frame;
       };
     };
   };
 };
-// In QuicFrame, QuicFrameType consumes 8 bytes with padding.
+
 static_assert(sizeof(QuicFrame) <= 24,
-              "Frames larger than 16 bytes should be referenced by pointer.");
+              "Frames larger than 24 bytes should be referenced by pointer.");
 static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
               "Offset of |type| must match in QuicFrame and QuicStreamFrame");
-static_assert(offsetof(QuicStreamFrame, type) == 0,
-              "Illegal stream frame layout");
 
 // A inline size of 1 is chosen to optimize the typical use case of
 // 1-stream-frame in QuicTransmissionInfo.retransmittable_frames.

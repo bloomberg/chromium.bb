@@ -830,6 +830,15 @@ QuicStreamId QuicSession::GetNextOutgoingStreamId() {
   return id;
 }
 
+bool QuicSession::CanOpenNextOutgoingStream() {
+  if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
+    QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
+                    << "Already " << GetNumOpenOutgoingStreams() << " open.";
+    return false;
+  }
+  return true;
+}
+
 QuicStream* QuicSession::GetOrCreateStream(const QuicStreamId stream_id) {
   StaticStreamMap::iterator it = static_stream_map_.find(stream_id);
   if (it != static_stream_map_.end()) {
@@ -1280,19 +1289,12 @@ bool QuicSession::RetransmitLostData() {
       if (stream->HasPendingRetransmission()) {
         // Connection is write blocked.
         break;
-      } else {
-        if (GetQuicReloadableFlag(quic_fix_retransmit_lost_data)) {
-          QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_retransmit_lost_data);
-          if (!streams_with_pending_retransmission_.empty() &&
-              streams_with_pending_retransmission_.begin()->first == id) {
-            // Retransmit lost data may cause connection close. If this stream
-            // has not yet sent fin, a RST_STREAM will be sent and it will be
-            // removed from streams_with_pending_retransmission_.
-            streams_with_pending_retransmission_.pop_front();
-          }
-        } else {
-          streams_with_pending_retransmission_.pop_front();
-        }
+      } else if (!streams_with_pending_retransmission_.empty() &&
+                 streams_with_pending_retransmission_.begin()->first == id) {
+        // Retransmit lost data may cause connection close. If this stream
+        // has not yet sent fin, a RST_STREAM will be sent and it will be
+        // removed from streams_with_pending_retransmission_.
+        streams_with_pending_retransmission_.pop_front();
       }
     } else {
       QUIC_BUG << "Try to retransmit data of a closed stream";

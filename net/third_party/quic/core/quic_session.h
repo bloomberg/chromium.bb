@@ -377,6 +377,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // underlying counter.
   QuicStreamId GetNextOutgoingStreamId();
 
+  // Indicates whether the next outgoing stream ID can be allocated or not.
+  bool CanOpenNextOutgoingStream();
+
   // Returns existing stream with id = |stream_id|. If no such stream exists,
   // and |stream_id| is a peer-created id, then a new stream is created and
   // returned. However if |stream_id| is a locally-created id and no such stream

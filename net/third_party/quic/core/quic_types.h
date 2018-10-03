@@ -185,6 +185,7 @@ enum QuicFrameType : uint8_t {
   STOP_SENDING_FRAME,
   MESSAGE_FRAME,
   CRYPTO_FRAME,
+  NEW_TOKEN_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -225,9 +226,8 @@ enum QuicIetfFrameType : uint8_t {
   // bit specifically when/as needed.
   IETF_STREAM = 0x10,
   IETF_CRYPTO = 0x18,
-  // TODO(fkastenholz): When the NEW_TOKEN frame type value is added, need
-  // to update the test in ProcessIetfFrameData that checks to see if the frame
-  // type has not been minimally encoded.
+  IETF_NEW_TOKEN = 0x19,
+
   // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
   // stream frame some wiggle room.
   IETF_EXTENSION_MESSAGE_NO_LENGTH = 0x20,

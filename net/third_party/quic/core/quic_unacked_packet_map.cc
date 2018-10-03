@@ -299,10 +299,6 @@ void QuicUnackedPacketMap::CancelRetransmissionsForStream(
   }
 }
 
-bool QuicUnackedPacketMap::HasUnackedPackets() const {
-  return !unacked_packets_.empty();
-}
-
 bool QuicUnackedPacketMap::HasInFlightPackets() const {
   return bytes_in_flight_ > 0;
 }

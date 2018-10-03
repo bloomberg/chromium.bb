@@ -817,6 +817,11 @@ bool QuicDispatcher::OnNewConnectionIdFrame(
   return false;
 }
 
+bool QuicDispatcher::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
 bool QuicDispatcher::OnMessageFrame(const QuicMessageFrame& frame) {
   DCHECK(false);
   return false;

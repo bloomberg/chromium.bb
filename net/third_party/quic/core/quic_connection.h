@@ -489,6 +489,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
   bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override;
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
@@ -1005,6 +1006,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |send_stop_waiting| indicates whether a stop waiting needs to be sent.
   // |acked_new_packet| is true if a previously-unacked packet was acked.
   void PostProcessAfterAckFrame(bool send_stop_waiting, bool acked_new_packet);
+
+  // Called when an ACK is received to set the path degrading alarm or
+  // retransmittable on wire alarm.
+  void MaybeSetPathDegradingAlarm(bool acked_new_packet);
 
   // Updates the release time into the future.
   void UpdateReleaseTimeIntoFuture();

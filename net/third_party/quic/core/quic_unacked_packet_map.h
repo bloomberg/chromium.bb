@@ -81,12 +81,12 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // acked.
   bool HasRetransmittableFrames(const QuicTransmissionInfo& info) const;
 
-  // Returns true if there are any unacked packets.
-  bool HasUnackedPackets() const;
-
   // Returns true if there are any unacked packets which have retransmittable
   // frames.
   bool HasUnackedRetransmittableFrames() const;
+
+  // Returns true if there are no packets present in the unacked packet map.
+  bool empty() const { return unacked_packets_.empty(); }
 
   // Returns the largest packet number that has been sent.
   QuicPacketNumber largest_sent_packet() const { return largest_sent_packet_; }

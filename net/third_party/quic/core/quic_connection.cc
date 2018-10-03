@@ -1223,6 +1223,10 @@ bool QuicConnection::OnNewConnectionIdFrame(
   return true;
 }
 
+bool QuicConnection::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
+  return true;
+}
+
 bool QuicConnection::OnMessageFrame(const QuicMessageFrame& frame) {
   DCHECK(connected_);
 
@@ -2402,7 +2406,7 @@ void QuicConnection::OnPathDegradingTimeout() {
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
-  DCHECK(sent_packet_manager_.HasUnackedPackets());
+  DCHECK(!sent_packet_manager_.unacked_packets().empty());
   if (close_connection_after_five_rtos_ &&
       sent_packet_manager_.GetConsecutiveRtoCount() >= 4) {
     // Close on the 5th consecutive RTO, so after 4 previous RTOs have occurred.
@@ -2740,6 +2744,11 @@ void QuicConnection::SetRetransmissionAlarm() {
 }
 
 void QuicConnection::SetPathDegradingAlarm() {
+  if (GetQuicReloadableFlag(quic_fix_path_degrading_alarm) &&
+      perspective_ == Perspective::IS_SERVER) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_fix_path_degrading_alarm, 1, 2);
+    return;
+  }
   const QuicTime::Delta delay = sent_packet_manager_.GetPathDegradingDelay();
   path_degrading_alarm_->Update(clock_->ApproximateNow() + delay,
                                 QuicTime::Delta::FromMilliseconds(1));
@@ -3208,8 +3217,25 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
   // Always reset the retransmission alarm when an ack comes in, since we now
   // have a better estimate of the current rtt than when it was set.
   SetRetransmissionAlarm();
+  MaybeSetPathDegradingAlarm(acked_new_packet);
 
-  if (!sent_packet_manager_.HasUnackedPackets()) {
+  // TODO(ianswett): Only increment stop_waiting_count_ if StopWaiting frames
+  // are sent.
+  if (send_stop_waiting) {
+    ++stop_waiting_count_;
+  } else {
+    stop_waiting_count_ = 0;
+  }
+}
+
+void QuicConnection::MaybeSetPathDegradingAlarm(bool acked_new_packet) {
+  bool has_unacked_packets = !sent_packet_manager_.unacked_packets().empty();
+  if (GetQuicReloadableFlag(quic_fix_path_degrading_alarm)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_fix_path_degrading_alarm, 2, 2);
+    // If there in flight packets, an ACK is expected in the future.
+    has_unacked_packets = sent_packet_manager_.HasInFlightPackets();
+  }
+  if (!has_unacked_packets) {
     // There are no retransmittable packets on the wire, so it may be
     // necessary to send a PING to keep a retransmittable packet on the wire.
     if (!retransmittable_on_wire_alarm_->IsSet()) {
@@ -3224,14 +3250,6 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
     // degrading previously. Set/update the path degrading alarm.
     is_path_degrading_ = false;
     SetPathDegradingAlarm();
-  }
-
-  // TODO(ianswett): Only increment stop_waiting_count_ if StopWaiting frames
-  // are sent.
-  if (send_stop_waiting) {
-    ++stop_waiting_count_;
-  } else {
-    stop_waiting_count_ = 0;
   }
 }
 
@@ -3258,6 +3276,7 @@ bool QuicConnection::session_decides_what_to_write() const {
 }
 
 void QuicConnection::SetRetransmittableOnWireAlarm() {
+  // TODO(ianswett): Merge the RetransmittableOnWireAlarm and PingAlarm.
   if (perspective_ == Perspective::IS_SERVER) {
     // Only clients send pings.
     return;

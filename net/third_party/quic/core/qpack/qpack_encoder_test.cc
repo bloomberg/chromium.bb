@@ -78,7 +78,7 @@ TEST_P(QpackEncoderTest, Multiple) {
   spdy::SpdyHeaderBlock header_list;
   header_list["foo"] = "bar";
   // 'Z' would be Huffman encoded to 8 bits, so no Huffman encoding is used.
-  header_list["ZZZZZZZ"] = std::string(127, 'Z');
+  header_list["ZZZZZZZ"] = QuicString(127, 'Z');
   QuicString output = Encode(&header_list);
 
   EXPECT_EQ(

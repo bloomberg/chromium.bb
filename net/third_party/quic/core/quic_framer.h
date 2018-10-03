@@ -174,6 +174,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnNewConnectionIdFrame(
       const QuicNewConnectionIdFrame& frame) = 0;
 
+  // Called when a NewTokenFrame has been parsed.
+  virtual bool OnNewTokenFrame(const QuicNewTokenFrame& frame) = 0;
+
   // Called when a message frame has been parsed.
   virtual bool OnMessageFrame(const QuicMessageFrame& frame) = 0;
 
@@ -314,6 +317,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes for a serialized new connection id frame
   static size_t GetNewConnectionIdFrameSize(
       const QuicNewConnectionIdFrame& frame);
+
+  // Size in bytes for a serialized new token frame
+  static size_t GetNewTokenFrameSize(const QuicNewTokenFrame& frame);
 
   // Size in bytes required for a serialized version negotiation packet
   static size_t GetVersionNegotiationPacketSize(size_t number_versions);
@@ -751,6 +757,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                   QuicDataWriter* writer);
   bool ProcessNewConnectionIdFrame(QuicDataReader* reader,
                                    QuicNewConnectionIdFrame* frame);
+
+  bool AppendNewTokenFrame(const QuicNewTokenFrame& frame,
+                           QuicDataWriter* writer);
+  bool ProcessNewTokenFrame(QuicDataReader* reader, QuicNewTokenFrame* frame);
 
   bool RaiseError(QuicErrorCode error);
 
