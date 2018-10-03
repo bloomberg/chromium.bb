@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.explore_sites;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -87,14 +85,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     @Override
     public void onBindViewHolder(CategoryCardViewHolderFactory.CategoryCardViewHolder holder,
             int position, @Nullable Void payload) {
-        if (holder.getItemViewType() == ViewType.HEADER) {
-            TextView view = (TextView) holder.itemView;
-            view.setText(R.string.explore_sites_title);
-        } else if (holder.getItemViewType() == ViewType.ERROR) {
-            // populate the error view
-        } else if (holder.getItemViewType() == ViewType.LOADING) {
-            // Populate loading view
-        } else {
+        if (holder.getItemViewType() == ViewType.CATEGORY) {
             ExploreSitesCategoryCardView view = (ExploreSitesCategoryCardView) holder.itemView;
             // Position - 1 because there is always title.
             view.setCategory(

@@ -29,6 +29,8 @@ import java.util.List;
  * View for a category name and site tiles.
  */
 public class ExploreSitesCategoryCardView extends LinearLayout {
+    private static final int MAX_TILE_COUNT = 8;
+
     private TextView mTitleView;
     private GridLayout mTileView;
     private RoundedIconGenerator mIconGenerator;
@@ -107,19 +109,25 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     }
 
     public void updateTileViews(List<ExploreSitesSite> sites) {
-        // Remove extra views if too many.
+        // Remove extra tiles if too many.
         if (mTileView.getChildCount() > sites.size()) {
             mTileView.removeViews(sites.size(), mTileView.getChildCount() - sites.size());
         }
-        // Add views if too few.
-        if (mTileView.getChildCount() < sites.size()) {
-            for (int i = mTileView.getChildCount(); i < sites.size(); i++) {
+
+        // Maximum number of sites to show.
+        int tileMax = Math.min(MAX_TILE_COUNT, sites.size());
+
+        // Add tiles if too few
+        if (mTileView.getChildCount() < tileMax) {
+            for (int i = mTileView.getChildCount(); i < tileMax; i++) {
                 mTileView.addView(LayoutInflater.from(getContext())
-                                          .inflate(R.layout.explore_sites_tile_view, null));
+                                          .inflate(R.layout.explore_sites_tile_view, mTileView,
+                                                  /* attachToRoot = */ false));
             }
         }
-        // Initialize all the tiles again to update.
-        for (int i = 0; i < sites.size(); i++) {
+
+        // Initialize all the non-empty tiles again to update.
+        for (int i = 0; i < tileMax; i++) {
             ExploreSitesTileView tileView = (ExploreSitesTileView) mTileView.getChildAt(i);
             final ExploreSitesSite site = sites.get(i);
             tileView.initialize(site, mIconGenerator);

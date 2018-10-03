@@ -8,8 +8,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:gravity="center_horizontal" >
+    android:paddingVertical="@dimen/explore_sites_category_padding" >
+
 
     <TextView
         android:id="@+id/category_title"
@@ -20,10 +22,11 @@
 
     <GridLayout
         android:id="@+id/category_sites"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
         android:columnCount="4"
-        android:rowCount="2" />
+        android:columnOrderPreserved="true" />
 
 </org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryCardView>
