@@ -28,9 +28,6 @@
 # Mac only failure. See crbug.com/876990
 -CrSettingsPrivacyPageTest.All
 
-# Tests that fail only on official builds.
--CrSettingsIncompatibleApplicationsPageTest.All
-
 # ChromeOS only test failures.
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
@@ -45,9 +42,6 @@
 -CrSettingsFingerprintProgressArcTest.All
 -CrSettingsInternetDetailPageTest.InternetDetailPage
 -CrSettingsInternetPageTest.InternetPage
--CrSettingsLanguagesPageTest.AddLanguagesDialog
--CrSettingsLanguagesPageTest.LanguageMenu
--CrSettingsLanguagesPageTest.Spellcheck
 -CrSettingsMultidevicePageTest.All
 -CrSettingsPeoplePageLockScreenTest.All
 -CrSettingsPeoplePageQuickUnlockAuthenticateTest.All
@@ -150,7 +144,8 @@ CrSettingsFingerprintProgressArcTest.*
 CrSettingsFocusRowBehavior.*
 CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
-CrSettingsLanguagesPageTest.InputMethods
+CrSettingsIncompatibleApplicationsPageTest.*
+CrSettingsLanguagesPageTest.*
 CrSettingsLanguagesTest.*
 CrSettingsMainPageTest.*
 CrSettingsMenuTest.*
