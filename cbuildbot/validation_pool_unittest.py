@@ -411,7 +411,7 @@ class ValidationFailureOrTimeout(_Base):
          constants.CL_ACTION_PRE_CQ_FAILED])
 
 
-class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
+class TestCoreLogic(_Base):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def setUp(self):
@@ -428,7 +428,7 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     self._patch_factory = patch_unittest.MockPatchFactory(self.patch_mock)
 
   def MakePool(self, *args, **kwargs):
-    """Helper for creating ValidationPool objects for Mox tests."""
+    """Helper for creating ValidationPool objects for tests."""
     handlers = kwargs.pop('handlers', False)
     kwargs['build_root'] = self.build_root
     pool = MakePool(*args, **kwargs)
