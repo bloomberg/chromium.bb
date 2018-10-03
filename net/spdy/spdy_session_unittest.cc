@@ -1650,7 +1650,7 @@ TEST_F(SpdySessionTestWithMockTime, ClaimPushedStreamBeforeExpires) {
 
   SpdyStream* spdy_stream2;
   int rv = session_->GetPushedStream(pushed_url, pushed_stream_id, MEDIUM,
-                                     &spdy_stream2, NetLogWithSource());
+                                     &spdy_stream2);
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(spdy_stream2);
 
@@ -5603,7 +5603,7 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
 
   SpdyStream* pushed_stream;
   int rv = session_->GetPushedStream(pushed_url, pushed_stream_id, IDLE,
-                                     &pushed_stream, NetLogWithSource());
+                                     &pushed_stream);
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(pushed_stream);
   test::StreamDelegateCloseOnHeaders delegate2(pushed_stream->GetWeakPtr());
@@ -5687,7 +5687,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   const GURL pushed_url(kPushedUrl);
   SpdyStream* pushed_stream;
   int rv = session_->GetPushedStream(pushed_url, 2 /* pushed_stream_id */, IDLE,
-                                     &pushed_stream, NetLogWithSource());
+                                     &pushed_stream);
   EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
 
   // Read PUSH_PROMISE.
@@ -5718,13 +5718,13 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   // GetPushedStream() should return an error if there does not exist a pushed
   // stream with ID |pushed_stream_id|.
   rv = session_->GetPushedStream(pushed_url, 4 /* pushed_stream_id */, IDLE,
-                                 &pushed_stream, NetLogWithSource());
+                                 &pushed_stream);
   EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
 
   // GetPushedStream() should return OK and return the pushed stream in
   // |pushed_stream| outparam if |pushed_stream_id| matches.
   rv = session_->GetPushedStream(pushed_url, 2 /* pushed_stream_id */, IDLE,
-                                 &pushed_stream, NetLogWithSource());
+                                 &pushed_stream);
   EXPECT_THAT(rv, IsOk());
   ASSERT_TRUE(pushed_stream);
   test::StreamDelegateCloseOnHeaders delegate2(pushed_stream->GetWeakPtr());

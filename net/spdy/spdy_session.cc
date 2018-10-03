@@ -920,8 +920,7 @@ SpdySession::~SpdySession() {
 int SpdySession::GetPushedStream(const GURL& url,
                                  spdy::SpdyStreamId pushed_stream_id,
                                  RequestPriority priority,
-                                 SpdyStream** stream,
-                                 const NetLogWithSource& stream_net_log) {
+                                 SpdyStream** stream) {
   CHECK(!in_io_loop_);
   // |pushed_stream_id| must be valid.
   DCHECK_NE(pushed_stream_id, kNoPushedStreamFound);
@@ -930,7 +929,6 @@ int SpdySession::GetPushedStream(const GURL& url,
             pool_->push_promise_index()->FindStream(url, this));
 
   if (availability_state_ == STATE_DRAINING) {
-    *stream = nullptr;
     return ERR_CONNECTION_CLOSED;
   }
 
