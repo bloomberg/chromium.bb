@@ -118,4 +118,40 @@ suite('AddSmbShareDialogTests', function() {
     assertTrue(!!page.$$('cr-policy-pref-indicator'));
     assertTrue(button.disabled);
   });
+
+  test('AuthenticationSelectorVisibility', function() {
+    const authenticationMethod = addDialog.$$('#authentication-method');
+    expectTrue(!!authenticationMethod);
+
+    expectTrue(authenticationMethod.hidden);
+
+    addDialog.isActiveDirectory_ = true;
+
+    expectFalse(authenticationMethod.hidden);
+  });
+
+  test('AuthenticationSelectorControlsCredentialFields', function() {
+    addDialog.isActiveDirectory_ = true;
+
+    expectFalse(addDialog.$$('#authentication-method').hidden);
+
+    const dropDown = addDialog.$$('.md-select');
+    expectTrue(!!dropDown);
+
+    const credentials = addDialog.$$('#credentials');
+    expectTrue(!!credentials);
+
+    dropDown.value = 'kerberos';
+    dropDown.dispatchEvent(new CustomEvent('change'));
+    Polymer.dom.flush();
+
+    expectTrue(credentials.hidden);
+
+    dropDown.value = 'credentials';
+    dropDown.dispatchEvent(new CustomEvent('change'));
+    Polymer.dom.flush();
+
+    expectFalse(credentials.hidden);
+  });
+
 });

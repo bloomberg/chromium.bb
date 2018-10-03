@@ -848,6 +848,12 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
     {"smbShareAddedInvalidURLMessage",
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
+    {"smbShareAuthenticationMethod",
+     IDS_SETTINGS_DOWNLOADS_ADD_SHARE_AUTHENTICATION_METHOD},
+    {"smbShareStandardAuthentication",
+     IDS_SETTINGS_DOWNLOADS_ADD_SHARE_STANDARD_AUTHENTICATION},
+    {"smbShareKerberosAuthentication",
+     IDS_SETTINGS_DOWNLOADS_ADD_SHARE_KERBEROS_AUTHENTICATION},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -1363,6 +1369,8 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
       "secondaryUserBannerText",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
+  html_source->AddBoolean("isActiveDirectoryUser",
+                          user && user->IsActiveDirectoryUser());
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
