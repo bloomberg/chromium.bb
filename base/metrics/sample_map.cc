@@ -91,7 +91,7 @@ void SampleMap::Accumulate(Sample value, Count count) {
 }
 
 Count SampleMap::GetCount(Sample value) const {
-  std::map<Sample, Count>::const_iterator it = sample_counts_.find(value);
+  auto it = sample_counts_.find(value);
   if (it == sample_counts_.end())
     return 0;
   return it->second;

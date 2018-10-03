@@ -86,8 +86,7 @@ TEST(UTFOffsetStringConversionsTest, LimitOffsets) {
     OffsetAdjuster::AdjustOffset(kNoAdjustments, &size_ts.back(), kLimit);
   }
   size_t unlimited_count = 0;
-  for (std::vector<size_t>::iterator ti = size_ts.begin(); ti != size_ts.end();
-       ++ti) {
+  for (auto ti = size_ts.begin(); ti != size_ts.end(); ++ti) {
     if (*ti != kNpos)
       ++unlimited_count;
   }
@@ -100,8 +99,7 @@ TEST(UTFOffsetStringConversionsTest, LimitOffsets) {
     OffsetAdjuster::AdjustOffset(kNoAdjustments, &size_ts.back(), kLimit);
   }
   unlimited_count = 0;
-  for (std::vector<size_t>::iterator ti = size_ts.begin(); ti != size_ts.end();
-       ++ti) {
+  for (auto ti = size_ts.begin(); ti != size_ts.end(); ++ti) {
     if (*ti != kNpos)
       ++unlimited_count;
   }
