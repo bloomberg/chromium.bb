@@ -47,13 +47,34 @@ fullscreen_script = r"""
     return rt;
   }
 
-  // Return true if video has started playing.
-  function setupVideoElement() {
+  /**
+   * Set up the video element for testing.
+   * @param {boolean} force_underlay - Whether to add a layer on top so
+   *   the video layer becomes an underlay.
+   * @returns {boolean} true if video has started playing.
+   */
+  function setupVideoElement(force_underlay) {
     var video = locateElement("video");
     if (video) {
       video.muted = true;
       video.loop = true;
       video.autoplay = true;
+      if (force_underlay) {
+        var layer = document.createElement("div");
+        layer.style.border = "thick solid rgb(0,0,255)";
+        layer.style.backgroundColor = "red";
+        layer.style.width = "100px";
+        layer.style.height = "50px";
+        layer.style.position = "absolute";
+        layer.style.zIndex = "1000";
+        var vid_rect = video.getBoundingClientRect();
+        var parent_rect = video.parentNode.getBoundingClientRect();
+        var top = vid_rect.top - parent_rect.top;
+        var left = vid_rect.left - parent_rect.left;
+        layer.style.top = top.toString() + "px";
+        layer.style.left = left.toString() + "px";
+        video.parentNode.appendChild(layer);
+      }
       return video.currentTime > 0;
     }
     return false;
@@ -125,6 +146,9 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                       help="specify if the browser goes to fullscreen mode "
                       "automatically, specifically if there is a single video "
                       "element in the page, switch it to fullsrceen mode.")
+    parser.add_option("--underlay", action="store_true", default=False,
+                      help="add a layer on top so the video layer becomes an "
+                      "underlay.")
     parser.add_option("--logdir",
                       help="Speficy where the Intel Power Gadget log file "
                       "should be stored. If specified, the log file name will "
@@ -145,6 +169,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     yield ('url', options.url, (options.repeat,
                                 options.outliers,
                                 options.fullscreen,
+                                options.underlay,
                                 options.logdir,
                                 options.duration,
                                 options.delay,
@@ -166,10 +191,11 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     repeat = args[0]
     outliers = args[1]
     fullscreen = args[2]
-    ipg_logdir = args[3]
-    ipg_duration = args[4]
-    ipg_delay = args[5]
-    ipg_resolution = args[6]
+    underlay = args[3]
+    ipg_logdir = args[4]
+    ipg_duration = args[5]
+    ipg_delay = args[6]
+    ipg_resolution = args[7]
 
     print ""
     print "Total iterations: ", repeat
@@ -180,7 +206,8 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       if test_path:
         self.tab.action_runner.Navigate(test_path, fullscreen_script)
         self.tab.WaitForDocumentReadyStateToBeComplete()
-        if not self.tab.action_runner.EvaluateJavaScript('setupVideoElement()'):
+        code = "setupVideoElement(%s)" % ("true" if underlay else "false")
+        if not self.tab.action_runner.EvaluateJavaScript(code):
           # autoplay doesn't work for vimeo.
           # action_runner.PlayMedia doesn't work for vimeo.
           self.tab.action_runner.TapElement(element_function=(
