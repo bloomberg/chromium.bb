@@ -3238,14 +3238,21 @@ IntPoint LocalFrameView::RootFrameToDocument(
 
 FloatPoint LocalFrameView::RootFrameToDocument(
     const FloatPoint& point_in_root_frame) {
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return point_in_root_frame;
+
   FloatPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
-  return local_frame + LayoutViewport()->GetScrollOffset();
+  return local_frame + layout_viewport->GetScrollOffset();
 }
 
 DoublePoint LocalFrameView::DocumentToFrame(
     const DoublePoint& point_in_document) const {
-  return point_in_document -
-         GetLayoutView()->GetScrollableArea()->GetScrollOffset();
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return point_in_document;
+
+  return point_in_document - layout_viewport->GetScrollOffset();
 }
 
 FloatPoint LocalFrameView::DocumentToFrame(
@@ -3255,8 +3262,11 @@ FloatPoint LocalFrameView::DocumentToFrame(
 
 LayoutPoint LocalFrameView::DocumentToFrame(
     const LayoutPoint& point_in_document) const {
-  return point_in_document -
-         LayoutSize(GetLayoutView()->GetScrollableArea()->GetScrollOffset());
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return point_in_document;
+
+  return point_in_document - LayoutSize(layout_viewport->GetScrollOffset());
 }
 
 LayoutRect LocalFrameView::DocumentToFrame(
@@ -3267,15 +3277,18 @@ LayoutRect LocalFrameView::DocumentToFrame(
 }
 
 LayoutPoint LocalFrameView::FrameToDocument(
-    const LayoutPoint& point_in_absolute) const {
-  return point_in_absolute +
-         LayoutSize(GetLayoutView()->GetScrollableArea()->GetScrollOffset());
+    const LayoutPoint& point_in_frame) const {
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return point_in_frame;
+
+  return point_in_frame + LayoutSize(layout_viewport->GetScrollOffset());
 }
 
 LayoutRect LocalFrameView::FrameToDocument(
-    const LayoutRect& rect_in_absolute) const {
-  return LayoutRect(FrameToDocument(rect_in_absolute.Location()),
-                    rect_in_absolute.Size());
+    const LayoutRect& rect_in_frame) const {
+  return LayoutRect(FrameToDocument(rect_in_frame.Location()),
+                    rect_in_frame.Size());
 }
 
 IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
