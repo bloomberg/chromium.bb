@@ -51,7 +51,7 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp(
   // can easily fail.
   pending_app_manager_->Install(
       web_app::PendingAppManager::AppInfo(
-          chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
+          chromeos::android_sms::GetAndroidMessagesURLWithParams(),
           web_app::PendingAppManager::LaunchContainer::kWindow,
           web_app::PendingAppManager::InstallSource::kInternal,
           web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
