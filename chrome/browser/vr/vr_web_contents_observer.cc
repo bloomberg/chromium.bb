@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/vr_web_contents_observer.h"
+#include "chrome/browser/vr/vr_web_contents_observer.h"
 
-#include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -13,21 +12,17 @@
 namespace vr {
 
 VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
-                                             VrShell* vr_shell,
                                              BrowserUiInterface* ui_interface,
-                                             ToolbarHelper* toolbar)
+                                             ToolbarHelper* toolbar,
+                                             base::OnceClosure on_destroy)
     : WebContentsObserver(web_contents),
-      vr_shell_(vr_shell),
       ui_interface_(ui_interface),
-      toolbar_(toolbar) {
+      toolbar_(toolbar),
+      on_destroy_(std::move(on_destroy)) {
   toolbar_->Update();
 }
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
-
-void VrWebContentsObserver::SetUiInterface(BrowserUiInterface* ui_interface) {
-  ui_interface_ = ui_interface;
-}
 
 void VrWebContentsObserver::DidStartLoading() {
   ui_interface_->SetLoading(true);
@@ -59,11 +54,12 @@ void VrWebContentsObserver::DidChangeVisibleSecurityState() {
 void VrWebContentsObserver::DidToggleFullscreenModeForTab(
     bool entered_fullscreen,
     bool will_cause_resize) {
-  vr_shell_->OnFullscreenChanged(entered_fullscreen);
+  ui_interface_->SetFullscreen(entered_fullscreen);
 }
 
 void VrWebContentsObserver::WebContentsDestroyed() {
-  vr_shell_->ContentWebContentsDestroyed();
+  DCHECK(on_destroy_);
+  std::move(on_destroy_).Run();
 }
 
 void VrWebContentsObserver::RenderViewHostChanged(
