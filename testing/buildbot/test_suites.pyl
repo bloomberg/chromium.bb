@@ -243,11 +243,6 @@
       },
     },
 
-    'android_l_cts_tests': {
-      'arch': 'arm64',
-      'platform': 'L',
-    },
-
     'android_m_cts_tests': {
       'arch': 'arm64',
       'platform': 'M',
@@ -2338,6 +2333,22 @@
       'jingle_unittests': {},
       'remoting_unittests': {
         'args': ['--gtest_filter=Webrtc*'],
+      },
+    },
+
+    'webview_cts_tests_isolated_scripts': {
+      'webview_cts_tests': {
+        'swarming': {
+          'hard_timeout': 960,
+          'shards': 3,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': '../../android_webview/tools/cts_archive',
+              'revision': 'version:1.0',
+            }
+          ]
+        },
       },
     },
 
