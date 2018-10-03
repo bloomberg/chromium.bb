@@ -236,8 +236,10 @@ void InitializeHardwareOverlaySupport() {
                                  OverlayFormatToString(info.overlay_format),
                              info.flags);
   }
-  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFormatUsed",
-                            g_overlay_format_used);
+  if (g_supports_overlays) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFormatUsed2",
+                              g_overlay_format_used);
+  }
   UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
                         g_supports_overlays);
 }
@@ -735,8 +737,10 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     return false;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
-                        is_yuv_swapchain_);
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.DirectComposition.SwapChainFormat2",
+      is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA);
+
   frames_since_color_space_change_++;
 
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
@@ -943,6 +947,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
   frames_since_color_space_change_ = 0;
 
+  const std::string kSwapChainCreationResultUmaPrefix =
+      "GPU.DirectComposition.SwapChainCreationResult.";
   is_yuv_swapchain_ = false;
   // The composition surface handle isn't actually used, but
   // CreateSwapChainForComposition can't create YUV swapchains.
@@ -952,6 +958,9 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
         swap_chain_.GetAddressOf());
     is_yuv_swapchain_ = SUCCEEDED(hr);
     failed_to_create_yuv_swapchain_ = !is_yuv_swapchain_;
+    base::UmaHistogramBoolean(kSwapChainCreationResultUmaPrefix +
+                                  OverlayFormatToString(g_overlay_format_used),
+                              SUCCEEDED(hr));
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create "
                   << OverlayFormatToString(g_overlay_format_used)
@@ -970,6 +979,9 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
+    base::UmaHistogramBoolean(kSwapChainCreationResultUmaPrefix +
+                                  OverlayFormatToString(OverlayFormat::kBGRA),
+                              SUCCEEDED(hr));
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create BGRA swap chain with error " << std::hex
                   << hr;
