@@ -4,6 +4,7 @@
 
 #include "content/common/throttling_url_loader.h"
 
+#include "base/debug/alias.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -237,8 +238,14 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
 void ThrottlingURLLoader::RestartWithFactory(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
     uint32_t url_loader_options) {
-  DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!loader_completed_);
+  // TODO(crbug.com/882661): Remove these aliases and turn CHECKs to DCHECKs
+  // when the linked bug is fixed.
+  DeferredStage deferred_stage = deferred_stage_;
+  base::debug::Alias(&deferred_stage);
+  bool loader_completed = loader_completed_;
+  base::debug::Alias(&loader_completed);
+  CHECK_EQ(DEFERRED_NONE, deferred_stage_);
+  CHECK(!loader_completed_);
   url_loader_.reset();
   client_binding_.Close();
   start_info_->url_loader_factory = std::move(factory);
@@ -422,6 +429,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
     }
   }
 
+  sent_on_receive_response_ = true;
   forwarding_client_->OnReceiveResponse(response_head_copy);
 }
 
@@ -520,9 +528,18 @@ void ThrottlingURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void ThrottlingURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!loader_completed_);
+  // TODO(crbug.com/882661): Remove these aliases and turn CHECKs to DCHECKs
+  // when the linked bug is fixed.
+  DeferredStage deferred_stage = deferred_stage_;
+  base::debug::Alias(&deferred_stage);
+  bool loader_completed = loader_completed_;
+  base::debug::Alias(&loader_completed);
+  bool sent_on_receive_response = sent_on_receive_response_;
+  base::debug::Alias(&sent_on_receive_response);
 
+  CHECK_EQ(DEFERRED_NONE, deferred_stage_);
+  CHECK(!loader_completed_);
+  CHECK(sent_on_receive_response_);
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
@@ -582,6 +599,7 @@ void ThrottlingURLLoader::Resume() {
     }
     case DEFERRED_RESPONSE: {
       client_binding_.ResumeIncomingMethodCallProcessing();
+      sent_on_receive_response_ = true;
       forwarding_client_->OnReceiveResponse(response_info_->response_head);
       // Note: |this| may be deleted here.
       break;
