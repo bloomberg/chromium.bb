@@ -4766,7 +4766,6 @@ crbug.com/831796 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfie
 
 # Sheriff 2018-04-24
 crbug.com/836242 [ Linux Mac Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/836275 [ Linux Mac ] fast/spatial-navigation/snav-two-elements-one-line.html [ Pass Failure ]
 
 # Sheriff 2018-04-25
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
