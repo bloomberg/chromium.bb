@@ -401,5 +401,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/update_engine/proto_bindings/update_engine.pb.cc',
       ],
     },
+    {
+      'target_name': 'system_api-bootlockbox-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/bootlockbox',
+        'proto_out_dir': 'include/bootlockbox/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/boot_lockbox_rpc.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-bootlockbox-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-bootlockbox-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/bootlockbox/proto_bindings/boot_lockbox_rpc.pb.cc',
+      ],
+    },
   ],
 }
