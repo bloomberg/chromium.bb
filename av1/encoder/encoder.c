@@ -3787,9 +3787,8 @@ static void release_scaled_references(AV1_COMP *cpi) {
   // TODO(isbs): only refresh the necessary frames, rather than all of them
   for (i = 0; i < REF_FRAMES; ++i) {
     const int idx = cpi->scaled_ref_idx[i];
-    RefCntBuffer *const buf =
-        idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[idx] : NULL;
-    if (buf != NULL) {
+    if (idx != INVALID_IDX) {
+      RefCntBuffer *const buf = &cm->buffer_pool->frame_bufs[idx];
       --buf->ref_count;
       cpi->scaled_ref_idx[i] = INVALID_IDX;
     }
@@ -3912,6 +3911,8 @@ static void init_ref_frame_bufs(AV1_COMP *cpi) {
   cm->new_fb_idx = INVALID_IDX;
   for (i = 0; i < REF_FRAMES; ++i) {
     cm->ref_frame_map[i] = INVALID_IDX;
+  }
+  for (i = 0; i < FRAME_BUFFERS; ++i) {
     pool->frame_bufs[i].ref_count = 0;
   }
   if (cm->seq_params.force_screen_content_tools) {
@@ -6503,8 +6504,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
 
     // Find a free buffer for the new frame, releasing the reference
-    // previously
-    // held.
+    // previously held.
     if (cm->new_fb_idx != INVALID_IDX) {
       --pool->frame_bufs[cm->new_fb_idx].ref_count;
     }
