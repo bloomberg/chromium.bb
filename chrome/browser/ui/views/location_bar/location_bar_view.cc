@@ -1332,6 +1332,16 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 // LocationBarView, private ui::MaterialDesignControllerObserver implementation:
 
 void LocationBarView::OnMdModeChanged() {
+  const gfx::FontList& font_list = views::style::GetFont(
+      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+  location_icon_view_->SetFontList(font_list);
+  omnibox_view_->SetFontList(font_list);
+  ime_inline_autocomplete_view_->SetFontList(font_list);
+  selected_keyword_view_->SetFontList(font_list);
+  for (ContentSettingImageView* view : content_setting_views_)
+    view->SetFontList(font_list);
+  if (save_credit_card_icon_view_)
+    save_credit_card_icon_view_->SetFontList(font_list);
   RefreshLocationIcon();
   Layout();
   SchedulePaint();

@@ -178,6 +178,10 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
+void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
+  label_->SetFontList(font_list);
+}
+
 bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }

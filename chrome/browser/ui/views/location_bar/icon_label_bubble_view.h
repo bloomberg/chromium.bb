@@ -76,6 +76,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
+  void SetFontList(const gfx::FontList& font_list);
 
   const views::ImageView* GetImageView() const { return image_; }
   views::ImageView* GetImageView() { return image_; }
