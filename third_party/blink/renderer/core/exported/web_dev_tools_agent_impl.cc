@@ -412,12 +412,25 @@ void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_content_loader_->DidCommitLoadForLocalFrame(frame);
   for (auto& session : sessions_)
     session->DidCommitLoadForLocalFrame(frame);
+  if (inspected_frames_->Root() == frame) {
+    for (auto& session : sessions_)
+      session->V8Session()->setSkipAllPauses(false);
+  }
+}
+
+void WebDevToolsAgentImpl::DidFailProvisionalLoad(LocalFrame* frame) {
+  if (inspected_frames_->Root() == frame) {
+    for (auto& session : sessions_)
+      session->V8Session()->setSkipAllPauses(false);
+  }
 }
 
 void WebDevToolsAgentImpl::DidStartProvisionalLoad(LocalFrame* frame) {
   if (inspected_frames_->Root() == frame) {
-    for (auto& session : sessions_)
+    for (auto& session : sessions_) {
+      session->V8Session()->setSkipAllPauses(true);
       session->V8Session()->resume();
+    }
   }
 }
 

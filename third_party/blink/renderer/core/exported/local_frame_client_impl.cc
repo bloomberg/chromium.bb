@@ -496,6 +496,8 @@ void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
+  if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
+    dev_tools->DidFailProvisionalLoad(web_frame_->GetFrame());
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 

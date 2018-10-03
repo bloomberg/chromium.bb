@@ -453,7 +453,6 @@ InspectorPageAgent::InspectorPageAgent(
     : inspected_frames_(inspected_frames),
       v8_session_(v8_session),
       client_(client),
-      reloading_(false),
       inspector_resource_content_loader_(resource_content_loader),
       resource_content_loader_client_id_(
           resource_content_loader->CreateClientId()),
@@ -546,7 +545,6 @@ Response InspectorPageAgent::disable() {
 
   stopScreencast();
 
-  FinishReload();
   return Response::OK();
 }
 
@@ -647,7 +645,6 @@ Response InspectorPageAgent::reload(
   pending_script_to_evaluate_on_load_once_ =
       optional_script_to_evaluate_on_load.fromMaybe("");
   v8_session_->setSkipAllPauses(true);
-  reloading_ = true;
   return Response::OK();
 }
 
@@ -715,13 +712,6 @@ Response InspectorPageAgent::getFrameTree(
     std::unique_ptr<protocol::Page::FrameTree>* object) {
   *object = BuildObjectForFrameTree(inspected_frames_->Root());
   return Response::OK();
-}
-
-void InspectorPageAgent::FinishReload() {
-  if (!reloading_)
-    return;
-  reloading_ = false;
-  v8_session_->setSkipAllPauses(false);
 }
 
 void InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded(
@@ -910,7 +900,6 @@ void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
 
 void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
   if (loader->GetFrame() == inspected_frames_->Root()) {
-    FinishReload();
     script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
     pending_script_to_evaluate_on_load_once_ = String();
   }

@@ -214,7 +214,6 @@ class CORE_EXPORT InspectorPageAgent final
                      InspectorResourceContentLoader*,
                      v8_inspector::V8InspectorSession*);
 
-  void FinishReload();
   void GetResourceContentAfterResourcesContentLoaded(
       const String& frame_id,
       const String& url,
@@ -242,7 +241,6 @@ class CORE_EXPORT InspectorPageAgent final
   Client* client_;
   String pending_script_to_evaluate_on_load_once_;
   String script_to_evaluate_on_load_once_;
-  bool reloading_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
   int resource_content_loader_client_id_;
   InspectorAgentState::Boolean enabled_;
