@@ -12,10 +12,15 @@
 
 namespace {
 bool g_is_input_source_dvorak_qwerty = false;
+bool g_is_input_source_czech = false;
 }  // namespace
 
 void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
   g_is_input_source_dvorak_qwerty = is_dvorak_qwerty;
+}
+
+void SetIsInputSourceCzechForTesting(bool is_czech) {
+  g_is_input_source_czech = is_czech;
 }
 
 @interface KeyboardInputSourceListener : NSObject
@@ -47,6 +52,9 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
       inputSource.get(), kTISPropertyInputSourceID);
   g_is_input_source_dvorak_qwerty =
       [inputSourceID isEqualToString:@"com.apple.keylayout.DVORAK-QWERTYCMD"];
+  g_is_input_source_czech =
+      [inputSourceID rangeOfString:@"com.apple.keylayout.Czech"].location !=
+      NSNotFound;
 }
 
 - (void)inputSourceDidChange:(NSNotification*)notification {
@@ -164,6 +172,17 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
                     NSControlKeyMask |
                     NSAlternateKeyMask |
                     NSShiftKeyMask;
+
+  // On Czech keyboards, we want to interpret cmd + '+' as cmd + '1'.
+  // htts://crbug.com/889424. We don't need special handling for other numeric
+  // keys because they produce non-ASCII characters, and we already have logic
+  // that ignores non-ASCII characters in favor of modified characters.
+  if (g_is_input_source_czech) {
+    if (eventModifiers == NSCommandKeyMask &&
+        [eventString isEqualToString:@"+"]) {
+      eventString = @"1";
+    }
+  }
 
   return [eventString isEqualToString:[self keyEquivalent]]
       && eventModifiers == [self keyEquivalentModifierMask];

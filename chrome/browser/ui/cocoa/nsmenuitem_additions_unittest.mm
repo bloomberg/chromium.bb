@@ -331,6 +331,17 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
                           /*compareCocoa=*/false);
   ExpectKeyFiresItem(key, MenuItem(@"T", NSCommandKeyMask),
                      /*compareCocoa=*/false);
+
+  // On Czech layout, cmd + '+' should instead trigger cmd + '1'.
+  key = KeyEvent(0x100108, @"1", @"+", 18);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"1", NSCommandKeyMask),
+                          /*compareCocoa=*/false);
+  SetIsInputSourceCzechForTesting(true);
+  ExpectKeyFiresItem(key, MenuItem(@"1", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
+  SetIsInputSourceCzechForTesting(false);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"1", NSCommandKeyMask),
+                          /*compareCocoa=*/false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
