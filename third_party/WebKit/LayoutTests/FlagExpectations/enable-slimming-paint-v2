@@ -68,7 +68,6 @@ Bug(none) xmlviewer/ [ Skip ]
 
 Bug(none) virtual/android/ [ Skip ]
 Bug(none) virtual/blink-gen-property-trees/ [ Skip ]
-Bug(none) virtual/enable_wasm/ [ Skip ]
 Bug(none) virtual/exotic-color-space/ [ Skip ]
 Bug(none) virtual/gpu/ [ Skip ]
 Bug(none) virtual/gpu-rasterization/ [ Skip ]

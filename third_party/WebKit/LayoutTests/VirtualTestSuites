@@ -327,16 +327,6 @@
     "args": ["--force-device-scale-factor=1.5"]
   },
   {
-    "prefix": "enable_wasm",
-    "base": "http/tests/wasm",
-    "args": ["--enable-features=WebAssembly"]
-  },
-  {
-    "prefix": "enable_wasm",
-    "base": "external/wpt/wasm",
-    "args": ["--enable-features=WebAssembly"]
-  },
-  {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
     "args": ["--enable-blink-features=LayoutNG"]
