@@ -87,7 +87,6 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
     switch (effective_connection_type) {
       case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
       case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
       case net::EFFECTIVE_CONNECTION_TYPE_4G:
         EXPECT_EQ(10u, resource_scheduler_params_manager
                            .GetParamsForEffectiveConnectionType(
@@ -102,7 +101,20 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
                 .GetParamsForEffectiveConnectionType(effective_connection_type)
                 .delay_requests_on_multiplexed_connections);
         return;
-
+      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+        EXPECT_EQ(10u, resource_scheduler_params_manager
+                           .GetParamsForEffectiveConnectionType(
+                               effective_connection_type)
+                           .max_delayable_requests);
+        EXPECT_EQ(0.0, resource_scheduler_params_manager
+                           .GetParamsForEffectiveConnectionType(
+                               effective_connection_type)
+                           .non_delayable_weight);
+        EXPECT_TRUE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .delay_requests_on_multiplexed_connections);
+        return;
       case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
       case net::EFFECTIVE_CONNECTION_TYPE_2G:
         EXPECT_EQ(8u, resource_scheduler_params_manager
@@ -113,7 +125,7 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
                            .GetParamsForEffectiveConnectionType(
                                effective_connection_type)
                            .non_delayable_weight);
-        EXPECT_FALSE(
+        EXPECT_TRUE(
             resource_scheduler_params_manager
                 .GetParamsForEffectiveConnectionType(effective_connection_type)
                 .delay_requests_on_multiplexed_connections);
@@ -183,6 +195,17 @@ TEST_F(ResourceSchedulerParamsManagerTest,
       EXPECT_TRUE(resource_scheduler_params_manager
                       .GetParamsForEffectiveConnectionType(ect)
                       .delay_requests_on_multiplexed_connections);
+
+    } else if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
+      EXPECT_EQ(10u, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .max_delayable_requests);
+      EXPECT_EQ(0.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_FALSE(resource_scheduler_params_manager
+                       .GetParamsForEffectiveConnectionType(ect)
+                       .delay_requests_on_multiplexed_connections);
 
     } else {
       VerifyDefaultParams(

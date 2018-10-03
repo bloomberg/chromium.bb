@@ -40,7 +40,7 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 // ResourceScheduler just as HTTP/1.1 resources are. However, requests from such
 // servers are not subject to kMaxNumDelayableRequestsPerHostPerClient limit.
 const base::Feature kDelayRequestsOnMultiplexedConnections{
-    "DelayRequestsOnMultiplexedConnections", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network
