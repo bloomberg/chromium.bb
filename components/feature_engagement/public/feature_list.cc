@@ -42,6 +42,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHBookmarkFeature,
     &kIPHIncognitoWindowFeature,
     &kIPHNewTabFeature,
+    &kIPHReopenTabFeature,
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #if defined(OS_IOS)
     &kIPHBottomToolbarTipFeature,

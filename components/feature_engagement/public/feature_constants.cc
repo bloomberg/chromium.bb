@@ -66,6 +66,8 @@ const base::Feature kIPHIncognitoWindowFeature{
     "IPH_IncognitoWindow", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabFeature{"IPH_NewTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
