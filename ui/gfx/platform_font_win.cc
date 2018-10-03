@@ -4,12 +4,12 @@
 
 #include "ui/gfx/platform_font_win.h"
 
-#include <windows.h>
 #include <dwrite.h>
 #include <limits.h>
 #include <math.h>
 #include <stdint.h>
 #include <wchar.h>
+#include <windows.h>
 #include <wrl/client.h>
 
 #include <algorithm>
@@ -37,36 +37,6 @@
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
-
-gfx::PlatformFontWin::AdjustFontCallback g_adjust_font_callback = nullptr;
-gfx::PlatformFontWin::GetMinimumFontSizeCallback
-    g_get_minimum_font_size_callback = nullptr;
-
-// Returns the minimum font size, using the minimum size callback, if set.
-int GetMinimumFontSize() {
-  int min_font_size = 0;
-  if (g_get_minimum_font_size_callback)
-    min_font_size = g_get_minimum_font_size_callback();
-  return min_font_size;
-}
-
-// Returns either minimum font allowed for a current locale or
-// lf_height + size_delta value.
-int AdjustFontSize(int lf_height, int size_delta) {
-  if (lf_height < 0) {
-    lf_height -= size_delta;
-  } else {
-    lf_height += size_delta;
-  }
-  const int min_font_size = GetMinimumFontSize();
-  // Make sure lf_height is not smaller than allowed min font size for current
-  // locale.
-  if (abs(lf_height) < min_font_size) {
-    return lf_height < 0 ? -min_font_size : min_font_size;
-  } else {
-    return lf_height;
-  }
-}
 
 // Sets style properties on |font_info| based on |font_style|.
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
@@ -254,6 +224,12 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   return hr;
 }
 
+}  // namespace
+
+namespace gfx {
+
+namespace internal {
+
 class SystemFonts {
  public:
   SystemFonts() {
@@ -289,12 +265,20 @@ class SystemFonts {
 
  private:
   void AddFont(gfx::PlatformFontWin::SystemFont system_font, LOGFONT* logfont) {
-    if (g_adjust_font_callback)
-      g_adjust_font_callback(logfont);
-    logfont->lfHeight = AdjustFontSize(logfont->lfHeight, 0);
+    // Make adjustments to the font as necessary.
+    if (PlatformFontWin::adjust_font_callback_) {
+      gfx::PlatformFontWin::FontAdjustment font_adjustment;
+      PlatformFontWin::adjust_font_callback_(&font_adjustment);
+      PlatformFontWin::AdjustLOGFONT(font_adjustment, logfont);
+    }
+
+    // Cap at minimum font size.
+    logfont->lfHeight = PlatformFontWin::AdjustFontSize(logfont->lfHeight, 0);
+
+    // Create the Font object.
     HFONT font = CreateFontIndirect(logfont);
     DLOG_ASSERT(font);
-    system_fonts_.emplace(system_font, gfx::Font(font));
+    system_fonts_.emplace(system_font, gfx::PlatformFontWin::HFontToFont(font));
   }
 
   // Use a flat map for faster lookups.
@@ -308,12 +292,18 @@ class SystemFonts {
 // static
 bool SystemFonts::is_initialized_ = false;
 
-}  // namespace
-
-namespace gfx {
+}  // namespace internal
 
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::base_font_ref_;
+
+// static
+gfx::PlatformFontWin::AdjustFontCallback
+    PlatformFontWin::adjust_font_callback_ = nullptr;
+
+// static
+gfx::PlatformFontWin::GetMinimumFontSizeCallback
+    PlatformFontWin::get_minimum_font_size_callback_ = nullptr;
 
 IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
 
@@ -361,14 +351,14 @@ PlatformFontWin::PlatformFontWin(const std::string& font_name,
 // static
 void PlatformFontWin::SetGetMinimumFontSizeCallback(
     GetMinimumFontSizeCallback callback) {
-  DCHECK(!SystemFonts::IsInitialized());
-  g_get_minimum_font_size_callback = callback;
+  DCHECK(!internal::SystemFonts::IsInitialized());
+  get_minimum_font_size_callback_ = callback;
 }
 
 // static
 void PlatformFontWin::SetAdjustFontCallback(AdjustFontCallback callback) {
-  DCHECK(!SystemFonts::IsInitialized());
-  g_adjust_font_callback = callback;
+  DCHECK(!internal::SystemFonts::IsInitialized());
+  adjust_font_callback_ = callback;
 }
 
 // static
@@ -386,7 +376,27 @@ bool PlatformFontWin::IsDirectWriteEnabled() {
 
 // static
 const Font& PlatformFontWin::GetSystemFont(SystemFont system_font) {
-  return SystemFonts::Instance()->GetFont(system_font);
+  return internal::SystemFonts::Instance()->GetFont(system_font);
+}
+
+// static
+Font PlatformFontWin::AdjustExistingFont(
+    NativeFont existing_font,
+    const FontAdjustment& font_adjustment) {
+  LOGFONT logfont;
+  auto result = GetObject(existing_font, sizeof(logfont), &logfont);
+  DCHECK(result);
+
+  // Make the necessary adjustments.
+  AdjustLOGFONT(font_adjustment, &logfont);
+
+  // Cap at minimum font size.
+  logfont.lfHeight = AdjustFontSize(logfont.lfHeight, 0);
+
+  // Create the Font object.
+  HFONT hfont = CreateFontIndirect(&logfont);
+  DCHECK(hfont);
+  return HFontToFont(hfont);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -507,8 +517,10 @@ PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
   if (base_font_ref_ == nullptr) {
     // We'll delegate to our SystemFonts instance to give us the default
     // message font.
-    PlatformFontWin* message_font = static_cast<PlatformFontWin*>(
-        SystemFonts::Instance()->GetFont(SystemFont::kMessage).platform_font());
+    PlatformFontWin* message_font =
+        static_cast<PlatformFontWin*>(internal::SystemFonts::Instance()
+                                          ->GetFont(SystemFont::kMessage)
+                                          .platform_font());
     base_font_ref_ = message_font->font_ref_.get();
   }
   return base_font_ref_;
@@ -647,6 +659,50 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   return new HFontRef(gdi_font, -font_info.lfHeight, height, baseline,
                       cap_height, ave_char_width,
                       ToGfxFontWeight(font_info.lfWeight), style);
+}
+
+// static
+int PlatformFontWin::AdjustFontSize(int lf_height, int size_delta) {
+  // Extract out the sign of |lf_height| - we'll add it back later.
+  const int lf_sign = lf_height < 0 ? -1 : 1;
+  lf_height = std::abs(lf_height);
+
+  // Apply the size adjustment.
+  lf_height += size_delta;
+
+  // Make sure |lf_height| is not smaller than allowed min allowed font size.
+  int min_font_size = 0;
+  if (get_minimum_font_size_callback_) {
+    min_font_size = get_minimum_font_size_callback_();
+    DCHECK_GE(min_font_size, 0);
+  }
+  lf_height = std::max(min_font_size, lf_height);
+
+  // Add back the sign.
+  return lf_sign * lf_height;
+}
+
+// static
+void PlatformFontWin::AdjustLOGFONT(
+    const gfx::PlatformFontWin::FontAdjustment& font_adjustment,
+    LOGFONT* logfont) {
+  DCHECK_GT(font_adjustment.font_scale, 0.0);
+  LONG new_height =
+      LONG{std::round(logfont->lfHeight * font_adjustment.font_scale)};
+  if (logfont->lfHeight && !new_height)
+    new_height = logfont->lfHeight > 0 ? 1 : -1;
+  logfont->lfHeight = new_height;
+  if (!font_adjustment.font_family_override.empty()) {
+    auto result = wcscpy_s(logfont->lfFaceName,
+                           font_adjustment.font_family_override.c_str());
+    DCHECK_EQ(0, result) << "Font name " << font_adjustment.font_family_override
+                         << " cannot be copied into LOGFONT structure.";
+  }
+}
+
+// static
+Font PlatformFontWin::HFontToFont(HFONT hfont) {
+  return Font(new PlatformFontWin(CreateHFontRef(hfont)));
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
