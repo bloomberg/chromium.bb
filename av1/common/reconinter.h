@@ -355,7 +355,7 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
 int av1_allow_warp(const MB_MODE_INFO *const mbmi,
                    const WarpTypesAllowed *const warp_types,
                    const WarpedMotionParams *const gm_params,
-                   int build_for_obmc, int x_scale, int y_scale,
+                   int build_for_obmc, const struct scale_factors *const sf,
                    WarpedMotionParams *final_warp_params);
 
 #ifdef __cplusplus

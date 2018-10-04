@@ -789,8 +789,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       int do_warp = (bw >= 8 && bh >= 8 &&
                      av1_allow_warp(mi, &warp_types,
                                     &xd->global_motion[mi->ref_frame[ref]],
-                                    build_for_obmc, subpel_params[ref].xs,
-                                    subpel_params[ref].ys, NULL));
+                                    build_for_obmc, sf, NULL));
       do_warp = (do_warp && xd->cur_frame_force_integer_mv == 0);
 
       extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv, subpel_y_mv,

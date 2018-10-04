@@ -35,10 +35,12 @@
 int av1_allow_warp(const MB_MODE_INFO *const mbmi,
                    const WarpTypesAllowed *const warp_types,
                    const WarpedMotionParams *const gm_params,
-                   int build_for_obmc, int x_scale, int y_scale,
+                   int build_for_obmc, const struct scale_factors *const sf,
                    WarpedMotionParams *final_warp_params) {
-  if (x_scale != SCALE_SUBPEL_SHIFTS || y_scale != SCALE_SUBPEL_SHIFTS)
-    return 0;
+  // Note: As per the spec, we must test the fixed point scales here, which are
+  // at a higher precision (1 << 14) than the xs and ys in subpel_params (that
+  // have 1 << 10 precision).
+  if (av1_is_scaled(sf)) return 0;
 
   if (final_warp_params != NULL) *final_warp_params = default_warp_params;
 
@@ -75,8 +77,7 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   const int do_warp =
       (w >= 8 && h >= 8 &&
        av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
-                      build_for_obmc, subpel_params->xs, subpel_params->ys,
-                      &final_warp_params));
+                      build_for_obmc, sf, &final_warp_params));
   const int is_intrabc = mi->use_intrabc;
   assert(IMPLIES(is_intrabc, !do_warp));
 
