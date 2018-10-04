@@ -19,7 +19,4 @@ const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
 
 const base::Feature kNoHoverAfterLayoutChange{
     "NoHoverAfterLayoutChange", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNoHoverDuringScroll{"NoHoverDuringScroll",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 }
