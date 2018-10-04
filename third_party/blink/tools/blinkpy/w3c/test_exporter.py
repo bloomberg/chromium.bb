@@ -6,6 +6,7 @@
 
 import argparse
 import logging
+import sys
 
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.local_wpt import LocalWPT
@@ -56,6 +57,10 @@ class TestExporter(object):
                        '#GitHub-credentials for instructions on how to set '
                        'your credentials up.')
             return False
+
+        # TODO(crbug.com/891831): temporary debug logging; remove afterwards.
+        _log.debug("LANG=%s", self.host.environ.get('LANG', ''))
+        _log.debug("filesystemencoding=%s", sys.getfilesystemencoding())
 
         self.wpt_github = self.wpt_github or WPTGitHub(self.host, credentials['GH_USER'], credentials['GH_TOKEN'])
         self.gerrit = self.gerrit or GerritAPI(self.host, credentials['GERRIT_USER'], credentials['GERRIT_TOKEN'])

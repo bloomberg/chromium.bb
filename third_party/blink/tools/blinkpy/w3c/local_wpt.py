@@ -94,11 +94,12 @@ class LocalWPT(object):
         # Remove Chromium WPT directory prefix.
         patch = patch.replace(CHROMIUM_WPT_DIR, '')
 
-        _log.info('Author: %s', author)
         if '<' in author:
             author_str = author
         else:
             author_str = '%s <%s>' % (author, author)
+        _log.info('Author: %s', repr(author_str))
+        _log.debug('Message:\n%s', repr(message))
 
         # TODO(jeffcarp): Use git am -p<n> where n is len(CHROMIUM_WPT_DIR.split(/'))
         # or something not off-by-one.
