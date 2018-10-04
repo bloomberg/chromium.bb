@@ -343,6 +343,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
+  // Methods to add/remove/reset/query child FrameTreeNodes of this frame.
+  // See class-level comment for FrameTreeNode for how the frame tree is
+  // represented.
+  size_t child_count() { return children_.size(); }
+  FrameTreeNode* child_at(size_t index) const { return children_[index].get(); }
+  FrameTreeNode* AddChild(std::unique_ptr<FrameTreeNode> child,
+                          int process_id,
+                          int frame_routing_id);
+  void RemoveChild(FrameTreeNode* child);
+  void ResetChildren();
+
   // Allows FrameTreeNode::SetCurrentURL to update this frame's last committed
   // URL.  Do not call this directly, since we rely on SetCurrentURL to track
   // whether a real load has committed or not.
@@ -1326,6 +1337,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   FrameTreeNode* const frame_tree_node_;
+
+  // The immediate children of this specific frame.
+  std::vector<std::unique_ptr<FrameTreeNode>> children_;
 
   // The active parent RenderFrameHost for this frame, if it is a subframe.
   // Null for the main frame.  This is cached because the parent FrameTreeNode
