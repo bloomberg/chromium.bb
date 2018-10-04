@@ -186,6 +186,14 @@ class HackerNewsDesktopStory(_ArticleBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class HackerNewsDesktopStory2018(_ArticleBrowsingStory):
+  NAME = 'browse:news:hackernews:2018'
+  URL = 'https://news.ycombinator.com'
+  ITEM_SELECTOR = '.athing .title > a'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+
 class NytimesDesktopStory(_ArticleBrowsingStory):
   """The third top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:nytimes'
