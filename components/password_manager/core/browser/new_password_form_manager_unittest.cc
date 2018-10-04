@@ -97,10 +97,6 @@ class MockFormSaver : public StubFormSaver {
   DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
 };
 
-std::string GetSignonRealm(GURL origin) {
-  return origin.GetOrigin().spec();
-}
-
 }  // namespace
 
 // TODO(https://crbug.com/831123): Test sending metrics.
