@@ -56,15 +56,19 @@ class ElementInnerTextCollector final {
     void EmitTab();
     void EmitText(const StringView& text);
     String Finish();
+    void FlushCollapsibleSpace();
 
     bool HasCollapsibleSpace() const { return has_collapsible_space_; }
 
+    void SetShouldCollapseWhitespace(bool value) { at_start_of_block_ = value; }
+
    private:
-    void FlushCollapsibleSpace();
     void FlushRequiredLineBreak();
 
     StringBuilder builder_;
     int required_line_break_count_ = 0;
+    // TODO(yosin): We should rename |at_of_block_| to
+    // |should_collapse_white_space_|.
     bool at_start_of_block_ = false;
     bool has_collapsible_space_ = false;
 
@@ -507,8 +511,15 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   if (IsDisplayBlockLevel(node))
     return ProcessChildrenWithRequiredLineBreaks(node, 1);
 
-  if (layout_object.IsLayoutBlock())
-    return ProcessChildrenWithRequiredLineBreaks(node, 0);
+  if (layout_object.IsLayoutBlock()) {
+    result_.FlushCollapsibleSpace();
+    ProcessChildrenWithRequiredLineBreaks(node, 0);
+    // We should not collapse white space after inline-block.
+    // e.g. abc <span style="display:inline-block"></span> def => "abc  def".
+    // See http://crbug.com/890020
+    result_.SetShouldCollapseWhitespace(false);
+    return;
+  }
   ProcessChildren(node);
 }
 
@@ -585,8 +596,6 @@ void ElementInnerTextCollector::ProcessTextNode(const Text& node) {
 // ----
 
 void ElementInnerTextCollector::Result::EmitBeginBlock() {
-  if (has_collapsible_space_)
-    return;
   at_start_of_block_ = true;
 }
 
