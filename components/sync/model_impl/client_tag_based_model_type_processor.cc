@@ -133,7 +133,10 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     }
     model_type_state_ = batch->GetModelTypeState();
   } else {
-    DCHECK(commit_only_ || batch->TakeAllMetadata().empty());
+    // TODO(crbug.com/872360): This DCHECK can currently trigger if the user's
+    // persisted Sync metadata is in an inconsistent state.
+    DCHECK(commit_only_ || batch->TakeAllMetadata().empty())
+        << ModelTypeToString(type_);
     // First time syncing; initialize metadata.
     model_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));
