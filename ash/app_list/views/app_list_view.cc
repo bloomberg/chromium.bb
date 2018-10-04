@@ -503,8 +503,6 @@ void AppListView::Layout() {
 
   app_list_main_view_->SetBoundsRect(centered_bounds);
 
-  contents_view->Layout();
-
   gfx::Rect app_list_background_shield_bounds = contents_bounds;
   // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded
   // corners on the top and bottom of the |app_list_background_shield_|.
@@ -865,7 +863,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
     }
   }
   drag_started_from_peeking_ = false;
-  DraggingLayout();
+  UpdateChildViewsYPositionAndOpacity();
   initial_drag_point_ = gfx::Point();
 }
 
@@ -1186,7 +1184,7 @@ void AppListView::OnTabletModeChanged(bool started) {
 
     if (is_in_drag_) {
       SetIsInDrag(false);
-      DraggingLayout();
+      UpdateChildViewsYPositionAndOpacity();
     }
 
     // Set fullscreen state. When current state is fullscreen, we still need to
@@ -1375,6 +1373,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
 
   // In transition animation, layout is only performed after it is complete,
   // which makes the child views jump. So layout in advance here to avoid that.
+  GetAppsContainerView()->InvalidateLayout();
   Layout();
 }
 
@@ -1463,7 +1462,7 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
   native_view->SetBounds(new_widget_bounds);
 
-  DraggingLayout();
+  UpdateChildViewsYPositionAndOpacity();
 }
 
 void AppListView::OffsetYPositionOfAppList(int offset) {
@@ -1542,20 +1541,30 @@ bool AppListView::IsHomeLauncherEnabledInTabletMode() const {
   return is_tablet_mode_ && is_home_launcher_enabled_;
 }
 
-void AppListView::DraggingLayout() {
+void AppListView::UpdateChildViewsYPositionAndOpacity() {
   if (app_list_state_ == AppListViewState::CLOSED)
     return;
 
+  // Update the Y position of the background shield.
+  float app_list_transition_progress = GetAppListTransitionProgress();
+  gfx::Transform transform;
+  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
+    // Translate background shield so that it ends drag at y position
+    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
+    transform.Translate(
+        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+  }
+  app_list_background_shield_->SetTransform(transform);
+
+  // Update the opacity of the background shield.
   float shield_opacity =
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
   app_list_background_shield_->layer()->SetOpacity(
       is_in_drag_ ? background_opacity_ : shield_opacity);
 
-  // Updates the opacity of the items in the app list.
   search_box_view_->UpdateOpacity();
-  app_list_main_view_->contents_view()->UpdateOpacity();
 
-  Layout();
+  app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 }
 
 void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {

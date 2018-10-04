@@ -2044,11 +2044,12 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   delta.set_y(delta.y() + drag_view_->title()->size().height() / 2);
 
   // We have to hide the original item since the drag and drop host will do
-  // the OS dependent code to "lift off the dragged item".
+  // the OS dependent code to "lift off the dragged item". Apply the scale
+  // factor of this view's transform to the dragged view as well.
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
       drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
-      drag_view_, kDragAndDropProxyScale,
+      drag_view_, kDragAndDropProxyScale * GetTransform().Scale2d().x(),
       is_new_style_launcher_enabled_ && drag_view_->item()->is_folder()
           ? AppListConfig::instance().blur_radius()
           : 0);
