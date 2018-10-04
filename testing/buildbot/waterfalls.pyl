@@ -1365,6 +1365,11 @@
           'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
         },
       },
+      'linux-code-coverage-generation': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_coverage_gtests',
+        }
+      },
       'linux-tcmalloc-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',

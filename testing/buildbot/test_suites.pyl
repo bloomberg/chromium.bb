@@ -663,6 +663,10 @@
       'webapk_shell_apk_junit_tests': {},
     },
 
+    'chromium_linux_coverage_gtests': {
+      'base_unittests': {},
+    },
+
     'chromium_linux_scripts': {
       'checkdeps': {
         'script': 'checkdeps.py',
