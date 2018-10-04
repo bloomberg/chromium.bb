@@ -772,6 +772,8 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   EXPECT_EQ(
       text,
       test_context_handler.last_update_composition_arg().composition_text.text);
+  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
+                    .composition_text.selection.start());
   // Committing the composing text calls ClearComposition() and CommitText().
   connection->CommitText(base::ASCIIToUTF16("text"), 0);
   EXPECT_EQ(2, test_context_handler.update_preedit_text_call_count());

@@ -118,9 +118,9 @@ void InputConnectionImpl::SetComposingText(
     const base::string16& text,
     int new_cursor_pos,
     const base::Optional<gfx::Range>& new_selection_range) {
-  // If new_cursor_pos > 0, it's relative to (the end of the text - 1).
-  if (new_cursor_pos > 0)
-    new_cursor_pos += text.length() - 1;
+  // It's relative to the last character of the composing text,
+  // so 0 means the cursor should be just before the last character of the text.
+  new_cursor_pos += text.length() - 1;
 
   StartStateUpdateTimer();
 
