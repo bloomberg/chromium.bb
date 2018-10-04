@@ -6,7 +6,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "dbus/object_path.h"
+#include "device/bluetooth/dbus/bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
@@ -22,5 +26,23 @@ BluetoothSystem::BluetoothSystem(mojom::BluetoothSystemClientPtr client) {
 }
 
 BluetoothSystem::~BluetoothSystem() = default;
+
+void BluetoothSystem::GetState(GetStateCallback callback) {
+  std::vector<dbus::ObjectPath> object_paths =
+      GetBluetoothAdapterClient()->GetAdapters();
+  if (object_paths.empty()) {
+    std::move(callback).Run(State::kUnavailable);
+    return;
+  }
+
+  // TODO(crbug.com/870192): Return the state based on the adapter's state.
+  std::move(callback).Run(State::kPoweredOff);
+}
+
+bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
+  // Use AlternateBluetoothAdapterClient to avoid interfering with users of the
+  // regular BluetoothAdapterClient.
+  return bluez::BluezDBusManager::Get()->GetAlternateBluetoothAdapterClient();
+}
 
 }  // namespace device
