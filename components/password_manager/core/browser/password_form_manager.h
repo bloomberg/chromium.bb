@@ -117,6 +117,7 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   bool RetryPasswordFormPasswordUpdate() const override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
+  const autofill::PasswordForm* GetSubmittedForm() const override;
 
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.). If this is called
@@ -172,11 +173,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   void MarkGenerationAvailable();
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
-
-  // Returns the provisionally saved form, if it exists, otherwise nullptr.
-  const autofill::PasswordForm* submitted_form() const {
-    return submitted_form_.get();
-  }
 
   FormSaver* form_saver() { return form_saver_.get(); }
 

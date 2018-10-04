@@ -795,6 +795,9 @@ void PasswordManager::CreatePendingLoginManagers(
                       pending_login_managers_.size());
   }
 
+  if (skip_old_form_managers_in_tests_)
+    return;
+
   for (const PasswordForm& form : forms) {
     // Don't involve the password manager if this form corresponds to
     // SpdyProxy authentication, as indicated by the realm.
@@ -946,21 +949,22 @@ bool PasswordManager::CanProvisionalManagerSave() {
     logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
   }
 
-  if (!provisional_save_manager_) {
+  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+
+  if (!submitted_manager) {
     if (logger) {
       logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
     }
     return false;
   }
 
-  if (provisional_save_manager_->GetFormFetcher()->GetState() ==
+  if (submitted_manager->GetFormFetcher()->GetState() ==
       FormFetcher::State::WAITING) {
     // We have a provisional save manager, but it didn't finish matching yet.
     // We just give up.
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE,
-        provisional_save_manager_->GetOrigin(), logger.get());
-    provisional_save_manager_.reset();
+        submitted_manager->GetOrigin(), logger.get());
     return false;
   }
   return true;
@@ -990,13 +994,16 @@ void PasswordManager::OnPasswordFormsRendered(
   if (!CanProvisionalManagerSave())
     return;
 
+  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+
   // If the server throws an internal error, access denied page, page not
   // found etc. after a login attempt, we do not save the credentials.
   if (client_->WasLastNavigationHTTPError()) {
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_DROP);
-    provisional_save_manager_->LogSubmitFailed();
+    submitted_manager->GetMetricsRecorder()->LogSubmitFailed();
     provisional_save_manager_.reset();
+    owned_submitted_form_manager_.reset();
     return;
   }
 
@@ -1010,30 +1017,32 @@ void PasswordManager::OnPasswordFormsRendered(
                             visible_forms.begin(),
                             visible_forms.end());
 
+  if (!did_stop_loading)
+    return;
+
   // If we see the login form again, then the login failed.
-  if (did_stop_loading) {
-    if (provisional_save_manager_->GetPendingCredentials().scheme ==
-        PasswordForm::SCHEME_HTML) {
-      for (const PasswordForm& form : all_visible_forms_) {
-        if (IsPasswordFormReappeared(
-                form, provisional_save_manager_->GetPendingCredentials())) {
-          if (provisional_save_manager_
-                  ->IsPossibleChangePasswordFormWithoutUsername() &&
-              AreAllFieldsEmpty(form)) {
-            continue;
-          }
-          provisional_save_manager_->LogSubmitFailed();
-          if (logger) {
-            logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                    form);
-            logger->LogMessage(Logger::STRING_DECISION_DROP);
-          }
-          provisional_save_manager_.reset();
-          // Clear all_visible_forms_ once we found the match.
-          all_visible_forms_.clear();
-          return;
+  if (submitted_manager->GetPendingCredentials().scheme ==
+      PasswordForm::SCHEME_HTML) {
+    for (const PasswordForm& form : all_visible_forms_) {
+      if (IsPasswordFormReappeared(
+              form, submitted_manager->GetPendingCredentials())) {
+        if (submitted_manager->IsPossibleChangePasswordFormWithoutUsername() &&
+            AreAllFieldsEmpty(form)) {
+          continue;
         }
+        submitted_manager->GetMetricsRecorder()->LogSubmitFailed();
+        if (logger) {
+          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
+                                  form);
+          logger->LogMessage(Logger::STRING_DECISION_DROP);
+        }
+        provisional_save_manager_.reset();
+        owned_submitted_form_manager_.reset();
+        // Clear all_visible_forms_ once we found the match.
+        all_visible_forms_.clear();
+        return;
       }
+    }
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML);
@@ -1047,7 +1056,6 @@ void PasswordManager::OnPasswordFormsRendered(
     // already given consent, either through previously accepting the infobar
     // or by having the browser generate the password.
     OnLoginSuccessful();
-  }
 }
 
 void PasswordManager::OnLoginSuccessful() {
@@ -1058,20 +1066,17 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
 
-  // TODO(https://crbug.com/831123): Implement metrics with
-  // NewPasswordFormManager.
-  client_->GetStoreResultFilter()->ReportFormLoginSuccess(
-      *provisional_save_manager_);
-  if (provisional_save_manager_->submitted_form()) {
-    metrics_util::LogPasswordSuccessfulSubmissionIndicatorEvent(
-        provisional_save_manager_->submitted_form()->submission_event);
-    if (logger) {
-      logger->LogSuccessfulSubmissionIndicatorEvent(
-          provisional_save_manager_->submitted_form()->submission_event);
-    }
-  }
+  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+  DCHECK(submitted_manager);
+  DCHECK(submitted_manager->GetSubmittedForm());
 
-  DCHECK(provisional_save_manager_->submitted_form());
+  client_->GetStoreResultFilter()->ReportFormLoginSuccess(*submitted_manager);
+
+  auto submission_event =
+      submitted_manager->GetSubmittedForm()->submission_event;
+  metrics_util::LogPasswordSuccessfulSubmissionIndicatorEvent(submission_event);
+  if (logger)
+    logger->LogSuccessfulSubmissionIndicatorEvent(submission_event);
 
   bool able_to_save_passwords =
       client_->GetPasswordStore()->IsAbleToSavePasswords();
@@ -1080,39 +1085,29 @@ void PasswordManager::OnLoginSuccessful() {
   if (!able_to_save_passwords)
     return;
 
-  MaybeSavePasswordHash();
+  MaybeSavePasswordHash(*submitted_manager);
 
   // TODO(https://crbug.com/831123): Implement checking whether to save with
   // NewPasswordFormManager.
   if (!client_->GetStoreResultFilter()->ShouldSave(
-          *provisional_save_manager_->submitted_form())) {
+          *submitted_manager->GetSubmittedForm())) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL,
-        provisional_save_manager_->GetOrigin(), logger.get());
+        submitted_manager->GetOrigin(), logger.get());
     provisional_save_manager_.reset();
     owned_submitted_form_manager_.reset();
     return;
   }
 
-  provisional_save_manager_->LogSubmitPassed();
+  submitted_manager->GetMetricsRecorder()->LogSubmitPassed();
 
   RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SuccessfulLoginHappened",
-                        provisional_save_manager_->submitted_form()
-                            ->origin.SchemeIsCryptographic());
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.SuccessfulLoginHappened",
+      submitted_manager->GetSubmittedForm()->origin.SchemeIsCryptographic());
 
   // If the form is eligible only for saving fallback, it shouldn't go here.
-  DCHECK(!provisional_save_manager_->GetPendingCredentials()
-              .only_for_fallback_saving);
-
-  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
-  if (!submitted_manager) {
-    // This is a simple crash fix for merging in M-70.
-    // TODO(https://crbug.com/831123): fit it properly by making
-    // |submitted_manager| is not null here and put DCHECK(submitted_manager)
-    // instead.
-    return;
-  }
+  DCHECK(!submitted_manager->GetPendingCredentials().only_for_fallback_saving);
 
   // TODO(https://crbug.com/831123): Remove logging when the old form parsing is
   // removed.
@@ -1121,9 +1116,11 @@ void PasswordManager::OnLoginSuccessful() {
     // |provisional_save_manager_| to a PasswordFormManager. They use the new
     // and the old FormData parser, respectively. Log the differences using UKM
     // to be alerted of regressions early.
-    RecordParsingOnSavingDifference(*provisional_save_manager_,
-                                    *submitted_manager,
-                                    submitted_manager->GetMetricsRecorder());
+    if (provisional_save_manager_) {
+      RecordParsingOnSavingDifference(*provisional_save_manager_,
+                                      *submitted_manager,
+                                      submitted_manager->GetMetricsRecorder());
+    }
   }
 
   if (ShouldPromptUserToSavePassword(*submitted_manager)) {
@@ -1144,12 +1141,12 @@ void PasswordManager::OnLoginSuccessful() {
       logger->LogMessage(Logger::STRING_DECISION_SAVE);
     submitted_manager->Save();
 
-    if (!provisional_save_manager_->IsNewLogin()) {
+    if (!submitted_manager->IsNewLogin()) {
       client_->NotifySuccessfulLoginWithExistingPassword(
           submitted_manager->GetPendingCredentials());
     }
 
-    if (provisional_save_manager_->HasGeneratedPassword()) {
+    if (submitted_manager->HasGeneratedPassword()) {
       client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
     } else {
       provisional_save_manager_.reset();
@@ -1158,13 +1155,14 @@ void PasswordManager::OnLoginSuccessful() {
   }
 }
 
-void PasswordManager::MaybeSavePasswordHash() {
+void PasswordManager::MaybeSavePasswordHash(
+    const PasswordFormManagerInterface& submitted_manager) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // When |username_value| is empty, it's not clear whether the submitted
   // credentials are really Gaia or enterprise credentials. Don't save
   // password hash in that case.
-  std::string username = base::UTF16ToUTF8(
-      provisional_save_manager_->submitted_form()->username_value);
+  std::string username =
+      base::UTF16ToUTF8(submitted_manager.GetSubmittedForm()->username_value);
   if (username.empty())
     return;
 
@@ -1173,8 +1171,7 @@ void PasswordManager::MaybeSavePasswordHash() {
   if (!store)
     return;
 
-  const PasswordForm* password_form =
-      provisional_save_manager_->submitted_form();
+  const PasswordForm* password_form = submitted_manager.GetSubmittedForm();
 
   bool should_save_enterprise_pw =
       client_->GetStoreResultFilter()->ShouldSaveEnterprisePasswordHash(

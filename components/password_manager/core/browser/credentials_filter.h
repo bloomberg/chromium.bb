@@ -10,7 +10,7 @@
 
 namespace password_manager {
 
-class PasswordFormManager;
+class PasswordFormManagerInterface;
 
 // This interface is used to filter credentials during saving, retrieval from
 // PasswordStore, etc.
@@ -40,7 +40,7 @@ class CredentialsFilter {
   // Call this if the form associated with |form_manager| was filled, and the
   // subsequent sign-in looked like a success.
   virtual void ReportFormLoginSuccess(
-      const PasswordFormManager& form_manager) const {}
+      const PasswordFormManagerInterface& form_manager) const {}
 
   // If |username| matches Chrome sync account email.
   virtual bool IsSyncAccountEmail(const std::string& username) const = 0;

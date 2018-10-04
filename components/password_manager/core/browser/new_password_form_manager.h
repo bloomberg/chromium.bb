@@ -121,6 +121,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
   bool RetryPasswordFormPasswordUpdate() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
+  const autofill::PasswordForm* GetSubmittedForm() const override;
 
   // Create a copy of |*this| which can be passed to the code handling
   // save-password related UI. This omits some parts of the internal data, so

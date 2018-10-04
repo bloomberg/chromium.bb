@@ -132,6 +132,9 @@ class PasswordFormManagerInterface : public PasswordFormManagerForUI {
   // Returns the drivers representing all the frames for the form.
   virtual std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers()
       const = 0;
+
+  // Returns the submitted form, if it exists, otherwise nullptr.
+  virtual const autofill::PasswordForm* GetSubmittedForm() const = 0;
 };
 
 }  // namespace  password_manager
