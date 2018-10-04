@@ -91,6 +91,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -808,25 +809,18 @@ public class CustomTabActivityTest {
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
                         mTestServer.getURL(GEOLOCATION_PAGE)));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return currentTab != null
-                        && currentTab.getInfoBarContainer() != null
-                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
-            }
-        });
-        final ChromeActivity newActivity = reparentAndVerifyTab();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab currentTab = newActivity.getActivityTab();
-                return currentTab != null
-                        && currentTab.getInfoBarContainer() != null
-                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> isInfoBarSizeOne(mCustomTabActivityTestRule.getActivity().getActivityTab()));
+
+        ChromeActivity newActivity = reparentAndVerifyTab();
+        CriteriaHelper.pollUiThread(() -> isInfoBarSizeOne(newActivity.getActivityTab()));
+    }
+
+    private static boolean isInfoBarSizeOne(Tab tab) {
+        if (tab == null) return false;
+        InfoBarContainer container = InfoBarContainer.get(tab);
+        if (container == null) return false;
+        return container.getInfoBarsForTesting().size() == 1;
     }
 
     /**

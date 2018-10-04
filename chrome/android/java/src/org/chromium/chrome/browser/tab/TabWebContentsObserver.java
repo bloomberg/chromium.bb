@@ -16,6 +16,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -245,7 +246,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didAttachInterstitialPage() {
-        mTab.getInfoBarContainer().setVisibility(View.INVISIBLE);
+        InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
         mTab.showRenderedPage();
         mTab.updateThemeColorIfNeeded(false);
 
@@ -265,7 +266,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didDetachInterstitialPage() {
-        mTab.getInfoBarContainer().setVisibility(View.VISIBLE);
+        InfoBarContainer.get(mTab).setVisibility(View.VISIBLE);
         mTab.updateThemeColorIfNeeded(false);
 
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();

@@ -96,9 +96,7 @@ public class SiteSettingsPreferencesTest {
                 new Callable<InfoBarTestAnimationListener>() {
                     @Override
                     public InfoBarTestAnimationListener call() throws Exception {
-                        InfoBarContainer container = mActivityTestRule.getActivity()
-                                                             .getActivityTab()
-                                                             .getInfoBarContainer();
+                        InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
                         InfoBarTestAnimationListener listener =  new InfoBarTestAnimationListener();
                         container.addAnimationListener(listener);
                         return listener;

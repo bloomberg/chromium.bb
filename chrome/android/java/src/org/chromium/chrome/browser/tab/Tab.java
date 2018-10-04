@@ -201,9 +201,6 @@ public class Tab
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
     private NativePage mNativePage;
 
-    /** InfoBar container to show InfoBars for this tab. */
-    private InfoBarContainer mInfoBarContainer;
-
     /** Controls overscroll pull-to-refresh behavior for this tab. */
     private SwipeRefreshHandler mSwipeRefreshHandler;
 
@@ -853,13 +850,6 @@ public class Tab
     public TabModelSelector getTabModelSelector() {
         if (getActivity() == null) return null;
         return getActivity().getTabModelSelector();
-    }
-
-    /**
-     * @return The infobar container.
-     */
-    public final InfoBarContainer getInfoBarContainer() {
-        return mInfoBarContainer;
     }
 
     /** @return An opaque "state" object that can be persisted to storage. */
@@ -1797,8 +1787,7 @@ public class Tab
             // initialized.
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
-            mInfoBarContainer = InfoBarContainer.from(this);
-            mInfoBarContainer.setWebContents(getWebContents());
+            InfoBarContainer.from(this);
 
             mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext, this);
 
@@ -2290,10 +2279,6 @@ public class Tab
         mContentView.setOnHierarchyChangeListener(null);
         mContentView.setOnSystemUiVisibilityChangeListener(null);
 
-        if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
-            mInfoBarContainer.removeFromParentView();
-            mInfoBarContainer.setWebContents(null);
-        }
         if (mSwipeRefreshHandler != null) {
             mSwipeRefreshHandler.destroy();
             mSwipeRefreshHandler = null;

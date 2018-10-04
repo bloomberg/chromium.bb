@@ -85,8 +85,7 @@ public class InfoBarContainerTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // Register for animation notifications
-        InfoBarContainer container =
-                mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
+        InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         container.addAnimationListener(mListener);
 
@@ -299,8 +298,7 @@ public class InfoBarContainerTest {
     public void testAddAndDismissSurfaceFlingerOverlays() throws Exception {
         final ViewGroup decorView =
                 (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView();
-        final InfoBarContainer infoBarContainer =
-                mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
+        final InfoBarContainer infoBarContainer = mActivityTestRule.getInfoBarContainer();
 
         // Detect layouts. Note this doesn't actually need to be atomic (just final).
         final AtomicInteger layoutCount = new AtomicInteger();

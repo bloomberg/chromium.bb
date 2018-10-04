@@ -52,7 +52,7 @@ public class TranslateCompactInfoBarTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mInfoBarContainer = mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
+        mInfoBarContainer = mActivityTestRule.getInfoBarContainer();
         mListener = new InfoBarTestAnimationListener();
         mInfoBarContainer.addAnimationListener(mListener);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());

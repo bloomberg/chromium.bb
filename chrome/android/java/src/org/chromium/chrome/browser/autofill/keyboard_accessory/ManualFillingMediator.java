@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -132,6 +133,7 @@ class ManualFillingMediator
         @Override
         public void onDestroyed(Tab tab) {
             mModel.remove(tab); // Clears tab if still present.
+            if (tab == mActiveBrowserTab) mActiveBrowserTab = null;
             restoreCachedState(mActiveBrowserTab);
         }
 
@@ -404,8 +406,8 @@ class ManualFillingMediator
      */
     private void updateInfobarState(boolean shouldBeHidden) {
         if (mActiveBrowserTab == null) return;
-        if (mActiveBrowserTab.getInfoBarContainer() == null) return;
-        mActiveBrowserTab.getInfoBarContainer().setHidden(shouldBeHidden);
+        if (InfoBarContainer.get(mActiveBrowserTab) == null) return;
+        InfoBarContainer.get(mActiveBrowserTab).setHidden(shouldBeHidden);
     }
 
     @VisibleForTesting
