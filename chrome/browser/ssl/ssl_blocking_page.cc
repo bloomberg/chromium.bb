@@ -45,6 +45,9 @@ using security_interstitials::SSLErrorUI;
 
 namespace {
 
+const char kSymantecSupportUrl[] =
+    "https://support.google.com/chrome?p=symantec";
+
 std::unique_ptr<ChromeMetricsHelper> CreateSslProblemMetricsHelper(
     content::WebContents* web_contents,
     int cert_error,
@@ -108,6 +111,15 @@ SSLBlockingPage* SSLBlockingPage::Create(
           "interstitial.ssl_nonoverridable.is_recurrent_error.ct_error",
           is_recurrent_error);
     }
+  }
+
+  if (cert_error == net::ERR_CERT_SYMANTEC_LEGACY) {
+    GURL symantec_support_url(kSymantecSupportUrl);
+    return new SSLBlockingPage(
+        web_contents, cert_error, ssl_info, request_url, options_mask,
+        time_triggered, std::move(symantec_support_url),
+        std::move(ssl_cert_reporter), overridable, std::move(metrics_helper),
+        is_superfish, callback);
   }
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
