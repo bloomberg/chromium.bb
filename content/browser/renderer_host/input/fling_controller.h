@@ -46,6 +46,8 @@ class CONTENT_EXPORT FlingControllerSchedulerClient {
 
   virtual void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) = 0;
+
+  virtual bool NeedsBeginFrameForFlingProgress() = 0;
 };
 
 class CONTENT_EXPORT FlingController {

@@ -73,6 +73,7 @@ class MockInputRouterClient : public InputRouterClient,
       base::WeakPtr<FlingController> fling_controller) override {}
   void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) override {}
+  bool NeedsBeginFrameForFlingProgress() override;
 
  private:
   InputRouter* input_router_;
