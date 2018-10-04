@@ -259,7 +259,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   _webState->TakeSnapshot(
       webViewSnapshotFrame, base::BindOnce(^(gfx::Image image) {
         SnapshotGenerator* strongSelf = weakSelf;
-        if (!strongSelf)
+        if (!strongSelf || !_webState)
           return;
         UIImage* snapshot = image.ToUIImage();
         if (overlays.count > 0) {
@@ -457,8 +457,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 #pragma mark - Properties.
 
 - (SnapshotCache*)snapshotCache {
-  DCHECK(_webState);
-  DCHECK(_webState->GetBrowserState());
   return SnapshotCacheFactory::GetForBrowserState(
       ios::ChromeBrowserState::FromBrowserState(_webState->GetBrowserState()));
 }

@@ -68,8 +68,6 @@ bool IsUIRefreshPhase1Enabled() {
 
 // TODO(crbug.com/885003) : Remove this flag.
 bool IsWKWebViewSnapshotsEnabled() {
-  if (tests_hook::ForceWKWebViewSnapshots())
-    return true;
   return base::FeatureList::IsEnabled(kWKWebViewSnapshots);
 }
 
