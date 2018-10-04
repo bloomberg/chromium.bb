@@ -394,8 +394,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     // The render frame host is constructed before the call to
     // WebContentsObserver::Observe, so we need to manually handle the creation
     // of the new render frame host.
-    HandleNewRenderFrameHost(
-        main_window_->web_contents()->GetRenderViewHost()->GetMainFrame());
+    HandleNewRenderFrameHost(main_window_->web_contents()->GetMainFrame());
 
     if (is_devtools_protocol_test) {
       devtools_protocol_test_bindings_.reset(
@@ -408,6 +407,10 @@ bool BlinkTestController::PrepareForLayoutTest(
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
     } else {
+      // Focus the RenderWidgetHost. This will send an IPC message to the
+      // renderer to propagate the state change.
+      main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+
       // Flush IPC messages on the widget.
       base::RunLoop run_loop;
       main_window_->web_contents()
@@ -474,10 +477,10 @@ bool BlinkTestController::PrepareForLayoutTest(
       main_window_->web_contents()->GetController().LoadURLWithParams(params);
       main_window_->web_contents()->Focus();
     }
+    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->SetActive(
+        true);
+    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   }
-  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->SetActive(
-      true);
-  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   return true;
 }
 
