@@ -171,7 +171,8 @@ void DevToolsVideoConsumer::OnFrameCaptured(
          viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {},
       std::move(mapping), std::move(callbacks)));
   frame->metadata()->MergeInternalValuesFrom(info->metadata);
-  frame->set_color_space(info->color_space);
+  if (info->color_space.has_value())
+    frame->set_color_space(info->color_space.value());
 
   callback_.Run(std::move(frame));
 }
