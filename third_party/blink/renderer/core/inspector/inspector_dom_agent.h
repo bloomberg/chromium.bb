@@ -299,6 +299,7 @@ class CORE_EXPORT InspectorDOMAgent final
   void PushChildNodesToFrontend(int node_id,
                                 int depth = 1,
                                 bool traverse_frames = false);
+  void DOMNodeRemoved(Node*);
 
   void InvalidateFrameOwnerElement(HTMLFrameOwnerElement*);
 
