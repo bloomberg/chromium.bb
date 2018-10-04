@@ -101,7 +101,7 @@ void ActionView::UpdateState(bool animate) {
   BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      mic_state = BaseLogoView::State::kMicFab;
+      mic_state = BaseLogoView::State::kMic;
       break;
     case MicState::kOpen:
       mic_state = is_user_speaking_ ? BaseLogoView::State::kUserSpeaks
