@@ -508,7 +508,8 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
 
   void SetUpOnMainThread() override {
     NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), &StubNotificationDisplayService::FactoryForTests);
+        profile(),
+        base::BindRepeating(&StubNotificationDisplayService::FactoryForTests));
 
     gcm::FakeGCMProfileService* gcm_service =
         static_cast<gcm::FakeGCMProfileService*>(

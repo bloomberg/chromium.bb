@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -448,7 +449,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   MenuManager* manager = static_cast<MenuManager*>(
       (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(),
-          &MenuManagerFactory::BuildServiceInstanceForTesting)));
+          base::BindRepeating(
+              &MenuManagerFactory::BuildServiceInstanceForTesting))));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
@@ -496,7 +498,8 @@ TEST_F(ExtensionContextMenuModelTest,
   // Create a MenuManager for adding context items.
   MenuManager* manager = static_cast<MenuManager*>(
       MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting));
+          profile(), base::BindRepeating(
+                         &MenuManagerFactory::BuildServiceInstanceForTesting)));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
@@ -1374,7 +1377,9 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
   // Create a MenuManager for adding context items.
   MenuManager* manager = static_cast<MenuManager*>(
       (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting)));
+          profile(),
+          base::BindRepeating(
+              &MenuManagerFactory::BuildServiceInstanceForTesting))));
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);

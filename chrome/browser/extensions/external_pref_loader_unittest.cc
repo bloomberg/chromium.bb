@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/external_pref_loader.h"
+
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -125,7 +127,7 @@ class ExternalPrefLoaderTest : public testing::Test {
 TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
   TestSyncService* test_service = static_cast<TestSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &TestingSyncFactoryFunction));
+          profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
 
   base::RunLoop run_loop;
   scoped_refptr<ExternalPrefLoader> loader(
