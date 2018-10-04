@@ -20,7 +20,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/views_export.h"
-#import "ui/views_bridge_mac/bridged_native_widget_owner.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 
@@ -60,8 +59,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
     : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
-      public CocoaMouseCaptureDelegate,
-      public BridgedNativeWidgetOwner {
+      public CocoaMouseCaptureDelegate {
  public:
   // Return the size that |window| will take for the given client area |size|,
   // based on its current style mask.
@@ -174,7 +172,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
-  BridgedNativeWidgetOwner* parent() { return parent_; }
+  BridgedNativeWidgetImpl* parent() { return parent_; }
   const std::vector<BridgedNativeWidgetImpl*>& child_windows() {
     return child_windows_;
   }
@@ -250,12 +248,18 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // update widget and compositor size.
   void UpdateWindowGeometry();
 
+  // The offset in screen pixels for positioning child windows owned by |this|.
+  gfx::Vector2d GetChildWindowOffset() const;
+
  private:
   friend class test::BridgedNativeWidgetTestApi;
 
   // Closes all child windows. BridgedNativeWidgetImpl children will be
   // destroyed.
   void RemoveOrDestroyChildren();
+
+  // Remove the specified child window without closing it.
+  void RemoveChildWindow(BridgedNativeWidgetImpl* child);
 
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
@@ -279,12 +283,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void OnMouseCaptureLost() override;
   NSWindow* GetWindow() const override;
 
-  // BridgedNativeWidgetOwner:
-  NSWindow* GetNSWindow() override;
-  gfx::Vector2d GetChildWindowOffset() const override;
-  bool IsVisibleParent() const override;
-  void RemoveChildWindow(BridgedNativeWidgetImpl* child) override;
-
   const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
@@ -299,7 +297,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   bool is_translucent_window_ = false;
   bool widget_is_top_level_ = false;
 
-  BridgedNativeWidgetOwner* parent_ = nullptr;  // Weak. If non-null, owns this.
+  BridgedNativeWidgetImpl* parent_ = nullptr;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidgetImpl*> child_windows_;
 
   // The size of the content area of the window most recently sent to |host_|

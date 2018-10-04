@@ -234,7 +234,7 @@ gfx::Vector2d BridgedNativeWidgetHostImpl::GetBoundsOffsetForParent() const {
   if (!bridge_impl_)
     return offset;
   Widget* widget = native_widget_mac_->GetWidget();
-  BridgedNativeWidgetOwner* parent = bridge_impl_->parent();
+  BridgedNativeWidgetImpl* parent = bridge_impl_->parent();
   if (parent && !PositionWindowInScreenCoordinates(widget, widget_type_))
     offset = parent->GetChildWindowOffset();
   return offset;
