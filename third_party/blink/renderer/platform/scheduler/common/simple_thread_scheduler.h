@@ -46,6 +46,7 @@ class SimpleThreadScheduler : public ThreadScheduler {
   // Return the thread task runner (there's no separate task runner for them).
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
 
   // Unsupported. Return nullptr, and it may cause a crash.
   std::unique_ptr<PageScheduler> CreatePageScheduler(

@@ -162,6 +162,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // WebThreadScheduler implementation:
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
   std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -208,6 +209,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                                WebThread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  // IPCTaskRunner() is implemented above in the WebThreadScheduler section.
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()

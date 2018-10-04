@@ -16,10 +16,10 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
-#include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 
 namespace content {
 
@@ -27,7 +27,7 @@ namespace content {
 scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
     scoped_refptr<DOMStorageContextWrapper> context) {
   return SessionStorageNamespaceImpl::Create(
-      std::move(context), AllocateSessionStorageNamespaceId());
+      std::move(context), blink::AllocateSessionStorageNamespaceId());
 }
 
 // static
@@ -102,7 +102,7 @@ bool SessionStorageNamespaceImpl::should_persist() const {
 
 scoped_refptr<SessionStorageNamespaceImpl>
 SessionStorageNamespaceImpl::Clone() {
-  return CloneFrom(context_wrapper_, AllocateSessionStorageNamespaceId(),
+  return CloneFrom(context_wrapper_, blink::AllocateSessionStorageNamespaceId(),
                    namespace_id_, true);
 }
 

@@ -41,7 +41,6 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
@@ -107,6 +106,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -454,6 +454,8 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       webkit_preferences_(params.web_preferences),
       session_storage_namespace_id_(params.session_storage_namespace_id),
       weak_ptr_factory_(this) {
+  DCHECK(!session_storage_namespace_id_.empty())
+      << "Session storage namespace must be populated.";
   GetWidget()->set_owner_delegate(this);
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
@@ -1396,7 +1398,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
   params->window_container_type = WindowFeaturesToContainerType(features);
 
-  params->session_storage_namespace_id = AllocateSessionStorageNamespaceId();
+  params->session_storage_namespace_id =
+      blink::AllocateSessionStorageNamespaceId();
   params->clone_from_session_storage_namespace_id =
       session_storage_namespace_id_;
   if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
@@ -1480,6 +1483,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   view_params->main_frame_widget_routing_id = reply->main_frame_widget_route_id;
   view_params->session_storage_namespace_id =
       reply->cloned_session_storage_namespace_id;
+  DCHECK(!view_params->session_storage_namespace_id.empty())
+      << "Session storage namespace must be populated.";
   view_params->swapped_out = false;
   view_params->replicated_frame_state.frame_policy.sandbox_flags =
       sandbox_flags;

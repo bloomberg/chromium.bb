@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dom_storage/dom_storage_namespace_ids.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 
 #include <algorithm>
 
 #include "base/guid.h"
+#include "base/logging.h"
 
-namespace content {
+namespace blink {
 
-std::string AllocateSessionStorageNamespaceId() {
+SessionStorageNamespaceId AllocateSessionStorageNamespaceId() {
   std::string guid = base::GenerateGUID();
   std::replace(guid.begin(), guid.end(), '-', '_');
   // The database deserialization code makes assumptions based on this length.
@@ -18,4 +19,4 @@ std::string AllocateSessionStorageNamespaceId() {
   return guid;
 }
 
-}  // namespace content
+}  // namespace blink

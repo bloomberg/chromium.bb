@@ -35,9 +35,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/modules/storage/storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -74,9 +75,11 @@ void InspectorDOMStorageAgent::Restore() {
 }
 
 void InspectorDOMStorageAgent::InnerEnable() {
-  if (StorageNamespaceController* controller = StorageNamespaceController::From(
-          inspected_frames_->Root()->GetPage()))
-    controller->SetInspectorAgent(this);
+  StorageController::GetInstance()->AddLocalStorageInspectorStorageAgent(this);
+  StorageNamespace* ns =
+      StorageNamespace::From(inspected_frames_->Root()->GetPage());
+  if (ns)
+    ns->AddInspectorStorageAgent(this);
 }
 
 Response InspectorDOMStorageAgent::enable() {
@@ -91,9 +94,12 @@ Response InspectorDOMStorageAgent::disable() {
   if (!enabled_.Get())
     return Response::OK();
   enabled_.Set(false);
-  if (StorageNamespaceController* controller = StorageNamespaceController::From(
-          inspected_frames_->Root()->GetPage()))
-    controller->SetInspectorAgent(nullptr);
+  StorageController::GetInstance()->RemoveLocalStorageInspectorStorageAgent(
+      this);
+  StorageNamespace* ns =
+      StorageNamespace::From(inspected_frames_->Root()->GetPage());
+  if (ns)
+    ns->RemoveInspectorStorageAgent(this);
   return Response::OK();
 }
 
@@ -213,23 +219,25 @@ Response InspectorDOMStorageAgent::FindStorageArea(
   if (is_local_storage) {
     if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessLocalStorage())
       return Response::Error("Security origin cannot access local storage");
-    storage_area =
-        StorageArea::Create(frame,
-                            StorageNamespace::LocalStorageArea(
-                                frame->GetDocument()->GetSecurityOrigin()),
-                            StorageArea::StorageType::kLocalStorage);
+    storage_area = StorageArea::Create(
+        frame,
+        StorageController::GetInstance()->GetWebLocalStorageArea(
+            frame->GetDocument()->GetSecurityOrigin()),
+        StorageArea::StorageType::kLocalStorage);
     return Response::OK();
   }
 
   if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessSessionStorage())
     return Response::Error("Security origin cannot access session storage");
-  StorageNamespace* session_storage =
-      StorageNamespaceController::From(frame->GetPage())->SessionStorage();
-  if (!session_storage)
+  StorageNamespace* session_namespace =
+      StorageNamespace::From(frame->GetPage());
+  if (!session_namespace)
     return Response::Error("SessionStorage is not supported");
+  DCHECK(session_namespace->IsSessionStorage());
+
   storage_area =
       StorageArea::Create(frame,
-                          session_storage->GetStorageArea(
+                          session_namespace->GetWebStorageArea(
                               frame->GetDocument()->GetSecurityOrigin()),
                           StorageArea::StorageType::kSessionStorage);
   return Response::OK();

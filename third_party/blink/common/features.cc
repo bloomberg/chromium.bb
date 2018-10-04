@@ -30,6 +30,24 @@ const base::Feature kMojoBlobURLs{"MojoBlobURLs",
 const base::Feature kNestedWorkers{"NestedWorkers",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Onion souping for all DOMStorage. Requires that kMojoSessionStorage is
+// enabled. https://crbug.com/781870
+const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable Portals. https://crbug.com/865123.
+const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Used to control the collection of anchor element metrics (crbug.com/856683).
+// If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
+// clicked by the user will be extracted and recorded.
+// If kRecordAnchorMetricsVisible is enabled, then metrics of anchor elements
+// in the first viewport after the page load will be extracted and recorded.
+const base::Feature kRecordAnchorMetricsClicked{
+    "RecordAnchorMetricsClicked", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRecordAnchorMetricsVisible{
+    "RecordAnchorMetricsVisible", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -42,19 +60,6 @@ const base::Feature kServiceWorkerParallelSideDataReading{
 // enabled independently of NetworkService.
 const base::Feature kServiceWorkerServicification{
     "ServiceWorkerServicification", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Used to control the collection of anchor element metrics (crbug.com/856683).
-// If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
-// clicked by the user will be extracted and recorded.
-// If kRecordAnchorMetricsVisible is enabled, then metrics of anchor elements
-// in the first viewport after the page load will be extracted and recorded.
-const base::Feature kRecordAnchorMetricsClicked{
-    "RecordAnchorMetricsClicked", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kRecordAnchorMetricsVisible{
-    "RecordAnchorMetricsVisible", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable Portals. https://crbug.com/865123.
-const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Freeze scheduler task queues in background after allowed grace time.
 // "stop" is a legacy name.

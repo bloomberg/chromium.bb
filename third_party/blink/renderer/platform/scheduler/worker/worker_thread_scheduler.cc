@@ -165,6 +165,12 @@ WorkerThreadScheduler::CompositorTaskRunner() {
   return compositor_task_runner_;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThreadScheduler::IPCTaskRunner() {
+  NOTREACHED() << "Not implemented";
+  return nullptr;
+}
+
 bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   DCHECK(initialized_);
   return idle_helper_.CanExceedIdleDeadlineIfRequired();
