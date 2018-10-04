@@ -228,8 +228,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
 
-IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -348,13 +346,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 
 // Sent once the RenderWidgetCompositor issues a draw command.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidCommitAndDrawCompositorFrame)
-
-// Acknowledges that a SelectWordAroundCaret completed with the specified
-// result and adjustments to the selection offsets.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectWordAroundCaretAck,
-                    bool /* did_select */,
-                    int /* start_adjust */,
-                    int /* end_adjust */)
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform

@@ -133,9 +133,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
 
-  // Notify the render view host to select the word around the caret.
-  virtual void SelectWordAroundCaret() = 0;
-
  private:
   // This interface should only be implemented inside content.
   friend class RenderViewHostImpl;

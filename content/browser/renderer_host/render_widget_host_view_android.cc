@@ -62,8 +62,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,8 +71,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_start.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -247,17 +243,6 @@ void RenderWidgetHostViewAndroid::AddDestructionObserver(
 void RenderWidgetHostViewAndroid::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
-}
-
-bool RenderWidgetHostViewAndroid::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectWordAroundCaretAck,
-                        OnSelectWordAroundCaretAck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
@@ -473,9 +458,9 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   return is_showing_ && view_.parent();
 }
 
-void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
-                                                             int start_adjust,
-                                                             int end_adjust) {
+void RenderWidgetHostViewAndroid::SelectWordAroundCaretAck(bool did_select,
+                                                           int start_adjust,
+                                                           int end_adjust) {
   if (!selection_popup_controller_)
     return;
   selection_popup_controller_->OnSelectWordAroundCaretAck(
