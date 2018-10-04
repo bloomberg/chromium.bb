@@ -1282,6 +1282,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_UP:
+#if defined(OS_MACOSX)
+      if (shift)
+        return false;
+#endif
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
         return true;
@@ -1289,6 +1293,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DOWN:
+#if defined(OS_MACOSX)
+      if (shift)
+        return false;
+#endif
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
         return true;
