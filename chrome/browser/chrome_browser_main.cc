@@ -941,11 +941,6 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 // content::BrowserMainParts implementation ------------------------------------
 
-bool ChromeBrowserMainParts::ShouldContentCreateFeatureList() {
-  // Chrome creates the FeatureList, so no need for content to do the same.
-  return false;
-}
-
 int ChromeBrowserMainParts::PreEarlyInitialization() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)

@@ -304,6 +304,13 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
   logging::CloseLogFile();
 }
 
+bool AwMainDelegate::ShouldCreateFeatureList() {
+  // TODO(https://crbug.com/887468): Move the creation of FeatureList from
+  // AwBrowserMainParts::PreCreateThreads() to
+  // AwMainDelegate::PostEarlyInitialization().
+  return false;
+}
+
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
   content_browser_client_.reset(new AwContentBrowserClient());
   return content_browser_client_.get();

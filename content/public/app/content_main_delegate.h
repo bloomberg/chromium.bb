@@ -129,9 +129,15 @@ class CONTENT_EXPORT ContentMainDelegate {
   // creating the main message loop.
   virtual void PreCreateMainMessageLoop() {}
 
-  // Allows the embedder to perform platform-specific initializatioion. For
-  // example, things that should be done right after TaskScheduler starts and
-  // the main MessageLoop was installed.
+  // Returns true if content should create field trials and initialize the
+  // FeatureList instance for this process. Default implementation returns true.
+  // Embedders that need to control when and/or how FeatureList should be
+  // created should override and return false.
+  virtual bool ShouldCreateFeatureList();
+
+  // Allows the embedder to perform its own initialization after content
+  // performed its own and already brought up MessageLoop, TaskScheduler, field
+  // tials and FeatureList (by default).
   virtual void PostEarlyInitialization() {}
 
  protected:

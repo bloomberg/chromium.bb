@@ -67,6 +67,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   void PreCreateMainMessageLoop() override;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   void PostEarlyInitialization() override;
+  bool ShouldCreateFeatureList() override;
 #endif
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;

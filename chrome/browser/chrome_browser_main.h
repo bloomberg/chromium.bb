@@ -61,7 +61,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
                          ChromeFeatureListCreator* chrome_feature_list_creator);
 
   // content::BrowserMainParts overrides.
-  bool ShouldContentCreateFeatureList() override;
   // These are called in-order by content::BrowserMainLoop.
   // Each stage calls the same stages in any ChromeBrowserMainExtraParts added
   // with AddParts() from ChromeContentBrowserClient::CreateBrowserMainParts.
