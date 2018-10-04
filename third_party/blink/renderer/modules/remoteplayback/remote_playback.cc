@@ -227,8 +227,7 @@ bool RemotePlayback::HasPendingActivity() const {
 }
 
 void RemotePlayback::ContextDestroyed(ExecutionContext*) {
-  target_presentation_connection_.reset();
-  presentation_connection_binding_.Close();
+  CleanupConnections();
 }
 
 void RemotePlayback::PromptInternal() {
@@ -369,7 +368,9 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
               ->MediaRemotingStopped(
                   WebLocalizedString::kMediaRemotingStopNoText);
         }
+        CleanupConnections();
         presentation_id_ = "";
+        presentation_url_ = KURL();
         media_element_->FlingingStopped();
       }
       break;
@@ -465,6 +466,11 @@ void RemotePlayback::RemotePlaybackDisabled() {
   }
 }
 
+void RemotePlayback::CleanupConnections() {
+  target_presentation_connection_.reset();
+  presentation_connection_binding_.Close();
+}
+
 void RemotePlayback::AvailabilityChanged(
     mojom::blink::ScreenAvailability availability) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
@@ -511,7 +517,6 @@ void RemotePlayback::OnConnectionSuccess(
 
   StateChanged(WebRemotePlaybackState::kConnecting);
 
-  // TODO(imcheng): Reset binding when remote playback stops.
   DCHECK(!presentation_connection_binding_.is_bound());
   auto* presentation_controller =
       PresentationController::FromContext(GetExecutionContext());
