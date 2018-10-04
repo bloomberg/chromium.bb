@@ -256,8 +256,8 @@ public class FeedNewTabPage extends NewTabPage {
     public void destroy() {
         super.destroy();
         mMediator.destroy();
-        if (mImageLoader != null) mImageLoader.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
+        if (mImageLoader != null) mImageLoader.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
     }
 
