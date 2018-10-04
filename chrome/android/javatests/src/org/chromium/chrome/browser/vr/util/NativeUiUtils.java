@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.vr.KeyboardTestAction;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.UiTestOperationResult;
 import org.chromium.chrome.browser.vr.UiTestOperationType;
@@ -47,6 +48,16 @@ public class NativeUiUtils {
     }
 
     /**
+     * Enables the mock keyboard without sending any input. Should be called before performing an
+     * action that would trigger the keyboard for the first time to ensure that the mock keyboard
+     * is used instead of the real one.
+     */
+    public static void enableMockedKeyboard() {
+        TestVrShellDelegate.getInstance().performKeyboardInputForTesting(
+                KeyboardTestAction.ENABLE_MOCKED_KEYBOARD, "" /* unused */);
+    }
+
+    /**
      * Clicks on a UI element as if done via a controller.
      *
      * @param elementName The UserFriendlyElementName that will be clicked on.
@@ -56,6 +67,32 @@ public class NativeUiUtils {
     public static void clickElement(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK, position);
+    }
+
+    /**
+     * Inputs the given text as if done via the VR keyboard.
+     *
+     * @param inputString The String to input via the keyboard.
+     */
+    public static void inputString(String inputString) {
+        TestVrShellDelegate.getInstance().performKeyboardInputForTesting(
+                KeyboardTestAction.INPUT_TEXT, inputString);
+    }
+
+    /**
+     * Presses backspace as if done via the VR keyboard.
+     */
+    public static void inputBackspace() {
+        TestVrShellDelegate.getInstance().performKeyboardInputForTesting(
+                KeyboardTestAction.BACKSPACE, "" /* unused */);
+    }
+
+    /**
+     * Presses enter as if done via the VR keyboard.
+     */
+    public static void inputEnter() throws InterruptedException {
+        TestVrShellDelegate.getInstance().performKeyboardInputForTesting(
+                KeyboardTestAction.ENTER, "" /* unused */);
     }
 
     /**

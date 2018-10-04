@@ -1308,6 +1308,18 @@ void VrShell::PerformControllerActionForTesting(
                      gl_thread_->GetBrowserRenderer(), controller_input));
 }
 
+void VrShell::PerformKeyboardInputForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint input_type,
+    jstring input_string) {
+  KeyboardTestInput keyboard_input;
+  keyboard_input.action = static_cast<KeyboardTestAction>(input_type);
+  keyboard_input.input_text =
+      base::android::ConvertJavaStringToUTF8(env, input_string);
+  ui_->PerformKeyboardInputForTesting(keyboard_input);
+}
+
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
   if (!web_contents_)
     return nullptr;

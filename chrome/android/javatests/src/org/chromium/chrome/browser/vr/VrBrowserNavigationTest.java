@@ -657,4 +657,27 @@ public class VrBrowserNavigationTest {
         Assert.assertTrue("Created native page is not a NTP",
                 mTestRule.getActivity().getActivityTab().getNativePage() instanceof NewTabPage);
     }
+
+    /**
+     * Tests that inputting a URL into the URL bar results in a successful navigation.
+     */
+    @Test
+    @MediumTest
+    public void testUrlEntryTriggersNavigation() throws InterruptedException {
+        NativeUiUtils.enableMockedKeyboard();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
+        // This is a roundabout solution for ensuring that the committing/pressing of enter actually
+        // results in a navigation - internally, this is handled by grabbing the first suggestion
+        // and navigating to its destination. So, we need to make sure we have suggestions before
+        // pressing enter, otherwise nothing happens. If this ever stops working, e.g. due to always
+        // having suggestions present, waiting for a number of frames before committing seemed
+        // stable. Adding an operation to listen for suggestion changes would also work, but
+        // would add some pretty niche test-only code to the native side.
+        NativeUiUtils.performActionAndWaitForVisibilityChange(
+                UserFriendlyElementName.SUGGESTION_BOX,
+                () -> { NativeUiUtils.inputString("chrome://version/"); });
+        NativeUiUtils.inputEnter();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), "chrome://version/");
+    }
 }

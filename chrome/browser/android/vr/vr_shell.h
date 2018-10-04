@@ -301,6 +301,12 @@ class VrShell : device::GvrGamepadDataProvider,
       jint action_type,
       jfloat x,
       jfloat y);
+
+  void PerformKeyboardInputForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint input_type,
+      jstring input_string);
   gfx::AcceleratedWidget GetRenderSurface();
 
  private:

@@ -26,6 +26,7 @@ enum class UserFriendlyElementName : int {
   kCloseIncognitoTabs,  // Button to close all Incognito tabs in the overflow
                         // menu
   kExitPrompt,          // DOFF prompt/request to exit VR
+  kSuggestionBox,       // Box containing the omnibox suggestions
 };
 
 // These are the types of actions that Java can request callbacks for once
@@ -64,12 +65,29 @@ enum class VrControllerTestAction : int {
   kMove,
 };
 
+// These are used to specify what type of keyboard input should be performed
+// for a frame during testing.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
+enum class KeyboardTestAction : int {
+  kInputText,
+  kBackspace,
+  kEnter,
+  kEnableMockedKeyboard,
+  kRevertToRealKeyboard,
+};
+
 // Holds all information necessary to perform a simulated controller action on
 // a UI element.
 struct ControllerTestInput {
   UserFriendlyElementName element_name;
   VrControllerTestAction action;
   gfx::PointF position;
+};
+
+// Holds all the information necessary to perform simulated keyboard input.
+struct KeyboardTestInput {
+  KeyboardTestAction action;
+  std::string input_text;
 };
 
 struct UiTestActivityExpectation {

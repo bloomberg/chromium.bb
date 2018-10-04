@@ -553,6 +553,15 @@ void VrGLThread::RemoveAllTabs() {
       base::BindOnce(&BrowserUiInterface::RemoveAllTabs, weak_browser_ui_));
 }
 
+void VrGLThread::PerformKeyboardInputForTesting(
+    KeyboardTestInput keyboard_input) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserUiInterface::PerformKeyboardInputForTesting,
+                     weak_browser_ui_, keyboard_input));
+}
+
 void VrGLThread::ReportUiOperationResultForTesting(
     const UiTestOperationType& action_type,
     const UiTestOperationResult& result) {

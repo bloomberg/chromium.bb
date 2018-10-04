@@ -20,6 +20,7 @@ class Version;
 namespace vr {
 
 struct Assets;
+struct KeyboardTestInput;
 struct OmniboxSuggestions;
 struct ToolbarState;
 
@@ -70,6 +71,8 @@ class VR_EXPORT BrowserUiInterface {
                               const base::string16& title) = 0;
   virtual void RemoveTab(int id, bool incognito) = 0;
   virtual void RemoveAllTabs() = 0;
+  virtual void PerformKeyboardInputForTesting(
+      KeyboardTestInput keyboard_input) = 0;
 };
 
 }  // namespace vr
