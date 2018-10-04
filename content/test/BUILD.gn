@@ -47,8 +47,6 @@ jumbo_static_library("test_support") {
     "../browser/background_fetch/background_fetch_test_data_manager.h",
     "../browser/background_fetch/mock_background_fetch_delegate.cc",
     "../browser/background_fetch/mock_background_fetch_delegate.h",
-    "../browser/media/session/audio_focus_test_util.cc",
-    "../browser/media/session/audio_focus_test_util.h",
     "../browser/media/session/mock_media_session_observer.cc",
     "../browser/media/session/mock_media_session_observer.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",
@@ -1458,7 +1456,6 @@ test("content_unittests") {
     "../browser/media/media_devices_permission_checker_unittest.cc",
     "../browser/media/media_internals_unittest.cc",
     "../browser/media/midi_host_unittest.cc",
-    "../browser/media/session/audio_focus_manager_unittest.cc",
     "../browser/media/session/media_session_controller_unittest.cc",
     "../browser/media/session/media_session_controllers_manager_unittest.cc",
     "../browser/media/session/media_session_impl_service_routing_unittest.cc",
@@ -2064,7 +2061,6 @@ test("content_unittests") {
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
     sources -= [
-      "../browser/media/session/audio_focus_manager_unittest.cc",
       "../browser/tracing/tracing_ui_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
