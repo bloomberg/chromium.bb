@@ -38,7 +38,10 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
                        const base::DictionaryValue* first_match,
                        base::DictionaryValue* merged);
 
-bool MatchCapabilities(base::DictionaryValue* capabilities);
+bool MatchCapabilities(const base::DictionaryValue* capabilities);
+
+Status ProcessCapabilities(const base::DictionaryValue& params,
+                           base::DictionaryValue* result_capabilities);
 
 std::string WebViewIdToWindowHandle(const std::string& web_view_id);
 

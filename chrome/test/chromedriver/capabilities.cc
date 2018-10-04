@@ -35,7 +35,7 @@ Status ParseBoolean(
     const base::Value& option,
     Capabilities* capabilities) {
   if (!option.GetAsBoolean(to_set))
-    return Status(kUnknownError, "must be a boolean");
+    return Status(kInvalidArgument, "must be a boolean");
   return Status(kOk);
 }
 
@@ -44,9 +44,9 @@ Status ParseString(std::string* to_set,
                    Capabilities* capabilities) {
   std::string str;
   if (!option.GetAsString(&str))
-    return Status(kUnknownError, "must be a string");
+    return Status(kInvalidArgument, "must be a string");
   if (str.empty())
-    return Status(kUnknownError, "cannot be empty");
+    return Status(kInvalidArgument, "cannot be empty");
   *to_set = str;
   return Status(kOk);
 }
@@ -56,9 +56,9 @@ Status ParseInterval(int* to_set,
                      Capabilities* capabilities) {
   int parsed_int = 0;
   if (!option.GetAsInteger(&parsed_int))
-    return Status(kUnknownError, "must be an integer");
+    return Status(kInvalidArgument, "must be an integer");
   if (parsed_int <= 0)
-    return Status(kUnknownError, "must be positive");
+    return Status(kInvalidArgument, "must be positive");
   *to_set = parsed_int;
   return Status(kOk);
 }
@@ -68,9 +68,9 @@ Status ParseTimeDelta(base::TimeDelta* to_set,
                       Capabilities* capabilities) {
   int milliseconds = 0;
   if (!option.GetAsInteger(&milliseconds))
-    return Status(kUnknownError, "must be an integer");
+    return Status(kInvalidArgument, "must be an integer");
   if (milliseconds < 0)
-    return Status(kUnknownError, "must be positive or zero");
+    return Status(kInvalidArgument, "must be positive or zero");
   *to_set = base::TimeDelta::FromMilliseconds(milliseconds);
   return Status(kOk);
 }
@@ -80,7 +80,7 @@ Status ParseFilePath(base::FilePath* to_set,
                      Capabilities* capabilities) {
   base::FilePath::StringType str;
   if (!option.GetAsString(&str))
-    return Status(kUnknownError, "must be a string");
+    return Status(kInvalidArgument, "must be a string");
   *to_set = base::FilePath(str);
   return Status(kOk);
 }
@@ -90,7 +90,7 @@ Status ParseDict(std::unique_ptr<base::DictionaryValue>* to_set,
                  Capabilities* capabilities) {
   const base::DictionaryValue* dict = NULL;
   if (!option.GetAsDictionary(&dict))
-    return Status(kUnknownError, "must be a dictionary");
+    return Status(kInvalidArgument, "must be a dictionary");
   to_set->reset(dict->DeepCopy());
   return Status(kOk);
 }
@@ -109,7 +109,7 @@ Status IgnoreCapability(const base::Value& option, Capabilities* capabilities) {
 
 Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
   if (!option.GetAsString(&capabilities->log_path))
-    return Status(kUnknownError, "must be a string");
+    return Status(kInvalidArgument, "must be a string");
   return Status(kOk);
 }
 
@@ -119,9 +119,8 @@ Status ParseDeviceName(const std::string& device_name,
   Status status = FindMobileDevice(device_name, &device);
 
   if (status.IsError()) {
-    return Status(kUnknownError,
-                  "'" + device_name + "' must be a valid device",
-                  status);
+    return Status(kInvalidArgument,
+                  "'" + device_name + "' must be a valid device", status);
   }
 
   capabilities->device_metrics = std::move(device->device_metrics);
@@ -136,16 +135,16 @@ Status ParseMobileEmulation(const base::Value& option,
                             Capabilities* capabilities) {
   const base::DictionaryValue* mobile_emulation;
   if (!option.GetAsDictionary(&mobile_emulation))
-    return Status(kUnknownError, "'mobileEmulation' must be a dictionary");
+    return Status(kInvalidArgument, "'mobileEmulation' must be a dictionary");
 
   if (mobile_emulation->HasKey("deviceName")) {
     // Cannot use any other options with deviceName.
     if (mobile_emulation->size() > 1)
-      return Status(kUnknownError, "'deviceName' must be used alone");
+      return Status(kInvalidArgument, "'deviceName' must be used alone");
 
     std::string device_name;
     if (!mobile_emulation->GetString("deviceName", &device_name))
-      return Status(kUnknownError, "'deviceName' must be a string");
+      return Status(kInvalidArgument, "'deviceName' must be a string");
 
     return ParseDeviceName(device_name, capabilities);
   }
@@ -153,7 +152,7 @@ Status ParseMobileEmulation(const base::Value& option,
   if (mobile_emulation->HasKey("deviceMetrics")) {
     const base::DictionaryValue* metrics;
     if (!mobile_emulation->GetDictionary("deviceMetrics", &metrics))
-      return Status(kUnknownError, "'deviceMetrics' must be a dictionary");
+      return Status(kInvalidArgument, "'deviceMetrics' must be a dictionary");
 
     int width = 0;
     int height = 0;
@@ -162,20 +161,20 @@ Status ParseMobileEmulation(const base::Value& option,
     bool mobile = true;
 
     if (metrics->HasKey("width") && !metrics->GetInteger("width", &width))
-      return Status(kUnknownError, "'width' must be an integer");
+      return Status(kInvalidArgument, "'width' must be an integer");
 
     if (metrics->HasKey("height") && !metrics->GetInteger("height", &height))
-      return Status(kUnknownError, "'height' must be an integer");
+      return Status(kInvalidArgument, "'height' must be an integer");
 
     if (metrics->HasKey("pixelRatio") &&
         !metrics->GetDouble("pixelRatio", &device_scale_factor))
-      return Status(kUnknownError, "'pixelRatio' must be a double");
+      return Status(kInvalidArgument, "'pixelRatio' must be a double");
 
     if (metrics->HasKey("touch") && !metrics->GetBoolean("touch", &touch))
-      return Status(kUnknownError, "'touch' must be a boolean");
+      return Status(kInvalidArgument, "'touch' must be a boolean");
 
     if (metrics->HasKey("mobile") && !metrics->GetBoolean("mobile", &mobile))
-      return Status(kUnknownError, "'mobile' must be a boolean");
+      return Status(kInvalidArgument, "'mobile' must be a boolean");
 
     DeviceMetrics* device_metrics =
         new DeviceMetrics(width, height, device_scale_factor, touch, mobile);
@@ -186,7 +185,7 @@ Status ParseMobileEmulation(const base::Value& option,
   if (mobile_emulation->HasKey("userAgent")) {
     std::string user_agent;
     if (!mobile_emulation->GetString("userAgent", &user_agent))
-      return Status(kUnknownError, "'userAgent' must be a string");
+      return Status(kInvalidArgument, "'userAgent' must be a string");
 
     capabilities->switches.SetSwitch("user-agent", user_agent);
   }
@@ -247,11 +246,11 @@ Status ParseSwitches(const base::Value& option,
                      Capabilities* capabilities) {
   const base::ListValue* switches_list = NULL;
   if (!option.GetAsList(&switches_list))
-    return Status(kUnknownError, "must be a list");
+    return Status(kInvalidArgument, "must be a list");
   for (size_t i = 0; i < switches_list->GetSize(); ++i) {
     std::string arg_string;
     if (!switches_list->GetString(i, &arg_string))
-      return Status(kUnknownError, "each argument must be a string");
+      return Status(kInvalidArgument, "each argument must be a string");
     capabilities->switches.SetUnparsedSwitch(arg_string);
   }
   return Status(kOk);
@@ -260,11 +259,11 @@ Status ParseSwitches(const base::Value& option,
 Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
   const base::ListValue* extensions = NULL;
   if (!option.GetAsList(&extensions))
-    return Status(kUnknownError, "must be a list");
+    return Status(kInvalidArgument, "must be a list");
   for (size_t i = 0; i < extensions->GetSize(); ++i) {
     std::string extension;
     if (!extensions->GetString(i, &extension)) {
-      return Status(kUnknownError,
+      return Status(kInvalidArgument,
                     "each extension must be a base64 encoded string");
     }
     capabilities->extensions.push_back(extension);
@@ -371,11 +370,11 @@ Status ParseExcludeSwitches(const base::Value& option,
                             Capabilities* capabilities) {
   const base::ListValue* switches = NULL;
   if (!option.GetAsList(&switches))
-    return Status(kUnknownError, "must be a list");
+    return Status(kInvalidArgument, "must be a list");
   for (size_t i = 0; i < switches->GetSize(); ++i) {
     std::string switch_name;
     if (!switches->GetString(i, &switch_name)) {
-      return Status(kUnknownError,
+      return Status(kInvalidArgument,
                     "each switch to be removed must be a string");
     }
     capabilities->exclude_switches.insert(switch_name);
@@ -387,17 +386,17 @@ Status ParseUseRemoteBrowser(const base::Value& option,
                                Capabilities* capabilities) {
   std::string server_addr;
   if (!option.GetAsString(&server_addr))
-    return Status(kUnknownError, "must be 'host:port'");
+    return Status(kInvalidArgument, "must be 'host:port'");
 
   std::vector<std::string> values = base::SplitString(
       server_addr, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (values.size() != 2)
-    return Status(kUnknownError, "must be 'host:port'");
+    return Status(kInvalidArgument, "must be 'host:port'");
 
   int port = 0;
   base::StringToInt(values[1], &port);
   if (port <= 0)
-    return Status(kUnknownError, "port must be > 0");
+    return Status(kInvalidArgument, "port must be > 0");
 
   capabilities->debugger_address = NetAddress(values[0], port);
   return Status(kOk);
@@ -407,7 +406,7 @@ Status ParseLoggingPrefs(const base::Value& option,
                          Capabilities* capabilities) {
   const base::DictionaryValue* logging_prefs = NULL;
   if (!option.GetAsDictionary(&logging_prefs))
-    return Status(kUnknownError, "must be a dictionary");
+    return Status(kInvalidArgument, "must be a dictionary");
 
   for (base::DictionaryValue::Iterator pref(*logging_prefs);
        !pref.IsAtEnd(); pref.Advance()) {
@@ -416,7 +415,8 @@ Status ParseLoggingPrefs(const base::Value& option,
     std::string level_name;
     if (!pref.value().GetAsString(&level_name) ||
         !WebDriverLog::NameToLevel(level_name, &level)) {
-      return Status(kUnknownError, "invalid log level for '" + type + "' log");
+      return Status(kInvalidArgument,
+                    "invalid log level for '" + type + "' log");
     }
     capabilities->logging_prefs.insert(std::make_pair(type, level));
   }
@@ -429,7 +429,7 @@ Status ParseInspectorDomainStatus(
     Capabilities* capabilities) {
   bool desired_value;
   if (!option.GetAsBoolean(&desired_value))
-    return Status(kUnknownError, "must be a boolean");
+    return Status(kInvalidArgument, "must be a boolean");
   if (desired_value)
     *to_set = PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled;
   else
@@ -441,7 +441,7 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
                              Capabilities* capabilities) {
   const base::DictionaryValue* perf_logging_prefs = NULL;
   if (!option.GetAsDictionary(&perf_logging_prefs))
-    return Status(kUnknownError, "must be a dictionary");
+    return Status(kInvalidArgument, "must be a dictionary");
 
   std::map<std::string, Parser> parser_map;
   parser_map["bufferUsageReportingInterval"] = base::Bind(&ParseInterval,
@@ -456,11 +456,11 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
   for (base::DictionaryValue::Iterator it(*perf_logging_prefs); !it.IsAtEnd();
        it.Advance()) {
      if (parser_map.find(it.key()) == parser_map.end())
-       return Status(kUnknownError, "unrecognized performance logging "
-                     "option: " + it.key());
+       return Status(kInvalidArgument,
+                     "unrecognized performance logging option: " + it.key());
      Status status = parser_map[it.key()].Run(it.value(), capabilities);
      if (status.IsError())
-       return Status(kUnknownError, "cannot parse " + it.key(), status);
+       return Status(kInvalidArgument, "cannot parse " + it.key(), status);
   }
   return Status(kOk);
 }
@@ -469,9 +469,9 @@ Status ParseDevToolsEventsLoggingPrefs(const base::Value& option,
                                        Capabilities* capabilities) {
   const base::ListValue* devtools_events_logging_prefs = nullptr;
   if (!option.GetAsList(&devtools_events_logging_prefs))
-    return Status(kUnknownError, "must be a list");
+    return Status(kInvalidArgument, "must be a list");
   if (devtools_events_logging_prefs->empty())
-    return Status(kUnknownError, "list must contain values");
+    return Status(kInvalidArgument, "list must contain values");
   capabilities->devtools_events_logging_prefs.reset(
       devtools_events_logging_prefs->DeepCopy());
   return Status(kOk);
@@ -480,12 +480,12 @@ Status ParseDevToolsEventsLoggingPrefs(const base::Value& option,
 Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
   const base::ListValue* window_types = NULL;
   if (!option.GetAsList(&window_types))
-    return Status(kUnknownError, "must be a list");
+    return Status(kInvalidArgument, "must be a list");
   std::set<WebViewInfo::Type> window_types_tmp;
   for (size_t i = 0; i < window_types->GetSize(); ++i) {
     std::string window_type;
     if (!window_types->GetString(i, &window_type)) {
-      return Status(kUnknownError, "each window type must be a string");
+      return Status(kInvalidArgument, "each window type must be a string");
     }
     WebViewInfo::Type type;
     Status status = ParseType(window_type, &type);
@@ -502,7 +502,7 @@ Status ParseChromeOptions(
     Capabilities* capabilities) {
   const base::DictionaryValue* chrome_options = NULL;
   if (!capability.GetAsDictionary(&chrome_options))
-    return Status(kUnknownError, "must be a dictionary");
+    return Status(kInvalidArgument, "must be a dictionary");
 
   bool is_android = chrome_options->HasKey("androidPackage");
   bool is_remote = chrome_options->HasKey("debuggerAddress");
@@ -567,12 +567,12 @@ Status ParseChromeOptions(
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
        it.Advance()) {
     if (parser_map.find(it.key()) == parser_map.end()) {
-      return Status(kUnknownError,
+      return Status(kInvalidArgument,
                     "unrecognized chrome option: " + it.key());
     }
     Status status = parser_map[it.key()].Run(it.value(), capabilities);
     if (status.IsError())
-      return Status(kUnknownError, "cannot parse " + it.key(), status);
+      return Status(kInvalidArgument, "cannot parse " + it.key(), status);
   }
   return Status(kOk);
 }
@@ -758,8 +758,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
     if (desired_caps.Get(it->first, &capability)) {
       Status status = it->second.Run(*capability, this);
       if (status.IsError()) {
-        return Status(
-            kUnknownError, "cannot parse capability: " + it->first, status);
+        return Status(kInvalidArgument, "cannot parse capability: " + it->first,
+                      status);
       }
     }
   }
@@ -771,7 +771,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
     if ((desired_caps.GetDictionary("goog:chromeOptions", &chrome_options) ||
          desired_caps.GetDictionary("chromeOptions", &chrome_options)) &&
         chrome_options->HasKey("perfLoggingPrefs")) {
-      return Status(kUnknownError, "perfLoggingPrefs specified, "
+      return Status(kInvalidArgument,
+                    "perfLoggingPrefs specified, "
                     "but performance logging was not enabled");
     }
   }
@@ -783,7 +784,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
     if ((desired_caps.GetDictionary("goog:chromeOptions", &chrome_options) ||
          desired_caps.GetDictionary("chromeOptions", &chrome_options)) &&
         chrome_options->HasKey("devToolsEventsToLog")) {
-      return Status(kUnknownError, "devToolsEventsToLog specified, "
+      return Status(kInvalidArgument,
+                    "devToolsEventsToLog specified, "
                     "but devtools events logging was not enabled");
     }
   }

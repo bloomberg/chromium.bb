@@ -13,6 +13,7 @@
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -217,39 +218,14 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->driver_log.reset(
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
-  const base::DictionaryValue empty_dict;
   base::DictionaryValue merged_caps;
 
   session->w3c_compliant = GetW3CSetting(params);
   if (session->w3c_compliant) {
-    if (!params.GetDictionary("capabilities.alwaysMatch", &desired_caps))
-      desired_caps = &empty_dict;
-
-    // TODO(johnchen): Handle capabilities.firstMatch. Currently, we're just
-    // merging, not validating or matching as per the spec.
-    const base::ListValue* first_match_list;
-    std::unique_ptr<base::ListValue> tmp_list;
-    if (!(params.GetList("capabilities.firstMatch", &first_match_list))) {
-      // if no firstMatch, make first_match_list a list with an empty dictionary
-      tmp_list = std::unique_ptr<base::ListValue>(new base::ListValue());
-      std::unique_ptr<base::DictionaryValue> inner(new base::DictionaryValue());
-      tmp_list->Append(std::move(inner));
-      first_match_list = tmp_list.get();
-    }
-    for (size_t i = 0; i < first_match_list->GetSize(); ++i) {
-      const base::DictionaryValue* first_match;
-      if (!first_match_list->GetDictionary(i, &first_match)) {
-        continue;
-      }
-      if (!MergeCapabilities(desired_caps, first_match, &merged_caps)) {
-        return Status(kSessionNotCreated, "Invalid capabilities");
-      }
-      if (MatchCapabilities(&merged_caps)) {
-        // If a match is found, we want to use these matched setcapabilities.
-        desired_caps = &merged_caps;
-        break;
-      }
-    }
+    Status status = ProcessCapabilities(params, &merged_caps);
+    if (status.IsError())
+      return status;
+    desired_caps = &merged_caps;
   } else if (!params.GetDictionary("desiredCapabilities", &desired_caps)) {
     return Status(kSessionNotCreated,
                   "Missing or invalid capabilities");
@@ -347,9 +323,9 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
   return true;
 }
 
-bool MatchCapabilities(base::DictionaryValue* capabilities) {
-  // attempt to match the capabilities requested to the actual capabilities
-  // reject if they don't match
+bool MatchCapabilities(const base::DictionaryValue* capabilities) {
+  // Attempt to match the capabilities requested to the actual capabilities.
+  // Reject if they don't match.
   if (capabilities->HasKey("browserName")) {
     std::string name;
     capabilities->GetString("browserName", &name);
@@ -358,6 +334,106 @@ bool MatchCapabilities(base::DictionaryValue* capabilities) {
     }
   }
   return true;
+}
+
+// Implementation of "process capabilities", as defined in W3C spec at
+// https://www.w3.org/TR/webdriver/#processing-capabilities. Step numbers in
+// the comments correspond to the step numbers in the spec.
+Status ProcessCapabilities(const base::DictionaryValue& params,
+                           base::DictionaryValue* result_capabilities) {
+  // 1. Get the property "capabilities" from parameters.
+  const base::DictionaryValue* capabilities_request;
+  if (!params.GetDictionary("capabilities", &capabilities_request))
+    return Status(kInvalidArgument, "'capabilities' must be a JSON object");
+
+  // 2. Get the property "alwaysMatch" from capabilities request.
+  const base::DictionaryValue empty_object;
+  const base::DictionaryValue* required_capabilities;
+  const base::Value* required_capabilities_value =
+      capabilities_request->FindKey("alwaysMatch");
+  if (required_capabilities_value == nullptr) {
+    required_capabilities = &empty_object;
+  } else if (required_capabilities_value->GetAsDictionary(
+                 &required_capabilities)) {
+    Capabilities cap;
+    Status status = cap.Parse(*required_capabilities);
+    if (status.IsError())
+      return status;
+  } else {
+    return Status(kInvalidArgument, "'alwaysMatch' must be a JSON object");
+  }
+
+  // 3. Get the property "firstMatch" from capabilities request.
+  base::ListValue default_list;
+  const base::ListValue* all_first_match_capabilities;
+  const base::Value* all_first_match_capabilities_value =
+      capabilities_request->FindKey("firstMatch");
+  if (all_first_match_capabilities_value == nullptr) {
+    default_list.Append(std::make_unique<base::DictionaryValue>());
+    all_first_match_capabilities = &default_list;
+  } else if (all_first_match_capabilities_value->GetAsList(
+                 &all_first_match_capabilities)) {
+    if (all_first_match_capabilities->GetSize() < 1)
+      return Status(kInvalidArgument,
+                    "'firstMatch' must contain at least one entry");
+  } else {
+    return Status(kInvalidArgument, "'firstMatch' must be a JSON list");
+  }
+
+  // 4. Let validated first match capabilities be an empty JSON List.
+  std::vector<const base::DictionaryValue*> validated_first_match_capabilities;
+
+  // 5. Validate all first match capabilities.
+  for (size_t i = 0; i < all_first_match_capabilities->GetSize(); ++i) {
+    const base::DictionaryValue* first_match;
+    if (!all_first_match_capabilities->GetDictionary(i, &first_match)) {
+      return Status(kInvalidArgument,
+                    base::StringPrintf(
+                        "entry %zu of 'firstMatch' must be a JSON object", i));
+    }
+    Capabilities cap;
+    Status status = cap.Parse(*first_match);
+    if (status.IsError())
+      return Status(
+          kInvalidArgument,
+          base::StringPrintf("entry %zu of 'firstMatch' is invalid", i),
+          status);
+    validated_first_match_capabilities.push_back(first_match);
+  }
+
+  // 6. Let merged capabilities be an empty List.
+  std::vector<base::DictionaryValue> merged_capabilities;
+
+  // 7. Merge capabilities.
+  for (size_t i = 0; i < validated_first_match_capabilities.size(); ++i) {
+    const base::DictionaryValue* first_match_capabilities =
+        validated_first_match_capabilities[i];
+    base::DictionaryValue merged;
+    if (!MergeCapabilities(required_capabilities, first_match_capabilities,
+                           &merged)) {
+      return Status(
+          kInvalidArgument,
+          base::StringPrintf(
+              "unable to merge 'alwaysMatch' with entry %zu of 'firstMatch'",
+              i));
+    }
+    merged_capabilities.emplace_back();
+    merged_capabilities.back().Swap(&merged);
+  }
+
+  // 8. Match capabilities.
+  for (auto& capabilities : merged_capabilities) {
+    if (MatchCapabilities(&capabilities)) {
+      capabilities.Swap(result_capabilities);
+      return Status(kOk);
+    }
+  }
+
+  // 9. The spec says "return success with data null", but then the caller is
+  // instructed to return error when the data is null. Since we don't have a
+  // convenient way to return data null, we will take a shortcut and return an
+  // error directly.
+  return Status(kSessionNotCreated, "No matching capabilities found");
 }
 
 Status ExecuteInitSession(const InitSessionParams& bound_params,
