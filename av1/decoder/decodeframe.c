@@ -5056,6 +5056,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           // pixels set to neutral grey.
           buf_idx = get_free_fb(cm);
           if (buf_idx == INVALID_IDX) {
+            assert(0 &&
+                   "Ran out of free frame buffers. Likely a reference leak.");
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Unable to find free frame buffer");
           }

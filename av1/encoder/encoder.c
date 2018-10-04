@@ -3746,6 +3746,7 @@ static void scale_references(AV1_COMP *cpi) {
           new_fb = get_free_fb(cm);
           force_scaling = 1;
         }
+        // TODO(wtc): Is it OK to ignore the get_free_fb() failure?
         if (new_fb == INVALID_IDX) return;
         new_fb_ptr = &pool->frame_bufs[new_fb];
         if (force_scaling || new_fb_ptr->buf.y_crop_width != cm->width ||
@@ -6510,7 +6511,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     }
     cm->new_fb_idx = get_free_fb(cm);
 
-    if (cm->new_fb_idx == INVALID_IDX) return -1;
+    if (cm->new_fb_idx == INVALID_IDX) {
+      assert(0 && "Ran out of free frame buffers. Likely a reference leak.");
+      return -1;
+    }
 
     // Clear down mmx registers
     aom_clear_system_state();
@@ -6700,7 +6704,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
   cm->new_fb_idx = get_free_fb(cm);
 
-  if (cm->new_fb_idx == INVALID_IDX) return -1;
+  if (cm->new_fb_idx == INVALID_IDX) {
+    assert(0 && "Ran out of free frame buffers. Likely a reference leak.");
+    return -1;
+  }
 
   // Retain the RF_LEVEL for the current newly coded frame.
   cpi->frame_rf_level[cm->new_fb_idx] =
