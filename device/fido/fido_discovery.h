@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
@@ -32,38 +33,12 @@ namespace internal {
 class ScopedFidoDiscoveryFactory;
 }
 
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
  public:
   enum class State {
     kIdle,
     kStarting,
     kRunning,
-  };
-
-  class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
-   public:
-    virtual ~Observer();
-
-    // It is guaranteed that this is never invoked synchronously from Start().
-    virtual void DiscoveryStarted(FidoDiscovery* discovery, bool success) {}
-
-    // It is guaranteed that DeviceAdded/DeviceRemoved() will not be invoked
-    // before the client of FidoDiscovery calls FidoDiscovery::Start(). However,
-    // for devices already known to the system at that point, DeviceAdded()
-    // might already be called to reported already known devices.
-    //
-    // The supplied FidoDevice instance is guaranteed to have its protocol
-    // version initialized. I.e., FidoDiscovery calls
-    // FidoDevice::DiscoverSupportedProtocolAndDeviceInfo() before notifying
-    // the Observer.
-    virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
-    virtual void DeviceRemoved(FidoDiscovery* discovery,
-                               FidoDevice* device) = 0;
-    // Invoked when address of the connected FIDO Bluetooth device changes due
-    // to pairing.
-    virtual void DeviceIdChanged(FidoDiscovery* discovery,
-                                 const std::string& previous_id,
-                                 std::string new_id) = 0;
   };
 
   // Factory functions to construct an instance that discovers authenticators on
@@ -78,32 +53,27 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   static std::unique_ptr<FidoDiscovery> CreateCable(
       std::vector<CableDiscoveryData> cable_data);
 
-  virtual ~FidoDiscovery();
+  ~FidoDiscovery() override;
 
-  Observer* observer() const { return observer_; }
-  void set_observer(Observer* observer) {
-    DCHECK(!observer_ || !observer) << "Only one observer is supported.";
-    observer_ = observer;
-  }
-
-  FidoTransportProtocol transport() const { return transport_; }
   bool is_start_requested() const { return state_ != State::kIdle; }
   bool is_running() const { return state_ == State::kRunning; }
-
-  void Start();
 
   std::vector<FidoDevice*> GetDevices();
   std::vector<const FidoDevice*> GetDevices() const;
 
+  // TODO(martinkr): Rename to GetDeviceForTesting.
   FidoDevice* GetDevice(base::StringPiece device_id);
   const FidoDevice* GetDevice(base::StringPiece device_id) const;
+
+  // FidoDiscoveryBase:
+  void Start() override;
 
  protected:
   FidoDiscovery(FidoTransportProtocol transport);
 
   void NotifyDiscoveryStarted(bool success);
-  void NotifyDeviceAdded(FidoDevice* device);
-  void NotifyDeviceRemoved(FidoDevice* device);
+  void NotifyAuthenticatorAdded(FidoAuthenticator* authenticator);
+  void NotifyAuthenticatorRemoved(FidoAuthenticator* authenticator);
 
   bool AddDevice(std::unique_ptr<FidoDevice> device);
   bool RemoveDevice(base::StringPiece device_id);
@@ -115,8 +85,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   // the discovery is s tarted.
   virtual void StartInternal() = 0;
 
-  std::map<std::string, std::unique_ptr<FidoDevice>, std::less<>> devices_;
-  Observer* observer_ = nullptr;
+  std::map<std::string,
+           std::pair<std::unique_ptr<FidoAuthenticator>,
+                     std::unique_ptr<FidoDevice>>,
+           std::less<>>
+      devices_;
 
  private:
   friend class internal::ScopedFidoDiscoveryFactory;
@@ -127,7 +100,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   static FactoryFuncPtr g_factory_func_;
   static CableFactoryFuncPtr g_cable_factory_func_;
 
-  const FidoTransportProtocol transport_;
   State state_ = State::kIdle;
   base::WeakPtrFactory<FidoDiscovery> weak_factory_;
 

@@ -20,6 +20,8 @@
 namespace device {
 namespace test {
 
+using ::testing::_;
+
 class FakeFidoDiscoveryTest : public ::testing::Test {
  public:
   FakeFidoDiscoveryTest() = default;
@@ -119,7 +121,7 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillOnce(::testing::Return("device0"));
   base::RunLoop device0_done;
-  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
       .WillOnce(testing::InvokeWithoutArgs(
           [&device0_done]() { device0_done.Quit(); }));
   discovery.AddDevice(std::move(device0));
@@ -133,7 +135,7 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
   auto device1 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device1, GetId()).WillOnce(::testing::Return("device1"));
   base::RunLoop device1_done;
-  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
       .WillOnce(testing::InvokeWithoutArgs(
           [&device1_done]() { device1_done.Quit(); }));
   discovery.AddDevice(std::move(device1));

@@ -31,8 +31,6 @@ namespace device {
 
 class BleAdapterManager;
 class FidoAuthenticator;
-class FidoDevice;
-class FidoTask;
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
   PlatformAuthenticatorInfo(std::unique_ptr<FidoAuthenticator> authenticator,
@@ -45,16 +43,16 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
   bool has_recognized_mac_touch_id_credential;
 };
 
-// Base class that handles device discovery/removal. Each FidoRequestHandlerBase
-// is owned by FidoRequestManager and its lifetime is equivalent to that of a
-// single WebAuthn request. For each authenticator, the per-device work is
-// carried out by one FidoTask instance, which is constructed on DeviceAdded(),
-// and destroyed either on DeviceRemoved() or CancelOutgoingTaks().
+// Base class that handles authenticator discovery/removal. Its lifetime is
+// equivalent to that of a single WebAuthn request. For each authenticator, the
+// per-device work is carried out by one FidoAuthenticator instance, which is
+// constructed in a FidoDiscoveryBase and passed to the request handler via its
+// Observer interface.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
-    : public FidoDiscovery::Observer {
+    : public FidoDiscoveryBase::Observer {
  public:
   using AuthenticatorMap =
-      std::map<std::string, std::unique_ptr<FidoAuthenticator>, std::less<>>;
+      std::map<std::string, FidoAuthenticator*, std::less<>>;
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
 
   enum class RequestType { kMakeCredential, kGetAssertion };
@@ -128,17 +126,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // FidoAuthenticator with given |authenticator_id|.
   void StartAuthenticatorRequest(const std::string& authenticator_id);
 
-  // Triggers cancellation of all per-device FidoTasks, except for the device
-  // with |exclude_device_id|, if one is provided. Cancelled tasks are
-  // immediately removed from |ongoing_tasks_|.
+  // Invokes |FidoAuthenticator::Cancel| on all authenticators, except if
+  // matching |exclude_id|, if one is provided. Cancelled authenticators are
+  // immediately removed from |active_authenticators_|.
   //
-  // This function is invoked either when:
-  //  (a) the entire WebAuthn API request is canceled or,
-  //  (b) a successful response or "invalid state error" is received from the
-  //  any one of the connected authenticators, in which case all other
-  //  per-device tasks are cancelled.
+  // This function is invoked either when: (a) the entire WebAuthn API request
+  // is canceled or, (b) a successful response or "invalid state error" is
+  // received from the any one of the connected authenticators, in which case
+  // all other authenticators are cancelled.
   // https://w3c.github.io/webauthn/#iface-pkcredential
-  void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
+  void CancelActiveAuthenticators(base::StringPiece exclude_id = nullptr);
   void OnBluetoothAdapterEnumerated(bool is_present,
                                     bool is_powered_on,
                                     bool can_power_on);
@@ -173,12 +170,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void Start();
 
-  // Testing seam to allow unit tests to inject a fake authenticator.
-  virtual std::unique_ptr<FidoDeviceAuthenticator>
-  CreateAuthenticatorFromDevice(FidoDevice* device);
-
   AuthenticatorMap& active_authenticators() { return active_authenticators_; }
-  std::vector<std::unique_ptr<FidoDiscovery>>& discoveries() {
+  std::vector<std::unique_ptr<FidoDiscoveryBase>>& discoveries() {
     return discoveries_;
   }
   TransportAvailabilityObserver* observer() const { return observer_; }
@@ -186,14 +179,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
  private:
   friend class FidoRequestHandlerTest;
 
-  // FidoDiscovery::Observer
-  void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) final;
-  void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
-  void DeviceIdChanged(FidoDiscovery* discovery,
-                       const std::string& previous_id,
-                       std::string new_id) final;
+  // FidoDiscoveryBase::Observer
+  void AuthenticatorAdded(FidoDiscoveryBase* discovery,
+                          FidoAuthenticator* authenticator) final;
+  void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
+                            FidoAuthenticator* authenticator) final;
+  void AuthenticatorIdChanged(FidoDiscoveryBase* discovery,
+                              const std::string& previous_id,
+                              std::string new_id) final;
 
-  void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
+  void AddAuthenticator(FidoAuthenticator* authenticator);
   void NotifyObserverTransportAvailability();
 
   // Invokes FidoAuthenticator::InitializeAuthenticator(), followed by
@@ -204,11 +199,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void ConstructBleAdapterPowerManager();
 
   AuthenticatorMap active_authenticators_;
-  std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
+  std::vector<std::unique_ptr<FidoDiscoveryBase>> discoveries_;
   TransportAvailabilityObserver* observer_ = nullptr;
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
+  // TODO(martinkr): Inject platform authenticators through FidoDiscovery and
+  // hold ownership there.
+  std::unique_ptr<FidoAuthenticator> platform_authenticator_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);

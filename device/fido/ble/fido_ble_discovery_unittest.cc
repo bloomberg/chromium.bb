@@ -16,6 +16,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,8 +83,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
-  EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
-  EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, AuthenticatorRemoved(&discovery, _)).Times(0);
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
@@ -104,9 +105,10 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer,
-                DeviceAdded(&discovery,
-                            IdMatches(BluetoothTestBase::kTestDeviceAddress1)));
+    EXPECT_CALL(
+        observer,
+        AuthenticatorAdded(&discovery,
+                           IdMatches(BluetoothTestBase::kTestDeviceAddress1)));
     EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
         .WillOnce(ReturnFromAsyncCall(quit));
 
@@ -139,9 +141,10 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer,
-                DeviceAdded(&discovery,
-                            IdMatches(BluetoothTestBase::kTestDeviceAddress1)))
+    EXPECT_CALL(
+        observer,
+        AuthenticatorAdded(&discovery,
+                           IdMatches(BluetoothTestBase::kTestDeviceAddress1)))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     SimulateLowEnergyDevice(4);  // This device should be ignored.
@@ -184,9 +187,10 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer,
-                DeviceAdded(&discovery,
-                            IdMatches(BluetoothTestBase::kTestDeviceAddress1)))
+    EXPECT_CALL(
+        observer,
+        AuthenticatorAdded(&discovery,
+                           IdMatches(BluetoothTestBase::kTestDeviceAddress1)))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     // This will update properties for device 3.
@@ -222,7 +226,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
     run_loop.Run();
   }
 
-  EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _)).Times(0);
 
   // Simulates a discovery of two Cable devices one of which is an Android Cable
   // authenticator and other is IOS Cable authenticator.
@@ -231,7 +235,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
 
   // Simulates a device change update received from the BluetoothAdapter. As the
   // updated device has an address that we know is an Cable device, this should
-  // not trigger DeviceAdded().
+  // not trigger AuthenticatorAdded().
   SimulateLowEnergyDevice(7);
 }
 
@@ -261,8 +265,8 @@ TEST_F(BluetoothTest, DiscoveryDoesNotAddDuplicateDeviceOnAddressChanged) {
           std::vector<BluetoothUUID>{BluetoothUUID(kFidoServiceUUID)}));
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter.get());
-  EXPECT_CALL(observer, DeviceIdChanged(&discovery, kAuthenticatorId,
-                                        kAuthenticatorChangedId));
+  EXPECT_CALL(observer, AuthenticatorIdChanged(&discovery, kAuthenticatorId,
+                                               kAuthenticatorChangedId));
   discovery.Start();
 
   EXPECT_CALL(*mock_device.get(), GetAddress)
