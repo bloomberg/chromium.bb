@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -21,7 +22,7 @@
 
 namespace extensions {
 
-TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
+TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
   enum HideRequestMask {
     HIDE_NONE = 0,
     HIDE_RENDERER_REQUEST = 1,
@@ -33,6 +34,7 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
   };
 
   ExtensionsAPIClient api_client;
+  auto info_map = base::MakeRefCounted<extensions::InfoMap>();
 
   struct TestCase {
     const char* url;
@@ -42,6 +44,8 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       {"http://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"https://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"https://clients.google.com",
+       HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"http://clients4.google.com",
        HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
       {"https://clients4.google.com",
        HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
@@ -54,6 +58,8 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
        HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
       {"https://.clients.google.com.",
        HIDE_BROWSER_SUB_RESOURCE_REQUEST | HIDE_SUB_FRAME_NAVIGATION},
+      {"https://test.clients.google.com",
+       HIDE_SUB_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"http://google.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"http://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"https://www.example.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
@@ -74,17 +80,24 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       {"https://safebrowsing.google.com/safebrowsing/anything", HIDE_ALL},
       {"https://safebrowsing.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"https://chrome.google.com", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
+      {"http://www.google.com/", HIDE_BROWSER_SUB_RESOURCE_REQUEST},
       {"https://chrome.google.com/webstore", HIDE_ALL},
       {"https://chrome.google.com./webstore", HIDE_ALL},
+      {"https://chrome.google.com./webstore/", HIDE_ALL},
       // Unsupported scheme.
       {"blob:https://chrome.google.com/fc3f440b-78ed-469f-8af8-7a1717ff39ae",
        HIDE_ALL},
+      {"notregisteredscheme://www.foobar.com", HIDE_ALL},
       {"https://chrome.google.com:80/webstore", HIDE_ALL},
       {"https://chrome.google.com/webstore?query", HIDE_ALL},
+      {"http://clients2.google.com/service/update2/crx", HIDE_ALL},
+      {"https://clients2.google.com/service/update2/crx", HIDE_ALL},
+      {"https://chrome.google.com/webstore/inlineinstall/detail/"
+       "kcnhkahnjcbndmmehfkdnkjomaanaooo",
+       HIDE_ALL},
   };
   const int kRendererProcessId = 1;
   const int kBrowserProcessId = -1;
-  extensions::InfoMap* info_map = nullptr;
 
   // Returns a WebRequestInfo instance constructed as per the given parameters.
   auto create_request = [](const GURL& url, content::ResourceType type,
@@ -114,7 +127,7 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map, request));
+                WebRequestPermissions::HideRequest(info_map.get(), request));
     }
 
     {
@@ -124,7 +137,7 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       bool expect_hidden = test_case.expected_hide_request_mask &
                            HIDE_BROWSER_SUB_RESOURCE_REQUEST;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map, request));
+                WebRequestPermissions::HideRequest(info_map.get(), request));
     }
 
     {
@@ -134,7 +147,7 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_MAIN_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map, request));
+                WebRequestPermissions::HideRequest(info_map.get(), request));
     }
 
     {
@@ -144,9 +157,35 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_SUB_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map, request));
+                WebRequestPermissions::HideRequest(info_map.get(), request));
     }
   }
+
+  // Check protection of requests originating from the frame showing the Chrome
+  // WebStore. Normally this request is not protected:
+  GURL non_sensitive_url("http://www.google.com/test.js");
+  WebRequestInfo non_sensitive_request_info = create_request(
+      non_sensitive_url, content::RESOURCE_TYPE_SCRIPT, kRendererProcessId);
+  EXPECT_FALSE(WebRequestPermissions::HideRequest(info_map.get(),
+                                                  non_sensitive_request_info));
+
+  // If the origin is labeled by the WebStoreAppId, it becomes protected.
+  {
+    const int kWebstoreProcessId = 42;
+    const int kSiteInstanceId = 23;
+    info_map->RegisterExtensionProcess(extensions::kWebStoreAppId,
+                                       kWebstoreProcessId, kSiteInstanceId);
+    WebRequestInfo sensitive_request_info = create_request(
+        non_sensitive_url, content::RESOURCE_TYPE_SCRIPT, kWebstoreProcessId);
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
+                                                   sensitive_request_info));
+  }
+
+  // Check that a request for a non-sensitive URL is rejected if it's a PAC
+  // script fetch.
+  non_sensitive_request_info.is_pac_request = true;
+  EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
+                                                 non_sensitive_request_info));
 }
 
 TEST(ExtensionWebRequestPermissions,
