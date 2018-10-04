@@ -4,7 +4,6 @@
 
 #include "components/password_manager/core/browser/invalid_realm_credential_cleaner.h"
 
-#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -13,6 +12,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
@@ -54,11 +54,6 @@ const GURL kOrigins[] = {GURL("https://example.org/path-0/"),
 const base::string16 kUsernames[] = {base::ASCIIToUTF16("user0"),
                                      base::ASCIIToUTF16("user1")};
 
-// TODO(http://crbug.com/889983): This callback is needed to be passed to
-// function that does the clean-up, but is not used. Remove it once the function
-// is skipped.
-auto null_callback = base::NullCallback();
-
 bool StoreContains(TestPasswordStore* store,
                    const autofill::PasswordForm& form) {
   const auto it = store->stored_passwords().find(form.signon_realm);
@@ -92,6 +87,16 @@ MigrationFormsPair GetCredentialsFrom(bool is_blacklisted,
 }
 
 }  // namespace
+
+class MockCredentialsCleanerObserver : public CredentialsCleaner::Observer {
+ public:
+  MockCredentialsCleanerObserver() = default;
+  ~MockCredentialsCleanerObserver() override = default;
+  MOCK_METHOD0(CleaningCompleted, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCredentialsCleanerObserver);
+};
 
 // This test checks that HTML credentials are correctly removed for the case
 // when both (HTTP and HTTPS credentials) are blacklisted, or both are not
@@ -218,8 +223,10 @@ TEST(InvalidRealmCredentialCleanerTest,
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
-                                                    null_callback);
+    MockCredentialsCleanerObserver observer;
+    InvalidRealmCredentialCleaner cleaner(password_store, &prefs);
+    EXPECT_CALL(observer, CleaningCompleted);
+    cleaner.StartCleaning(&observer);
     scoped_task_environment.RunUntilIdle();
 
     EXPECT_EQ(StoreContains(password_store.get(), https_form),
@@ -358,8 +365,10 @@ TEST(InvalidRealmCredentialCleanerTest,
     prefs.registry()->RegisterBooleanPref(
         prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-    password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
-                                                    null_callback);
+    MockCredentialsCleanerObserver observer;
+    InvalidRealmCredentialCleaner cleaner(password_store, &prefs);
+    EXPECT_CALL(observer, CleaningCompleted);
+    cleaner.StartCleaning(&observer);
     scoped_task_environment.RunUntilIdle();
 
     EXPECT_NE(StoreContains(password_store.get(), https_form),
@@ -398,8 +407,10 @@ TEST(InvalidRealmCredentialCleanerTest,
   prefs.registry()->RegisterBooleanPref(
       prefs::kCredentialsWithWrongSignonRealmRemoved, false);
 
-  password_manager_util::RemoveUselessCredentials(password_store, &prefs, 0,
-                                                  null_callback);
+  MockCredentialsCleanerObserver observer;
+  InvalidRealmCredentialCleaner cleaner(password_store, &prefs);
+  EXPECT_CALL(observer, CleaningCompleted);
+  cleaner.StartCleaning(&observer);
   scoped_task_environment.RunUntilIdle();
 
   // Check that credentials were not deleted.
