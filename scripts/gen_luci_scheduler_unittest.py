@@ -269,6 +269,9 @@ job {
 
 # Generated with chromite/scripts/gen_luci_scheduler
 
+# Autodeployed with:
+# http://cros-goldeneye/chromeos/legoland/builderHistory?buildConfig=luci-scheduler-updater
+
 acl_sets {
   name: "default"
   acls {
