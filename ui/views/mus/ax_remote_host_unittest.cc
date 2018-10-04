@@ -44,7 +44,7 @@ class TestAXHostService : public ax::mojom::AXHost {
   }
 
   void ResetCounts() {
-    add_client_count_ = 0;
+    remote_host_count_ = 0;
     event_count_ = 0;
     last_tree_id_ = ui::AXTreeIDUnknown();
     last_updates_.clear();
@@ -52,9 +52,9 @@ class TestAXHostService : public ax::mojom::AXHost {
   }
 
   // ax::mojom::AXHost:
-  void SetRemoteHost(ax::mojom::AXRemoteHostPtr client,
-                     SetRemoteHostCallback cb) override {
-    ++add_client_count_;
+  void RegisterRemoteHost(ax::mojom::AXRemoteHostPtr client,
+                          RegisterRemoteHostCallback cb) override {
+    ++remote_host_count_;
     std::move(cb).Run(TestAXTreeID(), automation_enabled_);
     client.FlushForTesting();
   }
@@ -69,7 +69,7 @@ class TestAXHostService : public ax::mojom::AXHost {
 
   mojo::Binding<ax::mojom::AXHost> binding_{this};
   bool automation_enabled_ = false;
-  int add_client_count_ = 0;
+  int remote_host_count_ = 0;
   int event_count_ = 0;
   ui::AXTreeID last_tree_id_ = ui::AXTreeIDUnknown();
   std::vector<ui::AXTreeUpdate> last_updates_;
@@ -137,7 +137,7 @@ TEST_F(AXRemoteHostTest, CreateRemote) {
   CreateRemote(&service);
 
   // Client registered itself with service.
-  EXPECT_EQ(1, service.add_client_count_);
+  EXPECT_EQ(1, service.remote_host_count_);
 }
 
 TEST_F(AXRemoteHostTest, AutomationEnabled) {

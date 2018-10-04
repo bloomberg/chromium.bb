@@ -5,8 +5,6 @@
 #ifndef UI_ACCESSIBILITY_AX_HOST_DELEGATE_H_
 #define UI_ACCESSIBILITY_AX_HOST_DELEGATE_H_
 
-#include <stdint.h>
-
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_id.h"
 
@@ -27,6 +25,10 @@ class AX_EXPORT AXHostDelegate {
   // Handle an action from an accessibility client.
   virtual void PerformAction(const ui::AXActionData& data) = 0;
 
+  // A tree id appropriate for annotating events sent to an accessibility
+  // client.
+  AXTreeID tree_id() const { return tree_id_; }
+
  protected:
   // A delegate with an automatically assigned tree id.
   AXHostDelegate();
@@ -34,10 +36,6 @@ class AX_EXPORT AXHostDelegate {
   // A delegate with an explicit tree id. The caller is responsible for ensuring
   // the uniqueness of the id.
   explicit AXHostDelegate(AXTreeID tree_id);
-
-  // A tree id appropriate for annotating events sent to an accessibility
-  // client.
-  AXTreeID tree_id() const { return tree_id_; }
 
  private:
   // Register or unregister this class with |AXTreeIDRegistry|.

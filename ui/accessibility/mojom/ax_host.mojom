@@ -23,7 +23,7 @@ interface AXHost {
   // root of the AX node tree. If |automation_enabled| is true then the remote
   // process must send its initial AX node tree immediately (because a feature
   // like ChromeVox is enabled).
-  SetRemoteHost(AXRemoteHost remote) =>
+  RegisterRemoteHost(AXRemoteHost remote) =>
       (ax.mojom.AXTreeID tree_id, bool automation_enabled);
 
   // Handles an accessibility |event| (e.g. focus change) for |tree_id| in the

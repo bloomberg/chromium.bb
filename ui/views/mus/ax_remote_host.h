@@ -81,10 +81,10 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
 
  private:
   // Registers this object as a remote host for the parent AXHost.
-  void BindAndSetRemote();
+  void BindAndRegisterRemote();
 
   // Callback for initial state from AXHost.
-  void SetRemoteHostCallback(const ui::AXTreeID& tree_id, bool enabled);
+  void RegisterRemoteHostCallback(const ui::AXTreeID& tree_id, bool enabled);
 
   void Enable();
   void Disable();

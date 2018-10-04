@@ -269,6 +269,8 @@ source_set("chromeos") {
     "accessibility/accessibility_panel.h",
     "accessibility/ax_host_service.cc",
     "accessibility/ax_host_service.h",
+    "accessibility/ax_remote_host_delegate.cc",
+    "accessibility/ax_remote_host_delegate.h",
     "accessibility/chromevox_panel.cc",
     "accessibility/chromevox_panel.h",
     "accessibility/dictation_chromeos.cc",
