@@ -59,7 +59,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -763,7 +762,7 @@ void WebContentsViewAura::CreateAuraWindow(aura::Window* context) {
                                           root_window->GetBoundsInScreen());
   }
   window_->layer()->SetMasksToBounds(true);
-  aura::WindowOcclusionTracker::Track(window_.get());
+  window_->TrackOcclusionState();
 
   // WindowObserver is not interesting and is problematic for Browser Plugin
   // guests.
