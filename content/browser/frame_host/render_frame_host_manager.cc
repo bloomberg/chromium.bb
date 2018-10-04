@@ -649,8 +649,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // RenderFrameHostManager are completely initialized. This should be
       // removed once the process manager moves away from NotificationService.
       // See https://crbug.com/462682.
-      delegate_->NotifyMainFrameSwappedFromRenderManager(
-          nullptr, render_frame_host_.get());
+      if (frame_tree_node_->IsMainFrame()) {
+        delegate_->NotifyMainFrameSwappedFromRenderManager(
+            nullptr, render_frame_host_.get());
+      }
     }
   }
 
@@ -1108,8 +1110,10 @@ void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
   // RenderFrameHostManager are completely initialized. This should be
   // removed once the process manager moves away from NotificationService.
   // See https://crbug.com/462682.
-  delegate_->NotifyMainFrameSwappedFromRenderManager(nullptr,
-                                                     render_frame_host_.get());
+  if (frame_tree_node_->IsMainFrame()) {
+    delegate_->NotifyMainFrameSwappedFromRenderManager(
+        nullptr, render_frame_host_.get());
+  }
 }
 
 RenderFrameHostManager::SiteInstanceDescriptor
