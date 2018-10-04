@@ -1319,7 +1319,6 @@ component("ash") {
     "//ash/strings",
     "//ash/wayland",
     "//components/discardable_memory/public/interfaces",
-    "//mash/public/mojom",
     "//mojo/public/cpp/system",
     "//services/device/public/mojom",
     "//services/service_manager/embedder",
@@ -2406,8 +2405,6 @@ service("ash_service") {
     "//services/service_manager/public/cpp",
   ]
 
-  # TODO(beng): This target relies on //mash/session, but there is a cycle so we
-  #             can't state that dependency here.
   data_deps = [
     ":ash_service_resources",
     ":ash_service_resources_200",

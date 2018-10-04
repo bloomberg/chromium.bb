@@ -1272,6 +1272,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -1436,6 +1437,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       debug::PerformDebugActionIfEnabled(action);
