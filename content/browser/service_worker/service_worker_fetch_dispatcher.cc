@@ -367,7 +367,8 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
     if (!fetch_dispatcher)
       return;
     fetch_dispatcher->DidFinish(fetch_event_id.value(), fetch_result,
-                                std::move(response), std::move(body_as_stream));
+                                std::move(response), std::move(body_as_stream),
+                                std::move(timing));
   }
 
   mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback> binding_;
@@ -567,24 +568,27 @@ void ServiceWorkerFetchDispatcher::DidFail(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_NE(blink::ServiceWorkerStatusCode::kOk, status);
   Complete(status, FetchEventResult::kShouldFallback,
-           blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */);
+           blink::mojom::FetchAPIResponse::New(), nullptr /* body_as_stream */,
+           nullptr /* timing */);
 }
 
 void ServiceWorkerFetchDispatcher::DidFinish(
     int request_id,
     FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
-    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
-           std::move(response), std::move(body_as_stream));
+           std::move(response), std::move(body_as_stream), std::move(timing));
 }
 
 void ServiceWorkerFetchDispatcher::Complete(
     blink::ServiceWorkerStatusCode status,
     FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
-    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   DCHECK(fetch_callback_);
 
   did_complete_ = true;
@@ -594,7 +598,7 @@ void ServiceWorkerFetchDispatcher::Complete(
 
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
-           version_);
+           std::move(timing), version_);
 }
 
 // Non-S13nServiceWorker

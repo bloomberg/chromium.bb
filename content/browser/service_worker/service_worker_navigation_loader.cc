@@ -7,6 +7,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -260,6 +261,8 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
 
   DCHECK(url_loader_client_.is_bound());
   TransitionToStatus(Status::kCompleted);
+  if (error_code == net::OK)
+    RecordTimingMetrics(true);
 
   // |stream_waiter_| calls this when done.
   stream_waiter_.reset();
@@ -300,6 +303,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing,
     scoped_refptr<ServiceWorkerVersion> version) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(status_, Status::kStarted);
@@ -325,6 +329,8 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     return;
   }
 
+  fetch_event_timing_ = std::move(timing);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     // Dispatching the event to the service worker failed. Do a last resort
     // attempt to load the page via network as if there was no service worker.
@@ -340,6 +346,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   if (fetch_result ==
       ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
     TransitionToStatus(Status::kCompleted);
+    RecordTimingMetrics(false);
     // TODO(falken): Propagate the timing info to the renderer somehow, or else
     // Navigation Timing etc APIs won't know about service worker.
     std::move(fallback_callback_)
@@ -509,6 +516,70 @@ void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
     delete this;
 }
 
+void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
+  DCHECK(fetch_event_timing_);
+  DCHECK(!completion_time_.is_null());
+
+  // We only record these metrics for top-level navigation.
+  if (resource_request_.resource_type != RESOURCE_TYPE_MAIN_FRAME)
+    return;
+
+  // |fetch_event_timing_| is recorded in renderer so we can get reasonable
+  // metrics only when TimeTicks are consistent across processes.
+  if (!base::TimeTicks::IsHighResolution() ||
+      !base::TimeTicks::IsConsistentAcrossProcesses())
+    return;
+
+  // Time between the request is made and the request is routed to this loader.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "StartToForwardServiceWorker",
+      response_head_.service_worker_start_time -
+          response_head_.load_timing.request_start);
+
+  // Time spent for service worker startup.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "ForwardServiceWorkerToWorkerReady",
+      response_head_.service_worker_ready_time -
+          response_head_.service_worker_start_time);
+
+  // Browser -> Renderer IPC delay.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "WorkerReadyToFetchHandlerStart",
+      fetch_event_timing_->dispatch_event_time -
+          response_head_.service_worker_ready_time);
+
+  // Time spent by fetch handlers.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.MainFrame.MainResource."
+      "FetchHandlerStartToFetchHandlerEnd",
+      fetch_event_timing_->respond_with_settled_time -
+          fetch_event_timing_->dispatch_event_time);
+
+  if (handled) {
+    // Renderer -> Browser IPC delay.
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.MainFrame.MainResource."
+        "FetchHandlerEndToResponseReceived",
+        response_head_.load_timing.receive_headers_end -
+            fetch_event_timing_->respond_with_settled_time);
+
+    // Time spent reading response body.
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.MainFrame.MainResource."
+        "ResponseReceivedToCompleted",
+        completion_time_ - response_head_.load_timing.receive_headers_end);
+  } else {
+    // Renderer -> Browser IPC delay (network fallback case).
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.MainFrame.MainResource."
+        "FetchHandlerEndToFallbackNetwork",
+        completion_time_ - fetch_event_timing_->respond_with_settled_time);
+  }
+}
+
 void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
 #if DCHECK_IS_ON()
   switch (new_status) {
@@ -534,6 +605,8 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
 #endif  // DCHECK_IS_ON()
 
   status_ = new_status;
+  if (new_status == Status::kCompleted)
+    completion_time_ = base::TimeTicks::Now();
 }
 
 }  // namespace content
