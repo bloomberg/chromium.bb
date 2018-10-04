@@ -34,7 +34,7 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
 
   // Fail the action if selectors is empty.
   if (proto_.wait_for_dom().selectors().empty()) {
-    UpdateProcessedAction(false);
+    UpdateProcessedAction(OTHER_ACTION_STATUS);
     DLOG(ERROR) << "Empty selector, failing action.";
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
@@ -68,13 +68,13 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
                                             ProcessActionCallback callback,
                                             bool result) {
   if (result) {
-    UpdateProcessedAction(true);
+    UpdateProcessedAction(ACTION_APPLIED);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
   if (rounds == 0) {
-    UpdateProcessedAction(false);
+    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }

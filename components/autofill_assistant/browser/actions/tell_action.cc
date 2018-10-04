@@ -22,7 +22,7 @@ void TellAction::ProcessAction(ActionDelegate* delegate,
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   // tell.message in the proto is localized.
   delegate->ShowStatusMessage(proto_.tell().message());
-  UpdateProcessedAction(true);
+  UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

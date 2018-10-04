@@ -38,7 +38,9 @@ void UploadDomAction::ProcessAction(ActionDelegate* delegate,
 
 void UploadDomAction::OnBuildNodeTree(ProcessActionCallback callback,
                                       bool status) {
-  UpdateProcessedAction(status);
+  // TODO(crbug.com/806868): Distinguish element not found from other error and
+  // report them as ELEMENT_RESOLUTION_FAILED.
+  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

@@ -162,6 +162,26 @@ TEST_F(ScriptExecutorTest, RunMultipleActions) {
   EXPECT_EQ(1u, processed_actions2_capture.size());
 }
 
+TEST_F(ScriptExecutorTest, UnsupportedAction) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  actions_response.add_actions();  // action definition missing
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(DoAll(SaveArg<1>(&processed_actions_capture),
+                      RunOnceCallback<2>(true, "")));
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(UNKNOWN_ACTION_STATUS, processed_actions_capture[0].status());
+}
+
 TEST_F(ScriptExecutorTest, StopAfterEnd) {
   ActionsResponseProto actions_response;
   actions_response.set_server_payload("payload");
