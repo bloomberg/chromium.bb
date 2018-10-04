@@ -151,4 +151,18 @@ TEST_F(ArcContentFileSystemFileStreamReaderTest, GetLength) {
             callback.GetResult(reader.GetLength(callback.callback())));
 }
 
+TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadError) {
+  ArcContentFileSystemFileStreamReader reader(
+      GURL("content://org.chromium.foo/error"), 0);
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(strlen(kData));
+  EXPECT_FALSE(ReadData(&reader, buffer.get()));
+}
+
+TEST_F(ArcContentFileSystemFileStreamReaderTest, GetLengthError) {
+  ArcContentFileSystemFileStreamReader reader(
+      GURL("content://org.chromium.foo/error"), 0);
+  net::TestInt64CompletionCallback callback;
+  EXPECT_LT(callback.GetResult(reader.GetLength(callback.callback())), 0);
+}
+
 }  // namespace arc
