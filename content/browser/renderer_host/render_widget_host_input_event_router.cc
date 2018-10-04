@@ -1709,4 +1709,11 @@ void RenderWidgetHostInputEventRouter::SetMouseCaptureTarget(
     mouse_capture_target_.target = nullptr;
 }
 
+RenderWidgetHostImpl*
+RenderWidgetHostInputEventRouter::GetMouseCaptureWidgetForTests() const {
+  if (mouse_capture_target_.target)
+    return mouse_capture_target_.target->host();
+  return nullptr;
+}
+
 }  // namespace content

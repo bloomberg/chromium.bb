@@ -786,6 +786,21 @@ void SimulateRoutedMouseClickAt(WebContents* web_contents,
                                                             ui::LatencyInfo());
 }
 
+void SendMouseDownToWidget(RenderWidgetHost* target,
+                           int modifiers,
+                           blink::WebMouseEvent::Button button) {
+  auto* view = static_cast<content::RenderWidgetHostImpl*>(target)->GetView();
+
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown, modifiers,
+                                   ui::EventTimeForNow());
+  mouse_event.button = button;
+  int x = view->GetViewBounds().width() / 2;
+  int y = view->GetViewBounds().height() / 2;
+  mouse_event.SetPositionInWidget(x, y);
+  mouse_event.click_count = 1;
+  target->ForwardMouseEvent(mouse_event);
+}
+
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
@@ -1874,6 +1889,12 @@ RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents) {
 
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetKeyboardLockWidget();
+}
+
+RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->GetInputEventRouter()
+      ->GetMouseCaptureWidgetForTests();
 }
 
 bool RequestKeyboardLock(WebContents* web_contents,

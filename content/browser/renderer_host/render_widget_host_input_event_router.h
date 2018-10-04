@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // Allows a target to claim or release capture of mouse events.
   void SetMouseCaptureTarget(RenderWidgetHostViewBase* target,
                              bool captures_dragging);
+  RenderWidgetHostImpl* GetMouseCaptureWidgetForTests() const;
 
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
   RenderWidgetTargeter* GetRenderWidgetTargeterForTests();

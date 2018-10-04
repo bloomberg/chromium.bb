@@ -427,6 +427,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
         hit_node->GetLayoutObject()->IsEmbeddedObject()) {
       mouse_capture_node_ = hit_node;
+      page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(true);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
   }
@@ -1847,6 +1848,8 @@ void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
 void WebViewImpl::MouseCaptureLost() {
   TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
   mouse_capture_node_ = nullptr;
+  if (page_->DeprecatedLocalMainFrame())
+    page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);
 }
 
 void WebViewImpl::SetFocus(bool enable) {
