@@ -172,13 +172,11 @@ void CORSURLLoader::SetPriority(net::RequestPriority priority,
 }
 
 void CORSURLLoader::PauseReadingBodyFromNet() {
-  DCHECK(!is_waiting_follow_redirect_call_);
   if (network_loader_)
     network_loader_->PauseReadingBodyFromNet();
 }
 
 void CORSURLLoader::ResumeReadingBodyFromNet() {
-  DCHECK(!is_waiting_follow_redirect_call_);
   if (network_loader_)
     network_loader_->ResumeReadingBodyFromNet();
 }
