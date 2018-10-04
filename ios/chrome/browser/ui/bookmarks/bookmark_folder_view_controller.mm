@@ -27,8 +27,8 @@
 
 namespace {
 
-// The height of every folder cell.
-const CGFloat kFolderCellHeight = 48.0;
+// The estimated height of every folder cell.
+const CGFloat kEstimatedFolderCellHeight = 48.0;
 
 // Height of section headers/footers.
 const CGFloat kSectionHeaderHeight = 8.0;
@@ -177,6 +177,9 @@ using bookmarks::BookmarkNode;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];
+
+  self.tableView.estimatedRowHeight = kEstimatedFolderCellHeight;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -202,11 +205,6 @@ using bookmarks::BookmarkNode;
 }
 
 #pragma mark - UITableViewDelegate
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  return kFolderCellHeight;
-}
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
