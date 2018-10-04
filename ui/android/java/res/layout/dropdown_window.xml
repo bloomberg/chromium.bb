@@ -18,7 +18,8 @@
         android:id="@+id/dropdown_body_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginVertical="@dimen/dropdown_vertical_margin" />
 
     <View style="@style/HorizontalDivider"
         android:id="@+id/dropdown_body_footer_divider"
