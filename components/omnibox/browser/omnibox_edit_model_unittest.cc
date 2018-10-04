@@ -249,6 +249,8 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
     base::string16 search_terms;
     EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
     EXPECT_TRUE(search_terms.empty());
+
+    EXPECT_TRUE(model()->CurrentTextIsURL());
   }
 
   // Verify the displayed text when there is a Query in Omnibox match.
@@ -262,6 +264,8 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_TRUE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
   EXPECT_FALSE(search_terms.empty());
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), search_terms);
+
+  EXPECT_FALSE(model()->CurrentTextIsURL());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {

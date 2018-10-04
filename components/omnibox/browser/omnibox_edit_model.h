@@ -110,7 +110,7 @@ class OmniboxEditModel {
 
   OmniboxEditController* controller() const { return controller_; }
 
-  OmniboxClient* client() { return client_.get(); }
+  OmniboxClient* client() const { return client_.get(); }
 
   // Returns the current state.  This assumes we are switching tabs, and changes
   // the internal state appropriately.
@@ -363,7 +363,7 @@ class OmniboxEditModel {
 
   // Convenience method for QueryInOmnibox::GetDisplaySearchTerms.
   // Returns true if Query in Omnibox is active. |search_terms| may be nullptr.
-  bool GetQueryInOmniboxSearchTerms(base::string16* search_terms);
+  bool GetQueryInOmniboxSearchTerms(base::string16* search_terms) const;
 
   // Used for testing purposes only.
   base::string16 GetUserTextForTesting() const { return user_text_; }
