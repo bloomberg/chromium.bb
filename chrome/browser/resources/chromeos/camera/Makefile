@@ -7,7 +7,7 @@ CHROME=google-chrome
 # Include all resources of the Camera App to be copied to the target package,
 # but without the manifest files.
 SRC_RESOURCES= \
-        src/_locales/am/messages.json \
+	src/_locales/am/messages.json \
 	src/_locales/ar/messages.json \
 	src/_locales/bg/messages.json \
 	src/_locales/bn/messages.json \
@@ -51,7 +51,7 @@ SRC_RESOURCES= \
 	src/_locales/sl/messages.json \
 	src/_locales/sr/messages.json \
 	src/_locales/sv/messages.json \
-        src/_locales/sw/messages.json \
+	src/_locales/sw/messages.json \
 	src/_locales/ta/messages.json \
 	src/_locales/te/messages.json \
 	src/_locales/th/messages.json \
@@ -61,35 +61,35 @@ SRC_RESOURCES= \
 	src/_locales/zh_CN/messages.json \
 	src/_locales/zh_TW/messages.json \
 	src/css/main.css \
-        src/images/browser_button_back.svg \
-        src/images/browser_button_delete.svg \
-        src/images/browser_button_export.svg \
-        src/images/browser_button_print.svg \
+	src/images/browser_button_back.svg \
+	src/images/browser_button_delete.svg \
+	src/images/browser_button_export.svg \
+	src/images/browser_button_print.svg \
 	src/images/camera_app_icons_128.png \
 	src/images/camera_app_icons_48.png \
-        src/images/camera_button_grid_off.svg \
-        src/images/camera_button_grid_on.svg \
-        src/images/camera_button_mic_off.svg \
-        src/images/camera_button_mic_on.svg \
-        src/images/camera_button_mirror_off.svg \
-        src/images/camera_button_mirror_on.svg \
-        src/images/camera_button_switch_photo.svg \
-        src/images/camera_button_switch_video.svg \
-        src/images/camera_button_timer_off.svg \
-        src/images/camera_button_timer_on.svg \
-        src/images/camera_button_toggle_device.svg \
-        src/images/camera_focus_aim.svg \
-        src/images/camera_mode_photo.svg \
-        src/images/camera_mode_recording.svg \
-        src/images/camera_shutter_photo_start.svg \
-        src/images/camera_shutter_photo_start_active.svg \
-        src/images/camera_shutter_photo_start_hover.svg \
-        src/images/camera_shutter_photo_stop.svg \
-        src/images/camera_shutter_photo_stop_hover.svg \
-        src/images/camera_shutter_recording_start.svg \
-        src/images/camera_shutter_recording_start_hover.svg \
-        src/images/camera_shutter_recording_stop.svg \
-        src/images/camera_shutter_recording_stop_hover.svg \
+	src/images/camera_button_grid_off.svg \
+	src/images/camera_button_grid_on.svg \
+	src/images/camera_button_mic_off.svg \
+	src/images/camera_button_mic_on.svg \
+	src/images/camera_button_mirror_off.svg \
+	src/images/camera_button_mirror_on.svg \
+	src/images/camera_button_switch_photo.svg \
+	src/images/camera_button_switch_video.svg \
+	src/images/camera_button_timer_off.svg \
+	src/images/camera_button_timer_on.svg \
+	src/images/camera_button_toggle_device.svg \
+	src/images/camera_focus_aim.svg \
+	src/images/camera_mode_photo.svg \
+	src/images/camera_mode_recording.svg \
+	src/images/camera_shutter_photo_start.svg \
+	src/images/camera_shutter_photo_start_active.svg \
+	src/images/camera_shutter_photo_start_hover.svg \
+	src/images/camera_shutter_photo_stop.svg \
+	src/images/camera_shutter_photo_stop_hover.svg \
+	src/images/camera_shutter_recording_start.svg \
+	src/images/camera_shutter_recording_start_hover.svg \
+	src/images/camera_shutter_recording_stop.svg \
+	src/images/camera_shutter_recording_stop_hover.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/main.js \
@@ -97,25 +97,25 @@ SRC_RESOURCES= \
 	src/js/models/file_system.js \
 	src/js/router.js \
 	src/js/scrollbar.js \
-        src/js/tooltip.js \
+	src/js/tooltip.js \
 	src/js/util.js \
 	src/js/view.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
-        src/js/views/camera/gallerybutton.js \
-        src/js/views/camera/layout.js \
-        src/js/views/camera/options.js \
-        src/js/views/camera/preview.js \
-        src/js/views/camera/recordtime.js \
-        src/js/views/camera_toast.js \
+	src/js/views/camera/gallerybutton.js \
+	src/js/views/camera/layout.js \
+	src/js/views/camera/options.js \
+	src/js/views/camera/preview.js \
+	src/js/views/camera/recordtime.js \
+	src/js/views/camera_toast.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
-        src/sounds/record_end.ogg \
-        src/sounds/record_start.ogg \
+	src/sounds/record_end.ogg \
+	src/sounds/record_start.ogg \
 	src/sounds/shutter.ogg \
 	src/sounds/tick.ogg \
 	src/views/main.html \
-        src/LICENSE \
+	src/LICENSE \
 
 # Path for the Camera resources. Relative, with a trailing slash.
 SRC_PATH=src/
