@@ -137,13 +137,18 @@ interface LoginScreen {
   // |reverse|:   Whether the tab order is reversed.
   HandleFocusLeavingLockScreenApps(bool reverse);
 
-  // Called when the info shown for dev and canary channels are changed.
+  // Called when new system information is available.
+  // |show_if_hidden|: If true, the system information should be displayed to
+  //                   the user if it is currently hidden. If false, the system
+  //                   information should remain hidden if not already shown.
+  //                   Hidden system information can be shown by pressing alt-v.
   // |os_version_label_text|: The OS version.
   // |enterprise_info_text|:  The enterprise info.
   // |bluetooth_name|:        The name of the bluetooth adapter.
-  SetDevChannelInfo(string os_version_label_text,
-                    string enterprise_info_text,
-                    string bluetooth_name);
+  SetSystemInfo(bool show_if_hidden,
+                string os_version_label_text,
+                string enterprise_info_text,
+                string bluetooth_name);
 
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);

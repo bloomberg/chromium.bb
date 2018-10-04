@@ -594,8 +594,8 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
   EXPECT_FALSE(test_api.note_action()->visible());
 }
 
-// Verifies the dev channel info view bounds.
-TEST_F(LockContentsViewUnitTest, DevChannelInfoViewBounds) {
+// Verifies the system info view bounds interaction with the note-taking button.
+TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
       data_dispatcher(),
@@ -605,28 +605,89 @@ TEST_F(LockContentsViewUnitTest, DevChannelInfoViewBounds) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   LockContentsView::TestApi test_api(contents);
-  // Verify that the dev channel info view is hidden by default.
-  EXPECT_FALSE(test_api.dev_channel_info()->visible());
+  // Verify that the system info view is hidden by default.
+  EXPECT_FALSE(test_api.system_info()->visible());
 
-  // Verify that the dev channel info view becomes visible and it doesn't block
-  // the note action button.
-  data_dispatcher()->SetDevChannelInfo("Best version ever", "Asset ID: 6666",
-                                       "Bluetooth adapter");
-  EXPECT_TRUE(test_api.dev_channel_info()->visible());
+  // Verify that the system info view becomes visible and it doesn't block the
+  // note action button.
+  data_dispatcher()->SetSystemInfo(true /*show_if_hidden*/, "Best version ever",
+                                   "Asset ID: 6666", "Bluetooth adapter");
+  EXPECT_TRUE(test_api.system_info()->visible());
   EXPECT_TRUE(test_api.note_action()->visible());
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_GE(widget_bounds.right() -
-                test_api.dev_channel_info()->GetBoundsInScreen().right(),
+                test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
 
-  // Verify that if the note action is disabled, the dev channel info view moves
-  // to the right to fill the empty space.
+  // Verify that if the note action is disabled, the system info view moves to
+  // the right to fill the empty space.
   data_dispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
   EXPECT_FALSE(test_api.note_action()->visible());
   EXPECT_LT(widget_bounds.right() -
-                test_api.dev_channel_info()->GetBoundsInScreen().right(),
+                test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
+}
+
+// Alt-V toggles display of system information.
+TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+  // Verify that the system info view is hidden by default.
+  EXPECT_FALSE(test_api.system_info()->visible());
+
+  // Verify that the system info view does not become visible when given data
+  // but show is false.
+  data_dispatcher()->SetSystemInfo(false /*show_if_hidden*/,
+                                   "Best version ever", "Asset ID: 6666",
+                                   "Bluetooth adapter");
+  EXPECT_FALSE(test_api.system_info()->visible());
+
+  // Alt-V shows hidden system info.
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_ALT_DOWN);
+  EXPECT_TRUE(test_api.system_info()->visible());
+  // System info is not empty, ie, it is actually being displayed.
+  EXPECT_FALSE(test_api.system_info()->bounds().IsEmpty());
+
+  // Alt-V again does nothing.
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_ALT_DOWN);
+  EXPECT_TRUE(test_api.system_info()->visible());
+}
+
+// Updating existing system info and setting show_if_hidden=true later will
+// reveal hidden system info.
+TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+
+  auto set_system_info = [&](bool show_if_hidden) {
+    data_dispatcher()->SetSystemInfo(show_if_hidden, "Best version ever",
+                                     "Asset ID: 6666", "Bluetooth adapter");
+  };
+
+  // Start with hidden system info.
+  set_system_info(false);
+  EXPECT_FALSE(test_api.system_info()->visible());
+
+  // Update system info but request it be shown.
+  set_system_info(true);
+  EXPECT_TRUE(test_api.system_info()->visible());
+
+  // Trying to hide system info from mojom call doesn't do anything.
+  set_system_info(false);
+  EXPECT_TRUE(test_api.system_info()->visible());
 }
 
 // Verifies the easy unlock tooltip is automatically displayed when requested.

@@ -177,18 +177,6 @@ void MakeSectionBold(views::StyledLabel* label,
   add_style(regular_style, *bold_start + bold_length + 1, text.length());
 }
 
-// Helper function to create a label for the dev channel info view.
-views::Label* CreateInfoLabel() {
-  views::Label* label = new views::Label();
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetEnabledColor(SK_ColorWHITE);
-  label->SetFontList(views::Label::GetDefaultFontList().Derive(
-      -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
-  label->SetSubpixelRenderingEnabled(false);
-
-  return label;
-}
-
 keyboard::KeyboardController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
@@ -305,8 +293,8 @@ LoginBubble* LockContentsView::TestApi::warning_banner_bubble() const {
   return view_->warning_banner_bubble_.get();
 }
 
-views::View* LockContentsView::TestApi::dev_channel_info() const {
-  return view_->dev_channel_info_;
+views::View* LockContentsView::TestApi::system_info() const {
+  return view_->system_info_;
 }
 
 LoginExpandedPublicAccountView* LockContentsView::TestApi::expanded_view()
@@ -372,14 +360,14 @@ LockContentsView::LockContentsView(
   top_header_->SetLayoutManager(std::move(top_header_layout));
   AddChildView(top_header_);
 
-  dev_channel_info_ = new views::View();
-  auto dev_channel_info_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(5, 8));
-  dev_channel_info_layout->set_cross_axis_alignment(
+  system_info_ = new views::View();
+  auto* system_info_layout =
+      system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, gfx::Insets(5, 8)));
+  system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
-  dev_channel_info_->SetLayoutManager(std::move(dev_channel_info_layout));
-  dev_channel_info_->SetVisible(false);
-  top_header_->AddChildView(dev_channel_info_);
+  system_info_->SetVisible(false);
+  top_header_->AddChildView(system_info_);
 
   note_action_ = new NoteActionLaunchButton(initial_note_action_state);
   top_header_->AddChildView(note_action_);
@@ -749,34 +737,43 @@ void LockContentsView::OnLockScreenNoteStateChanged(
   }
 }
 
-void LockContentsView::OnDevChannelInfoChanged(
+void LockContentsView::OnSystemInfoChanged(
+    bool show,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
   DCHECK(!os_version_label_text.empty() || !enterprise_info_text.empty() ||
          !bluetooth_name.empty());
 
-  if (!dev_channel_info_->visible()) {
-    // Initialize the dev channel info view.
-    dev_channel_info_->SetVisible(true);
+  // Helper function to create a label for the system info view.
+  auto create_info_label = []() -> views::Label* {
+    views::Label* label = new views::Label();
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetFontList(views::Label::GetDefaultFontList().Derive(
+        -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
+    label->SetSubpixelRenderingEnabled(false);
+    return label;
+  };
+
+  // Initialize the system info view.
+  if (system_info_->child_count() == 0) {
     for (int i = 0; i < 3; ++i)
-      dev_channel_info_->AddChildView(CreateInfoLabel());
+      system_info_->AddChildView(create_info_label());
   }
 
-  views::Label* version_label =
-      static_cast<views::Label*>(dev_channel_info_->child_at(0));
-  version_label->SetVisible(!os_version_label_text.empty());
-  version_label->SetText(base::UTF8ToUTF16(os_version_label_text));
+  if (show)
+    system_info_->SetVisible(true);
 
-  views::Label* enterprise_label =
-      static_cast<views::Label*>(dev_channel_info_->child_at(1));
-  enterprise_label->SetVisible(!enterprise_info_text.empty());
-  enterprise_label->SetText(base::UTF8ToUTF16(enterprise_info_text));
-
-  views::Label* bluetooth_label =
-      static_cast<views::Label*>(dev_channel_info_->child_at(2));
-  bluetooth_label->SetVisible(!bluetooth_name.empty());
-  bluetooth_label->SetText(base::UTF8ToUTF16(bluetooth_name));
+  auto update_label = [&](int index, const std::string& text) {
+    views::Label* label =
+        static_cast<views::Label*>(system_info_->child_at(index));
+    label->SetText(base::UTF8ToUTF16(text));
+    label->SetVisible(!text.empty());
+  };
+  update_label(0, os_version_label_text);
+  update_label(1, enterprise_info_text);
+  update_label(2, bluetooth_name);
 
   LayoutTopHeader();
 }
@@ -1172,11 +1169,10 @@ void LockContentsView::DoLayout() {
 }
 
 void LockContentsView::LayoutTopHeader() {
-  int preferred_width = dev_channel_info_->GetPreferredSize().width() +
+  int preferred_width = system_info_->GetPreferredSize().width() +
                         note_action_->GetPreferredSize().width();
-  int preferred_height =
-      std::max(dev_channel_info_->GetPreferredSize().height(),
-               note_action_->GetPreferredSize().height());
+  int preferred_height = std::max(system_info_->GetPreferredSize().height(),
+                                  note_action_->GetPreferredSize().height());
   top_header_->SetPreferredSize(gfx::Size(preferred_width, preferred_height));
   top_header_->SizeToPreferredSize();
   top_header_->Layout();
@@ -1663,6 +1659,8 @@ void LockContentsView::RegisterAccelerators() {
       AcceleratorAction::kFocusNextUser;
   accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
       AcceleratorAction::kFocusPreviousUser;
+  accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
+      AcceleratorAction::kShowSystemInfo;
 
   // Login-only accelerators:
   if (screen_type_ == LockScreen::ScreenType::kLogin) {
@@ -1681,6 +1679,7 @@ void LockContentsView::RegisterAccelerators() {
     }
   }
 
+  // Register the accelerators.
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
     controller->Register({item.first}, this);
@@ -1688,18 +1687,24 @@ void LockContentsView::RegisterAccelerators() {
 
 void LockContentsView::PerformAction(AcceleratorAction action) {
   switch (action) {
-    case AcceleratorAction::kShowFeedback:
-      Shell::Get()->login_screen_controller()->ShowFeedback();
-      return;
     case AcceleratorAction::kFocusNextUser:
       FocusNextUser();
-      return;
+      break;
     case AcceleratorAction::kFocusPreviousUser:
       FocusPreviousUser();
-      return;
+      break;
+    case AcceleratorAction::kShowSystemInfo:
+      if (!system_info_->visible()) {
+        system_info_->SetVisible(true);
+        LayoutTopHeader();
+      }
+      break;
+    case AcceleratorAction::kShowFeedback:
+      Shell::Get()->login_screen_controller()->ShowFeedback();
+      break;
     case AcceleratorAction::kShowResetScreen:
       Shell::Get()->login_screen_controller()->ShowResetScreen();
-      return;
+      break;
     default:
       NOTREACHED();
   }
