@@ -77,6 +77,10 @@ class StrikeDatabaseTest : public ::testing::Test {
     run_loop.Run();
   }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestStrikeDatabase db_;
+
  private:
   static const base::FilePath InitFilePath() {
     base::ScopedTempDir temp_dir_;
@@ -87,9 +91,7 @@ class StrikeDatabaseTest : public ::testing::Test {
   }
 
   int num_strikes_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<StrikeData> strike_data_;
-  TestStrikeDatabase db_;
 };
 
 TEST_F(StrikeDatabaseTest, AddStrikeTest) {
@@ -165,6 +167,11 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   EXPECT_EQ(0, strikes);
   strikes = GetStrikes(key2);
   EXPECT_EQ(5, strikes);
+}
+
+TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
+  const std::string last_four = "1234";
+  EXPECT_EQ("creditCardSave__1234", db_.GetKeyForCreditCardSave(last_four));
 }
 
 }  // namespace autofill

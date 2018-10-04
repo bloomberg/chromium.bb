@@ -48,8 +48,12 @@ class StrikeDatabase {
   void AddStrike(const std::string key, const StrikesCallback& outer_callback);
 
   // Removes database entry for |key|, which implicitly sets strike count to 0.
-  void ClearAllStrikesForKey(const std::string key,
+  void ClearAllStrikesForKey(const std::string& key,
                              const ClearStrikesCallback& outer_callback);
+
+  // Returns concatenation of prefix + |card_last_four_digits| to be used as key
+  // for credit card save.
+  std::string GetKeyForCreditCardSave(const std::string& card_last_four_digits);
 
  protected:
   std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>> db_;
@@ -63,7 +67,7 @@ class StrikeDatabase {
 
   // Sets the entry for |key| to |strike_data|. Success status is passed to the
   // callback.
-  void SetStrikeData(const std::string key,
+  void SetStrikeData(const std::string& key,
                      const StrikeData& strike_data,
                      const SetValueCallback& inner_callback);
 
@@ -85,6 +89,12 @@ class StrikeDatabase {
 
   void OnClearAllStrikesForKey(ClearStrikesCallback outer_callback,
                                bool success);
+
+  // Concatenates type prefix and identifier suffix to create a key.
+  std::string CreateKey(const std::string& type_prefix,
+                        const std::string& identifier_suffix);
+
+  std::string GetKeyPrefixForCreditCardSave();
 
   base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_;
 };

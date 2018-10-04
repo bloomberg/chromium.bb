@@ -17,6 +17,8 @@ namespace autofill {
 
 namespace {
 const char kDatabaseClientName[] = "StrikeService";
+const char kKeyDeliminator[] = "__";
+const char kKeyPrefixForCreditCardSave[] = "creditCardSave";
 }  // namespace
 
 StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
@@ -48,7 +50,7 @@ void StrikeDatabase::AddStrike(const std::string key,
 }
 
 void StrikeDatabase::ClearAllStrikesForKey(
-    const std::string key,
+    const std::string& key,
     const ClearStrikesCallback& outer_callback) {
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
@@ -61,6 +63,11 @@ void StrikeDatabase::ClearAllStrikesForKey(
                           base::Unretained(this), outer_callback));
 }
 
+std::string StrikeDatabase::GetKeyForCreditCardSave(
+    const std::string& card_last_four_digits) {
+  return CreateKey(GetKeyPrefixForCreditCardSave(), card_last_four_digits);
+}
+
 void StrikeDatabase::OnDatabaseInit(bool success) {}
 
 void StrikeDatabase::GetStrikeData(const std::string key,
@@ -68,7 +75,7 @@ void StrikeDatabase::GetStrikeData(const std::string key,
   db_->GetEntry(key, callback);
 }
 
-void StrikeDatabase::SetStrikeData(const std::string key,
+void StrikeDatabase::SetStrikeData(const std::string& key,
                                    const StrikeData& data,
                                    const SetValueCallback& callback) {
   std::unique_ptr<StrikeDataProto::KeyEntryVector> entries(
@@ -121,6 +128,15 @@ void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
 void StrikeDatabase::OnClearAllStrikesForKey(ClearStrikesCallback callback,
                                              bool success) {
   callback.Run(success);
+}
+
+std::string StrikeDatabase::CreateKey(const std::string& type_prefix,
+                                      const std::string& identifier_suffix) {
+  return type_prefix + kKeyDeliminator + identifier_suffix;
+}
+
+std::string StrikeDatabase::GetKeyPrefixForCreditCardSave() {
+  return kKeyPrefixForCreditCardSave;
 }
 
 }  // namespace autofill
