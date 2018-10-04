@@ -31,7 +31,7 @@ namespace {
 
 const char kBookmarkBarTag[] = "bookmark_bar";
 const char kBookmarkBarId[] = "bookmark_bar_id";
-const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
+const char kBookmarksRootId[] = "root_id";
 const char kCacheGuid[] = "generated_id";
 
 struct BookmarkInfo {
