@@ -8,10 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
-
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -61,6 +61,15 @@ const CGFloat kOverlayedViewLabelWidthPercentage = 0.7;
 
 // Bottom margin for the label displayed on the |overlayedView_|.
 const CGFloat kOverlayedViewLabelBottomMargin = 60;
+
+// Returns true if the file located at |url| is a valid PDF file.
+bool HasValidPdfAtUrl(NSURL* _Nullable url) {
+  if (!url)
+    return false;
+  base::ScopedCFTypeRef<CGPDFDocumentRef> document(
+      CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
+  return document;
+}
 
 }  // anonymous namespace
 
@@ -522,7 +531,9 @@ class OpenInControllerBridge
 #pragma mark -
 #pragma mark File management
 
-- (void)removeDocumentAtPath:(NSString*)path {
+- (void)removeDocumentAtPath:(nullable NSString*)path {
+  if (!path)
+    return;
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
@@ -584,18 +595,17 @@ class OpenInControllerBridge
 }
 
 - (void)urlLoadDidComplete:(const base::FilePath&)filePath {
-  if (!filePath.empty()) {
-    NSURL* fileURL =
-        [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
-    if (downloadCanceled_) {
-      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
-                                       [self
-                                           removeDocumentAtPath:[fileURL path]];
-                                     }));
-    } else {
-      [self presentOpenInMenuForFileAtURL:fileURL];
-    }
-  } else if (!downloadCanceled_) {
+  NSURL* fileURL = nil;
+  if (!filePath.empty())
+    fileURL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
+  if (!downloadCanceled_ && HasValidPdfAtUrl(fileURL)) {
+    [self presentOpenInMenuForFileAtURL:fileURL];
+    return;
+  }
+  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
+                                   [self removeDocumentAtPath:fileURL.path];
+                                 }));
+  if (!downloadCanceled_) {
     if (IsIPadIdiom())
       [self hideOpenInToolbar];
     [self removeOverlayedView];
