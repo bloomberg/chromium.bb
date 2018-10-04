@@ -334,8 +334,8 @@ void BookmarkModelMerger::ProcessLocalCreation(
   }
 
   const bookmarks::BookmarkNode* node = parent->GetChild(index);
-  const sync_pb::EntitySpecifics specifics =
-      CreateSpecificsFromBookmarkNode(node, bookmark_model_);
+  const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
+      node, bookmark_model_, /*force_favicon_load=*/true);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.
