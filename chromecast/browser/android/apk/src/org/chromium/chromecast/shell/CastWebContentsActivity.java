@@ -57,6 +57,8 @@ public class CastWebContentsActivity extends Activity {
     private final Controller<CastAudioManager> mAudioManagerState = new Controller<>();
     // Set in unittests to skip some behavior.
     private final Controller<Unit> mIsTestingState = new Controller<>();
+    // Set at creation. Handles destroying SurfaceHelper.
+    private final Controller<CastWebContentsSurfaceHelper> mSurfaceHelperState = new Controller<>();
 
     private CastWebContentsSurfaceHelper mSurfaceHelper;
 
@@ -84,13 +86,23 @@ public class CastWebContentsActivity extends Activity {
 
             setContentView(R.layout.cast_web_contents_activity);
 
-            mSurfaceHelper = new CastWebContentsSurfaceHelper(this, /* hostActivity */
+            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(this /* hostActivity */,
                     CastWebContentsView.onLayoutActivity(this,
                             (FrameLayout) findViewById(R.id.web_contents_container),
                             CastSwitches.getSwitchValueColor(
                                     CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
-                    (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri));
+                    (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri)));
         }));
+
+        mSurfaceHelperState.subscribe((CastWebContentsSurfaceHelper surfaceHelper) -> {
+            mSurfaceHelper = surfaceHelper;
+            return () -> {
+                mSurfaceHelper.onDestroy();
+                mSurfaceHelper = null;
+            };
+        });
+
+        mCreatedState.subscribe(Observers.onExit(x -> mSurfaceHelperState.reset()));
 
         mCreatedState.map(x -> getWindow())
                 .and(mGotIntentState)
@@ -127,6 +139,7 @@ public class CastWebContentsActivity extends Activity {
 
         mIsFinishingState.subscribe(Observers.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
+            mSurfaceHelperState.reset();
             finish();
         }));
 
@@ -194,9 +207,6 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
-        if (mSurfaceHelper != null) {
-            mSurfaceHelper.onDestroy();
-        }
         mCreatedState.reset();
         super.onDestroy();
     }
@@ -293,6 +303,6 @@ public class CastWebContentsActivity extends Activity {
 
     @RemovableInRelease
     public void setSurfaceHelperForTesting(CastWebContentsSurfaceHelper surfaceHelper) {
-        mSurfaceHelper = surfaceHelper;
+        mSurfaceHelperState.set(surfaceHelper);
     }
 }
