@@ -263,11 +263,13 @@ test("cast_audio_backend_unittests") {
     "mock_redirected_audio_output.h",
     "stream_mixer_external_audio_pipeline_unittest.cc",
     "stream_mixer_unittest.cc",
+    "volume_map_unittest.cc",
   ]
 
   deps = [
     ":audio_helpers",
     ":av_sync_dummy",
+    ":cast_audio_json",
     ":for_mixer_audio",
     ":null_video",
     ":public",
