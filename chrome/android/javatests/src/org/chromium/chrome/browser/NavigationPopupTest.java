@@ -9,7 +9,6 @@ import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ListPopupWindow;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -242,7 +241,7 @@ public class NavigationPopupTest {
     @Feature({"Navigation"})
     public void testFaviconFetching() throws ExecutionException {
         final TestNavigationController controller = new TestNavigationController();
-        final ListPopupWindow popup = showPopup(controller);
+        final NavigationPopup popup = showPopup(controller);
 
         CriteriaHelper.pollUiThread(new Criteria("All favicons did not get updated.") {
             @Override
@@ -265,7 +264,7 @@ public class NavigationPopupTest {
     @Feature({"Navigation"})
     public void testItemSelection() throws ExecutionException {
         final TestNavigationController controller = new TestNavigationController();
-        final ListPopupWindow popup = showPopup(controller);
+        final NavigationPopup popup = showPopup(controller);
 
         ThreadUtils.runOnUiThreadBlocking((Runnable) () -> popup.performItemClick(1));
 
@@ -279,7 +278,7 @@ public class NavigationPopupTest {
     @Feature({"Navigation"})
     public void testShowAllHistory() throws ExecutionException {
         final TestNavigationController controller = new TestNavigationController();
-        final ListPopupWindow popup = showPopup(controller);
+        final NavigationPopup popup = showPopup(controller);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ListView list = popup.getListView();
@@ -332,12 +331,16 @@ public class NavigationPopupTest {
                 () -> mActivityTestRule.getActivity().getNavigationPopupForTesting()));
     }
 
-    private ListPopupWindow showPopup(NavigationController controller) throws ExecutionException {
+    private NavigationPopup showPopup(NavigationController controller) throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationPopup popup = new NavigationPopup(mProfile, mActivityTestRule.getActivity(),
                     controller, NavigationPopup.Type.TABLET_FORWARD);
-            popup.show(mActivityTestRule.getActivity().getActivityTab().getContentView());
-            return popup.getPopupForTesting();
+            popup.setWidth(300);
+            popup.setHeight(300);
+            popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
+
+            popup.show();
+            return popup;
         });
     }
 

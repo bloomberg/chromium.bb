@@ -2092,8 +2092,29 @@ public class ChromeTabbedActivity
         mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
                 tab.getWebContents().getNavigationController(),
                 NavigationPopup.Type.ANDROID_SYSTEM_BACK);
-        mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);
-        mNavigationPopup.show(findViewById(R.id.navigation_popup_anchor_stub));
+        mNavigationPopup.setWidth(
+                getResources().getDimensionPixelSize(R.dimen.navigation_popup_width));
+        mNavigationPopup.setAnchorView(findViewById(R.id.navigation_popup_anchor_stub));
+        mNavigationPopup.setOnDismissListener(() -> mNavigationPopup = null);
+
+        positionAndShowNavigationPopup();
+    }
+
+    @Override
+    public void onOrientationChange(int orientation) {
+        super.onOrientationChange(orientation);
+        positionAndShowNavigationPopup();
+    }
+
+    private void positionAndShowNavigationPopup() {
+        if (mNavigationPopup == null) return;
+
+        // Center popup window.
+        ViewGroup coordinator = findViewById(R.id.coordinator);
+        int horizontalOffset = coordinator.getWidth() / 2 - mNavigationPopup.getWidth() / 2;
+        if (horizontalOffset > 0) mNavigationPopup.setHorizontalOffset(horizontalOffset);
+
+        mNavigationPopup.show();
     }
 
     @Override

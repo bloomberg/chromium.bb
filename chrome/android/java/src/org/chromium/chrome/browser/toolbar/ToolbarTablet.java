@@ -301,7 +301,13 @@ public class ToolbarTablet
         mNavigationPopup = new NavigationPopup(tab.getProfile(), getContext(),
                 tab.getWebContents().getNavigationController(),
                 isForward ? NavigationPopup.Type.TABLET_FORWARD : NavigationPopup.Type.TABLET_BACK);
-        mNavigationPopup.show(anchorView);
+
+        mNavigationPopup.setAnchorView(anchorView);
+
+        int menuWidth = getResources().getDimensionPixelSize(R.dimen.menu_width);
+        mNavigationPopup.setWidth(menuWidth);
+
+        mNavigationPopup.show();
     }
 
     @Override
