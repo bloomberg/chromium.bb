@@ -25,8 +25,6 @@
 
 #include "third_party/blink/renderer/core/dom/events/custom_event.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/event_names.h"
 
 namespace blink {
@@ -36,12 +34,9 @@ CustomEvent::CustomEvent() = default;
 CustomEvent::CustomEvent(ScriptState* script_state,
                          const AtomicString& type,
                          const CustomEventInit& initializer)
-    : Event(type, initializer) {
-  world_ = WrapRefCounted(&script_state->World());
-  if (initializer.hasDetail()) {
-    detail_.Set(initializer.detail().GetIsolate(),
-                initializer.detail().V8Value());
-  }
+    : Event(type, initializer),
+      detail_(initializer.hasDetail() ? initializer.detail()
+                                      : ScriptValue::CreateNull(script_state)) {
 }
 
 CustomEvent::~CustomEvent() = default;
@@ -52,23 +47,14 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   bool cancelable,
                                   const ScriptValue& script_value) {
   initEvent(type, bubbles, cancelable);
-  world_ = WrapRefCounted(&script_state->World());
   if (!IsBeingDispatched() && !script_value.IsEmpty())
-    detail_.Set(script_value.GetIsolate(), script_value.V8Value());
+    detail_ = script_value;
+  else
+    detail_ = ScriptValue::CreateNull(script_state);
 }
 
 ScriptValue CustomEvent::detail(ScriptState* script_state) const {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (detail_.IsEmpty())
-    return ScriptValue(script_state, v8::Null(isolate));
-  // Returns a clone of |detail_| if the world is different.
-  if (!world_ || world_->GetWorldId() != script_state->World().GetWorldId()) {
-    v8::Local<v8::Value> value = detail_.NewLocal(isolate);
-    scoped_refptr<SerializedScriptValue> serialized =
-        SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
-    return ScriptValue(script_state, serialized->Deserialize(isolate));
-  }
-  return ScriptValue(script_state, detail_.NewLocal(isolate));
+  return ScriptValue(script_state, detail_.V8ValueFor(script_state));
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {
@@ -76,7 +62,6 @@ const AtomicString& CustomEvent::InterfaceName() const {
 }
 
 void CustomEvent::Trace(blink::Visitor* visitor) {
-  visitor->Trace(detail_);
   Event::Trace(visitor);
 }
 
