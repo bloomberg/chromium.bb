@@ -567,7 +567,7 @@ public class ContextualSearchManager
     /** Accessor for the {@code InfoBarContainer} currently attached to the {@code Tab}. */
     private InfoBarContainer getInfoBarContainer() {
         Tab tab = mActivity.getActivityTab();
-        return tab == null ? null : tab.getInfoBarContainer();
+        return tab == null ? null : InfoBarContainer.get(tab);
     }
 
     /** Listens for notifications that should hide the Contextual Search bar. */

@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -90,6 +91,8 @@ public class ManualFillingControllerTest {
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     private ManualFillingCoordinator mController = new ManualFillingCoordinator();
+
+    private final UserDataHost mUserDataHost = new UserDataHost();
 
     @Before
     public void setUp() {
@@ -489,6 +492,7 @@ public class ManualFillingControllerTest {
         }
         Tab tab = mock(Tab.class);
         when(tab.getId()).thenReturn(id);
+        when(tab.getUserDataHost()).thenReturn(mUserDataHost);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);

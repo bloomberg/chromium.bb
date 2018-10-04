@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -590,8 +591,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
             public List<InfoBar> call() throws Exception {
                 Tab currentTab = getActivity().getActivityTab();
                 Assert.assertNotNull(currentTab);
-                Assert.assertNotNull(currentTab.getInfoBarContainer());
-                return currentTab.getInfoBarContainer().getInfoBarsForTesting();
+                Assert.assertNotNull(InfoBarContainer.get(currentTab));
+                return InfoBarContainer.get(currentTab).getInfoBarsForTesting();
             }
         });
     }
@@ -633,6 +634,17 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     public String getTestName() {
         return mCurrentTestName;
+    }
+
+    /**
+     * @return {@link InfoBarContainer} of the active tab of the activity.
+     *     {@code null} if there is no tab for the activity or infobar is available.
+     */
+    public InfoBarContainer getInfoBarContainer() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() ->
+            getActivity().getActivityTab() != null
+                    ? InfoBarContainer.get(getActivity().getActivityTab())
+                    : null);
     }
 
     /**

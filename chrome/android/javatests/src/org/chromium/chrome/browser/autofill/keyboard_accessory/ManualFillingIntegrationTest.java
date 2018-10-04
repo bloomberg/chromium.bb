@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -320,10 +319,8 @@ public class ManualFillingIntegrationTest {
         mHelper.loadTestPage(false);
 
         // TODO Create an infobar
-        InfoBarContainer container =
-                mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
         InfoBarTestAnimationListener mListener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(mListener);
+        mActivityTestRule.getInfoBarContainer().addAnimationListener(mListener);
         final SimpleConfirmInfoBarBuilder.Listener testListener =
                 new SimpleConfirmInfoBarBuilder.Listener() {
                     @Override
@@ -347,21 +344,13 @@ public class ManualFillingIntegrationTest {
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
         mHelper.waitForKeyboard();
-        assertThat(mActivityTestRule.getActivity()
-                           .getActivityTab()
-                           .getInfoBarContainer()
-                           .getVisibility(),
-                is(not(View.VISIBLE)));
+        assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
-        assertThat(mActivityTestRule.getActivity()
-                           .getActivityTab()
-                           .getInfoBarContainer()
-                           .getVisibility(),
-                is(not(View.VISIBLE)));
+        assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
         Espresso.pressBack();
 
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
