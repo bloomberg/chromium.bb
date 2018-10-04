@@ -19,50 +19,10 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/unified_consent_metrics.h"
-#include "components/unified_consent/unified_consent_service_client.h"
 
 namespace unified_consent {
 
 namespace {
-
-// Histogram recorded at startup to log which Google services are enabled.
-const char kSyncAndGoogleServicesSettingsHistogram[] =
-    "UnifiedConsent.SyncAndGoogleServicesSettings";
-
-// Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
-// function to avoid code size issues caused by histogram macros.
-void RecordSettingsHistogramSample(SettingsHistogramValue value) {
-  UMA_HISTOGRAM_ENUMERATION(kSyncAndGoogleServicesSettingsHistogram, value);
-}
-
-// Checks if a pref is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromPref(const char* pref_name,
-                                     PrefService* pref_service,
-                                     SettingsHistogramValue value) {
-  if (!pref_service->GetBoolean(pref_name))
-    return false;
-  RecordSettingsHistogramSample(value);
-  return true;
-}
-
-// Checks if a service is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromService(
-    UnifiedConsentServiceClient* client,
-    UnifiedConsentServiceClient::Service service,
-    SettingsHistogramValue value) {
-  if (client->GetServiceState(service) !=
-      UnifiedConsentServiceClient::ServiceState::kEnabled) {
-    return false;
-  }
-
-  RecordSettingsHistogramSample(value);
-  return true;
-}
 
 // Used for observing the sync service and finishing the rollback once the sync
 // engine is initialized.
@@ -251,26 +211,26 @@ bool UnifiedConsentService::ShouldShowConsentBump() {
 void UnifiedConsentService::MarkConsentBumpShown() {
   // Record suppress reason kNone, which means that it was shown. This also sets
   // the |kShouldShowConsentBump| pref to false.
-  RecordConsentBumpSuppressReason(ConsentBumpSuppressReason::kNone);
+  RecordConsentBumpSuppressReason(metrics::ConsentBumpSuppressReason::kNone);
 }
 
 void UnifiedConsentService::RecordConsentBumpSuppressReason(
-    ConsentBumpSuppressReason suppress_reason) {
+    metrics::ConsentBumpSuppressReason suppress_reason) {
   UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.ConsentBump.SuppressReason",
                             suppress_reason);
 
   switch (suppress_reason) {
-    case ConsentBumpSuppressReason::kNone:
-    case ConsentBumpSuppressReason::kNotSignedIn:
-    case ConsentBumpSuppressReason::kSyncEverythingOff:
-    case ConsentBumpSuppressReason::kPrivacySettingOff:
-    case ConsentBumpSuppressReason::kSettingsOptIn:
-    case ConsentBumpSuppressReason::kUserSignedOut:
-    case ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff:
-    case ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff:
+    case metrics::ConsentBumpSuppressReason::kNone:
+    case metrics::ConsentBumpSuppressReason::kNotSignedIn:
+    case metrics::ConsentBumpSuppressReason::kSyncEverythingOff:
+    case metrics::ConsentBumpSuppressReason::kPrivacySettingOff:
+    case metrics::ConsentBumpSuppressReason::kSettingsOptIn:
+    case metrics::ConsentBumpSuppressReason::kUserSignedOut:
+    case metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff:
+    case metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff:
       pref_service_->SetBoolean(prefs::kShouldShowUnifiedConsentBump, false);
       break;
-    case ConsentBumpSuppressReason::kSyncPaused:
+    case metrics::ConsentBumpSuppressReason::kSyncPaused:
       // Consent bump should be shown when sync is active again.
       DCHECK(ShouldShowConsentBump());
       break;
@@ -320,7 +280,8 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   }
 
   if (ShouldShowConsentBump())
-    RecordConsentBumpSuppressReason(ConsentBumpSuppressReason::kUserSignedOut);
+    RecordConsentBumpSuppressReason(
+        metrics::ConsentBumpSuppressReason::kUserSignedOut);
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
@@ -415,7 +376,8 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   }
 
   if (ShouldShowConsentBump())
-    RecordConsentBumpSuppressReason(ConsentBumpSuppressReason::kSettingsOptIn);
+    RecordConsentBumpSuppressReason(
+        metrics::ConsentBumpSuppressReason::kSettingsOptIn);
 
   // Enable all sync data types if possible, otherwise they will be enabled with
   // |OnStateChanged| once sync is active;
@@ -456,7 +418,8 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   DCHECK(!IsUnifiedConsentGiven());
 
   if (!identity_manager_->HasPrimaryAccount()) {
-    RecordConsentBumpSuppressReason(ConsentBumpSuppressReason::kNotSignedIn);
+    RecordConsentBumpSuppressReason(
+        metrics::ConsentBumpSuppressReason::kNotSignedIn);
     SetMigrationState(MigrationState::kCompleted);
     return;
   }
@@ -467,10 +430,10 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
 
   if (!is_syncing_everything) {
     RecordConsentBumpSuppressReason(
-        ConsentBumpSuppressReason::kSyncEverythingOff);
+        metrics::ConsentBumpSuppressReason::kSyncEverythingOff);
   } else if (!AreAllOnByDefaultPrivacySettingsOn()) {
     RecordConsentBumpSuppressReason(
-        ConsentBumpSuppressReason::kPrivacySettingOff);
+        metrics::ConsentBumpSuppressReason::kPrivacySettingOff);
   } else {
     // When the user was syncing everything, and all on-by-default privacy
     // settings were on, the consent bump should be shown.
@@ -539,27 +502,28 @@ void UnifiedConsentService::RecordSettingsHistogram() {
   bool metric_recorded = false;
 
   if (IsUnifiedConsentGiven()) {
-    RecordSettingsHistogramSample(SettingsHistogramValue::kUnifiedConsentGiven);
+    RecordSettingsHistogramSample(
+        metrics::SettingsHistogramValue::kUnifiedConsentGiven);
     metric_recorded = true;
   }
   if (identity_manager_->HasPrimaryAccount() &&
       sync_service_->GetPreferredDataTypes().Has(syncer::USER_EVENTS)) {
-    RecordSettingsHistogramSample(SettingsHistogramValue::kUserEvents);
+    RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kUserEvents);
     metric_recorded = true;
   }
   metric_recorded |= RecordSettingsHistogramFromPref(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service_,
-      SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
+      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
   metric_recorded |= RecordSettingsHistogramFromService(
       service_client_.get(),
       UnifiedConsentServiceClient::Service::kSafeBrowsingExtendedReporting,
-      SettingsHistogramValue::kSafeBrowsingExtendedReporting);
+      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting);
   metric_recorded |= RecordSettingsHistogramFromService(
       service_client_.get(), UnifiedConsentServiceClient::Service::kSpellCheck,
-      SettingsHistogramValue::kSpellCheck);
+      metrics::SettingsHistogramValue::kSpellCheck);
 
   if (!metric_recorded)
-    RecordSettingsHistogramSample(SettingsHistogramValue::kNone);
+    RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kNone);
 }
 
 void UnifiedConsentService::CheckConsentBumpEligibility() {
@@ -576,10 +540,10 @@ void UnifiedConsentService::CheckConsentBumpEligibility() {
   if (!sync_service_->GetPreferredDataTypes().HasAll(
           user_types_without_user_events)) {
     RecordConsentBumpSuppressReason(
-        ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff);
+        metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff);
   } else if (!AreAllOnByDefaultPrivacySettingsOn()) {
     RecordConsentBumpSuppressReason(
-        ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff);
+        metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff);
   }
   metrics::RecordConsentBumpEligibility(
       pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump));
