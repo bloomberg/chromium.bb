@@ -186,6 +186,13 @@ void CastMainDelegate::ZygoteForked() {
 }
 #endif  // defined(OS_LINUX)
 
+bool CastMainDelegate::ShouldCreateFeatureList() {
+  // TODO(https://crbug.com/887459): Move the creation of FeatureList from
+  // CastBrowserMainParts::PreCreateThreads() to
+  // CastMainDelegate::PostEarlyInitialization().
+  return false;
+}
+
 void CastMainDelegate::InitializeResourceBundle() {
   base::FilePath pak_file;
   CHECK(base::PathService::Get(FILE_CAST_PAK, &pak_file));

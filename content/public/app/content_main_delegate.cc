@@ -75,6 +75,10 @@ void ContentMainDelegate::OnServiceManagerInitialized(
     const base::Closure& quit_closure,
     service_manager::BackgroundServiceManager* service_manager) {}
 
+bool ContentMainDelegate::ShouldCreateFeatureList() {
+  return true;
+}
+
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
 #if defined(CHROME_MULTIPLE_DLL_CHILD)
   return NULL;

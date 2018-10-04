@@ -512,6 +512,11 @@ void ChromeMainDelegate::PostEarlyInitialization() {
   chrome_feature_list_creator_->CreateFeatureList();
   tracing_sampler_profiler_->OnMessageLoopStarted();
 }
+
+bool ChromeMainDelegate::ShouldCreateFeatureList() {
+  // Chrome creates the FeatureList, so content should not.
+  return false;
+}
 #endif
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {

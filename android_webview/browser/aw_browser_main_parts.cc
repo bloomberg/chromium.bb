@@ -149,11 +149,6 @@ AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
 AwBrowserMainParts::~AwBrowserMainParts() {
 }
 
-bool AwBrowserMainParts::ShouldContentCreateFeatureList() {
-  // FeatureList will be created in AwFieldTrialCreator.
-  return false;
-}
-
 int AwBrowserMainParts::PreEarlyInitialization() {
   // Network change notifier factory must be singleton, only set factory
   // instance while it is not been created.

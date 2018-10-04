@@ -650,16 +650,6 @@ int BrowserMainLoop::EarlyInitialization() {
       return pre_early_init_error_code;
   }
 
-  if (!parts_ || parts_->ShouldContentCreateFeatureList()) {
-    // Note that we do not initialize a new FeatureList when calling this for
-    // the second time.
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    base::FeatureList::InitializeInstance(
-        command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-        command_line->GetSwitchValueASCII(switches::kDisableFeatures));
-  }
-
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Up the priority of the UI thread unless it was already high (since recent
   // versions of Android (O+) do this automatically).
