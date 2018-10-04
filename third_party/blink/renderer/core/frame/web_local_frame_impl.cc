@@ -912,8 +912,7 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
 
   GetFrame()->Loader().StartNavigation(
       FrameLoadRequest(nullptr, request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy,
-                       base::UnguessableToken::Create()),
+                       kCheckContentSecurityPolicy),
       frame_load_type);
 }
 
@@ -937,9 +936,9 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
     GetTextFinder()->ClearActiveFindMatch();
 
   GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(
-          nullptr, request.ToResourceRequest(), /*frame_name=*/AtomicString(),
-          kCheckContentSecurityPolicy, base::UnguessableToken::Create()),
+      FrameLoadRequest(nullptr, request.ToResourceRequest(),
+                       /*frame_name=*/AtomicString(),
+                       kCheckContentSecurityPolicy),
       WebFrameLoadType::kStandard);
 }
 
@@ -2050,19 +2049,15 @@ void WebLocalFrameImpl::CommitNavigation(
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
   DCHECK(!request.Url().ProtocolIs("javascript"));
-  const ResourceRequest& resource_request = request.ToResourceRequest();
-
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 
-  FrameLoadRequest frame_request =
-      FrameLoadRequest(nullptr, resource_request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy, devtools_navigation_token);
-  if (is_client_redirect)
-    frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
   GetFrame()->Loader().CommitNavigation(
-      frame_request, web_frame_load_type, history_item,
+      request.ToResourceRequest(), SubstituteData(),
+      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      devtools_navigation_token, web_frame_load_type, history_item,
       std::move(navigation_params), std::move(extra_data));
 }
 
@@ -2137,15 +2132,12 @@ void WebLocalFrameImpl::CommitDataNavigation(
     bool is_client_redirect,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
-  FrameLoadRequest frame_request(
-      nullptr, request.ToResourceRequest(),
-      SubstituteData(data, mime_type, text_encoding, unreachable_url));
-  DCHECK(frame_request.GetSubstituteData().IsValid());
-  if (is_client_redirect)
-    frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-
   GetFrame()->Loader().CommitNavigation(
-      frame_request, web_frame_load_type, history_item,
+      request.ToResourceRequest(),
+      SubstituteData(data, mime_type, text_encoding, unreachable_url),
+      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      base::UnguessableToken::Create(), web_frame_load_type, history_item,
       std::move(navigation_params), std::move(navigation_data));
 }
 
