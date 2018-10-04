@@ -12,6 +12,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -206,6 +207,16 @@ void IdentityTestEnvironment::
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
   internals_->token_service()->IssueTokenForAllPendingRequests(token,
                                                                expiration);
+}
+
+void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        const std::string& token,
+        const base::Time& expiration,
+        const std::string& id_token) {
+  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  internals_->token_service()->IssueTokenForAllPendingRequests(
+      OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
 
 void IdentityTestEnvironment::

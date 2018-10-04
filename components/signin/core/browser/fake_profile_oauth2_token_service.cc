@@ -71,6 +71,14 @@ void FakeProfileOAuth2TokenService::IssueTokenForScope(
                        access_token, expiration, std::string() /* id_token */));
 }
 
+void FakeProfileOAuth2TokenService::IssueTokenForScope(
+    const ScopeSet& scope,
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  DCHECK(!auto_post_fetch_response_on_message_loop_);
+  CompleteRequests("", false, scope, GoogleServiceAuthError::AuthErrorNone(),
+                   token_response);
+}
+
 void FakeProfileOAuth2TokenService::IssueErrorForScope(
     const ScopeSet& scope,
     const GoogleServiceAuthError& error) {
@@ -94,6 +102,13 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
                    GoogleServiceAuthError::AuthErrorNone(),
                    OAuth2AccessTokenConsumer::TokenResponse(
                        access_token, expiration, std::string() /* id_token */));
+}
+
+void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  DCHECK(!auto_post_fetch_response_on_message_loop_);
+  CompleteRequests("", true, ScopeSet(),
+                   GoogleServiceAuthError::AuthErrorNone(), token_response);
 }
 
 void FakeProfileOAuth2TokenService::UpdateAuthErrorForTesting(
