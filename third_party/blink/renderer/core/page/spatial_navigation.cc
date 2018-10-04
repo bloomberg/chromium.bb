@@ -737,7 +737,7 @@ LayoutRect StartEdgeForAreaElement(const HTMLAreaElement& area,
       direction,
       area.GetDocument().GetFrame()->View()->ConvertToRootFrame(
           area.ComputeAbsoluteRect(area.ImageElement()->GetLayoutObject())),
-      LayoutUnit(1));
+      LayoutUnit(1) /* snav-imagemap-overlapped-areas.html */);
   return rect;
 }
 
@@ -770,36 +770,31 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
     return OppositeEdge(direction, viewport_rect_of_root_frame);
   }
 
-  LayoutRect box_in_root_frame;
-  LayoutUnit thickness(0);
-
   auto* area_element = ToHTMLAreaElementOrNull(focus_node);
-  if (area_element) {
+  if (area_element)
     focus_node = area_element->ImageElement();
-    thickness = LayoutUnit(1);  // snav-imagemap-overlapped-areas.html
-    box_in_root_frame =
-        area_element->GetDocument().GetFrame()->View()->ConvertToRootFrame(
-            area_element->ComputeAbsoluteRect(
-                area_element->ImageElement()->GetLayoutObject()));
-  } else {
-    box_in_root_frame = NodeRectInRootFrame(focus_node, true);
-  }
 
   if (!IsOffscreen(focus_node)) {
-    // We found the first box that encloses focus and is [partially] visible.
-    if (area_element || IsScrollableAreaOrDocument(focus_node)) {
-      // When searching a container, we start from one of its sides.
-      return OppositeEdge(
-          direction,
-          Intersection(box_in_root_frame, viewport_rect_of_root_frame),
-          thickness);
-    }
+    if (area_element)
+      return StartEdgeForAreaElement(*area_element, direction);
+
+    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node, true);
     return Intersection(box_in_root_frame, viewport_rect_of_root_frame);
   }
 
-  // Try a higher "focus-enclosing" scroller.
   Node* container = ScrollableAreaOrDocumentOf(focus_node);
-  return SearchOrigin(viewport_rect_of_root_frame, container, direction);
+  while (container) {
+    if (!IsOffscreen(container)) {
+      // The first scroller that encloses focus and is [partially] visible.
+      LayoutRect box_in_root_frame = NodeRectInRootFrame(container, true);
+      return OppositeEdge(direction, Intersection(box_in_root_frame,
+                                                  viewport_rect_of_root_frame));
+    }
+
+    container = ScrollableAreaOrDocumentOf(container);
+  }
+
+  return OppositeEdge(direction, viewport_rect_of_root_frame);
 }
 
 }  // namespace blink

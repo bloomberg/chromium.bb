@@ -190,6 +190,48 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedElement) {
             NodeRectInRootFrame(b, true));
 }
 
+TEST_F(SpatialNavigationTest, StartAtVisibleFocusedScroller) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  #content {"
+      "    margin-top: 200px;"  // Outside the div's viewport.
+      "  }"
+      "  #scroller {"
+      "    height: 100px;"
+      "    overflow: scroll;"
+      "  }"
+      "</style>"
+      "<div id='scroller'>"
+      "  <div id='content'>some text here</div>"
+      "</div>");
+
+  Element* scroller = GetDocument().getElementById("scroller");
+  EXPECT_EQ(
+      SearchOrigin(RootViewport(&GetFrame()), scroller, kWebFocusTypeDown),
+      NodeRectInRootFrame(scroller, true));
+}
+
+TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  iframe {"
+      "    width: 100px;"
+      "    height: 100px;"
+      "  }"
+      "</style>"
+      "<iframe id='iframe'></iframe>");
+
+  SetChildFrameHTML(
+      "<!DOCTYPE html>"
+      "<div>some text here</div>");
+
+  Element* iframe = GetDocument().getElementById("iframe");
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), iframe, kWebFocusTypeDown),
+            NodeRectInRootFrame(iframe, true));
+}
+
 TEST_F(SpatialNavigationTest, StartAtTopWhenGoingDownwardsWithoutFocus) {
   EXPECT_EQ(LayoutRect(0, 0, 111, 0),
             SearchOrigin({0, 0, 111, 222}, nullptr, kWebFocusTypeDown));
