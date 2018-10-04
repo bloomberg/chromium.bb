@@ -75,6 +75,9 @@ static const char kWebAuthnTouchIdMetadataSecretPrefName[] =
 static const char kWebAuthnLastTransportUsedPrefName[] =
     "webauthn.last_transport_used";
 
+static const char kWebAuthnBlePairedMacAddressesPrefName[] =
+    "webauthn.ble.paired_mac_addresses";
+
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -85,6 +88,8 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 
   registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
                                std::string());
+  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName,
+                             std::make_unique<base::ListValue>());
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
@@ -103,14 +108,6 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
     weak_dialog_model_->RemoveObserver(this);
     weak_dialog_model_ = nullptr;
   }
-}
-
-base::Optional<device::FidoTransportProtocol>
-ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
-  PrefService* prefs =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
-  return device::ConvertToFidoTransportProtocol(
-      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
 }
 
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
@@ -346,4 +343,36 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
   // |cancel_callback_| will destroy |this|.
   DCHECK(cancel_callback_);
   std::move(cancel_callback_).Run();
+}
+
+void ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList(
+    std::string device_address) {
+  ListPrefUpdate update(
+      Profile::FromBrowserContext(browser_context())->GetPrefs(),
+      kWebAuthnBlePairedMacAddressesPrefName);
+  bool already_contains_address = std::any_of(
+      update->begin(), update->end(), [&device_address](const auto& value) {
+        return value.is_string() && value.GetString() == device_address;
+      });
+
+  if (already_contains_address)
+    return;
+
+  update->Append(std::make_unique<base::Value>(std::move(device_address)));
+}
+
+base::Optional<device::FidoTransportProtocol>
+ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  return device::ConvertToFidoTransportProtocol(
+      prefs->GetString(kWebAuthnLastTransportUsedPrefName));
+}
+
+const base::ListValue*
+ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceAddresses()
+    const {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  return prefs->GetList(kWebAuthnBlePairedMacAddressesPrefName);
 }
