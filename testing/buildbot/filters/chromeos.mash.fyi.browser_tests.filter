@@ -124,11 +124,6 @@
 # http://crbug.com/831826
 -PolicyTest.UnifiedDesktopEnabledByDefault
 
-# IME accesses ash::Shell for root window.
--InputMethodEngineBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineComponentExtensionBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineIncognitoBrowserTest/InputMethodEngineBrowserTest.*
-
 # KeyboardOverlayUI uses ash::Shell.
 -KeyboardOverlayUIBrowserTest.*
 

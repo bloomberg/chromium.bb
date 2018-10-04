@@ -38,7 +38,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

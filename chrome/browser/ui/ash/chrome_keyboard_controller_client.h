@@ -32,11 +32,17 @@ class ChromeKeyboardControllerClient
   ChromeKeyboardControllerClient();
   ~ChromeKeyboardControllerClient() override;
 
+  // Static getter. The single instance must be instantiated first.
+  static ChromeKeyboardControllerClient* Get();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Static getter. The single instance must be instantiated first.
-  static ChromeKeyboardControllerClient* Get();
+  // Returns the cached KeyboardConfig value.
+  keyboard::mojom::KeyboardConfig GetKeyboardConfig();
+
+  // Sets the new keyboard configuration and updates the cached config.
+  void SetKeyboardConfig(const keyboard::mojom::KeyboardConfig& config);
 
  private:
   void OnGetInitialKeyboardConfig(keyboard::mojom::KeyboardConfigPtr config);
@@ -48,9 +54,12 @@ class ChromeKeyboardControllerClient
   void OnKeyboardConfigChanged(
       keyboard::mojom::KeyboardConfigPtr config) override;
 
-  keyboard::mojom::KeyboardControllerPtr keyboard_controller_;
+  keyboard::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
   mojo::AssociatedBinding<keyboard::mojom::KeyboardControllerObserver>
       keyboard_controller_observer_binding_{this};
+
+  // Cached copy of the latest config provided by mojom::KeyboardController.
+  keyboard::mojom::KeyboardConfigPtr cached_keyboard_config_;
 
   base::ObserverList<Observer> observers_;
 

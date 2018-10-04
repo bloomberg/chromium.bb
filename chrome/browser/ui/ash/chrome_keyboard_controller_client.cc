@@ -19,6 +19,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/public/keyboard_config_util.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
@@ -49,10 +50,10 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient() {
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &keyboard_controller_);
+      ->BindInterface(ash::mojom::kServiceName, &keyboard_controller_ptr_);
 
   // Request the configuration. This will be queued until the service is ready.
-  keyboard_controller_->GetKeyboardConfig(base::BindOnce(
+  keyboard_controller_ptr_->GetKeyboardConfig(base::BindOnce(
       &ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -70,11 +71,34 @@ void ChromeKeyboardControllerClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+keyboard::mojom::KeyboardConfig
+ChromeKeyboardControllerClient::GetKeyboardConfig() {
+  if (!cached_keyboard_config_) {
+    // Unlikely edge case (called before the Ash mojo service replies to the
+    // initial GetKeyboardConfig request). Return the default value.
+    return keyboard::GetDefaultKeyboardConfig();
+  }
+  return *cached_keyboard_config_.get();
+}
+
+void ChromeKeyboardControllerClient::SetKeyboardConfig(
+    const keyboard::mojom::KeyboardConfig& config) {
+  // Update the cache immediately.
+  cached_keyboard_config_ = keyboard::mojom::KeyboardConfig::New(config);
+  keyboard_controller_ptr_->SetKeyboardConfig(cached_keyboard_config_.Clone());
+}
+
 void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
     keyboard::mojom::KeyboardConfigPtr config) {
+  // Only set the cached value if not already set by SetKeyboardConfig (the
+  // set value will override the initial value once processed).
+  if (!cached_keyboard_config_)
+    cached_keyboard_config_ = std::move(config);
+
+  // Add this as a KeyboardController observer now that the service is ready.
   keyboard::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
   keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-  keyboard_controller_->AddObserver(std::move(ptr_info));
+  keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
@@ -123,6 +147,7 @@ void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
 
 void ChromeKeyboardControllerClient::OnKeyboardConfigChanged(
     keyboard::mojom::KeyboardConfigPtr config) {
+  cached_keyboard_config_ = std::move(config);
   extensions::VirtualKeyboardAPI* api =
       extensions::BrowserContextKeyedAPIFactory<
           extensions::VirtualKeyboardAPI>::Get(GetProfile());

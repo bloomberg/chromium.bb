@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -103,7 +104,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -293,13 +293,19 @@ std::string GetManagedLoginScreenLocale() {
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+  auto* client = ChromeKeyboardControllerClient::Get();
+  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_override =
+      keyboard::mojom::KeyboardOverscrollOverride::kDisabled;
+  client->SetKeyboardConfig(config);
 }
 
 void ResetKeyboardOverscrollOverride() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+  auto* client = ChromeKeyboardControllerClient::Get();
+  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_override =
+      keyboard::mojom::KeyboardOverscrollOverride::kNone;
+  client->SetKeyboardConfig(config);
 }
 
 // Workaround for graphical glitches with animated user avatars due to a race

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/extension_system.h"
@@ -85,6 +86,10 @@ void SetMenuItemToMenu(
   if (input.enabled)
     out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_ENABLED;
   out->enabled = input.enabled ? *input.enabled : true;
+}
+
+keyboard::mojom::KeyboardConfig GetKeyboardConfig() {
+  return ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
 }
 
 class ImeObserverChromeOS : public ui::ImeObserver {
@@ -310,28 +315,28 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
   bool ConvertInputContextAutoCorrect(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_correct)
+    if (!GetKeyboardConfig().auto_correct)
       return false;
     return ImeObserver::ConvertInputContextAutoCorrect(input_context);
   }
 
   bool ConvertInputContextAutoComplete(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_complete)
+    if (!GetKeyboardConfig().auto_complete)
       return false;
     return ImeObserver::ConvertInputContextAutoComplete(input_context);
   }
 
   input_ime::AutoCapitalizeType ConvertInputContextAutoCapitalize(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_capitalize)
+    if (!GetKeyboardConfig().auto_capitalize)
       return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
     return ImeObserver::ConvertInputContextAutoCapitalize(input_context);
   }
 
   bool ConvertInputContextSpellCheck(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().spell_check)
+    if (!GetKeyboardConfig().spell_check)
       return false;
     return ImeObserver::ConvertInputContextSpellCheck(input_context);
   }

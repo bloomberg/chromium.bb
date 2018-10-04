@@ -11,26 +11,15 @@
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/public/keyboard_controller.mojom.h"
 
+// Global utility functions for the virtual keyboard.
+// TODO(stevenjb/shuchen/shend): Many of these are accessed from both Chrome
+// and Ash. We need to remove any Chrome dependencies. htpps://crbug.com/843332
+
 namespace aura {
 class WindowTreeHost;
 }
 
 namespace keyboard {
-
-// An enumeration of different keyboard control events that should be logged.
-enum KeyboardControlEvent {
-  KEYBOARD_CONTROL_SHOW = 0,
-  KEYBOARD_CONTROL_HIDE_AUTO,
-  KEYBOARD_CONTROL_HIDE_USER,
-  KEYBOARD_CONTROL_MAX,
-};
-
-// An enumeration of keyboard overscroll override value.
-enum KeyboardOverscrolOverride {
-  KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED = 0,
-  KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED,
-  KEYBOARD_OVERSCROLL_OVERRIDE_NONE,
-};
 
 // An enumeration of keyboard policy settings.
 enum KeyboardShowOverride {
@@ -48,14 +37,6 @@ enum KeyboardState {
   // Request virtual keyboard be suppressed.
   KEYBOARD_STATE_DISABLED,
 };
-
-// Updates the current keyboard config with the given config is they are
-// different, notifying to observers. Returns whether update happened.
-KEYBOARD_EXPORT bool UpdateKeyboardConfig(
-    const mojom::KeyboardConfig& keyboard_config);
-
-// Gets the current virtual keyboard IME config.
-KEYBOARD_EXPORT const mojom::KeyboardConfig& GetKeyboardConfig();
 
 // Sets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
@@ -93,18 +74,9 @@ KEYBOARD_EXPORT std::string GetKeyboardLayout();
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
-// Returns true if the virtual keyboard is currently visible.
-KEYBOARD_EXPORT bool IsKeyboardVisible();
-
-// Returns true if keyboard overscroll mode is enabled.
-KEYBOARD_EXPORT bool IsKeyboardOverscrollEnabled();
-
-// Sets temporary keyboard overscroll override.
-KEYBOARD_EXPORT void SetKeyboardOverscrollOverride(
-    KeyboardOverscrolOverride override);
-
 // Sets policy override on whether to show the keyboard.
-KEYBOARD_EXPORT void SetKeyboardShowOverride(KeyboardShowOverride override);
+KEYBOARD_EXPORT void SetKeyboardShowOverride(
+    KeyboardShowOverride show_override);
 
 // Returns true if an IME extension can specify a custom input view for the
 // virtual keyboard window.
@@ -143,10 +115,6 @@ KEYBOARD_EXPORT bool IsVoiceInputEnabled();
 // Returns true if the IME service is enabled.
 KEYBOARD_EXPORT bool IsImeServiceEnabled();
 
-// Insert |text| into the active TextInputClient if there is one. Returns true
-// if |text| was successfully inserted.
-KEYBOARD_EXPORT bool InsertText(const base::string16& text);
-
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
 // value, |key_name| is the name of the key as defined in the DOM3 key event
@@ -168,9 +136,6 @@ KEYBOARD_EXPORT void MarkKeyboardLoadStarted();
 // Marks that the keyboard load has ended. This finishes measuring that the
 // keyboard is loaded.
 KEYBOARD_EXPORT void MarkKeyboardLoadFinished();
-
-// Logs the keyboard control event as a UMA stat.
-void LogKeyboardControlEvent(KeyboardControlEvent event);
 
 }  // namespace keyboard
 
