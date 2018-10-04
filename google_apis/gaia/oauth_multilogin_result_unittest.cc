@@ -149,17 +149,125 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
 
 TEST(OAuthMultiloginResultTest, CreateOAuthMultiloginResultFromString) {
   OAuthMultiloginResult result1;
-  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-      ")]}\'\n{}", &result1));
+  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                ")]}\'\n{ \"status\" : \"OK\" }", &result1)
+                .state(),
+            GoogleServiceAuthError::State::NONE);
   EXPECT_TRUE(result1.cookies().empty());
 
   OAuthMultiloginResult result2;
-  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-      "many_random_characters_before_newline\'\n{}", &result2));
+  EXPECT_EQ(
+      OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+          "many_random_characters_before_newline\'\n{ \"status\" : \"OK\" }",
+          &result2)
+          .state(),
+      GoogleServiceAuthError::State::NONE);
   EXPECT_TRUE(result2.cookies().empty());
 
   OAuthMultiloginResult result3;
-  EXPECT_FALSE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-      ")]}\'\n)]}'\n{}", &result3));
+  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                ")]}\'\n)]}'\n{ \"status\" : \"OK\" }", &result3)
+                .state(),
+            GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
   EXPECT_TRUE(result3.cookies().empty());
+}
+
+TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
+  OAuthMultiloginResult result1;
+  std::string data_error_none =
+      R"()]}'
+        {
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )";
+  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                data_error_none, &result1)
+                .state(),
+            GoogleServiceAuthError::State::NONE);
+
+  OAuthMultiloginResult result2;
+  std::string data_error_transient =
+      R"(()]}'
+        {
+          "status": "RETRY",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )";
+  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                  data_error_transient, &result2)
+                  .IsTransientError());
+
+  OAuthMultiloginResult result3;
+  // "ERROR" is a real response status that Gaia sends. This is a persistent
+  // error.
+  std::string data_error_persistent =
+      R"(()]}'
+        {
+          "status": "ERROR",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )";
+  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                  data_error_persistent, &result3)
+                  .IsPersistentError());
+
+  OAuthMultiloginResult result4;
+  std::string data_error_invalid_credentials =
+      R"()]}'
+        {
+          "status": "INVALID_TOKENS",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )";
+  const GoogleServiceAuthError error =
+      OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+          data_error_invalid_credentials, &result4);
+  EXPECT_EQ(error.state(),
+            GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
+  EXPECT_TRUE(error.IsPersistentError());
 }

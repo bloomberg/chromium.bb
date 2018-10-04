@@ -1054,12 +1054,14 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
   GoogleServiceAuthError auth_error = GoogleServiceAuthError::AuthErrorNone();
   if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
     OAuthMultiloginResult result;
-    if (!OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-            data, &result)) {
-      consumer_->OnOAuthMultiloginFailure(GoogleServiceAuthError(
-          GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
-    } else
+    const GoogleServiceAuthError error =
+        OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(data,
+                                                                     &result);
+    if (error.state() != GoogleServiceAuthError::State::NONE) {
+      consumer_->OnOAuthMultiloginFailure(error);
+    } else {
       consumer_->OnOAuthMultiloginSuccess(result);
+    }
   } else {
     auth_error = GenerateAuthError(data, net_error);
     consumer_->OnOAuthMultiloginFailure(auth_error);
