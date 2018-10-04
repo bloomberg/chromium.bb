@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -34,7 +36,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
@@ -72,6 +73,8 @@ class TestingOmniboxView : public OmniboxViewViews {
   void CheckUpdatePopupCallInfo(size_t call_count,
                                 const base::string16& text,
                                 const Range& selection_range);
+
+  void CheckUpdatePopupNotCalled();
 
   Range scheme_range() const { return scheme_range_; }
   Range emphasis_range() const { return emphasis_range_; }
@@ -128,6 +131,10 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
   EXPECT_EQ(call_count, update_popup_call_count_);
   EXPECT_EQ(text, update_popup_text_);
   EXPECT_EQ(selection_range, update_popup_selection_range_);
+}
+
+void TestingOmniboxView::CheckUpdatePopupNotCalled() {
+  EXPECT_EQ(update_popup_call_count_, 0U);
 }
 
 void TestingOmniboxView::EmphasizeURLComponents() {
@@ -354,6 +361,26 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
   omnibox_textfield()->OnKeyEvent(&up_pressed);
   EXPECT_EQ(ui::TextEditCommand::INVALID_COMMAND,
             scheduled_text_edit_command());
+}
+
+// Test that pressing Shift+Up on Mac is not captured and lets selection mode
+// take over. Test for crbug.com/863543.
+TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
+  const base::string16 text =
+      base::ASCIIToUTF16("http://www.example.com/?query=1");
+  static_cast<OmniboxView*>(omnibox_view())
+      ->SetWindowTextAndCaretPos(text, 23U, false, false);
+
+  ui::KeyEvent shift_up_pressed(ui::ET_KEY_PRESSED, ui::VKEY_UP,
+                                ui::EF_SHIFT_DOWN);
+  omnibox_textfield()->OnKeyEvent(&shift_up_pressed);
+
+#if defined(OS_MACOSX)
+  // TODO(ellyjones): find a way to test that the correct text is selected
+  omnibox_view()->CheckUpdatePopupNotCalled();
+#else
+  omnibox_view()->CheckUpdatePopupCallInfo(1, text, Range(23));
+#endif
 }
 
 TEST_F(OmniboxViewViewsTest, OnBlur) {
