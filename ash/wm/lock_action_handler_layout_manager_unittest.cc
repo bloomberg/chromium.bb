@@ -130,7 +130,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(true);
-      keyboard->ui()->GetKeyboardWindow()->SetBounds(
+      keyboard->GetKeyboardWindow()->SetBounds(
           keyboard::KeyboardBoundsFromRootBounds(
               Shell::GetPrimaryRootWindow()->bounds(), kVirtualKeyboardHeight));
       keyboard->NotifyKeyboardWindowLoaded();

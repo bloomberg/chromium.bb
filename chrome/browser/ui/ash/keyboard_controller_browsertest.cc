@@ -50,37 +50,41 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }
 
-  keyboard::KeyboardUI* ui() {
-    return keyboard::KeyboardController::Get()->ui();
+  ui::InputMethod* GetInputMethod() {
+    return keyboard::KeyboardController::Get()->GetInputMethodForTest();
   }
 
  protected:
   void FocusEditableNodeAndShowKeyboard(const gfx::Rect& init_bounds) {
     client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
-    ui::InputMethod* input_method = ui()->GetInputMethod();
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    ui::InputMethod* input_method =
+        keyboard_controller->GetInputMethodForTest();
     input_method->SetFocusedTextInputClient(client.get());
     input_method->ShowVirtualKeyboardIfEnabled();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
+    keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
     // Mock KeyboardUI notifying KeyboardController that the contents loaded.
-    keyboard::KeyboardController::Get()->NotifyKeyboardWindowLoaded();
+    keyboard_controller->NotifyKeyboardWindowLoaded();
   }
 
   void FocusNonEditableNode() {
     client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_NONE));
-    ui::InputMethod* input_method = ui()->GetInputMethod();
-    input_method->SetFocusedTextInputClient(client.get());
+    keyboard::KeyboardController::Get()
+        ->GetInputMethodForTest()
+        ->SetFocusedTextInputClient(client.get());
   }
 
   void MockEnableIMEInDifferentExtension(const std::string& url,
                                          const gfx::Rect& init_bounds) {
     DCHECK(!url.empty());
     ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(GURL(url));
-    keyboard::KeyboardController::Get()->Reload();
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    keyboard_controller->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
+    keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
   }
 
   bool IsKeyboardVisible() const {
@@ -153,11 +157,9 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   auto* controller = keyboard::KeyboardController::Get();
 
   controller->LoadKeyboardWindowInBackground();
-  keyboard::KeyboardUI* keyboard_ui = controller->ui();
-  ASSERT_TRUE(keyboard_ui);
 
-  aura::Window* view = keyboard_ui->GetKeyboardWindow();
-  EXPECT_TRUE(keyboard_ui->HasKeyboardWindow());
+  aura::Window* view = controller->GetKeyboardWindow();
+  EXPECT_TRUE(view);
 
   // Remove the keyboard window parent.
   EXPECT_TRUE(view->parent());

@@ -305,7 +305,7 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     visual_bounds_in_screen_ = gfx::Rect();
   }
 
-  ui_->EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
+  EnsureCaretInWorkArea(GetWorkspaceOccludedBounds());
 }
 
 void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
@@ -371,7 +371,7 @@ bool KeyboardController::InsertText(const base::string16& text) {
   if (!enabled())
     return false;
 
-  ui::InputMethod* input_method = ui()->GetInputMethod();
+  ui::InputMethod* input_method = ui_->GetInputMethod();
   if (!input_method)
     return false;
 
@@ -933,6 +933,15 @@ void KeyboardController::SetContainerType(
   }
 }
 
+ui::InputMethod* KeyboardController::GetInputMethodForTest() {
+  return ui_->GetInputMethod();
+}
+
+void KeyboardController::EnsureCaretInWorkAreaForTest(
+    const gfx::Rect& occluded_bounds) {
+  EnsureCaretInWorkArea(occluded_bounds);
+}
+
 void KeyboardController::RecordUkmKeyboardShown() {
   ui::TextInputClient* text_input_client = GetTextInputClient();
   if (!text_input_client)
@@ -986,6 +995,21 @@ void KeyboardController::UpdateInputMethodObserver() {
 
   // TODO(https://crbug.com/845780): Investigate whether this does anything.
   OnTextInputStateChanged(ime->GetTextInputClient());
+}
+
+void KeyboardController::EnsureCaretInWorkArea(
+    const gfx::Rect& occluded_bounds) {
+  ui::InputMethod* ime = ui_->GetInputMethod();
+  if (!ime)
+    return;
+
+  TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
+
+  if (IsOverscrollAllowed()) {
+    ime->SetOnScreenKeyboardBounds(occluded_bounds);
+  } else if (ime->GetTextInputClient()) {
+    ime->GetTextInputClient()->EnsureCaretNotInRect(occluded_bounds);
+  }
 }
 
 }  // namespace keyboard

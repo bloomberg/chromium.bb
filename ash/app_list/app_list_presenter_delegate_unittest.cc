@@ -767,7 +767,7 @@ TEST_P(AppListPresenterDelegateTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->ui()->GetKeyboardWindow()->SetBounds(
+  keyboard_controller->GetKeyboardWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
   keyboard_controller->NotifyKeyboardWindowLoaded();
