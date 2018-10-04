@@ -12,6 +12,19 @@
 #error "This file requires ARC support."
 #endif
 
+namespace manual_fill {
+
+NSString* const AccessoryKeyboardAccessibilityIdentifier =
+    @"kManualFillAccessoryKeyboardAccessibilityIdentifier";
+NSString* const AccessoryPasswordAccessibilityIdentifier =
+    @"kManualFillAccessoryPasswordAccessibilityIdentifier";
+NSString* const AccessoryAddressAccessibilityIdentifier =
+    @"kManualFillAccessoryAddressAccessibilityIdentifier";
+NSString* const AccessoryCreditCardAccessibilityIdentifier =
+    @"kManualFillAccessoryCreditCardAccessibilityIdentifier";
+
+}  // namespace manual_fill
+
 static NSTimeInterval MFAnimationDuration = 0.20;
 
 @interface ManualFillAccessoryViewController ()
@@ -58,6 +71,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   [self.keyboardButton addTarget:self
                           action:@selector(keyboardButtonPressed)
                 forControlEvents:UIControlEventTouchUpInside];
+  self.keyboardButton.accessibilityIdentifier =
+      manual_fill::AccessoryKeyboardAccessibilityIdentifier;
 
   self.passwordButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIImage* keyImage = [UIImage imageNamed:@"ic_vpn_key"];
@@ -67,6 +82,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   [self.passwordButton addTarget:self
                           action:@selector(passwordButtonPressed)
                 forControlEvents:UIControlEventTouchUpInside];
+  self.passwordButton.accessibilityIdentifier =
+      manual_fill::AccessoryPasswordAccessibilityIdentifier;
 
   NSArray* views;
   if (autofill::features::IsAutofillManualFallbackEnabled()) {
@@ -78,6 +95,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     [self.cardsButton addTarget:self
                          action:@selector(cardButtonPressed)
                forControlEvents:UIControlEventTouchUpInside];
+    self.cardsButton.accessibilityIdentifier =
+        manual_fill::AccessoryCreditCardAccessibilityIdentifier;
 
     self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
     UIImage* accountImage = [UIImage imageNamed:@"addresses"];
@@ -87,6 +106,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     [self.accountButton addTarget:self
                            action:@selector(accountButtonPressed)
                  forControlEvents:UIControlEventTouchUpInside];
+    self.accountButton.accessibilityIdentifier =
+        manual_fill::AccessoryAddressAccessibilityIdentifier;
 
     views = @[
       self.keyboardButton, self.passwordButton, self.accountButton,

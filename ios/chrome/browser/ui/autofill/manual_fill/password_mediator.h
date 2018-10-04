@@ -19,6 +19,12 @@ class PasswordStore;
 
 class WebStateList;
 
+namespace manual_fill {
+
+extern NSString* const ManagePasswordsAccessibilityIdentifier;
+
+}  // namespace manual_fill
+
 // Object in charge of getting the passwords relevant for the manual fill
 // passwords UI.
 @interface ManualFillPasswordMediator : NSObject<UISearchResultsUpdating>

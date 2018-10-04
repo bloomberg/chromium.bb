@@ -15,6 +15,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace manual_fill {
+
+NSString* const PasswordTableViewAccessibilityIdentifier =
+    @"kManualFillPasswordTableViewAccessibilityIdentifier";
+
+}  // namespace manual_fill
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -51,9 +58,11 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 0;
+  self.tableView.sectionFooterHeight = 20.0;
   self.tableView.estimatedRowHeight = 200;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
+  self.tableView.accessibilityIdentifier =
+      manual_fill::PasswordTableViewAccessibilityIdentifier;
 
   self.definesPresentationContext = YES;
   self.searchController.searchBar.backgroundColor = [UIColor clearColor];

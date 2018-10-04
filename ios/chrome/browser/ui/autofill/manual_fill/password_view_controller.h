@@ -10,6 +10,12 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+namespace manual_fill {
+
+extern NSString* const PasswordTableViewAccessibilityIdentifier;
+
+}  // namespace manual_fill
+
 // This class presents a list of usernames and passwords in a table view.
 @interface PasswordViewController
     : ChromeTableViewController<ManualFillPasswordConsumer>

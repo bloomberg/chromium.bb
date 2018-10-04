@@ -241,6 +241,9 @@ id<GREYMatcher> ContextMenuCopyButton();
 // Returns matcher for defoucesed omnibox on a new tab.
 id<GREYMatcher> NewTabPageOmnibox();
 
+// Returns a matcher for the current WebView.
+id<GREYMatcher> WebViewMatcher();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

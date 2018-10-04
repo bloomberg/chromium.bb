@@ -10,6 +10,14 @@
 @class ManualFillInjectionHandler;
 class WebStateList;
 
+// Delegate for the coordinator actions.
+@protocol PasswordCoordinatorDelegate<NSObject>
+
+// Opens the passwords settings.
+- (void)openPasswordSettings;
+
+@end
+
 // Creates and manages a view controller to present passwords to the user.
 // Any selected password will be sent to the current field in the active web
 // state.
@@ -17,6 +25,9 @@ class WebStateList;
 
 // The view controller of this coordinator.
 @property(nonatomic, readonly) UIViewController* viewController;
+
+// The delegate for this coordinator.
+@property(nonatomic, weak) id<PasswordCoordinatorDelegate> delegate;
 
 // Creates a coordinator that uses a |viewController|, |browserState|,
 // |webStateList| and an |injectionHandler|.
