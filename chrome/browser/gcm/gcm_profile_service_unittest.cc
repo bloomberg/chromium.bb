@@ -177,8 +177,7 @@ void GCMProfileServiceTest::TearDown() {
 void GCMProfileServiceTest::CreateGCMProfileService() {
   gcm_profile_service_ = static_cast<GCMProfileService*>(
       GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(),
-          &BuildGCMProfileService));
+          profile_.get(), base::BindRepeating(&BuildGCMProfileService)));
   gcm_profile_service_->driver()->AddAppHandler(
       kTestAppID, gcm_app_handler_.get());
 }
