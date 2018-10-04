@@ -282,7 +282,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
     // Create GCMProfileService that talks with fake GCMClient.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &ExtensionGCMAppHandlerTest::BuildGCMProfileService);
+        profile(), base::BindRepeating(
+                       &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
 
     // Create a fake version of ExtensionGCMAppHandler.
     gcm_app_handler_.reset(new FakeExtensionGCMAppHandler(profile(), &waiter_));
