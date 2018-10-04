@@ -86,7 +86,6 @@ std::string ProgramPath() {
   std::string result;
 
 #ifdef _WIN32
-  wchar_t wpath[MAX_PATH];
   char path[MAX_PATH];
   DWORD len = GetModuleFileNameA(NULL, path, MAX_PATH);
   if (len != 0)
