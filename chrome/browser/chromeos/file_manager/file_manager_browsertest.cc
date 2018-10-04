@@ -86,6 +86,7 @@ struct TestCase {
   bool tablet_mode = false;
   bool enable_drivefs = false;
   bool with_browser = false;
+  bool needs_zip = false;
   bool offline = false;
 };
 
@@ -94,6 +95,11 @@ struct EventCase : public TestCase {
   explicit EventCase(const char* name) : TestCase(name) {
     trusted_events = true;
   }
+};
+
+// ZipCase: FilesAppBrowserTest with zip/unzip support.
+struct ZipCase : public TestCase {
+  explicit ZipCase(const char* name) : TestCase(name) { needs_zip = true; }
 };
 
 // FilesApp browser test.
@@ -146,6 +152,8 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetRequiresStartupBrowser() const override {
     return GetParam().with_browser;
   }
+
+  bool GetNeedsZipSupport() const override { return GetParam().needs_zip; }
 
   bool GetIsOffline() const override { return GetParam().offline; }
 
@@ -237,16 +245,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("zipFileOpenDownloads").InGuestMode(),
-                      TestCase("zipFileOpenDownloads"),
-                      TestCase("zipFileOpenDrive").EnableDriveFs(),
-                      TestCase("zipFileOpenDrive"),
-                      TestCase("zipFileOpenUsb"),
-                      TestCase("zipCreateFileDownloads").InGuestMode(),
-                      TestCase("zipCreateFileDownloads"),
-                      TestCase("zipCreateFileDrive").EnableDriveFs(),
-                      TestCase("zipCreateFileDrive"),
-                      TestCase("zipCreateFileUsb")));
+    ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
+                      ZipCase("zipFileOpenDownloads"),
+                      ZipCase("zipFileOpenDrive").EnableDriveFs(),
+                      ZipCase("zipFileOpenDrive"),
+                      ZipCase("zipFileOpenUsb"),
+                      ZipCase("zipCreateFileDownloads").InGuestMode(),
+                      ZipCase("zipCreateFileDownloads"),
+                      ZipCase("zipCreateFileDrive").EnableDriveFs(),
+                      ZipCase("zipCreateFileDrive"),
+                      ZipCase("zipCreateFileUsb")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */

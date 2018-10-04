@@ -4,6 +4,18 @@
 
 'use strict';
 
+if (chrome.test) {
+  chrome.test.onMessage.addListener((msg) => {
+    if (msg.data != 'preloadZip')
+      return;
+
+    console.info('Preloading NaCl module');
+    unpacker.app.loadNaclModule(
+        unpacker.app.DEFAULT_MODULE_NMF, unpacker.app.DEFAULT_MODULE_TYPE);
+  });
+  chrome.test.sendMessage(JSON.stringify({name: 'zipArchiverLoaded'}));
+}
+
 function setupZipArchiver() {
   chrome.fileSystemProvider.onUnmountRequested.addListener(
       unpacker.app.onUnmountRequested);
