@@ -29,26 +29,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 
-namespace {
-void InstallIconFromFileThread(const base::FilePath& icon_path,
-                               const std::vector<unsigned char>& content_png) {
-  DCHECK(!content_png.empty());
-
-  base::CreateDirectory(icon_path.DirName());
-
-  int wrote = base::WriteFile(icon_path,
-                              reinterpret_cast<const char*>(content_png.data()),
-                              content_png.size());
-  if (wrote != static_cast<int>(content_png.size())) {
-    VLOG(2) << "Failed to write Crostini icon file: "
-            << icon_path.MaybeAsASCII();
-    if (!base::DeleteFile(icon_path, false)) {
-      VLOG(2) << "Couldn't delete broken icon file" << icon_path.MaybeAsASCII();
-    }
-  }
-}
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // CrostiniAppIcon::ReadResult
 
@@ -179,34 +159,9 @@ void CrostiniAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
   }
 
   // We won't always get back from Crostini the icon size we asked for, so it
-  // is expected that sometimes we need to rescale it. When that happens we
-  // also want to store that result as the PNG to avoid having to do this
-  // rescale every time the icon is loaded from the file.
+  // is expected that sometimes we need to rescale it.
   SkBitmap resized_image = skia::ImageOperations::Resize(
       bitmap, skia::ImageOperations::RESIZE_BEST, expected_dim, expected_dim);
-
-  std::vector<unsigned char> png_data;
-  bool encode_result;
-  if (resized_image.colorType() == kAlpha_8_SkColorType) {
-    encode_result = gfx::PNGCodec::EncodeA8SkBitmap(resized_image, &png_data);
-  } else {
-    encode_result = gfx::PNGCodec::EncodeBGRASkBitmap(
-        resized_image, false /* discard_transparency */, &png_data);
-  }
-  if (encode_result) {
-    if (!host_->registry_service_)
-      return;
-
-    // Now save this so we can reload it later when needed.
-    const base::FilePath path =
-        host_->registry_service_->GetIconPath(host_->app_id(), scale_factor_);
-    DCHECK(!path.empty());
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&InstallIconFromFileThread, path, std::move(png_data)));
-  } else {
-    LOG(ERROR) << "Failed encoding resized SkBitmap as PNG for Crostini icon";
-  }
 
   host_->Update(scale_factor_, std::move(resized_image));
   host_->DiscardDecodeRequest(this);
