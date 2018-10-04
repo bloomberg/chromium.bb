@@ -73,7 +73,7 @@ void LocalValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
 }
 
 ValueStore* LocalValueStoreCache::GetStorage(const Extension* extension) {
-  StorageMap::iterator iter = storage_map_.find(extension->id());
+  auto iter = storage_map_.find(extension->id());
   if (iter != storage_map_.end())
     return iter->second.get();
 

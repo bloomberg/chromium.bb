@@ -960,7 +960,7 @@ void NetworkingPrivateLinux::AddOrUpdateAccessPoint(
   access_point->GetString(kAccessPointInfoName, &ssid);
   access_point->SetString(kAccessPointInfoGuid, network_guid);
 
-  NetworkMap::iterator existing_access_point_iter = network_map->find(ssid);
+  auto existing_access_point_iter = network_map->find(ssid);
 
   if (existing_access_point_iter == network_map->end()) {
     // Unseen access point. Add it to the map.
@@ -1155,8 +1155,7 @@ bool NetworkingPrivateLinux::SetConnectionStateAndPostEvent(
     const std::string& connection_state) {
   AssertOnDBusThread();
 
-  NetworkMap::iterator network_iter =
-      network_map_->find(base::UTF8ToUTF16(ssid));
+  auto network_iter = network_map_->find(base::UTF8ToUTF16(ssid));
   if (network_iter == network_map_->end()) {
     return false;
   }
