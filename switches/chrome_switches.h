@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SWITCHES_CHROME_SWITCHES_H_
-#define SWITCHES_CHROME_SWITCHES_H_
+#ifndef SYSTEM_API_SWITCHES_CHROME_SWITCHES_H_
+#define SYSTEM_API_SWITCHES_CHROME_SWITCHES_H_
 
 // This file defines switches that are used both by Chrome and login_manager.
 
@@ -20,4 +20,4 @@ const char kSystemInDevMode[] = "system-developer-mode";
 }  // namespace switches
 }  // namespace chromeos
 
-#endif  // SWITCHES_CHROME_SWITCHES_H_
+#endif  // SYSTEM_API_SWITCHES_CHROME_SWITCHES_H_

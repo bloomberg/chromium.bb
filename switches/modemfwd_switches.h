@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SWITCHES_MODEMFWD_SWITCHES_H_
-#define SWITCHES_MODEMFWD_SWITCHES_H_
+#ifndef SYSTEM_API_SWITCHES_MODEMFWD_SWITCHES_H_
+#define SYSTEM_API_SWITCHES_MODEMFWD_SWITCHES_H_
 
 // This file defines switches that are used by modemfwd.
 // See its README.md file for more information about what each one does.
@@ -18,4 +18,4 @@ const char kReboot[] = "reboot";
 
 }  // namespace modemfwd
 
-#endif  // SWITCHES_MODEMFWD_SWITCHES_H_
+#endif  // SYSTEM_API_SWITCHES_MODEMFWD_SWITCHES_H_

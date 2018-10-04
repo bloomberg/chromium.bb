@@ -21,4 +21,4 @@ const char kSharePathMethod[] = "SharePath";
 }  // namespace seneschal
 }  // namespace vm_tools
 
-#endif // SYSTEM_API_DBUS_SENESCHAL_DBUS_CONSTANTS_H_
+#endif  // SYSTEM_API_DBUS_SENESCHAL_DBUS_CONSTANTS_H_
