@@ -2143,9 +2143,6 @@ extern const char kVoiceInputDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
-extern const char kZipArchiverUnpackerName[];
-extern const char kZipArchiverUnpackerDescription[];
-
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

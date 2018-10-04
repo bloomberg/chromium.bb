@@ -289,9 +289,6 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 // Disables wake on wifi features.
 const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 
-// Disables zip archiver - unpacker.
-const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
-
 // DEPRECATED. Please use --arc-availability=officially-supported.
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
@@ -368,9 +365,6 @@ const char kEnableVideoPlayerChromecastSupport[] =
 
 // Enables the VoiceInteraction support.
 const char kEnableVoiceInteraction[] = "enable-voice-interaction";
-
-// Enables zip archiver - unpacker.
-const char kEnableZipArchiverUnpacker[] = "enable-zip-archiver-unpacker";
 
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
@@ -688,12 +682,6 @@ bool IsAssistantFlagsEnabled() {
 bool IsAssistantEnabled() {
   // TODO(xiaohuic): We will add locale restrictions later.
   return IsAssistantFlagsEnabled();
-}
-
-bool IsZipArchiverUnpackerEnabled() {
-  // Enabled by default.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableZipArchiverUnpacker);
 }
 
 bool IsSigninFrameClientCertsEnabled() {
