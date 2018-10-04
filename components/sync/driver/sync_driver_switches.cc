@@ -64,6 +64,8 @@ const base::Feature kSyncPseudoUSSPreferences{
     "SyncPseudoUSSPreferences", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSPriorityPreferences{
     "SyncPseudoUSSPriorityPreferences", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncPseudoUSSSearchEngines{
+    "SyncPseudoUSSSearchEngines", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSSupervisedUsers{
     "SyncPseudoUSSSupervisedUsers", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
