@@ -62,8 +62,6 @@ source_set("gbm") {
     "gpu/gbm_overlay_surface.h",
     "gpu/gbm_pixmap.cc",
     "gpu/gbm_pixmap.h",
-    "gpu/gbm_surface.cc",
-    "gpu/gbm_surface.h",
     "gpu/gbm_surface_factory.cc",
     "gpu/gbm_surface_factory.h",
     "gpu/gbm_surfaceless.cc",
