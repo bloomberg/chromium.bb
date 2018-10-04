@@ -662,7 +662,8 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 #if defined(OS_WIN)
   if (event->type() == ui::ET_KEY_PRESSED && event->IsAltDown() &&
       event->key_code() == ui::VKEY_F4) {
-    controller_->Close(true /* should_pause_video */);
+    controller_->Close(true /* should_pause_video */,
+                       true /* should_reset_pip_player */);
     event->SetHandled();
   }
 #endif  // OS_WIN
@@ -715,7 +716,8 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (GetCloseControlsBounds().Contains(event->location())) {
-    controller_->Close(true /* should_pause_video */);
+    controller_->Close(true /* should_pause_video */,
+                       true /* should_reset_pip_player */);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
     TogglePlayPause();
@@ -728,7 +730,8 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
 void OverlayWindowViews::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_controls_view_.get())
-    controller_->Close(true /* should_pause_video */);
+    controller_->Close(true /* should_pause_video */,
+                       true /* should_reset_pip_player */);
 
   if (sender == play_pause_controls_view_.get())
     TogglePlayPause();
@@ -787,4 +790,9 @@ OverlayWindowViews::play_pause_controls_view_for_testing() const {
 
 views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
   return controls_parent_view_.get();
+}
+
+OverlayWindowViews::PlaybackState
+OverlayWindowViews::playback_state_for_testing() const {
+  return playback_state_;
 }
