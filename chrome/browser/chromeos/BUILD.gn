@@ -619,6 +619,8 @@ source_set("chromeos") {
     "dbus/chrome_features_service_provider.h",
     "dbus/component_updater_service_provider.cc",
     "dbus/component_updater_service_provider.h",
+    "dbus/dbus_helper.cc",
+    "dbus/dbus_helper.h",
     "dbus/drive_file_stream_service_provider.cc",
     "dbus/drive_file_stream_service_provider.h",
     "dbus/kiosk_info_service_provider.cc",

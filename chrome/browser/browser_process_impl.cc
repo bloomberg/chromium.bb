@@ -38,7 +38,6 @@
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_device_client.h"
-#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -96,6 +96,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/metrics_services_manager/metrics_services_manager_client.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -219,10 +220,16 @@ rappor::RapporService* GetBrowserRapporService() {
 
 BrowserProcessImpl::BrowserProcessImpl(
     ChromeFeatureListCreator* chrome_feature_list_creator)
-    : chrome_feature_list_creator_(chrome_feature_list_creator),
-      pref_service_factory_(
-          std::make_unique<prefs::InProcessPrefServiceFactory>()) {
+    : chrome_feature_list_creator_(chrome_feature_list_creator) {
   g_browser_process = this;
+
+  DCHECK(chrome_feature_list_creator_);
+  browser_policy_connector_ =
+      chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
+  created_browser_policy_connector_ = true;
+  pref_service_factory_ =
+      chrome_feature_list_creator_->TakePrefServiceFactory();
+
   platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
   // Most work should be done in Init().
 }
@@ -460,6 +467,14 @@ void BrowserProcessImpl::PostDestroyThreads() {
   io_thread_.reset();
 }
 #endif  // !defined(OS_ANDROID)
+
+void BrowserProcessImpl::SetMetricsServices(
+    std::unique_ptr<metrics_services_manager::MetricsServicesManager> manager,
+    metrics_services_manager::MetricsServicesManagerClient* client) {
+  metrics_services_manager_ = std::move(manager);
+  metrics_services_manager_client_ =
+      static_cast<ChromeMetricsServicesManagerClient*>(client);
+}
 
 namespace {
 
@@ -1117,33 +1132,8 @@ void BrowserProcessImpl::CreateProfileManager() {
 void BrowserProcessImpl::CreateLocalState() {
   DCHECK(!local_state_);
 
-  base::FilePath local_state_path;
-  CHECK(base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
-
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  if (chrome_feature_list_creator_)
-    local_state_ = chrome_feature_list_creator_->TakePrefService();
-  PrefRegistrySimple* pref_pregistry_simple =
-      local_state_ ? static_cast<PrefRegistrySimple*>(
-                         local_state_->DeprecatedGetPrefRegistry())
-                   : pref_registry.get();
-
-  // Register local state preferences.
-  RegisterLocalState(pref_pregistry_simple);
-
-  auto delegate = pref_service_factory_->CreateDelegate();
-  delegate->InitPrefRegistry(pref_pregistry_simple);
-  if (local_state_) {
-    chrome_prefs::InstallPoliciesOnLocalState(
-        local_state_.get(), policy_service(), std::move(delegate));
-  } else {
-    local_state_ = chrome_prefs::CreateLocalState(
-        local_state_path, policy_service(), std::move(pref_registry), false,
-        std::move(delegate));
-    DCHECK(local_state_);
-  }
-
-  sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
+  local_state_ = chrome_feature_list_creator_->TakePrefService();
+  DCHECK(local_state_);
 }
 
 void BrowserProcessImpl::PreCreateThreads(

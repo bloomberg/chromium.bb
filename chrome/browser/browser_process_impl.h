@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/buildflags.h"
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -80,9 +81,9 @@ class WebRtcEventLogManager;
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
-  // |user_pref_store|: if non-null, will be used as the source (and
-  // destination) of user prefs for Local State instead of loading the JSON file
-  // from disk.
+  // |chrome_feature_list_creator| should not be null. The BrowserProcessImpl
+  // will take the PrefService owned by the creator as the Local State instead
+  // of loading the JSON file from disk.
   explicit BrowserProcessImpl(
       ChromeFeatureListCreator* chrome_feature_list_creator);
   ~BrowserProcessImpl() override;
@@ -123,6 +124,12 @@ class BrowserProcessImpl : public BrowserProcess,
   void StartTearDown();
   void PostDestroyThreads();
 #endif
+
+  // Sets |metrics_services_manager_| and |metrics_services_manager_client_|
+  // which is owned by it.
+  void SetMetricsServices(
+      std::unique_ptr<metrics_services_manager::MetricsServicesManager> manager,
+      metrics_services_manager::MetricsServicesManagerClient* client);
 
   // BrowserProcess implementation.
   void ResourceDispatcherHostCreated() override;

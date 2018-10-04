@@ -51,7 +51,6 @@ class ExternalLoader;
 
 
 namespace internal {
-class DBusPreEarlyInit;
 class DBusServices;
 class SystemTokenCertDBInitializer;
 }
@@ -99,7 +98,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
 
-  std::unique_ptr<internal::DBusPreEarlyInit> dbus_pre_early_init_;
+  // Indicates whether the DBus has been initialized before. It is possible that
+  // the DBus has been initialized in ChromeFeatureListCreator.
+  bool is_dbus_initialized_ = false;
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
   std::unique_ptr<internal::SystemTokenCertDBInitializer>

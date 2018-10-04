@@ -54,7 +54,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
@@ -72,6 +71,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/webrtc_log_util.h"
+#include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/expired_histograms_array.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -409,9 +409,10 @@ void InitializeLocalState() {
       registry->RegisterStringPref(language::prefs::kApplicationLocale,
                                    std::string());
       const std::unique_ptr<PrefService> parent_local_state =
-          chrome_prefs::CreateLocalState(parent_profile,
-                                         g_browser_process->policy_service(),
-                                         std::move(registry), false, nullptr);
+          chrome_prefs::CreateLocalState(
+              parent_profile, g_browser_process->policy_service(),
+              std::move(registry), false, nullptr,
+              g_browser_process->browser_policy_connector());
       // Right now, we only inherit the locale setting from the parent profile.
       local_state->SetString(
           language::prefs::kApplicationLocale,
@@ -432,24 +433,6 @@ void InitializeLocalState() {
     }
   }
 #endif  // defined(OS_CHROMEOS)
-}
-
-void ConvertFlagsToSwitches() {
-#if !defined(OS_CHROMEOS)
-  // Convert active flags into switches. This needs to be done before
-  // ui::ResourceBundle::InitSharedInstanceWithLocale as some loaded resources
-  // are affected by experiment flags (--touch-optimized-ui in particular). On
-  // ChromeOS system level flags are applied from the device settings from the
-  // session manager.
-  DCHECK(!ui::ResourceBundle::HasSharedInstance());
-  TRACE_EVENT0("startup",
-               "ChromeBrowserMainParts::PreCreateThreadsImpl:ConvertFlags");
-  flags_ui::PrefServiceFlagsStorage flags_storage(
-      g_browser_process->local_state());
-  about_flags::ConvertFlagsToSwitches(&flags_storage,
-                                      base::CommandLine::ForCurrentProcess(),
-                                      flags_ui::kAddSentinels);
-#endif  // !defined(OS_CHROMEOS)
 }
 
 // Initializes the primary profile, possibly doing some user prompting to pick
@@ -830,44 +813,6 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
   chrome_extra_parts_.clear();
 }
 
-void ChromeBrowserMainParts::SetupFieldTrials() {
-  // Initialize FieldTrialList to support FieldTrials. This is intentionally
-  // leaked since it needs to live for the duration of the browser process and
-  // there's no benefit in cleaning it up at exit.
-  base::FieldTrialList* leaked_field_trial_list = new base::FieldTrialList(
-      browser_process_->GetMetricsServicesManager()->CreateEntropyProvider());
-  ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
-  ignore_result(leaked_field_trial_list);
-
-  auto feature_list = std::make_unique<base::FeatureList>();
-
-  // Associate parameters chosen in about:flags and create trial/group for them.
-  flags_ui::PrefServiceFlagsStorage flags_storage(
-      g_browser_process->local_state());
-  std::vector<std::string> variation_ids =
-      about_flags::RegisterAllFeatureVariationParameters(
-          &flags_storage, feature_list.get());
-
-  std::set<std::string> unforceable_field_trials;
-#if defined(OFFICIAL_BUILD)
-  unforceable_field_trials.insert("SettingsEnforcement");
-#endif  // defined(OFFICIAL_BUILD)
-
-  variations::VariationsService* variations_service =
-      browser_process_->variations_service();
-  variations_service->SetupFieldTrials(
-      cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials, variation_ids,
-      std::move(feature_list), &browser_field_trials_);
-  variations::InitCrashKeys();
-
-  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
-  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
-  // Even though base::Bind does AddRef and Release, the object will not be
-  // deleted after the Task is executed.
-  field_trial_synchronizer_ = new FieldTrialSynchronizer();
-}
-
 void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   metrics::MetricsService* metrics = browser_process_->metrics_service();
@@ -1014,6 +959,13 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =
       LoadLocalState(&failed_to_load_resource_bundle);
+
+  // Reuses the MetricsServicesManager and GetMetricsServicesManagerClient
+  // instances created in the FeatureListCreator so they won't be created again.
+  browser_process_->SetMetricsServices(
+      chrome_feature_list_creator_->TakeMetricsServicesManager(),
+      chrome_feature_list_creator_->GetMetricsServicesManagerClient());
+
   if (load_local_state_result == chrome::RESULT_CODE_MISSING_DATA &&
       failed_to_load_resource_bundle) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1097,8 +1049,6 @@ int ChromeBrowserMainParts::LoadLocalState(
 
   InitializeLocalState();
 
-  ConvertFlagsToSwitches();
-
   browser_process_->local_state()->UpdateCommandLinePrefStore(
       new ChromeCommandLinePrefStore(base::CommandLine::ForCurrentProcess()));
 
@@ -1123,14 +1073,6 @@ int ChromeBrowserMainParts::LoadLocalState(
   browser_process_->SetApplicationLocale(locale);
 
   SetupOriginTrialsCommandLine(browser_process_->local_state());
-
-  // Initialize field trials now that the Local State file has been read. This
-  // is done as soon as possible (here), so that code using the base::Feature
-  // API can be used from this point on. Field trials are also needed by
-  // IOThread's initialization in BrowserProcess:PreCreateThreads. Metrics
-  // initialization is handled in PreMainMessageLoopRunImpl since it posts
-  // tasks.
-  SetupFieldTrials();
 
   metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
                                chrome_metrics::kNumExpiredHistograms);

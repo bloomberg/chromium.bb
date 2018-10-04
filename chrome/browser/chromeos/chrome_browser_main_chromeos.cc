@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
+#include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
@@ -286,33 +287,6 @@ void RegisterStubPathOverridesIfNecessary() {
 
 namespace internal {
 
-// Contains state created in PreEarlyInitialization(). This is just the state
-// needed for field trials.
-class DBusPreEarlyInit {
- public:
-  DBusPreEarlyInit() {
-    SystemSaltGetter::Initialize();
-
-    // Initialize DBusThreadManager for the browser.
-    DBusThreadManager::Initialize(DBusThreadManager::kAll);
-
-    // Initialize the device settings service so that we'll take actions per
-    // signals sent from the session manager. This needs to happen before
-    // g_browser_process initializes BrowserPolicyConnector.
-    DeviceSettingsService::Initialize();
-    InstallAttributes::Initialize();
-  }
-
-  ~DBusPreEarlyInit() {
-    // NOTE: This must only be called if Initialize() was called.
-    DBusThreadManager::Shutdown();
-    SystemSaltGetter::Shutdown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DBusPreEarlyInit);
-};
-
 // Wrapper class for initializing D-Bus services and shutting them down.
 class DBusServices {
  public:
@@ -549,7 +523,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     ChromeFeatureListCreator* chrome_feature_list_creator)
     : ChromeBrowserMainPartsLinux(parameters,
                                   std::move(data_pack),
-                                  chrome_feature_list_creator) {}
+                                  chrome_feature_list_creator),
+      is_dbus_initialized_(chrome_feature_list_creator != nullptr) {}
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -600,7 +575,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     chrome::SetChannel(channel);
 #endif
 
-  dbus_pre_early_init_ = std::make_unique<internal::DBusPreEarlyInit>();
+  if (!is_dbus_initialized_)
+    PreEarlyInitDBus();
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(
@@ -1213,7 +1189,7 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // (ComponentUpdaterServiceProvider).
   g_browser_process->platform_part()->ShutdownCrosComponentManager();
 
-  dbus_pre_early_init_.reset();
+  ShutdownDBus();
 
   // Reset SystemTokenCertDBInitializer after DBus services because it should
   // outlive CertLoader.

@@ -21,7 +21,6 @@
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class ChromeFeatureListCreator;
-class FieldTrialSynchronizer;
 class HeapProfilerController;
 class PrefService;
 class Profile;
@@ -105,10 +104,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
  private:
   friend class ChromeBrowserMainPartsTestApi;
-
-  // Sets up the field trials and related initialization. Call only after
-  // about:flags have been converted to switches.
-  void SetupFieldTrials();
 
   // Constructs the metrics service and initializes metrics recording.
   void SetupMetrics();
@@ -203,9 +198,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   Profile* profile_;
   bool run_message_loop_;
-
-  // Initialized in |SetupFieldTrials()|.
-  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   base::FilePath user_data_dir_;
 
