@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
@@ -111,6 +112,93 @@ public final class UiUtils {
         String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
         return context.getString(
                 R.string.download_manager_list_item_description, displaySize, displayUrl);
+    }
+
+    /**
+     * Generates a detailed caption for downloads that are in-progress.
+     * @param item The {@link OfflineItem} to generate a caption for.
+     * @return     The {@link CharSequence} representing the caption.
+     */
+    public static CharSequence generateInProgressLongCaption(OfflineItem item) {
+        Context context = ContextUtils.getApplicationContext();
+        assert item.state != OfflineItemState.COMPLETE;
+
+        OfflineItem.Progress progress = item.progress;
+
+        // Make sure we have a valid OfflineItem.Progress to parse even if it's just for the failed
+        // message.
+        if (progress == null) {
+            if (item.totalSizeBytes > 0) {
+                progress = new OfflineItem.Progress(
+                        0, item.totalSizeBytes, OfflineItemProgressUnit.BYTES);
+            } else {
+                progress = new OfflineItem.Progress(0, 100L, OfflineItemProgressUnit.PERCENTAGE);
+            }
+        }
+
+        CharSequence progressString = DownloadUtils.getProgressTextForNotification(progress);
+        CharSequence statusString = null;
+
+        switch (item.state) {
+            case OfflineItemState.PENDING:
+                // TODO(crbug.com/891421): Add detailed pending state string from
+                // DownloadUtils.getPendingStatusString().
+                statusString = context.getString(R.string.download_manager_pending);
+                break;
+            case OfflineItemState.IN_PROGRESS:
+                if (item.timeRemainingMs > 0) {
+                    statusString = DownloadUtils.formatRemainingTime(context, item.timeRemainingMs);
+                }
+                break;
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED: // Intentional fallthrough.
+            case OfflineItemState.INTERRUPTED:
+                // TODO(crbug.com/891421): Add detailed failure state string from
+                // DownloadUtils.getFailStatusString().
+                statusString = context.getString(R.string.download_manager_failed);
+                break;
+            case OfflineItemState.PAUSED:
+                statusString = context.getString(R.string.download_manager_paused);
+                break;
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false;
+        }
+
+        if (statusString == null) return progressString;
+
+        return context.getString(
+                R.string.download_manager_in_progress_description, progressString, statusString);
+    }
+
+    /**
+     * Generates a short caption for downloads that are in-progress.
+     * @param item The {@link OfflineItem} to generate a short caption for.
+     * @return     The {@link CharSequence} representing the caption.
+     */
+    public static CharSequence generateInProgressShortCaption(OfflineItem item) {
+        Context context = ContextUtils.getApplicationContext();
+
+        switch (item.state) {
+            case OfflineItemState.PENDING:
+                return context.getString(R.string.download_manager_pending);
+            case OfflineItemState.IN_PROGRESS:
+                if (item.timeRemainingMs > 0) {
+                    return DownloadUtils.formatRemainingTime(context, item.timeRemainingMs);
+                } else {
+                    return DownloadUtils.getProgressTextForNotification(item.progress);
+                }
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED: // Intentional fallthrough.
+            case OfflineItemState.INTERRUPTED:
+                return context.getString(R.string.download_manager_failed);
+            case OfflineItemState.PAUSED:
+                return context.getString(R.string.download_manager_paused);
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false;
+                return "";
+        }
     }
 
     /** @return Whether or not {@code item} can show a thumbnail in the UI. */

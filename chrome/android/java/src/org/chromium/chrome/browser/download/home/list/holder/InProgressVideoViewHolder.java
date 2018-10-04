@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
@@ -55,10 +54,10 @@ public class InProgressVideoViewHolder extends ListItemViewHolder {
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
 
         mTitle.setText(offlineItem.title);
+        mCaption.setText(UiUtils.generateInProgressLongCaption(offlineItem));
+
         mCancelButton.setOnClickListener(
                 v -> properties.get(ListProperties.CALLBACK_CANCEL).onResult(offlineItem));
-        // TODO(shaktisahu): Create status string for the new specs.
-        mCaption.setText(DownloadUtils.getProgressTextForNotification(offlineItem.progress));
 
         UiUtils.setProgressForOfflineItem(mActionButton, offlineItem);
         mActionButton.setOnClickListener(view -> {
