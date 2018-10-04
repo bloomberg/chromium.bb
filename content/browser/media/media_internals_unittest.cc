@@ -12,14 +12,15 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -40,8 +41,15 @@ const char kTestDeviceID[] = "test-device-id";
 // integer/string values.
 class MediaInternalsTestBase {
  public:
-  MediaInternalsTestBase()
-      : media_internals_(content::MediaInternals::GetInstance()) {}
+  MediaInternalsTestBase() : media_internals_(nullptr) {
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        media_session::switches::kEnableAudioFocus);
+
+    service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
+    media_internals_ = content::MediaInternals::GetInstance();
+  }
+
   virtual ~MediaInternalsTestBase() {}
 
  protected:
@@ -98,7 +106,14 @@ class MediaInternalsTestBase {
 
   const content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue update_data_;
-  content::MediaInternals* const media_internals_;
+
+  content::MediaInternals* media_internals() const { return media_internals_; }
+
+ private:
+  content::MediaInternals* media_internals_;
+
+  base::test::ScopedCommandLine scoped_command_line_;
+  std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
 };
 
 }  // namespace
@@ -114,11 +129,11 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
       : update_cb_(base::Bind(
             &MediaInternalsVideoCaptureDeviceTest::UpdateCallbackImpl,
             base::Unretained(this))) {
-    media_internals_->AddUpdateCallback(update_cb_);
+    media_internals()->AddUpdateCallback(update_cb_);
   }
 
   ~MediaInternalsVideoCaptureDeviceTest() override {
-    media_internals_->RemoveUpdateCallback(update_cb_);
+    media_internals()->RemoveUpdateCallback(update_cb_);
   }
 
  protected:
@@ -176,7 +191,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   // a JSON array of objects to string. So here, the |UpdateCallbackImpl| will
   // deserialize the first object in the array. This means we have to have
   // exactly one device_info in the |descriptors_and_formats|.
-  media_internals_->UpdateVideoCaptureDeviceCapabilities(
+  media_internals()->UpdateVideoCaptureDeviceCapabilities(
       descriptors_and_formats);
 
 #if defined(OS_LINUX)
@@ -208,13 +223,13 @@ class MediaInternalsAudioLogTest
                               base::Unretained(this))),
         test_params_(MakeAudioParams()),
         test_component_(GetParam()),
-        audio_log_(media_internals_->CreateAudioLog(test_component_,
-                                                    kTestComponentID)) {
-    media_internals_->AddUpdateCallback(update_cb_);
+        audio_log_(media_internals()->CreateAudioLog(test_component_,
+                                                     kTestComponentID)) {
+    media_internals()->AddUpdateCallback(update_cb_);
   }
 
   virtual ~MediaInternalsAudioLogTest() {
-    media_internals_->RemoveUpdateCallback(update_cb_);
+    media_internals()->RemoveUpdateCallback(update_cb_);
   }
 
  protected:
@@ -309,13 +324,12 @@ class MediaInternalsAudioFocusTest : public testing::Test,
         base::BindRepeating(&MediaInternalsAudioFocusTest::UpdateCallbackImpl,
                             base::Unretained(this));
 
-    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
+    browser_context_.reset(new TestBrowserContext());
+    run_loop_ = std::make_unique<base::RunLoop>();
 
     run_loop_ = std::make_unique<base::RunLoop>();
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
-    browser_context_.reset(new TestBrowserContext());
   }
 
   void TearDown() override {
@@ -325,20 +339,32 @@ class MediaInternalsAudioFocusTest : public testing::Test,
 
  protected:
   void UpdateCallbackImpl(const base::string16& update) override {
+    base::AutoLock auto_lock(lock_);
     MediaInternalsTestBase::UpdateCallbackImpl(update);
-    run_loop_->Quit();
+    call_count_++;
+
+    if (call_count_ == wanted_call_count_)
+      run_loop_->Quit();
   }
 
   void ExpectValueAndReset(base::ListValue expected_list) {
+    base::AutoLock auto_lock(lock_);
+
     base::DictionaryValue expected_data;
     expected_data.SetKey("sessions", std::move(expected_list));
     EXPECT_EQ(expected_data, update_data_);
-    Reset();
+
+    update_data_.Clear();
+    run_loop_ = std::make_unique<base::RunLoop>();
+    call_count_ = 0;
   }
 
   void Reset() {
+    base::AutoLock auto_lock(lock_);
+
     update_data_.Clear();
     run_loop_ = std::make_unique<base::RunLoop>();
+    call_count_ = 0;
   }
 
   std::unique_ptr<TestWebContents> CreateWebContents() {
@@ -356,9 +382,14 @@ class MediaInternalsAudioFocusTest : public testing::Test,
     session->RemoveAllPlayersForTest();
   }
 
-  void WaitForCallback() {
-    if (!update_data_.empty())
-      return;
+  void WaitForCallbackCount(int count) {
+    wanted_call_count_ = count;
+
+    {
+      base::AutoLock auto_lock(lock_);
+      if (!update_data_.empty() && call_count_ == wanted_call_count_)
+        return;
+    }
 
     run_loop_->Run();
   }
@@ -366,8 +397,11 @@ class MediaInternalsAudioFocusTest : public testing::Test,
   MediaInternals::UpdateCallback update_cb_;
 
  private:
+  int call_count_ = 0;
+  int wanted_call_count_ = 0;
+
+  base::Lock lock_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 };
 
@@ -377,7 +411,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   web_contents1->SetTitle(base::UTF8ToUTF16(kTestTitle1));
   MediaSessionImpl* media_session1 = MediaSessionImpl::Get(web_contents1.get());
   media_session1->RequestSystemAudioFocus(AudioFocusType::kGain);
-  WaitForCallback();
+  WaitForCallbackCount(1);
 
   // Check JSON is what we expect.
   {
@@ -398,9 +432,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   MediaSessionImpl* media_session2 = MediaSessionImpl::Get(web_contents2.get());
   media_session2->RequestSystemAudioFocus(
       AudioFocusType::kGainTransientMayDuck);
-  WaitForCallback();
-  Reset();
-  WaitForCallback();
+  WaitForCallbackCount(2);
 
   // Check JSON is what we expect.
   {
@@ -424,7 +456,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Abandon audio focus.
   RemoveAllPlayersForTest(media_session2);
-  WaitForCallback();
+  WaitForCallbackCount(1);
 
   // Check JSON is what we expect.
   {
@@ -441,7 +473,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Abandon audio focus.
   RemoveAllPlayersForTest(media_session1);
-  WaitForCallback();
+  WaitForCallbackCount(1);
 
   // Check JSON is what we expect.
   {
