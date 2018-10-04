@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 from chromite.cbuildbot.builders import generic_builders
-from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import firmware_stages
 from chromite.cbuildbot.stages import workspace_stages
 
@@ -69,7 +68,7 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
     self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
                    build_root=workspace_dir)
 
-    self._RunStage(build_stages.InitSDKStage,
+    self._RunStage(workspace_stages.WorkspaceInitSDKStage,
                    build_root=workspace_dir)
 
     for board in self._run.config.boards:
