@@ -1852,4 +1852,38 @@ TEST_F(ClientControlledShellSurfaceTest, MovingPipWindowOffDisplayIsAllowed) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
+TEST_F(ClientControlledShellSurfaceDisplayTest,
+       NoBoundsChangeEventInMinimized) {
+  gfx::Size buffer_size(100, 100);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 100, 100));
+  surface->Commit();
+
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
+      base::Unretained(this)));
+  ASSERT_EQ(0, bounds_change_count());
+
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::NORMAL,
+                                     ash::mojom::WindowStateType::NORMAL, 0,
+                                     gfx::Rect(10, 10, 100, 100), 0);
+  ASSERT_EQ(1, bounds_change_count());
+
+  EXPECT_FALSE(shell_surface->GetWidget()->IsMinimized());
+
+  shell_surface->SetMinimized();
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
+                                     ash::mojom::WindowStateType::MINIMIZED, 0,
+                                     gfx::Rect(0, 0, 100, 100), 0);
+  ASSERT_EQ(1, bounds_change_count());
+}
+
 }  // namespace exo
