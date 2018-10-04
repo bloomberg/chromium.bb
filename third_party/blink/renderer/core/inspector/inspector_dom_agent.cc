@@ -1872,7 +1872,10 @@ void InspectorDOMAgent::DidInsertDOMNode(Node* node) {
 void InspectorDOMAgent::WillRemoveDOMNode(Node* node) {
   if (IsWhitespace(node))
     return;
+  DOMNodeRemoved(node);
+}
 
+void InspectorDOMAgent::DOMNodeRemoved(Node* node) {
   ContainerNode* parent = node->parentNode();
 
   // If parent is not mapped yet -> ignore the event.
@@ -1950,6 +1953,10 @@ void InspectorDOMAgent::StyleAttributeInvalidated(
 }
 
 void InspectorDOMAgent::CharacterDataModified(CharacterData* character_data) {
+  if (IsWhitespace(character_data)) {
+    DOMNodeRemoved(character_data);
+    return;
+  }
   int id = document_node_to_id_map_->at(character_data);
   if (!id) {
     // Push text node if it is being created.
