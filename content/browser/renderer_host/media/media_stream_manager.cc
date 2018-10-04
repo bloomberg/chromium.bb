@@ -58,12 +58,12 @@
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "media/base/display_media_information.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -204,10 +204,10 @@ MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
 
   MediaStreamDevice device(MEDIA_DISPLAY_VIDEO_CAPTURE, media_id.ToString(),
                            media_id.ToString());
-  media::DisplayCaptureSurfaceType display_surface =
-      media::DisplayCaptureSurfaceType::MONITOR;
-  device.display_media_info = media::DisplayMediaInformation(
-      display_surface, true, media::CursorCaptureType::NEVER);
+  media::mojom::DisplayCaptureSurfaceType display_surface =
+      media::mojom::DisplayCaptureSurfaceType::MONITOR;
+  device.display_media_info = media::mojom::DisplayMediaInformation::New(
+      display_surface, true, media::mojom::CursorCaptureType::NEVER);
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -227,23 +227,23 @@ MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
       case media::FakeVideoCaptureDevice::DisplayMediaType::ANY:
       case media::FakeVideoCaptureDevice::DisplayMediaType::MONITOR:
         desktop_media_type = DesktopMediaID::TYPE_SCREEN;
-        display_surface = media::DisplayCaptureSurfaceType::MONITOR;
+        display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
         break;
       case media::FakeVideoCaptureDevice::DisplayMediaType::WINDOW:
         desktop_media_type = DesktopMediaID::TYPE_WINDOW;
-        display_surface = media::DisplayCaptureSurfaceType::WINDOW;
+        display_surface = media::mojom::DisplayCaptureSurfaceType::WINDOW;
         break;
       case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
         desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
-        display_surface = media::DisplayCaptureSurfaceType::BROWSER;
+        display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
         break;
     }
     media_id = DesktopMediaID(desktop_media_type, DesktopMediaID::kFakeId);
   }
   device = MediaStreamDevice(MEDIA_DISPLAY_VIDEO_CAPTURE, media_id.ToString(),
                              media_id.ToString());
-  device.display_media_info = media::DisplayMediaInformation(
-      display_surface, true, media::CursorCaptureType::NEVER);
+  device.display_media_info = media::mojom::DisplayMediaInformation::New(
+      display_surface, true, media::mojom::CursorCaptureType::NEVER);
   return device;
 }
 

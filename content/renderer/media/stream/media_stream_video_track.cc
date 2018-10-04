@@ -391,9 +391,9 @@ void MediaStreamVideoTrack::GetSettings(
   }
   if (source_->device().display_media_info.has_value()) {
     const auto& info = source_->device().display_media_info.value();
-    settings.display_surface = ToWebDisplaySurface(info.display_surface);
-    settings.logical_surface = info.logical_surface;
-    settings.cursor = ToWebCursorCaptureType(info.cursor);
+    settings.display_surface = ToWebDisplaySurface(info->display_surface);
+    settings.logical_surface = info->logical_surface;
+    settings.cursor = ToWebCursorCaptureType(info->cursor);
   }
 }
 

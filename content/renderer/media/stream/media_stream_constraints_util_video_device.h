@@ -30,10 +30,10 @@ CONTENT_EXPORT blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing);
 
 CONTENT_EXPORT blink::WebMediaStreamTrack::DisplayCaptureSurfaceType
-ToWebDisplaySurface(media::DisplayCaptureSurfaceType display_surface);
+ToWebDisplaySurface(media::mojom::DisplayCaptureSurfaceType display_surface);
 
 CONTENT_EXPORT blink::WebMediaStreamTrack::CursorCaptureType
-ToWebCursorCaptureType(media::CursorCaptureType cursor);
+ToWebCursorCaptureType(media::mojom::CursorCaptureType cursor);
 
 struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
