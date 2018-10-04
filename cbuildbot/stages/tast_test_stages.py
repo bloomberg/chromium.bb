@@ -89,9 +89,6 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
   # VM) after receiving SIGTERM. After this, SIGKILL is sent.
   CLEANUP_TIMEOUT_SEC = 30 * 60
 
-  # Path within src/scripts to start/stop VM and run tests.
-  SCRIPT_PATH = 'bin/cros_run_tast_vm_test'
-
   # These magic attributes can be used to turn off the stage via the build
   # config. See generic_stages.BuilderStage.
   option_name = 'tests'
@@ -173,21 +170,17 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     Raises:
       failures_lib.TestFailure if an internal error is encountered.
     """
-    image = os.path.join(self.GetImageDirSymlink(), constants.TEST_IMAGE_BIN)
-    ssh_key = os.path.join(self.GetImageDirSymlink(),
-                           constants.TEST_KEY_PRIVATE)
-    cmd = [TastVMTestStage.SCRIPT_PATH,
-           '--board=' + self._current_board,
-           '--image_path=' + image,
-           '--ssh_private_key=' + ssh_key,
-           '--no_graphics',
-           '--results_dir=' + suite_chroot_results_dir,
-          ]
-    cmd += test_exprs
+    cmd = [os.path.join(self._build_root, 'chromite/bin/cros_sdk'),
+           '--', 'cros_run_vm_test', '--board=' + self._current_board,
+           '--no-display', '--results-dir=' + suite_chroot_results_dir,
+           '--host-cmd', '--', 'tast', '-verbose', 'run', '-build=false',
+           '-resultsdir=' + suite_chroot_results_dir, '-extrauseflags=tast_vm',
+           '127.0.0.1:9222'
+          ] + test_exprs
 
     result = cros_build_lib.RunCommand(
-        cmd, cwd=os.path.join(self._build_root, 'src/scripts'),
-        error_code_ok=True, kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC)
+        cmd, error_code_ok=True,
+        kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC)
     if result.returncode:
       raise failures_lib.TestFailure(FAILURE_EXIT_CODE % result.returncode)
 
