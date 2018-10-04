@@ -216,6 +216,10 @@ Polymer({
    * @private
    */
   onNativeDialogCancel_: function(e) {
+    // Ignore any 'cancel' events not fired directly by the <dialog> element.
+    if (e.target !== this.getNative())
+      return;
+
     if (this.noCancel) {
       e.preventDefault();
       return;

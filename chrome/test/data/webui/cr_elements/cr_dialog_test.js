@@ -7,6 +7,33 @@ suite('cr-dialog', function() {
     MockInteractions.keyEventOn(element, 'keypress', 13, undefined, 'Enter');
   }
 
+  /**
+   * Creates and shows two nested cr-dialogs.
+   * @return {!Array<!CrDialogElement>} An array of 2 dialogs. The first dialog
+   *     is the outer dialog, and the second is the inner dialog.
+   */
+  function createAndShowNestedDialogs() {
+    document.body.innerHTML = `
+      <cr-dialog id="outer">
+        <div slot="title">outer dialog title</div>
+        <div slot="body">
+          <cr-dialog id="inner">
+            <div slot="title">inner dialog title</div>
+            <div slot="body">body</div>
+          </cr-dialog>
+        </div>
+      </cr-dialog>`;
+
+    const outer = document.body.querySelector('#outer');
+    assertTrue(!!outer);
+    const inner = document.body.querySelector('#inner');
+    assertTrue(!!inner);
+
+    outer.showModal();
+    inner.showModal();
+    return [outer, inner];
+  }
+
   setup(function() {
     PolymerTest.clearBody();
   });
@@ -44,24 +71,9 @@ suite('cr-dialog', function() {
   // <dialog> child to force them to bubble in Shadow DOM V1. Ensure that this
   // mechanism does not interfere with nested <cr-dialog> 'close' events.
   test('close events not fired from <dialog> are not affected', function() {
-    document.body.innerHTML = `
-      <cr-dialog id="outer">
-        <div slot="title">outer dialog title</div>
-        <div slot="body">
-          <cr-dialog id="inner">
-            <div slot="title">inner dialog title</div>
-            <div slot="body">body</div>
-          </cr-dialog>
-        </div>
-      </cr-dialog>`;
-
-    const outer = document.body.querySelector('#outer');
-    assertTrue(!!outer);
-    const inner = document.body.querySelector('#inner');
-    assertTrue(!!inner);
-
-    outer.showModal();
-    inner.showModal();
+    const dialogs = createAndShowNestedDialogs();
+    const outer = dialogs[0];
+    const inner = dialogs[1];
 
     let whenFired = test_util.eventToPromise('close', window);
     inner.close();
@@ -95,6 +107,31 @@ suite('cr-dialog', function() {
     return Promise.all([whenCancelFired, whenCloseFired]).then(() => {
       assertEquals('', dialog.getNative().returnValue);
     });
+  });
+
+  // cr-dialog has to catch and re-fire 'cancel' events fired from it's native
+  // <dialog> child to force them to bubble in Shadow DOM V1. Ensure that this
+  // mechanism does not interfere with nested <cr-dialog> 'cancel' events.
+  test('cancel events not fired from <dialog> are not affected', function() {
+    const dialogs = createAndShowNestedDialogs();
+    const outer = dialogs[0];
+    const inner = dialogs[1];
+
+    let whenFired = test_util.eventToPromise('cancel', window);
+    inner.cancel();
+
+    return whenFired
+        .then(e => {
+          // Check that the event's target is the inner dialog.
+          assertEquals(inner, e.target);
+          whenFired = test_util.eventToPromise('cancel', window);
+          outer.cancel();
+          return whenFired;
+        })
+        .then(e => {
+          // Check that the event's target is the outer dialog.
+          assertEquals(outer, e.target);
+        });
   });
 
   test('focuses title on show', function() {
