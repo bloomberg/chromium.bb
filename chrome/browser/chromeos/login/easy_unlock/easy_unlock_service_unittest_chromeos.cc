@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -307,8 +308,9 @@ class EasyUnlockServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> SetUpProfile(const std::string& email,
                                                std::string* gaia_id) {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(EasyUnlockServiceFactory::GetInstance(),
-                              &CreateEasyUnlockServiceForTest);
+    builder.AddTestingFactory(
+        EasyUnlockServiceFactory::GetInstance(),
+        base::BindRepeating(&CreateEasyUnlockServiceForTest));
     std::unique_ptr<TestingProfile> profile = builder.Build();
 
     AccountInfo account_info = identity::SetPrimaryAccount(
