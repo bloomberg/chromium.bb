@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -140,7 +141,8 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
       border_edges_(
           NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
                                       box.Style().GetWritingMode())) {
-  DCHECK(box.PhysicalFragment().IsBox());
+  DCHECK(box.PhysicalFragment().IsBox() ||
+         box.PhysicalFragment().IsRenderedLegend());
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
@@ -230,8 +232,7 @@ void NGBoxFragmentPainter::PaintObject(
     // to check the object as some objects may have box decoration background
     // other than from their own style.
     // TODO(eae): We can probably get rid of suppress_box_decoration_background.
-    if (!suppress_box_decoration_background && is_visible &&
-        style.HasBoxDecorationBackground())
+    if (!suppress_box_decoration_background && is_visible)
       PaintBoxDecorationBackground(paint_info, paint_offset);
 
     if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
@@ -363,7 +364,8 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
       else
         NGBoxFragmentPainter(*child).Paint(paint_info);
     } else {
-      NOTREACHED() << fragment.ToString();
+      DCHECK(fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend)
+          << fragment.ToString();
     }
   }
 }
@@ -430,6 +432,19 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
 void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
+  if (box_fragment_.PhysicalFragment().IsFieldsetContainer()) {
+    NGFieldsetPainter(box_fragment_)
+        .PaintBoxDecorationBackground(paint_info, paint_offset);
+    return;
+  }
+
+  // Note that for fieldsets we need to enter decoration and background painting
+  // even if we have no such things, because the rendered legend is painted in
+  // this phase as well. Hence the early check above.
+  const ComputedStyle& style = box_fragment_.Style();
+  if (!style.HasBoxDecorationBackground())
+    return;
+
   // TODO(mstensho): Break dependency on LayoutObject functionality.
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
 

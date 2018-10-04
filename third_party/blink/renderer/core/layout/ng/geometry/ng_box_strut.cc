@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 
+#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -77,6 +78,10 @@ NGLineBoxStrut NGPhysicalBoxStrut::ConvertToLineLogical(
     TextDirection direction) const {
   return NGLineBoxStrut(ConvertToLogical(writing_mode, direction),
                         IsFlippedLinesWritingMode(writing_mode));
+}
+
+LayoutRectOutsets NGPhysicalBoxStrut::ToLayoutRectOutsets() const {
+  return LayoutRectOutsets(top, right, bottom, left);
 }
 
 String NGBoxStrut::ToString() const {

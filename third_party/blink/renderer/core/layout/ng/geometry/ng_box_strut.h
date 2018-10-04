@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class LayoutRectOutsets;
 struct NGLineBoxStrut;
 struct NGPhysicalBoxStrut;
 
@@ -142,6 +143,8 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
 
   LayoutUnit HorizontalSum() const { return left + right; }
   LayoutUnit VerticalSum() const { return top + bottom; }
+
+  LayoutRectOutsets ToLayoutRectOutsets() const;
 
   LayoutUnit top;
   LayoutUnit right;

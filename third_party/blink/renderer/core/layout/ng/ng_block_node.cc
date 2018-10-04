@@ -293,11 +293,14 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       *layout_result);
     NGLayoutInputNode first_child = FirstChild();
-    if (first_child && first_child.IsInline()) {
-      CopyFragmentDataToLayoutBoxForInlineChildren(
-          ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
-          layout_result->PhysicalFragment()->Size().width,
-          Style().IsFlippedBlocksWritingMode());
+    bool has_inline_children = first_child && first_child.IsInline();
+    if (has_inline_children || box_->IsLayoutNGFieldset()) {
+      if (has_inline_children) {
+        CopyFragmentDataToLayoutBoxForInlineChildren(
+            ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
+            layout_result->PhysicalFragment()->Size().width,
+            Style().IsFlippedBlocksWritingMode());
+      }
 
       block_flow->SetPaintFragment(break_token,
                                    layout_result->PhysicalFragment(),
@@ -598,21 +601,40 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGPhysicalBoxFragment& physical_fragment,
     const NGPhysicalOffset& offset_from_start) {
+  LayoutBox* rendered_legend = nullptr;
   for (const auto& child_fragment : physical_fragment.Children()) {
     auto* child_object = child_fragment->GetLayoutObject();
 
     // Skip any line-boxes we have as children, this is handled within
     // NGInlineNode at the moment.
-    if (!child_fragment->IsBox())
+    if (!child_fragment->IsBox() && !child_fragment->IsRenderedLegend())
       continue;
 
     const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.get());
     if (IsFirstFragment(constraint_space, box_fragment)) {
+      if (box_fragment.IsRenderedLegend())
+        rendered_legend = ToLayoutBox(box_fragment.GetLayoutObject());
       CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
                                 offset_from_start);
     }
     if (child_object->IsLayoutBlockFlow())
       ToLayoutBlockFlow(child_object)->AddOverflowFromFloats();
+  }
+
+  if (rendered_legend) {
+    // The rendered legend is a child of the the anonymous fieldset content
+    // child wrapper object on the legacy side. LayoutNG, on the other hand,
+    // generates a fragment for the rendered legend as a direct child of the
+    // fieldset container fragment (as a *sibling* preceding the anonymous
+    // fieldset content wrapper). Now that we have positioned the anonymous
+    // wrapper, we're ready to compensate for this discrepancy. See
+    // LayoutNGFieldset for more details.
+    LayoutBlock* content_wrapper = rendered_legend->ContainingBlock();
+    DCHECK(content_wrapper->IsAnonymous());
+    DCHECK(IsHTMLFieldSetElement(content_wrapper->Parent()->GetNode()));
+    LayoutPoint location = rendered_legend->Location();
+    location -= content_wrapper->Location();
+    rendered_legend->SetLocation(location);
   }
 }
 

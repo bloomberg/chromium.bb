@@ -196,6 +196,12 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     width_available_to_children_changed_ = true;
   }
 
+  // Return true if this is the anonymous child wrapper of an NG fieldset
+  // container. Such a wrapper holds all the fieldset contents. Only the
+  // rendered legend is laid out on the outside, although the layout object
+  // itself for the legend is still a child of this object.
+  bool IsAnonymousNGFieldsetContentWrapper() const;
+
   void SetHasMarkupTruncation(bool b) { has_markup_truncation_ = b; }
   bool HasMarkupTruncation() const { return has_markup_truncation_; }
 

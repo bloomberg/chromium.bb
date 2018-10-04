@@ -422,6 +422,16 @@
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "fast/forms/fieldset",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]

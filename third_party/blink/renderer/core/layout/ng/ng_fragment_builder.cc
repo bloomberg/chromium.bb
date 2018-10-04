@@ -33,6 +33,9 @@ NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
     return NGPhysicalFragment::NGBoxType::kAtomicInline;
   if (layout_object->IsInline())
     return NGPhysicalFragment::NGBoxType::kInlineBox;
+  if (layout_object->IsLayoutBlock() &&
+      ToLayoutBlock(layout_object)->CreatesNewFormattingContext())
+    return NGPhysicalFragment::NGBoxType::kBlockFlowRoot;
   return NGPhysicalFragment::NGBoxType::kNormalBox;
 }
 
@@ -94,6 +97,7 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
     const NGLogicalOffset& child_offset) {
   switch (child->Type()) {
     case NGPhysicalBoxFragment::kFragmentBox:
+    case NGPhysicalBoxFragment::kFragmentRenderedLegend:
       if (child->BreakToken())
         child_break_tokens_.push_back(child->BreakToken());
       break;
@@ -294,7 +298,9 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
   }
 
   scoped_refptr<NGBreakToken> break_token;
+  bool is_rendered_legend = false;
   if (node_) {
+    is_rendered_legend = node_.IsRenderedLegend();
     if (!inline_break_tokens_.IsEmpty()) {
       if (auto token = inline_break_tokens_.back()) {
         if (!token->IsFinished())
@@ -319,7 +325,8 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
           borders_.ConvertToPhysical(GetWritingMode(), Direction()),
           padding_.ConvertToPhysical(GetWritingMode(), Direction()),
-          contents_ink_overflow, baselines_, BoxType(), is_old_layout_root_,
+          contents_ink_overflow, baselines_, BoxType(), is_fieldset_container_,
+          is_rendered_legend, is_old_layout_root_,
           border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;

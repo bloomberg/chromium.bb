@@ -134,6 +134,10 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType);
+  NGFragmentBuilder& SetIsFieldsetContainer() {
+    is_fieldset_container_ = true;
+    return *this;
+  }
   NGFragmentBuilder& SetIsOldLayoutRoot();
 
   bool DidBreak() const { return did_break_; }
@@ -191,6 +195,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;
+  bool is_fieldset_container_ = false;
   bool is_old_layout_root_;
   bool did_break_;
   bool has_forced_break_ = false;
