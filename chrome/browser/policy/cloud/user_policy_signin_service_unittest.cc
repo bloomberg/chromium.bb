@@ -178,13 +178,16 @@ class UserPolicySigninServiceTest : public testing::Test {
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(
             std::move(prefs)));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherServiceBuilder::BuildForTests);
-    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              signin::BuildTestSigninClient);
+                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    builder.AddTestingFactory(
+        AccountFetcherServiceFactory::GetInstance(),
+        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
+    builder.AddTestingFactory(
+        ChromeSigninClientFactory::GetInstance(),
+        base::BindRepeating(&signin::BuildTestSigninClient));
 
     profile_ = builder.Build();
 
