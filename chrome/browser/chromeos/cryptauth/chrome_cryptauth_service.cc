@@ -233,9 +233,6 @@ void ChromeCryptAuthService::PerformEnrollmentAndDeviceSyncIfPossible() {
 }
 
 void ChromeCryptAuthService::OnPrefsChanged() {
-  if (!identity_manager_->HasPrimaryAccountWithRefreshToken())
-    return;
-
   // Note: We only start the CryptAuth services if a feature was toggled on. In
   // the inverse case, we simply leave the services running until the user logs
   // off.
