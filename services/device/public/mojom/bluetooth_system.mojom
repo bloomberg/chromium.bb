@@ -34,6 +34,7 @@ interface BluetoothSystem {
     kPoweredOn,
   };
 
+  GetState() => (State state);
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events

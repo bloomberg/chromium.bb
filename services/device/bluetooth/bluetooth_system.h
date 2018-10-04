@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
+namespace bluez {
+class BluetoothAdapterClient;
+}
+
 namespace device {
 
 class BluetoothSystem : public mojom::BluetoothSystem {
@@ -18,7 +22,12 @@ class BluetoothSystem : public mojom::BluetoothSystem {
   explicit BluetoothSystem(mojom::BluetoothSystemClientPtr client);
   ~BluetoothSystem() override;
 
+  // mojom::BluetoothSystem
+  void GetState(GetStateCallback callback) override;
+
  private:
+  bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
+
   mojom::BluetoothSystemClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystem);
