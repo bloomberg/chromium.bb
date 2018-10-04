@@ -305,11 +305,12 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  // If !user_input_in_progress_, then permanent text is showing and should be a
-  // URL, so no further checking is needed.  By avoiding checking in this case,
-  // we avoid calling into the autocomplete providers, and thus initializing the
-  // history system, as long as possible, which speeds startup.
-  if (!user_input_in_progress_)
+  // If !user_input_in_progress_ and we are not showing a Query in Omnibox,
+  // then the URL is showing as the permanent display text, and no further
+  // checking is needed.  By avoiding checking in this case, we avoid calling
+  // into the autocomplete providers, and thus initializing the history system,
+  // as long as possible, which speeds startup.
+  if (!user_input_in_progress_ && !GetQueryInOmniboxSearchTerms(nullptr))
     return true;
 
   return !AutocompleteMatch::IsSearchType(CurrentMatch(nullptr).type);
@@ -1310,7 +1311,7 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
 }
 
 bool OmniboxEditModel::GetQueryInOmniboxSearchTerms(
-    base::string16* search_terms) {
+    base::string16* search_terms) const {
   QueryInOmnibox* query_in_omnibox = client()->GetQueryInOmnibox();
   if (!query_in_omnibox)
     return false;
