@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
@@ -157,9 +158,10 @@ void SaveCardBubbleViewsBrowserTestBase::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
   // Replace the signin manager and account fetcher service with fakes.
   SigninManagerFactory::GetInstance()->SetTestingFactory(
-      context, &BuildFakeSigninManagerBase);
+      context, base::BindRepeating(&BuildFakeSigninManagerBase));
   AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
-      context, &FakeAccountFetcherServiceBuilder::BuildForTests);
+      context,
+      base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SignInWithFullName(
