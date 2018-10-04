@@ -11,12 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
-#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/engine/data_type_association_stats.h"
+#include "components/sync/engine/shutdown_reason.h"
 
 namespace syncer {
 
@@ -94,9 +94,7 @@ class ModelAssociationManager {
                   const ConfigureContext& context);
 
   // Can be called at any time. Synchronously stops all datatypes.
-  // If |metadata_fate| equals  CLEAR_METADATA controllers should clear sync
-  // metadata.
-  void Stop(SyncStopMetadataFate metadata_fate);
+  void Stop(ShutdownReason shutdown_reason);
 
   // Should only be called after Initialize to start the actual association.
   // |types_to_associate| should be subset of |desired_types| in Initialize().
@@ -138,7 +136,7 @@ class ModelAssociationManager {
 
   // A helper to stop an individual datatype.
   void StopDatatype(const SyncError& error,
-                    SyncStopMetadataFate metadata_fate,
+                    ShutdownReason shutdown_reason,
                     DataTypeController* dtc,
                     DataTypeController::StopCallback callback);
 
