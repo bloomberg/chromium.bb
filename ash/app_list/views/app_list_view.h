@@ -169,15 +169,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void SetStateFromSearchBoxView(bool search_box_is_empty,
                                  bool triggered_by_contents_change);
 
-  // Updates y position and opacity of app list.
+  // Updates y position and opacity of app list during dragging.
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
 
   // Offsets the y position of the app list (above the screen)
   void OffsetYPositionOfAppList(int offset);
 
-  // Layouts the app list during dragging.
-  void DraggingLayout();
+  // Update Y position and opacity of this view's child views during dragging.
+  void UpdateChildViewsYPositionAndOpacity();
 
   // The search box cannot actively listen to all key events. To control and
   // input into the search box when it does not have focus, we need to redirect

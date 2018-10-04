@@ -493,7 +493,7 @@ void ContentsView::Layout() {
 
   if (expand_arrow_view_) {
     // Layout expand arrow.
-    gfx::Rect arrow_rect(rect);
+    gfx::Rect arrow_rect(GetContentsBounds());
     const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
     arrow_rect.set_height(arrow_size.height());
     arrow_rect.ClampToCenteredSize(arrow_size);
@@ -542,7 +542,14 @@ views::View* ContentsView::GetSelectedView() const {
   return app_list_pages_[GetActivePageIndex()]->GetSelectedView();
 }
 
-void ContentsView::UpdateOpacity() {
+void ContentsView::UpdateYPositionAndOpacity() {
+  AppListViewState state = app_list_view_->app_list_state();
+  if (state == AppListViewState::CLOSED ||
+      state == AppListViewState::FULLSCREEN_SEARCH ||
+      state == AppListViewState::HALF) {
+    return;
+  }
+
   if (expand_arrow_view_) {
     const bool should_restore_opacity =
         !app_list_view_->is_in_drag() &&
@@ -561,9 +568,21 @@ void ContentsView::UpdateOpacity() {
                                 kExpandArrowOpacityStartProgress),
                            0.f),
                   1.0f));
+
+    expand_arrow_view_->SchedulePaint();
   }
 
-  GetAppsContainerView()->UpdateOpacity();
+  AppsContainerView* apps_container_view = GetAppsContainerView();
+  SearchBoxView* search_box = GetSearchBoxView();
+  search_box->GetWidget()->SetBounds(
+      search_box->GetViewBoundsForSearchBoxContentsBounds(
+          ConvertRectToWidgetWithoutTransform(
+              apps_container_view->GetSearchBoxExpectedBounds())));
+
+  search_results_page_view()->SetBoundsRect(
+      apps_container_view->GetSearchBoxExpectedBounds());
+
+  apps_container_view->UpdateYPositionAndOpacity();
 }
 
 bool ContentsView::ShouldLayoutPage(AppListPage* page,

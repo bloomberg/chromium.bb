@@ -35,7 +35,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
@@ -53,8 +52,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       search_box_view_(nullptr),
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
   model_->AddObserver(this);
 }
 
@@ -147,6 +144,12 @@ void AppListMainView::NotifySearchBoxVisibilityChanged() {
 
 const char* AppListMainView::GetClassName() const {
   return "AppListMainView";
+}
+
+void AppListMainView::Layout() {
+  gfx::Rect rect = GetContentsBounds();
+  if (!rect.IsEmpty())
+    contents_view_->SetBoundsRect(rect);
 }
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {

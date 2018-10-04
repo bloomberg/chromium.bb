@@ -166,8 +166,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns selected view in active page.
   views::View* GetSelectedView() const;
 
-  // Updates the opacity of the items in this view during dragging.
-  void UpdateOpacity();
+  // Updates y position and opacity of the items in this view during dragging.
+  void UpdateYPositionAndOpacity();
 
  private:
   // Sets the active launcher page, accounting for whether the change is for

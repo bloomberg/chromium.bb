@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -163,7 +164,7 @@ void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
   }
 }
 
-void AppsContainerView::UpdateOpacity() {
+void AppsContainerView::UpdateYPositionAndOpacity() {
   apps_grid_view_->UpdateOpacity();
 
   // Updates the opacity of page switcher buttons. The same rule as all apps in
@@ -197,6 +198,14 @@ void AppsContainerView::UpdateOpacity() {
                  1.0f);
     suggestion_chip_container_view_->layer()->SetOpacity(
         should_restore_opacity ? 1.0f : chips_opacity);
+
+    suggestion_chip_container_view_->SetY(GetExpectedSuggestionChipY(
+        contents_view_->app_list_view()->GetAppListTransitionProgress()));
+
+    apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
+                          chip_grid_y_distance_);
+
+    page_switcher_->SetY(suggestion_chip_container_view_->bounds().bottom());
   }
 }
 
@@ -221,22 +230,17 @@ void AppsContainerView::Layout() {
       if (is_new_style_launcher_enabled_) {
         // Layout suggestion chips.
         gfx::Rect chip_container_rect(rect);
-        const float progress =
-            contents_view_->app_list_view()->GetAppListTransitionProgress();
-        if (progress <= 1) {
-          // Currently transition progress is between closed and peeking state.
-          chip_container_rect.set_y(gfx::Tween::IntValueBetween(
-              progress, 0, kSuggestionChipPeekingY));
-        } else {
-          // Currently transition progress is between peeking and fullscreen
-          // state.
-          chip_container_rect.set_y(
-              gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
-                                          kSuggestionChipFullscreenY));
-        }
+        chip_container_rect.set_y(GetExpectedSuggestionChipY(
+            contents_view_->app_list_view()->GetAppListTransitionProgress()));
         chip_container_rect.set_height(kSuggestionChipContainerHeight);
         suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
-        rect.Inset(0, chip_container_rect.bottom(), 0, 0);
+
+        // Leave the same available bounds for the apps grid view in both
+        // fullscreen and peeking state to avoid resizing the view during
+        // animation and dragging, which is an expensive operation.
+        rect.set_y(chip_container_rect.bottom());
+        rect.set_height(rect.height() - kSuggestionChipFullscreenY -
+                        kSuggestionChipContainerHeight);
       }
 
       // Layout apps grid.
@@ -280,11 +284,44 @@ void AppsContainerView::Layout() {
         grid_rect.Inset(horizontal_margin, vertical_margin);
         grid_rect.ClampToCenteredSize(
             apps_grid_view_->GetMaximumTileGridSize());
-        grid_rect.Inset(-apps_grid_view_->GetInsets());
+
+        if ((grid_rect.width() > 0 && grid_rect.height() > 0) &&
+            (grid_rect.width() < min_grid_size.width() ||
+             grid_rect.height() < min_grid_size.height())) {
+          // If the minimum size does not fit inside available bounds, scale
+          // down the apps grid view via transform while keep the minimum size.
+          const gfx::Insets insets = apps_grid_view_->GetInsets();
+          const float scale =
+              std::min((grid_rect.width()) /
+                           static_cast<float>(min_grid_size.width() +
+                                              insets.left() + insets.right()),
+                       grid_rect.height() /
+                           static_cast<float>(min_grid_size.height() +
+                                              insets.top() + insets.bottom()));
+          DCHECK_GT(scale, 0);
+          const gfx::RectF scaled_grid_rect(grid_rect.x(), grid_rect.y(),
+                                            grid_rect.width() / scale,
+                                            grid_rect.height() / scale);
+
+          gfx::Transform transform;
+          transform.Scale(scale, scale);
+          apps_grid_view_->SetTransform(transform);
+          apps_grid_view_->SetBoundsRect(gfx::ToEnclosedRect(scaled_grid_rect));
+        } else {
+          grid_rect.Inset(-apps_grid_view_->GetInsets());
+          apps_grid_view_->SetTransform(gfx::Transform());
+          apps_grid_view_->SetBoundsRect(grid_rect);
+        }
+
+        // Record the distance of y position between suggestion chip container
+        // and apps grid view to avoid duplicate calculation of apps grid view's
+        // y position during dragging.
+        chip_grid_y_distance_ =
+            apps_grid_view_->y() - suggestion_chip_container_view_->y();
       } else {
         grid_rect.Inset(kAppsGridLeftRightPadding, 0);
+        apps_grid_view_->SetBoundsRect(grid_rect);
       }
-      apps_grid_view_->SetBoundsRect(grid_rect);
 
       // Layout page switcher.
       gfx::Rect page_switcher_rect = rect;
@@ -526,6 +563,18 @@ void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
         disabled);
   }
   apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
+}
+
+int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
+  if (progress <= 1) {
+    // Currently transition progress is between closed and peeking state.
+    return gfx::Tween::IntValueBetween(progress, 0, kSuggestionChipPeekingY);
+  }
+
+  // Currently transition progress is between peeking and fullscreen
+  // state.
+  return gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
+                                     kSuggestionChipFullscreenY);
 }
 
 }  // namespace app_list

@@ -213,7 +213,7 @@ void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
       view_->SetState(AppListViewState(app_list_state));
     }
     view_->SetIsInDrag(false);
-    view_->DraggingLayout();
+    view_->UpdateChildViewsYPositionAndOpacity();
   }
 }
 
