@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -422,8 +423,9 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThreadAndGetNewTab(
   // PasswordStore has not completed.
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       browser->profile(),
-      password_manager::BuildPasswordStore<
-          content::BrowserContext, password_manager::TestPasswordStore>);
+      base::BindRepeating(
+          &password_manager::BuildPasswordStore<
+              content::BrowserContext, password_manager::TestPasswordStore>));
 
   // Add a tab with a customized ManagePasswordsUIController. Thus, we can
   // intercept useful UI events.
