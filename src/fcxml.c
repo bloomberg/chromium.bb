@@ -2085,7 +2085,7 @@ FcParseDir (FcConfigParse *parse)
 	    if (!prefix)
 		goto bail;
 	}
-	else if (FcStrCmp (attr, (const FcChar8 *)"cwd") == 0)
+	else if (FcStrCmp (attr, (const FcChar8 *)"default") == 0 || FcStrCmp (attr, (const FcChar8 *)"cwd") == 0)
 	{
 	}
 	else if (FcStrCmp (attr, (const FcChar8 *)"relative") == 0)
