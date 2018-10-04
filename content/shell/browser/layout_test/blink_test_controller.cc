@@ -465,6 +465,18 @@ bool BlinkTestController::PrepareForLayoutTest(
     render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
+    // Focus the RenderWidgetHost. This will send an IPC message to the
+    // renderer to propagate the state change.
+    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+
+    // Flush IPC messages on the widget.
+    base::RunLoop run_loop;
+    main_window_->web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->FlushForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
     } else {
@@ -475,11 +487,7 @@ bool BlinkTestController::PrepareForLayoutTest(
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
       params.should_clear_history_list = true;
       main_window_->web_contents()->GetController().LoadURLWithParams(params);
-      main_window_->web_contents()->Focus();
     }
-    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->SetActive(
-        true);
-    main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   }
   return true;
 }
