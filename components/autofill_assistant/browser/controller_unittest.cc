@@ -103,12 +103,20 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     return script;
   }
 
+  void SetLastCommittedUrl(const GURL& url) {
+    url_ = url;
+    tester_->SetLastCommittedURL(url);
+  }
+
   // Updates the current url of the controller and forces a refresh, without
   // bothering with actually rendering any page content.
   void SimulateNavigateToUrl(const GURL& url) {
-    url_ = url;
-    tester_->SetLastCommittedURL(url);
+    SetLastCommittedUrl(url);
     controller_->DidFinishLoad(nullptr, url);
+  }
+
+  void SimulateProgressChanged(double progress) {
+    controller_->LoadProgressChanged(web_contents(), progress);
   }
 
   void SimulateUserInteraction(const blink::WebInputEvent::Type type) {
@@ -306,6 +314,20 @@ TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterExecution) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _)).Times(0);
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, LoadProgressChanged) {
+  SetLastCommittedUrl(GURL("http://a.example.com/path"));
+
+  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _)).Times(0);
+  SimulateProgressChanged(0.1);
+  SimulateProgressChanged(0.3);
+  SimulateProgressChanged(0.5);
+
+  EXPECT_CALL(*mock_service_,
+              OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path")), _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+  SimulateProgressChanged(0.4);
 }
 
 }  // namespace autofill_assistant

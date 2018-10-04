@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -35,7 +36,8 @@ class ControllerTest;
 class Controller : public ScriptExecutorDelegate,
                    public UiDelegate,
                    public ScriptTracker::Listener,
-                   private content::WebContentsObserver {
+                   private content::WebContentsObserver,
+                   private content::WebContentsDelegate {
  public:
   static void CreateAndStartForWebContents(
       content::WebContents* web_contents,
@@ -90,6 +92,10 @@ class Controller : public ScriptExecutorDelegate,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void WebContentsDestroyed() override;
+
+  // Overrides content::WebContentsDelegate:
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override;
 
   std::unique_ptr<Client> client_;
   std::unique_ptr<WebController> web_controller_;
