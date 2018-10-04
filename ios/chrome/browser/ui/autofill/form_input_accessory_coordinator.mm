@@ -85,7 +85,7 @@
 - (void)stop {
   [self stopChildren];
   [self.manualFillAccessoryViewController reset];
-  [self.formInputAccessoryViewController restoreKeyboardView];
+  [self.formInputAccessoryViewController restoreOriginalKeyboardView];
 }
 
 #pragma mark - Presenting Children

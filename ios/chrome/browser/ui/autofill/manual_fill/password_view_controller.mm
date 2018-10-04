@@ -17,6 +17,8 @@
 
 namespace manual_fill {
 
+NSString* const PasswordSearchBarAccessibilityIdentifier =
+    @"kManualFillPasswordSearchBarAccessibilityIdentifier";
 NSString* const PasswordTableViewAccessibilityIdentifier =
     @"kManualFillPasswordTableViewAccessibilityIdentifier";
 
@@ -73,6 +75,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   } else {
     self.tableView.tableHeaderView = self.searchController.searchBar;
   }
+  self.searchController.searchBar.accessibilityIdentifier =
+      manual_fill::PasswordSearchBarAccessibilityIdentifier;
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;

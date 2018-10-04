@@ -208,7 +208,7 @@ class FormSuggestionControllerTest : public PlatformTest {
         [view removeFromSuperview];
       }
     };
-    [[[mock_consumer_ stub] andDo:mockRestore] restoreKeyboardView];
+    [[[mock_consumer_ stub] andDo:mockRestore] restoreOriginalKeyboardView];
 
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_

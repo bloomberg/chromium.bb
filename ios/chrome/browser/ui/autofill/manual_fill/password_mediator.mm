@@ -33,6 +33,8 @@ namespace manual_fill {
 
 NSString* const ManagePasswordsAccessibilityIdentifier =
     @"kManualFillManagePasswordsAccessibilityIdentifier";
+NSString* const OtherPasswordsAccessibilityIdentifier =
+    @"kManualFillOtherPasswordsAccessibilityIdentifier";
 
 }  // namespace manual_fill
 
@@ -182,6 +184,8 @@ NSString* const ManagePasswordsAccessibilityIdentifier =
                action:^{
                  [weakSelf.navigationDelegate openAllPasswordsList];
                }];
+    otherPasswordsItem.accessibilityIdentifier =
+        manual_fill::OtherPasswordsAccessibilityIdentifier;
 
     NSString* managePasswordsTitle =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);
