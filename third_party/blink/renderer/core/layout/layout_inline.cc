@@ -682,8 +682,15 @@ void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
           EnclosingBlockFlowFragmentOf(*this)) {
     const auto& descendants =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& descendant : descendants)
-      yield(descendant.RectInContainerBox().ToLayoutRect());
+    const LayoutBlock* block_for_flipping = nullptr;
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      block_for_flipping = ContainingBlock();
+    for (const auto& descendant : descendants) {
+      LayoutRect rect = descendant.RectInContainerBox().ToLayoutRect();
+      if (UNLIKELY(block_for_flipping))
+        block_for_flipping->FlipForWritingMode(rect);
+      yield(rect);
+    }
     return;
   }
   if (!AlwaysCreateLineBoxes()) {
