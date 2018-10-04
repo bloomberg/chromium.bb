@@ -4476,6 +4476,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncSupportSecondaryAccountDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-shill-sandboxing", flag_descriptions::kShillSandboxingName,
+     flag_descriptions::kShillSandboxingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kShillSandboxing)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

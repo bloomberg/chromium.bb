@@ -3548,6 +3548,11 @@ const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
 const char kUnfilteredBluetoothDevicesDescription[] =
     "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";
 
+const char kShillSandboxingName[] =
+    "Run shill, the ChromeOS network manager, in a sandbox.";
+const char kShillSandboxingDescription[] =
+    "Causes shill to be run as user/group 'shill', instead of 'root'.";
+
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "
