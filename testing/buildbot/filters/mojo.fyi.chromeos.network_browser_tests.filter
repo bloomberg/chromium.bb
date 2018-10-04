@@ -7,7 +7,6 @@
 # See https://crbug.com/881976
 
 # Uncategorized timeouts or test failures.
--PolicyProvidedTrustAnchorsRegularUserTest.AllowedForRegularUser
 -ForceMaximizeOnFirstRunTest.TwoRuns
 -ForceMaximizePolicyFalseTest.GeneralFirstRun
 
@@ -144,6 +143,10 @@
 
 # Flaky with error: `picture_in_picture_window_controller_impl.cc(167)] Check failed: media_player_id_.has_value()`.
 -PictureInPictureWindowControllerBrowserTest.TabIconUpdated
+
+# Relies on net::CertVerifier.
+# https://crbug.com/862043
+-PolicyProvidedTrustAnchorsRegularUserTest.AllowedForRegularUser
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
