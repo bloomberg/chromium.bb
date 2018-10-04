@@ -109,6 +109,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
   bool lock_screen_ready_ = false;
 
+  AuthenticateUserWithExternalBinaryCallback
+      authenticate_with_external_binary_callback_;
+
   // Callback registered as a lock screen apps focus handler - it should be
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
