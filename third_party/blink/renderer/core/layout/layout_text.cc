@@ -466,10 +466,15 @@ void LayoutText::Quads(Vector<FloatQuad>& quads,
           EnclosingBlockFlowFragment()) {
     const auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
+    const LayoutBlock* block_for_flipping = nullptr;
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      block_for_flipping = ContainingBlock();
     for (const auto& child : children) {
       // TODO(layout-dev): We should have NG version of |EllipsisRectForBox()|
-      AccumlateQuads(quads, IntRect(), local_or_absolute, mode,
-                     child.RectInContainerBox().ToLayoutRect());
+      LayoutRect rect = child.RectInContainerBox().ToLayoutRect();
+      if (UNLIKELY(block_for_flipping))
+        block_for_flipping->FlipForWritingMode(rect);
+      AccumlateQuads(quads, IntRect(), local_or_absolute, mode, rect);
     }
     return;
   }
