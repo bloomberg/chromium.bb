@@ -920,6 +920,10 @@ PasswordFormManager::GetDrivers() const {
   return drivers_;
 }
 
+const PasswordForm* PasswordFormManager::GetSubmittedForm() const {
+  return submitted_form_.get();
+}
+
 FormFetcher* PasswordFormManager::GetFormFetcher() {
   return form_fetcher_;
 }

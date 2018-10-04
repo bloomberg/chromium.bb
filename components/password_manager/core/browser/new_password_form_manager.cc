@@ -342,6 +342,10 @@ NewPasswordFormManager::GetDrivers() const {
   return {driver_};
 }
 
+const PasswordForm* NewPasswordFormManager::GetSubmittedForm() const {
+  return parsed_submitted_form_.get();
+}
+
 std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   // Fetcher is cloned to avoid re-fetching data from PasswordStore.
   std::unique_ptr<FormFetcher> fetcher = form_fetcher_->Clone();
