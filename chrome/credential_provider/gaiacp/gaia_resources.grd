@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit current_release="1" latest_public_release="0">
+  <outputs>
+    <output filename="grit/gaia_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/gaia_resources.rc" type="rc_all" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <include name="IDR_GAIACREDENTIALPROVIDER"
+               file="gaia_credential_provider.rgs"
+               type="REGISTRY" />
+      <include name="IDB_GOOGLE_LOGO_SMALL"
+               file="google_logo_small.bmp"
+               type="BITMAP" />
+    </includes>
+    <messages fallback_to_english="true">
+      <message name="IDS_PROJNAME" desc="">
+        Google Credential Provider
+      </message>
+      <message name="IDS_INVALID_UI_RESPONSE" desc="">
+        Signing in to your Google account failed, please try again.  Make sure the computer has a valid internet connection.  If the error persists, please report to Google.
+      </message>
+      <message name="IDS_CANT_CREATE_USER" desc="">
+        A user could not be created.
+      </message>
+      <message name="IDS_INTERNAL_ERROR" desc="">
+        An internal error occurred.  If the error persists. please report to Google.
+      </message>
+      <message name="IDS_EMAIL_MISMATCH" desc="">
+         Logon with this Google Account is not permitted.
+      </message>
+      <message name="IDS_GAIA_ACCOUNT_FULLNAME" desc="">
+        Google Credential Provider Helper
+      </message>
+      <message name="IDS_GAIA_ACCOUNT_COMMENT" desc="">
+        Used to run Google Credential Provider sign in page.
+      </message>
+      <message name="IDS_AUTH_FID_DESCRIPTION" desc="">
+        Logon using your Google Account.
+      </message>
+      <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
+        Google Account
+      </message>
+      <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
+        Logon using your updated Google Account password.
+      </message>
+      <message name="IDS_REAUTH_FID_PROVIDER_LABEL" desc="">
+        Update password
+      </message>
+      <message name="IDS_ERROR_DIALOG_TITLE" desc="">
+        Google Account Logon
+      </message>
+      <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
+        Google user
+      </message>
+    </messages>
+  </release>
+</grit>

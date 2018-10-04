@@ -34,6 +34,7 @@
       "components/components_strings.grd",
       "components/policy/resources/policy_templates.grd",
       "content/app/strings/content_strings.grd",
+      "credential_provider/gaiacp/gaia_resources.grd",
       "device/bluetooth/bluetooth_strings.grd",
       "device/fido/fido_strings.grd",
       "extensions/strings/extensions_strings.grd",
