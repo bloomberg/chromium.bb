@@ -44,9 +44,9 @@ from py_utils import discover
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
     'android-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
     'android_arm64-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
-    'Linux Builder Perf': ['chromedriver'],
-    'Mac Builder Perf': ['chromedriver'],
-    'Win Builder Perf': ['chromedriver'],
+    'linux-builder-perf': ['chromedriver'],
+    'mac-builder-perf': ['chromedriver'],
+    'win32-builder-perf': ['chromedriver'],
     'win64-builder-perf': ['chromedriver'],
 }
 

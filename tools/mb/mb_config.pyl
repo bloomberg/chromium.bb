@@ -386,11 +386,7 @@
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
       'linux-builder-perf': 'official_goma_perf',
-      # TODO(crbug.com/828468): Remove 'Mac Builder Perf'
-      'Mac Builder Perf': 'official_goma',
       'mac-builder-perf': 'official_goma',
-      # TODO(crbug.com/828472): Remove 'Win Builder Perf'
-      'Win Builder Perf': 'official_goma_x86',
       'win32-builder-perf': 'official_goma_x86',
       'win64-builder-perf': 'official_goma',
     },
