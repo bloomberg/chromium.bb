@@ -86,6 +86,12 @@ class UtilitySandboxedProcessLauncherDelegate
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
+  bool DisableDefaultPolicy() override {
+    // Default policy is disabled for audio process to allow audio drivers
+    // to read device properties (https://crbug.com/883326).
+    return sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO;
+  }
+
   bool ShouldLaunchElevated() override {
     return sandbox_type_ ==
            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
