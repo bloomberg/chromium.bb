@@ -306,6 +306,7 @@ void SyncedBookmarkTracker::TraverseAndAppend(
     const bookmarks::BookmarkNode* node,
     std::vector<const SyncedBookmarkTracker::Entity*>* ordered_entities) const {
   const SyncedBookmarkTracker::Entity* entity = GetEntityForBookmarkNode(node);
+  DCHECK(entity);
   DCHECK(entity->IsUnsynced());
   DCHECK(!entity->metadata()->is_deleted());
   ordered_entities->push_back(entity);
@@ -314,8 +315,9 @@ void SyncedBookmarkTracker::TraverseAndAppend(
     const bookmarks::BookmarkNode* child = node->GetChild(i);
     const SyncedBookmarkTracker::Entity* child_entity =
         GetEntityForBookmarkNode(child);
+    DCHECK(child_entity);
     if (!child_entity->IsUnsynced()) {
-      // If the entity has no local change, no need to check it's children. If
+      // If the entity has no local change, no need to check its children. If
       // any of the children would have a pending commit, it would be a root for
       // a separate tree in the forest built in
       // ReorderEntitiesWithLocalNonDeletions() and will be handled by another

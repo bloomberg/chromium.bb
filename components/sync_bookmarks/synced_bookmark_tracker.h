@@ -73,7 +73,7 @@ class SyncedBookmarkTracker {
     const bookmarks::BookmarkNode* bookmark_node_;
 
     // Serializable Sync metadata.
-    std::unique_ptr<sync_pb::EntityMetadata> metadata_;
+    const std::unique_ptr<sync_pb::EntityMetadata> metadata_;
 
     DISALLOW_COPY_AND_ASSIGN(Entity);
   };
