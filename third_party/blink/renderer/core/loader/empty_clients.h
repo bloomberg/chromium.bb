@@ -283,7 +283,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;
 
-  void DidStartLoading(LoadStartType) override {}
+  void DidStartLoading() override {}
   void ProgressEstimateChanged(double) override {}
   void DidStopLoading() override {}
 

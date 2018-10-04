@@ -313,7 +313,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&) override;
-  void DidStartLoading(bool) override;
+  void DidStartLoading() override;
   void DidStopLoading() override;
   void DidCreateDocumentLoader(WebDocumentLoader*) override;
   service_manager::InterfaceProvider* GetInterfaceProvider() override {

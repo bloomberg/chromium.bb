@@ -685,9 +685,6 @@ void NavigationSimulator::CommitSameDocument() {
     CHECK_EQ(STARTED, state_);
   }
 
-  render_frame_host_->OnMessageReceived(
-      FrameHostMsg_DidStartLoading(render_frame_host_->GetRoutingID(), false));
-
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.url = navigation_url_;

@@ -3140,59 +3140,51 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 // Ensure that WebContentsImpl does not stop loading too early when there still
 // is a pending renderer. This can happen if a same-process non user-initiated
 // navigation completes while there is an ongoing cross-process navigation.
-// TODO(fdegans): Rewrite the test for PlzNavigate when DidStartLoading and
-// DidStopLoading are properly called.
-TEST_F(WebContentsImplTest, NoEarlyStop) {
+// TODO(clamy): Rewrite that test when the renderer-initiated non-user-initiated
+// navigation no longer kills the speculative RenderFrameHost. See
+// https://crbug.com/889039.
+TEST_F(WebContentsImplTest, DISABLED_NoEarlyStop) {
   const GURL kUrl1("http://www.chromium.org");
   const GURL kUrl2("http://www.google.com");
-  const GURL kUrl3("http://www.wikipedia.org");
+  const GURL kUrl3("http://www.chromium.org/foo");
 
   contents()->NavigateAndCommit(kUrl1);
 
   TestRenderFrameHost* current_rfh = main_test_rfh();
 
-  // Start a browser-initiated cross-process navigation to |kUrl2|. There should
-  // be a pending RenderFrameHost and the WebContents should be loading.
-  controller().LoadURL(
-      kUrl2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+  // Start a browser-initiated cross-process navigation to |kUrl2|. The
+  // WebContents should be loading.
+  auto cross_process_navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  cross_process_navigation->ReadyToCommit();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
-  ASSERT_TRUE(pending_rfh);
   EXPECT_TRUE(contents()->IsLoading());
 
   // The current RenderFrameHost starts a non user-initiated render-initiated
-  // navigation and sends a DidStartLoading IPC. The WebContents should still be
-  // loading.
-  current_rfh->OnMessageReceived(
-      FrameHostMsg_DidStartLoading(current_rfh->GetRoutingID(), false));
-  EXPECT_TRUE(contents()->IsLoading());
-
-  // Simulate the pending RenderFrameHost DidStartLoading. There should still be
-  // a pending RenderFrameHost and the WebContents should still be loading.
-  pending_rfh->PrepareForCommit();
-  pending_rfh->OnMessageReceived(
-      FrameHostMsg_DidStartLoading(pending_rfh->GetRoutingID(), false));
-  EXPECT_EQ(contents()->GetPendingMainFrame(), pending_rfh);
+  // navigation. The WebContents should still be loading.
+  auto same_process_navigation =
+      NavigationSimulator::CreateRendererInitiated(kUrl3, current_rfh);
+  same_process_navigation->SetHasUserGesture(false);
+  same_process_navigation->Start();
   EXPECT_TRUE(contents()->IsLoading());
 
   // Simulate the commit and DidStopLoading from the renderer-initiated
   // navigation in the current RenderFrameHost. There should still be a pending
   // RenderFrameHost and the WebContents should still be loading.
-  current_rfh->SendNavigateWithModificationCallback(
-      0, true, kUrl3, base::Bind(SetAsNonUserGesture));
+  same_process_navigation->Commit();
   current_rfh->OnMessageReceived(
       FrameHostMsg_DidStopLoading(current_rfh->GetRoutingID()));
   EXPECT_EQ(contents()->GetPendingMainFrame(), pending_rfh);
   EXPECT_TRUE(contents()->IsLoading());
-  // It should commit.
+
+  // The same-process navigation should have committed.
   ASSERT_EQ(2, controller().GetEntryCount());
   EXPECT_EQ(kUrl3, controller().GetLastCommittedEntry()->GetURL());
 
-  // Commit the navigation. The formerly pending RenderFrameHost should now be
-  // the current RenderFrameHost and the WebContents should still be loading.
-  contents()->TestDidNavigate(pending_rfh, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  // Commit the cross-process navigation. The formerly pending RenderFrameHost
+  // should now be the current RenderFrameHost and the WebContents should still
+  // be loading.
+  cross_process_navigation->Commit();
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   TestRenderFrameHost* new_current_rfh = main_test_rfh();
   EXPECT_EQ(new_current_rfh, pending_rfh);

@@ -494,6 +494,9 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state,
 
 void FrameTreeNode::DidStartLoading(bool to_different_document,
                                     bool was_previously_loading) {
+  TRACE_EVENT2("navigation", "FrameTreeNode::DidStartLoading",
+               "frame_tree_node", frame_tree_node_id(), "to different document",
+               to_different_document);
   // Any main frame load to a new document should reset the load progress since
   // it will replace the current page and any frames. The WebContents will
   // be notified when DidChangeLoadProgress is called.
@@ -513,6 +516,8 @@ void FrameTreeNode::DidStartLoading(bool to_different_document,
 }
 
 void FrameTreeNode::DidStopLoading() {
+  TRACE_EVENT1("navigation", "FrameTreeNode::DidStopLoading", "frame_tree_node",
+               frame_tree_node_id());
   // Set final load progress and update overall progress. This will notify
   // the WebContents of the load progress change.
   DidChangeLoadProgress(kLoadingProgressDone);

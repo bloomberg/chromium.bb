@@ -7754,17 +7754,13 @@ class TestStartStopCallbackWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestStartStopCallbackWebFrameClient()
-      : start_loading_count_(0),
-        stop_loading_count_(0),
-        different_document_start_count_(0) {}
+      : start_loading_count_(0), stop_loading_count_(0) {}
   ~TestStartStopCallbackWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidStartLoading(bool to_different_document) override {
-    TestWebFrameClient::DidStartLoading(to_different_document);
+  void DidStartLoading() override {
+    TestWebFrameClient::DidStartLoading();
     start_loading_count_++;
-    if (to_different_document)
-      different_document_start_count_++;
   }
   void DidStopLoading() override {
     TestWebFrameClient::DidStopLoading();
@@ -7773,14 +7769,10 @@ class TestStartStopCallbackWebFrameClient
 
   int StartLoadingCount() const { return start_loading_count_; }
   int StopLoadingCount() const { return stop_loading_count_; }
-  int DifferentDocumentStartCount() const {
-    return different_document_start_count_;
-  }
 
  private:
   int start_loading_count_;
   int stop_loading_count_;
-  int different_document_start_count_;
 };
 
 TEST_F(WebFrameTest, PushStateStartsAndStops) {
@@ -7791,7 +7783,6 @@ TEST_F(WebFrameTest, PushStateStartsAndStops) {
 
   EXPECT_EQ(client.StartLoadingCount(), 2);
   EXPECT_EQ(client.StopLoadingCount(), 2);
-  EXPECT_EQ(client.DifferentDocumentStartCount(), 1);
 }
 
 class TestDidNavigateCommitTypeWebFrameClient
@@ -10651,10 +10642,9 @@ class CallbackOrderingWebFrameClient
   ~CallbackOrderingWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidStartLoading(bool to_different_document) override {
+  void DidStartLoading() override {
     EXPECT_EQ(0, callback_count_++);
-    FrameTestHelpers::TestWebFrameClient::DidStartLoading(
-        to_different_document);
+    FrameTestHelpers::TestWebFrameClient::DidStartLoading();
   }
   void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
     EXPECT_EQ(1, callback_count_++);

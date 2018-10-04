@@ -389,7 +389,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Navigational notifications ------------------------------------------
 
   // These notifications bracket any loading that occurs in the WebFrame.
-  virtual void DidStartLoading(bool to_different_document) {}
+  virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
 
   // Notification that some progress was made loading the current frame.

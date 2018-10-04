@@ -165,7 +165,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
   virtual void DispatchWillSubmitForm(HTMLFormElement*) = 0;
 
-  virtual void DidStartLoading(LoadStartType) = 0;
+  virtual void DidStartLoading() = 0;
   virtual void ProgressEstimateChanged(double progress_estimate) = 0;
   virtual void DidStopLoading() = 0;
 

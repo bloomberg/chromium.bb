@@ -321,9 +321,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     ui::PageTransition transition,
     int response_code,
     const ModificationCallback& callback) {
-  if (!IsBrowserSideNavigationEnabled())
-    OnDidStartLoading(true);
-
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = nav_entry_id;
   params.url = url;
