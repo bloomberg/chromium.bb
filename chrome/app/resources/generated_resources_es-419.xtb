@@ -1778,7 +1778,7 @@
 <translation id="3650952250015018111">Permitir que "<ph name="APP_NAME" />" acceda a:</translation>
 <translation id="3651488188562686558">Se desconecta de Wi-Fi.</translation>
 <translation id="3652817283076144888">Inicializando</translation>
-<translation id="3653160965917900914">Network File Shares</translation>
+<translation id="3653160965917900914">Archivos compartidos de red</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer la configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
@@ -1905,7 +1905,7 @@
 <translation id="38275787300541712">Presiona Intro al terminar</translation>
 <translation id="3827774300009121996">&amp;Pantalla completa</translation>
 <translation id="3828029223314399057">Buscar favoritos</translation>
-<translation id="3829765597456725595">Archivos compartidos mediante SMB</translation>
+<translation id="3829765597456725595">Archivos compartidos SMB</translation>
 <translation id="3830674330436234648">No hay reproducciones disponibles</translation>
 <translation id="3831436149286513437">Sugerencias de búsqueda de Google Drive</translation>
 <translation id="3831486154586836914">Modo de vista general de ventana activado</translation>
@@ -3158,7 +3158,7 @@
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> podrá leer los documentos que envíes a imprimir a través de <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Configuración de tarjetas de crédito</translation>
-<translation id="5763315388120433852">Configura o administra "Network File Shares".</translation>
+<translation id="5763315388120433852">Configura o administra archivos compartidos de red.</translation>
 <translation id="5763751966069581670">No se encuentraron dispositivos USB</translation>
 <translation id="5764483294734785780">Guardar audio como...</translation>
 <translation id="57646104491463491">Fecha de modificación</translation>

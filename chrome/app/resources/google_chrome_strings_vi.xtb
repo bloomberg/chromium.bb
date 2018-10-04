@@ -292,7 +292,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="9084668267983921457">Lỗi chứng chỉ xác thực. Vui lòng đăng nhập lại vào Google Chrome hoặc liên hệ với quản trị viên của bạn để biết thêm thông tin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS sẽ khởi động lại sau một giờ}other{Chrome OS sẽ khởi động lại sau # giờ}}</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
-<translation id="9138603949443464873">Để áp dụng các mục thay đổi của bạn, hãy chạy lại Chrome</translation>
+<translation id="9138603949443464873">Để áp dụng các mục thay đổi của bạn, hãy khởi động lại Chrome</translation>
 <translation id="919706545465235479">Cập nhật Chrome để bắt đầu đồng bộ hóa</translation>
 <translation id="924447568950697217">Đặt Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="989369509083708165">Google Chrome là trình duyệt mặc định của bạn</translation>

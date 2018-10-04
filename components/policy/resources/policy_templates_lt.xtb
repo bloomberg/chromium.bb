@@ -1037,7 +1037,7 @@
 
       Kad sertifikato skaidrumo įgyvendinimas būtu išjungtas, kai nustatyta ši politika, maiša turi būti sudaryta iš „subjectPublicKeyInfo“ vertės, pateiktos CA sertifikate, kuris atpažįstamas kaip pasenusi sertifikavimo institucija (CA). Pasenusi CA yra CA, kuria pagal numatytuosius nustatymus pasitiki viena ar daugiau „<ph name="PRODUCT_NAME" />“ palaikomų operacinių sistemų, bet nepasitiki „Android“ atvirojo šaltinio projektas arba „<ph name="PRODUCT_OS_NAME" />“.
 
-      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI kontrolinis kodas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
+      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI piršto antspaudas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
 
       Jei ši politika nenustatyta, bet koks sertifikatas, kurį reikia atskleisti taikant sertifikato skaidrumą, bus laikomas nepatikimu, jei nebus atskleistas atsižvelgiant į sertifikato skaidrumo politikos nuostatas.</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
@@ -2647,7 +2647,7 @@
       2. Tai yra „subjectPublicKeyInfo“ vertės, kuri pateikta sertifikatų grandinės CA sertifikate, maiša, CA sertifikatas apribotas naudojant „X.509v3“ „nameConstraints“ plėtinį, kintamajame „permittedSubtrees“ yra viena ar daugiau „directoryName“ „nameConstraints“ verčių ir kintamajame „directoryName“ yra „organizationName“ atributas.
       3. Tai yra „subjectPublicKeyInfo“ vertės, kuri pateikta sertifikatų grandinės CA sertifikate, maiša, CA sertifikato temoje yra vienas ar daugiau „organizationName“ atributų ir serverio sertifikate yra toks pat skaičius „organizationName“ atributų, pateiktų tokia pačia tvarka ir su identiškomis vertėmis (atitinka kiekvienas baitas).
 
-      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI kontrolinis kodas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
+      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI piršto antspaudas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
 
       Jei ši politika nenustatyta, bet koks sertifikatas, kurį reikia atskleisti taikant sertifikato skaidrumą, bus laikomas nepatikimu, jei nebus atskleistas atsižvelgiant į sertifikato skaidrumo politikos nuostatas.</translation>
 <translation id="7818131573217430250">Nustatyti numatytąją didelio kontrasto režimo prisijungimo ekrane būklę</translation>
@@ -2890,7 +2890,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="841977920223099909">Įspėjimo dėl slaptažodžio apsaugos aktyviklis</translation>
 <translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikomas kiekvieną kartą paleidus iš naujo</translation>
 <translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
-<translation id="8433423491036718210">Įmonių prisijungimo URL, kuriais slaptažodžio apsaugos paslauga turėtų užfiksuoti slaptažodžio kontrolinį kodą, sąrašo konfigūravimas.</translation>
+<translation id="8433423491036718210">Įmonių prisijungimo URL, kuriais slaptažodžio apsaugos paslauga turėtų užfiksuoti slaptažodžio piršto antspaudą, sąrašo konfigūravimas.</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="8459216513698220096">Nurodoma, ar apdorojama naudotojo politika iš kompiuterio GPO ir kaip apdorojama.
 
@@ -2909,7 +2909,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
 <translation id="8498293625012059298">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio piršto antspaudą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
       Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
@@ -3132,11 +3132,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
 <translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
-<translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio kontrolinis kodas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
+<translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio piršto antspaudas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio kontrolinis kodas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
-      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio kontrolinis kodas bus užfiksuotas tik adresu https://accounts.google.com.
+      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio piršto antspaudas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
+      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio piršto antspaudas bus užfiksuotas tik adresu https://accounts.google.com.
       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>

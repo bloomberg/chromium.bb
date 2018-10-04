@@ -359,7 +359,7 @@
 <translation id="3366477098757335611">కార్డ్‌లను చూడండి</translation>
 <translation id="3369192424181595722">గడియారం లోపం</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
-<translation id="3377188786107721145">విధాన అన్వయ ఎర్రర్</translation>
+<translation id="3377188786107721145">విధాన అన్వయ లోపం</translation>
 <translation id="3380365263193509176">తెలియని లోపం</translation>
 <translation id="3380864720620200369">క్లయింట్ ID:</translation>
 <translation id="3387261909427947069">చెల్లింపు పద్ధతులు</translation>
@@ -624,16 +624,15 @@
 <translation id="5230733896359313003">బట్వాడా చిరునామా</translation>
 <translation id="5250209940322997802">"నెట్‌వర్క్‌కు కనెక్ట్ చేయండి"</translation>
 <translation id="5251803541071282808">క్లౌడ్</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />సాఫ్ట్‌వేర్‌ను తాత్కాలికంగా నిలిపివేయడానికి ఈ దశలను పాటించండి తద్వారా మీరు వెబ్‌ను ప్రాప్యత చేయవచ్చు. మీకు నిర్వాహక అధికారాలు అవసరం.<ph name="END_PARAGRAPH" />
+<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />సాఫ్ట్‌వేర్‌ను తాత్కాలికంగా నిలిపివేయడానికి ఈ దశలను పాటించండి తద్వారా మీరు వెబ్‌ను యాక్సెస్ చేయవచ్చు. మీకు నిర్వాహక అధికారాలు అవసరం.<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />ప్రారంభించు<ph name="END_BOLD" /> క్లిక్ చేయండి, ఆపై <ph name="BEGIN_BOLD" />"స్థానిక సేవలను వీక్షించు"<ph name="END_BOLD" />ను శోధించి, ఎంచుకోండి
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> ఎంచుకోండి
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />ప్రారంభ రకం<ph name="END_BOLD" />లో, <ph name="BEGIN_BOLD" />నిలిపివేయబడింది<ph name="END_BOLD" /> ఎంచుకోండి
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />సేవ స్థితి<ph name="END_BOLD" />లో, <ph name="BEGIN_BOLD" />ఆపివేయి<ph name="END_BOLD" /> క్లిక్ చేయండి
+    <ph name="LIST_ITEM" />LIST_ITEM<ph name="BEGIN_BOLD" />ప్రారంభ రకం<ph name="END_BOLD" />లో, <ph name="BEGIN_BOLD" />ఆపివేయి<ph name="END_BOLD" /> క్లిక్ చేయండి
+<ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />సేవ స్థితిలో<ph name="END_BOLD" />,  <ph name="BEGIN_BOLD" />ఆపివేయి<ph name="END_BOLD" />ని క్లిక్ చేయండి
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />వర్తింపజేయి<ph name="END_BOLD" /> క్లిక్ చేయండి, ఆపై <ph name="BEGIN_BOLD" />సరే<ph name="END_BOLD" /> క్లిక్ చేయండి
-    <ph name="LIST_ITEM" />మీ కంప్యూటర్ నుండి శాశ్వతంగా సాఫ్ట్‌వేర్‌ను ఎలా తొలగించాలో తెలుసుకోవడానికి <ph name="BEGIN_LEARN_MORE_LINK" />Chrome సహాయ కేంద్రం<ph name="END_LEARN_MORE_LINK" />ని సందర్శించండి
-    <ph name="END_LIST" /></translation>
+    <ph name="LIST_ITEM" /><ph name="BEGIN_LEARN_MORE_LINK" />మీ కంప్యూటర్ నుండి శాశ్వతంగా సాఫ్ట్‌వేర్‌ను ఎలా తొలగించాలో తెలుసుకోవడానికి <ph name="END_LEARN_MORE_LINK" />Chrome సహాయ కేంద్రం<ph name="END_LIST" />ని సందర్శించండి</translation>
 <translation id="5285570108065881030">సేవ్ చేసిన అన్ని పాస్‌వర్డ్‌లను చూపు</translation>
 <translation id="5287240709317226393">కుక్కీలను చూపించు</translation>
 <translation id="5288108484102287882">విధాన విలువల క్రమబద్ధీకరణ హెచ్చరికలను జారీ చేసింది</translation>

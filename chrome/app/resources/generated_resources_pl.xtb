@@ -982,7 +982,7 @@
 <translation id="2464089476039395325">Serwer proxy HTTP</translation>
 <translation id="2468205691404969808">Zapisuje Twoje ustawienia w plikach cookie, nawet jeśli nie odwiedzasz tych stron</translation>
 <translation id="2468902267404883140">Nie można połączyć się z telefonem. Upewnij się, że używasz zgodnego telefonu z Androidem oraz że jest on włączony i znajduje się w zasięgu ręki. &lt;a&gt;Więcej informacji&lt;/a&gt;</translation>
-<translation id="247051149076336810">URL magazynu plików</translation>
+<translation id="247051149076336810">URL udziału plików</translation>
 <translation id="2470702053775288986">Wyłączono nieobsługiwane rozszerzenia</translation>
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
@@ -1781,7 +1781,7 @@
 <translation id="3650952250015018111">Zezwól aplikacji „<ph name="APP_NAME" />” na dostęp do:</translation>
 <translation id="3651488188562686558">rozłączy się z siecią Wi-Fi</translation>
 <translation id="3652817283076144888">Inicjuję</translation>
-<translation id="3653160965917900914">Sieciowe magazyny plików</translation>
+<translation id="3653160965917900914">Sieciowe udziały plików</translation>
 <translation id="3653999333232393305">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do mikrofonu</translation>
 <translation id="3654045516529121250">Odczyt ustawień ułatwień dostępu</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ma stały dostęp do jednego pliku.}few{Ma stały dostęp do # plików.}many{Ma stały dostęp do # plików.}other{Ma stały dostęp do # pliku.}}</translation>
@@ -1908,7 +1908,7 @@
 <translation id="38275787300541712">Naciśnij Enter po zakończeniu.</translation>
 <translation id="3827774300009121996">&amp;Pełny ekran</translation>
 <translation id="3828029223314399057">Przeszukaj zakładki</translation>
-<translation id="3829765597456725595">Magazyn plików SMB</translation>
+<translation id="3829765597456725595">Udział plików SMB</translation>
 <translation id="3830674330436234648">Odtwarzanie jest niedostępne</translation>
 <translation id="3831436149286513437">Podpowiedzi z Dysku Google podczas wyszukiwania</translation>
 <translation id="3831486154586836914">Jesteś w trybie przeglądu okien</translation>
@@ -3161,7 +3161,7 @@
 <translation id="5756163054456765343">C&amp;entrum pomocy</translation>
 <translation id="5759728514498647443">Dokumenty wysłane do drukowania z aplikacji <ph name="APP_NAME" /> można odczytać w aplikacji <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Ustawienia kart kredytowych</translation>
-<translation id="5763315388120433852">Skonfiguruj sieciowe magazyny plików i zarządzaj nimi.</translation>
+<translation id="5763315388120433852">Skonfiguruj sieciowe udziały plików i zarządzaj nimi.</translation>
 <translation id="5763751966069581670">Nie znaleziono urządzeń USB</translation>
 <translation id="5764483294734785780">Za&amp;pisz element audio jako...</translation>
 <translation id="57646104491463491">Data modyfikacji</translation>

@@ -2235,10 +2235,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6944167205014013774">Thông tin về việc sử dụng các ứng dụng Linux được gửi về
       máy chủ.
 
-      Nếu không đặt chính sách hoặc đặt thành false, thông tin sử dụng sẽ không được
-      báo cáo. Nếu đặt chính sách thành true, thông tin sử dụng sẽ được báo cáo.
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thông tin sử dụng sẽ không được
+      báo cáo. Nếu bạn đặt chính sách này thành true, thông tin sử dụng sẽ được báo cáo.
 
-      Chính sách này chỉ áp dụng nếu bật tính năng hỗ trợ ứng dụng Linux.</translation>
+      Chính sách này chỉ áp dụng nếu tính năng hỗ trợ ứng dụng Linux ở trạng thái bật.</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
 <translation id="6965859329738616662">Nêu rõ liệu mô hình giảm độ sáng thông minh có được phép kéo dài thời gian cho đến khi màn hình tối đi hay không.

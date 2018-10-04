@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">Nėra tinklų</translation>
 <translation id="1056898198331236512">Įspėjimas</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">Registruojamas kontrolinis kodas</translation>
+<translation id="1059855432287631118">Registruojamas piršto antspaudas</translation>
 <translation id="1061904396131502319">Beveik atėjo laikas padaryti pertrauką</translation>
 <translation id="1062407476771304334">Pakeisti</translation>
 <translation id="1067048845568873861">Sukurtas</translation>
@@ -351,7 +351,7 @@
 <translation id="1506061864768559482">Paieškos variklis</translation>
 <translation id="1507170440449692343">Šis puslapis užblokuotas, kad nepasiektų jūsų fotoaparato.</translation>
 <translation id="1507246803636407672">&amp;Atmesti</translation>
-<translation id="1508491105858779599">Palieskite pirštu kontrolinio kodo jutiklį, kad atrakintumėte įrenginį.</translation>
+<translation id="1508491105858779599">Palieskite pirštu piršto antspaudo jutiklį, kad atrakintumėte įrenginį.</translation>
 <translation id="1509281256533087115">Pasiekite bet kurį „<ph name="DEVICE_NAME_AND_VENDOR" />“ per USB</translation>
 <translation id="150962533380566081">Netinkamas PUK.</translation>
 <translation id="1510030919967934016">Šis puslapis buvo užblokuotas, kad nebūtų galima stebėti jūsų vietovės.</translation>
@@ -499,7 +499,7 @@
 <translation id="1712349894969001173">Gaukite šį slaptažodį „iPhone“ įrenginyje</translation>
 <translation id="1712552549805331520"><ph name="URL" /> prašo leidimo nuolat saugoti duomenis vietiniame kompiuteryje</translation>
 <translation id="1718835860248848330">Paskutinė valanda</translation>
-<translation id="1719312230114180055">Pastaba: kontrolinis kodas gali būti ne toks saugus kaip sudėtingas slaptažodis ar PIN kodas.</translation>
+<translation id="1719312230114180055">Pastaba: piršto antspaudas gali būti ne toks saugus kaip sudėtingas slaptažodis ar PIN kodas.</translation>
 <translation id="1720318856472900922">TLS WWW serverio tapatybės nustatymas</translation>
 <translation id="1721937473331968728">Prie <ph name="CLOUD_PRINT_NAME" /> galite pridėti įprastų spausdintuvų, prijungtų prie jūsų kompiuterio.</translation>
 <translation id="1723824996674794290">&amp;Naujas langas</translation>
@@ -598,7 +598,7 @@
 <translation id="1852799913675865625">Bandant skaityti failą įvyko klaida: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="1856715684130786728">Pridėti vietą...</translation>
-<translation id="1856813161013948396">Praleiskite užrakinimo ekraną tiesiog palietę kontrolinio kodo jutiklį. Spustelėkite ir konfigūruokite.</translation>
+<translation id="1856813161013948396">Praleiskite užrakinimo ekraną tiesiog palietę piršto antspaudo jutiklį. Spustelėkite ir konfigūruokite.</translation>
 <translation id="1858585891038687145">Pasitikėti šiuo sertifikatu nustatant programinės įrangos kūrėjus</translation>
 <translation id="1861262398884155592">Šis aplankas tuščias</translation>
 <translation id="1864111464094315414">Prisijungimas</translation>
@@ -644,7 +644,7 @@
 <translation id="192494336144674234">Atidaryti naudojant</translation>
 <translation id="1925021887439448749">Įveskite tinkintą žiniatinklio adresą</translation>
 <translation id="1926339101652878330">Šiems nustatymams taikoma įmonės politika. Daugiau informacijos galite gauti susisiekę su administratoriumi.</translation>
-<translation id="1927632033341042996"><ph name="NEW_FINGER_NUMBER" /> kontrolinis kodas</translation>
+<translation id="1927632033341042996"><ph name="NEW_FINGER_NUMBER" /> piršto antspaudas</translation>
 <translation id="1928202201223835302">Įveskite seną PIN kodą</translation>
 <translation id="1929546189971853037">Skaityti naršymo istoriją visuose įrenginiuose, kuriuose esate prisijungę</translation>
 <translation id="1931152874660185993">Neįdiegti jokie komponentai.</translation>
@@ -1035,7 +1035,7 @@
 <translation id="2534460670861217804">Saugus HTTP tarpinis serveris</translation>
 <translation id="253557089021624350">Aktyvumą palaikančių elementų skaičius</translation>
 <translation id="2538361623464451692">Sinchronizavimas išjungtas</translation>
-<translation id="2539876824180063438">Truputį pajudinkite smilių, kad būtų pridėtos skirtingos kontrolinio kodo dalys.</translation>
+<translation id="2539876824180063438">Truputį pajudinkite smilių, kad būtų pridėtos skirtingos piršto antspaudo dalys.</translation>
 <translation id="2541002089857695151">Optimizuoti perdavimą viso ekrano režimu?</translation>
 <translation id="2542049655219295786">„Google“ lentelė</translation>
 <translation id="2544853746127077729">Autentifikavimo sertifikatą atmetė tinklas</translation>
@@ -1457,7 +1457,7 @@
 <translation id="3154429428035006212">Neprijungta daugiau nei mėnesį</translation>
 <translation id="3156531245809797194">Jei norite naudoti „Chrome“, prisijunkite</translation>
 <translation id="3157931365184549694">Atkurti</translation>
-<translation id="3158033540161634471">Kontrolinio kodo nustatymas</translation>
+<translation id="3158033540161634471">Piršto antspaudo nustatymas</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (atsarginė kopija sukurta aparatinėje įrangoje)</translation>
 <translation id="316125635462764134">Pašalinti programą</translation>
 <translation id="3161522574479303604">Visos kalbos</translation>
@@ -1657,7 +1657,7 @@
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="3475447146579922140">„Google“ skaičiuoklė</translation>
 <translation id="3475538074809281797">{LINE_COUNT,plural, =1{&lt;1 eilutė nerodoma&gt;}one{&lt;$1 eilutė nerodoma&gt;}few{&lt;$1 eilutės nerodomos&gt;}many{&lt;$1 eilutės nerodoma&gt;}other{&lt;$1 eilučių nerodoma&gt;}}</translation>
-<translation id="3475843873335999118">Deja, kontrolinis kodas vis dar neatpažintas. Įveskite slaptažodį.</translation>
+<translation id="3475843873335999118">Deja, piršto antspaudas vis dar neatpažintas. Įveskite slaptažodį.</translation>
 <translation id="347670947055184738">Oi! Sistemai nepavyko pateikti įrenginio politikos.</translation>
 <translation id="347785443197175480">Toliau leisti <ph name="HOST" /> pasiekti fotoaparatą ir mikrofoną</translation>
 <translation id="3478685642445675458">Prieš pašalindami asmenį atrakinkite savo profilį.</translation>
@@ -1774,7 +1774,7 @@
 <translation id="363903084947548957">Kitas įvesties būdas</translation>
 <translation id="3640214691812501263">Pridėti „<ph name="EXTENSION_NAME" />“ naudotojui <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Plotis</translation>
-<translation id="3645372836428131288">Truputį pajudinkite pirštą, kad būtų užfiksuota kita kontrolinio kodo dalis.</translation>
+<translation id="3645372836428131288">Truputį pajudinkite pirštą, kad būtų užfiksuota kita piršto antspaudo dalis.</translation>
 <translation id="3648348069317717750">Aptiktas „<ph name="USB_DEVICE_NAME" />“</translation>
 <translation id="3649138363871392317">Nuotrauka buvo užfiksuota</translation>
 <translation id="3650845953328929506">Laukiama, kol žurnalas bus įkeltas.</translation>
@@ -2350,7 +2350,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4558426062282641716">Pateikta užklausa dėl leidimo automatiškai paleisti</translation>
 <translation id="4558491878126948419">Gaukite „<ph name="DEVICE_TYPE" />“ patarimų, „Google“ produktų naujinius ir bendrinkite atsiliepimus. Atsisakyti prenumeratos galėsite bet kuriuo metu.</translation>
 <translation id="4559617833001311418">Ši svetainė pasiekia judesio ir šviesos jutiklius.</translation>
-<translation id="4562155214028662640">Pridėti kontrolinį kodą</translation>
+<translation id="4562155214028662640">Pridėti piršto antspaudą</translation>
 <translation id="4563880231729913339">Trečias pirštas</translation>
 <translation id="4565377596337484307">Slėpti slaptažodį</translation>
 <translation id="4567772783389002344">Pridėti žodį</translation>
@@ -3331,7 +3331,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6007240208646052708">Paieška balsu jūsų kalba nepasiekiama.</translation>
 <translation id="6009781704028455063">Įtaisytas jutiklis</translation>
 <translation id="6010869025736512584">Pasiekiama vaizdo įrašų įvestis</translation>
-<translation id="6011193465932186973">Kontrolinis kodas</translation>
+<translation id="6011193465932186973">Piršto antspaudas</translation>
 <translation id="6011449291337289699">Išvalyti svetainės duomenis</translation>
 <translation id="6015796118275082299">Metai</translation>
 <translation id="6016551720757758985">„Powerwash“ grąžinant ankstesnę versiją patvirtinimas</translation>
@@ -3345,7 +3345,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6025215716629925253">Dėklo pėdsakas</translation>
 <translation id="6026047032548434446">Įdiegti programą?</translation>
 <translation id="6026819612896463875">„<ph name="WINDOW_TITLE" />“ – USB įrenginys prijungtas</translation>
-<translation id="6028117231645531007">Pridėti kontrolinį kodą</translation>
+<translation id="6028117231645531007">Pridėti piršto antspaudą</translation>
 <translation id="6029027682598229313">„Linux“ įdiegta.</translation>
 <translation id="6029587122245504742">Lėčiausias</translation>
 <translation id="6032912588568283682">Failų sistema</translation>
@@ -4116,7 +4116,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7186088072322679094">Laikyti įrankių juostoje</translation>
 <translation id="7187428571767585875">Registro vertės, kurios bus pašalintos arba pakeistos:</translation>
 <translation id="7189234443051076392">Įsitikinkite, kad įrenginyje yra pakankamai vietos</translation>
-<translation id="7189965711416741966">Kontrolinis kodas pridėtas.</translation>
+<translation id="7189965711416741966">Piršto antspaudas pridėtas.</translation>
 <translation id="7191159667348037">Nežinomas spausdintuvas (USB)</translation>
 <translation id="7191454237977785534">Išsaugoti failą kaip</translation>
 <translation id="7193374945610105795">Nėra išsaugotų <ph name="ORIGIN" /> slaptažodžių</translation>
@@ -4148,13 +4148,13 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7230787553283372882">Tinkinkite teksto dydį</translation>
 <translation id="7232750842195536390">Nepavyko pervardyti</translation>
 <translation id="7234406375359457793">Klaida įdedant bendrinamą objektą. Nurodytas bendrinamas objektas nepalaikomas.</translation>
-<translation id="7238585580608191973">SHA-256 kontrolinis kodas</translation>
+<translation id="7238585580608191973">SHA-256 piršto antspaudas</translation>
 <translation id="7240120331469437312">Alternatyvus sertifikato subjekto vardas</translation>
 <translation id="7240339475467890413">Prisijungti prie naujo viešosios interneto prieigos taško?</translation>
 <translation id="7241389281993241388">Jei norite importuoti programos sertifikatą, prisijunkite prie „<ph name="TOKEN_NAME" />“.</translation>
 <translation id="7243632151880336635">Išvalyti ir atsijungti</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (geriausia)</translation>
-<translation id="7246339268451149667">Įgalinti atrakinimą naudojant kontrolinį kodą?</translation>
+<translation id="7246339268451149667">Įgalinti atrakinimą naudojant piršto antspaudą?</translation>
 <translation id="7246947237293279874">FTP tarpinis serveris</translation>
 <translation id="725109152065019550">Deja, jūsų administratorius išjungė išorinę paskyros atmintinę.</translation>
 <translation id="7253521419891527137">&amp;Sužinokite daugiau</translation>
@@ -4708,7 +4708,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8050038245906040378">„Microsoft“ komercinio kodo pasirašymas</translation>
 <translation id="8053278772142718589">PKCS Nr. 12 failai</translation>
 <translation id="8053390638574070785">Iš naujo įkelti šį puslapį</translation>
-<translation id="8054029954190364711">Atrakinimo naudojant kontrolinį kodą funkcija</translation>
+<translation id="8054029954190364711">Atrakinimo naudojant piršto antspaudą funkcija</translation>
 <translation id="8054517699425078995">Šio tipo failas gali pakenkti įrenginiui. Ar vis tiek norite pasilikti „<ph name="FILE_NAME" />“?</translation>
 <translation id="8054563304616131773">Įveskite tinkamą el. pašto adresą</translation>
 <translation id="8054921503121346576">USB klaviatūra prijungta</translation>
@@ -5127,8 +5127,8 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8716931980467311658">Ištrinti visas „Linux“ programas ir duomenis „Linux“ failų aplanke iš šio „<ph name="DEVICE_TYPE" />“ įrenginio?</translation>
 <translation id="8719653885894320876">Nepavyko atsisiųsti „<ph name="PLUGIN_NAME" />“</translation>
 <translation id="8723829621484579639">Inkognito režimo antriniai kadrai, skirti: <ph name="PARENT_SITE" /></translation>
-<translation id="8724405322205516354">Kai rodoma ši piktograma, tapatybei nustatyti ar pirkimo operacijai patvirtinti naudokite kontrolinį kodą.</translation>
-<translation id="8724409975248965964">Kontrolinis kodas pridėtas</translation>
+<translation id="8724405322205516354">Kai rodoma ši piktograma, tapatybei nustatyti ar pirkimo operacijai patvirtinti naudokite piršto antspaudą.</translation>
+<translation id="8724409975248965964">Piršto antspaudas pridėtas</translation>
 <translation id="8724859055372736596">&amp;Rodyti aplanke</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8725178340343806893">Adresynas / žymės</translation>

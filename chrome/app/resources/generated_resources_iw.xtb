@@ -123,7 +123,7 @@
 <translation id="1171135284592304528">הדגש את האובייקט עם מיקוד המקלדת כשהוא משתנה</translation>
 <translation id="1173894706177603556">שנה שם</translation>
 <translation id="1174073918202301297">קיצור הדרך נוסף</translation>
-<translation id="117445914942805388">‏כדי לנקות את נתוני הגלישה מכל המכשירים המסונכרנים ומחשבון Google שלך, <ph name="BEGIN_LINK" />יש להיכנס להגדרות סנכרון<ph name="END_LINK" />.</translation>
+<translation id="117445914942805388">‏כדי לנקות את נתוני הגלישה מכל המכשירים המסונכרנים ומחשבון Google שלך, <ph name="BEGIN_LINK" />יש להיכנס להגדרות הסנכרון<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">הדפס...</translation>
 <translation id="117624967391683467">מעתיק את <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש, מודעות ושירותים נוספים של Google. אפשר לשנות את ההגדרה הזו בכתובת myaccount.google.com/activitycontrols/search.</translation>
@@ -1640,7 +1640,7 @@
 <translation id="3459697287128633276">‏כדי לאפשר לחשבונך לגשת אל חנות Google Play, עליך לבצע אימות אצל ספק הזהות שלך.</translation>
 <translation id="3459774175445953971">שונה לאחרונה:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> רוצה גישה אל טקסט ותמונות שהועתקו אל לוח העריכה.</translation>
-<translation id="3462311546193741693">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך כדי שניתן יהיה לנקות את הנתונים המסונכרנים.</translation>
+<translation id="3462311546193741693">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google, כדי שניתן יהיה לנקות את הנתונים המסונכרנים.</translation>
 <translation id="3462413494201477527">האם לבטל את הגדרת החשבון?</translation>
 <translation id="346431825526753">זהו חשבון לילדים, המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">לחץ על התמונה שלך</translation>
