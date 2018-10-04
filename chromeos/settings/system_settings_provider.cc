@@ -2,29 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/system_settings_provider.h"
+#include "chromeos/settings/system_settings_provider.h"
 
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace chromeos {
+namespace {
+// TODO(olsen): PerUserTimeZoneEnabled and FineGrainedTimeZoneDetectionEnabled
+// are duplicated in chrome/browser/chromeos/system/timezone_util.cc, which
+// is not visible from this package. Try to re-unify these functions by moving
+// timezone_util to src/chromeos too (out of src/chrome/browser).
+
+bool PerUserTimezoneEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisablePerUserTimezone);
+}
+
+bool FineGrainedTimeZoneDetectionEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFineGrainedTimeZoneDetection);
+}
+
+}  // namespace
 
 SystemSettingsProvider::SystemSettingsProvider(
     const NotifyObserversCallback& notify_cb)
     : CrosSettingsProvider(notify_cb) {
-  system::TimezoneSettings *timezone_settings =
+  system::TimezoneSettings* timezone_settings =
       system::TimezoneSettings::GetInstance();
   timezone_settings->AddObserver(this);
   timezone_value_.reset(
       new base::Value(timezone_settings->GetCurrentTimezoneID()));
   per_user_timezone_enabled_value_.reset(
-      new base::Value(system::PerUserTimezoneEnabled()));
+      new base::Value(PerUserTimezoneEnabled()));
   fine_grained_time_zone_enabled_value_.reset(
-      new base::Value(system::FineGrainedTimeZoneDetectionEnabled()));
+      new base::Value(FineGrainedTimeZoneDetectionEnabled()));
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
@@ -67,7 +85,7 @@ const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
 
 // The timezone is always trusted.
 CrosSettingsProvider::TrustedStatus
-    SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
   return TRUSTED;
 }
 

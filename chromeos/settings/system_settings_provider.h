@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
+#ifndef CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
+#define CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -20,8 +20,9 @@ class Value;
 
 namespace chromeos {
 
-class SystemSettingsProvider : public CrosSettingsProvider,
-                               public system::TimezoneSettings::Observer {
+class CHROMEOS_EXPORT SystemSettingsProvider
+    : public CrosSettingsProvider,
+      public system::TimezoneSettings::Observer {
  public:
   explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
   ~SystemSettingsProvider() override;
@@ -47,4 +48,4 @@ class SystemSettingsProvider : public CrosSettingsProvider,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_
+#endif  // CHROMEOS_SETTINGS_SYSTEM_SETTINGS_PROVIDER_H_

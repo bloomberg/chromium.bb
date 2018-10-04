@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/system_settings_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
