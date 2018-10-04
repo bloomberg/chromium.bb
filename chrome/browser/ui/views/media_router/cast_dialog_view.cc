@@ -99,7 +99,12 @@ bool CastDialogView::ShouldShowCloseButton() const {
 }
 
 base::string16 CastDialogView::GetWindowTitle() const {
-  return dialog_title_;
+  // |dialog_title_| may contain the presentation URL origin which is not
+  // relevant for non-tab sources. So we override it with the default title for
+  // those sources.
+  return selected_source_ == kTabSource
+             ? dialog_title_
+             : l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE);
 }
 
 int CastDialogView::GetDialogButtons() const {
@@ -187,6 +192,7 @@ bool CastDialogView::IsCommandIdEnabled(int command_id) const {
 void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
   selected_source_ = command_id;
   DisableUnsupportedSinks();
+  GetWidget()->UpdateWindowTitle();
   metrics_.OnCastModeSelected();
 }
 

@@ -13,9 +13,11 @@
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
 using testing::_;
@@ -138,6 +140,37 @@ TEST_F(MediaRouterViewsUITest, SinkFriendlyName) {
                   model.media_sinks()[0].friendly_name);
       }));
   ui_->OnResultsUpdated({sink_with_cast_modes});
+  ui_->RemoveObserver(&observer);
+}
+
+TEST_F(MediaRouterViewsUITest, SetDialogHeader) {
+  MockControllerObserver observer;
+  // Initially, the dialog header should simply say "Cast".
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce([&](const CastDialogModel& model) {
+        EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE),
+                  model.dialog_header());
+      });
+  ui_->AddObserver(&observer);
+  // We temporarily remove the observer here because the implementation calls
+  // OnModelUpdated() multiple times when the presentation request gets set.
+  ui_->RemoveObserver(&observer);
+
+  GURL gurl("https://example.com");
+  url::Origin origin = url::Origin::Create(gurl);
+  ui_->OnDefaultPresentationChanged(content::PresentationRequest(
+      content::GlobalFrameRoutingId(), {gurl}, origin));
+
+  // Now that the presentation request has been set, the dialog header contains
+  // its origin.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce([&](const CastDialogModel& model) {
+        EXPECT_EQ(
+            l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
+                                       base::UTF8ToUTF16(origin.host())),
+            model.dialog_header());
+      });
+  ui_->AddObserver(&observer);
   ui_->RemoveObserver(&observer);
 }
 
