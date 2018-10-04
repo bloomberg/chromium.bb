@@ -459,10 +459,10 @@ void TestingProfile::Init() {
       this, std::move(extension_prefs));
 
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
-      this, extensions::TestExtensionSystem::Build);
+      this, base::BindRepeating(&extensions::TestExtensionSystem::Build));
 
-  extensions::EventRouterFactory::GetInstance()->SetTestingFactory(this,
-                                                                   nullptr);
+  extensions::EventRouterFactory::GetInstance()->SetTestingFactory(
+      this, BrowserContextKeyedServiceFactory::TestingFactory());
 #endif
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
@@ -549,18 +549,20 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   history::HistoryService* history_service =
       static_cast<history::HistoryService*>(
           HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, BuildHistoryService));
+              this, base::BindRepeating(&BuildHistoryService)));
   if (!history_service->Init(
           no_db, history::HistoryDatabaseParamsForPath(GetPath()))) {
-    HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
+    HistoryServiceFactory::GetInstance()->SetTestingFactory(
+        this, BrowserContextKeyedServiceFactory::TestingFactory());
     return false;
   }
   // Some tests expect that CreateHistoryService() will also make the
   // InMemoryURLIndex available.
   InMemoryURLIndexFactory::GetInstance()->SetTestingFactory(
-      this, BuildInMemoryURLIndex);
+      this, base::BindRepeating(&BuildInMemoryURLIndex));
   // Disable WebHistoryService by default, since it makes network requests.
-  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
+  WebHistoryServiceFactory::GetInstance()->SetTestingFactory(
+      this, BrowserContextKeyedServiceFactory::TestingFactory());
   return true;
 }
 
@@ -571,18 +573,18 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      this, BuildOfflinePageModel);
+      this, base::BindRepeating(&BuildOfflinePageModel));
 #endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
   // This creates the BookmarkModel.
   ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, BuildBookmarkModel));
+      this, base::BindRepeating(&BuildBookmarkModel)));
 }
 
 void TestingProfile::CreateWebDataService() {
   WebDataServiceFactory::GetInstance()->SetTestingFactory(
-      this, BuildWebDataService);
+      this, base::BindRepeating(&BuildWebDataService));
 }
 
 void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
