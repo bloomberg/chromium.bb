@@ -13349,7 +13349,7 @@
       },
       'example_value': True,
       'id': 483,
-      'caption': '''Enables the Hardware Platform API to policy-installed extensions''',
+      'caption': '''Enables managed extensions to use the Enterprise Hardware Platform API''',
       'tags': [],
       'desc': '''When this policy is set to enabled, extensions installed by enterprise policy are allowed to use the Enterprise Hardware Platform API.
       When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
