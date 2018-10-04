@@ -1012,27 +1012,6 @@
       'win-rel',
     ],
     'modifications': {
-      # chromium
-      'mac-dbg': {
-        'args': [
-          'mac-debug/sizes',
-        ],
-      },
-      'mac-rel': {
-        'args': [
-          'mac-release/sizes',
-        ],
-      },
-      'linux-dbg': {
-        'args': [
-          'linux-debug-64/sizes',
-        ],
-      },
-      'linux-rel': {
-        'args': [
-          'linux-release-64/sizes',
-        ],
-      },
       # chromium.android.fyi
       'Android Cronet KitKat Builder': {
         'args': [

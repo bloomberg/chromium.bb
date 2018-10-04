@@ -28,6 +28,7 @@
         ],
       },
       'linux-rel': {
+        'mixins': ['linux-rel-args'],
         'additional_compile_targets': [
           'all',
         ],
@@ -41,6 +42,7 @@
         ],
       },
       'mac-rel': {
+        'mixins': ['mac-rel-args'],
         'additional_compile_targets': [
           'all',
         ],
@@ -958,7 +960,7 @@
         ],
       },
       'Linux ARM': {
-        'swarming_mixins': [
+        'mixins': [
           'linux-trusty',
           'arm_tester',
         ],
@@ -1378,7 +1380,7 @@
         },
       },
       'mac-osxbeta-rel': {
-        'swarming_mixins': [
+        'mixins': [
             'intel_iris_5100',
             'mac_10.14',
         ],
@@ -2266,7 +2268,7 @@
       'Mac FYI 10.14 Release (AMD)': {
         'os_type': 'mac',
         'browser_config': 'release',
-        'swarming_mixins': [
+        'mixins': [
           'amd_8870m',
           'gpu_pool',
           'limited_capacity_bot',
@@ -2280,7 +2282,7 @@
       'Mac FYI 10.14 Release (Intel)': {
         'os_type': 'mac',
         'browser_config': 'release',
-        'swarming_mixins': [
+        'mixins': [
           'gpu_pool',
           'intel_iris_5100',
           'limited_capacity_bot',
@@ -2294,7 +2296,7 @@
       'Mac FYI 10.14 Release (NVIDIA)': {
         'os_type': 'mac',
         'browser_config': 'release',
-        'swarming_mixins': [
+        'mixins': [
           'gpu_pool',
           'mac_10.14',
           'limited_capacity_bot',
@@ -3174,7 +3176,7 @@
         ],
       },
       'Mac10.10 Tests': {
-        'swarming_mixins': [
+        'mixins': [
             'mac_10.10',
             'no_gpu',
         ],
@@ -3184,7 +3186,7 @@
         },
       },
       'Mac10.11 Tests': {
-        'swarming_mixins': [
+        'mixins': [
             'mac_10.11',
             'no_gpu',
         ],
@@ -3194,7 +3196,7 @@
         },
       },
       'Mac10.12 Tests': {
-        'swarming_mixins': [
+        'mixins': [
             'mac_mini_10.12',
         ],
         'test_suites': {
@@ -3203,7 +3205,7 @@
         },
       },
       'Mac10.13 Tests': {
-        'swarming_mixins': [
+        'mixins': [
             'mac_10.13',
             'no_gpu',
         ],
@@ -3214,7 +3216,7 @@
         },
       },
       'Mac10.13 Tests (dbg)': {
-        'swarming_mixins': [
+        'mixins': [
             'mac_10.13',
             'no_gpu',
         ],
@@ -3278,7 +3280,7 @@
         ],
       },
       'Linux ChromiumOS MSan Tests': {
-        'swarming_mixins': [
+        'mixins': [
           'linux-trusty',
           'x86-64',
         ],
@@ -3290,7 +3292,7 @@
         ],
       },
       'Linux MSan Tests': {
-        'swarming_mixins': [
+        'mixins': [
           'linux-trusty',
           'x86-64',
         ],
@@ -3518,7 +3520,7 @@
       'WebRTC Chromium FYI Android Builder (dbg)': {},
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': {},
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
-        'swarming_mixins': [
+        'mixins': [
           'kitkat',
           'hammerhead',
         ],
@@ -3527,7 +3529,7 @@
         },
       },
       'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
-        'swarming_mixins': [
+        'mixins': [
           'marshmallow',
           'bullhead',
         ],
@@ -3554,7 +3556,7 @@
         ],
       },
       'WebRTC Chromium FYI Linux Tester': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'linux-trusty',
         ],
@@ -3581,7 +3583,7 @@
         ],
       },
       'WebRTC Chromium FYI Mac Tester': {
-        'swarming_mixins': [
+        'mixins': [
           'mac_mini_10.12',
         ],
         'test_suites': {
@@ -3607,7 +3609,7 @@
         ],
       },
       'WebRTC Chromium FYI Win10 Tester': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'win10',
         ],
@@ -3616,7 +3618,7 @@
         },
       },
       'WebRTC Chromium FYI Win7 Tester': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'win7',
         ],
@@ -3625,7 +3627,7 @@
         },
       },
       'WebRTC Chromium FYI Win8 Tester': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'win8',
         ],
@@ -3653,7 +3655,7 @@
         },
       },
       'Win10 Tests x64': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'win10',
         ],
@@ -3663,7 +3665,7 @@
         },
       },
       'Win10 Tests x64 (dbg)': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-64',
           'win10',
         ],
@@ -3673,7 +3675,7 @@
         },
       },
       'Win7 (32) Tests': {
-        'swarming_mixins': [
+        'mixins': [
           'x86-32',
           'win7',
         ],
