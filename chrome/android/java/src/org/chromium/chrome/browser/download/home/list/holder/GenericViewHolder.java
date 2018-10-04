@@ -63,37 +63,43 @@ public class GenericViewHolder extends OfflineItemViewHolder {
         if (iconId != mGenericIconId) {
             mGenericIconId = iconId;
 
-            Drawable icon = DrawableCompat.wrap(
-                    ApiCompatibilityUtils.getDrawable(itemView.getResources(), mGenericIconId));
-            DrawableCompat.setTintList(icon,
+            Drawable drawable = DrawableCompat.wrap(
+                    ApiCompatibilityUtils.getDrawable(itemView.getResources(), iconId));
+            DrawableCompat.setTintList(drawable,
                     AppCompatResources.getColorStateList(
                             itemView.getContext(), R.color.dark_mode_tint));
 
-            mThumbnail.setUnavailableDrawable(icon);
-            mThumbnail.setWaitingDrawable(icon);
+            mThumbnail.setUnavailableDrawable(drawable);
+            mThumbnail.setWaitingDrawable(drawable);
         }
 
         mSelectionView.setVisibility(mSelectionView.isSelected() ? View.VISIBLE : View.INVISIBLE);
         mThumbnail.setVisibility(mSelectionView.isSelected() ? View.INVISIBLE : View.VISIBLE);
+        updateThumbnailBackground(mThumbnail.getDrawable() != null);
     }
 
     @Override
     protected Drawable onThumbnailRetrieved(OfflineItemVisuals visuals) {
-        Resources resources = itemView.getResources();
         boolean hasThumbnail = visuals != null && visuals.icon != null;
+        updateThumbnailBackground(hasThumbnail);
 
         RoundedBitmapDrawable drawable = null;
         if (hasThumbnail) {
-            drawable = RoundedBitmapDrawableFactory.create(resources, visuals.icon);
+            drawable = RoundedBitmapDrawableFactory.create(itemView.getResources(), visuals.icon);
             drawable.setCircular(true);
-
-            mThumbnail.setBackground(null);
-        } else {
-            mThumbnail.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-            mThumbnail.getBackground().setLevel(
-                    resources.getInteger(R.integer.list_item_level_default));
         }
-
         return drawable;
+    }
+
+    private void updateThumbnailBackground(boolean hasThumbnail) {
+        if (hasThumbnail) {
+            mThumbnail.setBackground(null);
+        } else if (mThumbnail.getBackground() == null) {
+            Resources resources = itemView.getResources();
+            Drawable background = ApiCompatibilityUtils.getDrawable(
+                    resources, R.drawable.list_item_icon_modern_bg);
+            background.setLevel(resources.getInteger(R.integer.list_item_level_default));
+            mThumbnail.setBackground(background);
+        }
     }
 }

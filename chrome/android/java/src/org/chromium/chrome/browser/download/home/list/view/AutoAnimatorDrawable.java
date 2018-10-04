@@ -18,6 +18,8 @@ import android.support.annotation.Nullable;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * A helper {@link Drawable} that wraps another {@link Drawable} and starts/stops any
  * {@link Animatable} {@link Drawable}s in the {@link Drawable} hierarchy when this {@link Drawable}
@@ -37,7 +39,7 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
      *                 {@code drawable} is {@code null}.
      */
     public static Drawable wrap(@Nullable Drawable drawable) {
-        if (drawable == null) return null;
+        if (drawable == null || !shouldWrapDrawable(drawable)) return drawable;
         return new AutoAnimatorDrawable(drawable);
     }
 
@@ -68,6 +70,12 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
 
     private static void stopAnimatedDrawables(@Nullable Drawable drawable) {
         AutoAnimatorDrawable.animatedDrawableHelper(drawable, animatable -> animatable.stop());
+    }
+
+    private static boolean shouldWrapDrawable(@Nullable Drawable drawable) {
+        AtomicBoolean found = new AtomicBoolean();
+        AutoAnimatorDrawable.animatedDrawableHelper(drawable, animatable -> found.set(true));
+        return found.get();
     }
 
     @TargetApi(Build.VERSION_CODES.M)
