@@ -77,7 +77,8 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
     const std::string& provider_namespace,
     bool is_off_the_record)
-    : offline_item(offline_items_collection::ContentId(
+    : paused(fetch_description->start_paused),
+      offline_item(offline_items_collection::ContentId(
           provider_namespace,
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {

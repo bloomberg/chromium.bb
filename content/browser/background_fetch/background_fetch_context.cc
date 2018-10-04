@@ -84,7 +84,8 @@ void BackgroundFetchContext::DidGetInitializationData(
   for (auto& data : initialization_data) {
     CreateController(data.registration_id, data.registration, data.options,
                      data.icon, data.ui_title, data.num_completed_requests,
-                     data.num_requests, std::move(data.active_fetch_requests));
+                     data.num_requests, std::move(data.active_fetch_requests),
+                     /* start_paused = */ false);
   }
 }
 
@@ -196,6 +197,7 @@ void BackgroundFetchContext::DidGetPermission(
     // TODO(crbug.com/886896): Passed paused flag to CreateRegistration.
     data_manager_->BackgroundFetchDataManager::CreateRegistration(
         registration_id, requests, options, icon,
+        permission == BackgroundFetchPermission::ASK /* start_paused */,
         base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                        weak_factory_.GetWeakPtr(), registration_id));
     return;
@@ -316,7 +318,8 @@ void BackgroundFetchContext::OnRegistrationCreated(
     const BackgroundFetchRegistration& registration,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
-    int num_requests) {
+    int num_requests,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (hang_registration_creation_for_testing_) {
@@ -331,7 +334,7 @@ void BackgroundFetchContext::OnRegistrationCreated(
 
   CreateController(registration_id, registration, options, icon, options.title,
                    0u /* num_completed_requests */, num_requests,
-                   {} /* active_fetch_requests */);
+                   {} /* active_fetch_requests */, start_paused);
 }
 
 void BackgroundFetchContext::OnUpdatedUI(
@@ -375,7 +378,8 @@ void BackgroundFetchContext::CreateController(
     size_t num_completed_requests,
     size_t num_requests,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-        active_fetch_requests) {
+        active_fetch_requests,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
@@ -390,7 +394,7 @@ void BackgroundFetchContext::CreateController(
 
   controller->InitializeRequestStatus(num_completed_requests, num_requests,
                                       std::move(active_fetch_requests),
-                                      ui_title);
+                                      ui_title, start_paused);
   scheduler_->AddJobController(controller.get());
   job_controllers_.emplace(registration_id.unique_id(), std::move(controller));
 }

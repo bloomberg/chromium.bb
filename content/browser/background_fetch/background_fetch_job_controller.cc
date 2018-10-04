@@ -41,7 +41,8 @@ void BackgroundFetchJobController::InitializeRequestStatus(
     int total_downloads,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
         active_fetch_requests,
-    const std::string& ui_title) {
+    const std::string& ui_title,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't allow double initialization.
@@ -64,7 +65,7 @@ void BackgroundFetchJobController::InitializeRequestStatus(
       registration_id().unique_id(), ui_title, registration_id().origin(),
       icon_, completed_downloads, total_downloads,
       complete_requests_downloaded_bytes_cache_, total_downloads_size_,
-      std::move(active_guids));
+      std::move(active_guids), start_paused);
 
   delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
                                      std::move(active_fetch_requests));

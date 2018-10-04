@@ -66,7 +66,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       int total_downloads,
       std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
           active_fetch_requests,
-      const std::string& ui_title);
+      const std::string& ui_title,
+      bool start_paused);
 
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();

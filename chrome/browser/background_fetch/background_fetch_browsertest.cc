@@ -702,12 +702,39 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchFromServiceWorkerWithAsk) {
+  auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  DCHECK(settings_map);
+
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
+
+  // The fetch should start in a paused state.
+  std::vector<OfflineItem> items;
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndWaitForOfflineItems(
+      "StartFetchFromServiceWorkerNoWait()", &items));
+  ASSERT_EQ(items.size(), 1u);
+  EXPECT_EQ(items[0].state, offline_items_collection::OfflineItemState::PAUSED);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchFromChildFrameWithPermissions) {
   // Give the needed permissions.
   SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_ALLOW);
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "StartFetchFromIframe()", "backgroundfetchsuccess"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromChildFrameWithAsk) {
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
+
+  // The fetch should start in a paused state.
+  std::vector<OfflineItem> items;
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartFetchFromIframeNoWait()", &items));
+  ASSERT_EQ(items.size(), 1u);
+  EXPECT_EQ(items[0].state, offline_items_collection::OfflineItemState::PAUSED);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,

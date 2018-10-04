@@ -155,7 +155,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
                        base::Unretained(this)));
 
     controller->InitializeRequestStatus(
-        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */);
+        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */,
+        /* start_paused = */ false);
 
     return controller;
   }

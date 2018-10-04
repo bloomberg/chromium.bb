@@ -28,7 +28,8 @@ class BackgroundFetchDataManagerObserver {
       const BackgroundFetchRegistration& registration,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
-      int num_requests) = 0;
+      int num_requests,
+      bool start_paused) = 0;
 
   // Called when the UI options for the Background Fetch |registration_id| have
   // been updated in the data store.
