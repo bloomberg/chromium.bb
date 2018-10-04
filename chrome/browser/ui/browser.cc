@@ -179,6 +179,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -1803,15 +1804,19 @@ content::ColorChooser* Browser::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void Browser::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                             const blink::mojom::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+void Browser::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
-void Browser::EnumerateDirectory(WebContents* web_contents,
-                                 int request_id,
-                                 const base::FilePath& path) {
-  FileSelectHelper::EnumerateDirectory(web_contents, request_id, path);
+void Browser::EnumerateDirectory(
+    WebContents* web_contents,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const base::FilePath& path) {
+  FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
 }
 
 bool Browser::EmbedsFullscreenWidget() const {

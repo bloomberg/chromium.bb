@@ -27,6 +27,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -288,14 +289,15 @@ FileChooserDelegate::~FileChooserDelegate() = default;
 
 void FileChooserDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
   // Send the selected file to the renderer process.
   auto file_info = blink::mojom::FileChooserFileInfo::NewNativeFile(
       blink::mojom::NativeFileInfo::New(file_, base::string16()));
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
   files.push_back(std::move(file_info));
-  render_frame_host->FilesSelectedInChooser(
-      files, blink::mojom::FileChooserParams::Mode::kOpen);
+  listener->FileSelected(std::move(files),
+                         blink::mojom::FileChooserParams::Mode::kOpen);
 
   file_chosen_ = true;
   params_ = params.Clone();

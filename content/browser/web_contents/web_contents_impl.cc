@@ -106,6 +106,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/invalidate_type.h"
@@ -297,6 +298,46 @@ class CloseDialogCallbackWrapper
 bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
   return a->frame_tree_node()->depth() < b->frame_tree_node()->depth();
 }
+
+// TODO(tkent): This will be merged into FileChooserImpl in
+// render_frame_host_impl.cc.
+class ViewFileSelectListener : public FileSelectListener,
+                               private WebContentsObserver {
+ public:
+  ViewFileSelectListener(WebContents* web_contents, int request_id)
+      : web_contents_(web_contents), request_id_(request_id) {
+    Observe(web_contents);
+  }
+  ~ViewFileSelectListener() override = default;
+
+ private:
+  // content::FileSelectListener overrides:
+
+  void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    blink::mojom::FileChooserParams::Mode mode) override {
+    if (!web_contents_)
+      return;
+    std::vector<base::FilePath> file_path_list;
+    for (const auto& file_info : files) {
+      file_path_list.push_back(file_info->get_native_file()->file_path);
+    }
+    web_contents_->GetRenderViewHost()->DirectoryEnumerationFinished(
+        request_id_, file_path_list);
+  }
+
+  void FileSelectionCanceled() override {
+    if (!web_contents_)
+      return;
+    web_contents_->GetRenderViewHost()->DirectoryEnumerationFinished(
+        request_id_, std::vector<base::FilePath>());
+  }
+
+  // content::WebContentsObserver override:
+  void WebContentsDestroyed() override { web_contents_ = nullptr; }
+
+  WebContents* web_contents_;
+  int request_id_;
+};
 
 }  // namespace
 
@@ -4589,10 +4630,11 @@ void WebContentsImpl::OnEnumerateDirectory(RenderViewHostImpl* source,
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->CanReadFile(source->GetProcess()->GetID(), path)) {
-    // TODO(nick): |this| param in the call below ought to be a RenderFrameHost.
-    delegate_->EnumerateDirectory(this, request_id, path);
-  }
+  if (!policy->CanReadFile(source->GetProcess()->GetID(), path))
+    return;
+  auto listener = std::make_unique<ViewFileSelectListener>(this, request_id);
+  // TODO(nick): |this| param in the call below ought to be a RenderFrameHost.
+  delegate_->EnumerateDirectory(this, std::move(listener), path);
 }
 
 void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
@@ -5254,13 +5296,16 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
 void WebContentsImpl::RunFileChooser(
     RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
   ForSecurityDropFullscreen();
 
   if (delegate_)
-    delegate_->RunFileChooser(render_frame_host, params);
+    delegate_->RunFileChooser(render_frame_host, std::move(listener), params);
+  else
+    listener->FileSelectionCanceled();
 }
 
 WebContents* WebContentsImpl::GetAsWebContents() {

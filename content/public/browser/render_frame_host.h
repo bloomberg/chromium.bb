@@ -15,7 +15,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -248,13 +247,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Get the number of proxies to this frame, in all processes. Exposed for
   // use by resource metrics.
   virtual int GetProxyCount() = 0;
-
-  // Notifies the Listener that one or more files have been chosen by the user
-  // from a file chooser dialog for the form. |permissions| is the file
-  // selection mode in which the chooser dialog was created.
-  virtual void FilesSelectedInChooser(
-      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
-      blink::mojom::FileChooserParams::Mode permissions) = 0;
 
   // Returns true if the frame has a selection.
   virtual bool HasSelection() = 0;

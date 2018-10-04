@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -89,11 +90,14 @@ void AwWebContentsDelegate::CanDownload(
 
 void AwWebContentsDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
-  if (!java_delegate.obj())
+  if (!java_delegate.obj()) {
+    listener->FileSelectionCanceled();
     return;
+  }
 
   int mode_flags = 0;
   if (params.mode == FileChooserParams::Mode::kOpenMultiple) {
@@ -103,12 +107,14 @@ void AwWebContentsDelegate::RunFileChooser(
     mode_flags |= kFileChooserModeOpenMultiple | kFileChooserModeOpenFolder;
   } else if (params.mode == FileChooserParams::Mode::kSave) {
     // Save not supported, so cancel it.
-    render_frame_host->FilesSelectedInChooser(
-        std::vector<FileChooserFileInfoPtr>(), params.mode);
+    listener->FileSelectionCanceled();
     return;
   } else {
     DCHECK_EQ(FileChooserParams::Mode::kOpen, params.mode);
   }
+  DCHECK(!file_select_listener_)
+      << "Multiple concurrent FileChooser requests are not supported.";
+  file_select_listener_ = std::move(listener);
   Java_AwWebContentsDelegate_runFileChooser(
       env, java_delegate, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID(), mode_flags,
@@ -276,6 +282,11 @@ void AwWebContentsDelegate::UpdateUserGestureCarryoverInfo(
     intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
 }
 
+std::unique_ptr<content::FileSelectListener>
+AwWebContentsDelegate::TakeFileSelectListener() {
+  return std::move(file_select_listener_);
+}
+
 static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
@@ -286,8 +297,20 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     const JavaParamRef<jobjectArray>& display_names) {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id, render_id);
-  if (!rfh)
+  auto* web_contents = WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
     return;
+  auto* delegate =
+      static_cast<AwWebContentsDelegate*>(web_contents->GetDelegate());
+  if (!delegate)
+    return;
+  std::unique_ptr<content::FileSelectListener> listener =
+      delegate->TakeFileSelectListener();
+
+  if (!file_paths.obj()) {
+    listener->FileSelectionCanceled();
+    return;
+  }
 
   std::vector<std::string> file_path_str;
   std::vector<base::string16> display_name_str;
@@ -325,7 +348,7 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
   }
   DVLOG(0) << "File Chooser result: mode = " << mode
            << ", file paths = " << base::JoinString(file_path_str, ":");
-  rfh->FilesSelectedInChooser(files, mode);
+  listener->FileSelected(std::move(files), mode);
 }
 
 }  // namespace android_webview

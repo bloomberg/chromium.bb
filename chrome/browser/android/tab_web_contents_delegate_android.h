@@ -36,6 +36,7 @@ class TabWebContentsDelegateAndroid
   ~TabWebContentsDelegateAndroid() override;
 
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                      std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,

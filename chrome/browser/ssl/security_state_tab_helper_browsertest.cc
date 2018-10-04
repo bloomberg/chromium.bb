@@ -44,6 +44,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -217,13 +218,14 @@ class FileChooserDelegate : public content::WebContentsDelegate {
 
   // WebContentsDelegate:
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                      std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override {
     // Send the selected file to the renderer process.
     std::vector<blink::mojom::FileChooserFileInfoPtr> files;
     files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
         blink::mojom::NativeFileInfo::New(file_, base::string16())));
-    render_frame_host->FilesSelectedInChooser(
-        files, blink::mojom::FileChooserParams::Mode::kOpen);
+    listener->FileSelected(std::move(files),
+                           blink::mojom::FileChooserParams::Mode::kOpen);
 
     file_chosen_ = true;
     params_ = params.Clone();

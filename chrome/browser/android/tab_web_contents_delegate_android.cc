@@ -44,6 +44,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/security_state/content/content_utils.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -124,13 +125,16 @@ TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           WebContents::FromRenderFrameHost(render_frame_host),
           vr::UiSuppressedElement::kFileChooser)) {
+    listener->FileSelectionCanceled();
     return;
   }
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 std::unique_ptr<BluetoothChooser>

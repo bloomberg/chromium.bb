@@ -120,6 +120,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -502,6 +503,99 @@ PendingNavigation::PendingNavigation(
       begin_navigation_params(std::move(begin_navigation_params)),
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
       navigation_client(std::move(navigation_client)) {}
+
+class FileChooserImpl : public content::FileSelectListener,
+                        private content::WebContentsObserver {
+ public:
+  FileChooserImpl(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {
+    Observe(WebContents::FromRenderFrameHost(render_frame_host));
+  }
+
+  ~FileChooserImpl() override {
+#if DCHECK_IS_ON()
+    DCHECK(was_file_select_listener_function_called_)
+        << "Should call either FileSelectListener::FileSelected() or "
+           "FileSelectListener::FileSelectionCanceled()";
+#endif
+  }
+
+  // FileSelectListener overrides:
+
+  void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    blink::mojom::FileChooserParams::Mode mode) override {
+#if DCHECK_IS_ON()
+    DCHECK(!was_file_select_listener_function_called_)
+        << "Should not call both of FileSelectListener::FileSelected() and "
+           "FileSelectListener::FileSelectionCanceled()";
+    was_file_select_listener_function_called_ = true;
+#endif
+    if (!render_frame_host_)
+      return;
+    storage::FileSystemContext* file_system_context = nullptr;
+    const int pid = render_frame_host_->GetProcess()->GetID();
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    // Grant the security access requested to the given files.
+    for (const auto& file : files) {
+      if (mode == blink::mojom::FileChooserParams::Mode::kSave) {
+        policy->GrantCreateReadWriteFile(pid,
+                                         file->get_native_file()->file_path);
+      } else {
+        if (file->is_file_system()) {
+          if (!file_system_context) {
+            file_system_context =
+                BrowserContext::GetStoragePartition(
+                    render_frame_host_->GetProcess()->GetBrowserContext(),
+                    render_frame_host_->GetSiteInstance())
+                    ->GetFileSystemContext();
+          }
+          policy->GrantReadFileSystem(
+              pid, file_system_context->CrackURL(file->get_file_system()->url)
+                       .mount_filesystem_id());
+        } else {
+          policy->GrantReadFile(pid, file->get_native_file()->file_path);
+        }
+      }
+    }
+    render_frame_host_->Send(new FrameMsg_RunFileChooserResponse(
+        render_frame_host_->routing_id(), files));
+  }
+
+  void FileSelectionCanceled() override {
+#if DCHECK_IS_ON()
+    DCHECK(!was_file_select_listener_function_called_)
+        << "Should not call both of FileSelectListener::FileSelected() and "
+           "FileSelectListener::FileSelectionCanceled()";
+    was_file_select_listener_function_called_ = true;
+#endif
+    if (!render_frame_host_)
+      return;
+    render_frame_host_->Send(new FrameMsg_RunFileChooserResponse(
+        render_frame_host_->routing_id(),
+        std::vector<blink::mojom::FileChooserFileInfoPtr>()));
+  }
+
+ private:
+  // content::WebContentsObserver overrides:
+
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override {
+    if (old_host == render_frame_host_)
+      render_frame_host_ = nullptr;
+  }
+
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host == render_frame_host_)
+      render_frame_host_ = nullptr;
+  }
+
+  void WebContentsDestroyed() override { render_frame_host_ = nullptr; }
+
+  RenderFrameHostImpl* render_frame_host_;
+#if DCHECK_IS_ON()
+  bool was_file_select_listener_function_called_ = false;
+#endif
+};
 
 // static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
@@ -2394,16 +2488,18 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 
 void RenderFrameHostImpl::OnRunFileChooser(
     const blink::mojom::FileChooserParams& params) {
+  auto listener = std::make_unique<FileChooserImpl>(this);
   // Do not allow messages with absolute paths in them as this can permit a
   // renderer to coerce the browser to perform I/O on a renderer controlled
   // path.
   if (params.default_file_name != params.default_file_name.BaseName()) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RFH_FILE_CHOOSER_PATH);
+    listener->FileSelectionCanceled();
     return;
   }
 
-  delegate_->RunFileChooser(this, params);
+  delegate_->RunFileChooser(this, std::move(listener), params);
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
@@ -4702,34 +4798,6 @@ int RenderFrameHostImpl::GetProxyCount() {
   if (!IsCurrent())
     return 0;
   return frame_tree_node_->render_manager()->GetProxyCount();
-}
-
-void RenderFrameHostImpl::FilesSelectedInChooser(
-    const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
-    blink::mojom::FileChooserParams::Mode permissions) {
-  storage::FileSystemContext* const file_system_context =
-      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
-                                          GetSiteInstance())
-          ->GetFileSystemContext();
-  // Grant the security access requested to the given files.
-  for (const auto& file : files) {
-    if (permissions == blink::mojom::FileChooserParams::Mode::kSave) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
-          GetProcess()->GetID(), file->get_native_file()->file_path);
-    } else {
-      if (file->is_file_system()) {
-        ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
-            GetProcess()->GetID(),
-            file_system_context->CrackURL(file->get_file_system()->url)
-                .mount_filesystem_id());
-      } else {
-        ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-            GetProcess()->GetID(), file->get_native_file()->file_path);
-      }
-    }
-  }
-
-  Send(new FrameMsg_RunFileChooserResponse(routing_id_, files));
 }
 
 bool RenderFrameHostImpl::HasSelection() {

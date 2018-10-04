@@ -231,9 +231,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
   int GetProxyCount() override;
-  void FilesSelectedInChooser(
-      const std::vector<blink::mojom::FileChooserFileInfoPtr>& files,
-      blink::mojom::FileChooserParams::Mode permissions) override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,

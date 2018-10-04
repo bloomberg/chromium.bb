@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
@@ -156,6 +157,20 @@ content::ColorChooser* WebContentsDelegate::OpenColorChooser(
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   return nullptr;
+}
+
+void WebContentsDelegate::RunFileChooser(
+    RenderFrameHost* render_frame_host,
+    std::unique_ptr<FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  listener->FileSelectionCanceled();
+}
+
+void WebContentsDelegate::EnumerateDirectory(
+    WebContents* web_contents,
+    std::unique_ptr<FileSelectListener> listener,
+    const base::FilePath& path) {
+  listener->FileSelectionCanceled();
 }
 
 void WebContentsDelegate::RequestMediaAccessPermission(

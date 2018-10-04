@@ -42,8 +42,15 @@ namespace base {
 class FilePath;
 }
 
+namespace blink {
+namespace mojom {
+class FileChooserParams;
+}
+}  // namespace blink
+
 namespace content {
 class ColorChooser;
+class FileSelectListener;
 class JavaScriptDialogManager;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -363,15 +370,20 @@ class CONTENT_EXPORT WebContentsDelegate {
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions);
 
   // Called when a file selection is to be done.
+  // This function is responsible for calling listener->FileSelected() or
+  // listener->FileSelectionCanceled().
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              const blink::mojom::FileChooserParams& params) {}
+                              std::unique_ptr<FileSelectListener> listener,
+                              const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
   // chooser in directory-enumeration mode and having the user select the given
   // directory.
+  // This function is responsible for calling listener->FileSelected() or
+  // listener->FileSelectionCanceled().
   virtual void EnumerateDirectory(WebContents* web_contents,
-                                  int request_id,
-                                  const base::FilePath& path) {}
+                                  std::unique_ptr<FileSelectListener> listener,
+                                  const base::FilePath& path);
 
   // Shows a chooser for the user to select a nearby Bluetooth device. The
   // observer must live at least as long as the returned chooser object.
