@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -111,7 +112,8 @@ ToolbarModelTest::~ToolbarModelTest() {
 void ToolbarModelTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &AutocompleteClassifierFactory::BuildInstanceFor);
+      profile(),
+      base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Install a fake extension so that the ID in the chrome-extension test URL is
