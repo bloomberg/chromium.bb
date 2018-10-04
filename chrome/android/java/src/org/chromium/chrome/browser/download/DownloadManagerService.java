@@ -1033,6 +1033,8 @@ public class DownloadManagerService
                             .build();
             onDownloadCancelled(info);
             removeDownloadProgress(id.id);
+        } else {
+            mDownloadNotifier.notifyDownloadCanceled(id);
         }
         recordDownloadFinishedUMA(DownloadStatus.CANCELLED, id.id, 0);
     }

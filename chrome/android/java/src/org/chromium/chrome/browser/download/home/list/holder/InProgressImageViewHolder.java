@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
@@ -61,8 +60,8 @@ public class InProgressImageViewHolder extends ListItemViewHolder {
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
 
         mPlaceholder.setContentDescription(offlineItem.title);
-        // TODO(shaktisahu): Create status string for the new specs.
-        mCaption.setText(DownloadUtils.getProgressTextForNotification(offlineItem.progress));
+        mCaption.setText(UiUtils.generateInProgressShortCaption(offlineItem));
+
         mCancelButton.setOnClickListener(
                 v -> properties.get(ListProperties.CALLBACK_CANCEL).onResult(offlineItem));
 

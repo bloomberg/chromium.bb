@@ -234,10 +234,23 @@ public final class DownloadInfo {
 
     /**
      * Helper method to build a {@link DownloadInfo} from an {@link OfflineItem}.
-     * @param item The {@link OfflineItem} to mimic.
-     * @return     A {@link DownloadInfo} containing the relevant fields from {@code item}.
+     * @param item    The {@link OfflineItem} to mimic.
+     * @param visuals The {@link OfflineItemVisuals} to mimic.
+     * @return        A {@link DownloadInfo} containing the relevant fields from {@code item}.
      */
     public static DownloadInfo fromOfflineItem(OfflineItem item, OfflineItemVisuals visuals) {
+        return builderFromOfflineItem(item, visuals).build();
+    }
+
+    /**
+     * Helper method to build a {@link DownloadInfo.Builder} from an {@link OfflineItem}.
+     * @param item    The {@link OfflineItem} to mimic.
+     * @param visuals The {@link OfflineItemVisuals} to mimic.
+     * @return        A {@link DownloadInfo.Builder} containing the relevant fields from
+     *                {@code item}.
+     */
+    public static DownloadInfo.Builder builderFromOfflineItem(
+            OfflineItem item, OfflineItemVisuals visuals) {
         int state;
         switch (item.state) {
             case OfflineItemState.COMPLETE:
@@ -285,8 +298,7 @@ public final class DownloadInfo {
                 .setIcon(visuals == null ? null : visuals.icon)
                 .setPendingState(item.pendingState)
                 .setFailState(item.failState)
-                .setShouldPromoteOrigin(item.promoteOrigin)
-                .build();
+                .setShouldPromoteOrigin(item.promoteOrigin);
     }
 
     /**
@@ -311,9 +323,12 @@ public final class DownloadInfo {
         offlineItem.isOffTheRecord = downloadInfo.isOffTheRecord();
         offlineItem.mimeType = downloadInfo.getMimeType();
         offlineItem.progress = downloadInfo.getProgress();
+        offlineItem.timeRemainingMs = downloadInfo.getTimeRemainingInMillis();
         offlineItem.isDangerous = downloadInfo.getIsDangerous();
+        offlineItem.pendingState = downloadInfo.getPendingState();
         offlineItem.failState = downloadInfo.getFailState();
         offlineItem.promoteOrigin = downloadInfo.getShouldPromoteOrigin();
+
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED

@@ -2499,13 +2499,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>4 minutes ago</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
-        <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
+        <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_FILES_TAB" desc="Tab text for showing the files a user explicitly downloaded.">
         My Files
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_CAPTION" desc="Text containing the prefetched article description.">
-        <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph> - <ph name="FILE_SIZE">%2$s<ex>1.56 MB</ex></ph>
+        <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="FILE_SIZE">%2$s<ex>1.56 MB</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_TAB_EMPTY" desc="Tab text indicating that there is no prefetched content.">
         No content here
@@ -2515,6 +2515,18 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_N_HOURS" desc="How many hours ago an item was downloaded (if downloaded on the same day). [ICU Syntax]">
         {HOURS, plural, =1 {# hr} other {# hrs}}
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_PAUSED" desc="Generic text shown as part of an aggregated message when a download is paused.">
+        paused
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_PENDING" desc="Generic text shown as part of an aggregated message when a download is waiting to start.">
+        pending
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_FAILED" desc="Generic text shown as part of an aggregated message when a download has failed.">
+        failed
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_IN_PROGRESS_DESCRIPTION" desc="Text containing two components of an in-progress string description.">
+        <ph name="FILE_SIZE_OF_TOTAL">%1$s<ex>1.56 MB / 10MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>failed</ex></ph>
       </message>
 
       <!-- Browsing History UI -->
