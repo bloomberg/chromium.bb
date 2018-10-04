@@ -139,14 +139,14 @@ constexpr base::StringPiece kEventsKey = "events";
 constexpr base::StringPiece kEventsListenersKey = "event_listeners";
 constexpr base::StringPiece kExtraDataKey = "extra_data";
 constexpr base::StringPiece kFilterKey = "filter";
+constexpr base::StringPiece kInternalsIdKey = "id";
+constexpr base::StringPiece kInternalsNameKey = "name";
+constexpr base::StringPiece kInternalsVersionKey = "version";
 constexpr base::StringPiece kKeepaliveKey = "keepalive";
 constexpr base::StringPiece kLocationKey = "location";
-constexpr base::StringPiece kIdKey = "id";
 constexpr base::StringPiece kManifestVersionKey = "manifest_version";
-constexpr base::StringPiece kNameKey = "name";
 constexpr base::StringPiece kPathKey = "path";
 constexpr base::StringPiece kTypeKey = "type";
-constexpr base::StringPiece kVersionKey = "version";
 
 base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
                                 const extensions::Extension* extension) {
@@ -188,7 +188,8 @@ void AddEventListenerData(extensions::EventRouter* event_router,
       // The data for each event is a dictionary, with a name and a
       // filter.
       base::Value event_data(base::Value::Type::DICTIONARY);
-      event_data.SetKey(kNameKey, base::Value(listener_entry->event_name()));
+      event_data.SetKey(kInternalsNameKey,
+                        base::Value(listener_entry->event_name()));
       // Add the filter if one exists.
       base::Value* const filter = listener_entry->filter();
       if (filter != nullptr) {
@@ -200,7 +201,7 @@ void AddEventListenerData(extensions::EventRouter* event_router,
 
   // Move all of the entries from the map into the output data.
   for (auto& output_entry : data->GetList()) {
-    const base::Value* const value = output_entry.FindKey(kIdKey);
+    const base::Value* const value = output_entry.FindKey(kInternalsIdKey);
     CHECK(value && value->is_string());
     const auto it = events_map.find(value->GetString());
     base::Value listeners(base::Value::Type::DICTIONARY);
@@ -253,19 +254,19 @@ std::string ExtensionsInternalsSource::WriteToString() const {
   base::Value data(base::Value::Type::LIST);
   for (const auto& extension : *extensions) {
     base::Value extension_data(base::Value::Type::DICTIONARY);
-    extension_data.SetKey(kIdKey, base::Value(extension->id()));
+    extension_data.SetKey(kInternalsIdKey, base::Value(extension->id()));
     extension_data.SetKey(
         kKeepaliveKey, FormatKeepaliveData(process_manager, extension.get()));
     extension_data.SetKey(kLocationKey,
                           base::Value(LocationToString(extension->location())));
     extension_data.SetKey(kManifestVersionKey,
                           base::Value(extension->manifest_version()));
-    extension_data.SetKey(kNameKey, base::Value(extension->name()));
+    extension_data.SetKey(kInternalsNameKey, base::Value(extension->name()));
     extension_data.SetKey(kPathKey,
                           base::Value(extension->path().LossyDisplayName()));
     extension_data.SetKey(kTypeKey,
                           base::Value(TypeToString(extension->GetType())));
-    extension_data.SetKey(kVersionKey,
+    extension_data.SetKey(kInternalsVersionKey,
                           base::Value(extension->GetVersionForDisplay()));
     data.GetList().push_back(std::move(extension_data));
   }
