@@ -34,6 +34,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
+    {"shutdown", "*", nullptr},
     {"task_scheduler", "*", nullptr},
     {"toplevel", "*", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "StackCpuSampling", nullptr},
