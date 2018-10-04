@@ -1064,6 +1064,7 @@ void PersonalDataManager::ClearAllServerData() {
   // clear so that tests can synchronously verify that this data was cleared.
   server_credit_cards_.clear();
   server_profiles_.clear();
+  payments_customer_data_.reset();
 }
 
 void PersonalDataManager::ClearAllLocalData() {

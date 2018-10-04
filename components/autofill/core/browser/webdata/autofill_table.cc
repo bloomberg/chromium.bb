@@ -1501,6 +1501,11 @@ bool AutofillTable::ClearAllServerData() {
   address_metadata.Run();
   changed |= db_->GetLastChangeCount() > 0;
 
+  sql::Statement customer_data(
+      db_->GetUniqueStatement("DELETE FROM payments_customer_data"));
+  customer_data.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
   transaction.Commit();
   return changed;
 }
