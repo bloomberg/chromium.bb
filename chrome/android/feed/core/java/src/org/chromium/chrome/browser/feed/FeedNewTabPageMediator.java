@@ -178,6 +178,7 @@ class FeedNewTabPageMediator
         if (mSignInPromo != null) {
             mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
         }
+        mStreamContentChanged = true;
     }
 
     /**
