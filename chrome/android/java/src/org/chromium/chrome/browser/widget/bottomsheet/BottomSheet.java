@@ -12,7 +12,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Region;
 import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -166,6 +165,9 @@ public class BottomSheet extends FrameLayout
 
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
+
+    /** The view that contains the sheet. */
+    private ViewGroup mSheetContainer;
 
     /** For detecting scroll and fling events on the bottom sheet. */
     private BottomSheetSwipeDetector mGestureDetector;
@@ -511,14 +513,6 @@ public class BottomSheet extends FrameLayout
         return true;
     }
 
-    @Override
-    public boolean gatherTransparentRegion(Region region) {
-        // TODO(mdjones): Figure out what this should actually be set to since the view animates
-        // without necessarily calling this method again.
-        region.setEmpty();
-        return true;
-    }
-
     /**
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
@@ -686,6 +680,9 @@ public class BottomSheet extends FrameLayout
             @Override
             public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
         });
+
+        mSheetContainer = (ViewGroup) this.getParent();
+        mSheetContainer.removeView(this);
     }
 
     @Override
@@ -1099,6 +1096,13 @@ public class BottomSheet extends FrameLayout
 
         setTranslationY(translationY);
 
+        float hiddenHeight = getHiddenRatio() * mContainerHeight;
+        if (mCurrentOffsetPx <= hiddenHeight && this.getParent() != null) {
+            mSheetContainer.removeView(this);
+        } else if (mCurrentOffsetPx > hiddenHeight && this.getParent() == null) {
+            mSheetContainer.addView(this);
+        }
+
         float peekHeight = getSheetHeightForState(SheetState.PEEK);
         boolean isAtPeekingHeight = MathUtils.areFloatsEqual(getCurrentOffsetPx(), peekHeight);
         if (isSheetOpen() && (getCurrentOffsetPx() < peekHeight || isAtPeekingHeight)) {
@@ -1340,8 +1344,6 @@ public class BottomSheet extends FrameLayout
                     + swipeToClose);
             if (getFocusedChild() == null) requestFocus();
         }
-
-        setVisibility(mCurrentState == SheetState.HIDDEN ? GONE : VISIBLE);
 
         for (BottomSheetObserver o : mObservers) {
             o.onSheetStateChanged(mCurrentState);
