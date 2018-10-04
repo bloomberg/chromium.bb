@@ -51,7 +51,7 @@ static size_t LengthOfLineEndingAtIndex(const char* input,
 }
 
 void QuotedPrintableEncode(const char* input,
-                           size_t input_length,
+                           wtf_size_t input_length,
                            QuotedPrintableEncodeDelegate* delegate,
                            Vector<char>& out) {
   out.clear();
