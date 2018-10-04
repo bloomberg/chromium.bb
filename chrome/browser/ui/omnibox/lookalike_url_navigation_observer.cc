@@ -58,12 +58,15 @@ LookalikeUrlNavigationObserver::~LookalikeUrlNavigationObserver() {}
 
 void LookalikeUrlNavigationObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(navigation_handle->IsInMainFrame());
+  // Ignore subframe and same document navigations.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
+    return;
+
   // If the navigation was not committed, it means either the page was a
   // download or error 204/205, or the navigation never left the previous
   // URL. Basically, this isn't a problem since we stayed at the existing URL.
-  // Also ignore same document navigations.
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
+  if (!navigation_handle->HasCommitted())
     return;
 
   const GURL url = navigation_handle->GetURL();
