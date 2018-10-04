@@ -801,6 +801,9 @@ const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
      media_session::switches::kEnableAudioFocus,
      media_session::switches::kEnableAudioFocusDuckFlash},
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+    {flag_descriptions::kEnableAudioFocusEnabledNoEnforce,
+     media_session::switches::kEnableAudioFocus,
+     media_session::switches::kEnableAudioFocusNoEnforce},
 };
 #endif  // !defined(OS_ANDROID)
 

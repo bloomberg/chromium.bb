@@ -2733,6 +2733,8 @@ const char kEnableAudioFocusEnabled[] = "Enabled";
 const char kEnableAudioFocusEnabledDuckFlash[] =
     "Enabled (Flash lowers volume when interrupted by other sound, "
     "experimental)";
+const char kEnableAudioFocusEnabledNoEnforce[] =
+    "Enabled (without enforcement of a single active media session)";
 
 const char kInfiniteSessionRestoreName[] = "Infinite Session Restore";
 const char kInfiniteSessionRestoreDescription[] =

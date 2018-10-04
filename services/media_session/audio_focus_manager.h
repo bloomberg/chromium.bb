@@ -57,10 +57,13 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // control its audio focus.
   class StackRow;
 
-  void RequestAudioFocusInternal(std::unique_ptr<StackRow> row,
-                                 mojom::AudioFocusType type,
-                                 base::OnceCallback<void()> callback);
-  void AbandonAudioFocusInternal(RequestId id);
+  void RequestAudioFocusInternal(std::unique_ptr<StackRow>,
+                                 mojom::AudioFocusType,
+                                 base::OnceCallback<void()>);
+  void EnforceAudioFocusRequest(mojom::AudioFocusType);
+
+  void AbandonAudioFocusInternal(RequestId);
+  void EnforceAudioFocusAbandon();
 
   // Flush for testing will flush any pending messages to the observers.
   void FlushForTesting();
