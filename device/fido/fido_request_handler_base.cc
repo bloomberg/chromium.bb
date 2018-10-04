@@ -14,8 +14,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/ble_adapter_manager.h"
-#include "device/fido/fido_device.h"
-#include "device/fido/fido_task.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -121,14 +119,14 @@ FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
 
 void FidoRequestHandlerBase::StartAuthenticatorRequest(
     const std::string& authenticator_id) {
-  auto authenticator = active_authenticators_.find(authenticator_id);
-  if (authenticator == active_authenticators_.end())
+  auto authenticator_it = active_authenticators_.find(authenticator_id);
+  if (authenticator_it == active_authenticators_.end())
     return;
 
-  InitializeAuthenticatorAndDispatchRequest(authenticator->second.get());
+  InitializeAuthenticatorAndDispatchRequest(authenticator_it->second);
 }
 
-void FidoRequestHandlerBase::CancelOngoingTasks(
+void FidoRequestHandlerBase::CancelActiveAuthenticators(
     base::StringPiece exclude_device_id) {
   for (auto task_it = active_authenticators_.begin();
        task_it != active_authenticators_.end();) {
@@ -136,6 +134,10 @@ void FidoRequestHandlerBase::CancelOngoingTasks(
     if (task_it->first != exclude_device_id) {
       DCHECK(task_it->second);
       task_it->second->Cancel();
+
+      // Note that the pointer being erased is non-owning. The actual
+      // FidoAuthenticator instance is owned by its discovery (which in turn is
+      // owned by |discoveries_|.
       task_it = active_authenticators_.erase(task_it);
     } else {
       ++task_it;
@@ -183,34 +185,32 @@ void FidoRequestHandlerBase::Start() {
     discovery->Start();
 }
 
-void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
-                                         FidoDevice* device) {
-  DCHECK(!base::ContainsKey(active_authenticators(), device->GetId()));
-  AddAuthenticator(CreateAuthenticatorFromDevice(device));
+void FidoRequestHandlerBase::AuthenticatorAdded(
+    FidoDiscoveryBase* discovery,
+    FidoAuthenticator* authenticator) {
+  DCHECK(!base::ContainsKey(active_authenticators(), authenticator->GetId()));
+  AddAuthenticator(authenticator);
 }
 
-std::unique_ptr<FidoDeviceAuthenticator>
-FidoRequestHandlerBase::CreateAuthenticatorFromDevice(FidoDevice* device) {
-  return std::make_unique<FidoDeviceAuthenticator>(device);
-}
-
-void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
-                                           FidoDevice* device) {
+void FidoRequestHandlerBase::AuthenticatorRemoved(
+    FidoDiscoveryBase* discovery,
+    FidoAuthenticator* authenticator) {
   // Device connection has been lost or device has already been removed.
   // Thus, calling CancelTask() is not necessary. Also, below
   // ongoing_tasks_.erase() will have no effect for the devices that have been
   // already removed due to processing error or due to invocation of
   // CancelOngoingTasks().
-  DCHECK(device);
-  active_authenticators_.erase(device->GetId());
+  DCHECK(authenticator);
+  active_authenticators_.erase(authenticator->GetId());
 
   if (observer_)
-    observer_->FidoAuthenticatorRemoved(device->GetId());
+    observer_->FidoAuthenticatorRemoved(authenticator->GetId());
 }
 
-void FidoRequestHandlerBase::DeviceIdChanged(FidoDiscovery* discovery,
-                                             const std::string& previous_id,
-                                             std::string new_id) {
+void FidoRequestHandlerBase::AuthenticatorIdChanged(
+    FidoDiscoveryBase* discovery,
+    const std::string& previous_id,
+    std::string new_id) {
   DCHECK_EQ(FidoTransportProtocol::kBluetoothLowEnergy, discovery->transport());
   auto it = active_authenticators_.find(previous_id);
   if (it == active_authenticators_.end())
@@ -224,21 +224,19 @@ void FidoRequestHandlerBase::DeviceIdChanged(FidoDiscovery* discovery,
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(
-    std::unique_ptr<FidoAuthenticator> authenticator) {
+    FidoAuthenticator* authenticator) {
   DCHECK(authenticator &&
          !base::ContainsKey(active_authenticators(), authenticator->GetId()));
-  FidoAuthenticator* authenticator_ptr = authenticator.get();
-  active_authenticators_.emplace(authenticator->GetId(),
-                                 std::move(authenticator));
+  active_authenticators_.emplace(authenticator->GetId(), authenticator);
 
-  // If |observer_| exists, dispatching request to |authenticator_ptr| is
-  // delegated to |observer_|. Else, dispatch request to |authenticator_ptr|
+  // If |observer_| exists, dispatching request to |authenticator| is
+  // delegated to |observer_|. Else, dispatch request to |authenticator|
   // immediately.
   bool embedder_controls_dispatch = false;
   if (observer_) {
     embedder_controls_dispatch =
-        observer_->EmbedderControlsAuthenticatorDispatch(*authenticator_ptr);
-    observer_->FidoAuthenticatorAdded(*authenticator_ptr);
+        observer_->EmbedderControlsAuthenticatorDispatch(*authenticator);
+    observer_->FidoAuthenticatorAdded(*authenticator);
   }
 
   if (!embedder_controls_dispatch) {
@@ -249,12 +247,13 @@ void FidoRequestHandlerBase::AddAuthenticator(
         FROM_HERE,
         base::BindOnce(
             &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
-            GetWeakPtr(), authenticator_ptr));
+            GetWeakPtr(), authenticator));
   }
 }
 
 void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
     base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info) {
+  DCHECK(!platform_authenticator_);
   if (platform_authenticator_info &&
       base::ContainsKey(transport_availability_info_.available_transports,
                         FidoTransportProtocol::kInternal)) {
@@ -264,7 +263,9 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
          FidoTransportProtocol::kInternal));
     transport_availability_info_.has_recognized_mac_touch_id_credential =
         platform_authenticator_info->has_recognized_mac_touch_id_credential;
-    AddAuthenticator(std::move(platform_authenticator_info->authenticator));
+    platform_authenticator_ =
+        std::move(platform_authenticator_info->authenticator);
+    AddAuthenticator(platform_authenticator_.get());
   } else {
     transport_availability_info_.available_transports.erase(
         FidoTransportProtocol::kInternal);

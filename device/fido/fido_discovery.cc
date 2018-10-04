@@ -10,7 +10,9 @@
 #include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_device_authenticator.h"
 
 // HID is not supported on Android.
 #if !defined(OS_ANDROID)
@@ -81,7 +83,7 @@ std::unique_ptr<FidoDiscovery> FidoDiscovery::CreateCable(
 }
 
 FidoDiscovery::FidoDiscovery(FidoTransportProtocol transport)
-    : transport_(transport), weak_factory_(this) {}
+    : FidoDiscoveryBase(transport), weak_factory_(this) {}
 
 FidoDiscovery::~FidoDiscovery() = default;
 
@@ -98,30 +100,31 @@ void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
   DCHECK_EQ(state_, State::kStarting);
   if (success)
     state_ = State::kRunning;
-  if (!observer_)
+  if (!observer())
     return;
-  observer_->DiscoveryStarted(this, success);
+  observer()->DiscoveryStarted(this, success);
 }
 
-void FidoDiscovery::NotifyDeviceAdded(FidoDevice* device) {
+void FidoDiscovery::NotifyAuthenticatorAdded(FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
-  if (!observer_)
+  if (!observer())
     return;
-  observer_->DeviceAdded(this, device);
+  observer()->AuthenticatorAdded(this, authenticator);
 }
 
-void FidoDiscovery::NotifyDeviceRemoved(FidoDevice* device) {
+void FidoDiscovery::NotifyAuthenticatorRemoved(
+    FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
-  if (!observer_)
+  if (!observer())
     return;
-  observer_->DeviceRemoved(this, device);
+  observer()->AuthenticatorRemoved(this, authenticator);
 }
 
 std::vector<FidoDevice*> FidoDiscovery::GetDevices() {
   std::vector<FidoDevice*> devices;
   devices.reserve(devices_.size());
   for (const auto& device : devices_)
-    devices.push_back(device.second.get());
+    devices.push_back(device.second.second.get());
   return devices;
 }
 
@@ -129,7 +132,7 @@ std::vector<const FidoDevice*> FidoDiscovery::GetDevices() const {
   std::vector<const FidoDevice*> devices;
   devices.reserve(devices_.size());
   for (const auto& device : devices_)
-    devices.push_back(device.second.get());
+    devices.push_back(device.second.second.get());
   return devices;
 }
 
@@ -140,17 +143,20 @@ FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) {
 
 const FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) const {
   auto found = devices_.find(device_id);
-  return found != devices_.end() ? found->second.get() : nullptr;
+  return found != devices_.end() ? found->second.second.get() : nullptr;
 }
 
 bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   std::string device_id = device->GetId();
-  const auto result = devices_.emplace(std::move(device_id), std::move(device));
+  auto authenticator = std::make_unique<FidoDeviceAuthenticator>(device.get());
+  const auto result = devices_.emplace(
+      std::move(device_id),
+      std::make_pair(std::move(authenticator), std::move(device)));
   if (!result.second) {
     return false;  // Duplicate device id.
   }
 
-  NotifyDeviceAdded(result.first->second.get());
+  NotifyAuthenticatorAdded(result.first->second.first.get());
   return true;
 }
 
@@ -159,9 +165,9 @@ bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {
   if (found == devices_.end())
     return false;
 
-  auto device = std::move(found->second);
+  auto authenticator_device_pair = std::move(found->second);
   devices_.erase(found);
-  NotifyDeviceRemoved(device.get());
+  NotifyAuthenticatorRemoved(authenticator_device_pair.first.get());
   return true;
 }
 

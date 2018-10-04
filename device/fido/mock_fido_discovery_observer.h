@@ -14,19 +14,21 @@
 
 namespace device {
 
-class FidoDevice;
+class FidoAuthenticator;
 
-class MockFidoDiscoveryObserver : public FidoDiscovery::Observer {
+class MockFidoDiscoveryObserver : public FidoDiscoveryBase::Observer {
  public:
   MockFidoDiscoveryObserver();
   ~MockFidoDiscoveryObserver() override;
 
-  MOCK_METHOD2(DiscoveryStarted, void(FidoDiscovery*, bool));
-  MOCK_METHOD2(DiscoveryStopped, void(FidoDiscovery*, bool));
-  MOCK_METHOD2(DeviceAdded, void(FidoDiscovery*, FidoDevice*));
-  MOCK_METHOD2(DeviceRemoved, void(FidoDiscovery*, FidoDevice*));
-  MOCK_METHOD3(DeviceIdChanged,
-               void(FidoDiscovery*, const std::string&, std::string));
+  MOCK_METHOD2(DiscoveryStarted, void(FidoDiscoveryBase*, bool));
+  MOCK_METHOD2(DiscoveryStopped, void(FidoDiscoveryBase*, bool));
+  MOCK_METHOD2(AuthenticatorAdded,
+               void(FidoDiscoveryBase*, FidoAuthenticator*));
+  MOCK_METHOD2(AuthenticatorRemoved,
+               void(FidoDiscoveryBase*, FidoAuthenticator*));
+  MOCK_METHOD3(AuthenticatorIdChanged,
+               void(FidoDiscoveryBase*, const std::string&, std::string));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFidoDiscoveryObserver);

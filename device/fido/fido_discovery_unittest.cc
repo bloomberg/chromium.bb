@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
@@ -20,7 +22,9 @@ namespace device {
 namespace {
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::UnorderedElementsAre;
 
 // A minimal implementation of FidoDiscovery that is no longer abstract.
@@ -33,11 +37,8 @@ class ConcreteFidoDiscovery : public FidoDiscovery {
   MOCK_METHOD0(StartInternal, void());
 
   using FidoDiscovery::AddDevice;
-  using FidoDiscovery::RemoveDevice;
-
   using FidoDiscovery::NotifyDiscoveryStarted;
-  using FidoDiscovery::NotifyDeviceAdded;
-  using FidoDiscovery::NotifyDeviceRemoved;
+  using FidoDiscovery::RemoveDevice;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConcreteFidoDiscovery);
@@ -102,12 +103,17 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   // Expect successful insertion.
   auto device0 = std::make_unique<MockFidoDevice>();
   auto* device0_raw = device0.get();
+  FidoAuthenticator* authenticator0 = nullptr;
   base::RunLoop device0_done;
-  EXPECT_CALL(observer, DeviceAdded(&discovery, device0_raw))
-      .WillOnce(testing::InvokeWithoutArgs(
-          [&device0_done]() { device0_done.Quit(); }));
-  EXPECT_CALL(*device0, GetId()).WillOnce(Return("device0"));
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
+      .WillOnce(DoAll(SaveArg<1>(&authenticator0),
+                      testing::InvokeWithoutArgs(
+                          [&device0_done]() { device0_done.Quit(); })));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(Return("device0"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device0)));
+  EXPECT_EQ("device0", authenticator0->GetId());
+  EXPECT_EQ(device0_raw, static_cast<FidoDeviceAuthenticator*>(authenticator0)
+                             ->GetDeviceForTesting());
   device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -115,17 +121,22 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   base::RunLoop device1_done;
   auto device1 = std::make_unique<MockFidoDevice>();
   auto* device1_raw = device1.get();
-  EXPECT_CALL(observer, DeviceAdded(&discovery, device1_raw))
-      .WillOnce(testing::InvokeWithoutArgs(
-          [&device1_done]() { device1_done.Quit(); }));
-  EXPECT_CALL(*device1, GetId()).WillOnce(Return("device1"));
+  FidoAuthenticator* authenticator1 = nullptr;
+  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
+      .WillOnce(DoAll(SaveArg<1>(&authenticator1),
+                      testing::InvokeWithoutArgs(
+                          [&device1_done]() { device1_done.Quit(); })));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(Return("device1"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device1)));
+  EXPECT_EQ("device1", authenticator1->GetId());
+  EXPECT_EQ(device1_raw, static_cast<FidoDeviceAuthenticator*>(authenticator1)
+                             ->GetDeviceForTesting());
   device1_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Inserting a device with an already present id should be prevented.
   auto device1_dup = std::make_unique<MockFidoDevice>();
-  EXPECT_CALL(observer, DeviceAdded(_, _)).Times(0);
+  EXPECT_CALL(observer, AuthenticatorAdded(_, _)).Times(0);
   EXPECT_CALL(*device1_dup, GetId()).WillOnce(Return("device1"));
   EXPECT_FALSE(discovery.AddDevice(std::move(device1_dup)));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
@@ -142,15 +153,15 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
               UnorderedElementsAre(device0_raw, device1_raw));
 
   // Trying to remove a non-present device should fail.
-  EXPECT_CALL(observer, DeviceRemoved(_, _)).Times(0);
+  EXPECT_CALL(observer, AuthenticatorRemoved(_, _)).Times(0);
   EXPECT_FALSE(discovery.RemoveDevice("device2"));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_CALL(observer, DeviceRemoved(&discovery, device1_raw));
+  EXPECT_CALL(observer, AuthenticatorRemoved(&discovery, authenticator1));
   EXPECT_TRUE(discovery.RemoveDevice("device1"));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_CALL(observer, DeviceRemoved(&discovery, device0_raw));
+  EXPECT_CALL(observer, AuthenticatorRemoved(&discovery, authenticator0));
   EXPECT_TRUE(discovery.RemoveDevice("device0"));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }

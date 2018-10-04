@@ -14,6 +14,7 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
+#include "device/fido/fido_authenticator.h"
 
 namespace device {
 
@@ -108,8 +109,8 @@ void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
   devices_.erase(it);
 
   if (observer()) {
-    observer()->DeviceIdChanged(this, previous_device_id,
-                                std::move(new_device_id));
+    observer()->AuthenticatorIdChanged(this, previous_device_id,
+                                       std::move(new_device_id));
   }
 }
 

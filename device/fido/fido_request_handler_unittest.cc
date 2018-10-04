@@ -189,11 +189,6 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
                            weak_factory_.GetWeakPtr(), authenticator));
   }
 
-  std::unique_ptr<FidoDeviceAuthenticator> CreateAuthenticatorFromDevice(
-      FidoDevice* device) override {
-    return std::make_unique<FakeFidoAuthenticator>(device);
-  }
-
  private:
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
 };
@@ -244,8 +239,8 @@ class FidoRequestHandlerTest : public ::testing::Test {
   void ChangeAuthenticatorId(FakeFidoRequestHandler* request_handler,
                              FidoDevice* device,
                              std::string new_authenticator_id) {
-    request_handler->DeviceIdChanged(ble_discovery_, device->GetId(),
-                                     std::move(new_authenticator_id));
+    request_handler->AuthenticatorIdChanged(ble_discovery_, device->GetId(),
+                                            std::move(new_authenticator_id));
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }

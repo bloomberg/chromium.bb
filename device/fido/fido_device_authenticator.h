@@ -34,9 +34,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 
   // FidoAuthenticator:
   void InitializeAuthenticator(base::OnceClosure callback) override;
-  void MakeCredential(
-      CtapMakeCredentialRequest request,
-      MakeCredentialCallback callback) override;
+  void MakeCredential(CtapMakeCredentialRequest request,
+                      MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
   void Cancel() override;
@@ -45,6 +44,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   const AuthenticatorSupportedOptions& Options() const override;
   FidoTransportProtocol AuthenticatorTransport() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
+
+  FidoDevice* GetDeviceForTesting() { return device_; }
 
  protected:
   void OnCtapMakeCredentialResponseReceived(
