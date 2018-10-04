@@ -54,6 +54,10 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
   void RecordSessionDuck(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
+  // This is not used by this delegate.
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr) override {}
+
  private:
   // Weak pointer because |this| is owned by |media_session_|.
   MediaSessionImpl* media_session_;

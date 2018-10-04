@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -30,10 +29,13 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/service_manager_connection.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
@@ -719,33 +721,20 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
 }
 
 void MediaInternals::SendAudioFocusState() {
-#if !defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!CanUpdate())
     return;
 
-  audio_focus_data_.Clear();
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr_);
 
-  auto& stack = AudioFocusManager::GetInstance()->audio_focus_stack_;
+  if (!audio_focus_ptr_.is_bound())
+    return;
 
-  // We should go backwards through the stack so the top of the stack is always
-  // shown first in the list.
-  base::ListValue stack_data;
-  for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
-    base::DictionaryValue media_session_data;
-    media_session_data.SetKey(kAudioFocusIdKey, base::Value((*iter)->id()));
-    stack_data.GetList().push_back(std::move(media_session_data));
-
-    (*iter)->session()->GetDebugInfo(
-        base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
-                       base::Unretained(this), (*iter)->id()));
-  }
-
-  audio_focus_data_.SetKey(kAudioFocusSessionsKey, std::move(stack_data));
-
-  if (stack.empty())
-    SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
-#endif  // !defined(OS_ANDROID)
+  // Get the audio focus state from the media session service.
+  audio_focus_ptr_->GetFocusRequests(base::BindOnce(
+      &MediaInternals::DidGetAudioFocusRequestList, base::Unretained(this)));
 }
 
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
@@ -845,6 +834,43 @@ void MediaInternals::OnFocusLost(
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&MediaInternals::SendAudioFocusState,
                                           base::Unretained(this)));
+}
+
+void MediaInternals::DidGetAudioFocusRequestList(
+    std::vector<media_session::mojom::AudioFocusRequestStatePtr> stack) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!CanUpdate())
+    return;
+
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(media_session::mojom::kServiceName,
+                      &audio_focus_debug_ptr_);
+
+  if (!audio_focus_debug_ptr_.is_bound())
+    return;
+
+  audio_focus_data_.Clear();
+
+  // We should go backwards through the stack so the top of the stack is
+  // always shown first in the list.
+  base::ListValue stack_data;
+  for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
+    int request_id = (*iter)->request_id;
+    base::DictionaryValue media_session_data;
+    media_session_data.SetKey(kAudioFocusIdKey, base::Value(request_id));
+    stack_data.GetList().push_back(std::move(media_session_data));
+
+    audio_focus_debug_ptr_->GetDebugInfoForRequest(
+        request_id, base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
+                                   base::Unretained(this), request_id));
+  }
+
+  audio_focus_data_.SetKey(kAudioFocusSessionsKey, std::move(stack_data));
+
+  if (stack.empty())
+    SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
 }
 
 void MediaInternals::DidGetAudioFocusDebugInfo(

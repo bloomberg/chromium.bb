@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
-#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/media_session.h"

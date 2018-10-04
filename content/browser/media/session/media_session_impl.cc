@@ -626,6 +626,7 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 
 void MediaSessionImpl::Initialize() {
   delegate_ = AudioFocusDelegate::Create(this);
+  delegate_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
 }
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
@@ -798,6 +799,8 @@ void MediaSessionImpl::NotifyObserversInfoChanged() {
       [&current_info](media_session::mojom::MediaSessionObserver* observer) {
         observer->MediaSessionInfoChanged(current_info.Clone());
       });
+
+  delegate_->MediaSessionInfoChanged(current_info.Clone());
 }
 
 bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,

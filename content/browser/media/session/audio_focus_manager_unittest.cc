@@ -336,23 +336,6 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_NoAssociatedEntry) {
   EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
 }
 
-TEST_F(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientEntry) {
-  MockMediaSession media_session;
-
-  AudioFocusManager::RequestId request_id =
-      RequestAudioFocus(&media_session, AudioFocusType::kGainTransientMayDuck);
-  EXPECT_EQ(1, GetTransientMaybeDuckCount());
-
-  {
-    test::TestAudioFocusObserver observer;
-    AbandonAudioFocus(request_id);
-
-    EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer.focus_lost_session_.Equals(
-        test::GetMediaSessionInfoSync(&media_session)));
-  }
-}
-
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_WhileDuckingThenResume) {
   MockMediaSession media_session_1;
   MockMediaSession media_session_2;
@@ -526,53 +509,6 @@ TEST_F(AudioFocusManagerTest, AudioFocusObserver_AbandonNoop) {
 
   EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
   EXPECT_TRUE(observer.focus_lost_session_.is_null());
-}
-
-TEST_F(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
-  MockMediaSession media_session;
-  AudioFocusManager::RequestId request_id;
-
-  {
-    test::TestAudioFocusObserver observer;
-    request_id = RequestAudioFocus(&media_session, AudioFocusType::kGain);
-
-    EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_EQ(AudioFocusType::kGain, observer.focus_gained_type());
-    EXPECT_FALSE(observer.focus_gained_session_.is_null());
-  }
-
-  {
-    test::TestAudioFocusObserver observer;
-    RequestAudioFocus(&media_session, AudioFocusType::kGain, request_id);
-
-    EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_TRUE(observer.focus_gained_session_.is_null());
-  }
-}
-
-TEST_F(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
-  MockMediaSession media_session;
-  AudioFocusManager::RequestId request_id;
-
-  {
-    test::TestAudioFocusObserver observer;
-    request_id = RequestAudioFocus(&media_session,
-                                   AudioFocusType::kGainTransientMayDuck);
-
-    EXPECT_EQ(1, GetTransientMaybeDuckCount());
-    EXPECT_EQ(AudioFocusType::kGainTransientMayDuck,
-              observer.focus_gained_type());
-    EXPECT_FALSE(observer.focus_gained_session_.is_null());
-  }
-
-  {
-    test::TestAudioFocusObserver observer;
-    AbandonAudioFocus(request_id);
-
-    EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer.focus_lost_session_.Equals(
-        test::GetMediaSessionInfoSync(&media_session)));
-  }
 }
 
 }  // namespace content

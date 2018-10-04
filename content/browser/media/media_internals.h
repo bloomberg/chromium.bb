@@ -126,7 +126,12 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   void OnFocusLost(
       media_session::mojom::MediaSessionInfoPtr media_session) override;
 
-  // Called when we receive audio focus debug info to display.
+  // Called when we receive the list of audio focus requests to display.
+  void DidGetAudioFocusRequestList(
+      std::vector<media_session::mojom::AudioFocusRequestStatePtr>);
+
+  // Called when we receive audio focus debug info to display for a single
+  // audio focus request.
   void DidGetAudioFocusDebugInfo(
       int id,
       media_session::mojom::MediaSessionDebugInfoPtr info);
@@ -156,6 +161,10 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                                                    int component_id,
                                                    int render_process_id,
                                                    int render_frame_id);
+
+  // Holds a pointer to the media session service and it's debug interface.
+  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;

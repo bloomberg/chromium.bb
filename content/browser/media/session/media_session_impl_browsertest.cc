@@ -71,6 +71,9 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
     return audio_focus_type_;
   }
 
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+
   void ResolveRequest(bool result) {
     if (!async_mode_)
       return;
