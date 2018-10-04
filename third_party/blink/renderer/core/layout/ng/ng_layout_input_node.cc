@@ -111,6 +111,10 @@ bool NGLayoutInputNode::IsFieldsetContainer() const {
   return IsBlock() && box_->IsLayoutNGFieldset();
 }
 
+bool NGLayoutInputNode::IsRenderedLegend() const {
+  return IsBlock() && box_->IsRenderedLegend();
+}
+
 bool NGLayoutInputNode::IsAnonymousBlock() const {
   return box_->IsAnonymousBlock();
 }

@@ -556,6 +556,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsFieldset() const { return IsOfType(kLayoutObjectFieldset); }
   bool IsLayoutNGFieldset() const { return IsOfType(kLayoutObjectNGFieldset); }
+  bool IsFieldsetIncludingNG() const {
+    return IsFieldset() || IsLayoutNGFieldset();
+  }
   bool IsFileUploadControl() const {
     return IsOfType(kLayoutObjectFileUploadControl);
   }

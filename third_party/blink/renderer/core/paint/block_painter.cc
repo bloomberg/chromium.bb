@@ -101,9 +101,19 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
 }
 
 void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
+  // We may use legacy paint to paint the anonymous fieldset child. The layout
+  // object for the rendered legend will be a child of that one, and has to be
+  // skipped here, since it's handled by a special NG fieldset painter.
+  bool may_contain_rendered_legend =
+      layout_block_.IsAnonymousNGFieldsetContentWrapper();
   for (LayoutBox* child = layout_block_.FirstChildBox(); child;
-       child = child->NextSiblingBox())
+       child = child->NextSiblingBox()) {
+    if (may_contain_rendered_legend && child->IsRenderedLegend()) {
+      may_contain_rendered_legend = false;
+      continue;
+    }
     PaintChild(*child, paint_info);
+  }
 }
 
 void BlockPainter::PaintChild(const LayoutBox& child,

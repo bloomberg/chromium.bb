@@ -27,22 +27,26 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     const NGPhysicalOffsetRect& contents_ink_overflow,
     Vector<NGBaseline>& baselines,
     NGBoxType box_type,
+    bool is_fieldset_container,
+    bool is_rendered_legend,
     bool is_old_layout_root,
     unsigned border_edges,  // NGBorderEdges::Physical
     scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalContainerFragment(layout_object,
-                                  style,
-                                  style_variant,
-                                  size,
-                                  kFragmentBox,
-                                  box_type,
-                                  children,
-                                  contents_ink_overflow,
-                                  std::move(break_token)),
+    : NGPhysicalContainerFragment(
+          layout_object,
+          style,
+          style_variant,
+          size,
+          is_rendered_legend ? kFragmentRenderedLegend : kFragmentBox,
+          box_type,
+          children,
+          contents_ink_overflow,
+          std::move(break_token)),
       baselines_(std::move(baselines)),
       borders_(borders),
       padding_(padding) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
+  is_fieldset_container_ = is_fieldset_container;
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
   children_inline_ = layout_object && layout_object->ChildrenInline();

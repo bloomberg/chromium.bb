@@ -4439,8 +4439,9 @@ DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
       IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
-      IsFieldset() || IsCustomItem() || IsDocumentElement() || IsGridItem() ||
-      IsWritingModeRoot() || StyleRef().Display() == EDisplay::kFlowRoot ||
+      IsFieldsetIncludingNG() || IsCustomItem() || IsDocumentElement() ||
+      IsGridItem() || IsWritingModeRoot() ||
+      StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       StyleRef().SpecifiesColumns() ||
       StyleRef().GetColumnSpan() == EColumnSpan::kAll) {

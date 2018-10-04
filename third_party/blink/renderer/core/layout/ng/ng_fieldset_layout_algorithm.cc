@@ -122,6 +122,7 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   border_box_size.block_size =
       std::max(border_box_size.block_size, minimum_border_box_block_size);
 
+  container_builder_.SetIsFieldsetContainer();
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetBlockSize(border_box_size.block_size);

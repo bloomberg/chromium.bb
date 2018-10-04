@@ -51,7 +51,8 @@ class CORE_EXPORT NGPhysicalFragment
   enum NGFragmentType {
     kFragmentBox = 0,
     kFragmentText = 1,
-    kFragmentLineBox = 2
+    kFragmentLineBox = 2,
+    kFragmentRenderedLegend = 3,
     // When adding new values, make sure the bit size of |type_| is large
     // enough to store.
   };
@@ -64,6 +65,7 @@ class CORE_EXPORT NGPhysicalFragment
     kAtomicInline,
     kFloating,
     kOutOfFlowPositioned,
+    kBlockFlowRoot,
     // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
 
@@ -78,11 +80,18 @@ class CORE_EXPORT NGPhysicalFragment
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsContainer() const {
     return Type() == NGFragmentType::kFragmentBox ||
-           Type() == NGFragmentType::kFragmentLineBox;
+           Type() == NGFragmentType::kFragmentLineBox ||
+           Type() == NGFragmentType::kFragmentRenderedLegend;
   }
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
   bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
   bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
+
+  // Return true if this is the legend child of a fieldset that gets special
+  // treatment (i.e. placed over the block-start border).
+  bool IsRenderedLegend() const {
+    return Type() == NGFragmentType::kFragmentRenderedLegend;
+  }
 
   // Returns the box type of this fragment.
   NGBoxType BoxType() const {
@@ -114,6 +123,12 @@ class CORE_EXPORT NGPhysicalFragment
   }
   bool IsBlockFlow() const;
   bool IsListMarker() const;
+
+  // Return true if this fragment is a container established by a fieldset
+  // element. Such a fragment contains an optional rendered legend fragment and
+  // an optional fieldset contents wrapper fragment (which holds everything
+  // inside the fieldset except the rendered legend).
+  bool IsFieldsetContainer() const { return is_fieldset_container_; }
 
   // Returns whether the fragment is old layout root.
   bool IsOldLayoutRoot() const { return is_old_layout_root_; }
@@ -232,6 +247,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
+  unsigned is_fieldset_container_ : 1;
   unsigned is_old_layout_root_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   const unsigned style_variant_ : 2;  // NGStyleVariant

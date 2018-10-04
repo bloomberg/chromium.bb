@@ -1,0 +1,11 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x336
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x335.59
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x319.59
+      LayoutNGFieldset {FIELDSET} at (2,0) size 780x319.59 [border: (2px groove #C0C0C0)]
+        LayoutNGBlockFlow (anonymous) at (2,2) size 776x315.59
+          LayoutNGBlockFlow (floating) {DIV} at (12,5.59) size 300x300 [bgcolor=#008000]
+          LayoutNGBlockFlow {DIV} at (12,5.59) size 752x50
+            LayoutText {#text} at (300,0) size 88x18
+              text run at (300,0) width 88: "Other content"

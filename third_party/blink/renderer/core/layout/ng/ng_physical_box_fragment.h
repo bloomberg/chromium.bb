@@ -28,6 +28,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         const NGPhysicalOffsetRect& contents_ink_overflow,
                         Vector<NGBaseline>& baselines,
                         NGBoxType box_type,
+                        bool is_fieldset_container,
+                        bool is_rendered_legend,
                         bool is_old_layout_root,
                         unsigned,  // NGBorderEdges::Physical
                         scoped_refptr<NGBreakToken> break_token = nullptr);
@@ -86,11 +88,14 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGPhysicalOffsetRect descendant_outlines_;
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->Type() == NGPhysicalFragment::kFragmentBox,
-                  fragment.Type() == NGPhysicalFragment::kFragmentBox);
+DEFINE_TYPE_CASTS(
+    NGPhysicalBoxFragment,
+    NGPhysicalFragment,
+    fragment,
+    (fragment->Type() == NGPhysicalFragment::kFragmentBox ||
+     fragment->Type() == NGPhysicalFragment::kFragmentRenderedLegend),
+    (fragment.Type() == NGPhysicalFragment::kFragmentBox ||
+     fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend));
 
 }  // namespace blink
 

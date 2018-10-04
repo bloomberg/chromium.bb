@@ -74,6 +74,11 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ListMarkerOccupiesWholeLine() const;
   bool IsTableCell() const;
   bool IsFieldsetContainer() const;
+
+  // Return true if this is the legend child of a fieldset that gets special
+  // treatment (i.e. placed over the block-start border).
+  bool IsRenderedLegend() const;
+
   bool IsAnonymousBlock() const;
 
   // If the node is a quirky container for margin collapsing, see:

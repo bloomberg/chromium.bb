@@ -966,6 +966,12 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
     parent->MarkContainerNeedsCollectInlines();
 }
 
+bool LayoutBlock::IsAnonymousNGFieldsetContentWrapper() const {
+  if (!RuntimeEnabledFeatures::LayoutNGFieldsetEnabled() || !Parent())
+    return false;
+  return Parent()->IsLayoutNGFieldset();
+}
+
 void LayoutBlock::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   BlockPaintInvalidator(*this).InvalidatePaint(context);
@@ -1130,6 +1136,12 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
                                   const HitTestLocation& location_in_container,
                                   const LayoutPoint& accumulated_offset,
                                   HitTestAction hit_test_action) {
+  // We may use legacy code to hit-test the anonymous fieldset content wrapper
+  // child. The layout object for the rendered legend will be a child of that
+  // one, and has to be skipped here, since its fragment is actually laid out on
+  // the outside and is a sibling of the anonymous wrapper.
+  bool may_contain_rendered_legend = IsAnonymousNGFieldsetContentWrapper();
+
   DCHECK(!ChildrenInline());
   LayoutPoint scrolled_offset(HasOverflowClip()
                                   ? accumulated_offset - ScrolledContentOffset()
@@ -1143,6 +1155,7 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
         FlipForWritingModeForChild(child, scrolled_offset);
     if (!child->HasSelfPaintingLayer() && !child->IsFloating() &&
         !child->IsColumnSpanAll() &&
+        (!may_contain_rendered_legend || !child->IsRenderedLegend()) &&
         child->NodeAtPoint(result, location_in_container, child_point,
                            child_hit_test)) {
       UpdateHitTestResult(

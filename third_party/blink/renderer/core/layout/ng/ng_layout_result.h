@@ -77,7 +77,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentBox);
+    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentBox ||
+           root_fragment_->Type() ==
+               NGPhysicalFragment::kFragmentRenderedLegend);
     return intrinsic_block_size_;
   }
 
