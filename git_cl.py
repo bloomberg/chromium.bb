@@ -2488,13 +2488,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # For projects with unusual authentication schemes.
       # See http://crbug.com/603378.
       return
-    # Lazy-loader to identify Gerrit and Git hosts.
-    if gerrit_util.GceAuthenticator.is_gce():
+
+    # Check presence of cookies only if using cookies-based auth method.
+    cookie_auth = gerrit_util.Authenticator.get()
+    if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
+
+    # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
     assert self._gerrit_server and self._gerrit_host
-    cookie_auth = gerrit_util.CookiesAuthenticator()
 
     gerrit_auth = cookie_auth.get_auth_header(self._gerrit_host)
     git_auth = cookie_auth.get_auth_header(git_host)
@@ -2544,10 +2547,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                    (self.GetIssueURL(),
                     'submitted' if status == 'MERGED' else 'abandoned'))
 
-    if gerrit_util.GceAuthenticator.is_gce():
+    # TODO(vadimsh): For some reason the chunk of code below was skipped if
+    # 'is_gce' is True. I'm just refactoring it to be 'skip if not cookies'.
+    # Apparently this check is not very important? Otherwise get_auth_email
+    # could have been added to other implementations of Authenticator.
+    cookies_auth = gerrit_util.Authenticator.get()
+    if not isinstance(cookies_auth, gerrit_util.CookiesAuthenticator):
       return
-    cookies_user = gerrit_util.CookiesAuthenticator().get_auth_email(
-        self._GetGerritHost())
+
+    cookies_user = cookies_auth.get_auth_email(self._GetGerritHost())
     if self.GetIssueOwner() == cookies_user:
       return
     logging.debug('change %s owner is %s, cookies user is %s',
@@ -4161,10 +4169,17 @@ def CMDcreds_check(parser, args):
   """Checks credentials and suggests changes."""
   _, _ = parser.parse_args(args)
 
-  if gerrit_util.GceAuthenticator.is_gce():
+  # Code below checks .gitcookies. Abort if using something else.
+  authn = gerrit_util.Authenticator.get()
+  if not isinstance(authn, gerrit_util.CookiesAuthenticator):
+    if isinstance(authn, gerrit_util.GceAuthenticator):
+      DieWithError(
+          'This command is not designed for GCE, are you on a bot?\n'
+          'If you need to run this on GCE, export SKIP_GCE_AUTH_FOR_GIT=1 '
+          'in your env.')
     DieWithError(
-        'This command is not designed for GCE, are you on a bot?\n'
-        'If you need to run this, export SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
+        'This command is not designed for bot environment. It checks '
+        '~/.gitcookies file not generally used on bots.')
 
   checker = _GitCookiesChecker()
   checker.ensure_configured_gitcookies()

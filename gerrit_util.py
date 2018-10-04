@@ -104,9 +104,27 @@ class CookiesAuthenticator(Authenticator):
   Expected case for developer workstations.
   """
 
+  _EMPTY = object()
+
   def __init__(self):
-    self.netrc = self._get_netrc()
-    self.gitcookies = self._get_gitcookies()
+    # Credentials will be loaded lazily on first use. This ensures Authenticator
+    # get() can always construct an authenticator, even if something is broken.
+    # This allows 'creds-check' to proceed to actually checking creds later,
+    # rigorously (instead of blowing up with a cryptic error if they are wrong).
+    self._netrc = self._EMPTY
+    self._gitcookies = self._EMPTY
+
+  @property
+  def netrc(self):
+    if self._netrc is self._EMPTY:
+      self._netrc = self._get_netrc()
+    return self._netrc
+
+  @property
+  def gitcookies(self):
+    if self._gitcookies is self._EMPTY:
+      self._gitcookies = self._get_gitcookies()
+    return self._gitcookies
 
   @classmethod
   def get_new_password_url(cls, host):
