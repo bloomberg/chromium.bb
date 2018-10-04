@@ -60,12 +60,12 @@ public class ChromeApplication extends Application {
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        boolean browserProcess = ContextUtils.isMainProcess();
-        if (browserProcess) UmaUtils.recordMainEntryPointTime();
+        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
+        if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
 
-        if (browserProcess) {
+        if (isBrowserProcess) {
             if (BuildConfig.IS_MULTIDEX_ENABLED) {
                 ChromiumMultiDexInstaller.install(this);
             }
