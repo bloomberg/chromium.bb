@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
@@ -182,6 +183,10 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
 
   // Only enable if native media controls are used.
   if (!video_element_->ShouldShowControls())
+    return;
+
+  // Do not enable if controlsList=nofullscreen is used.
+  if (video_element_->ControlsListInternal()->ShouldHideFullscreen())
     return;
 
   // Only enable if the Device Orientation API can provide beta and gamma values
