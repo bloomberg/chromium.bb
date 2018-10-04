@@ -63,6 +63,7 @@
 #include "components/password_manager/core/browser/password_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
+#include "components/search_engines/search_engine_model_type_controller.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -373,9 +374,15 @@ ChromeSyncClient::CreateDataTypeControllers(
   // Search Engine sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
-    controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
-        error_callback, this,
-        TemplateURLServiceFactory::GetForProfile(profile_)));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSearchEngines)) {
+      controllers.push_back(std::make_unique<SearchEngineModelTypeController>(
+          error_callback, GetModelTypeStoreService()->GetStoreFactory(),
+          TemplateURLServiceFactory::GetForProfile(profile_)));
+    } else {
+      controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
+          error_callback, this,
+          TemplateURLServiceFactory::GetForProfile(profile_)));
+    }
   }
 #endif  // !defined(OS_ANDROID)
 

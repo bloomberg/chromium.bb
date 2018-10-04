@@ -31,6 +31,7 @@ extern const base::Feature kSyncPseudoUSSFavicons;
 extern const base::Feature kSyncPseudoUSSHistoryDeleteDirectives;
 extern const base::Feature kSyncPseudoUSSPreferences;
 extern const base::Feature kSyncPseudoUSSPriorityPreferences;
+extern const base::Feature kSyncPseudoUSSSearchEngines;
 extern const base::Feature kSyncPseudoUSSSupervisedUsers;
 extern const base::Feature kSyncPseudoUSSThemes;
 extern const base::Feature kSyncStandaloneTransport;
