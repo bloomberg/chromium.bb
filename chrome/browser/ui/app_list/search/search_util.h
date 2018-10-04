@@ -30,6 +30,8 @@ enum SearchResultType {
   PLAY_STORE_INSTANT_APP,
   // A result that is an answer card.
   ANSWER_CARD,
+  // A result that open a specific activity in an app installed from Play Store.
+  PLAY_STORE_APP_SHORTCUT,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

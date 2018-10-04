@@ -1522,6 +1522,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="PLAY_STORE_UNINSTALLED_APP"/>
   <int value="8" label="PLAY_STORE_INSTANT_APP"/>
   <int value="9" label="ANSWER_CARD"/>
+  <int value="10" label="PLAY_STORE_APP_SHORTCUT"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
