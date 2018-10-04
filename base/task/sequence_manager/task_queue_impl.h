@@ -235,6 +235,9 @@ class BASE_EXPORT TaskQueueImpl {
   // constructed due to not having TaskQueue.
   void SetQueueEnabledForTest(bool enabled);
 
+  // TODO(alexclarke): Remove when possible.
+  void ClearSequenceManagerForTesting();
+
  protected:
   void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
 
