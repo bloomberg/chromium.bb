@@ -185,7 +185,7 @@ class VirtualKeyboardAppWindowTest : public extensions::PlatformAppBrowserTest {
 // Tests that ime window won't overscroll. See crbug.com/529880.
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
                        DisableOverscrollForImeWindow) {
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetManifest(extensions::DictionaryBuilder()
                            .Set("name", "test extension")

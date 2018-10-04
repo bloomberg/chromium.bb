@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
 // lives in src/chrome but should be getting moved soon.
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP).Build();
 
   scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationStart) {
   const std::string id = "display0";
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationAppNoComplete) {
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibrationFail) {
   const std::string id = "display0";
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibrationFail) {
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibration) {
   const std::string id = "display0";
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();
@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibration) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetMirrorMode) {
-  scoped_refptr<Extension> test_extension =
+  scoped_refptr<const Extension> test_extension =
       ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .SetManifestKey("kiosk_enabled", true)
           .Build();

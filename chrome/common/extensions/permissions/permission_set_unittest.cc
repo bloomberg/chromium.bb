@@ -1313,7 +1313,7 @@ TEST(PermissionsTest, GetWarningMessages_PlatformAppHosts) {
 }
 
 testing::AssertionResult ShowsAllHostsWarning(const std::string& pattern) {
-  scoped_refptr<Extension> extension =
+  scoped_refptr<const Extension> extension =
       ExtensionBuilder("TLDWildCardTest").AddPermission(pattern).Build();
 
   return VerifyHasPermissionMessage(

@@ -105,7 +105,7 @@ class AsyncFunctionRunner {
     function->SetArgs(parsed_args.get());
 
     if (!function->extension()) {
-      scoped_refptr<Extension> empty_extension(
+      scoped_refptr<const Extension> empty_extension(
           ExtensionBuilder("Test").Build());
       function->set_extension(empty_extension.get());
     }
@@ -662,7 +662,7 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
   }
 
  private:
-  scoped_refptr<Extension> CreateExtensionWithEmailPermission() {
+  scoped_refptr<const Extension> CreateExtensionWithEmailPermission() {
     return ExtensionBuilder("Test").AddPermission("identity.email").Build();
   }
 };
@@ -1943,7 +1943,7 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
         .WillRepeatedly(Return(true));
   }
 
-  scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
+  scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
     return ExtensionBuilder("Test")
         .SetManifestKey(
             "oauth2", DictionaryBuilder()
@@ -2086,7 +2086,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, MAYBE_UserCloseWindow) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   WaitForGURLAndCloseWindow popup_observer(auth_url);
@@ -2110,7 +2111,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": false, \"url\": \"" +
@@ -2130,7 +2132,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": true, \"url\": \"" +
@@ -2144,7 +2147,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -2164,7 +2168,8 @@ IN_PROC_BROWSER_TEST_F(
     LaunchWebAuthFlowFunctionTest, InteractiveFirstNavigationSuccess) {
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -2190,7 +2195,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");

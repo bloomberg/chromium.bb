@@ -246,8 +246,8 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   FakeHost host_ab_;
   FakeHost host_bb_;
   FakeHost host_aa_duplicate_;
-  scoped_refptr<Extension> extension_a_;
-  scoped_refptr<Extension> extension_b_;
+  scoped_refptr<const Extension> extension_a_;
+  scoped_refptr<const Extension> extension_b_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTest);

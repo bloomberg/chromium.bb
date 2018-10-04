@@ -138,7 +138,7 @@ class AppSearchProviderTest : public AppListTestBase {
                     const std::string& name,
                     extensions::Manifest::Location location,
                     int extra_flags) {
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
             .SetManifest(
                 extensions::DictionaryBuilder()

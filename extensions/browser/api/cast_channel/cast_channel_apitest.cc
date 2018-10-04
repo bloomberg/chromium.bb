@@ -231,7 +231,7 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
   }
 
   extensions::CastChannelOpenFunction* CreateOpenFunction(
-        scoped_refptr<Extension> extension) {
+      scoped_refptr<const Extension> extension) {
     extensions::CastChannelOpenFunction* cast_channel_open_function =
       new extensions::CastChannelOpenFunction;
     cast_channel_open_function->set_extension(extension.get());
@@ -239,7 +239,7 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
   }
 
   extensions::CastChannelSendFunction* CreateSendFunction(
-        scoped_refptr<Extension> extension) {
+      scoped_refptr<const Extension> extension) {
     extensions::CastChannelSendFunction* cast_channel_send_function =
       new extensions::CastChannelSendFunction;
     cast_channel_send_function->set_extension(extension.get());
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
-  scoped_refptr<Extension> empty_extension =
+  scoped_refptr<const Extension> empty_extension =
       extensions::ExtensionBuilder("Test").Build();
   scoped_refptr<extensions::CastChannelOpenFunction> cast_channel_open_function;
 
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
-  scoped_refptr<Extension> empty_extension(
+  scoped_refptr<const Extension> empty_extension(
       extensions::ExtensionBuilder("Test").Build());
   scoped_refptr<extensions::CastChannelSendFunction> cast_channel_send_function;
 

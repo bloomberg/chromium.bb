@@ -133,14 +133,14 @@ ExtensionBuilder::ExtensionBuilder(ExtensionBuilder&& other) = default;
 ExtensionBuilder& ExtensionBuilder::operator=(ExtensionBuilder&& other) =
     default;
 
-scoped_refptr<Extension> ExtensionBuilder::Build() {
+scoped_refptr<const Extension> ExtensionBuilder::Build() {
   CHECK(manifest_data_ || manifest_value_);
 
   if (id_.empty() && manifest_data_)
     id_ = crx_file::id_util::GenerateId(manifest_data_->name);
 
   std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
+  scoped_refptr<const Extension> extension = Extension::Create(
       path_, location_,
       manifest_data_ ? *manifest_data_->GetValue() : *manifest_value_, flags_,
       id_, &error);

@@ -69,7 +69,7 @@ web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
       web_app::PendingAppManager::InstallSource::kExternalPolicy);
 }
 
-scoped_refptr<Extension> CreateDummyExtension(const std::string& id) {
+scoped_refptr<const Extension> CreateDummyExtension(const std::string& id) {
   return ExtensionBuilder("Dummy name")
       .SetLocation(Manifest::EXTERNAL_POLICY)
       .SetID(id)

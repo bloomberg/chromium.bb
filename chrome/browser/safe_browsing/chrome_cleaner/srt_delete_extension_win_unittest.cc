@@ -35,7 +35,7 @@ TEST_F(ExtensionDeletionTest, DisableExtensionTest) {
   std::vector<base::string16> extension_ids{};
   extensions::ExtensionService* extension_service = this->service();
   for (int i = 40; i < 43; i++) {
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder(base::NumberToString(i))
             .SetManifestKey("version", "1")
             .Build();
@@ -88,7 +88,7 @@ TEST_F(ExtensionDeletionTest, EmptyDeletionTest) {
       std::make_unique<ChromePromptImpl>(extension_service, nullptr,
                                          base::DoNothing(), base::DoNothing());
   for (int i = 40; i < 43; i++) {
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder(base::NumberToString(i))
             .SetManifestKey("version", "1")
             .Build();
@@ -114,7 +114,7 @@ TEST_F(ExtensionDeletionTest, BadlyFormattedDeletionTest) {
       std::make_unique<ChromePromptImpl>(extension_service, nullptr,
                                          base::DoNothing(), base::DoNothing());
   for (int i = 40; i < 43; i++) {
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder(base::NumberToString(i))
             .SetManifestKey("version", "1")
             .Build();
@@ -141,7 +141,7 @@ TEST_F(ExtensionDeletionTest, NotInstalledExtensionTest) {
                                          base::DoNothing(), base::DoNothing());
   for (int i = 40; i < 43; i++) {
     // Don't actually install the extension
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder(base::NumberToString(i))
             .SetManifestKey("version", "1")
             .Build();

@@ -239,9 +239,9 @@ size_t GetExternalInstallBubbleCount(ExtensionService* service) {
   return bubble_count;
 }
 
-scoped_refptr<Extension> CreateExtension(const std::string& name,
-                                         const base::FilePath& path,
-                                         Manifest::Location location) {
+scoped_refptr<const Extension> CreateExtension(const std::string& name,
+                                               const base::FilePath& path,
+                                               Manifest::Location location) {
   return ExtensionBuilder(name).SetPath(path).SetLocation(location).Build();
 }
 
@@ -6538,7 +6538,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
   InitializeEmptyExtensionService();
   service_->Init();
 
-  scoped_refptr<Extension> external_component_extension = CreateExtension(
+  scoped_refptr<const Extension> external_component_extension = CreateExtension(
       "external_component_extension",
       base::FilePath(FILE_PATH_LITERAL("//external_component_extension")),
       Manifest::EXTERNAL_COMPONENT);
@@ -6550,7 +6550,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(
       external_component_extension->id()));
 
-  scoped_refptr<Extension> component_extension = CreateExtension(
+  scoped_refptr<const Extension> component_extension = CreateExtension(
       "component_extension",
       base::FilePath(FILE_PATH_LITERAL("//component_extension")),
       Manifest::COMPONENT);
@@ -7088,7 +7088,8 @@ TEST_F(ExtensionServiceTest,
 TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
   InitializeEmptyExtensionService();
 
-  scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").Build();
   ASSERT_TRUE(extension.get());
   const std::string& id = extension->id();
 
@@ -7142,7 +7143,7 @@ TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
 // Test that calls to disable Shared Modules do not work.
 TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   InitializeEmptyExtensionService();
-  scoped_refptr<Extension> extension =
+  scoped_refptr<const Extension> extension =
       ExtensionBuilder("Shared Module")
           .SetManifestPath({"export", "resources"},
                            ListBuilder().Append("foo.js").Build())
