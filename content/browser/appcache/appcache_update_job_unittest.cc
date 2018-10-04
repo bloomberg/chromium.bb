@@ -1133,8 +1133,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     // Create response writer to get a response id.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
 
     AppCache* cache = MakeCacheForGroup(1, response_writer_->response_id());
     MockFrontend* frontend1 = MakeMockFrontend();
@@ -1286,8 +1286,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     // Create a response writer to get a response id.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());
@@ -1360,8 +1360,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host->AssociateCompleteCache(cache);
 
     // Give the newest cache an entry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -1428,8 +1428,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host->AssociateCompleteCache(cache);
 
     // Give the newest cache an entry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -1494,8 +1494,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host->AssociateCompleteCache(cache);
 
     // Give the newest cache an entry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -1560,8 +1560,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host->AssociateCompleteCache(cache);
 
     // Give the newest cache an entry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -3187,8 +3187,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     // Give the newest cache a manifest enry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());
@@ -3260,8 +3260,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     // Give the newest cache a manifest enry that is in storage.
-    response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());

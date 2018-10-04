@@ -294,9 +294,9 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
     scoped_refptr<net::IOBuffer> response_data =
         base::MakeRefCounted<net::IOBuffer>(
             base::checked_cast<size_t>(amount_to_read));
-    std::unique_ptr<AppCacheResponseReader> reader(
+    std::unique_ptr<AppCacheResponseReader> reader =
         appcache_service_->storage()->CreateResponseReader(
-            GURL(response_enquiry.manifest_url), response_enquiry.response_id));
+            GURL(response_enquiry.manifest_url), response_enquiry.response_id);
 
     reader->ReadData(response_data.get(), amount_to_read,
                      base::BindOnce(&Proxy::OnResponseDataReadComplete, this,

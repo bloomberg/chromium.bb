@@ -202,7 +202,7 @@ class CONTENT_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
   friend class AppCacheStorageImpl;
   friend class content::MockAppCacheStorage;
 
-  // Should only be constructed by the storage class and derivatives.
+  // Use AppCacheStorage::CreateResponse() instead of calling directly.
   AppCacheResponseReader(int64_t response_id,
                          base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 

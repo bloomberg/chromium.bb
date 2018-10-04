@@ -1711,23 +1711,26 @@ void AppCacheStorageImpl::StoreEvictionTimes(AppCacheGroup* group) {
   task->Schedule();
 }
 
-AppCacheResponseReader* AppCacheStorageImpl::CreateResponseReader(
-    const GURL& manifest_url,
-    int64_t response_id) {
-  return new AppCacheResponseReader(
-      response_id, is_disabled_ ? nullptr : disk_cache()->GetWeakPtr());
+std::unique_ptr<AppCacheResponseReader>
+AppCacheStorageImpl::CreateResponseReader(const GURL& manifest_url,
+                                          int64_t response_id) {
+  // base::WrapUnique needed due to non-public constructor.
+  return base::WrapUnique(new AppCacheResponseReader(
+      response_id, is_disabled_ ? nullptr : disk_cache()->GetWeakPtr()));
 }
 
-AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
-    const GURL& manifest_url) {
-  return new AppCacheResponseWriter(
-      NewResponseId(), is_disabled_ ? nullptr : disk_cache()->GetWeakPtr());
+std::unique_ptr<AppCacheResponseWriter>
+AppCacheStorageImpl::CreateResponseWriter(const GURL& manifest_url) {
+  // base::WrapUnique needed due to non-public constructor.
+  return base::WrapUnique(new AppCacheResponseWriter(
+      NewResponseId(), is_disabled_ ? nullptr : disk_cache()->GetWeakPtr()));
 }
 
-AppCacheResponseMetadataWriter*
+std::unique_ptr<AppCacheResponseMetadataWriter>
 AppCacheStorageImpl::CreateResponseMetadataWriter(int64_t response_id) {
-  return new AppCacheResponseMetadataWriter(
-      response_id, is_disabled_ ? nullptr : disk_cache()->GetWeakPtr());
+  // base::WrapUnique needed due to non-public constructor.
+  return base::WrapUnique(new AppCacheResponseMetadataWriter(
+      response_id, is_disabled_ ? nullptr : disk_cache()->GetWeakPtr()));
 }
 
 void AppCacheStorageImpl::DoomResponses(
