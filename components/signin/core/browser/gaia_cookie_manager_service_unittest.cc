@@ -474,6 +474,7 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
   std::string data =
       R"()]}'
         {
+          "status": "OK",
           "cookies":[
           {
               "name":"SID",
@@ -488,8 +489,10 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
           ]
         }
       )";
-  ASSERT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-      data, &result));
+  ASSERT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                data, &result)
+                .state(),
+            GoogleServiceAuthError::State::NONE);
 
   testing::InSequence mock_sequence;
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
@@ -552,6 +555,7 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
   std::string data =
       R"()]}'
         {
+          "status": "OK",
           "cookies":[
             {
               "name":"SID",
@@ -586,8 +590,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
           ]
         }
       )";
-  ASSERT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-      data, &result));
+  ASSERT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+                data, &result)
+                .state(),
+            GoogleServiceAuthError::State::NONE);
 
   testing::InSequence mock_sequence;
   EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
