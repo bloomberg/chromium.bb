@@ -33,6 +33,9 @@ SyncedBookmarkTracker::Entity::Entity(
     const bookmarks::BookmarkNode* bookmark_node,
     std::unique_ptr<sync_pb::EntityMetadata> metadata)
     : bookmark_node_(bookmark_node), metadata_(std::move(metadata)) {
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK(metadata_);
   if (bookmark_node) {
     DCHECK(!metadata_->is_deleted());
   } else {
@@ -95,6 +98,9 @@ SyncedBookmarkTracker::SyncedBookmarkTracker(
       DCHECK(entity->metadata()->is_deleted());
       ordered_local_tombstones_.push_back(entity.get());
     }
+    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+    // Should be removed after figuring out the reason for the crash.
+    CHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
     sync_id_to_entities_map_[sync_id] = std::move(entity);
   }
 }
@@ -133,6 +139,9 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
   auto entity = std::make_unique<Entity>(bookmark_node, std::move(metadata));
   bookmark_node_to_entities_map_[bookmark_node] = entity.get();
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
   sync_id_to_entities_map_[sync_id] = std::move(entity);
 }
 
@@ -358,6 +367,9 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
   if (old_id != new_id) {
     auto it = sync_id_to_entities_map_.find(old_id);
     entity->metadata()->set_server_id(new_id);
+    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+    // Should be removed after figuring out the reason for the crash.
+    CHECK_EQ(0U, sync_id_to_entities_map_.count(new_id));
     sync_id_to_entities_map_[new_id] = std::move(it->second);
     sync_id_to_entities_map_.erase(old_id);
   }

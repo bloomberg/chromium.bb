@@ -180,6 +180,9 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
   const base::Time modification_time = base::Time::Now();
   sync_pb::EntitySpecifics specifics =
       CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true);
+  // TODO(crbug.com/516866): The below CHECKs are added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK_EQ(entity, bookmark_tracker_->GetEntityForBookmarkNode(node));
   if (entity->MatchesSpecificsHash(specifics)) {
     // We should push data to the server only if there is an actual change in
     // the data. We could hit this code path without having actual changes

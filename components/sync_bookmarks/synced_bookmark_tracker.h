@@ -62,8 +62,18 @@ class SyncedBookmarkTracker {
     // Used in local deletions to mark and entity as a tommstone.
     void clear_bookmark_node() { bookmark_node_ = nullptr; }
 
-    const sync_pb::EntityMetadata* metadata() const { return metadata_.get(); }
-    sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
+    const sync_pb::EntityMetadata* metadata() const {
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(metadata_);
+      return metadata_.get();
+    }
+    sync_pb::EntityMetadata* metadata() {
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(metadata_);
+      return metadata_.get();
+    }
 
     // Returns the estimate of dynamically allocated memory in bytes.
     size_t EstimateMemoryUsage() const;
