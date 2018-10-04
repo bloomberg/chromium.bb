@@ -10,6 +10,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace media_session {
@@ -187,24 +188,8 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
     return;
   }
 
-  // Allow the top-most MediaSession having force duck to unduck even if
-  // it is not active.
-  for (auto iter = audio_focus_stack_.rbegin();
-       iter != audio_focus_stack_.rend(); ++iter) {
-    if (!(*iter)->info()->force_duck)
-      continue;
-
-    auto duck_row = std::move(*iter);
-    duck_row->session()->StopDucking();
-    audio_focus_stack_.erase(std::next(iter).base());
-    audio_focus_stack_.push_back(std::move(duck_row));
-    return;
-  }
-
-  // Only try to unduck the new MediaSession on top. The session might be
-  // still inactive but it will not be resumed (so it doesn't surprise the
-  // user).
-  audio_focus_stack_.back()->session()->StopDucking();
+  if (IsAudioFocusEnforcementEnabled())
+    EnforceAudioFocusAbandon();
 
   // Notify observers that we lost audio focus.
   observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
@@ -240,6 +225,32 @@ void AudioFocusManager::RequestAudioFocusInternal(
     std::unique_ptr<StackRow> row,
     mojom::AudioFocusType type,
     base::OnceCallback<void()> callback) {
+  // If audio focus is enabled then we should enforce this request and make sure
+  // the new active session is not ducking.
+  if (IsAudioFocusEnforcementEnabled()) {
+    EnforceAudioFocusRequest(type);
+    row->session()->StopDucking();
+  }
+
+  row->SetAudioFocusType(type);
+  audio_focus_stack_.push_back(std::move(row));
+
+  // Notify observers that we were gained audio focus.
+  mojom::MediaSessionInfoPtr session_info =
+      audio_focus_stack_.back()->info().Clone();
+  observers_.ForAllPtrs(
+      [&session_info, type](mojom::AudioFocusObserver* observer) {
+        observer->OnFocusGained(session_info.Clone(), type);
+      });
+
+  // We always grant the audio focus request but this may not always be the case
+  // in the future.
+  std::move(callback).Run();
+}
+
+void AudioFocusManager::EnforceAudioFocusRequest(mojom::AudioFocusType type) {
+  DCHECK(IsAudioFocusEnforcementEnabled());
+
   if (type == mojom::AudioFocusType::kGainTransientMayDuck) {
     for (auto& old_session : audio_focus_stack_)
       old_session->session()->StartDucking();
@@ -255,22 +266,29 @@ void AudioFocusManager::RequestAudioFocusInternal(
       }
     }
   }
+}
 
-  row->SetAudioFocusType(type);
-  row->session()->StopDucking();
-  audio_focus_stack_.push_back(std::move(row));
+void AudioFocusManager::EnforceAudioFocusAbandon() {
+  DCHECK(IsAudioFocusEnforcementEnabled());
 
-  // Notify observers that we were gained audio focus.
-  mojom::MediaSessionInfoPtr session_info =
-      audio_focus_stack_.back()->info().Clone();
-  observers_.ForAllPtrs(
-      [&session_info, type](mojom::AudioFocusObserver* observer) {
-        observer->OnFocusGained(session_info.Clone(), type);
-      });
+  // Allow the top-most MediaSession having force duck to unduck even if
+  // it is not active.
+  for (auto iter = audio_focus_stack_.rbegin();
+       iter != audio_focus_stack_.rend(); ++iter) {
+    if (!(*iter)->info()->force_duck)
+      continue;
 
-  // We always grant the audio focus request but this may not always be the case
-  // in the future.
-  std::move(callback).Run();
+    auto duck_row = std::move(*iter);
+    duck_row->session()->StopDucking();
+    audio_focus_stack_.erase(std::next(iter).base());
+    audio_focus_stack_.push_back(std::move(duck_row));
+    return;
+  }
+
+  // Only try to unduck the new MediaSession on top. The session might be
+  // still inactive but it will not be resumed (so it doesn't surprise the
+  // user).
+  audio_focus_stack_.back()->session()->StopDucking();
 }
 
 void AudioFocusManager::ResetForTesting() {
