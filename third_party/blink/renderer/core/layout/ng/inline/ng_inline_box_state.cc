@@ -56,6 +56,11 @@ void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
   include_used_fonts = style.LineHeight().IsNegative();
 }
 
+void NGInlineBoxState::ResetTextMetrics() {
+  metrics = text_metrics = NGLineHeightMetrics();
+  text_top = text_height = LayoutUnit();
+}
+
 void NGInlineBoxState::EnsureTextMetrics(const ComputedStyle& style,
                                          FontBaseline baseline_type) {
   if (text_metrics.IsEmpty())
@@ -116,7 +121,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
       if (!line_height_quirk)
         box.metrics = box.text_metrics;
       else
-        box.metrics = box.text_metrics = NGLineHeightMetrics();
+        box.ResetTextMetrics();
       if (box.needs_box_fragment) {
         // Existing box states are wrapped before they were closed, and hence
         // they do not have start edges, unless 'box-decoration-break: clone'.
