@@ -256,7 +256,11 @@ struct VideoFrameInfo{
   VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
-  gfx.mojom.ColorSpace color_space;
+  // This field is only optional to work around the issue of native enums
+  // not being usable for non-Chromium Mojo clients.
+  // TODO(chfremer): Make this non-optional once gfx.mojom.ColorSpace has been
+  // migrated to a full Mojo struct.
+  gfx.mojom.ColorSpace? color_space;
   // Optionally, stride information can be provided.
   // If not provided, it is assumed that frame data is tightly packed.
   PlaneStrides? strides;

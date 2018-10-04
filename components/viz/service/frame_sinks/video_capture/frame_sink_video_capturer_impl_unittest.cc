@@ -160,7 +160,8 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
             mapping.size(), info->timestamp);
     ASSERT_TRUE(frame);
     frame->metadata()->MergeInternalValuesFrom(info->metadata);
-    frame->set_color_space(info->color_space);
+    if (info->color_space.has_value())
+      frame->set_color_space(info->color_space.value());
     frame->AddDestructionObserver(base::BindOnce(
         [](base::ReadOnlySharedMemoryMapping mapping) {}, std::move(mapping)));
     OnFrameCapturedMock(frame, update_rect, callbacks.get());
