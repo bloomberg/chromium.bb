@@ -293,7 +293,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_webview_test_suite',
-          'num_shards': 16,
+          'num_shards': 8,
           'extra_args': [
               '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
               '--assert-gpu-compositing',

@@ -158,7 +158,7 @@ ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
 
 ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
-    num_shards=16)
+    num_shards=8)  # Reduced from 16 per crbug.com/891848.
 
 
 ALL_PLATFORMS = {
