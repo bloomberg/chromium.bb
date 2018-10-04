@@ -563,6 +563,9 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     // Find fragments that have text for the specified range.
     DCHECK_LE(start, end);
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    const LayoutBlock* block_for_flipping = nullptr;
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      block_for_flipping = ContainingBlock();
     for (const NGPaintFragment* fragment : fragments) {
       const NGPhysicalTextFragment& text_fragment =
           ToNGPhysicalTextFragment(fragment->PhysicalFragment());
@@ -572,10 +575,12 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       const unsigned clamped_start =
           std::max(start, text_fragment.StartOffset());
       const unsigned clamped_end = std::min(end, text_fragment.EndOffset());
-      NGPhysicalOffsetRect rect =
-          text_fragment.LocalRect(clamped_start, clamped_end);
-      rect.offset += fragment->InlineOffsetToContainerBox();
-      const FloatQuad quad = LocalToAbsoluteQuad(rect.ToFloatRect());
+      LayoutRect rect =
+          text_fragment.LocalRect(clamped_start, clamped_end).ToLayoutRect();
+      rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
+      if (UNLIKELY(block_for_flipping))
+        block_for_flipping->FlipForWritingMode(rect);
+      const FloatQuad quad = LocalToAbsoluteQuad(FloatRect(rect));
       if (clamped_start < clamped_end) {
         quads.push_back(quad);
         found_non_collapsed_quad = true;
