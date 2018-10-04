@@ -231,7 +231,8 @@ void CanvasRenderingContext2DTest::SetUp() {
   StringOrCanvasGradientOrCanvasPattern wrapped_alpha_gradient;
   this->AlphaGradient().SetCanvasGradient(alpha_gradient);
 
-  global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
+  global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 }
 
 void CanvasRenderingContext2DTest::TearDown() {

@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -74,7 +75,8 @@ class ImageBitmapTest : public testing::Test {
     image2_ = surface2->makeImageSnapshot();
 
     // Save the global memory cache to restore it upon teardown.
-    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
+    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
     auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
