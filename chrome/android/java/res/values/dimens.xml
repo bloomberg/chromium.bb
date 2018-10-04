@@ -222,7 +222,6 @@
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
     <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
-    <dimen name="bottom_control_container_peek_height">48dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="fullscreen_activity_control_container_height">0dp</dimen>
 
@@ -504,6 +503,7 @@
     <dimen name="sad_tab_bullet_gap">12dp</dimen>
     <dimen name="sad_tab_bullet_leading_offset">1dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
+    <dimen name="bottom_sheet_peek_height">56dp</dimen>
 
     <!-- Context Menu Dimensions -->
     <dimen name="context_menu_header_image_width_padding">15dp</dimen>

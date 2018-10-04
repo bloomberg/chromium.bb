@@ -13,7 +13,7 @@
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_control_container_peek_height"
+        android:layout_height="@dimen/bottom_sheet_peek_height"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@android:color/white" >
@@ -63,7 +63,7 @@
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_shadow_height"
-        android:layout_marginTop="@dimen/bottom_control_container_peek_height"
+        android:layout_marginTop="@dimen/bottom_sheet_peek_height"
         android:src="@drawable/modern_toolbar_shadow"
         android:scaleType="fitXY"
         tools:ignore="ContentDescription"
