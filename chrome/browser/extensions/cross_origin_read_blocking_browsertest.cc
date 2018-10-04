@@ -48,13 +48,15 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
       GURL resource_to_fetch_from_declarative_content_script = GURL()) {
     bool use_declarative_content_script =
         resource_to_fetch_from_declarative_content_script.is_valid();
-
     const char kContentScriptManifestEntry[] = R"(
           "content_scripts": [{
+            "all_frames": true,
+            "match_about_blank": true,
             "matches": ["*://*/*"],
             "js": ["content_script.js"]
           }],
     )";
+
     const char kManifestTemplate[] = R"(
         {
           "name": "CrossOriginReadBlockingTest",
@@ -141,6 +143,16 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
                  base::Unretained(this), base::Unretained(web_contents)));
   }
 
+  // Performs a fetch of |url| from a srcdoc subframe added to |parent_frame|
+  // and executing a script via <script> tag.  Returns the body of the response.
+  std::string FetchViaSrcDocFrame(GURL url,
+                                  content::RenderFrameHost* parent_frame) {
+    return FetchHelper(
+        url, base::BindOnce(
+                 &CrossOriginReadBlockingExtensionTest::ExecuteInSrcDocFrame,
+                 base::Unretained(this), base::Unretained(parent_frame)));
+  }
+
   void VerifyContentScriptHistogramIsPresent(
       const base::HistogramTester& histograms,
       content::ResourceType resource_type) {
@@ -192,6 +204,38 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
   bool ExecuteRegularScript(content::WebContents* web_contents,
                             const std::string& regular_script) {
     content::ExecuteScriptAsync(web_contents, regular_script);
+
+    // Report artificial success to meet FetchCallback's requirements.
+    return true;
+  }
+
+  // Injects into |parent_frame| an "srcdoc" subframe that contains/executes
+  // |script_to_run_in_subframe| via <script> tag.
+  //
+  // This function is useful to exercise a scenario when a <script> tag may
+  // execute before the browser gets a chance to see the a frame/navigation
+  // commit is happening.
+  //
+  // This is an implementation of FetchCallback.
+  // Returns true if the script execution started succeessfully.
+  bool ExecuteInSrcDocFrame(content::RenderFrameHost* parent_frame,
+                            const std::string& script_to_run_in_subframe) {
+    static int sequence_id = 0;
+    sequence_id++;
+    std::string filename =
+        base::StringPrintf("srcdoc_script_%d.js", sequence_id);
+    dir_.WriteFile(base::FilePath::FromUTF8Unsafe(filename).value(),
+                   script_to_run_in_subframe);
+
+    // Using <script src=...></script> instead of <script>...</script> to avoid
+    // extensions CSP which forbids inline scripts.
+    const char kScriptTemplate[] = R"(
+        var subframe = document.createElement('iframe');
+        subframe.srcdoc = '<script src=' + $1 + '></script>';
+        document.body.appendChild(subframe); )";
+    std::string subframe_injection_script =
+        content::JsReplace(kScriptTemplate, filename);
+    content::ExecuteScriptAsync(parent_frame, subframe_injection_script);
 
     // Report artificial success to meet FetchCallback's requirements.
     return true;
@@ -263,33 +307,68 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
                        FromDeclarativeContentScript_NoSniffXml) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
   // Load the test extension.
   GURL cross_site_resource(
       embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
   ASSERT_TRUE(InstallExtension(cross_site_resource));
 
-  // Navigate to a foo.com page - this should trigger execution of the
-  // |content_script| declared in the extension manifest.
-  base::HistogramTester histograms;
-  content::DOMMessageQueue message_queue;
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(url::Origin::Create(page_url),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  // Test case #1: Declarative script injected after a browser-initiated
+  // navigation of the main frame.
+  {
+    // Monitor CORB behavior + result of the fetch.
+    base::HistogramTester histograms;
+    content::DOMMessageQueue message_queue;
 
-  // Extract results of the fetch done in the declarative content script.
-  std::string fetch_result = PopString(&message_queue);
+    // Navigate to a foo.com page - this should trigger execution of the
+    // |content_script| declared in the extension manifest.
+    GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+    ui_test_utils::NavigateToURL(browser(), page_url);
+    EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+    EXPECT_EQ(url::Origin::Create(page_url),
+              web_contents->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Verify that no blocking occurred.
-  EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-  EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-              testing::IsEmpty());
+    // Extract results of the fetch done in the declarative content script.
+    std::string fetch_result = PopString(&message_queue);
 
-  // Verify that LogInitiatorSchemeBypassingDocumentBlocking was called.
-  VerifyContentScriptHistogramIsPresent(histograms, content::RESOURCE_TYPE_XHR);
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+
+    // Verify that LogInitiatorSchemeBypassingDocumentBlocking was called.
+    VerifyContentScriptHistogramIsPresent(histograms,
+                                          content::RESOURCE_TYPE_XHR);
+  }
+
+  // Test case #2: Declarative script injected after a renderer-initiated
+  // creation of an about:blank frame.
+  {
+    // Monitor CORB behavior + result of the fetch.
+    base::HistogramTester histograms;
+    content::DOMMessageQueue message_queue;
+
+    // Inject an about:blank subframe - this should trigger execution of the
+    // |content_script| declared in the extension manifest.
+    const char kBlankSubframeInjectionScript[] = R"(
+        var subframe = document.createElement('iframe');
+        document.body.appendChild(subframe); )";
+    content::ExecuteScriptAsync(web_contents, kBlankSubframeInjectionScript);
+
+    // Extract results of the fetch done in the declarative content script.
+    std::string fetch_result = PopString(&message_queue);
+
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+
+    // Verify that LogInitiatorSchemeBypassingDocumentBlocking was called.
+    VerifyContentScriptHistogramIsPresent(histograms,
+                                          content::RESOURCE_TYPE_XHR);
+  }
 }
 
 // Test that verifies the current, baked-in (but not necessarily desirable
@@ -432,21 +511,44 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   EXPECT_EQ(GetExtensionOrigin(),
             web_contents->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Perform a cross-origin XHR from the foreground extension page.
-  base::HistogramTester histograms;
-  GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
-  std::string fetch_result =
-      FetchViaWebContents(cross_site_resource, web_contents);
+  // Test case #1: Fetch from a chrome-extension://... main frame.
+  {
+    // Perform a cross-origin XHR from the foreground extension page.
+    base::HistogramTester histograms;
+    GURL cross_site_resource(
+        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+    std::string fetch_result =
+        FetchViaWebContents(cross_site_resource, web_contents);
 
-  // Verify that no blocking occurred.
-  EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-  EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-              testing::IsEmpty());
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
 
-  // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-  // for a request that wasn't from a content script.
-  VerifyContentScriptHistogramIsMissing(histograms);
+    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
+    // for a request that wasn't from a content script.
+    VerifyContentScriptHistogramIsMissing(histograms);
+  }
+
+  // Test case #2: Fetch from an about:srcdoc subframe of a
+  // chrome-extension://... frame.
+  {
+    // Perform a cross-origin XHR from the foreground extension page.
+    base::HistogramTester histograms;
+    GURL cross_site_resource(
+        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+    std::string fetch_result =
+        FetchViaSrcDocFrame(cross_site_resource, web_contents->GetMainFrame());
+
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+
+    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
+    // for a request that wasn't from a content script.
+    VerifyContentScriptHistogramIsMissing(histograms);
+  }
 }
 
 // Test that requests from an extension's service worker to the network use
