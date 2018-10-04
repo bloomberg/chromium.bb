@@ -1091,9 +1091,7 @@ bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {
   // about:blank or about:srcdoc frames should not be allowed to use password
   // manager.  See https://crbug.com/756587.
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  blink::WebURL url = frame->GetDocument().Url();
-  if (url.ProtocolIs(url::kAboutScheme) || url.ProtocolIs(url::kBlobScheme) ||
-      url.ProtocolIs(url::kFileSystemScheme))
+  if (frame->GetDocument().Url().ProtocolIs(url::kAboutScheme))
     return false;
   return frame->GetSecurityOrigin().CanAccessPasswordManager();
 }

@@ -3610,31 +3610,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessPasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsSavePromptAvailable());
 }
 
-// Verify that there is no renderer kill when filling out a password on a
-// blob: URL.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       NoRendererKillWithBlobURLFrames) {
-  // Start from a page without a password form.
-  NavigateToFile("/password/other.html");
-
-  GURL submit_url(embedded_test_server()->GetURL("/password/done.html"));
-  std::string form_html = GeneratePasswordFormForAction(submit_url);
-  std::string navigate_to_blob_url =
-      "location.href = URL.createObjectURL(new Blob([\"" + form_html +
-      "\"], { type: 'text/html' }));";
-  NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), navigate_to_blob_url));
-  observer.Wait();
-
-  // Fill in the password and submit the form.  This shouldn't bring up a save
-  // password prompt and shouldn't result in a renderer kill.
-  std::string fill_and_submit =
-      "document.getElementById('password_field').value = 'random';"
-      "document.getElementById('testform').submit();";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
-  EXPECT_FALSE(BubbleObserver(WebContents()).IsSavePromptAvailable());
-}
-
 // Test that for HTTP auth (i.e., credentials not put through web forms) the
 // password manager works even though it should be disabled on the previous
 // page.
