@@ -4,6 +4,7 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
@@ -271,7 +272,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     test_event_router_ = extensions::CreateAndUseTestEventRouter(profile);
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
-        ->SetTestingFactory(profile, BuildSafeBrowsingPrivateEventRouter);
+        ->SetTestingFactory(
+            profile, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
     observer_ =
         std::make_unique<TestExtensionEventObserver>(test_event_router_);
 #endif
