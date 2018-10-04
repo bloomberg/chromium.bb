@@ -25,9 +25,10 @@ class FrameTest : public PageTestBase {
 
   void Navigate(const String& destinationUrl, bool user_activated) {
     const KURL& url = KURL(NullURL(), destinationUrl);
-    FrameLoadRequest request(nullptr, ResourceRequest(url),
-                             SubstituteData(SharedBuffer::Create()));
-    GetDocument().GetFrame()->Loader().CommitNavigation(request);
+    GetDocument().GetFrame()->Loader().CommitNavigation(
+        ResourceRequest(url), SubstituteData(SharedBuffer::Create()),
+        ClientRedirectPolicy::kNotClientRedirect,
+        base::UnguessableToken::Create());
     if (user_activated) {
       GetDocument()
           .GetFrame()

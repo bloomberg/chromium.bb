@@ -70,8 +70,10 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   CString content("");
   scoped_refptr<SharedBuffer> buffer(
       SharedBuffer::Create(content.data(), content.length()));
-  main_frame_->GetFrame()->Loader().CommitNavigation(FrameLoadRequest(
-      nullptr, ResourceRequest(script_url), SubstituteData(buffer)));
+  main_frame_->GetFrame()->Loader().CommitNavigation(
+      ResourceRequest(script_url), SubstituteData(buffer),
+      ClientRedirectPolicy::kNotClientRedirect,
+      base::UnguessableToken::Create());
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {

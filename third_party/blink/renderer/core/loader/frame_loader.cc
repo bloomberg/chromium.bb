@@ -40,6 +40,7 @@
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -629,7 +630,9 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
 }
 
 WebFrameLoadType FrameLoader::DetermineFrameLoadType(
-    const FrameLoadRequest& request,
+    const ResourceRequest& resource_request,
+    Document* origin_document,
+    const KURL& failing_url,
     WebFrameLoadType frame_load_type) {
   // TODO(dgozman): this method is rewriting the load type, which makes it hard
   // to reason about various navigations and their desired load type. We should
@@ -643,7 +646,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
         !state_machine_.CommittedFirstRealDocumentLoad())
       return WebFrameLoadType::kReplaceCurrentItem;
     if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
-      if (Opener() && request.GetResourceRequest().Url().IsEmpty())
+      if (Opener() && resource_request.Url().IsEmpty())
         return WebFrameLoadType::kReplaceCurrentItem;
       return WebFrameLoadType::kStandard;
     }
@@ -651,9 +654,9 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   if (frame_load_type != WebFrameLoadType::kStandard)
     return frame_load_type;
   CHECK_NE(mojom::FetchCacheMode::kValidateCache,
-           request.GetResourceRequest().GetCacheMode());
+           resource_request.GetCacheMode());
   CHECK_NE(mojom::FetchCacheMode::kBypassCache,
-           request.GetResourceRequest().GetCacheMode());
+           resource_request.GetCacheMode());
   // From the HTML5 spec for location.assign():
   // "If the browsing context's session history contains only one Document,
   // and that was the about:blank Document created when the browsing context
@@ -662,26 +665,23 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
        DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
     return WebFrameLoadType::kReplaceCurrentItem;
 
-  if (request.GetResourceRequest().Url() == document_loader_->UrlForHistory()) {
-    if (request.GetResourceRequest().HttpMethod() == HTTPNames::POST)
+  if (resource_request.Url() == document_loader_->UrlForHistory()) {
+    if (resource_request.HttpMethod() == HTTPNames::POST)
       return WebFrameLoadType::kStandard;
-    if (!request.OriginDocument())
+    if (!origin_document)
       return WebFrameLoadType::kReload;
     return WebFrameLoadType::kReplaceCurrentItem;
   }
 
-  if (request.GetSubstituteData().FailingURL() ==
-          document_loader_->UrlForHistory() &&
+  if (failing_url == document_loader_->UrlForHistory() &&
       document_loader_->LoadType() == WebFrameLoadType::kReload)
     return WebFrameLoadType::kReload;
 
-  if (request.GetResourceRequest().Url().IsEmpty() &&
-      request.GetSubstituteData().FailingURL().IsEmpty()) {
+  if (resource_request.Url().IsEmpty() && failing_url.IsEmpty()) {
     return WebFrameLoadType::kReplaceCurrentItem;
   }
 
-  if (request.OriginDocument() &&
-      !request.OriginDocument()->CanCreateHistoryEntry())
+  if (origin_document && !origin_document->CanCreateHistoryEntry())
     return WebFrameLoadType::kReplaceCurrentItem;
 
   return WebFrameLoadType::kStandard;
@@ -773,7 +773,6 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type,
                                   NavigationPolicy policy) {
-  CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
@@ -846,7 +845,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
-  frame_load_type = DetermineFrameLoadType(request, frame_load_type);
+  frame_load_type = DetermineFrameLoadType(resource_request, origin_document,
+                                           KURL(), frame_load_type);
 
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
@@ -940,12 +940,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     Client()->DispatchWillSubmitForm(request.Form());
 
   if (policy == kNavigationPolicyCurrentTab) {
-    FrameLoadRequest new_request(
-        nullptr, resource_request, AtomicString(),
-        request.ShouldCheckMainWorldContentSecurityPolicy(),
-        request.GetDevToolsNavigationToken());
-    new_request.SetClientRedirect(request.ClientRedirect());
-    CommitNavigation(new_request, frame_load_type, nullptr, nullptr, nullptr);
+    CommitNavigation(resource_request, SubstituteData(),
+                     request.ClientRedirect(), base::UnguessableToken::Create(),
+                     frame_load_type, nullptr, nullptr, nullptr);
     return;
   }
 
@@ -956,7 +953,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, request, frame_load_type, navigation_type,
+      resource_request, SubstituteData(), request.ClientRedirect(),
+      base::UnguessableToken::Create(), frame_load_type, navigation_type,
       nullptr /* navigation_params */, nullptr /* extra_data */);
 
   provisional_document_loader_->AppendRedirect(
@@ -973,16 +971,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 }
 
 void FrameLoader::CommitNavigation(
-    const FrameLoadRequest& passed_request,
+    const ResourceRequest& request,
+    const SubstituteData& substitute_data,
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token,
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  CHECK(!passed_request.OriginDocument());
-  CHECK(passed_request.FrameName().IsEmpty());
-  CHECK(!passed_request.Form());
-  CHECK(passed_request.TriggeringEventInfo() ==
-        WebTriggeringEventInfo::kNotFromEvent);
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
@@ -1004,12 +1000,19 @@ void FrameLoader::CommitNavigation(
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
-  FrameLoadRequest request(passed_request);
-  ResourceRequest& resource_request = request.GetResourceRequest();
+  ResourceRequest resource_request = request;
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
+  resource_request.SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kNavigate);
+  resource_request.SetFetchCredentialsMode(
+      network::mojom::FetchCredentialsMode::kInclude);
+  resource_request.SetFetchRedirectMode(
+      network::mojom::FetchRedirectMode::kManual);
 
-  frame_load_type = DetermineFrameLoadType(request, frame_load_type);
+  frame_load_type =
+      DetermineFrameLoadType(resource_request, nullptr /* origin_document */,
+                             substitute_data.FailingURL(), frame_load_type);
 
   // Note: we might actually classify this navigation as same document
   // right here in the following circumstances:
@@ -1043,7 +1046,8 @@ void FrameLoader::CommitNavigation(
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, request, frame_load_type, navigation_type,
+      resource_request, substitute_data, client_redirect_policy,
+      devtools_navigation_token, frame_load_type, navigation_type,
       std::move(navigation_params), std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
@@ -1744,18 +1748,18 @@ inline void FrameLoader::TakeObjectSnapshot() const {
 
 DocumentLoader* FrameLoader::CreateDocumentLoader(
     const ResourceRequest& request,
-    const FrameLoadRequest& frame_load_request,
+    const SubstituteData& substitute_data,
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token,
     WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
-      frame_load_request.GetSubstituteData().IsValid()
-          ? frame_load_request.GetSubstituteData()
-          : DefaultSubstituteDataForURL(request.Url()),
-      frame_load_request.ClientRedirect(),
-      frame_load_request.GetDevToolsNavigationToken(),
+      substitute_data.IsValid() ? substitute_data
+                                : DefaultSubstituteDataForURL(request.Url()),
+      client_redirect_policy, devtools_navigation_token,
       std::move(navigation_params), std::move(extra_data));
 
   loader->SetLoadType(load_type);
