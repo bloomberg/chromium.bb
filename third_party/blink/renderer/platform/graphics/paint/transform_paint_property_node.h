@@ -186,22 +186,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   unsigned RenderingContextId() const { return state_.rendering_context_id; }
   bool HasRenderingContext() const { return state_.rendering_context_id; }
 
-#if DCHECK_IS_ON()
-  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
-  // a transform node before it has been updated, to later detect changes.
-  scoped_refptr<TransformPaintPropertyNode> Clone() const {
-    return base::AdoptRef(new TransformPaintPropertyNode(
-        Parent(), State(state_), IsParentAlias()));
-  }
-
-  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
-  // if a transform node has changed.
-  bool operator==(const TransformPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_ &&
-           IsParentAlias() == o.IsParentAlias();
-  }
-#endif
-
   std::unique_ptr<JSONObject> ToJSON() const;
 
   // Returns memory usage of the transform cache of this node plus ancestors.

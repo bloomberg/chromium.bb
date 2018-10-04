@@ -2073,11 +2073,6 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
 
 void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     base::Optional<IntPoint>& paint_offset_translation) {
-#if DCHECK_IS_ON()
-  FindPaintOffsetNeedingUpdateScope check_scope(
-      object_, fragment_data_, full_context_.is_actually_needed);
-#endif
-
   context_.old_paint_offset = fragment_data_.PaintOffset();
   UpdatePaintOffset();
   UpdateForPaintOffsetTranslation(paint_offset_translation);
@@ -2129,6 +2124,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathCache() {
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
+#if DCHECK_IS_ON()
+  FindPaintOffsetNeedingUpdateScope check_paint_offset(
+      object_, fragment_data_, full_context_.is_actually_needed);
+#endif
+
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without NeedsPaintPropertyUpdate.
   base::Optional<IntPoint> paint_offset_translation;
@@ -2138,13 +2138,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   UpdateClipPathCache();
 
   if (properties_) {
-    // TODO(wangxianzhu): Put these in FindObjectPropertiesNeedingUpdateScope.
-    UpdateFragmentClip();
+    {
+#if DCHECK_IS_ON()
+      FindPropertiesNeedingUpdateScope check_fragment_clip(
+          object_, fragment_data_, full_context_.force_subtree_update_reasons);
+#endif
+      UpdateFragmentClip();
+    }
+    // Update of PaintOffsetTranslation is checked by
+    // FindPaintOffsetNeedingUpdateScope.
     UpdatePaintOffsetTranslation(paint_offset_translation);
   }
 
 #if DCHECK_IS_ON()
-  FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
+  FindPropertiesNeedingUpdateScope check_paint_properties(
       object_, fragment_data_, full_context_.force_subtree_update_reasons);
 #endif
 
@@ -2164,7 +2171,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
 void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 #if DCHECK_IS_ON()
-  FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(
+  // Paint offset should not change during this function.
+  const bool needs_paint_offset_update = false;
+  FindPaintOffsetNeedingUpdateScope check_paint_offset(
+      object_, fragment_data_, needs_paint_offset_update);
+
+  FindPropertiesNeedingUpdateScope check_paint_properties(
       object_, fragment_data_, full_context_.force_subtree_update_reasons);
 #endif
 
