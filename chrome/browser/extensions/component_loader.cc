@@ -368,7 +368,7 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
       extension_misc::kSpeechSynthesisExtensionId,
       base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
                  weak_factory_.GetWeakPtr(),
-                 extension_misc::kChromeVoxExtensionId));
+                 extension_misc::kSpeechSynthesisExtensionId));
 }
 #endif
 
