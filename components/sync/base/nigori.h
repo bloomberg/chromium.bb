@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/tick_clock.h"
 #include "components/sync/base/passphrase_enums.h"
 
 namespace crypto {
@@ -93,6 +94,10 @@ class Nigori {
 
   static std::string GenerateScryptSalt();
 
+  void SetTickClockForTesting(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
   // Exposed for tests.
   static const size_t kIvSize = 16;
 
@@ -118,6 +123,7 @@ class Nigori {
   };
 
   Keys keys_;
+  const base::TickClock* tick_clock_;
 };
 
 }  // namespace syncer
