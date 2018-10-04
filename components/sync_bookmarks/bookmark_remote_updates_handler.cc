@@ -22,10 +22,6 @@ namespace sync_bookmarks {
 
 namespace {
 
-// Id is created by concatenating the specifics field number and the server tag
-// similar to LookbackServerEntity::CreateId() that uses
-// GetSpecificsFieldNumberFromModelType() to compute the field number.
-const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 // Recursive method to traverse a forest created by ReorderUpdates() to to
@@ -141,7 +137,7 @@ void BookmarkRemoteUpdatesHandler::Process(
     // Only non deletions and non premanent node should have valid specifics and
     // unique positions.
     if (!update_entity.is_deleted() &&
-        update_entity.parent_id != kBookmarksRootId) {
+        update_entity.server_defined_unique_tag.empty()) {
       if (!IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
                                     update_entity.is_folder)) {
         // Ignore updates with invalid specifics.
@@ -286,7 +282,7 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
                            update_entity.specifics);
     return;
   }
-  if (update_entity.parent_id == kBookmarksRootId) {
+  if (!update_entity.server_defined_unique_tag.empty()) {
     DLOG(ERROR) << "Permanent nodes other than the Synced Bookmarks node "
                    "should have been merged during intial sync.";
     return;
