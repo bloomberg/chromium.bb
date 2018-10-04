@@ -111,7 +111,8 @@ class MemoryCacheCorrectnessTest : public testing::Test {
   // Overrides testing::Test.
   void SetUp() override {
     // Save the global memory cache to restore it upon teardown.
-    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
+    global_memory_cache_ = ReplaceMemoryCacheForTesting(
+        MemoryCache::Create(platform_->test_task_runner()));
 
     MockFetchContext* context =
         MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource);
