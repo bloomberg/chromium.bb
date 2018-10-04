@@ -1272,8 +1272,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if ('emailDomain' in params)
         adAuthUI.userRealm = '@' + params['emailDomain'];
-      else if ('realm' in params)
-        adAuthUI.userRealm = '@' + params['realm'];
 
       adAuthUI.userName = params['email'];
       adAuthUI.focus();

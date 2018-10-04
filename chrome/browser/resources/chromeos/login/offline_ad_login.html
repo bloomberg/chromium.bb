@@ -101,7 +101,7 @@
               hidden="[[!isDomainJoin]]" value="[[machineName]]"
               disabled="[[disabled]]" invalid="[[machineNameInvalid]]"
               pattern="[[machineNameInputPattern_]]"
-              label="[[getMachineNameLabel_(locale, selectedConfigOption_)]]"
+              label="[[i18nDynamic(locale, 'oauthEnrollAdMachineNameInput')]]"
               on-keydown="onKeydownMachineNameInput_"
               error-message="[[getMachineNameError_(locale, errorState,
                   selectedConfigOption_)]]">
@@ -114,7 +114,7 @@
               label="[[i18nDynamic(locale, 'adAuthLoginUsername')]]"
               on-keydown="onKeydownUserInput_"
               error-message="[[i18nDynamic(locale, 'adLoginInvalidUsername')]]">
-            <span slot="suffix" hidden="[[domainHidden(userName)]]">
+            <span slot="suffix" hidden="[[domainHidden(userRealm, userName)]]">
               [[userRealm]]
             </span>
           </cr-input>

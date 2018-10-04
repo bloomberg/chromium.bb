@@ -3008,9 +3008,6 @@
   <message name="IDS_AD_DEVICE_NAME_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the Active Directory domain join screen. User should tell us the name of their device.">
     Chromebook device name
   </message>
-  <message name="IDS_AD_DEVICE_NAME_REGEX_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the Active Directory domain join screen. User should tell us the name of their device.">
-    Chromebook device name (<ph name="REGEX">$1<ex>^DEVICE_\d+$</ex></ph>)
-  </message>
   <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the Active Directory domain join screen.">
     Join device to domain
   </message>
