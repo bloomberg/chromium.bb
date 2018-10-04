@@ -136,10 +136,7 @@ DownloadItemModel::~DownloadItemModel() {
 ContentId DownloadItemModel::GetContentId() const {
   bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
                             ->IsOffTheRecord();
-  // Caveat. Create a dummy namespace, so this might be incorrect if used to
-  // query the provider. After migration to offline items, we shouldn't need
-  // this.
-  return ContentId(OfflineItemUtils::GetDownloadNamespacePrefix(off_the_record),
+  return ContentId(OfflineItemUtils::GetDownloadNamespace(off_the_record),
                    download_->GetGuid());
 }
 

@@ -45,14 +45,15 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
   Profile* profile = Profile::FromBrowserContext(manager_->GetBrowserContext());
   profile = profile->GetOriginalProfile();
   aggregator_ = OfflineContentAggregatorFactory::GetForBrowserContext(profile);
-  name_space_ = OfflineContentAggregator::CreateUniqueNameSpace(
-      OfflineItemUtils::GetDownloadNamespacePrefix(
-          manager_->GetBrowserContext()->IsOffTheRecord()));
-  aggregator_->RegisterProvider(name_space_, this);
+  aggregator_->RegisterProvider(
+      OfflineItemUtils::GetDownloadNamespace(
+          manager_->GetBrowserContext()->IsOffTheRecord()),
+      this);
 }
 
 DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
-  aggregator_->UnregisterProvider(name_space_);
+  aggregator_->UnregisterProvider(OfflineItemUtils::GetDownloadNamespace(
+      manager_->GetBrowserContext()->IsOffTheRecord()));
 }
 
 // TODO(shaktisahu) : Pass DownloadOpenSource.
@@ -94,8 +95,7 @@ void DownloadOfflineContentProvider::GetItemById(
   DownloadItem* item = manager_->GetDownloadByGuid(id.id);
   auto offline_item =
       item && ShouldShowDownloadItem(item)
-          ? base::make_optional(
-                OfflineItemUtils::CreateOfflineItem(name_space_, item))
+          ? base::make_optional(OfflineItemUtils::CreateOfflineItem(item))
           : base::nullopt;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -112,7 +112,7 @@ void DownloadOfflineContentProvider::GetAllItems(
     if (!ShouldShowDownloadItem(item))
       continue;
 
-    items.push_back(OfflineItemUtils::CreateOfflineItem(name_space_, item));
+    items.push_back(OfflineItemUtils::CreateOfflineItem(item));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -180,10 +180,8 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadManager* manager,
   if (!ShouldShowDownloadItem(item))
     return;
 
-  for (auto& observer : observers_) {
-    observer.OnItemUpdated(
-        OfflineItemUtils::CreateOfflineItem(name_space_, item));
-  }
+  for (auto& observer : observers_)
+    observer.OnItemUpdated(OfflineItemUtils::CreateOfflineItem(item));
 }
 
 void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadManager* manager,
@@ -191,7 +189,9 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadManager* manager,
   if (!ShouldShowDownloadItem(item))
     return;
 
-  ContentId contentId(name_space_, item->GetGuid());
+  ContentId contentId(OfflineItemUtils::GetDownloadNamespace(
+                          manager_->GetBrowserContext()->IsOffTheRecord()),
+                      item->GetGuid());
   for (auto& observer : observers_)
     observer.OnItemRemoved(contentId);
 }

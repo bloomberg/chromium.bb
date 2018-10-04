@@ -120,8 +120,7 @@ class DownloadItemNotificationTest : public testing::Test {
 
   void CreateDownloadItemNotification() {
     offline_items_collection::ContentId id(
-        OfflineItemUtils::GetDownloadNamespacePrefix(
-            profile_->IsOffTheRecord()),
+        OfflineItemUtils::GetDownloadNamespace(profile_->IsOffTheRecord()),
         download_item_->GetGuid());
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
 

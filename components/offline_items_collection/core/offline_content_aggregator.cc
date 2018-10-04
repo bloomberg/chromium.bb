@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -32,12 +31,6 @@ OfflineContentAggregator::OfflineContentAggregator()
     : weak_ptr_factory_(this) {}
 
 OfflineContentAggregator::~OfflineContentAggregator() = default;
-
-std::string OfflineContentAggregator::CreateUniqueNameSpace(
-    const std::string& prefix) {
-  static int num_registrations = 0;
-  return prefix + "_" + base::IntToString(++num_registrations);
-}
 
 void OfflineContentAggregator::RegisterProvider(
     const std::string& name_space,

@@ -42,10 +42,6 @@ class OfflineContentAggregator : public OfflineContentProvider,
   OfflineContentAggregator();
   ~OfflineContentAggregator() override;
 
-  // Creates a unique namespace with the given prefix. Should be called to get
-  // the namespace for registration in order to avoid namespace collision.
-  static std::string CreateUniqueNameSpace(const std::string& prefix);
-
   // Registers a provider and associates it with all OfflineItems with
   // |name_space|.  UI actions taken on OfflineItems with |name_space| will be
   // routed to |provider|.  |provider| is expected to only expose OfflineItems
