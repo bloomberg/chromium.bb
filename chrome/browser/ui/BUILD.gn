@@ -752,6 +752,8 @@ jumbo_split_static_library("ui") {
       "android/infobars/permission_infobar.h",
       "android/infobars/previews_infobar.cc",
       "android/infobars/previews_infobar.h",
+      "android/infobars/previews_lite_page_infobar.cc",
+      "android/infobars/previews_lite_page_infobar.h",
       "android/infobars/reader_mode_infobar.cc",
       "android/infobars/reader_mode_infobar.h",
       "android/infobars/save_password_infobar.cc",
