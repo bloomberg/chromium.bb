@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 
+#include "base/bind.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
@@ -29,9 +30,9 @@ class ChildAccountServiceTest : public ::testing::Test {
 
   void SetUp() override {
     ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
-        &profile_, &BuildTestSigninClient);
+        &profile_, base::BindRepeating(&BuildTestSigninClient));
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, &BuildFakeGaiaCookieManagerService);
+        &profile_, base::BindRepeating(&BuildFakeGaiaCookieManagerService));
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
         GaiaCookieManagerServiceFactory::GetForProfile(&profile_));
   }
