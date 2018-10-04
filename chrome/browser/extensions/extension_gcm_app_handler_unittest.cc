@@ -302,8 +302,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   // Returns a barebones test extension.
-  scoped_refptr<Extension> CreateExtension() {
-    scoped_refptr<Extension> extension =
+  scoped_refptr<const Extension> CreateExtension() {
+    scoped_refptr<const Extension> extension =
         ExtensionBuilder(kTestExtensionName)
             .AddPermission("gcm")
             .SetPath(temp_dir_.GetPath())
@@ -425,7 +425,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 };
 
 TEST_F(ExtensionGCMAppHandlerTest, AddAndRemoveAppHandler) {
-  scoped_refptr<Extension> extension(CreateExtension());
+  scoped_refptr<const Extension> extension(CreateExtension());
 
   // App handler is added when extension is loaded.
   LoadExtension(extension.get());
@@ -449,7 +449,7 @@ TEST_F(ExtensionGCMAppHandlerTest, AddAndRemoveAppHandler) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
-  scoped_refptr<Extension> extension(CreateExtension());
+  scoped_refptr<const Extension> extension(CreateExtension());
   LoadExtension(extension.get());
 
   // Kick off registration.
@@ -470,7 +470,7 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
-  scoped_refptr<Extension> extension(CreateExtension());
+  scoped_refptr<const Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
   LoadExtension(extension.get());
@@ -485,7 +485,7 @@ TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionRemoved) {
-  scoped_refptr<Extension> extension(CreateExtension());
+  scoped_refptr<const Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
   LoadExtension(extension.get());

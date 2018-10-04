@@ -176,7 +176,7 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
   }
 
   Browser* browser_;
-  scoped_refptr<Extension> extension_;
+  scoped_refptr<const Extension> extension_;
 };
 
 void ExtensionSessionsTest::SetUpCommandLine(base::CommandLine* command_line) {

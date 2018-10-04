@@ -380,7 +380,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
   EXPECT_TRUE(display_name.empty());
 
   // Create a mocked extension.
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetID("honijodknafkokifofgiaalefdiedpko")
           .SetManifest(extensions::DictionaryBuilder()
@@ -412,7 +412,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetID("honijodknafkokifofgiaalefdiedpko")
           .SetManifest(extensions::DictionaryBuilder()

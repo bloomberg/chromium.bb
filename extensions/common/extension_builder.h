@@ -72,7 +72,7 @@ class ExtensionBuilder {
 
   // Can only be called once, after which it's invalid to use the builder.
   // CHECKs that the extension was created successfully.
-  scoped_refptr<Extension> Build();
+  scoped_refptr<const Extension> Build();
 
   //////////////////////////////////////////////////////////////////////////////
   // Utility methods for use with aided manifest construction.

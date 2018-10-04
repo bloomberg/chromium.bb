@@ -113,10 +113,11 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
           .Set("version", "1.0")
           .Set("manifest_version", 2)
           .Build();
-  scoped_refptr<Extension> extension = ExtensionBuilder()
-                                           .SetManifest(std::move(manifest))
-                                           .SetID(kExtensionId)
-                                           .Build();
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(manifest))
+          .SetID(kExtensionId)
+          .Build();
   registry_service.SimulateExtensionUninstalled(extension.get());
 
   base::PostTaskWithTraits(

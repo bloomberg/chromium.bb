@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   GURL hosted_app_url(
       embedded_test_server()->GetURL(
           "/extensions/api_test/webrequest_hosted_app/index.html"));
-  scoped_refptr<Extension> hosted_app =
+  scoped_refptr<const Extension> hosted_app =
       ExtensionBuilder()
           .SetManifest(
               DictionaryBuilder()

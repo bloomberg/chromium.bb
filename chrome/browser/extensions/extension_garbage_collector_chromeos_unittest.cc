@@ -116,9 +116,9 @@ class ExtensionGarbageCollectorChromeOSUnitTest
                                                  std::move(version_info));
   }
 
-  scoped_refptr<Extension> CreateExtension(const std::string& id,
-                                           const std::string& version,
-                                           const base::FilePath& path) {
+  scoped_refptr<const Extension> CreateExtension(const std::string& id,
+                                                 const std::string& version,
+                                                 const base::FilePath& path) {
     return ExtensionBuilder("test")
         .SetVersion(version)
         .SetID(id)
@@ -163,8 +163,8 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
   CreateSharedExtensionPrefs(kExtensionId2, "1.0",
                              user_manager::StubAccountId().GetUserEmail(),
                              path_id2_1);
-  scoped_refptr<Extension> extension2 = CreateExtension(kExtensionId2, "1.0",
-                                                        path_id2_1);
+  scoped_refptr<const Extension> extension2 =
+      CreateExtension(kExtensionId2, "1.0", path_id2_1);
   GetExtensionPrefs()->SetDelayedInstallInfo(
       extension2.get(),
       Extension::ENABLED,
