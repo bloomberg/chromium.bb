@@ -7,7 +7,6 @@
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -15,7 +14,6 @@
 namespace blink {
 
 class Document;
-class ScriptState;
 
 // The HTMLPortalElement implements the <portal> HTML element. The portal
 // element can be used to embed another top-level browsing context, which can be
@@ -31,9 +29,6 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   static HTMLElement* Create(Document&);
 
   ~HTMLPortalElement() override;
-
-  // idl implementation.
-  ScriptPromise activate(ScriptState*);
 
  private:
   explicit HTMLPortalElement(Document&);
