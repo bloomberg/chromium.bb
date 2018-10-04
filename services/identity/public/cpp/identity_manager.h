@@ -64,8 +64,10 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnPrimaryAccountCleared(
         const AccountInfo& previous_primary_account_info) {}
 
-    // TODO(https://crbug/869418): Eventually we might need a callback for
-    // failure to log in to the primary account.
+    // Called when the user attempts but fails to set their primary
+    // account. |error| gives the reason for the failure.
+    virtual void OnPrimaryAccountSigninFailed(
+        const GoogleServiceAuthError& error) {}
 
     // Called when a new refresh token is associated with |account_info|.
     // |is_valid| indicates whether the new refresh token is valid.
@@ -245,6 +247,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
+  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
