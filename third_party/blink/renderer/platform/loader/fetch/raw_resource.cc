@@ -257,6 +257,12 @@ void RawResource::SetSerializedCachedMetadata(const char* data, size_t size) {
     if (cache_handler) {
       cache_handler->SetSerializedCachedMetadata(data, size);
     }
+  } else if (GetType() == ResourceType::kRaw) {
+    ScriptCachedMetadataHandler* cache_handler =
+        static_cast<ScriptCachedMetadataHandler*>(Resource::CacheHandler());
+    if (cache_handler) {
+      cache_handler->SetSerializedCachedMetadata(data, size);
+    }
   }
 
   ResourceClientWalker<RawResourceClient> w(Clients());

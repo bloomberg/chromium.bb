@@ -166,8 +166,9 @@ bool ResourceLoader::CodeCacheRequest::FetchFromCodeCache(
   CodeCacheLoader::FetchCodeCacheCallback callback =
       base::BindOnce(&ResourceLoader::CodeCacheRequest::DidReceiveCachedCode,
                      weak_ptr_factory_.GetWeakPtr(), resource_loader);
-  code_cache_loader_->FetchFromCodeCache(
-      blink::mojom::CodeCacheType::kJavascript, gurl_, std::move(callback));
+  auto cache_type = resource_loader->GetCodeCacheType();
+  code_cache_loader_->FetchFromCodeCache(cache_type, gurl_,
+                                         std::move(callback));
   return true;
 }
 
@@ -313,12 +314,15 @@ bool ResourceLoader::ShouldFetchCodeCache() {
     return false;
   if (request.DownloadToBlob())
     return false;
-  // If the resource type is script or MainResource (for inline scripts) fetch
-  // code cache. For others we need not fetch code cache.
-  if (resource_->GetType() != ResourceType::kScript &&
-      resource_->GetType() != ResourceType::kMainResource)
-    return false;
-  return true;
+  // Javascript resources have type kScript or kMainResource (for inline
+  // scripts). WebAssembly module resources have type kRaw. Note that since we
+  // can't easily distinguish WebAssembly modules from other raw resources, we
+  // perform a code fetch for all raw resources. These fetches should be cheap,
+  // however, requiring one additional IPC and no browser process disk IO since
+  // the cache index is in memory and the resource key should not be present.
+  return resource_->GetType() == ResourceType::kScript ||
+         resource_->GetType() == ResourceType::kMainResource ||
+         resource_->GetType() == ResourceType::kRaw;
 }
 
 void ResourceLoader::Start() {
@@ -692,14 +696,17 @@ void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
   }
 }
 
+blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {
+  return Resource::ResourceTypeToCodeCacheType(resource_->GetType());
+}
+
 void ResourceLoader::SendCachedCodeToResource(const char* data, int length) {
   resource_->SetSerializedCachedMetadata(data, length);
 }
 
 void ResourceLoader::ClearCachedCode() {
-  Platform::Current()->ClearCodeCacheEntry(
-      Resource::ResourceTypeToCodeCacheType(resource_->GetType()),
-      resource_->Url());
+  auto cache_type = GetCodeCacheType();
+  Platform::Current()->ClearCodeCacheEntry(cache_type, resource_->Url());
 }
 
 void ResourceLoader::DidSendData(unsigned long long bytes_sent,
