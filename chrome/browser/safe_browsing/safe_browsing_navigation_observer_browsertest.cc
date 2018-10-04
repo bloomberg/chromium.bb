@@ -2506,4 +2506,19 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   ASSERT_EQ(2, referrer_chain.size());
 }
 
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       SetWindowLocationGetsReferrerChain) {
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.location='../signed.exe'"));
+  base::RunLoop().RunUntilIdle();
+
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(2, referrer_chain.size());
+}
+
 }  // namespace safe_browsing
