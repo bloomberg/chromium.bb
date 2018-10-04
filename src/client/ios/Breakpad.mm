@@ -161,6 +161,7 @@ class Breakpad {
   NSArray *CrashReportsToUpload();
   NSString *NextCrashReportToUpload();
   NSDictionary *NextCrashReportConfiguration();
+  NSDate *DateOfMostRecentCrashReport();
   void UploadNextReport(NSDictionary *server_parameters);
   void UploadReportWithConfiguration(NSDictionary *configuration,
                                      NSDictionary *server_parameters);
@@ -465,6 +466,30 @@ NSString *Breakpad::NextCrashReportToUpload() {
 //=============================================================================
 NSDictionary *Breakpad::NextCrashReportConfiguration() {
   return [Uploader readConfigurationDataFromFile:NextCrashReportToUpload()];
+}
+
+//=============================================================================
+NSDate *Breakpad::DateOfMostRecentCrashReport() {
+  NSString *directory = KeyValue(@BREAKPAD_DUMP_DIRECTORY);
+  if (!directory) {
+    return nil;
+  }
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  NSArray *dirContents = [fileManager contentsOfDirectoryAtPath:directory error:nil];
+  NSArray *dumps = [dirContents filteredArrayUsingPredicate:[NSPredicate
+      predicateWithFormat:@"self ENDSWITH '.dmp'"]];
+  NSDate *mostRecentCrashReportDate = nil;
+  for (NSString *dump in dumps) {
+    NSString *filePath = [directory stringByAppendingPathComponent:dump];
+    NSDate *crashReportDate =
+        [[fileManager attributesOfItemAtPath:filePath error:nil] fileCreationDate];
+    if (!mostRecentCrashReportDate) {
+      mostRecentCrashReportDate = crashReportDate;
+    } else if (crashReportDate) {
+      mostRecentCrashReportDate = [mostRecentCrashReportDate laterDate:crashReportDate];
+    }
+  }
+  return mostRecentCrashReportDate;
 }
 
 //=============================================================================
@@ -836,6 +861,19 @@ NSDictionary *BreakpadGetNextReportConfiguration(BreakpadRef ref) {
       return breakpad->NextCrashReportConfiguration();
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadGetNextReportConfiguration() : error\n");
+  }
+  return nil;
+}
+
+//=============================================================================
+NSDate *BreakpadGetDateOfMostRecentCrashReport(BreakpadRef ref) {
+  try {
+    Breakpad *breakpad = (Breakpad *)ref;
+    if (breakpad) {
+      return breakpad->DateOfMostRecentCrashReport();
+    }
+  } catch (...) {    // don't let exceptions leave this C API
+    fprintf(stderr, "BreakpadGetDateOfMostRecentCrashReport() : error\n");
   }
   return nil;
 }

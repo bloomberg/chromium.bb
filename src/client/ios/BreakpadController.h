@@ -112,6 +112,9 @@
 // Unregisters the crash handlers.
 - (void)stop;
 
+// Returns whether or not the controller is started.
+- (BOOL)isStarted;
+
 // Enables or disables uploading of crash reports, but does not stop the
 // BreakpadController.
 - (void)setUploadingEnabled:(BOOL)enabled;
@@ -130,6 +133,9 @@
 //   configuration being next report to upload, or nil if none is pending.
 - (void)getNextReportConfigurationOrSendDelay:
     (void(^)(NSDictionary*, int))callback;
+
+// Get the date of the most recent crash report.
+- (void)getDateOfMostRecentCrashReport:(void(^)(NSDate *))callback;
 
 // Sends synchronously the report specified by |configuration|. This method is
 // NOT thread safe and must be called from the breakpad thread.
