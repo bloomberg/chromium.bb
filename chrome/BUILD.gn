@@ -985,8 +985,10 @@ if (is_win) {
     }
   }
 
-  # EGL on MacOS ships with official chrome
-  bundle_egl_libraries = use_egl
+  # EGL on MacOS can be used in dev builds and on bots for test
+  # related purposes, but it is not yet desired to ship these
+  # libraries with official chrome (http://crbug.com/757974).
+  bundle_egl_libraries = use_egl && !(is_chrome_branded && is_official_build)
 
   if (bundle_egl_libraries) {
     # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
@@ -1348,8 +1350,6 @@ if (is_win) {
       "$root_out_dir/$chrome_helper_name.app/Contents/MacOS/$chrome_helper_name",
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
       "$root_out_dir/crashpad_handler",
-      "$root_out_dir/libswiftshader_libEGL.dylib",
-      "$root_out_dir/libswiftshader_libGLESv2.dylib",
     ]
 
     # It is possible to run dump_syms on unstripped products without dSYMs,
@@ -1380,8 +1380,6 @@ if (is_win) {
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//third_party/breakpad:dump_syms",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
 
@@ -1398,8 +1396,6 @@ if (is_win) {
         "$root_out_dir/$chrome_helper_name.dSYM",
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/crashpad_handler.dSYM",
-        "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
-        "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
       ]
 
       sources = _chrome_symbols_sources
@@ -1419,8 +1415,6 @@ if (is_win) {
         ":chrome_helper_app",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
   } else {
