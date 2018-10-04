@@ -1781,7 +1781,7 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            TabGestureStateListener.init(this);
+            TabGestureStateListener.create(this, this::getFullscreenManager);
 
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
