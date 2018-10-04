@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -87,6 +88,7 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
+class V8DisplayLockCallback;
 class V8ScrollStateCallback;
 
 enum SpellcheckAttributeState {
@@ -905,6 +907,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
   void DidEndCustomizedScrollPhase();
+
+  ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
 
  protected:
   Element(const QualifiedName& tag_name, Document*, ConstructionType);

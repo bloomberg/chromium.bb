@@ -142,6 +142,9 @@ interface Element : Node {
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
     attribute EventHandler onsearch;
+
+    // Display locking.
+    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise acquireDisplayLock(DisplayLockCallback callback);
 };
 
 Element implements ParentNode;

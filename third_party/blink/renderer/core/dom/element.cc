@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_callback.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -3710,6 +3712,18 @@ void Element::WillBeginCustomizedScrollPhase(
 
 void Element::DidEndCustomizedScrollPhase() {
   GetScrollCustomizationCallbacks().SetInScrollPhase(this, false);
+}
+
+ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
+                                          V8DisplayLockCallback* callback) {
+  // For now, just invoke the callback, and resolve the promise immediately.
+  // TODO(vmpstr): Finish implementation.
+  callback->InvokeAndReportException(nullptr, new DisplayLockContext);
+
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  const auto& promise = resolver->Promise();
+  resolver->Resolve();
+  return promise;
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
