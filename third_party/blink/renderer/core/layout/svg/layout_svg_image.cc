@@ -182,18 +182,20 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
   if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
     return false;
 
-  HitTestLocation local_location;
-  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+  base::Optional<HitTestLocation> local_storage;
+  const HitTestLocation* local_location =
+      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
           *this, LocalToSVGParentTransform(), location_in_container,
-          local_location))
+          local_storage);
+  if (!local_location)
     return false;
 
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
-    if (local_location.Intersects(object_bounding_box_)) {
+    if (local_location->Intersects(object_bounding_box_)) {
       const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location.TransformedPoint());
+          LayoutPoint(local_location->TransformedPoint());
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
+      if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;
     }

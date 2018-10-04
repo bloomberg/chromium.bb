@@ -98,10 +98,11 @@ bool AffineTransform::IsInvertible() const {
 
 AffineTransform AffineTransform::Inverse() const {
   double determinant = Det();
-  if (determinant == 0.0)
-    return AffineTransform();
-
   AffineTransform result;
+
+  if (determinant == 0.0)
+    return result;
+
   if (IsIdentityOrTranslation()) {
     result.transform_[4] = -transform_[4];
     result.transform_[5] = -transform_[5];

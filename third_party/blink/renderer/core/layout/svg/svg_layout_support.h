@@ -77,13 +77,16 @@ class CORE_EXPORT SVGLayoutSupport {
   static bool PointInClippingArea(const LayoutObject&, const FloatPoint&);
 
   // Transform |pointInParent| to |object|'s user-space and check if it is
-  // within the clipping area. Returns false if the transform is singular or
-  // the point is outside the clipping area.
-  static bool TransformToUserSpaceAndCheckClipping(
+  // within the clipping area. Returns a pointer to a HitTestLocation object
+  // to use as the local location. Returns nullptr if the transform is singular
+  // or the point is outside the clipping area. The object backing
+  // the pointer is either |location_in_parent| or an emplacement of
+  // |local_storage|.
+  static const HitTestLocation* TransformToUserSpaceAndCheckClipping(
       const LayoutObject&,
       const AffineTransform& local_transform,
       const HitTestLocation& location_in_parent,
-      HitTestLocation& local_location);
+      base::Optional<HitTestLocation>& local_storage);
 
   static void ComputeContainerBoundingBoxes(const LayoutObject* container,
                                             FloatRect& object_bounding_box,

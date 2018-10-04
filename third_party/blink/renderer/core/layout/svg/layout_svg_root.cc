@@ -527,17 +527,16 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
     const AffineTransform& local_to_border_box_transform =
         LocalToBorderBoxTransform();
     if (local_to_border_box_transform.IsInvertible()) {
-      FloatPoint local_point = local_to_border_box_transform.Inverse().MapPoint(
-          local_border_box_location.TransformedPoint());
+      AffineTransform inverse = local_to_border_box_transform.Inverse();
+      FloatPoint local_point =
+          inverse.MapPoint(local_border_box_location.TransformedPoint());
 
       base::Optional<HitTestLocation> local_location;
       if (location_in_container.IsRectBasedTest()) {
         FloatQuad quad_in_container =
             local_border_box_location.TransformedRect();
 
-        local_location.emplace(
-            local_point,
-            local_to_border_box_transform.Inverse().MapQuad(quad_in_container));
+        local_location.emplace(local_point, inverse.MapQuad(quad_in_container));
       } else {
         local_location.emplace(local_point);
       }

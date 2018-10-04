@@ -180,10 +180,12 @@ bool LayoutSVGContainer::NodeAtPoint(
     const LayoutPoint& accumulated_offset,
     HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, LayoutPoint());
-  HitTestLocation local_location;
-  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+  base::Optional<HitTestLocation> local_storage;
+  const HitTestLocation* local_location =
+      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
           *this, LocalToSVGParentTransform(), location_in_container,
-          local_location))
+          local_storage);
+  if (!local_location)
     return false;
 
   for (LayoutObject* child = LastChild(); child;
@@ -191,17 +193,17 @@ bool LayoutSVGContainer::NodeAtPoint(
     bool found = false;
     if (child->IsSVGForeignObject()) {
       found = ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
-          result, local_location, accumulated_offset, hit_test_action);
+          result, *local_location, accumulated_offset, hit_test_action);
     } else {
-      found = child->NodeAtPoint(result, local_location, accumulated_offset,
+      found = child->NodeAtPoint(result, *local_location, accumulated_offset,
                                  hit_test_action);
     }
     if (found) {
       const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location.TransformedPoint());
+          LayoutPoint(local_location->TransformedPoint());
       UpdateHitTestResult(result, local_layout_point);
       if (result.AddNodeToListBasedTestResult(
-              child->GetNode(), local_location) == kStopHitTesting) {
+              child->GetNode(), *local_location) == kStopHitTesting) {
         return true;
       }
     }
@@ -212,11 +214,11 @@ bool LayoutSVGContainer::NodeAtPoint(
     // Check for a valid bounding box because it will be invalid for empty
     // containers.
     if (IsObjectBoundingBoxValid() &&
-        local_location.Intersects(ObjectBoundingBox())) {
+        local_location->Intersects(ObjectBoundingBox())) {
       const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location.TransformedPoint());
+          LayoutPoint(local_location->TransformedPoint());
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
+      if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;
     }

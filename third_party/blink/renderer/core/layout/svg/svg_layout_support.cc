@@ -429,24 +429,34 @@ bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
                                                   point);
 }
 
-bool SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
     const LayoutObject& object,
     const AffineTransform& local_transform,
     const HitTestLocation& location_in_parent,
-    HitTestLocation& local_location) {
+    base::Optional<HitTestLocation>& local_storage) {
+  // Use a fast path for an identity transform which creates no new
+  // HitTestLocation objects or inverse AffineTransforms, and performs no
+  // matrix multiplies.
+  if (local_transform.IsIdentity()) {
+    if (PointInClippingArea(object, location_in_parent.TransformedPoint()))
+      return &location_in_parent;
+    return nullptr;
+  }
   if (!local_transform.IsInvertible())
-    return false;
+    return nullptr;
   const AffineTransform inverse = local_transform.Inverse();
   if (location_in_parent.IsRectBasedTest()) {
-    local_location =
+    local_storage.emplace(
         HitTestLocation(inverse.MapPoint(location_in_parent.TransformedPoint()),
-                        inverse.MapQuad(location_in_parent.TransformedRect()));
+                        inverse.MapQuad(location_in_parent.TransformedRect())));
   } else {
-    local_location = HitTestLocation(
-        inverse.MapPoint(location_in_parent.TransformedPoint()));
+    local_storage.emplace(HitTestLocation(
+        inverse.MapPoint(location_in_parent.TransformedPoint())));
   }
 
-  return PointInClippingArea(object, local_location.TransformedPoint());
+  if (PointInClippingArea(object, local_storage->TransformedPoint()))
+    return &*local_storage;
+  return nullptr;
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(

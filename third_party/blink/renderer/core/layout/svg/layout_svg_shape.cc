@@ -356,20 +356,22 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  HitTestLocation local_location;
-  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+  base::Optional<HitTestLocation> local_storage;
+  const HitTestLocation* local_location =
+      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
           *this, LocalToSVGParentTransform(), location_in_parent,
-          local_location))
+          local_storage);
+  if (!local_location)
     return false;
 
   PointerEventsHitRules hit_rules(
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
       result.GetHitTestRequest(), StyleRef().PointerEvents());
-  if (NodeAtPointInternal(result.GetHitTestRequest(), local_location,
+  if (NodeAtPointInternal(result.GetHitTestRequest(), *local_location,
                           hit_rules)) {
-    const LayoutPoint local_layout_point(local_location.TransformedPoint());
+    const LayoutPoint local_layout_point(local_location->TransformedPoint());
     UpdateHitTestResult(result, local_layout_point);
-    if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
+    if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
         kStopHitTesting)
       return true;
   }
