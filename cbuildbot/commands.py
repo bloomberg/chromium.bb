@@ -241,22 +241,6 @@ def DeleteChrootSnapshot(buildroot, snapshot_name):
   return result.returncode == 0
 
 
-def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
-  """Run the chroot upgrade hooks in the chroot.
-
-  Args:
-    buildroot: Root directory where build occurs.
-    chrome_root: The directory where chrome is stored.
-    extra_env: A dictionary of environment variables to set.
-  """
-  chroot_args = []
-  if chrome_root:
-    chroot_args.append('--chrome_root=%s' % chrome_root)
-
-  RunBuildScript(buildroot, ['./run_chroot_version_hooks'], enter_chroot=True,
-                 chroot_args=chroot_args, extra_env=extra_env)
-
-
 def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   """Wrapper around update_chroot.
 
