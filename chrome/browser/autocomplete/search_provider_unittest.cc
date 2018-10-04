@@ -3612,7 +3612,14 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-TEST_F(SearchProviderTest, SendsWarmUpRequestOnFocus) {
+#if defined(THREAD_SANITIZER)
+// SearchProviderTest.SendsWarmUpRequestOnFocus is flaky on Linux TSan Tests
+// crbug.com/891959.
+#define MAYBE_SendsWarmUpRequestOnFocus DISABLED_SendsWarmUpRequestOnFocus
+#else
+#define MAYBE_SendsWarmUpRequestOnFocus SendsWarmUpRequestOnFocus
+#endif  // defined(THREAD_SANITIZER)
+TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("f"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
