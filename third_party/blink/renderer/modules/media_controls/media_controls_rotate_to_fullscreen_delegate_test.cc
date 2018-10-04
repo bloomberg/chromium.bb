@@ -735,4 +735,50 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(GetVideo().IsFullscreen());
 }
 
+TEST_F(MediaControlsRotateToFullscreenDelegateTest,
+       EnterFailControlsListNoFullscreen) {
+  // Portrait screen, landscape video.
+  InitScreenAndVideo(kWebScreenOrientationPortraitPrimary, WebSize(640, 480));
+  EXPECT_EQ(SimpleOrientation::kPortrait, ObservedScreenOrientation());
+  EXPECT_EQ(SimpleOrientation::kLandscape, ComputeVideoOrientation());
+
+  EXPECT_FALSE(ObservedVisibility());
+
+  GetVideo().setAttribute("controlslist", "nofullscreen");
+
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  EXPECT_TRUE(ObservedVisibility());
+
+  // Rotate screen to landscape.
+  RotateTo(kWebScreenOrientationLandscapePrimary);
+
+  // Should not enter fullscreen when controlsList=nofullscreen.
+  EXPECT_FALSE(GetVideo().IsFullscreen());
+}
+
+TEST_F(MediaControlsRotateToFullscreenDelegateTest,
+       EnterSuccessControlsListNoDownload) {
+  // Portrait screen, landscape video.
+  InitScreenAndVideo(kWebScreenOrientationPortraitPrimary, WebSize(640, 480));
+  EXPECT_EQ(SimpleOrientation::kPortrait, ObservedScreenOrientation());
+  EXPECT_EQ(SimpleOrientation::kLandscape, ComputeVideoOrientation());
+
+  EXPECT_FALSE(ObservedVisibility());
+
+  GetVideo().setAttribute("controlslist", "nodownload");
+
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  EXPECT_TRUE(ObservedVisibility());
+
+  // Rotate screen to landscape.
+  RotateTo(kWebScreenOrientationLandscapePrimary);
+
+  // Should enter fullscreen when controlsList is not set to nofullscreen.
+  EXPECT_TRUE(GetVideo().IsFullscreen());
+}
+
 }  // namespace blink
