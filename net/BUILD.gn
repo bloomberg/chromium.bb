@@ -5872,19 +5872,21 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
 }
 
-fuzzer_test("net_ntlm_ntlm_client_fuzzer") {
-  sources = [
-    "ntlm/ntlm_client_fuzzer.cc",
-    "ntlm/ntlm_test_data.h",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    ":test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_ntlm_ntlm_client_fuzzer.dict"
-  seed_corpus = "data/fuzzer_data/ntlm_client_fuzzer/"
+if (!is_win) {
+  fuzzer_test("net_ntlm_ntlm_client_fuzzer") {
+    sources = [
+      "ntlm/ntlm_client_fuzzer.cc",
+      "ntlm/ntlm_test_data.h",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      ":test_support",
+      "//base",
+      "//net",
+    ]
+    dict = "data/fuzzer_dictionaries/net_ntlm_ntlm_client_fuzzer.dict"
+    seed_corpus = "data/fuzzer_data/ntlm_client_fuzzer/"
+  }
 }
 
 if (!disable_brotli_filter) {
