@@ -90,6 +90,11 @@ const base::Feature kWritableFilesAPI{"WritableFilesAPI",
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Tracks "jank" from layout objects changing their visual location between
+// animation frames (see crbug.com/581518).
+const base::Feature kJankTracking{"JankTracking",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
