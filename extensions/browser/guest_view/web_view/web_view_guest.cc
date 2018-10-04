@@ -399,8 +399,7 @@ void WebViewGuest::DidDropLink(const GURL& url) {
 }
 
 void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
-  script_executor_ =
-      std::make_unique<ScriptExecutor>(web_contents(), &script_observers_);
+  script_executor_ = std::make_unique<ScriptExecutor>(web_contents());
 
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
   web_view_permission_helper_ = std::make_unique<WebViewPermissionHelper>(this);

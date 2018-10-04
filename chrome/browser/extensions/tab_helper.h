@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/script_execution_observer.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/stack_frame.h"
@@ -52,10 +51,6 @@ class TabHelper : public content::WebContentsObserver,
 
   void CreateHostedAppFromWebContents(bool shortcut_app_requested);
   bool CanCreateBookmarkApp() const;
-
-  // ScriptExecutionObserver::Delegate
-  virtual void AddScriptExecutionObserver(ScriptExecutionObserver* observer);
-  virtual void RemoveScriptExecutionObserver(ScriptExecutionObserver* observer);
 
   // Sets the extension denoting this as an app. If |extension| is non-null this
   // tab becomes an app-tab. WebContents does not listen for unload events for
@@ -146,10 +141,9 @@ class TabHelper : public content::WebContentsObserver,
                             const GURL& requestor_url,
                             int return_route_id,
                             int callback_id);
-  void OnContentScriptsExecuting(
-      content::RenderFrameHost* host,
-      const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
-      const GURL& on_url);
+  void OnContentScriptsExecuting(content::RenderFrameHost* host,
+                                 const ExecutingScriptsMap& extension_ids,
+                                 const GURL& on_url);
 
   // App extensions related methods:
 
@@ -170,11 +164,6 @@ class TabHelper : public content::WebContentsObserver,
   void SetTabId(content::RenderFrameHost* render_frame_host);
 
   Profile* profile_;
-
-  // Our content script observers. Declare at top so that it will outlive all
-  // other members, since they might add themselves as observers.
-  base::ObserverList<ScriptExecutionObserver>::Unchecked
-      script_execution_observers_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
