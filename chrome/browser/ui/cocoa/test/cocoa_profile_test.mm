@@ -72,9 +72,11 @@ void CocoaProfileTest::SetUp() {
   // this.
   // http://crbug.com/39725
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+      profile_,
+      base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+      profile_,
+      base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
 
   // Configure the GaiaCookieManagerService to return no accounts.
   // This is copied from
