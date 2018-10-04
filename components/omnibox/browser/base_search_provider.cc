@@ -512,7 +512,7 @@ bool BaseSearchProvider::ParseSuggestResults(
 
 void BaseSearchProvider::DeleteMatchFromMatches(
     const AutocompleteMatch& match) {
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+  for (auto i(matches_.begin()); i != matches_.end(); ++i) {
     // Find the desired match to delete by checking the type and contents.
     // We can't check the destination URL, because the autocomplete controller
     // may have reformulated that. Not that while checking for matching
