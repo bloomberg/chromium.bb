@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -58,7 +59,7 @@ void LoadBookmarkModel(Profile* profile,
 bookmarks::BookmarkModel* CreateBookmarkModelWithoutLoad(Profile* profile) {
   return static_cast<bookmarks::BookmarkModel*>(
       BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile, BuildBookmarkModelWithoutLoad));
+          profile, base::BindRepeating(&BuildBookmarkModelWithoutLoad)));
 }
 
 class BookmarkStatHelper {
@@ -106,8 +107,9 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   profile->CreateWebDataService();
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       profile,
-      password_manager::BuildPasswordStore<
-          content::BrowserContext, password_manager::TestPasswordStore>);
+      base::BindRepeating(
+          &password_manager::BuildPasswordStore<
+              content::BrowserContext, password_manager::TestPasswordStore>));
 
   bookmarks::BookmarkModel* bookmark_model =
       CreateBookmarkModelWithoutLoad(profile);
