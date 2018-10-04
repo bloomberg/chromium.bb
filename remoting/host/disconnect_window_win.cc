@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <windows.h>
 
+#include <cstdlib>
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -121,6 +122,8 @@ class DisconnectWindowWin : public HostWindow {
   HWND hwnd_ = nullptr;
   bool has_hotkey_ = false;
   base::win::ScopedGDIObject<HPEN> border_pen_;
+
+  webrtc::DesktopVector mouse_position_;
 
   base::WeakPtrFactory<DisconnectWindowWin> weak_factory_;
 
@@ -380,7 +383,16 @@ void DisconnectWindowWin::StopAutoHideBehavior() {
 
 void DisconnectWindowWin::OnLocalMouseEvent(
     const webrtc::DesktopVector& position) {
-  ShowDialog();
+  // Don't show the dialog if the position changes by ~1px in any direction.
+  // This will prevent the dialog from being reshown due to small movements
+  // caused by hardware/software issues which cause cursor drift or small
+  // vibrations in the environment around the remote host.
+  if (std::abs(position.x() - mouse_position_.x()) > 1 ||
+      std::abs(position.y() - mouse_position_.y()) > 1) {
+    ShowDialog();
+  }
+
+  mouse_position_ = position;
 }
 
 void DisconnectWindowWin::OnLocalKeyboardEvent() {
