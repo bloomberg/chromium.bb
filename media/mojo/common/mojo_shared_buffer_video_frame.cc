@@ -61,40 +61,38 @@ scoped_refptr<MojoSharedBufferVideoFrame>
 MojoSharedBufferVideoFrame::CreateFromYUVFrame(const VideoFrame& frame) {
   DCHECK_EQ(VideoFrame::NumPlanes(frame.format()), 3u);
 
-  // The data from |frame| may not be consecutive between planes. Copy data
-  // into a shared memory buffer which is tightly packed.
-  size_t allocation_size =
-      VideoFrame::AllocationSize(frame.format(), frame.coded_size());
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::SharedBufferHandle::Create(allocation_size);
+  const size_t y_stride = frame.stride(VideoFrame::kYPlane);
+  const size_t u_stride = frame.stride(VideoFrame::kUPlane);
+  const size_t v_stride = frame.stride(VideoFrame::kVPlane);
 
   const size_t y_size =
-      VideoFrame::PlaneSize(frame.format(), VideoFrame::kYPlane,
-                            frame.coded_size())
-          .GetArea();
+      VideoFrame::Rows(kYPlane, frame.format(), frame.coded_size().height()) *
+      y_stride;
   const size_t u_size =
-      VideoFrame::PlaneSize(frame.format(), VideoFrame::kUPlane,
-                            frame.coded_size())
-          .GetArea();
+      VideoFrame::Rows(kUPlane, frame.format(), frame.coded_size().height()) *
+      u_stride;
   const size_t v_size =
-      VideoFrame::PlaneSize(frame.format(), VideoFrame::kVPlane,
-                            frame.coded_size())
-          .GetArea();
+      VideoFrame::Rows(kVPlane, frame.format(), frame.coded_size().height()) *
+      v_stride;
+
+  size_t allocation_size = y_size + u_size + v_size;
+
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(allocation_size);
 
   // Computes the offset of planes in shared memory buffer.
   const size_t y_offset = 0u;
   const size_t u_offset = y_offset + y_size;
   const size_t v_offset = y_offset + y_size + u_size;
 
-  // Create a mojo video frame backed by shared memory, so it can be sent to
-  // the browser process.
+  // The data from |frame| may not be consecutive between planes. Copy data into
+  // a shared memory buffer which is tightly packed. Padding inside each planes
+  // are preserved.
   scoped_refptr<MojoSharedBufferVideoFrame> mojo_frame =
       MojoSharedBufferVideoFrame::Create(
           frame.format(), frame.coded_size(), frame.visible_rect(),
           frame.natural_size(), std::move(handle), allocation_size, y_offset,
-          u_offset, v_offset, frame.stride(VideoFrame::kYPlane),
-          frame.stride(VideoFrame::kUPlane), frame.stride(VideoFrame::kVPlane),
-          frame.timestamp());
+          u_offset, v_offset, y_stride, u_stride, v_stride, frame.timestamp());
 
   // Copy Y plane.
   memcpy(mojo_frame->shared_buffer_data(),

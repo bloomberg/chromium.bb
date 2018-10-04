@@ -229,24 +229,25 @@ TEST(MojoSharedBufferVideoFrameTest, YUVFrameToMojoFrame) {
   std::vector<uint8_t> data = std::vector<uint8_t>(12, 1u);
   const auto pixel_format = VideoPixelFormat::PIXEL_FORMAT_I420;
   const auto size = gfx::Size(1, 1);
+  const int32_t stride = 3;
+
+  // The YUV frame only has 1 pixel. But each plane are not in consecutive
+  // memory block, also stride is 3 bytes that contains 1 byte image data and 2
+  // bytes padding.
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalYuvData(
-      pixel_format, size, gfx::Rect(1, 1), size, 4, 4, 4, &data[0], &data[4],
-      &data[8], base::TimeDelta());
+      pixel_format, size, gfx::Rect(1, 1), size, stride, stride, stride,
+      &data[0], &data[4], &data[8], base::TimeDelta());
   auto mojo_frame = MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame);
   EXPECT_TRUE(mojo_frame);
 
-  const size_t u_offset =
-      VideoFrame::PlaneSize(pixel_format, VideoFrame::kYPlane, size).GetArea();
-  const size_t v_offset =
-      u_offset +
-      VideoFrame::PlaneSize(pixel_format, VideoFrame::kUPlane, size).GetArea();
+  const size_t y_stride = frame->stride(VideoFrame::kYPlane);
+  const size_t u_stride = frame->stride(VideoFrame::kUPlane);
 
   // Verifies mapped size and offset.
-  EXPECT_EQ(mojo_frame->MappedSize(),
-            frame->AllocationSize(pixel_format, size));
+  EXPECT_EQ(mojo_frame->MappedSize(), static_cast<size_t>(3 * stride));
   EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kYPlane), 0u);
-  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kUPlane), u_offset);
-  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kVPlane), v_offset);
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kUPlane), y_stride);
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kVPlane), y_stride + u_stride);
 }
 
 }  // namespace media
