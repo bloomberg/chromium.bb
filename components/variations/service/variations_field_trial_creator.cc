@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "components/language/core/browser/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/platform_field_trials.h"
@@ -35,6 +36,7 @@
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace variations {
 namespace {
@@ -162,6 +164,8 @@ VariationsFieldTrialCreator::VariationsFieldTrialCreator(
       ui_string_overrider_(ui_string_overrider),
       seed_store_(std::move(seed_store)),
       create_trials_from_seed_called_(false),
+      application_locale_(
+          language::GetApplicationLocale(seed_store_->local_state())),
       has_platform_override_(false),
       platform_override_(Study::PLATFORM_WINDOWS) {}
 
@@ -236,7 +240,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
     const base::Version& version) {
   std::unique_ptr<ClientFilterableState> state =
       std::make_unique<ClientFilterableState>();
-  state->locale = client_->GetApplicationLocale();
+  state->locale = application_locale_;
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
   state->channel = GetChannelForVariations(client_->GetChannel());

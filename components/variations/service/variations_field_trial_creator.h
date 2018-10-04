@@ -145,6 +145,11 @@ class VariationsFieldTrialCreator {
   // called at most once.
   bool create_trials_from_seed_called_;
 
+  // The application locale won't change after the startup, so we cache the
+  // value the first time when GetApplicationLocale() is called in the
+  // constructor.
+  std::string application_locale_;
+
   // Indiciate if OverrideVariationsPlatform has been used to set
   // |platform_override_|.
   bool has_platform_override_;
