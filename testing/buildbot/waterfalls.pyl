@@ -1374,8 +1374,8 @@
       },
       'mac-osxbeta-rel': {
         'swarming_mixins': [
+            'intel_iris_5100',
             'mac_10.14',
-            'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
