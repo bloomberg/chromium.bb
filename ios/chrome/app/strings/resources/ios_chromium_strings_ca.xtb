@@ -52,7 +52,6 @@
 <translation id="786327964234957808">Estàs canviant el compte de sincronització de <ph name="USER_EMAIL1" /> a <ph name="USER_EMAIL2" />. <ph name="DOMAIN" /> gestiona les teves dades de Chromium. Se suprimiran les teves dades d'aquest dispositiu, però continuaran estant disponibles a <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Consell: <ph name="BEGIN_LINK" />mou Chromium al Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Compartiu la vostra ubicació per tal de gaudir dels avantatges de Chromium.</translation>
-<translation id="8353224596138547809">Voleu que Chromium desi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="8508544542427105412">La <ph name="BEGIN_LINK" />configuració<ph name="END_LINK" /> es pot personalitzar en qualsevol moment. Google pot utilitzar contingut dels llocs web que visites, així com l'activitat i les interaccions al navegador per personalitzar Chromium i els serveis de Google, com ara el Traductor, la Cerca i els anuncis.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8809780021347235332">Per desar imatges, toca Configuració perquè Chromium pugui utilitzar les teves fotos</translation>

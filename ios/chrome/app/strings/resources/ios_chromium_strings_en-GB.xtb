@@ -52,7 +52,6 @@
 <translation id="786327964234957808">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chromium data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Move Chromium to your dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Get a better Google experience in Chromium based on your location.</translation>
-<translation id="8353224596138547809">Do you want Chromium to save your password for this site?</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /> can be customised at any time. Google may use content on sites that you visit, as well as browsing activity and interactions, to personalise Chromium and Google services such as Translate, Search and ads.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8809780021347235332">To save images, tap on Settings to let Chromium use your photos</translation>

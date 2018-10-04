@@ -125,11 +125,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       NOTĂ: această politică nu se aplică pentru Android. Pentru a activa IsolateOrigins pe Android, folosește setarea politicii IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Activează API-ul platformei hardware pentru extensiile instalate prin politică</translation>
 <translation id="1384459581748403878">Referință: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="1413936351612032792">Raportează informații despre utilizarea aplicațiilor Linux</translation>
 <translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
@@ -1000,13 +1000,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă politica „EnableMediaRouter” este dezactivată, valoarea acestei politici nu va avea niciun efect, iar pictograma din bara de instrumente nu va fi afișată.</translation>
 <translation id="3788662722837364290">Setările pentru gestionarea consumului de energie când utilizatorul devine inactiv</translation>
-<translation id="3793095274466276777">Configurează verificările pentru browserul prestabilit în <ph name="PRODUCT_NAME" /> și împiedică modificarea acestora de către utilizatori.
-
-      Dacă activezți această setare, <ph name="PRODUCT_NAME" /> va verifica întotdeauna la pornire dacă este browserul prestabilit și se va înregistra automat dacă este posibil.
-
-      Dacă această setare este dezactivată, <ph name="PRODUCT_NAME" /> nu va verifica niciodată dacă este browserul prestabilit și va dezactiva comenzile utilizatorului pentru setarea acestei opțiuni.
-
-      Dacă această setare nu este configurată, <ph name="PRODUCT_NAME" /> va permite utilizatorului să stabilească dacă acesta este browserul prestabilit și dacă trebuie afișate notificări pentru utilizator atunci când nu este.</translation>
 <translation id="379602782757302612">Îți permite să specifici extensiile pe care utilizatorii NU le pot instala. Extensiile instalate deja vor fi dezactivate dacă apar în lista neagră, fără ca utilizatorul să le poată activa. După ce o extensie dezactivată din cauza listei negre este eliminată din aceasta, extensia va fi activată din nou automat.
 
           O valoare „*” din lista neagră înseamnă că toate extensiile apar în lista neagră, cu excepția cazului în care acestea sunt explicit specificate în lista albă.
@@ -1156,11 +1149,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
 <translation id="4105989332710272578">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de adrese URL</translation>
-<translation id="4111405663956464686">Avertisment: politica privind versiunea TLS maximă va fi eliminată complet din <ph name="PRODUCT_NAME" /> începând cu versiunea 72 (aproximativ în luna ianuarie 2019).
-
-      Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea maximă prestabilită.
-
-      În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1.2” sau „tls1.3”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS superioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
 <translation id="412697421478384751">Permite utilizatorilor să seteze coduri PIN slabe pentru ecranul de blocare</translation>
 <translation id="4138655880188755661">Limita de timp</translation>
@@ -1994,11 +1982,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este neconfigurată sau dacă lista este goală, toate schemele vor putea fi accesate în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setări pentru utilizatorii gestionați local</translation>
 <translation id="6658245400435704251">Specifică numărul de secunde până la care un dispozitiv poate întârzia în mod aleatoriu descărcarea unei actualizări, din momentul în care respectiva actualizare a fost publicată pe server. O parte din perioada în care dispozitivul așteaptă efectuarea actualizării poate fi exprimată în termeni temporali, iar partea rămasă printr-un număr de verificări ale existenței unei actualizări. În orice caz, difuzarea are ca limită superioară o valoare constantă de timp, astfel încât un dispozitiv nu poate rămâne niciodată blocat definitiv în așteptarea descărcării unei actualizări.</translation>
-<translation id="6665599130599311250">Dacă această politică este dezactivată sau nu este configurată, sesiunea pentru invitați gestionată se va comporta așa cum este descris la https://support.google.com/chrome/a/answer/3017014 – „Sesiunea publică” standard.
-
-      Dacă această politică este activată, sesiunea pentru invitați gestionată se va comporta ca o „Sesiune gestionată” care ridică multe dintre restricțiile aplicate „Sesiunilor publice” obișnuite.
-
-      Dacă această politică este configurată, utilizatorul nu o poate modifica sau ignora.</translation>
 <translation id="6665670272107384733">Setează frecvența cu care un utilizator trebuie să introducă parola pentru a folosi deblocarea rapidă</translation>
 <translation id="6681229465468164801">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile împiedicate să ceară utilizatorului să le acorde acces la un dispozitiv USB.
 
@@ -2158,6 +2141,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este setată, va fi utilizată valoarea prestabilită, 32.</translation>
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
+<translation id="6944167205014013774">Informațiile despre utilizarea aplicațiilor Linux sunt trimise înapoi la
+      server.
+
+      Dacă politica este dezactivată sau nu este setată, nu se raportează informații
+      despre utilizare. Dacă este activată, se raportează informații despre utilizare.
+
+      Această politică se aplică doar dacă este activată asistența pentru aplicațiile Linux.</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
 <translation id="6965859329738616662">Specifică dacă un model inteligent de reducere a luminozității poate extinde timpul până la întunecarea ecranului

@@ -121,11 +121,11 @@
 
       NOTA: aquesta política no s'aplica a Android. S'hi pot substituir per IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Activa l'API Hardware Platform en extensions instal·lades amb la política</translation>
 <translation id="1384459581748403878">Referència: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
+<translation id="1413936351612032792">Ofereix informació sobre l'ús d'aplicacions per a Linux</translation>
 <translation id="142346659686073702">Permet que els usuaris no afiliats facin servir Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
@@ -987,7 +987,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si la política EnableMediaRouter es defineix com a "false", el valor de la política no tindrà cap efecte i la icona no es mostrarà a la barra d'eines.</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
-<translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME" /> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME" /> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
 <translation id="379602782757302612">Permet especificar les extensions que els usuaris NO poden instal·lar. Si les extensions que ja s'han instal·lat s'inclouen a la llista negra, es desactivaran i l'usuari no podrà activar-les de cap manera. Si una extensió s'ha desactivat perquè s'incloïa en aquesta llista, però se'n treu, es tornarà a activar automàticament.
 
           Si la llista negra conté el valor "*", significa que s'hi inclouen totes les extensions tret de les que s'indiquin explícitament a la llista blanca.
@@ -1134,11 +1133,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
 <translation id="4105989332710272578">Desactiva l'aplicació de la Transparència de certificats per a una llista d'URL</translation>
-<translation id="4111405663956464686">Advertiment: la política de la versió TLS màxima se suprimirà completament de <ph name="PRODUCT_NAME" /> aproximadament a la versió 72 (cap al gener de 2019).
-
-      Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà la versió màxima predeterminada.
-
-      També es pot definir a un dels valors següents: "tls1.2" o "tls1.3". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS posteriors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
 <translation id="412697421478384751">Permet que els usuaris defineixin PIN poc segurs per a la pantalla de bloqueig</translation>
 <translation id="4138655880188755661">Límit de temps</translation>
@@ -1522,7 +1516,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política s'estableix en "false", no s'activa Crostini per a l'usuari.
       Si s'estableix en "true" o es deixa sense establir, s'activa Crostini per a l'usuari sempre que altres opcions de configuració ho permetin.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'inici de contenidors de Crostini nous, però no tanca els que ja s'estiguin executant.</translation>
 <translation id="5283457834853986457">Desactiva el cercador de connectors (política obsoleta)</translation>
 <translation id="5288772341821359899">Si es defineix la política, l'interval de ports UDP que utilitza WebRTC estarà restringit a un interval de ports específic (extrems inclosos).
@@ -1965,11 +1959,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si no s'estableix aquesta política o la llista és buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuració dels usuaris gestionats localment</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
-<translation id="6665599130599311250">Si aquesta política s'estableix en "false" o no s'estableix, la sessió de convidat gestionada funcionarà com es descriu a la pàgina https://support.google.com/chrome/a/answer/3017014, és a dir, com una sessió pública estàndard.
-
-      Si aquesta política s'estableix en "true", la sessió de convidat gestionada funcionarà com una sessió gestionada i se suprimiran moltes de les restriccions de les sessions públiques normals.
-
-      Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="6665670272107384733">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid</translation>
 <translation id="6681229465468164801">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
 
@@ -2122,6 +2111,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, el valor predeterminat que s'utilitzarà serà 32.</translation>
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
+<translation id="6944167205014013774">Es torna a enviar informació sobre l'ús d'aplicacions per a Linux al
+      servidor.
+
+      Si la política s'estableix en "false" o es deixa sense establir, no es proporciona
+      informació d'ús. Si s'estableix en "true", es proporciona informació d'ús.
+
+      Aquesta política només s'aplica si la compatibilitat amb les aplicacions per a Linux està activada.</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
 <translation id="6965859329738616662">Especifica si es permet que un model d'atenuació intel·ligent ampliï el temps fins que s'atenua la pantalla.
@@ -2226,7 +2222,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7232816984286843471">Si la política s'estableix en "false", els usuaris no afiliats no tindran permís per fer servir Crostini.
 
       Si no s'estableix o s'estableix en "true", tots els usuaris tindran permís per fer servir Crostini sempre que altres opcions de configuració ho permetin.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'inici de contenidors de Crostini nous, però no tanca els que ja s'estiguin executant.</translation>
 <translation id="7234280155140786597">Noms dels amfitrions de missatgeria nativa prohibits (o bé * per a tots)</translation>
 <translation id="7236775576470542603">Establiu el tipus de lupa predeterminada activada a la pàgina d'inici de sessió.
@@ -2560,7 +2556,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
 
       Si la política s'estableix en "true", el dispositiu podrà executar màquines virtuals.
       Si s'estableix en "false", el dispositiu no podrà executar màquines virtuals.
-      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se.
+      Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan sol·licitin que es pugui executar Crostini.
       Quan la política es canvia a "false", afecta l'execució de màquines virtuals noves, però no tanca les que ja s'estan executant.
       Quan la política no s'estableix en un dispositiu gestionat, el dispositiu no té permís per executar màquines virtuals.
       Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
@@ -2739,7 +2735,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
+<translation id="8483004350080020634">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible de privadesa i seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
 
       Quan s'estableix en "true", s'activa la funció de seguretat i se suprimeixen els URL de tipus https://
       abans d'enviar-los a un script PAC. D'aquesta manera, l'script PAC

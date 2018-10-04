@@ -133,11 +133,11 @@
 
       OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, use a configuração da política IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Ativa a API Hardware Platform para extensões instaladas pela política</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
+<translation id="1413936351612032792">Enviar informações sobre o uso de apps Linux</translation>
 <translation id="142346659686073702">Permitir que usuários sem afiliação utilizem o Crostini</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
@@ -1001,7 +1001,6 @@
 
           Se a política "EnableMediaRouter" for definida como false, o valor desta política não terá nenhum efeito, e o ícone da barra de ferramentas não será exibido.</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
-<translation id="3793095274466276777">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem. Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará, na inicialização, se ele é o navegador padrão e automaticamente se registrará, se possível. Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará controles do usuário para configurar essa opção. Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá ao usuário controlar se ele é o navegador padrão e se as notificações do usuário devem ser exibidas quando não forem exibidas.</translation>
 <translation id="379602782757302612">Permite que você especifique quais extensões os usuários NÃO podem instalar. As extensões já instaladas serão desativadas se estiverem na lista negra, e o usuário não poderá ativá-las novamente. Quando uma extensão desativada por esse motivo é removida da lista negra, ela é reativada automaticamente.
 
           O valor "*" na lista negra significa que todas as extensões foram incluídas nessa lista, a menos que estejam explicitamente mencionadas na lista de permissões.
@@ -1151,11 +1150,6 @@
 
           O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="4105989332710272578">Desativar a aplicação da Transparência dos certificados para uma lista de URLs</translation>
-<translation id="4111405663956464686">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 72 (aproximadamente em janeiro de 2019).
-
-      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará a versão máxima padrão.
-
-      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="412697421478384751">Permitir que os usuários definam PINs fracos para a tela de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
@@ -1980,11 +1974,6 @@
       Se esta política não for definida ou se a lista estiver vazia, todos os esquemas serão acessíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configurações de usuários gerenciados localmente</translation>
 <translation id="6658245400435704251">Especifica o número de segundos que um dispositivo pode chegar a atrasar aleatoriamente o download de uma atualização a partir do momento em que a atualização foi lançada no servidor. O dispositivo pode esperar uma parte desse intervalo de tempo em tempo cronológico e o restante contado em número de verificações de atualizações. Em todo caso, a dispersão tem como limite máximo uma quantidade constante de tempo para que o dispositivo nunca fique parado indefinidamente esperando para fazer o download de uma atualização.</translation>
-<translation id="6665599130599311250">Se esta política for definida como falsa ou não for definida, a sessão de visitante gerenciada terá o comportamento documentado em https://support.google.com/chrome/a/answer/3017014, a "Sessão pública" padrão.
-
-      Se esta política for definida como verdadeira, a sessão de visitante gerenciada terá o comportamento de "Sessão gerenciada", o que elimina muitas das restrições estabelecidas para "Sessões públicas" normais.
-
-      Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.</translation>
 <translation id="6665670272107384733">Definir com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam quais sites não podem pedir que o usuário conceda acesso a um dispositivo USB.
 
@@ -2144,6 +2133,13 @@
 
       Se esta política for deixada sem definição, o valor padrão de 32 será utilizado.</translation>
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
+<translation id="6944167205014013774">As informações sobre o uso de apps Linux são enviadas de volta para o
+      servidor.
+
+      Se a política for definida como false ou não for configurada, nenhuma informação de uso será enviada.
+      Se for definida como true, as informações de uso serão enviadas.
+
+      Esta política se aplicará apenas se a compatibilidade com apps Linux estiver ativada.</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se um modelo de escurecimento inteligente é permitido para aumentar o tempo que a tela permanece ativa.
@@ -2760,7 +2756,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Retira partes confidenciais de privacidade e segurança de URLs https:// antes de repassá-los para scripts de PAC (Config. automática de proxy) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
+<translation id="8483004350080020634">Retira partes confidenciais de privacidade e segurança de URLs https:// antes de repassá-los para scripts de configuração automática de proxy (PAC, na sigla em inglês) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
 
       Quando a política é definida como Verdadeira, o recurso de segurança é ativado, e os URLs https:// são
       retirados antes de enviá-los para um script de PAC. Dessa forma, o script 

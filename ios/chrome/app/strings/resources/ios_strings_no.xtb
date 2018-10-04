@@ -111,14 +111,12 @@
 <translation id="2780046210906776326">Ingen e-postkontoer</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Avslutt fanevelgeren</translation>
-<translation id="283291358677939992">Finn på siden</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tilbakestill innstillingene for Oversetter</translation>
 <translation id="285960592395650245">Prøv å laste ned på nytt</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
 <translation id="2898963176829412617">Ny mappe</translation>
-<translation id="2909437209446960244">Nylige faner</translation>
 <translation id="2916171785467530738">Autofullfør søk og nettadresser</translation>
 <translation id="291754862089661335">Plassér QR-/strekkoden i denne rammen.</translation>
 <translation id="2921219216347069551">Kan ikke dele siden</translation>
@@ -132,7 +130,6 @@
 <translation id="3112556859945124369">Merk…</translation>
 <translation id="3151924044251363314">Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer den, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Merk alle…</translation>
-<translation id="3172213052701798825">Google Smart Lock for passord</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3210163015918861891">Synkronisering er av</translation>
@@ -160,13 +157,11 @@
 <translation id="3519193562722059437">Åpne en fane for å surfe på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3551320343578183772">Lukk fanen</translation>
-<translation id="3567664240939803299">Vil du at Google Smart Lock skal lagre passordet ditt for dette nettstedet?</translation>
 <translation id="3588820906588687999">Åpne bildet i en ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkadressen</translation>
 <translation id="3607167657931203000">Autofylldata</translation>
 <translation id="360930808415985584">Kontrollér synkronisering, personlig tilpassing med mer</translation>
 <translation id="3609785682760573515">Synkroniserer …</translation>
-<translation id="3628119975092896051">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3765471630796399471">Bruk et annet passord</translation>
@@ -179,7 +174,6 @@
 <translation id="3915450441834151894">Opplysninger om nettstedet</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
 <translation id="3950820424414687140">Logg på</translation>
-<translation id="3963231839620026525">Ny inkognitofane</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="3989635538409502728">Logg av</translation>
 <translation id="4002066346123236978">Tittel</translation>
@@ -227,7 +221,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="481968316161811770">Informasjonskapsler og nettstedsdata</translation>
 <translation id="4854345657858711387">Angi en adgangskode</translation>
 <translation id="4860895144060829044">Ring</translation>
-<translation id="4875622588773761625">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4882831918239250449">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av søk, annonser med mer</translation>
 <translation id="4904877109095351937">Merk som lest</translation>
@@ -242,7 +235,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="5062321486222145940">Installer Google Disk</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelsen.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
-<translation id="5173593619615111996">Lukk alle inkognitofaner</translation>
 <translation id="5181140330217080051">Laster ned</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
@@ -263,6 +255,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene må bruke samme iCloud-konto.</translation>
 <translation id="5554368826343982379">Synkronisering og personlig tilpasning</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
+<translation id="5614553682702429503">Vil du lagre passordet?</translation>
 <translation id="5619279135193775234">E-post</translation>
 <translation id="5626245204502895507">Filen kan ikke lastes ned for øyeblikket.</translation>
 <translation id="5659593005791499971">E-post</translation>
@@ -294,7 +287,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6012140227487808125">Krypterer …</translation>
 <translation id="6021332621416007159">Åpne i...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet ditt for <ph name="USERNAME" /> for dette nettstedet?</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
@@ -302,7 +294,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6122191549521593678">Pålogget</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
 <translation id="6136914049981179737">For noen sekunder siden</translation>
-<translation id="6158823227857319455">Ny fane</translation>
 <translation id="616831107264507309">Les senere</translation>
 <translation id="6184086493125982861">Vis faner</translation>
 <translation id="6187302354554850004">Sist synkronisert: <ph name="LAST_USED_TIME" /></translation>
@@ -393,7 +384,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7603852183842204213">Blokkerte forgrunnsvinduer (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
-<translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="766891008101699113">For å surfe på nettet privat, legg til en ny fane.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
@@ -420,7 +410,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="806745655614357130">Hold dataene mine adskilt</translation>
 <translation id="8073670137947914548">Nedlastingen er fullført</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
-<translation id="8080028325999236607">Lukk alle faner</translation>
 <translation id="8114753159095730575">Filnedlasting er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="8160722851663543621">Sender søk fra adressefeltet og søkefeltet samt noen informasjonskapsler til standardsøkemotoren din</translation>
 <translation id="8205564605687841303">Avbryt</translation>
@@ -452,6 +441,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8741995161408053644">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8756969031206844760">Vil du oppdatere passordet?</translation>
 <translation id="8775144690796719618">Ugyldig nettadresse</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="8840513115188359703">Du blir ikke logget av Google-kontoen din.</translation>
@@ -476,7 +466,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Programstopprapporten er sendt.</translation>
 <translation id="935490618240037774">Bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir synkronisert med Google-kontoen din, slik at du kan få dem på alle enhetene du bruker.</translation>
-<translation id="939598580284253335">Angi en passordfrase</translation>
 <translation id="976982866697960176">Administrer synkroniserte data …</translation>
 <translation id="988141524645182168">Andre enheter</translation>
 <translation id="989988560359834682">Rediger adresse</translation>

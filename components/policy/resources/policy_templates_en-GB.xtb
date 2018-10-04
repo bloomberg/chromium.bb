@@ -137,11 +137,11 @@
 
       NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
       </translation>
-<translation id="1377024960658062022">Enables the Hardware Platform API to policy-installed extensions</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="1413936351612032792">Report information about usage of Linux apps</translation>
 <translation id="142346659686073702">Allow unaffiliated users to use Crostini</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
@@ -1039,13 +1039,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect and the toolbar icon would not be shown.</translation>
 <translation id="3788662722837364290">Power management settings when the user becomes idle</translation>
-<translation id="3793095274466276777">Configures the default browser checks in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
-
-If you enable this setting, <ph name="PRODUCT_NAME" /> will always check on start-up whether it is the default browser and automatically register itself if possible.
-
-If this setting is disabled, <ph name="PRODUCT_NAME" /> will never check if it is the default browser and will disable user controls for setting this option.
-
-If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.</translation>
 <translation id="379602782757302612">Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once a disabled, blacklisted extension is removed, it will automatically get re-enabled.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -1199,11 +1192,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
-<translation id="4111405663956464686">Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME" /> around version 72 (around January 2019).
-
-      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses the default maximum version.
-
-      Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
 <translation id="4138655880188755661">Time Limit</translation>
@@ -2074,11 +2062,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Locally managed users settings</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
-<translation id="6665599130599311250">If this policy is set to false or left unset, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard 'Public Session'.
-
-      If this policy is set to true, managed guest session will take on 'Managed Session' behaviour, which lifts many of the restrictions that are in place for regular 'Public Sessions'.
-
-      If this policy is set, the user cannot change or override it.</translation>
 <translation id="6665670272107384733">Set how often user has to enter password to use quick unlock</translation>
 <translation id="6681229465468164801">Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.
 
@@ -2241,6 +2224,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set the default value will be used which is 32.</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
+<translation id="6944167205014013774">Information about the usage of Linux apps is sent back to the
+      server.
+
+      If the policy is set to false or left unset, no usage information is
+      reported. If set to true, usage information is reported.
+
+      This policy only applies if Linux app support is enabled.</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
 <translation id="6965859329738616662">Specifies whether a smart dim model is allowed to extend the time until the screen is dimmed.

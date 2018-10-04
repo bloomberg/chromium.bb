@@ -120,11 +120,11 @@
 
       NOT: Bu politika Android için geçerli değildir. Android'de IsolateOrigins'i etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
       </translation>
-<translation id="1377024960658062022">Politika tarafından yüklenen uzantılar için Donanım Platformu API'sini etkinleştirir</translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
+<translation id="1413936351612032792">Linux uygulamalarının kullanımıyla ilgili bilgileri raporla</translation>
 <translation id="142346659686073702">Bağlı olmayan kullanıcıların Crostini'yi kullanmasına izin verir</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
@@ -1018,7 +1018,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
           "EnableMediaRouter" politikası yanlış değerine ayarlanırsa bu politikanın değerinin herhangi bir etkisi olmaz ve araç çubuğu simgesi gösterilmez.</translation>
 <translation id="3788662722837364290">Kullanıcının işlem yapmadığı zaman için güç yönetimi ayarları</translation>
-<translation id="3793095274466276777"><ph name="PRODUCT_NAME" /> içindeki varsayılan tarayıcı denetimlerini yapılandırır ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> her zaman başlangıçta varsayılan tarayıcı olup olmadığını denetler ve mümkünse kendini otomatik olarak kaydeder. Bu ayar devre dışı bırakılırsa, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını hiçbir zaman denetlemez ve bu seçeneği ayarlamaya yönelik kullanıcı denetimlerini devre dışı bırakır. Bu ayar belirtilmezse, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını ve varsayılan tarayıcı değilse kullanıcı bildirimlerinin gösterilip gösterilmeyeceğini kullanıcının denetlemesine izin verir.</translation>
 <translation id="379602782757302612">Kullanıcıların hangi uzantıları YÜKLEYEMEYECEĞİNİ belirlemenize olanak tanır. Halihazırda yüklü olan uzantılar kara listede bulunuyorsa devre dışı bırakılır ve kullanıcı hiçbir şekilde onları yeniden etkinleştiremez. Kara liste nedeniyle devre dışı bırakılan bir uzantı, kara listeden çıkarılması halinde otomatik olarak yeniden etkinleştirilir.
 
           Kara liste değerinin * olması, açıkça beyaz listede bulunmayan tüm uzantıların kara listeye alınacağı anlamına gelir.
@@ -1169,11 +1168,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
 <translation id="4105989332710272578">Bir URL listesi için Sertifika Şeffaflığı uygulamasını devre dışı bırak</translation>
-<translation id="4111405663956464686">Uyarı: Maks. TLS sürümü politikası, yaklaşık olarak sürüm 72 düzeyinde (Ocak 2019 civarında) <ph name="PRODUCT_NAME" /> ürününden tamamıyla kaldırılacaktır.
-
-      Bu politika yapılandırılmazsa <ph name="PRODUCT_NAME" />, varsayılan maksimum sürümü kullanır.
-
-      Aksi halde, şu değerlerin birine ayarlanabilir: "tls1.2" veya "tls1.3". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden yüksek olan SSL/TLS sürümlerini kullanmaz. Tanınmayan değerler yoksayılır.</translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
 <translation id="412697421478384751">Kullanıcıların kilit ekranı PIN'i için zayıf PIN'ler ayarlamasına izin ver</translation>
 <translation id="4138655880188755661">Zaman Limiti</translation>
@@ -2043,11 +2037,6 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa veya liste boş olursa, <ph name="PRODUCT_NAME" /> içindeki tüm şemalara erişilebilir.</translation>
 <translation id="6652197835259177259">Yerel olarak yönetilen kullanıcıların ayarları</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
-<translation id="6665599130599311250">Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
-
-      Politika doğru (true) değerine ayarlanırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
-
-      Bu politika ayarlanırsa kullanıcı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
 <translation id="6681229465468164801">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
 
@@ -2211,6 +2200,12 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan değer olan 32 değeri kullanılır.</translation>
 <translation id="6943577887654905793">Mac/Linux tercih adı:</translation>
+<translation id="6944167205014013774">Linux'un kullanımıyla ilgili bilgiler sunucuya geri gönderilir.
+
+      Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa kullanım bilgisi bildirilmez.
+      Doğru (true) değerine ayarlanırsa kullanım bilgisi bildirilir.
+
+      Bu politika, yalnızca Linux uygulama desteği etkin olduğunda geçerlidir.</translation>
 <translation id="69525503251220566">Varsayılan arama sağlayıcısı için resme göre arama özelliği sağlayan parametre</translation>
 <translation id="6956272732789158625">Hiçbir sitenin anahtar oluşturma işlevini kullanmasına izin verme</translation>
 <translation id="6965859329738616662">Ekran karartma süresini uzatmak için akıllı karartma modeline izin verip verilmeyeceğini belirtir.

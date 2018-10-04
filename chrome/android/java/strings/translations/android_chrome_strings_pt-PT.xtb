@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1067922213147265141">Outros serviços Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
 <translation id="1105960400813249514">Ecrã a ser capturado...</translation>
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
@@ -40,6 +39,7 @@
 <translation id="1259100630977430756">As páginas que visualizar em separadores privados não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores privados. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
 No entanto, a navegação não é invisível. Passar para o modo privado não oculta a navegação do empregador, do fornecedor de serviços de Internet nem dos Websites que visitar.</translation>
+<translation id="1264974993859112054">Desporto</translation>
 <translation id="127138278192656016">Utilizar a sincronização e todos os serviços</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
@@ -106,7 +106,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1756600373018374892">Toque neste botão para aceder rapidamente aos seus separadores.</translation>
 <translation id="1779089405699405702">Descodificador de imagem</translation>
 <translation id="1782483593938241562">Data de conclusão: <ph name="DATE" /></translation>
-<translation id="1792959175193046959">Altere a localização de transferência predefinida a qualquer momento.</translation>
+<translation id="1792959175193046959">Altere a localização de transferência predefinida em qualquer altura.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1821253160463689938">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
@@ -149,7 +149,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
-<translation id="2095887075102408547">Quando esta funcionalidade está ativada, o Chrome utiliza os servidores da Google para comprimir as páginas visitadas antes de as transferir. As páginas acedidas através de ligações privadas (HTTPS) ou em separadores de navegação anónima não são otimizadas ou vistas pela Google.</translation>
 <translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
@@ -178,11 +177,10 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2321086116217818302">A preparar palavras-passe…</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
-<translation id="2325181368089033281">Tu ou os teus pais podem personalizar as <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /> a qualquer momento. A Google pode utilizar conteúdos nos sites que visitas, assim como as interações e a atividade com o navegador, para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
+<translation id="2325181368089033281">Tu ou os teus pais podem personalizar as <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /> em qualquer altura. A Google pode utilizar conteúdos nos sites que visitas, assim como as interações e a atividade com o navegador, para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="2328985652426384049">Não é possível iniciar sessão</translation>
 <translation id="2342981853652716282">Inicie sessão no Chrome para obter os seus marcadores, palavras-passe e muito mais em todos os dispositivos.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
-<translation id="2346253980530904022">Os servidores Google otimizam as páginas que visita, exceto HTTPS e Navegação anónima.</translation>
 <translation id="2349710944427398404">Total de dados utilizados pelo Chrome, incluindo contas, marcadores e definições guardadas</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -302,7 +300,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3384347053049321195">Partilhar imagem</translation>
 <translation id="3386292677130313581">Perguntar antes de permitir que os sites conheçam a sua localização (recomendado)</translation>
 <translation id="3387650086002190359">A transferência de <ph name="FILE_NAME" /> falhou devido a erros do sistema de ficheiros.</translation>
-<translation id="339329030417445648">Este site tem tendência para mostrar anúncios intrusivos</translation>
 <translation id="3398320232533725830">Abrir o gestor de marcadores</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3443221991560634068">Atualizar a página atual</translation>
@@ -381,7 +378,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4084682180776658562">Marcar</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />fornecido pela Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB transferido(s)</translation>
-<translation id="4089831646916293264">Esta funcionalidade pode interferir com o acesso a serviços de dados premium fornecidos pelo seu operador.</translation>
 <translation id="4095146165863963773">Pretende eliminar os dados da aplicação?</translation>
 <translation id="4097739989936358050">Esta aplicação está a ser executada no Chrome.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
@@ -528,7 +524,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="5224771365102442243">Com vídeo</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="5240817131241497236">As definições que controlam a sincronização, a personalização e outros serviços Google no Chrome foram alteradas. Isto pode afetar as suas definições atuais.</translation>
-<translation id="5264003212305142034">Pode personalizar as <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" /> a qualquer momento. A Google pode utilizar conteúdos nos sites que visita, assim como as interações e a atividade com o navegador, para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
+<translation id="5264003212305142034">Pode personalizar as <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" /> em qualquer altura. A Google pode utilizar conteúdos nos sites que visita, assim como as interações e a atividade com o navegador, para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="5284584623296338184">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
@@ -586,6 +582,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
 <translation id="5648166631817621825">Últimos 7 dias</translation>
+<translation id="5649053991847567735">Transferências automáticas</translation>
 <translation id="5655963694829536461">Pesquisar as suas transferências</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
@@ -623,7 +620,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5864419784173784555">A aguardar por outra transferência…</translation>
 <translation id="5865733239029070421">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
-<translation id="5878455346526065919">Bloquear anúncios de sites que têm tendência para mostrar anúncios intrusivos</translation>
 <translation id="5902828464777634901">Todos os dados armazenados por este Website, incluindo cookies, são eliminados.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
@@ -704,7 +700,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s)</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
-<translation id="6556716549745717622">Bloquear se o site tiver tendência para mostrar anúncios intrusivos (recomendado)</translation>
 <translation id="6560414384669816528">Pesquisar com o Sogou</translation>
 <translation id="6566259936974865419">O Chrome permitiu-lhe poupar <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
@@ -736,7 +731,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6762156594045689028">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
-<translation id="6770414673596662518">O sistema de Navegação segura do Chrome também será utilizado para detetar páginas maliciosas e para o proteger contra phishing, programas maliciosos e transferências prejudiciais.</translation>
+<translation id="6768277682697012280">A instalar o módulo de realidade aumentada…</translation>
 <translation id="6776813977906306442">Transferir vídeos para ver mais tarde através do botão Transferir</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="679325081238418596">Obter os marcadores, histórico, palavras-passe e outras definições em todos os dispositivos</translation>
@@ -757,11 +752,12 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Impedir sites de lerem texto e imagens da área de transferência</translation>
 <translation id="6914783257214138813">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado.</translation>
-<translation id="6942665639005891494">Altere a localização de transferência predefinida a qualquer momento ao utilizar a opção do menu Definições.</translation>
+<translation id="6942665639005891494">Altere a localização de transferência predefinida em qualquer altura ao utilizar a opção do menu Definições.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6968317970155454671">Falha ao instalar o módulo de realidade aumentada.</translation>
 <translation id="6978479750597523876">Repor definições de tradução</translation>
 <translation id="6979737339423435258">Sempre</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
@@ -952,6 +948,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8489271220582375723">Abrir a página do histórico</translation>
 <translation id="8493948351860045254">Libertar espaço</translation>
+<translation id="8496140788721644230">Módulo de realidade aumentada instalado.</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>
 <translation id="8503559462189395349">Palavras-passe do Chrome</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
@@ -995,7 +992,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8816439037877937734">A aplicação <ph name="APP_NAME" /> será aberta no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome, bem como o <ph name="BEGIN_LINK3" />Aviso de Privacidade para Contas Google Geridas com o Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="8823704566850948458">Sugerir palavra-passe…</translation>
-<translation id="8830904257167680355"><ph name="DESCRIPTION" /> – <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">Ocorreu um erro ao transferir o conteúdo.</translation>
 <translation id="8840953339110955557">Esta página pode ser diferente da versão online.</translation>
 <translation id="8847988622838149491">USB</translation>

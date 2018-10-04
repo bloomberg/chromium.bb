@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoć za upotrebu OS-a Chrome</translation>
 <translation id="1795405610103747296">Instalirajte Chrome na telefon. Poslat ćemo vam SMS na vaš telefonski broj: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Ako isključite tu opciju, možete se prijaviti na Googleove web-lokacije kao što je Gmail bez prijavljivanja u Chrome</translation>
 <translation id="1860536484129686729">Chrome treba dopuštenje za pristup kameri za ovu web-lokaciju</translation>
 <translation id="1873233029667955273">Google Chrome nije vaš zadani preglednik</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="1915828456209461693">Dostupno je novo ažuriranje za Chrome i primijenit će se nakon ponovnog pokretanja.</translation>
+<translation id="1919130412786645364">Dopusti prijavu u Chrome</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
 <translation id="2094919256425865063">Želite li ipak zatvoriti Chrome?</translation>
@@ -285,6 +287,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="9084668267983921457">Certifikat za autentifikaciju nije uspio. Prijavite se ponovo u Google Chrome ili se obratite administratoru za više informacija. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{OS Chrome ponovo će se pokrenuti za sat vremena}one{OS Chrome ponovo će se pokrenuti za # sat}few{OS Chrome ponovo će se pokrenuti za # sata}other{OS Chrome ponovo će se pokrenuti za # sati}}</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
+<translation id="9138603949443464873">Da bi se vaše promjene primijenile, ponovo pokrenite Chrome</translation>
 <translation id="919706545465235479">Ažurirajte Chrome da bi se pokrenula sinkronizacija</translation>
 <translation id="924447568950697217">Postavljanje Chromea kao zadanog preglednika</translation>
 <translation id="989369509083708165">Google Chrome vaš je zadani preglednik</translation>

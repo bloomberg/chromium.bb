@@ -137,11 +137,11 @@
 
       REMARQUE : Cette règle ne s'applique pas sur Android. Pour activer IsolateOrigins sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Active l'API Hardware Platform pour les extensions installées dans le cadre des règles</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
+<translation id="1413936351612032792">Transmettre des informations sur l'utilisation des applications Linux</translation>
 <translation id="142346659686073702">Autoriser les utilisateurs non affiliés à utiliser Crostini</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
@@ -1047,13 +1047,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si la règle "EnableMediaRouter" est définie sur "false", la valeur attribuée à la règle "ShowCastIconInToolbar" n'a aucun effet et l'icône de la barre d'outils ne s'affiche pas.</translation>
 <translation id="3788662722837364290">Paramètres de gestion de l'alimentation en cas d'inactivité de l'utilisateur</translation>
-<translation id="3793095274466276777">Configure les vérifications du navigateur par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de les modifier.
-
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> vérifiera toujours au démarrage s'il s'agit du navigateur par défaut et s'enregistrera automatiquement si possible.
-
-      Si ce paramètre est désactivé, <ph name="PRODUCT_NAME" /> ne vérifiera jamais s'il s'agit du navigateur par défaut et désactivera les contrôles utilisateur pour définir cette option.
-
-      Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME" /> autorisera l'utilisateur à déterminer s'il s'agit du navigateur par défaut et si des notifications aux utilisateurs doivent être affichées dans le cas contraire.</translation>
 <translation id="379602782757302612">Permet de spécifier les extensions que les utilisateurs ne peuvent PAS installer. Les extensions déjà installées et figurant sur la liste noire seront supprimées, sans que l'utilisateur puisse les activer. Une fois qu'une extension désactivée suite à son ajout à la liste noire est retirée de cette liste, elle est automatiquement réactivée.
 
           Définir la liste noire sur la valeur "*" revient à interdire toutes les extensions, sauf celles qui sont expressément répertoriées dans la liste blanche.
@@ -1207,11 +1200,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
 <translation id="4105989332710272578">Désactiver l'application des règles de transparence des certificats pour une liste d'URL</translation>
-<translation id="4111405663956464686">Avertissement : La règle relative à la version TLS maximale sera entièrement supprimée du produit <ph name="PRODUCT_NAME" /> à partir de la version 72 environ (autour de janvier 2019).
-
-      Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> utilise la version maximale par défaut.
-
-      Cette règle peut également être définie sur l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions de SSL/TLS supérieures à la version spécifiée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="412697421478384751">Autoriser les utilisateurs à définir des codes ayant un niveau de sécurité faible pour le code de l'écran de verrouillage</translation>
 <translation id="4138655880188755661">Période limite</translation>
@@ -2087,11 +2075,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si vous ne définissez pas cette règle ou si la liste est vide, tous les schémas sont accessibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Paramètres des utilisateurs gérés en local</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
-<translation id="6665599130599311250">Si cette règle est définie sur "False" ou n'est pas définie, la session gérée en mode Invité se comportera comme une session publique standard, tel que cela est expliqué dans l'article suivant : https://support.google.com/chrome/a/answer/3017014.
-
-      Si cette règle est définie sur "True", la session gérée en mode Invité se comportera comme une session gérée, et de nombreuses restrictions appliquées aux sessions publiques normales seront ainsi levées.
-
-      Si cette règle est configurée, l'utilisateur ne pourra pas la modifier ni l'ignorer.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6681229465468164801">Cette règle permet de définir une liste de formats d'URL spécifiant les sites non autorisés à demander à l'utilisateur l'accès à un périphérique USB.
 
@@ -2255,6 +2238,7 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 
       En cas de non-configuration de cette règle, la valeur par défaut de 32 est utilisée.</translation>
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
+<translation id="6944167205014013774">Cette règle renvoie au serveur des informations sur l'utilisation des applications Linux. Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'utilisation ne sont pas transmises. Si cette règle est définie sur "True", les informations sur l'utilisation sont transmises. Cette règle ne s'applique que si la compatibilité avec les applications Linux est activée.</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
 <translation id="6965859329738616662">Détermine si un modèle de réduction intelligente de la luminosité peut augmenter le délai d'assombrissement de l'écran.
@@ -2902,7 +2886,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8465065632133292531">Paramètres pour l'URL instantanée utilisant POST</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Supprime les sections liées à la confidentialité et celles qui sont sensibles au niveau de la sécurité des URL "https://" avant de les transmettre aux scripts PAC (Proxy Auto Config) utilisés par <ph name="PRODUCT_NAME" /> lors de la résolution du proxy.
+<translation id="8483004350080020634">Cette règle supprime les parties sensibles (informations confidentielles et de sécurité) des URL "https://" avant de les transmettre aux scripts PAC (Proxy Auto Config) utilisés par <ph name="PRODUCT_NAME" /> lors de la résolution du proxy.
 
       Lorsque la règle est définie sur "True", la fonctionnalité de sécurité est activée et les informations sensibles sont retirées des URL https:// avant leur envoi à un script PAC. De cette manière, le script PAC ne peut pas afficher des données qui sont normalement protégées par un canal chiffré (comme le chemin d'accès et la requête de l'URL).
 

@@ -125,11 +125,11 @@
 
       PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku IsolateOrigins operētājsistēmā Android, izmantojiet politikas IsolateOriginsAndroid iestatījumu.
       </translation>
-<translation id="1377024960658062022">Iespējo Hardware Platform API paplašinājumiem, kas instalēti saskaņā ar politikām</translation>
 <translation id="1384459581748403878">Informācija: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
+<translation id="1413936351612032792">Sniegt informāciju par Linux lietotņu izmantošanu</translation>
 <translation id="142346659686073702">Ļauj nesaistītiem lietotājiem izmantot Crostini</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
@@ -1025,13 +1025,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Ja politikai “EnableMediaRouter” tiks iestatīta vērtība “False”, šī politikas vērtība neradīs nekādu efektu, un rīkjoslas ikona nebūs redzama.</translation>
 <translation id="3788662722837364290">Barošanas pārvaldības iestatījumi, kad lietotājs ir neaktīvs</translation>
-<translation id="3793095274466276777">Konfigurē noklusējuma pārlūka pārbaudes produktā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem tās mainīt.
-
-      Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> vienmēr startēšanas brīdī pārbauda, vai tas ir noklusējuma pārlūks, un, ja iespējams, automātiski sevi reģistrē.
-
-      Ja šis iestatījums ir atspējots, <ph name="PRODUCT_NAME" /> nekad nepārbauda, vai tas ir noklusējuma pārlūks, un lietotājam tiek atspējota iespēja iestatīt šo opciju.
-
-      Ja šis iestatījums nav iestatīts, <ph name="PRODUCT_NAME" /> ļauj lietotājam noteikt, vai tas ir noklusējuma pārlūks un, ja tas nav, vai jāparāda lietotāja paziņojumi.</translation>
 <translation id="379602782757302612">Ļauj norādīt, kurus paplašinājumus lietotāji NEDRĪKST instalēt. Ja melnajā sarakstā būs iekļauts kāds no jau instalētajiem paplašinājumiem, tas tiks atspējots tādā veidā, ka lietotājs nevarēs to iespējot. Tiklīdz atspējotais paplašinājums tiks izņemts no melnā saraksta, tas tiks automātiski atkārtoti iespējots.
 
           Melnā saraksta vērtība “*” nozīmē, ka visi paplašinājumi ir iekļauti melnajā sarakstā, ja vien tie nav skaidri norādīti baltajā sarakstā.
@@ -1182,11 +1175,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
-<translation id="4111405663956464686">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 72, maksimālā TLS versijas politika tiks pilnībā noņemta (aptuveni 2019. gada janvārī).
-
-      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju.
-
-      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad tiks iestatīta attiecīgā politikas vērtība, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="412697421478384751">Atļauja lietotājiem iestatīt nedrošus ekrāna bloķēšanas PIN</translation>
 <translation id="4138655880188755661">Laika ierobežojums</translation>
@@ -2057,11 +2045,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta vai saraksts ir tukšs, pārlūkā <ph name="PRODUCT_NAME" /> varēs piekļūt visām shēmām.</translation>
 <translation id="6652197835259177259">Lokāli pārvaldītu lietotāju iestatījumi</translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
-<translation id="6665599130599311250">Ja politikai ir iestatīta vērtība “False” vai tā nav iestatīta, pārvaldītā viesa sesija tiks dokumentēta kā https://support.google.com/chrome/a/answer/3017014 — standarta “Publiskā sesija”.
-
-      Ja šai politikai ir iestatīta vērtība “True”, pārvaldītā viesa sesija norisināsies kā "Pārvaldītā sesija", kas atceļ daudzus ierobežojumus, kuri ir spēkā parastai “Publiskajai sesijai”.
- 
-      Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.</translation>
 <translation id="6665670272107384733">Paroles ievadīšanas biežuma iestatīšana, lai varētu izmantot ātro atbloķēšanu</translation>
 <translation id="6681229465468164801">Ļauj iestatīt vietrāžu URL modeļu sarakstu ar vietnēm, kurām nav atļauts lūgt lietotājam piešķirt piekļuvi USB ierīcei.
 
@@ -2223,6 +2206,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika nav iestatīta, tiks izmantota noklusējuma vērtība (32).</translation>
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
+<translation id="6944167205014013774">Informācija par Linux lietotņu izmantošanu tika nosūtīta atpakaļ uz
+      serveri.
+
+      Ja politikai ir iestatīta vērtība “false” vai politika nav iestatīta, lietojuma
+      informācija netiek nosūtīta. Ja politikai ir iestatīta vērtība “true”, tiek nosūtīta lietojuma informācija.
+
+      Šī politika ir spēkā tikai tad, ja ir iespējots Linux lietotņu atbalsts.</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
 <translation id="6965859329738616662">Norāda, vai viedās aptumšošanas modelis var paildzināt laiku, līdz ekrāns ir aptumšots.

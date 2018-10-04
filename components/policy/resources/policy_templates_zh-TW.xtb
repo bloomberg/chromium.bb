@@ -124,11 +124,11 @@
       在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
       注意：這項政策不適用於 Android 裝置。如要在 Android 裝置上啟用 IsolateOrigins，請改用 IsolateOriginsAndroid 政策設定。
       </translation>
-<translation id="1377024960658062022">針對透過政策安裝的擴充功能啟用 Hardware Platform API</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
+<translation id="1413936351612032792">回報 Linux 應用程式使用情形資訊</translation>
 <translation id="142346659686073702">允許無關聯的使用者使用 Crostini</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
@@ -995,7 +995,6 @@
 
           如果「EnableMediaRouter」政策設為 False，這項政策的值則沒有效用，系統不會顯示工具列圖示。</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
-<translation id="3793095274466276777">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。如果你啟用這項設定，<ph name="PRODUCT_NAME" /> 會一律在起始時檢查是否為預設瀏覽器，並在情況許可下自動登錄。如果你停用這項設定，<ph name="PRODUCT_NAME" /> 就永遠不會檢查是否為預設瀏覽器，且會停用使用者控制這項設定的選項。如果你尚未設定這項設定，<ph name="PRODUCT_NAME" /> 會允許使用者控制是否為預設瀏覽器，並在不是預設瀏覽器時，允許使用者控制是否要顯示使用者通知。</translation>
 <translation id="379602782757302612">讓你指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到停用 (使用者無法啟用)。因列入黑名單而遭到停用的擴充功能一旦從黑名單中移除，就會自動重新啟用。
 
           星號「*」代表一律不允許使用者安裝擴充功能 (特別加入許可清單者除外)。
@@ -1144,11 +1143,6 @@
 
           指定政策值時需以毫秒為單位。</translation>
 <translation id="4105989332710272578">不針對列出的網址強制執行憑證透明化政策</translation>
-<translation id="4111405663956464686">警告：自 <ph name="PRODUCT_NAME" /> 版本 72 (2019 年 1 月左右推出) 起，我們將全面移除 TLS 最高版本政策。
-
-      如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最高版本。
-
-      這項政策可使用的設定值包括：「tls1.2」或「tls1.3」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用高於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="412697421478384751">允許使用者設定強度不足的螢幕鎖定 PIN 碼</translation>
 <translation id="4138655880188755661">時間限制</translation>
@@ -1978,11 +1972,6 @@
       如果你未設定這項政策或留空，則可在 <ph name="PRODUCT_NAME" /> 中使用所有協定。</translation>
 <translation id="6652197835259177259">本機管理化環境下的使用者設定</translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。你可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
-<translation id="6665599130599311250">如果將這項政策設為 False 或未設定，受管理訪客工作階段的行為將符合 https://support.google.com/chrome/a/answer/3017014 網頁內有關標準「公開工作階段」的敘述。
-
-      如果將這項政策設為 True，受管理訪客工作階段的行為則視同「受管理的工作階段」，在許多規範上，不受一般「公開工作階段」的限制。
-
-      設定這項政策後，使用者無法變更或覆寫此政策。</translation>
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
 <translation id="6681229465468164801">允許你設定網址模式清單，指定禁止要求使用者授予 USB 裝置存取權的網站。
 
@@ -2141,6 +2130,12 @@
 
       如果你未設定這項政策，系統將採用 32 做為預設值。</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
+<translation id="6944167205014013774">將 Linux 應用程式使用情形資訊傳回伺服器。
+
+      如果將這項政策設為 false 或不予設定，系統不會回報使用情形資訊。
+      如果設為 true，則會回報使用情形資訊。
+
+      必須啟用 Linux 應用程式支援功能才可套用這項政策。</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
 <translation id="6965859329738616662">指定是否允許智慧型調光模式延長使用時間，直到螢幕變暗為止。

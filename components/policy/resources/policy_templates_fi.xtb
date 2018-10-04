@@ -137,11 +137,11 @@
 
       HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa IsolateOrigins-asetuksen käyttöön Androidilla, käytä IsolateOriginsAndroid-käytännön asetusta.
       </translation>
-<translation id="1377024960658062022">Ota käyttöön Hardware Platform API käytäntöjen asentamia laajennuksia varten</translation>
 <translation id="1384459581748403878">Viite: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
+<translation id="1413936351612032792">Raportoi tietoja Linux-sovellusten käytöstä</translation>
 <translation id="142346659686073702">Salli ulkopuolisten käyttäjien käyttää Crostinia</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
@@ -1009,7 +1009,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos EnableMediaRouter-käytännön arvo on Epätosi, tämän käytännön arvolla ei ole merkitystä eikä yläpalkkikuvaketta näytetä.</translation>
 <translation id="3788662722837364290">Virransäästöasetukset laitteen ollessa käyttämättä</translation>
-<translation id="3793095274466276777">Määrittää oletusselaimen tarkistukset tuotteelle <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta niitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> tarkistaa aina käynnistettäessä, onko se oletusselain, ja rekisteröi itsensä automaattisesti, jos mahdollista. Jos tämä asetus on pois käytöstä, <ph name="PRODUCT_NAME" /> ei koskaan tarkista, onko se oletusselain eikä anna käyttäjän muuttaa asetusta. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> antaa käyttäjän valita, onko tuote oletusselain ja näytetäänkö käyttäjälle ilmoitus, jos tuote ei ole oletusselain.</translation>
 <translation id="379602782757302612">Voit määrittää, mitä laajennuksia käyttäjät EIVÄT saa asentaa. Jo asennetut laajennukset poistetaan käytöstä, jos ne ovat kieltoluettelossa, eikä käyttäjä voi ottaa niitä käyttöön. Kun kieltoluettelon vuoksi käytöstä poistettu laajennus on poistettu luettelosta, se otetaan automaattisesti takaisin käyttöön.
 
           Jos kieltoluettelossa on arvo "*", se tarkoittaa, että kaikki laajennukset on lisätty kieltoluetteloon, ellei niitä ole erikseen lisätty sallittujen luetteloon.
@@ -1159,11 +1158,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
 <translation id="4105989332710272578">Poista Certificate Transparency ‑vaatimus tietyiltä URL-osoitteilta</translation>
-<translation id="4111405663956464686">Varoitus: <ph name="PRODUCT_NAME" /> ei enää tue uusimman TLS-version käytäntöä versiosta 72 (arviolta tammikuusta 2019) eteenpäin.
-
-      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena uusinta versiota.
-
-      Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1.2 tai tls1.3. Jos arvo on toinen näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa uudempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
 <translation id="4121350739760194865">Estä sovelluskampanjoita näkymästä uusi välilehti -sivulla</translation>
 <translation id="412697421478384751">Salli käyttäjän määrittää heikko lukitusnäytön PIN-koodi</translation>
 <translation id="4138655880188755661">Aikaraja</translation>
@@ -1991,11 +1985,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos tätä käytäntöä ei määritetä tai luettelo on tyhjä, kaikkia tuotteen <ph name="PRODUCT_NAME" /> järjestelmiä voidaan käyttää.</translation>
 <translation id="6652197835259177259">Paikallisesti hallinnoitujen käyttäjien asetukset</translation>
 <translation id="6658245400435704251">Määrittää sekunteina ajan, jonka laite voi viivyttää päivityksen lataamista siitä hetkestä, kun päivitys on lähetetty palvelimelle. Osa odotusajasta voidaan määrittää aikana ja loput päivitystarkistusten määränä. Hajonnalle on kuitenkin yläraja, joten laite ei koskaan jää odottamaan päivityksen lataamista loputtomasti.</translation>
-<translation id="6665599130599311250">Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, hallinnoidut vierailijakäyttökerrat toimivat kuten tavalliset julkiset käyttökerrat, joista kerrotaan artikkelissa https://support.google.com/chrome/a/answer/3017014.
-
-      Jos tämän käytännön arvo on tosi, hallinnoituja vierailijakäyttökertoja käsitellään hallinnoitujen käyttökertojen sääntöjen mukaisesti, jolloin monet julkisia käyttökertoja koskevat rajoitukset poistetaan.
-
-      Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
 <translation id="6665670272107384733">Määritä, kuinka usein käyttäjän on kirjoitettava salasana, jotta hän voi käyttää lukituksen pika-avaamista</translation>
 <translation id="6681229465468164801">Antaa sinun määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot eivät saa pyytää käyttäjältä USB-laitteen käyttöoikeutta.
 
@@ -2155,6 +2144,13 @@ Jotkin verkkosovellukset käyttävät paljon yhteyksiä GETien vuoksi, joten 32:
 
 Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</translation>
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
+<translation id="6944167205014013774">Linux-sovellusten käyttötietoja lähetetään takaisin
+      palvelimelle.
+
+      Jos käytännön arvo on epätosi tai sitä ei ole määritetty, käyttötietoja ei lähetetä.
+      Jos käytännön arvo on tosi, käyttötiedot lähetetään.
+
+      Tätä käytäntöä sovelletaan vain jos Linux-sovelluksia tuetaan.</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6965859329738616662">Määrittää, saako älykäs himmennysmalli pidentää näytön himmennysaikaa

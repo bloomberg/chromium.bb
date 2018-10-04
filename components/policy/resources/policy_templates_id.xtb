@@ -125,11 +125,11 @@
 
       CATATAN: Kebijakan ini tidak berlaku di Android. Untuk mengaktifkan IsolateOrigins di Android, gunakan setelan kebijakan IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Mengaktifkan Hardware Platform API untuk ekstensi yang diinstal oleh kebijakan</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
+<translation id="1413936351612032792">Informasi laporan tentang penggunaan aplikasi Linux</translation>
 <translation id="142346659686073702">Izinkan pengguna tak terafiliasi menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
@@ -998,7 +998,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Jika kebijakan "EnableMediaRouter" disetel ke false, setelan kebijakan ini tidak akan berpengaruh, dan ikon toolbar tidak akan ditampilkan.</translation>
 <translation id="3788662722837364290">Setelan pengelolaan daya saat pengguna sedang menganggur</translation>
-<translation id="3793095274466276777">Mengonfigurasi pemeriksaan browser default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan selalu memeriksa saat permulaan apakah itu browser default dan mendaftar sendiri secara otomatis jika memungkinkan. Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> tidak akan memeriksa apakah itu browser default dan akan menonaktifkan kontrol pengguna untuk setelan opsi ini. Jika setelan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mengizinkan pengguna mengontrol apakah itu browser default dan apakah pemberitahuan pengguna harus ditampilkan ketika tidak muncul.</translation>
 <translation id="379602782757302612">Memungkinkan Anda menentukan ekstensi mana yang TIDAK dapat diinstal pengguna. Ekstensi yang sudah diinstal akan dinonaktifkan jika termasuk dalam daftar yang tidak diizinkan, tanpa memberikan opsi kepada pengguna untuk mengaktifkannya. Setelah ekstensi yang dinonaktifkan dihapus dari daftar karena termasuk dalam daftar yang tidak diizinkan, ekstensi akan diaktfikan kembali secara otomatis.
 
           Nilai pada daftar yang tidak diizinkan '*' berarti semua ekstensi termasuk dalam daftar yang tidak diizinkan sampai ekstensi tersebut dicantumkan secara eksplisit dalam daftar yang diizinkan.
@@ -1148,11 +1147,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
 <translation id="4105989332710272578">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar URL</translation>
-<translation id="4111405663956464686">Peringatan: Kebijakan versi TLS maksimum akan sepenuhnya dihapus dari <ph name="PRODUCT_NAME" /> sekitar versi 72 (sekitar bulan Januari 2019).
-
-      Jika kebijakan ini tidak dikonfigurasi <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum default.
-
-      Jika dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih besar daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
 <translation id="412697421478384751">Izinkan pengguna menyetel PIN lemah untuk PIN layar kunci</translation>
 <translation id="4138655880188755661">Batas Waktu</translation>
@@ -1982,11 +1976,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini tidak disetel atau daftar kosong, semua skema akan dapat diakses di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setelan pengguna yang dikelola secara lokal</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
-<translation id="6665599130599311250">Jika kebijakan ini disetel ke false atau tidak disetel, sesi tamu yang dikelola akan berperilaku seperti didokumentasikan di https://support.google.com/chrome/a/answer/3017014 - "Sesi Publik" standar.
-
-      Jika kebijakan ini disetel ke true, sesi tamu yang dikelola akan melakukan perilaku "Sesi Terkelola" yang menghapus banyak batasan yang berlaku untuk "Sesi Publik" reguler.
-
-      Jika kebijakan ini disetel, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="6665670272107384733">Setel seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="6681229465468164801">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang dicegah agar tidak meminta pengguna memberikan akses ke perangkat USB.
 
@@ -2147,6 +2136,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 
       Jika kebijakan ini tidak disetel, nilai default 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
+<translation id="6944167205014013774">Informasi tentang penggunaan aplikasi Linux dikirim kembali ke server.
+
+Jika kebijakan disetel ke false atau tidak disetel, tidak ada informasi penggunaan yang dilaporkan. Jika disetel ke true, informasi penggunaan akan dilaporkan.
+
+Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
 <translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
 <translation id="6965859329738616662">Menentukan apakah model redup smart diizinkan untuk memperpanjang waktu hingga layar diredupkan.

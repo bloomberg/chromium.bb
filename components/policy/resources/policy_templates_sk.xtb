@@ -120,11 +120,11 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 
       POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo IsolateOrigins v Androide, použite nastavenie pravidla IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Umožňuje rozšíreniam nainštalovaným pravidlom používať rozhranie Hardware Platform API</translation>
 <translation id="1384459581748403878">Referenčná stránka: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="1413936351612032792">Nahlasovať informácie o používaní aplikácií pre Linux</translation>
 <translation id="142346659686073702">Povoliť používať funkciu Crostini používateľom, ktorí nie sú partneri</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
@@ -1014,7 +1014,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak je pravidlo EnableMediaRouter nastavené na hodnotu False, hodnota tohto pravidla sa nijak neprejaví a ikona sa na paneli s nástrojmi nebude zobrazovať.</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
-<translation id="3793095274466276777">Slúži na konfiguráciu kontroly predvoleného prehliadača v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom toto nastavenie zmeniť. Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> pri spustení vždy skontroluje, či je predvoleným prehliadačom, a ak to bude možné, automaticky sa registruje. Ak je toto nastavenie zakázané, prehliadač <ph name="PRODUCT_NAME" /> nebude kontrolovať, či je predvoleným prehliadačom, a zakáže používateľské ovládacie prvky na nastavenie tejto možnosti. Ak toto nastavenie nebolo nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> umožní používateľovi určiť, či ho chce nastaviť ako predvolený prehliadač a či sa v prípade, ak ním nie je, majú používateľovi zobraziť upozornenia.</translation>
 <translation id="379602782757302612">Umožňuje určiť, ktoré rozšírenia používatelia NEMÔŽU inštalovať. Nainštalované rozšírenia uvedené v zozname zakázaných položiek budú zakázané a používateľ ich nebude môcť povoliť. Ak odstránite rozšírenie zo zoznamu zakázaných položiek, ktoré bolo na základe toho zakázané, bude automaticky znova povolené.
 
           Hodnota „*“ v zozname zakázaných položiek znamená, že všetky rozšírenia sú zaradené do zoznamu zakázaných položiek, ak nie sú výslovne uvedené v zozname povolených položiek.
@@ -1168,11 +1167,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
 <translation id="4105989332710272578">Zakázať vynucovanie pravidla transparentnosti certifikátov pre zoznam webových adries</translation>
-<translation id="4111405663956464686">Upozornenie: Pravidlo stanovujúce maximálnu verziu protokolu TLS bude úplne odstránené z prehliadača <ph name="PRODUCT_NAME" /> približne vo verzii 72 (okolo januára 2019).
-
-      Ak toto pravidlo nenakonfigurujete, <ph name="PRODUCT_NAME" /> bude používať predvolenú maximálnu verziu.
-
-      Inak ho môžete nastaviť na niektorú z nesledujúcich hodnôt: tls1.2 alebo tls1.3. Keď ho nastavíte, <ph name="PRODUCT_NAME" /> nebude používať verzie protokolu SSL/TLS vyššie ako stanovená verzia. Hodnota, ktorá sa nebude dať rozpoznať, bude ignorovaná.</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
 <translation id="412697421478384751">Povoliť používateľom nastaviť slabé kódy PIN na uzamknutej obrazovke</translation>
 <translation id="4138655880188755661">Časový limit</translation>
@@ -2043,11 +2037,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak je toto pravidlo nenastavené alebo je zoznam prázdny, bude sa dať v prehliadači <ph name="PRODUCT_NAME" /> pristupovať ku všetkým schémam.</translation>
 <translation id="6652197835259177259">Nastavenia miestne spravovaných používateľov</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
-<translation id="6665599130599311250">Ak toto pravidlo nastavíte na hodnotu false alebo ho ponecháte nenastavené, spravovaná relácia hosťa sa bude správať tak, ako je uvedené v časti https://support.google.com/chrome/a/answer/3017014 – štandardná Verejná relácia.
-
-      Ak ho nastavíte na hodnotu true, spravovaná relácia hosťa sa bude správať tak, ako je uvedené v časti Spravovaná relácia. V tejto relácii sú zrušené mnohé obmedzenia, ktoré platia pre bežné Verejné relácie.
-
-      Ak toto pravidlo nastavíte, používateľ ho nemôže zmeniť ani prepísať.</translation>
 <translation id="6665670272107384733">Nastaviť, ako často musí používateľ zadávať heslo na používanie rýchleho odomknutia</translation>
 <translation id="6681229465468164801">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré nemôžu používateľa požiadať o udelenie prístupu k zariadeniu USB.
 
@@ -2211,6 +2200,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo ponecháte nenastavené, použije sa predvolená hodnota (32).</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
+<translation id="6944167205014013774">Informácie o používaní aplikácií pre Linux sa odosielajú späť na
+      server.
+
+      Ak je toto pravidlo nastavené na hodnotu false alebo nie je nastavené, nebudú sa hlásiť žiadne informácie o používaní.
+      Ak je nastavené na hodnotu true, informácie o používaní sa budú nahlasovať.
+
+      Toto pravidlo platí iba vtedy, keď je povolená podpora aplikácií pre Linux.</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
 <translation id="6965859329738616662">Určuje, či je povolený inteligentný model stlmenia na predĺženie času do stlmenia obrazovky.
@@ -2856,7 +2852,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 
       Predvolene je nastavená možnosť true (bezpečnostná funkcia je povolená).
 
-     Na hodnotu false ho nastavte iba vtedy, keď spôsobuje problém s kompatibilitou v prípade existujúcich skriptov PAC.
+     Na hodnotu false pravidlo nastavte iba vtedy, keď spôsobuje problém s kompatibilitou v prípade existujúcich skriptov PAC.
 .
 
       Toto pravidlo bude odstránené vo verzii M75.</translation>

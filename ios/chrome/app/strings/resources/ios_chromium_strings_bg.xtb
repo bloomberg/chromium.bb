@@ -52,7 +52,6 @@
 <translation id="786327964234957808">Заменяте настоящия профил за синхронизиране (<ph name="USER_EMAIL1" />) с друг (<ph name="USER_EMAIL2" />). Съществуващите ви данни в Chromium се управляват от <ph name="DOMAIN" />. Те ще се изтрият от това устройство, но ще останат в профила <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Съвет: <ph name="BEGIN_LINK" />Преместете Chromium в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Подобрете работата си с Google в Chromium въз основа на местоположението си.</translation>
-<translation id="8353224596138547809">Искате ли Chromium да запази паролата ви за този сайт?</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />Настройките<ph name="END_LINK" /> могат да бъдат персонализирани по всяко време. Може да използваме съдържанието на посещаваните от вас сайтове, активността в браузъра и взаимодействията с него, за да персонализираме Chromium и услуги на Google, като Преводач, Търсене и рекламите.</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8809780021347235332">За да запазите изображения, докоснете „Settings“ и разрешете на Chromium да използва снимките ви</translation>

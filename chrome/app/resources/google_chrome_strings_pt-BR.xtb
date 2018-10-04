@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obter ajuda para usar o Chrome OS</translation>
 <translation id="1795405610103747296">Instale o Chrome no seu smartphone. Enviaremos um SMS para seu número: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Desative essa opção para fazer login em sites do Google, como o Gmail, sem fazer login no Chrome</translation>
 <translation id="1860536484129686729">O Chrome precisa de permissão para este site acessar sua câmera</translation>
 <translation id="1873233029667955273">O Google Chrome não é seu navegador padrão</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
 <translation id="1915828456209461693">Uma nova atualização está disponível para o Chrome e será aplicada assim que você reiniciá-lo.</translation>
+<translation id="1919130412786645364">Permitir login no Chrome</translation>
 <translation id="2063848847527508675">É necessário reiniciar o Chrome OS para aplicar a atualização.</translation>
 <translation id="2084710999043359739">Adicionar ao Google Chrome</translation>
 <translation id="2094919256425865063">Sair do Chrome mesmo assim?</translation>
@@ -286,6 +288,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="9084668267983921457">Falha no certificado de autenticação. Faça login novamente no Google Chrome ou entre em contato com o administrador para receber mais informações. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{O Chrome OS será reiniciado em uma hora}one{O Chrome OS será reiniciado em # hora}other{O Chrome OS será reiniciado em # horas}}</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
+<translation id="9138603949443464873">Para que as alterações sejam aplicadas, reinicie o Chrome</translation>
 <translation id="919706545465235479">Atualize o Chrome para iniciar a sincronização</translation>
 <translation id="924447568950697217">Definir o Google Chrome como o navegador padrão</translation>
 <translation id="989369509083708165">O Google Chrome é seu navegador padrão</translation>
