@@ -194,9 +194,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     profile_builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildFakeProfileOAuth2TokenService);
-    profile_builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                                      BuildFakeSigninManagerBase);
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    profile_builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerBase));
     if (user_type == user_manager::USER_TYPE_CHILD)
       profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
 
