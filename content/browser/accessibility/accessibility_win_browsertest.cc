@@ -78,6 +78,12 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpSingleCharInputField(
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
+  void SetUpSingleCharInputFieldWithPlaceholder(
+      Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
+  void SetUpSingleCharTextarea(
+      Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
+  void SetUpSingleCharContenteditable(
+      Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpSingleCharRtlInputField(
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpTextareaField(
@@ -206,6 +212,8 @@ void AccessibilityWinBrowserTest::SetUpScrollableInputField(
 }
 
 // Loads a page with an input text field and places a single character in it.
+// Also tests with padding, in order to ensure character extent of empty field
+// does not erroneously include padding.
 void AccessibilityWinBrowserTest::SetUpSingleCharInputField(
     Microsoft::WRL::ComPtr<IAccessibleText>* input_text) {
   ASSERT_NE(nullptr, input_text);
@@ -214,7 +222,37 @@ void AccessibilityWinBrowserTest::SetUpSingleCharInputField(
           <html>
           <body>
             <form>
-              <input type="text" id="textField" name="name" value="x">
+              <input type="text" value="x" style="padding:3px">
+            </form>
+          </body>
+          </html>)HTML"));
+  SetUpInputFieldHelper(input_text);
+}
+
+void AccessibilityWinBrowserTest::SetUpSingleCharInputFieldWithPlaceholder(
+    Microsoft::WRL::ComPtr<IAccessibleText>* input_text) {
+  ASSERT_NE(nullptr, input_text);
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <form>
+              <input type="text" value="x" placeholder="placeholder">
+            </form>
+          </body>
+          </html>)HTML"));
+  SetUpInputFieldHelper(input_text);
+}
+
+void AccessibilityWinBrowserTest::SetUpSingleCharTextarea(
+    Microsoft::WRL::ComPtr<IAccessibleText>* input_text) {
+  ASSERT_NE(nullptr, input_text);
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <form>
+              <textarea rows="3" cols="10">x</textarea>
             </form>
           </body>
           </html>)HTML"));
@@ -274,12 +312,13 @@ void AccessibilityWinBrowserTest::SetUpInputFieldHelper(
       ax::mojom::Event::kTextSelectionChanged);
   std::wstring caret_offset = base::UTF16ToWide(
       base::IntToString16(static_cast<int>(kContentsLength - 1)));
-  ExecuteScript(std::wstring(L"let textField = document.querySelector('input');"
-                             L"textField.focus();"
-                             L"textField.setSelectionRange(") +
-                caret_offset + L"," + caret_offset +
-                L");"
-                L"textField.scrollLeft = 1000;");
+  ExecuteScript(
+      std::wstring(L"let textField = document.querySelector('input,textarea');"
+                   L"textField.focus();"
+                   L"textField.setSelectionRange(") +
+      caret_offset + L"," + caret_offset +
+      L");"
+      L"textField.scrollLeft = 1000;");
   waiter.WaitForNotification();
 }
 
@@ -1433,10 +1472,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 }
 
-// TODO(accessibility) Support bounds in an empty text field where there are
-// no child inline text objects, such that the following test passes.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestCharacterExtentsInEmptyInputField) {
+                       TestCharacterExtentsInEmptyInputField) {
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpSingleCharInputField(&input_text);
 
@@ -1453,6 +1490,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
+  base::win::ScopedBstr text0;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -1465,6 +1505,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   LONG caret_offset;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
+
+  base::win::ScopedBstr text;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
 
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
@@ -1480,10 +1523,167 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 }
 
-// TODO(accessibility) Support bounds in an empty text field where there are
-// no child inline text objects, such that the following test passes.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestCharacterExtentsInEmptyRtlInputField) {
+                       TestCharacterExtentsInEmptyInputFieldWithPlaceholder) {
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
+  SetUpSingleCharInputFieldWithPlaceholder(&input_text);
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(1, n_characters);
+
+  // Get the rect for the only character.
+  LONG prev_x, prev_y, prev_width, prev_height;
+  EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+      0, IA2_COORDTYPE_SCREEN_RELATIVE, &prev_x, &prev_y, &prev_width,
+      &prev_height));
+
+  EXPECT_LT(1, prev_width);
+  EXPECT_LT(1, prev_height);
+
+  base::win::ScopedBstr text0;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+
+  // Delete the character in the input field.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(std::wstring(L"document.querySelector('input').value='';"));
+  waiter.WaitForNotification();
+
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(0, n_characters);
+  LONG caret_offset;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
+  ASSERT_EQ(0, caret_offset);
+
+  base::win::ScopedBstr text;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+
+  // Now that input is completely empty, the position of the caret should be
+  // returned for character 0. The x,y position and height should be the same as
+  // it was as when there was single character, but the width should now be 1.
+  LONG x, y, width, height;
+  for (int offset = IA2_TEXT_OFFSET_CARET; offset <= 0; ++offset) {
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+    EXPECT_EQ(prev_x, x);
+    EXPECT_EQ(prev_y, y);
+    EXPECT_EQ(1, width);
+    EXPECT_EQ(prev_height, height);
+  }
+}
+
+// TODO(accessibility) empty contenteditable gets height of entire
+// contenteditable instead of just 1 line. May be able to use the following
+// in Blink to get the height of a line -- it's at least close:
+// layout_object->Style()->GetFont().PrimaryFont()->GetFontMetrics().Height()
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       DISABLED_TestCharacterExtentsInEmptyContenteditable) {
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
+  SetUpSampleParagraphInScrollableEditable(&input_text);
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_LT(0, n_characters);
+
+  // Get the rect for the only character.
+  LONG prev_x, prev_y, prev_width, prev_height;
+  EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+      0, IA2_COORDTYPE_SCREEN_RELATIVE, &prev_x, &prev_y, &prev_width,
+      &prev_height));
+
+  EXPECT_LT(1, prev_width);
+  EXPECT_LT(1, prev_height);
+
+  base::win::ScopedBstr text0;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+
+  // Delete the character in the input field.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kChildrenChanged);
+  ExecuteScript(std::wstring(
+      L"document.querySelector('[contenteditable]').innerText='';"));
+  waiter.WaitForNotification();
+
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(0, n_characters);
+  LONG caret_offset;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
+  ASSERT_EQ(0, caret_offset);
+
+  base::win::ScopedBstr text;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+
+  // Now that input is completely empty, the position of the caret should be
+  // returned for character 0. The x,y position and height should be the same as
+  // it was as when there was single character, but the width should now be 1.
+  LONG x, y, width, height;
+  for (int offset = IA2_TEXT_OFFSET_CARET; offset <= 0; ++offset) {
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+    EXPECT_EQ(prev_x, x);
+    EXPECT_EQ(prev_y, y);
+    EXPECT_EQ(1, width);
+    EXPECT_EQ(prev_height, height);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestCharacterExtentsInEmptyTextarea) {
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
+  SetUpSingleCharTextarea(&input_text);
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(1, n_characters);
+
+  // Get the rect for the only character.
+  LONG prev_x, prev_y, prev_width, prev_height;
+  EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+      0, IA2_COORDTYPE_SCREEN_RELATIVE, &prev_x, &prev_y, &prev_width,
+      &prev_height));
+
+  EXPECT_LT(1, prev_width);
+  EXPECT_LT(1, prev_height);
+
+  base::win::ScopedBstr text0;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+
+  // Delete the character in the input field.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(
+      std::wstring(L"document.querySelector('textarea').innerText='';"));
+  waiter.WaitForNotification();
+
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(0, n_characters);
+  LONG caret_offset;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
+  ASSERT_EQ(0, caret_offset);
+
+  base::win::ScopedBstr text;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+
+  // Now that input is completely empty, the position of the caret should be
+  // returned for character 0. The x,y position and height should be the same as
+  // it was as when there was single character, but the width should now be 1.
+  LONG x, y, width, height;
+  for (int offset = IA2_TEXT_OFFSET_CARET; offset <= 0; ++offset) {
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+    EXPECT_EQ(prev_x, x);
+    EXPECT_EQ(prev_y, y);
+    EXPECT_EQ(1, width);
+    EXPECT_EQ(prev_height, height);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestCharacterExtentsInEmptyRtlInputField) {
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpSingleCharRtlInputField(&input_text);
 
