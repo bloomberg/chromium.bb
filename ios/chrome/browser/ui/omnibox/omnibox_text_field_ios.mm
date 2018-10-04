@@ -365,7 +365,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // default to a reasonable prefix string to give a plausible offset.
   NSString* prefixString = @"https://";
 
-  if ([self.text containsString:string]) {
+  if (string.length > 0 && [self.text containsString:string]) {
     NSRange range = [self.text rangeOfString:string];
     NSRange prefixRange = NSMakeRange(0, range.location);
     prefixString = [self.text substringWithRange:prefixRange];
