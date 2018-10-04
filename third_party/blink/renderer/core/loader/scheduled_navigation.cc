@@ -15,11 +15,13 @@ namespace blink {
 ScheduledNavigation::ScheduledNavigation(Reason reason,
                                          double delay,
                                          Document* origin_document,
-                                         bool is_location_change)
+                                         bool is_location_change,
+                                         base::TimeTicks input_timestamp)
     : reason_(reason),
       delay_(delay),
       origin_document_(origin_document),
-      is_location_change_(is_location_change) {
+      is_location_change_(is_location_change),
+      input_timestamp_(input_timestamp) {
   if (LocalFrame::HasTransientUserActivation(
           origin_document ? origin_document->GetFrame() : nullptr))
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
