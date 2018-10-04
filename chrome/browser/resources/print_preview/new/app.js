@@ -234,8 +234,6 @@ Polymer({
     // itself is closed.
     if (e.code == 'Escape' && !hasKeyModifiers(e)) {
       // Don't close the Print Preview dialog if there is a child dialog open.
-      const destinations = this.$.destinationSettings;
-      const advanced = this.$.advancedSettings;
       if (this.openDialogs_.length != 0) {
         // Manually cancel the dialog, since we call preventDefault() to prevent
         // views from closing the Print Preview dialog.

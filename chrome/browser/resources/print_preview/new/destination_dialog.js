@@ -240,7 +240,7 @@ Polymer({
       this.$.provisionalResolver.resolveDestination(destination)
           .then(this.selectDestination_.bind(this))
           .catch(function() {
-            console.error(
+            console.warn(
                 'Failed to resolve provisional destination: ' + destination.id);
           })
           .then(() => {
