@@ -234,6 +234,11 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   }
 }
 
+void IdentityManager::GoogleSigninFailed(const GoogleServiceAuthError& error) {
+  for (auto& observer : observer_list_)
+    observer.OnPrimaryAccountSigninFailed(error);
+}
+
 void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   AccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
