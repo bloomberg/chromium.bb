@@ -98,8 +98,7 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
 
   // Sets |customer_data| to this client and returns whether any change has been
   // applied (i.e., whether |customer_data| was different from local data).
-  bool SetPaymentsCustormerData(
-      std::vector<PaymentsCustomerData> customer_data);
+  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for

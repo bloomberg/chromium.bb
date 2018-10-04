@@ -270,7 +270,7 @@ void AutofillWalletSyncBridge::SetSyncData(
 
   // In both cases, we need to update wallet cards and payments customer data.
   wallet_data_changed |= SetWalletCards(std::move(wallet_cards));
-  wallet_data_changed |= SetPaymentsCustormerData(std::move(customer_data));
+  wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
 
   if (web_data_backend_ && wallet_data_changed)
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -343,7 +343,7 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
   return false;
 }
 
-bool AutofillWalletSyncBridge::SetPaymentsCustormerData(
+bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
     std::vector<PaymentsCustomerData> customer_data) {
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
