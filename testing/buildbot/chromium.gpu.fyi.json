@@ -5652,6 +5652,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -5669,7 +5670,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -5689,7 +5691,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "browser_tests"
       },
@@ -5706,7 +5709,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -5722,7 +5726,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_unittests"
       },
@@ -5738,7 +5743,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -5751,7 +5757,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -5768,7 +5775,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "services_unittests"
       },
@@ -5781,7 +5789,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "swiftshader_unittests"
       }
@@ -5807,6 +5816,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5830,6 +5840,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5853,6 +5864,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5876,6 +5888,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5903,6 +5916,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5933,6 +5947,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5971,6 +5986,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -5995,6 +6011,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6018,6 +6035,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6043,6 +6061,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -6067,6 +6086,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -6089,6 +6109,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -6106,7 +6127,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -6126,7 +6148,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "browser_tests"
       },
@@ -6143,7 +6166,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -6159,7 +6183,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_unittests"
       },
@@ -6175,7 +6200,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -6188,7 +6214,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -6205,7 +6232,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "services_unittests"
       },
@@ -6218,7 +6246,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "swiftshader_unittests"
       }
@@ -6244,6 +6273,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6267,6 +6297,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6290,6 +6321,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6313,6 +6345,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6340,6 +6373,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6370,6 +6404,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6408,6 +6443,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6432,6 +6468,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6455,6 +6492,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6480,6 +6518,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -6504,6 +6543,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -6526,6 +6566,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -6543,7 +6584,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -6563,7 +6605,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "browser_tests"
       },
@@ -6580,7 +6623,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -6596,7 +6640,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_unittests"
       },
@@ -6612,7 +6657,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -6625,7 +6671,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -6642,7 +6689,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "services_unittests"
       },
@@ -6655,7 +6703,8 @@
               "os": "Mac-10.14",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "swiftshader_unittests"
       }
@@ -6681,6 +6730,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6704,6 +6754,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6727,6 +6778,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6750,6 +6802,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6777,6 +6830,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6807,6 +6861,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6845,6 +6900,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6869,6 +6925,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6892,6 +6949,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -6917,6 +6975,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -6941,6 +7000,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
