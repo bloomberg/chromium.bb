@@ -24,7 +24,7 @@ void NavigateAction::ProcessAction(ActionDelegate* delegate,
   GURL url(proto_.navigate().url());
   delegate->LoadURL(url);
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-  UpdateProcessedAction(/* status= */ true);
+  UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

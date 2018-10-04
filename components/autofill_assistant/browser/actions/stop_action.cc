@@ -22,7 +22,7 @@ void StopAction::ProcessAction(ActionDelegate* delegate,
                                ProcessActionCallback callback) {
   delegate->Shutdown();
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-  UpdateProcessedAction(true);
+  UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

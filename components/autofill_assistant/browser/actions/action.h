@@ -31,7 +31,7 @@ class Action {
 
  protected:
   explicit Action(const ActionProto& proto);
-  void UpdateProcessedAction(bool status);
+  void UpdateProcessedAction(ProcessedActionStatusProto status);
 
   const ActionProto proto_;
 

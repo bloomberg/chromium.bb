@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
+#include "components/autofill_assistant/browser/actions/unsupported_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -193,6 +194,7 @@ bool ProtocolUtils::ParseActions(
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
         DLOG(ERROR) << "Unknown or unsupported action with action_case="
                     << action.action_info_case();
+        actions->emplace_back(std::make_unique<UnsupportedAction>(action));
         break;
       }
     }

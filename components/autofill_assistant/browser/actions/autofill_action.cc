@@ -164,7 +164,7 @@ void AutofillAction::ProcessAction(ActionDelegate* delegate,
 }
 
 void AutofillAction::EndAction(bool successful) {
-  UpdateProcessedAction(successful);
+  UpdateProcessedAction(successful ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
@@ -223,7 +223,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
   if (!card) {
     // TODO(crbug.com/806868): The failure might because of cancel, then ask to
     // choose a card again.
-    UpdateProcessedAction(false);
+    UpdateProcessedAction(OTHER_ACTION_STATUS);
     std::move(process_action_callback_).Run(std::move(processed_action_proto_));
     return;
   }
