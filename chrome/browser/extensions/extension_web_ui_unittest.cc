@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_web_ui.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -50,7 +51,7 @@ class ExtensionWebUITest : public testing::Test {
     extension_service_ = system->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->SetTestingFactory(
-        profile_.get(), &BuildOverrideRegistrar);
+        profile_.get(), base::BindRepeating(&BuildOverrideRegistrar));
     ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->Get(profile_.get());
   }
 

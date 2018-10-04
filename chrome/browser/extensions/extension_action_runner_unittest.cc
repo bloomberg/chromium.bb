@@ -178,8 +178,8 @@ void ExtensionActionRunnerUnitTest::SetUp() {
       extensions_features::kRuntimeHostPermissions);
 
   // Skip syncing for testing purposes.
-  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),
-                                                                nullptr);
+  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), BrowserContextKeyedServiceFactory::TestingFactory());
 
   TabHelper::CreateForWebContents(web_contents());
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());

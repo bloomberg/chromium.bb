@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -137,7 +138,7 @@ class UpdateInstallGateTest : public testing::Test {
 
     event_router_ = static_cast<EventRouter*>(
         EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_, &BuildEventRouter));
+            profile_, base::BindRepeating(&BuildEventRouter)));
 
     delayer_.reset(new UpdateInstallGate(service_));
 
