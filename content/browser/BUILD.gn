@@ -1307,8 +1307,6 @@ jumbo_source_set("browser") {
     "renderer_host/frame_sink_provider_impl.h",
     "renderer_host/frame_token_message_queue.cc",
     "renderer_host/frame_token_message_queue.h",
-    "renderer_host/hit_test_debug_key_event_observer.cc",
-    "renderer_host/hit_test_debug_key_event_observer.h",
     "renderer_host/input/fling_controller.cc",
     "renderer_host/input/fling_controller.h",
     "renderer_host/input/fling_scheduler.cc",

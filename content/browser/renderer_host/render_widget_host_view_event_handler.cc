@@ -4,11 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 
-#include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "components/viz/common/features.h"
-#include "content/browser/renderer_host/hit_test_debug_key_event_observer.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -104,15 +101,6 @@ bool NeedsInputGrab(content::RenderWidgetHostViewBase* view) {
   return view->GetWidgetType() == content::WidgetType::kPopup;
 }
 
-// Enables hit-test debug logging.
-const char kEnableVizHitTestDebug[] = "enable-viz-hit-test-debug";
-
-inline bool IsVizHitTestingDebugEnabled() {
-  return features::IsVizHitTestingEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kEnableVizHitTestDebug);
-}
-
 }  // namespace
 
 namespace content {
@@ -140,10 +128,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       popup_child_event_handler_(nullptr),
       delegate_(delegate),
       window_(nullptr),
-      mouse_wheel_phase_handler_(host_view),
-      debug_observer_(IsVizHitTestingDebugEnabled()
-                          ? std::make_unique<HitTestDebugKeyEventObserver>(host)
-                          : nullptr) {}
+      mouse_wheel_phase_handler_(host_view) {}
 
 RenderWidgetHostViewEventHandler::~RenderWidgetHostViewEventHandler() {}
 
