@@ -418,10 +418,9 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (StyleType() != kPseudoIdNone)
     return nullptr;
 
-  for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
+  for (const auto& pseudo_style : *cached_pseudo_styles_) {
     if (pseudo_style->StyleType() == pid)
-      return pseudo_style;
+      return pseudo_style.get();
   }
 
   return nullptr;
@@ -445,7 +444,7 @@ const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
 void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
   if (!cached_pseudo_styles_)
     return;
-  for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
+  for (wtf_size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
     const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid) {
       cached_pseudo_styles_->EraseAt(i);
@@ -950,8 +949,8 @@ void ComputedStyle::SetContent(ContentData* content_data) {
 }
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  for (size_t i = 0; i < WillChangeProperties().size(); ++i) {
-    switch (WillChangeProperties()[i]) {
+  for (const auto& property : WillChangeProperties()) {
+    switch (property) {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -1610,8 +1609,8 @@ TextDecoration ComputedStyle::TextDecorationsInEffect() const {
 
   const Vector<AppliedTextDecoration>& applied = AppliedTextDecorations();
 
-  for (size_t i = 0; i < applied.size(); ++i)
-    decorations |= applied[i].Lines();
+  for (const AppliedTextDecoration& decoration : applied)
+    decorations |= decoration.Lines();
 
   return decorations;
 }
@@ -1871,8 +1870,8 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
   if (!list->HasOneRef())
     list = list->Copy();
 
-  for (size_t i = 0; i < list->size(); ++i)
-    list->at(i).SetColor(override_color);
+  for (AppliedTextDecoration& decoration : *list)
+    decoration.SetColor(override_color);
 }
 
 void ComputedStyle::ApplyTextDecorations(
@@ -2166,11 +2165,11 @@ void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   if (!shadow_list)
     return false;
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
-    if (shadow_list->Shadows()[i].GetColor().IsCurrentColor())
-      return true;
-  }
-  return false;
+  return std::any_of(shadow_list->Shadows().begin(),
+                     shadow_list->Shadows().end(),
+                     [](const ShadowData& shadow) {
+                       return shadow.GetColor().IsCurrentColor();
+                     });
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto,
