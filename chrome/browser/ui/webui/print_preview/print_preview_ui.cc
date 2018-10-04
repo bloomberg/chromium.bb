@@ -352,6 +352,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_ADVANCED_OPTIONS_LABEL);
   source->AddLocalizedString("showAdvancedOptions",
                              IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS);
+  source->AddLocalizedString("newShowAdvancedOptions",
+                             IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS);
 
   source->AddLocalizedString("accept", IDS_PRINT_PREVIEW_ACCEPT_INVITE);
   source->AddLocalizedString(
