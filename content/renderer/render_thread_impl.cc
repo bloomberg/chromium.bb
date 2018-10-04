@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -984,8 +983,6 @@ void RenderThreadImpl::Init() {
   process_foregrounded_count_ = 0;
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
-
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 
   GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                 mojo::MakeRequest(&frame_sink_provider_));
@@ -2243,30 +2240,6 @@ void RenderThreadImpl::OnMemoryPressure(
     ReleaseFreeMemory();
 }
 
-void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
-  if (blink_platform_impl_) {
-    blink::WebMemoryCoordinator::OnMemoryStateChange(
-        static_cast<blink::MemoryState>(state));
-  }
-}
-
-void RenderThreadImpl::OnPurgeMemory() {
-  // Record amount of purged memory after 2 seconds. 2 seconds is arbitrary
-  // but it works most cases.
-  RendererMemoryMetrics metrics;
-  if (!GetRendererMemoryMetrics(&metrics))
-    return;
-
-  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&RenderThreadImpl::RecordPurgeMemory,
-                     base::Unretained(this), std::move(metrics)),
-      base::TimeDelta::FromSeconds(2));
-
-  OnTrimMemoryImmediately();
-  ReleaseFreeMemory();
-}
-
 void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
   RendererMemoryMetrics after;
   if (!GetRendererMemoryMetrics(&after))
@@ -2437,17 +2410,6 @@ void RenderThreadImpl::OnSyncMemoryPressure(
       v8_memory_pressure_level);
   blink::MemoryPressureNotificationToWorkerThreadIsolates(
       v8_memory_pressure_level);
-}
-
-// Note that this would be called only when memory_coordinator is enabled.
-// OnSyncMemoryPressure() is never called in that case.
-void RenderThreadImpl::OnTrimMemoryImmediately() {
-  if (blink::MainThreadIsolate()) {
-    blink::MainThreadIsolate()->MemoryPressureNotification(
-        v8::MemoryPressureLevel::kCritical);
-    blink::MemoryPressureNotificationToWorkerThreadIsolates(
-        v8::MemoryPressureLevel::kCritical);
-  }
 }
 
 void RenderThreadImpl::OnRendererInterfaceRequest(
