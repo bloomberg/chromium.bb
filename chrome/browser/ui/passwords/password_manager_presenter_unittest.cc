@@ -43,8 +43,9 @@ class PasswordManagerPresenterTest : public testing::Test {
   void SetUp() override {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         &profile_,
-        password_manager::BuildPasswordStore<
-            content::BrowserContext, password_manager::MockPasswordStore>);
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                content::BrowserContext, password_manager::MockPasswordStore>));
     mock_controller_.reset(new MockPasswordUIView(&profile_));
   }
   void AddPasswordEntry(const GURL& origin,
