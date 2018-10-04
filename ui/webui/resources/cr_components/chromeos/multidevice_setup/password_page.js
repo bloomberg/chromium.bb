@@ -18,7 +18,8 @@ Polymer({
      */
     forwardButtonDisabled: {
       type: Boolean,
-      computed: 'shouldForwardButtonBeDisabled_(inputValue_, passwordInvalid_)',
+      computed: 'shouldForwardButtonBeDisabled_(' +
+          'inputValue_, passwordInvalid_, waitingForPasswordCheck_)',
       notify: true,
     },
 
@@ -44,7 +45,11 @@ Polymer({
      * Authentication token; retrieved using the quickUnlockPrivate API.
      * @type {string}
      */
-    authToken: {type: String, value: '', notify: true},
+    authToken: {
+      type: String,
+      value: '',
+      notify: true,
+    },
 
     /** @private {string} */
     profilePhotoUrl_: {
@@ -59,7 +64,10 @@ Polymer({
     },
 
     /** @private {!QuickUnlockPrivate} */
-    quickUnlockPrivate_: {type: Object, value: chrome.quickUnlockPrivate},
+    quickUnlockPrivate_: {
+      type: Object,
+      value: chrome.quickUnlockPrivate,
+    },
 
     /** @private {string} */
     inputValue_: {
@@ -73,16 +81,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {boolean} */
+    waitingForPasswordCheck_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {?multidevice_setup.BrowserProxy} */
   browserProxy_: null,
-
-  /**
-   * Function which clears this.authToken after it has expired.
-   * @private {number|undefined}
-   */
-  clearAccountPasswordTimeout_: undefined,
 
   clearPasswordTextInput: function() {
     this.$.passwordInput.value = '';
@@ -103,10 +111,14 @@ Polymer({
 
   /** Overridden from UiPageContainerBehavior. */
   getCanNavigateToNextPage: function() {
-    clearTimeout(this.clearAccountPasswordTimeout_);
-
     return new Promise((resolve) => {
+      if (this.waitingForPasswordCheck_) {
+        resolve(false /* canNavigate */);
+        return;
+      }
+      this.waitingForPasswordCheck_ = true;
       this.quickUnlockPrivate_.getAuthToken(this.inputValue_, (tokenInfo) => {
+        this.waitingForPasswordCheck_ = false;
         if (chrome.runtime.lastError) {
           this.passwordInvalid_ = true;
           // Select the password text if the user entered an incorrect password.
@@ -114,20 +126,8 @@ Polymer({
           resolve(false /* canNavigate */);
           return;
         }
-
         this.authToken = tokenInfo.token;
         this.passwordInvalid_ = false;
-
-        // Subtract time from the exiration time to account for IPC delays.
-        // Treat values less than the minimum as 0 for testing.
-        const IPC_SECONDS = 2;
-        const lifetimeMs = tokenInfo.lifetimeSeconds > IPC_SECONDS ?
-            (tokenInfo.lifetimeSeconds - IPC_SECONDS) * 1000 :
-            0;
-        this.clearAccountPasswordTimeout_ = setTimeout(() => {
-          this.authToken = '';
-        }, lifetimeMs);
-
         resolve(true /* canNavigate */);
       });
     });
@@ -155,6 +155,7 @@ Polymer({
    * @private
    */
   shouldForwardButtonBeDisabled_: function() {
-    return this.passwordInvalid_ || !this.inputValue_;
+    return this.passwordInvalid_ || !this.inputValue_ ||
+        this.waitingForPasswordCheck_;
   },
 });
