@@ -147,7 +147,16 @@ class SharedWorkerHostTest : public testing::Test {
       mojo::MakeStrongAssociatedBinding(
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&main_script_loader_factory));
-      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo());
+
+      network::mojom::URLLoaderFactoryPtr default_factory_ptr;
+      mojo::MakeStrongBinding(
+          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
+          mojo::MakeRequest(&default_factory_ptr));
+      subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo(
+          default_factory_ptr.PassInterface(),
+          URLLoaderFactoryBundleInfo::SchemeMap(),
+          URLLoaderFactoryBundleInfo::OriginMap(),
+          true /* bypass_redirect_checks */));
     }
 
     host->Start(std::move(factory), std::move(provider_info),
