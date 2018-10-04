@@ -60,16 +60,20 @@ class ElementInnerTextCollector final {
 
     bool HasCollapsibleSpace() const { return has_collapsible_space_; }
 
-    void SetShouldCollapseWhitespace(bool value) { at_start_of_block_ = value; }
+    void SetShouldCollapseWhitespace(bool value) {
+      should_collapse_white_space_ = value;
+    }
 
    private:
     void FlushRequiredLineBreak();
 
     StringBuilder builder_;
     int required_line_break_count_ = 0;
-    // TODO(yosin): We should rename |at_of_block_| to
-    // |should_collapse_white_space_|.
-    bool at_start_of_block_ = false;
+
+    // |should_collapse_white_space_| is used for collapsing white spaces around
+    // block, e.g. leading white space at start of block and leading white
+    // spaces after inline-block.
+    bool should_collapse_white_space_ = false;
     bool has_collapsible_space_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Result);
@@ -596,7 +600,7 @@ void ElementInnerTextCollector::ProcessTextNode(const Text& node) {
 // ----
 
 void ElementInnerTextCollector::Result::EmitBeginBlock() {
-  at_start_of_block_ = true;
+  should_collapse_white_space_ = true;
 }
 
 void ElementInnerTextCollector::Result::EmitChar16(UChar code_point) {
@@ -607,11 +611,11 @@ void ElementInnerTextCollector::Result::EmitChar16(UChar code_point) {
   DCHECK_EQ(required_line_break_count_, 0);
   DCHECK(!has_collapsible_space_);
   builder_.Append(code_point);
-  at_start_of_block_ = false;
+  should_collapse_white_space_ = false;
 }
 
 void ElementInnerTextCollector::Result::EmitCollapsibleSpace() {
-  if (at_start_of_block_)
+  if (should_collapse_white_space_)
     return;
   FlushRequiredLineBreak();
   has_collapsible_space_ = true;
@@ -643,21 +647,21 @@ void ElementInnerTextCollector::Result::EmitRequiredLineBreak(int count) {
   // items with a string consisting of as many U+000A LINE FEED (LF) characters
   // as the maximum of the values in the required line break count items.
   required_line_break_count_ = std::max(required_line_break_count_, count);
-  at_start_of_block_ = true;
+  should_collapse_white_space_ = true;
 }
 
 void ElementInnerTextCollector::Result::EmitTab() {
   if (required_line_break_count_ > 0)
     FlushRequiredLineBreak();
   has_collapsible_space_ = false;
-  at_start_of_block_ = false;
+  should_collapse_white_space_ = false;
   builder_.Append(kTabulationCharacter);
 }
 
 void ElementInnerTextCollector::Result::EmitText(const StringView& text) {
   if (text.IsEmpty())
     return;
-  at_start_of_block_ = false;
+  should_collapse_white_space_ = false;
   if (required_line_break_count_ > 0)
     FlushRequiredLineBreak();
   else
