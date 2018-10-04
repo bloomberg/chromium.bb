@@ -42,6 +42,7 @@
 #include "content/test/test_render_frame.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -346,7 +347,8 @@ void RenderViewTest::SetUp() {
   render_thread_->PassInitialInterfaceProviderRequestForFrame(
       view_params->main_frame_routing_id,
       mojo::MakeRequest(&view_params->main_frame_interface_provider));
-  view_params->session_storage_namespace_id = "";
+  view_params->session_storage_namespace_id =
+      blink::AllocateSessionStorageNamespaceId();
   view_params->swapped_out = false;
   view_params->replicated_frame_state = FrameReplicationState();
   view_params->proxy_routing_id = MSG_ROUTING_NONE;

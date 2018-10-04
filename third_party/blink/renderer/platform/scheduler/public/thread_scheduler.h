@@ -80,6 +80,9 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   CompositorTaskRunner() = 0;
 
+  // Returns a task runner for handling IPC messages.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() = 0;
+
   // Creates a new PageScheduler for a given Page. Must be called from the
   // associated WebThread.
   virtual std::unique_ptr<PageScheduler> CreatePageScheduler(

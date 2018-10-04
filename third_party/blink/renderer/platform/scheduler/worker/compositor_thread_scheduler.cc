@@ -102,6 +102,12 @@ CompositorThreadScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+CompositorThreadScheduler::IPCTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
 bool CompositorThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   return false;
 }

@@ -21,6 +21,7 @@
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/web/web_script_controller.h"
 
 namespace content {
@@ -345,7 +346,8 @@ void MockRenderThread::OnCreateWindow(
       reply->main_frame_route_id,
       mojo::MakeRequest(&reply->main_frame_interface_provider));
   reply->main_frame_widget_route_id = GetNextRoutingID();
-  reply->cloned_session_storage_namespace_id = "";
+  reply->cloned_session_storage_namespace_id =
+      blink::AllocateSessionStorageNamespaceId();
 }
 
 }  // namespace content
