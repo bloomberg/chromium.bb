@@ -162,6 +162,76 @@ Status ChromeImpl::GetWindowSize(const std::string& target_id,
   return Status(kOk);
 }
 
+Status ChromeImpl::GetWindowBounds(int window_id, Window* window) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetInteger("windowId", window_id);
+  std::unique_ptr<base::DictionaryValue> result;
+  status = devtools_websocket_client_->SendCommandAndGetResult(
+      "Browser.getWindowBounds", params, &result);
+  if (status.IsError())
+    return status;
+
+  return ParseWindowBounds(std::move(result), window);
+}
+
+Status ChromeImpl::SetWindowBounds(
+    int window_id,
+    std::unique_ptr<base::DictionaryValue> bounds) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetInteger("windowId", window_id);
+  params.Set("bounds", bounds->CreateDeepCopy());
+  status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                   params);
+  if (status.IsError())
+    return status;
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  std::string state;
+  if (!bounds->GetString("windowState", &state))
+    return Status(kOk);
+
+  Window window;
+  status = GetWindowBounds(window_id, &window);
+  if (status.IsError())
+    return status;
+  if (window.state != state)
+    return Status(kUnknownError, "failed to change window state to " + state +
+                                     ", current state is " + window.state);
+  return Status(kOk);
+}
+
+Status ChromeImpl::SetWindowSize(const std::string& target_id,
+                                        int width,
+                                        int height) {
+  Window window;
+
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state != "normal") {
+    // restore window to normal first to allow size change.
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+  bounds->SetInteger("width", width);
+  bounds->SetInteger("height", height);
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,
                                Window* window) {
   if (!params->GetInteger("windowId", &window->id))

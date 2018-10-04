@@ -998,13 +998,9 @@ Status ExecuteSetWindowSize(Session* session,
       !params.GetDouble("height", &height))
     return Status(kUnknownError, "missing or invalid 'width' or 'height'");
 
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  return desktop->SetWindowSize(session->window, static_cast<int>(width),
-                                  static_cast<int>(height));
+  return session->chrome->SetWindowSize(session->window,
+                                        static_cast<int>(width),
+                                        static_cast<int>(height));
 }
 
 Status ExecuteMaximizeWindow(Session* session,
