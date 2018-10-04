@@ -646,9 +646,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncApi(
 
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
-  for (syncable::EntryKernelMutationMap::const_iterator it =
-           mutations.Get().begin();
-       it != mutations.Get().end(); ++it) {
+  for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {
     if (!it->second.mutated.ref(syncable::IS_UNSYNCED)) {
       continue;
     }
@@ -727,9 +725,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
-  for (syncable::EntryKernelMutationMap::const_iterator it =
-           mutations.Get().begin();
-       it != mutations.Get().end(); ++it) {
+  for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {
     bool existed_before = !it->second.original.ref(syncable::IS_DEL);
     bool exists_now = !it->second.mutated.ref(syncable::IS_DEL);
 

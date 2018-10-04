@@ -659,7 +659,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStart(ModelType type) {
 
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
                                                    const SyncError& error) {
-  DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
+  auto c_it = controllers_->find(type);
   DCHECK(c_it != controllers_->end());
   // Delegate deactivation to the controller.
   c_it->second->DeactivateDataType(configurer_);
@@ -688,7 +688,7 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
     ModelType type,
     const DataTypeAssociationStats& association_stats) {
   DCHECK(!association_types_queue_.empty());
-  DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
+  auto c_it = controllers_->find(type);
   DCHECK(c_it != controllers_->end());
   if (c_it->second->state() == DataTypeController::RUNNING) {
     // Delegate activation to the controller.
