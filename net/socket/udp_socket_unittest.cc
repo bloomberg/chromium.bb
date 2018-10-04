@@ -295,15 +295,12 @@ TEST_F(UDPSocketTest, PartialRecv) {
   EXPECT_EQ(second_packet, received);
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // - MacOS: requires root permissions on OSX 10.7+.
 // - Android: devices attached to testbots don't have default network, so
 // broadcasting to 255.255.255.255 returns error -109 (Address not reachable).
 // crbug.com/139144.
 // - Fuchsia: TODO(fuchsia): broadcast support is not implemented yet.
-// - ChromeOS: QEMU's user-mode networking doesn't handle broadcasts.
-//   https://crbug.com/852590
 #define MAYBE_LocalBroadcast DISABLED_LocalBroadcast
 #else
 #define MAYBE_LocalBroadcast LocalBroadcast
@@ -313,7 +310,7 @@ TEST_F(UDPSocketTest, MAYBE_LocalBroadcast) {
   std::string first_message("first message"), second_message("second message");
 
   IPEndPoint broadcast_address;
-  CreateUDPAddress("255.255.255.255", kPort, &broadcast_address);
+  CreateUDPAddress("127.255.255.255", kPort, &broadcast_address);
   IPEndPoint listen_address;
   CreateUDPAddress("0.0.0.0", kPort, &listen_address);
 
