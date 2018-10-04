@@ -6,7 +6,9 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/grit/generated_resources.h"
 #include "jni/DownloadUtils_jni.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
@@ -18,6 +20,7 @@ static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
     jint fail_state) {
   base::string16 message = OfflineItemUtils::GetFailStateMessage(
       static_cast<offline_items_collection::FailState>(fail_state));
+  l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED, message);
   return ConvertUTF16ToJavaString(env, message);
 }
 
