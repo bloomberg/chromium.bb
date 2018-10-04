@@ -1320,12 +1320,13 @@ LayoutRect LayoutInline::ReferenceBoxForClipPath() const {
   // See crbug.com/641907
   LayoutRect bounding_box;
   if (const NGPaintFragment* fragment = FirstInlineFragment()) {
-    bounding_box.SetLocation(fragment->Offset().ToLayoutPoint());
+    bounding_box.SetLocation(
+        fragment->InlineOffsetToContainerBox().ToLayoutPoint());
     bounding_box.SetSize(fragment->Size().ToLayoutSize());
   } else if (const InlineFlowBox* flow_box = FirstLineBox()) {
     bounding_box = flow_box->FrameRect();
+    ContainingBlock()->FlipForWritingMode(bounding_box);
   }
-  ContainingBlock()->FlipForWritingMode(bounding_box);
   return bounding_box;
 }
 
