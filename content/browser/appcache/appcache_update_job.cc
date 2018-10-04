@@ -271,8 +271,9 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                      weak_factory_.GetWeakPtr(), true));
 }
 
-AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
-  AppCacheResponseWriter* writer =
+std::unique_ptr<AppCacheResponseWriter>
+AppCacheUpdateJob::CreateResponseWriter() {
+  std::unique_ptr<AppCacheResponseWriter> writer =
       storage_->CreateResponseWriter(manifest_url_);
   stored_response_ids_.push_back(writer->response_id());
   return writer;
@@ -687,7 +688,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
       entry->add_types(AppCacheEntry::MANIFEST);
       StoreGroupAndCache();
     } else {
-      manifest_response_writer_.reset(CreateResponseWriter());
+      manifest_response_writer_ = CreateResponseWriter();
       scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
           base::MakeRefCounted<HttpResponseInfoIOBuffer>(
               std::move(manifest_response_info_));
@@ -901,9 +902,8 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   }
 
   // Load manifest data from storage to compare against fetched manifest.
-  manifest_response_reader_.reset(
-      storage_->CreateResponseReader(manifest_url_,
-                                     entry->response_id()));
+  manifest_response_reader_ =
+      storage_->CreateResponseReader(manifest_url_, entry->response_id());
   read_manifest_buffer_ =
       base::MakeRefCounted<net::IOBuffer>(kAppCacheFetchBufferSize);
   manifest_response_reader_->ReadData(

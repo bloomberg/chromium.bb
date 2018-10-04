@@ -181,8 +181,8 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
   DCHECK(IsDeliveringAppCacheResponse());
   if (response_info) {
     info_ = response_info;
-    reader_.reset(
-        storage_->CreateResponseReader(manifest_url_, entry_.response_id()));
+    reader_ =
+        storage_->CreateResponseReader(manifest_url_, entry_.response_id());
 
     if (is_range_request())
       SetupRangeResponse();
