@@ -3293,7 +3293,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestFindAPI_findupdate) {
   TestHelper("testFindAPI_findupdate", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_testFindInMultipleWebViews) {
+// TODO(crbug.com/892085): Disabled on Windows due to flakiness. Re-enable.
+#if defined(OS_WIN)
+#define MAYBE_Shim_testFindInMultipleWebViews \
+  DISABLED_Shim_testFindInMultipleWebViews
+#else
+#define MAYBE_Shim_testFindInMultipleWebViews Shim_testFindInMultipleWebViews
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_testFindInMultipleWebViews) {
   TestHelper("testFindInMultipleWebViews", "web_view/shim", NO_TEST_SERVER);
 }
 
