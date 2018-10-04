@@ -429,15 +429,6 @@ Polymer({
     return errorState != ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_TOO_LONG;
   },
 
-  getMachineNameLabel_: function(locale) {
-    if (this.machineNameInputPattern_) {
-      return this.i18nDynamic(
-          locale, 'oauthEnrollAdMachineNameInputRegex',
-          this.machineNameInputPattern_);
-    }
-    return this.i18nDynamic(locale, 'oauthEnrollAdMachineNameInput');
-  },
-
   getMachineNameError_: function(locale, errorState) {
     if (errorState == ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_TOO_LONG)
       return this.i18nDynamic(locale, 'adJoinErrorMachineNameTooLong');
@@ -485,8 +476,8 @@ Polymer({
     }
   },
 
-  domainHidden: function(userName) {
-    return userName && userName.includes('@');
+  domainHidden: function(userRealm, userName) {
+    return !userRealm || (userName && userName.includes('@'));
   },
 
   onKeydownAuthPasswordInput_: function(e) {

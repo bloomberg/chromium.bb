@@ -565,8 +565,6 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
 
   /* Active Directory strings */
   builder->Add("oauthEnrollAdMachineNameInput", IDS_AD_DEVICE_NAME_INPUT_LABEL);
-  builder->Add("oauthEnrollAdMachineNameInputRegex",
-               IDS_AD_DEVICE_NAME_REGEX_INPUT_LABEL);
   builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
                IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
   builder->Add("adAuthLoginUsername", IDS_AD_AUTH_LOGIN_USER);
