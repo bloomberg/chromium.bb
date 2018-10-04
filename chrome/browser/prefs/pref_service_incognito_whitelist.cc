@@ -202,16 +202,6 @@ const char* const kPersistentPrefNames[] = {
     variations::prefs::kVariationsSeedSignature,
 };
 
-// TODO(https://crbug.com/861722): Remove this list.
-// WARNING: PLEASE DO NOT ADD ANYTHING TO THIS LIST.
-// This list is temporarily added for transition of incognito preferences
-// storage default, from on disk to in memory. All items in this list will be
-// audited, checked with owners, and removed or transfered to
-// |kPersistentPrefNames|.
-const char* const kTemporaryIncognitoWhitelist[] = {
-    prefs::kClearPluginLSODataEnabled,
-};
-
 }  // namespace
 
 namespace prefs {
@@ -220,12 +210,6 @@ std::vector<const char*> GetIncognitoPersistentPrefsWhitelist() {
   std::vector<const char*> whitelist;
   whitelist.insert(whitelist.end(), kPersistentPrefNames,
                    kPersistentPrefNames + base::size(kPersistentPrefNames));
-
-  // TODO(https://crbug.com/861722): Remove after the list is audited and
-  // emptied.
-  whitelist.insert(
-      whitelist.end(), kTemporaryIncognitoWhitelist,
-      kTemporaryIncognitoWhitelist + base::size(kTemporaryIncognitoWhitelist));
   return whitelist;
 }
 
