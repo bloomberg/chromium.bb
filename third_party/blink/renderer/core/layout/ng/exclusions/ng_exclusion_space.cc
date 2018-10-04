@@ -67,12 +67,17 @@ bool HasSolidEdges(const Vector<scoped_refptr<const NGExclusion>, 1>& edges,
 // Adds any edges (other exclusions) which are within the range:
 // (block_offset, LayoutUnit::Max())
 // to the given out_edges vector.
-void CollectSolidEdges(const Vector<scoped_refptr<const NGExclusion>, 1>& edges,
+// edges will be invalid after this call.
+void CollectSolidEdges(Vector<scoped_refptr<const NGExclusion>, 1>* edges,
                        LayoutUnit block_offset,
                        Vector<scoped_refptr<const NGExclusion>, 1>* out_edges) {
-  for (const auto& edge : edges) {
-    if (edge->rect.BlockEndOffset() > block_offset)
-      out_edges->emplace_back(edge);
+  *out_edges = std::move(*edges);
+  for (auto* it = out_edges->begin(); it != out_edges->end();) {
+    if ((*it)->rect.BlockEndOffset() <= block_offset) {
+      out_edges->erase(it);
+    } else {
+      ++it;
+    }
   }
 }
 
@@ -460,10 +465,11 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
       if (exclusion_end_offset != shelf_copy->block_offset) {
         NGShelf new_shelf(/* block_offset */ exclusion_end_offset);
 
-        CollectSolidEdges(shelf_copy->line_left_edges, new_shelf.block_offset,
+        // shelf_copy->line_{left,right}_edges will not valid after these calls.
+        CollectSolidEdges(&shelf_copy->line_left_edges, new_shelf.block_offset,
                           &new_shelf.line_left_edges);
 
-        CollectSolidEdges(shelf_copy->line_right_edges, new_shelf.block_offset,
+        CollectSolidEdges(&shelf_copy->line_right_edges, new_shelf.block_offset,
                           &new_shelf.line_right_edges);
 
         // The new shelf adopts the copy exclusions. This may contain
