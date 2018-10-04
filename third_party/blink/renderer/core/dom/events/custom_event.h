@@ -26,10 +26,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/custom_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 
 namespace blink {
 
@@ -64,7 +65,9 @@ class CORE_EXPORT CustomEvent final : public Event {
   CustomEvent(ScriptState*,
               const AtomicString& type,
               const CustomEventInit& initializer);
-  ScriptValue detail_;
+
+  scoped_refptr<DOMWrapperWorld> world_;
+  TraceWrapperV8Reference<v8::Value> detail_;
 };
 
 }  // namespace blink
