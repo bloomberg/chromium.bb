@@ -50,6 +50,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetTabletMode() const;
   virtual bool GetEnableDriveFs() const;
   virtual bool GetRequiresStartupBrowser() const;
+  virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
@@ -69,6 +70,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires DriveFS.
   bool IsDriveFsTest() const { return GetEnableDriveFs(); }
+
+  // Returns true if the test requires zip/unzip support.
+  bool IsZipTest() const { return GetNeedsZipSupport(); }
 
   // Returns true if Drive should act as if offline.
   bool IsOfflineTest() const { return GetIsOffline(); }

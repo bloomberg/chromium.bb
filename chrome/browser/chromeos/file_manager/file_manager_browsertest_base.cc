@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -55,8 +56,10 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/api/test.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "media/base/media_switches.h"
@@ -1159,6 +1162,10 @@ bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
   return false;
 }
 
+bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
+  return false;
+}
+
 bool FileManagerBrowserTestBase::GetIsOffline() const {
   return false;
 }
@@ -1240,6 +1247,21 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "getDriveFsEnabled") {
     *output = IsDriveFsTest() ? "true" : "false";
+    return;
+  }
+
+  if (name == "zipArchiverLoaded") {
+    if (IsZipTest()) {
+      LOG(INFO) << "Preloading zip archiver NaCl module";
+      auto event = std::make_unique<extensions::Event>(
+          extensions::events::FOR_TEST,
+          extensions::api::test::OnMessage::kEventName,
+          base::ListValue::From(base::JSONReader::Read(
+              R"([{"data": "preloadZip", "lastMessage": false}])")),
+          profile());
+      extensions::EventRouter::Get(profile())->DispatchEventToExtension(
+          kZipArchiverId, std::move(event));
+    }
     return;
   }
 
