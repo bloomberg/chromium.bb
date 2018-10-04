@@ -15,8 +15,10 @@
 
 namespace bookmarks {
 
+#if !defined(OS_MACOSX)
 const char BookmarkNodeData::kClipboardFormatString[] =
     "chromium/x-bookmark-entries";
+#endif
 
 BookmarkNodeData::Element::Element() : is_url(false), id_(0) {
 }
@@ -39,6 +41,7 @@ BookmarkNodeData::Element::Element(const Element& other) = default;
 BookmarkNodeData::Element::~Element() {
 }
 
+#if !defined(OS_MACOSX)
 void BookmarkNodeData::Element::WriteToPickle(base::Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
@@ -97,6 +100,7 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
   }
   return true;
 }
+#endif
 
 // BookmarkNodeData -----------------------------------------------------------
 
@@ -239,7 +243,6 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 
   return false;
 }
-#endif
 
 void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
                                      base::Pickle* pickle) const {
@@ -267,6 +270,8 @@ bool BookmarkNodeData::ReadFromPickle(base::Pickle* pickle) {
 
   return true;
 }
+
+#endif  // OS_MACOSX
 
 std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     BookmarkModel* model,

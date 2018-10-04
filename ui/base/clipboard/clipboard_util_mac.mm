@@ -177,4 +177,22 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
   return true;
 }
 
+// static
+NSPasteboard* ClipboardUtil::PasteboardFromType(ui::ClipboardType type) {
+  NSString* type_string = nil;
+  switch (type) {
+    case ui::CLIPBOARD_TYPE_COPY_PASTE:
+      type_string = NSGeneralPboard;
+      break;
+    case ui::CLIPBOARD_TYPE_DRAG:
+      type_string = NSDragPboard;
+      break;
+    case ui::CLIPBOARD_TYPE_SELECTION:
+      NOTREACHED();
+      break;
+  }
+
+  return [NSPasteboard pasteboardWithName:type_string];
+}
+
 }  // namespace ui

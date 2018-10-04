@@ -212,6 +212,10 @@ NSData* OSExchangeDataProviderMac::GetNSDataForType(NSString* type) const {
   return [pasteboard_->get() dataForType:type];
 }
 
+NSPasteboard* OSExchangeDataProviderMac::GetPasteboard() const {
+  return pasteboard_->get();
+}
+
 NSArray* OSExchangeDataProviderMac::GetAvailableTypes() const {
   NSSet* supportedTypes = [NSSet setWithArray:SupportedPasteboardTypes()];
   NSMutableSet* availableTypes =
