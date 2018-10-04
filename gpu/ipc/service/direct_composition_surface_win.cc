@@ -43,6 +43,8 @@
 
 namespace gpu {
 namespace {
+// Number of stable frames before the swap chain can be resized
+static constexpr int kNumFramesBeforeSwapChainResize = 30;
 
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
@@ -342,6 +344,7 @@ class DCLayerTree {
                              const gfx::Point& offset);
 
   void CalculateVideoSwapChainParameters(
+      VisualInfo* visual_info,
       const ui::DCRendererLayerParams& params,
       gfx::Size* video_swap_chain_size,
       gfx::Transform* video_visual_transform,
@@ -386,6 +389,8 @@ class DCLayerTree::SwapChainPresenter {
     return swap_chain_;
   }
 
+  gfx::Size GetStableSwapChainSize(gfx::Size requested_swap_chain_size);
+
  private:
   bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
                          gl::GLImageMemory* uv_image_memory);
@@ -411,6 +416,8 @@ class DCLayerTree::SwapChainPresenter {
   PresentationHistory presentation_history_;
   bool failed_to_create_yuv_swapchain_ = false;
   int frames_since_color_space_change_ = 0;
+  int frames_since_stable_swap_chain_resize_ = 0;
+  gfx::Size last_requested_swap_chain_size_;
 
   // These are the GLImages that were presented in the last frame.
   std::vector<scoped_refptr<gl::GLImage>> last_gl_images_;
@@ -548,6 +555,33 @@ bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
     // Switch to YUV once 3/4 are using overlays (or unknown).
     return composition_count < (PresentationHistory::kPresentsToStore / 4);
   }
+}
+
+// To avoid frequent swap chain recreation during video resizing, keep
+// the same swap chain size until the onscreen video size is stable for
+// at least 30 frames.
+gfx::Size DCLayerTree::SwapChainPresenter::GetStableSwapChainSize(
+    gfx::Size requested_swap_chain_size) {
+  if (requested_swap_chain_size == swap_chain_size_ ||
+      swap_chain_size_.IsEmpty()) {
+    last_requested_swap_chain_size_ = requested_swap_chain_size;
+    return requested_swap_chain_size;
+  }
+
+  if (requested_swap_chain_size == last_requested_swap_chain_size_) {
+    frames_since_stable_swap_chain_resize_++;
+    if (frames_since_stable_swap_chain_resize_ >=
+        kNumFramesBeforeSwapChainResize) {
+      frames_since_stable_swap_chain_resize_ = 0;
+      return requested_swap_chain_size;
+    }
+  } else {
+    frames_since_stable_swap_chain_resize_ = 0;
+    last_requested_swap_chain_size_ = requested_swap_chain_size;
+  }
+
+  // Keep the previous swap chain size
+  return swap_chain_size_;
 }
 
 bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
@@ -701,7 +735,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
       return false;
     }
 
-    // DirectComposition can display black for a swapchain between the first
+    // DirectComposition can display black for a swap chain between the first
     // and second time it's presented to - maybe the first Present can get
     // lost somehow and it shows the wrong buffer. In that case copy the
     // buffers so both have the correct contents, which seems to help. The
@@ -1027,8 +1061,8 @@ bool DCLayerTree::UpdateVisualForVideo(VisualInfo* visual_info,
   gfx::Transform video_transform;
   gfx::Point video_offset;
 
-  CalculateVideoSwapChainParameters(params, &swap_chain_size, &video_transform,
-                                    &video_offset);
+  CalculateVideoSwapChainParameters(visual_info, params, &swap_chain_size,
+                                    &video_transform, &video_offset);
 
   Microsoft::WRL::ComPtr<IDCompositionVisual2> dc_visual =
       visual_info->content_visual;
@@ -1072,6 +1106,7 @@ bool DCLayerTree::UpdateVisualForVideo(VisualInfo* visual_info,
 }
 
 void DCLayerTree::CalculateVideoSwapChainParameters(
+    VisualInfo* visual_info,
     const ui::DCRendererLayerParams& params,
     gfx::Size* video_swap_chain_size,
     gfx::Transform* video_visual_transform,
@@ -1124,6 +1159,14 @@ void DCLayerTree::CalculateVideoSwapChainParameters(
     gfx::Size ceiled_input_size =
         gfx::ToCeiledSize(params.contents_rect.size());
     swap_chain_size.SetToMin(ceiled_input_size);
+    // We don't want to recreate the swap chain too frequently, so override the
+    // swap chain size with GetStableSwapChainSize().
+    // TODO(magchen): This might cause overlay downscaling if the
+    // new size is bigger than display_rect.
+    if (visual_info->swap_chain_presenter)
+      swap_chain_size =
+          visual_info->swap_chain_presenter->GetStableSwapChainSize(
+              swap_chain_size);
   }
 
   // YUV surfaces must have an even width.
@@ -1131,7 +1174,7 @@ void DCLayerTree::CalculateVideoSwapChainParameters(
     swap_chain_size.set_width(swap_chain_size.width() + 1);
 
   // Update the transform matrix. It will be used in dc_visual->SetTransform()
-  // This is the scale from the swapchain size to the size of the contents
+  // This is the scale from the swap chain size to the size of the contents
   // onscreen.
   float swap_chain_scale_x =
       params.rect.width() * 1.0f / swap_chain_size.width();
@@ -1366,6 +1409,11 @@ OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool value) {
   g_supports_scaled_overlays = value;
+}
+
+// static
+int DirectCompositionSurfaceWin::GetNumFramesBeforeSwapChainResizeForTesting() {
+  return kNumFramesBeforeSwapChainResize;
 }
 
 // static
