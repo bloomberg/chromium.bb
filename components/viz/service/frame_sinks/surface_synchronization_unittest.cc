@@ -2989,5 +2989,52 @@ TEST_F(SurfaceSynchronizationTest, ChildBlockedOnParentActivatesAfterDeadline) {
   EXPECT_FALSE(child_surface2->has_deadline());
 }
 
+// A child may submit CompositorFrame corresponding to a child-initiated
+// synchronization event followed by a CompositorFrame corresponding to a
+// parent-initiated synchronization event.
+TEST_F(SurfaceSynchronizationTest,
+       ParentInitiatedAfterChildInitiatedSynchronization) {
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  // Child-initiated synchronization event:
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  // Parent-initiated synchronizaton event:
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 2);
+
+  // |child_id1| Surface should immediately activate.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+
+  // |child_id2| Surface should not activate because |child_id1| was never
+  // added as a dependency by a parent.
+  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_TRUE(child_surface2->HasPendingFrame());
+  EXPECT_FALSE(child_surface2->HasActiveFrame());
+
+  // |child_id3| Surface should activate immediately because it corresponds to a
+  // parent-initiated synchronization event. |child_surface3| activating
+  // triggers all predecessors to activate as well if they're blocked on a
+  // parent.
+  child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface3 = GetSurfaceForId(child_id3);
+  ASSERT_NE(nullptr, child_surface3);
+  EXPECT_FALSE(child_surface3->HasPendingFrame());
+  EXPECT_TRUE(child_surface3->HasActiveFrame());
+  EXPECT_FALSE(IsMarkedForDestruction(child_id3));
+
+  // |child_surface2| should have activated now (and should be a candidate for
+  // garbage collection).
+  EXPECT_FALSE(child_surface2->HasPendingFrame());
+  EXPECT_TRUE(child_surface2->HasActiveFrame());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id2));
+}
+
 }  // namespace test
 }  // namespace viz
