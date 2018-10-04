@@ -139,16 +139,12 @@
   "chrome/common/common_resources.grd": {
     "includes": [13380],
   },
-  "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13400],
-    "messages": [13410],
-  },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [13500],
-    "structures": [13600],
+    "includes": [13390],
+    "structures": [13470],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [13650],
+    "includes": [13480],
   },
   # END chrome/ miscellaneous section.
 
