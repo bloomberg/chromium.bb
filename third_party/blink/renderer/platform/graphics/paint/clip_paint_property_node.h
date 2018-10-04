@@ -123,22 +123,6 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return state_.direct_compositing_reasons != CompositingReason::kNone;
   }
 
-#if DCHECK_IS_ON()
-  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
-  // a clip node before it has been updated, to later detect changes.
-  scoped_refptr<ClipPaintPropertyNode> Clone() const {
-    return base::AdoptRef(
-        new ClipPaintPropertyNode(Parent(), State(state_), IsParentAlias()));
-  }
-
-  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
-  // if a clip node has changed.
-  bool operator==(const ClipPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_ &&
-           IsParentAlias() == o.IsParentAlias();
-  }
-#endif
-
   std::unique_ptr<JSONObject> ToJSON() const;
 
   // Returns memory usage of the clip cache of this node plus ancestors.
