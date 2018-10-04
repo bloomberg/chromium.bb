@@ -27,7 +27,6 @@ if (closure_compile) {
         "print_preview:closure_compile",
         "settings:closure_compile",
         "signin/dice_sync_confirmation:closure_compile",
-        "welcome/onboarding_welcome:closure_compile",
       ]
     }
     if (is_chromeos) {
