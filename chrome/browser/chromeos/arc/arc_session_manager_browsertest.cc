@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -144,7 +145,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     profile_builder.SetProfileName(kFakeUserName);
     profile_builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildFakeProfileOAuth2TokenService);
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     profile_ = profile_builder.Build();
     token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
