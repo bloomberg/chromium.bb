@@ -240,16 +240,20 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #endif
   }
 
-  // For access to getTransformCache() and setCachedTransform.
+  // For access to GetTransformCache() and SetCachedTransform.
   friend class GeometryMapper;
   friend class GeometryMapperTest;
   friend class GeometryMapperTransformCache;
+  friend class GeometryMapperTransformCacheTest;
 
   const GeometryMapperTransformCache& GetTransformCache() const {
     if (!transform_cache_)
       transform_cache_.reset(new GeometryMapperTransformCache);
     transform_cache_->UpdateIfNeeded(*this);
     return *transform_cache_;
+  }
+  void UpdateScreenTransform() const {
+    transform_cache_->UpdateScreenTransform(*this);
   }
 
   State state_;

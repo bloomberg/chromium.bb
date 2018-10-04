@@ -576,8 +576,8 @@ TEST_P(GeometryMapperTest, SiblingTransforms) {
   GeometryMapper::LocalToAncestorVisualRect(transform1_state, transform2_state,
                                             result_clip);
   FloatClipRect expected_clip(FloatRect(-100, 0, 100, 100));
-  // This is because the combined Rotate(45) and Rotate(-45) is not exactly a
-  // translation-only transform due to calculation errors.
+  // We convervatively treat any rotated clip rect as not tight, even if it's
+  // rotated by 90 degrees.
   expected_clip.ClearIsTight();
   EXPECT_CLIP_RECT_EQ(expected_clip, result_clip);
 
@@ -887,6 +887,27 @@ TEST_P(GeometryMapperTest, PointVisibleInAncestorSpaceClipPathWithTransform) {
 
   EXPECT_FALSE(GeometryMapper::PointVisibleInAncestorSpace(
       local_state, ancestor_state, FloatPoint(5, 5)));
+}
+
+TEST_P(GeometryMapperTest, Precision) {
+  auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(32767));
+  auto t2 = CreateTransform(*t1, TransformationMatrix().Rotate(1));
+  auto t3 = CreateTransform(*t2, TransformationMatrix());
+  auto t4 = CreateTransform(*t3, TransformationMatrix());
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t4.get(), t4.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t3.get(), t4.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t2.get(), t4.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t3.get(), t2.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t4.get(), t2.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t4.get(), t3.get()));
+  EXPECT_EQ(TransformationMatrix(),
+            GeometryMapper::SourceToDestinationProjection(t2.get(), t3.get()));
 }
 
 }  // namespace blink
