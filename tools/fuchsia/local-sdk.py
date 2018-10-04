@@ -61,7 +61,7 @@ def main(args):
 
   tempdir = tempfile.mkdtemp()
   sdk_tar = os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk',
-                         'garnet.tar.gz')
+                         'archive', 'garnet.tar.gz')
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
