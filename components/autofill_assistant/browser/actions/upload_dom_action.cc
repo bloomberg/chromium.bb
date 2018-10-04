@@ -27,20 +27,26 @@ void UploadDomAction::ProcessAction(ActionDelegate* delegate,
   for (const auto& selector : proto_.upload_dom().tree_root().selectors()) {
     selectors.emplace_back(selector);
   }
-  NodeProto* root_node = processed_action_proto_->mutable_page_content()
-                             ->mutable_dom_tree()
-                             ->mutable_root();
-  delegate->BuildNodeTree(
-      selectors, root_node,
-      base::BindOnce(&UploadDomAction::OnBuildNodeTree,
+  DCHECK(!selectors.empty());
+  delegate->GetOuterHtml(
+      selectors,
+      base::BindOnce(&UploadDomAction::OnGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void UploadDomAction::OnBuildNodeTree(ProcessActionCallback callback,
-                                      bool status) {
+void UploadDomAction::OnGetOuterHtml(ProcessActionCallback callback,
+                                     bool successful,
+                                     const std::string& outer_html) {
   // TODO(crbug.com/806868): Distinguish element not found from other error and
   // report them as ELEMENT_RESOLUTION_FAILED.
-  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+  if (!successful) {
+    UpdateProcessedAction(OTHER_ACTION_STATUS);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
+
+  processed_action_proto_->set_html_source(outer_html);
+  UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

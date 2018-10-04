@@ -23,7 +23,9 @@ class UploadDomAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
-  void OnBuildNodeTree(ProcessActionCallback callback, bool status);
+  void OnGetOuterHtml(ProcessActionCallback callback,
+                      bool successful,
+                      const std::string& outer_html);
 
   base::WeakPtrFactory<UploadDomAction> weak_ptr_factory_;
 

@@ -76,9 +76,9 @@ class ScriptExecutor : public ActionDelegate {
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
                      base::OnceCallback<void(bool)> callback) override;
-  void BuildNodeTree(const std::vector<std::string>& selectors,
-                     NodeProto* node_tree_out,
-                     base::OnceCallback<void(bool)> callback) override;
+  void GetOuterHtml(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool, const std::string&)> callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Restart() override;

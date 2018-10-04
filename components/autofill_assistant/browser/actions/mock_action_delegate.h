@@ -94,10 +94,10 @@ class MockActionDelegate : public ActionDelegate {
                void(const std::vector<std::string>& selectors,
                     const std::string& value,
                     base::OnceCallback<void(bool)>& callback));
-  MOCK_METHOD3(BuildNodeTree,
-               void(const std::vector<std::string>& selectors,
-                    NodeProto* node_tree_out,
-                    base::OnceCallback<void(bool)> callback));
+  MOCK_METHOD2(
+      GetOuterHtml,
+      void(const std::vector<std::string>& selectors,
+           base::OnceCallback<void(bool, const std::string&)> callback));
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Restart, void());

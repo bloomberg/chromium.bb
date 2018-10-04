@@ -64,6 +64,12 @@ const char* const kGetValueAttributeScript =
 const char* const kSetValueAttributeScript =
     "function (value) { this.value = value; }";
 
+// Javascript code to get the outerHTML of a node.
+// TODO(crbug.com/806868): Investigate if using DOM.GetOuterHtml would be a
+// better solution than injecting Javascript code.
+const char* const kGetOuterHtmlScript =
+    "function () { return this.outerHTML; }";
+
 }  // namespace
 
 // static
@@ -702,13 +708,56 @@ void WebController::OnSetValueAttribute(
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
-void WebController::BuildNodeTree(const std::vector<std::string>& selectors,
-                                  NodeProto* node_tree_out,
-                                  base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/806868): We return a dummy dom tree for now.
-  node_tree_out->set_type(NodeProto::ELEMENT);
-  node_tree_out->set_value("BODY");
-  std::move(callback).Run(true);
+void WebController::GetOuterHtml(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  FindElement(
+      selectors,
+      base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnResult(
+    bool successful,
+    const std::string& result,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  devtools_client_->GetDOM()->Disable();
+  std::move(callback).Run(successful, result);
+}
+
+void WebController::OnFindElementForGetOuterHtml(
+    base::OnceCallback<void(bool, const std::string&)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    OnResult(false, "", std::move(callback));
+    return;
+  }
+
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetFunctionDeclaration(std::string(kGetOuterHtmlScript))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnGetOuterHtml,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetOuterHtml(
+    base::OnceCallback<void(bool, const std::string&)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  if (!result || result->HasExceptionDetails()) {
+    OnResult(false, "", std::move(callback));
+    return;
+  }
+
+  // Read the result returned from Javascript code.
+  DCHECK(result->GetResult()->GetValue()->is_string());
+  OnResult(true, result->GetResult()->GetValue()->GetString(),
+           std::move(callback));
 }
 
 }  // namespace autofill_assistant

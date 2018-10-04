@@ -120,19 +120,27 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
-  void BuildNodeTree(const std::vector<std::string>& selectors,
-                     NodeProto* node) {
+  bool GetOuterHtml(const std::vector<std::string>& selectors,
+                    std::string* html_output) {
     base::RunLoop run_loop;
-    web_controller_->BuildNodeTree(
-        selectors, node,
-        base::BindOnce(&WebControllerBrowserTest::OnBuildNodeTree,
-                       base::Unretained(this), run_loop.QuitClosure()));
+    bool result;
+    web_controller_->GetOuterHtml(
+        selectors,
+        base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtml,
+                       base::Unretained(this), run_loop.QuitClosure(), &result,
+                       html_output));
     run_loop.Run();
+    return result;
   }
 
-  void OnBuildNodeTree(const base::Closure& done_callback, bool result) {
+  void OnGetOuterHtml(const base::Closure& done_callback,
+                      bool* successful_output,
+                      std::string* html_output,
+                      bool successful,
+                      const std::string& html) {
+    *successful_output = successful;
+    *html_output = html;
     done_callback.Run();
-    EXPECT_TRUE(result);
   }
 
   void FindElement(const std::vector<std::string>& selectors,
@@ -377,14 +385,14 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
   EXPECT_EQ("NY", content::EvalJs(shell(), javascript));
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, BuildNodeTree) {
-  // TODO(crbug/808686): Complete this test when the implementation is finished.
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
   std::vector<std::string> selectors;
-  NodeProto node;
-  BuildNodeTree(selectors, &node);
-
-  EXPECT_EQ(node.type(), NodeProto::ELEMENT);
-  EXPECT_EQ(node.value(), "BODY");
+  selectors.emplace_back("#testOuterHtml");
+  std::string html;
+  ASSERT_TRUE(GetOuterHtml(selectors, &html));
+  EXPECT_EQ(
+      R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
+      html);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {

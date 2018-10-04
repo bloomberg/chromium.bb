@@ -23,7 +23,6 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
-class NodeProto;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -88,11 +87,10 @@ class ActionDelegate {
                              const std::string& value,
                              base::OnceCallback<void(bool)> callback) = 0;
 
-  // Given an element |selectors| on the page as the root element, build a node
-  // tree using the output parameter |node_tree_out| as a starting node.
-  virtual void BuildNodeTree(const std::vector<std::string>& selectors,
-                             NodeProto* node_tree_out,
-                             base::OnceCallback<void(bool)> callback) = 0;
+  // Return the outerHTML of an element given by |selectors|.
+  virtual void GetOuterHtml(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
 
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.

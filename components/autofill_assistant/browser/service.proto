@@ -199,50 +199,13 @@ message ActionProto {
   }
 }
 
-message NodeProto {
-  // Note: these use the same constant value as the DOM spec,
-  // except for UNKNOWN.
-  // https://developer.mozilla.org/en/docs/Web/API/Node/nodeType
-  enum Type {
-    UNKNOWN = 0;
-    ELEMENT = 1;
-    TEXT = 3;
-    DOCUMENT = 9;
-  }
-
-  message Attribute {
-    optional string name = 1;
-    optional string value = 2;
-  }
-
-  optional Type type = 1;
-
-  // For ELEMENT nodes: the <TAG> name, *always* in UPPERCASE.
-  // For TEXT nodes: the text content.
-  optional string value = 2;
-  repeated Attribute attribute = 3;
-
-  // Children in the order of their indices.
-  repeated NodeProto child = 7;
-}
-
-message TreeProto {
-  optional NodeProto root = 1;
-  optional string url = 5;
-}
-
-message PageContentProto {
-  optional TreeProto dom_tree = 1;
-  optional string url = 3;
-}
-
 message ProcessedActionProto {
   // The action that was processed.
   optional ActionProto action = 1;
 
   optional ProcessedActionStatusProto status = 2;
 
-  optional PageContentProto page_content = 3;
+  oneof result_data { string html_source = 12; }
 }
 
 enum ProcessedActionStatusProto {
