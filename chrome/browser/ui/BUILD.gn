@@ -1956,11 +1956,15 @@ jumbo_split_static_library("ui") {
       "webui/welcome/welcome_ui.h",
     ]
 
-    deps += [
-      "//chrome/browser/ui/webui/welcome/nux:constants",
-      "//chrome/browser/ui/webui/welcome/nux:email_feature",
-      "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",
-    ]
+    # TODO(scottchen): Remove if-check once nux files are non-exclusive
+    #     to windows.
+    if (is_win && is_chrome_branded) {
+      deps += [
+        "//chrome/browser/ui/webui/welcome/nux:constants",
+        "//chrome/browser/ui/webui/welcome/nux:email_feature",
+        "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",
+      ]
+    }
 
     if (enable_dice_support) {
       sources += [

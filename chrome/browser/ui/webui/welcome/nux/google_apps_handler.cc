@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/webui/welcome/nux/show_promo_delegate.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -122,6 +123,11 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
 
   // Enable bookmark bar.
   prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
+
+  // Show bookmark bubble.
+  ShowPromoDelegate::CreatePromoDelegate(
+      IDS_NUX_GOOGLE_APPS_DESCRIPTION_PROMO_BUBBLE)
+      ->ShowForNode(bookmark_model_->bookmark_bar_node()->GetChild(0));
 
   UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
                             GoogleAppsInteraction::kGetStarted,
