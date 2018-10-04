@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -388,11 +389,11 @@ void DeveloperPrivateApiUnitTest::SetUp() {
   browser_.reset(new Browser(params));
 
   // Allow the API to be created.
-  EventRouterFactory::GetInstance()->SetTestingFactory(profile(),
-                                                       &BuildEventRouter);
+  EventRouterFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildEventRouter));
 
   DeveloperPrivateAPI::GetFactoryInstance()->SetTestingFactory(
-      profile(), &BuildAPI);
+      profile(), base::BindRepeating(&BuildAPI));
 
   // Loading unpacked extensions through the developerPrivate API requires
   // developer mode to be enabled.
