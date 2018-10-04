@@ -72,8 +72,11 @@ scoped_refptr<PluginPrefs> PluginPrefs::GetForProfile(Profile* profile) {
 scoped_refptr<PluginPrefs> PluginPrefs::GetForTestingProfile(
     Profile* profile) {
   return static_cast<PluginPrefs*>(
-      PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &PluginPrefsFactory::CreateForTestingProfile).get());
+      PluginPrefsFactory::GetInstance()
+          ->SetTestingFactoryAndUse(
+              profile,
+              base::BindRepeating(&PluginPrefsFactory::CreateForTestingProfile))
+          .get());
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
