@@ -181,6 +181,7 @@ component("core") {
     "//third_party/blink/renderer/core/clipboard",
     "//third_party/blink/renderer/core/context_features",
     "//third_party/blink/renderer/core/css",
+    "//third_party/blink/renderer/core/display_lock",
     "//third_party/blink/renderer/core/dom",
     "//third_party/blink/renderer/core/editing",
     "//third_party/blink/renderer/core/events",

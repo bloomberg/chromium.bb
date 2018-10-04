@@ -377,6 +377,9 @@
       settable_from_internals: true,
     },
     {
+      name: "DisplayLocking",
+    },
+    {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
       status: "stable",
     },
