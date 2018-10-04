@@ -1057,7 +1057,6 @@ eve-arcvm-no-vmtest-pre-cq (gce_beefy)
 eve-arcvm-paladin-tryjob (gce_beefy)
 eve-arcvm-payloads (gce_beefy)
 eve-arcvm-pre-cq (gce_beefy)
-eve-arcvm-release (gce_beefy)
 eve-arcvm-release-afdo-generate-tryjob (gce_beefy)
 [eve-arcvm-release-afdo-tryjob] (gce_beefy)
   eve-arcvm-release-afdo-generate
