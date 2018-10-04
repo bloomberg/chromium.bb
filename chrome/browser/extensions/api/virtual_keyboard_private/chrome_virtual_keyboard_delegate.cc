@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -31,6 +33,7 @@
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -270,18 +273,29 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   // TODO(blakeo): once the old flag's usages have been removed from the
   // extension and all pushes have settled, remove this overly verbose comment.
   features->AppendString(GenerateFeatureFlag(
-      "floatingkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
-  features->AppendString(
-      GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
+      "floatingkeyboard",
+      base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard)));
   features->AppendString(GenerateFeatureFlag(
-      "gestureediting", keyboard::IsGestureEditingEnabled()));
+      "gesturetyping", !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           keyboard::switches::kDisableGestureTyping)));
+  // TODO(shend): Gesture editing is not implemented in the MD UI.
+  // https://crbug.com/890134.
+  bool enable_gesture_editing =
+      !base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kDisableGestureEditing);
+  features->AppendString(
+      GenerateFeatureFlag("gestureediting", enable_gesture_editing));
   features->AppendString(GenerateFeatureFlag(
       "fullscreenhandwriting",
-      keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled()));
+      base::FeatureList::IsEnabled(
+          features::kEnableFullscreenHandwritingVirtualKeyboard)));
   features->AppendString(GenerateFeatureFlag(
-      "virtualkeyboardmdui", keyboard::IsVirtualKeyboardMdUiEnabled()));
-  features->AppendString(
-      GenerateFeatureFlag("imeservice", keyboard::IsImeServiceEnabled()));
+      "virtualkeyboardmdui",
+      base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi)));
+  features->AppendString(GenerateFeatureFlag(
+      "imeservice", base::FeatureList::IsEnabled(
+                        chromeos::features::kImeServiceConnectable)));
 
   auto config = ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
