@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -133,6 +134,11 @@ void StopGpuProcess(const base::Closure& callback) {
       base::Bind(&StopGpuProcessImpl,
                  base::Bind(RunTaskOnTaskRunner,
                             base::ThreadTaskRunnerHandle::Get(), callback)));
+}
+
+gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() {
+  return content::BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory();
 }
 
 }  // namespace content

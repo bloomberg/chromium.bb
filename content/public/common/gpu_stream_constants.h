@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_STREAM_CONSTANTS_H_
-#define CONTENT_COMMON_GPU_STREAM_CONSTANTS_H_
+#ifndef CONTENT_PUBLIC_COMMON_GPU_STREAM_CONSTANTS_H_
+#define CONTENT_PUBLIC_COMMON_GPU_STREAM_CONSTANTS_H_
 
 #include "gpu/command_buffer/common/scheduling_priority.h"
 
@@ -40,4 +40,4 @@ const gpu::SchedulingPriority kGpuStreamPriorityHighPriorityWebGL =
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_STREAM_CONSTANTS_H_
+#endif  // CONTENT_PUBLIC_COMMON_GPU_STREAM_CONSTANTS_H_
