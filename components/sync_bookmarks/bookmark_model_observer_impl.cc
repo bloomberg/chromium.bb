@@ -63,7 +63,7 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
       ComputePosition(*new_parent, new_index, sync_id).ToProto();
 
   sync_pb::EntitySpecifics specifics =
-      CreateSpecificsFromBookmarkNode(node, model);
+      CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true);
 
   bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                             modification_time, unique_position, specifics);
@@ -98,7 +98,7 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
       ComputePosition(*parent, index, sync_id).ToProto();
 
   sync_pb::EntitySpecifics specifics =
-      CreateSpecificsFromBookmarkNode(node, model);
+      CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true);
 
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          unique_position, specifics);
@@ -180,7 +180,7 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
   const std::string& sync_id = entity->metadata()->server_id();
   const base::Time modification_time = base::Time::Now();
   sync_pb::EntitySpecifics specifics =
-      CreateSpecificsFromBookmarkNode(node, model);
+      CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true);
   if (entity->MatchesSpecificsHash(specifics)) {
     // We should push data to the server only if there is an actual change in
     // the data. We could hit this code path without having actual changes
@@ -262,8 +262,8 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
 
     previous_position = position;
 
-    const sync_pb::EntitySpecifics specifics =
-        CreateSpecificsFromBookmarkNode(node, model);
+    const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
+        node, model, /*force_favicon_load=*/true);
 
     bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                               modification_time, position.ToProto(), specifics);

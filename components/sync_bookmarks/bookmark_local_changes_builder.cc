@@ -66,7 +66,8 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
       data.unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
-      data.specifics = CreateSpecificsFromBookmarkNode(node, bookmark_model_);
+      data.specifics = CreateSpecificsFromBookmarkNode(
+          node, bookmark_model_, /*force_favicon_load=*/true);
     }
     request.entity = data.PassToPtr();
     request.sequence_number = metadata->sequence_number();

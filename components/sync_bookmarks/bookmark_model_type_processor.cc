@@ -451,7 +451,8 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.non_unique_name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
   data.unique_position = metadata->unique_position();
-  data.specifics = CreateSpecificsFromBookmarkNode(node, bookmark_model_);
+  data.specifics = CreateSpecificsFromBookmarkNode(
+      node, bookmark_model_, /*force_favicon_load=*/false);
   if (node->is_permanent_node()) {
     data.server_defined_unique_tag =
         ComputeServerDefinedUniqueTagForDebugging(node, bookmark_model_);

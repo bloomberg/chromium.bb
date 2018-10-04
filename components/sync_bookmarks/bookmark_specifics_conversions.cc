@@ -89,7 +89,8 @@ void SetBookmarkFaviconFromSpecifics(
 
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     const bookmarks::BookmarkNode* node,
-    bookmarks::BookmarkModel* model) {
+    bookmarks::BookmarkModel* model,
+    bool force_favicon_load) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   if (!node->is_folder()) {
@@ -98,6 +99,14 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  if (node->GetMetaInfoMap()) {
+    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
+  }
+
+  if (!force_favicon_load && !node->is_favicon_loaded()) {
+    return specifics;
+  }
 
   // Encodes a bookmark's favicon into raw PNG data.
   scoped_refptr<base::RefCountedMemory> favicon_bytes(nullptr);
@@ -122,9 +131,6 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     bm_specifics->clear_icon_url();
   }
 
-  if (node->GetMetaInfoMap()) {
-    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
-  }
   return specifics;
 }
 
