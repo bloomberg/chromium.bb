@@ -48,13 +48,12 @@ LameWindowCapturerChromeOS::~LameWindowCapturerChromeOS() {
 }
 
 void LameWindowCapturerChromeOS::SetFormat(media::VideoPixelFormat format,
-                                           media::ColorSpace color_space) {
+                                           const gfx::ColorSpace& color_space) {
   if (format != media::PIXEL_FORMAT_I420) {
     LOG(DFATAL) << "Invalid pixel format: Only I420 is supported.";
   }
 
-  if (color_space != media::COLOR_SPACE_UNSPECIFIED &&
-      color_space != media::COLOR_SPACE_HD_REC709) {
+  if (color_space.IsValid() && color_space != gfx::ColorSpace::CreateREC709()) {
     LOG(DFATAL) << "Unsupported color space: Only BT.709 is supported.";
   }
 }

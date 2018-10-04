@@ -93,7 +93,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                           base::Unretained(this)));
 
   capturer_->SetFormat(capture_params_.requested_format.pixel_format,
-                       media::COLOR_SPACE_UNSPECIFIED);
+                       gfx::ColorSpace::CreateREC709());
   capturer_->SetMinCapturePeriod(
       base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
           base::Time::kMicrosecondsPerSecond /
