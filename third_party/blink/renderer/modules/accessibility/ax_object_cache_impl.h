@@ -295,10 +295,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
 
-  HeapHashMap<WeakMember<Document>, HeapVector<Member<Node>>>
-      nodes_changed_during_layout_;
-  HeapHashMap<WeakMember<Document>, HeapVector<Member<AccessibleNode>>>
-      accessible_nodes_changed_during_layout_;
+  HeapVector<Member<Node>> nodes_changed_during_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };
