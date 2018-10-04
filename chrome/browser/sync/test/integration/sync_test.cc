@@ -714,7 +714,11 @@ void SyncTest::SetUpInvalidations(int index) {
 }
 
 void SyncTest::InitializeInvalidations(int index) {
-  configuration_refresher_ = std::make_unique<ConfigurationRefresher>();
+  // Lazily create |configuration_refresher_| the first time we get here (or the
+  // first time after a previous call to StopConfigurationRefresher).
+  if (!configuration_refresher_) {
+    configuration_refresher_ = std::make_unique<ConfigurationRefresher>();
+  }
 
   switch (server_type_) {
     case EXTERNAL_LIVE_SERVER:
