@@ -344,6 +344,69 @@ testcase.openQuickViewScrollText = function() {
 };
 
 /**
+ * Tests opening Quick View on a text document to verify that the background
+ * color of the <webview> root (html) element is solid white.
+ */
+testcase.openQuickViewBackgroundColorText = function() {
+  const caller = getCaller();
+  let appId;
+
+  /**
+   * The text <webview> resides in the #quick-view shadow DOM, as a child of
+   * the #dialog element.
+   */
+  const webView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.tallText.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.tallText], []);
+    },
+    // Open the file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.tallText.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Wait for the Quick View <webview> to load and display its content.
+    function() {
+      function checkWebViewTextLoaded(elements) {
+        let haveElements = Array.isArray(elements) && elements.length === 1;
+        if (haveElements)
+          haveElements = elements[0].styles.display.includes('block');
+        if (!haveElements || !elements[0].attributes.src)
+          return pending(caller, 'Waiting for <webview> to load.');
+        return;
+      }
+      repeatUntil(function() {
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepQueryAllElements', appId, [webView, ['display']])
+            .then(checkWebViewTextLoaded);
+      }).then(this.next);
+    },
+    // Get the <webview> root (html) element backgroundColor style.
+    function() {
+      const getBackgroundStyle =
+          'window.getComputedStyle(document.documentElement).backgroundColor';
+      remoteCall
+        .callRemoteTestUtil(
+            'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle])
+        .then(this.next);
+    },
+    // Check: the <webview> root backgroundColor should be solid white.
+    function(backgroundColor) {
+      chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor[0]);
+      this.next();
+    },
+    function(results) {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * html document.
  */
