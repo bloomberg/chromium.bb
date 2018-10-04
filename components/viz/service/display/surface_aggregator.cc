@@ -947,16 +947,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
-    if (will_draw) {
-      const SurfaceRange& surface_range = surface_info.surface_range;
-      damage_ranges_[surface_range.end().frame_sink_id()].push_back(
-          surface_range);
-      if (surface_range.HasDifferentFrameSinkIds()) {
-        damage_ranges_[surface_range.start()->frame_sink_id()].push_back(
-            surface_range);
-      }
-    }
-
     // TODO(fsamuel): Consider caching this value somewhere so that
     // HandleSurfaceQuad doesn't need to call it again.
     Surface* child_surface =
@@ -1021,6 +1011,15 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
   if (will_draw)
     surface->OnWillBeDrawn();
+
+  for (const SurfaceRange& surface_range : frame.metadata.referenced_surfaces) {
+    damage_ranges_[surface_range.end().frame_sink_id()].push_back(
+        surface_range);
+    if (surface_range.HasDifferentFrameSinkIds()) {
+      damage_ranges_[surface_range.start()->frame_sink_id()].push_back(
+          surface_range);
+    }
+  }
 
   for (const SurfaceId& surface_id : surface->active_referenced_surfaces()) {
     if (!contained_surfaces_.count(surface_id)) {

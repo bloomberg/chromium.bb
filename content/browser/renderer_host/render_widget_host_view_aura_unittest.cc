@@ -3431,8 +3431,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_FALSE(view_->HasFallbackSurface());
 }
 
-// This test verifies that the primary SurfaceId is populated on resize and
-// the fallback SurfaceId is populated in OnFirstSurfaceActivation.
+// This test verifies that the primary SurfaceId is populated on resize.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // Early out because DelegatedFrameHost is not used in mash.
   if (features::IsMultiProcessMash())
@@ -3448,25 +3447,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
-  EXPECT_FALSE(view_->HasFallbackSurface());
   EXPECT_EQ(gfx::Size(300, 300),
             view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
-
-  // Resizing should update the primary SurfaceId.
-  view_->SetSize(gfx::Size(400, 400));
-  EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
-  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
-  EXPECT_EQ(gfx::Size(400, 400),
-            view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
-
-  // Fallback SurfaceId should be updated in OnFirstSurfaceActivation.
-  // Submitting a CompositorFrame should update the fallback SurfaceId
-  viz::SurfaceId surface_id(view_->GetFrameSinkId(),
-                            view_->GetLocalSurfaceId());
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id, 1.f, gfx::Size(400, 400)));
-  EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
-  EXPECT_EQ(surface_id, *view_->window_->layer()->GetFallbackSurfaceId());
 }
 
 // This test verifies that the primary SurfaceId is updated on device scale
@@ -3663,7 +3645,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // Make [1] hidden, resize it. It should drop its frame.
   views[1]->Hide();
-  EXPECT_TRUE(views[1]->HasFallbackSurface());
+  // TODO(samans): Fix this expectation once https://crbug.com/878372 is fixed.
+  EXPECT_FALSE(views[1]->HasFallbackSurface());
   gfx::Size size2(200, 200);
   views[1]->SetSize(size2);
   EXPECT_FALSE(views[1]->HasFallbackSurface());
@@ -5936,7 +5919,9 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
       viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
-  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  // TODO(samans): Fix these expectations once https://crbug.com/878372 is
+  // fixed.
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
   view_->Hide();
   view_->SetSize(gfx::Size(54, 32));
   view_->Show();
@@ -5959,10 +5944,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
       viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
-  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  // TODO(samans): Fix these expectations once https://crbug.com/878372 is
+  // fixed.
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
   view_->Hide();
   view_->Show();
-  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
 }
 
 // Check that TakeFallbackContentFrom() copies the fallback SurfaceId and
@@ -5987,16 +5974,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       view2->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
-  // Set fallback for the first view.
-  viz::LocalSurfaceId id = view_->GetLocalSurfaceId();
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id), 1, gfx::Size(20, 20)));
-  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
-
-  // Call TakeFallbackContentFrom(). The second view should now have the same
-  // fallback as the first view.
+  // Call TakeFallbackContentFrom(). The second view should obtain a fallback
+  // from the first view.
   view2->TakeFallbackContentFrom(view_);
-  EXPECT_EQ(*view_->window_->layer()->GetFallbackSurfaceId(),
+  EXPECT_EQ(view_->window_->layer()->GetPrimarySurfaceId()->ToSmallestId(),
             *view2->window_->layer()->GetFallbackSurfaceId());
 
   DestroyView(view2);
