@@ -141,6 +141,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // components has been initialized.
   bool has_been_shown_ = false;
 
+  // Current playback state on the video in Picture-in-Picture window. It is
+  // used to show/hide controls.
+  PlaybackState playback_state_ = kNoVideo;
+
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.
   // TODO(apacible): Update these bounds when the display the window is on
