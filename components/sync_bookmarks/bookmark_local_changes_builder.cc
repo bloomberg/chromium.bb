@@ -35,6 +35,7 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
   std::vector<syncer::CommitRequestData> commit_requests;
   for (const SyncedBookmarkTracker::Entity* entity :
        entities_with_local_changes) {
+    DCHECK(entity);
     DCHECK(entity->IsUnsynced());
     const sync_pb::EntityMetadata* metadata = entity->metadata();
 

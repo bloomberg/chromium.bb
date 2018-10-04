@@ -177,7 +177,6 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
     //    start tracking the node.
     return;
   }
-  const std::string& sync_id = entity->metadata()->server_id();
   const base::Time modification_time = base::Time::Now();
   sync_pb::EntitySpecifics specifics =
       CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true);
@@ -187,6 +186,7 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
     // (e.g.upon a favicon load).
     return;
   }
+  const std::string& sync_id = entity->metadata()->server_id();
   bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
                             modification_time,
                             entity->metadata()->unique_position(), specifics);
