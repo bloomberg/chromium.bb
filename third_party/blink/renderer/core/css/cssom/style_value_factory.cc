@@ -302,10 +302,19 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return style_value_vector;
   }
 
-  // Custom properties count as repeated whenever we have a CSSValueList.
   if (!css_value.IsValueList() ||
+      // TODO(andruud): Custom properties claim to not be repeated, even though
+      // they may be. Therefore we must ignore "IsRepeated" for custom
+      // properties.
       (!CSSProperty::Get(property_id).IsRepeated() &&
-       property_id != CSSPropertyVariable)) {
+       property_id != CSSPropertyVariable) ||
+      // Note: CSSTransformComponent is parsed as CSSFunctionValue, which is a
+      // CSSValueList. We do not yet support such CSSFunctionValues, however.
+      // TODO(andruud): Make CSSTransformComponent a subclass of CSSStyleValue,
+      // once TypedOM spec is updated.
+      // https://github.com/w3c/css-houdini-drafts/issues/290
+      (property_id == CSSPropertyVariable &&
+       CSSTransformComponent::FromCSSValue(css_value))) {
     return UnsupportedCSSValue(property_id, css_value);
   }
 
