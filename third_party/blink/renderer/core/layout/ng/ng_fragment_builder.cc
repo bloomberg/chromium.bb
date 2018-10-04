@@ -310,6 +310,10 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
     }
   }
 
+  // Because this vector will be long-lived, make sure to not waste space.
+  // (We reserve an initial capacity when adding the first child)
+  if (children_.size())
+    children_.ShrinkToReasonableCapacity();
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
