@@ -111,14 +111,12 @@
 <translation id="2780046210906776326">Создайте аккаунт</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Закрыть переключатель вкладок</translation>
-<translation id="283291358677939992">Найти на странице…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Сбросить настройки перевода</translation>
 <translation id="285960592395650245">Повторить скачивание</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Скрытый пароль</translation>
 <translation id="2898963176829412617">Новая папка</translation>
-<translation id="2909437209446960244">Недавние вкладки</translation>
 <translation id="2916171785467530738">Включить автозаполнение для поисковых запросов и URL</translation>
 <translation id="291754862089661335">Поместите QR-код или штрихкод в эту рамку</translation>
 <translation id="2921219216347069551">Ошибка</translation>
@@ -132,7 +130,6 @@
 <translation id="3112556859945124369">Отметить…</translation>
 <translation id="3151924044251363314">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Отметить все…</translation>
-<translation id="3172213052701798825">Smart Lock для паролей</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
 <translation id="3210163015918861891">Синхронизация: выкл.</translation>
@@ -160,13 +157,11 @@
 <translation id="3519193562722059437">Чтобы просматривать веб-страницы, откройте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3551320343578183772">Закрыть вкладку</translation>
-<translation id="3567664240939803299">Сохранить пароль для этого сайта в Google Smart Lock?</translation>
 <translation id="3588820906588687999">Открыть изображение в новой вкладке</translation>
 <translation id="3603009562372709545">Копировать URL</translation>
 <translation id="3607167657931203000">Данные автозаполнения</translation>
 <translation id="360930808415985584">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
-<translation id="3628119975092896051">Ваш список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3765471630796399471">Используйте другой пароль</translation>
@@ -179,7 +174,6 @@
 <translation id="3915450441834151894">Информация о сайте</translation>
 <translation id="3928666092801078803">Объединить данные</translation>
 <translation id="3950820424414687140">Вход</translation>
-<translation id="3963231839620026525">Новая вкладка инкогнито</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="3989635538409502728">Выйти</translation>
 <translation id="3995521777587992544">Индикатор загрузки страницы: выполнено <ph name="EMAIL" />.</translation>
@@ -228,7 +222,6 @@
 <translation id="481968316161811770">Cookie, данные сайтов</translation>
 <translation id="4854345657858711387">Установите код доступа</translation>
 <translation id="4860895144060829044">Позвонить</translation>
-<translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4882831918239250449">Использование данных о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
@@ -243,7 +236,6 @@
 <translation id="5062321486222145940">Установить Google Диск</translation>
 <translation id="5083464117946352670">Не установлен размер файла</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
-<translation id="5173593619615111996">Закр. вкладки инкогнито</translation>
 <translation id="5181140330217080051">Скачивается</translation>
 <translation id="5186185447130319458">Конфиденциально</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
@@ -264,6 +256,7 @@
 Функцию Handoff нужно включить не только в Chrome, но и в настройках устройства (см. раздел "Общие"). Все ваши устройства должны синхронизироваться с одним и тем же аккаунтом iCloud.</translation>
 <translation id="5554368826343982379">Синхронизация и персонализация</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
+<translation id="5614553682702429503">Сохранение пароля</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Не удалось скачать файлы.</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
@@ -295,7 +288,6 @@
 <translation id="6012140227487808125">Шифрование…</translation>
 <translation id="6021332621416007159">Открыть в…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="605721222689873409">ГГ</translation>
@@ -303,7 +295,6 @@
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6136914049981179737">только что</translation>
-<translation id="6158823227857319455">Новая вкладка</translation>
 <translation id="616831107264507309">Читать позже</translation>
 <translation id="6184086493125982861">Показать вкладки</translation>
 <translation id="6187302354554850004">Послед. синхр.: <ph name="LAST_USED_TIME" /></translation>
@@ -394,7 +385,6 @@
 <translation id="7603852183842204213">Заблок. вспл. окон: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
 <translation id="7605594153474022051">Ошибка синхронизации</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
-<translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="766891008101699113">Чтобы просматривать веб-страницы анонимно, откройте новую вкладку.</translation>
 <translation id="7671141431838911305">УСТАНОВИТЬ</translation>
@@ -421,7 +411,6 @@
 <translation id="806745655614357130">Не объединять данные</translation>
 <translation id="8073670137947914548">Скачивание завершено</translation>
 <translation id="8076014560081431679">Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
-<translation id="8080028325999236607">Закрыть все вкладки</translation>
 <translation id="8114753159095730575">Файл доступен для скачивания. Параметры указаны в нижней части экрана.</translation>
 <translation id="8160722851663543621">Отправлять поисковые запросы из адресной строки и окна поиска, а также файлы cookie в поисковую систему по умолчанию</translation>
 <translation id="8205564605687841303">Отмена</translation>
@@ -453,6 +442,7 @@
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8741995161408053644">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8756969031206844760">Обновить пароль?</translation>
 <translation id="8775144690796719618">Недействительный URL</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
@@ -477,7 +467,6 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Отчет отправлен</translation>
 <translation id="935490618240037774">Пароли, закладки, история и другие параметры будут синхронизированы с аккаунтом Google, чтобы у вас был доступ к ним на любом устройстве.</translation>
-<translation id="939598580284253335">Введите кодовую фразу</translation>
 <translation id="976982866697960176">Управление синхронизированными данными</translation>
 <translation id="988141524645182168">Другие устройства</translation>
 <translation id="989988560359834682">Изменение адреса</translation>

@@ -111,14 +111,12 @@
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
-<translation id="283291358677939992">পৃষ্ঠাতে খুঁজুন...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">অনুবাদ সেটিংস আবার সেট করুন</translation>
 <translation id="285960592395650245">আবার ডাউনলোডের চেষ্টা করুন</translation>
 <translation id="2870560284913253234">সাইট</translation>
 <translation id="2871695793448672541">লুকানো, পাসওয়ার্ড</translation>
 <translation id="2898963176829412617">নতুন ফোল্ডার...</translation>
-<translation id="2909437209446960244">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="2916171785467530738">সার্চ এবং ইউআরএলগুলি নিজে থেকে সম্পূর্ণ হতে দিন</translation>
 <translation id="291754862089661335">এই ফ্রেমের মধ্যে QR কোড বা বারকোড স্থাপন করুন</translation>
 <translation id="2921219216347069551">পৃষ্ঠা শেয়ার করা যায়নি</translation>
@@ -132,7 +130,6 @@
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
 <translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক আবার সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
-<translation id="3172213052701798825">পাসওয়ার্ডের জন্য Google Smart Lock</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
 <translation id="3210163015918861891">সিঙ্ক বন্ধ রয়েছে</translation>
@@ -160,13 +157,11 @@
 <translation id="3519193562722059437">ওয়েব ব্রাউজ করার জন্য একটি ট্যাব খুলুন।</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3551320343578183772">ট্যাব বন্ধ করুন</translation>
-<translation id="3567664240939803299">আপনি কি চান Google Smart Lock এই সাইটের জন্য আপনার পাসওয়ার্ড সংরক্ষণ করুক?</translation>
 <translation id="3588820906588687999">নতুন ট্যাবে ছবি খুলুন</translation>
 <translation id="3603009562372709545">লিঙ্ক URL কপি করুন</translation>
 <translation id="3607167657931203000">ডেটা স্বতঃপূর্ণ করুন</translation>
 <translation id="360930808415985584">সিঙ্ক, নিজের মতন করে সাজিয়ে নেওয়া এবং আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
-<translation id="3628119975092896051">আপনার পড়ার তালিকা অফলাইনে উপলব্ধ। আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" /> আলতো চাপুন।</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3765471630796399471">অন্য পাসওয়ার্ড ব্যবহার করুন</translation>
@@ -179,7 +174,6 @@
 <translation id="3915450441834151894">সাইটের তথ্য</translation>
 <translation id="3928666092801078803">আমার ডেটা একত্রিত করুন</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
-<translation id="3963231839620026525">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="3967822245660637423">ডাউনলোড সম্পূর্ণ</translation>
 <translation id="3989635538409502728">সাইন-আউট করুন</translation>
 <translation id="3995521777587992544">পৃষ্ঠা লোড করার প্রগ্রেস বার, <ph name="EMAIL" /> লোড করা হয়েছে।</translation>
@@ -228,7 +222,6 @@
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
 <translation id="4854345657858711387">একটি পাসকোড সেট করুন</translation>
 <translation id="4860895144060829044">কল করুন</translation>
-<translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4882831918239250449">সার্চ, বিজ্ঞাপনসহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কিভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
@@ -243,7 +236,6 @@
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
 <translation id="5083464117946352670">ফাইলের আকার নির্ধারণ করা যাচ্ছে না।</translation>
 <translation id="5094827893301452931">Tweet সম্পূর্ণ হয়েছে৷</translation>
-<translation id="5173593619615111996">সমস্ত ছদ্মবেশী ট্যাব বন্ধ করুন</translation>
 <translation id="5181140330217080051">ডাউনলোড হচ্ছে</translation>
 <translation id="5186185447130319458">ব্যক্তিগত</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
@@ -265,6 +257,7 @@
 সেটিংস-এর সাধারণ বিভাগে Handoff সক্ষমিত থাকা আবশ্যক, এবং আপনার ডিভাইস একই iCloud অ্যাকাউন্ট ব্যবহার করা আবশ্যক৷</translation>
 <translation id="5554368826343982379">সিঙ্ক এবং ব্যক্তিগতকরণ</translation>
 <translation id="5556459405103347317">আবার লোড করুন</translation>
+<translation id="5614553682702429503">পাসওয়ার্ড সেভ করবেন?</translation>
 <translation id="5619279135193775234">মেল</translation>
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
 <translation id="5659593005791499971">ইমেল আইডি</translation>
@@ -296,7 +289,6 @@
 <translation id="6012140227487808125">এনক্রিপ্ট হচ্ছে...</translation>
 <translation id="6021332621416007159">এতে খুলুন...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">আপনি কি চান যে এই সাইটটির ক্ষেত্রে <ph name="USERNAME" /> এর জন্য আপনার পাসওয়ার্ডটি <ph name="PASSWORD_MANAGER_BRAND" /> আপডেট করুক?</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরও</translation>
 <translation id="605721222689873409">YY</translation>
@@ -304,7 +296,6 @@
 <translation id="6122191549521593678">অনলাইন</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
-<translation id="6158823227857319455">নতুন ট্যাব</translation>
 <translation id="616831107264507309">পরে পড়ুন</translation>
 <translation id="6184086493125982861">ট্যাব দেখান</translation>
 <translation id="6187302354554850004">শেষে সিঙ্ক হয়েছে: <ph name="LAST_USED_TIME" /></translation>
@@ -395,7 +386,6 @@
 <translation id="7603852183842204213">পপ-আপ ব্লক (<ph name="NUMBER_OF_BLOCKED_POPUPS" />টি)</translation>
 <translation id="7605594153474022051">সিঙ্ক কাজ করছে না</translation>
 <translation id="7638584964844754484">ত্রুটিপূর্ণ পাসফ্রেজ</translation>
-<translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="766891008101699113">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করতে, একটি নতুন ট্যাব যোগ করুন।</translation>
 <translation id="7671141431838911305">ইনস্টল করুন</translation>
@@ -422,7 +412,6 @@
 <translation id="806745655614357130">আমার ডেটা আলাদা রাখুন</translation>
 <translation id="8073670137947914548">ডাউনলোড হয়ে গেছে</translation>
 <translation id="8076014560081431679">সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
-<translation id="8080028325999236607">সমস্ত ট্যাব বন্ধ করুন</translation>
 <translation id="8114753159095730575">ফাইল ডাউনলোড করা যাবে। স্ক্রিনের নিচের দিকে বিকল্পগুলি উপলভ্য।</translation>
 <translation id="8160722851663543621">অ্যাড্রেস বার এবং সার্চ বক্স থেকে সার্চের তথ্য এবং কিছু কুকি আপনার ডিফল্ট সার্চ ইঞ্জিনে পাঠায়</translation>
 <translation id="8205564605687841303">বাতিল করুন</translation>
@@ -454,6 +443,7 @@
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস থাকতে পারে।</translation>
+<translation id="8756969031206844760">পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="8775144690796719618">অবৈধ URL</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="8840513115188359703">আপনাকে আপনার Google অ্যাকাউন্ট থেকে প্রস্থান করা হবে না।</translation>
@@ -478,7 +468,6 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">ক্র্যাশ প্রতিবেদন পাঠানো হয়েছে৷</translation>
 <translation id="935490618240037774">আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে যাতে আপনি আপনার সমস্ত ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>
-<translation id="939598580284253335">পাসফ্রেজ প্রবেশ করান</translation>
 <translation id="976982866697960176">সিঙ্ক হওয়া ডেটা পরিচালনা করুন...</translation>
 <translation id="988141524645182168">অন্যান্য ডিভাইস</translation>
 <translation id="989988560359834682">ঠিকানা সম্পাদনা করুন</translation>

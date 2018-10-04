@@ -111,14 +111,12 @@
 <translation id="2780046210906776326">Aucun compte messag.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
-<translation id="283291358677939992">Rechercher dans la page…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Réinitialiser paramètres Traduction</translation>
 <translation id="285960592395650245">Relancer téléchargement</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Masqué, Mot de passe</translation>
 <translation id="2898963176829412617">Nouveau dossier…</translation>
-<translation id="2909437209446960244">Onglets récents</translation>
 <translation id="2916171785467530738">Saisir semi-automatiquement les recherches et les URL</translation>
 <translation id="291754862089661335">Positionnez le code QR ou le code-barres dans ce cadre</translation>
 <translation id="2921219216347069551">Impossible de partager page</translation>
@@ -132,7 +130,6 @@
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3151924044251363314">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
-<translation id="3172213052701798825">Google Smart Lock pour les mots de passe</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3210163015918861891">Synchronisation désactivée</translation>
@@ -160,13 +157,11 @@
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
-<translation id="3567664240939803299">Voulez-vous que Google Smart Lock enregistre votre mot de passe pour ce site ?</translation>
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
 <translation id="3603009562372709545">Copier l'URL du lien</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
 <translation id="360930808415985584">Contrôler les paramètres de synchronisation et de personnalisation, et bien plus</translation>
 <translation id="3609785682760573515">Synchronisation en cours…</translation>
-<translation id="3628119975092896051">Votre liste de lecture est disponible hors connexion. Pour ajouter une page à cette liste, appuyez sur <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3765471630796399471">Utiliser un autre mot de passe</translation>
@@ -179,7 +174,6 @@
 <translation id="3915450441834151894">Informations sur le site</translation>
 <translation id="3928666092801078803">Combiner mes données</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
-<translation id="3963231839620026525">Nouvel onglet nav. privée</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3989635538409502728">Déconnexion</translation>
 <translation id="3995521777587992544">Barre de progression du chargement de page, <ph name="EMAIL" /> chargé(s).</translation>
@@ -228,7 +222,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="481968316161811770">Cookies/données site</translation>
 <translation id="4854345657858711387">Définir un code secret</translation>
 <translation id="4860895144060829044">Appeler</translation>
-<translation id="4875622588773761625">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> modifie votre mot de passe pour ce site ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4882831918239250449">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche, les annonces, etc.</translation>
 <translation id="4904877109095351937">Marquer comme lues</translation>
@@ -243,7 +236,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="5062321486222145940">Installer Google Drive</translation>
 <translation id="5083464117946352670">Impos. déterm. taille fichier.</translation>
 <translation id="5094827893301452931">Tweet publié.</translation>
-<translation id="5173593619615111996">Fermer onglets nav. privée </translation>
 <translation id="5181140330217080051">Téléchargement</translation>
 <translation id="5186185447130319458">Privé</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
@@ -264,6 +256,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 Handoff doit également être activé dans la section "Général" des paramètres, et vous devez utiliser le même compte iCloud sur vos appareils.</translation>
 <translation id="5554368826343982379">Synchronisation et personnalisation</translation>
 <translation id="5556459405103347317">Actualiser</translation>
+<translation id="5614553682702429503">Enregistrer le mot de passe ?</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Impossible de télécharger le fichier pour le moment.</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -295,7 +288,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6012140227487808125">Chiffrement…</translation>
 <translation id="6021332621416007159">Ouvrir dans…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> mette à jour le mot de passe de <ph name="USERNAME" /> pour ce site ?</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="605721222689873409">AA</translation>
@@ -303,7 +295,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6122191549521593678">En ligne</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
 <translation id="6136914049981179737">À l'instant.</translation>
-<translation id="6158823227857319455">Nouvel onglet</translation>
 <translation id="616831107264507309">Lire plus tard</translation>
 <translation id="6184086493125982861">Afficher les onglets</translation>
 <translation id="6187302354554850004">Dernière synchro : <ph name="LAST_USED_TIME" /></translation>
@@ -394,7 +385,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7603852183842204213">Pop-up bloqués (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">La synchronisation ne fonctionne pas</translation>
 <translation id="7638584964844754484">Phrase secrète incorrecte.</translation>
-<translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="766891008101699113">Pour naviguer sur le Web en toute discrétion, ajoutez un onglet.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
@@ -421,7 +411,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="806745655614357130">Conserver mes données à part</translation>
 <translation id="8073670137947914548">Téléchargement terminé</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
-<translation id="8080028325999236607">Fermer tous les onglets</translation>
 <translation id="8114753159095730575">Vous pouvez télécharger des fichiers. Différentes options sont disponibles au bas de l'écran.</translation>
 <translation id="8160722851663543621">Envoie les recherches effectuées à partir de la barre d'adresse et du champ de recherche ainsi que des cookies à votre moteur de recherche par défaut</translation>
 <translation id="8205564605687841303">Annuler</translation>
@@ -453,6 +442,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>
 <translation id="8741995161408053644">Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8756969031206844760">Mettre à jour le mot de passe ?</translation>
 <translation id="8775144690796719618">URL non valide.</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="8840513115188359703">Vous ne serez pas déconnecté de votre compte Google.</translation>
@@ -477,7 +467,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Le rapport d'erreur a bien été envoyé.</translation>
 <translation id="935490618240037774">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>
-<translation id="939598580284253335">Saisir la phrase secrète</translation>
 <translation id="976982866697960176">Gérer les données synchronisées…</translation>
 <translation id="988141524645182168">Autres appareils</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>

@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
+<translation id="1413936351612032792">Informacijos apie „Linux“ programų pateikimas</translation>
 <translation id="142346659686073702">Leidimas nesusietiems naudotojams naudoti „Crostini“</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
@@ -465,6 +466,9 @@
 <translation id="2201555246697292490">Savosios susirašinėjimo pranešimais programos baltojo sąrašo konfigūravimas</translation>
 <translation id="2204753382813641270">Valdyti automatinį lentynos paslėpimą</translation>
 <translation id="2208976000652006649">Paieškos URL parametrai, kuriuose naudojama POST</translation>
+<translation id="2214880135980649323">Kai ši politika nustatyta kaip įgalinta, pagal įmonės politiką įdiegtiems plėtiniams leidžiama naudoti įmonės aparatinės įrangos platformos API.
+      Kai ši politika nustatyta kaip išjungta arba nenustatyta, jokiems plėtiniams neleidžiama naudoti įmonės aparatinės įrangos platformos API.
+      Ši politika taip pat taikoma komponentų plėtiniams, pavyzdžiui, „Hangout“ paslaugų plėtiniui.</translation>
 <translation id="2223598546285729819">Numatytasis pranešimų nustatymas</translation>
 <translation id="2231817271680715693">Importuoti naršymo istoriją iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="2236488539271255289">Neleisti nė vienoje svetainėje nustatyti vietinių duomenų</translation>
@@ -1021,7 +1025,7 @@
 
       Kad sertifikato skaidrumo įgyvendinimas būtu išjungtas, kai nustatyta ši politika, maiša turi būti sudaryta iš „subjectPublicKeyInfo“ vertės, pateiktos CA sertifikate, kuris atpažįstamas kaip pasenusi sertifikavimo institucija (CA). Pasenusi CA yra CA, kuria pagal numatytuosius nustatymus pasitiki viena ar daugiau „<ph name="PRODUCT_NAME" />“ palaikomų operacinių sistemų, bet nepasitiki „Android“ atvirojo šaltinio projektas arba „<ph name="PRODUCT_OS_NAME" />“.
 
-      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI kontrolinis kodas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
+      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI piršto antspaudas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
 
       Jei ši politika nenustatyta, bet koks sertifikatas, kurį reikia atskleisti taikant sertifikato skaidrumą, bus laikomas nepatikimu, jei nebus atskleistas atsižvelgiant į sertifikato skaidrumo politikos nuostatas.</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
@@ -1033,13 +1037,6 @@
 
           Jei politika „EnableMediaRouter“ bus nustatyta į „false“, šios politikos vertė neturės jokio poveikio ir įrankių juostos piktograma nebus rodoma.</translation>
 <translation id="3788662722837364290">Maitinimo valdymo nustatymai, kai naudotojas tampa neaktyvus</translation>
-<translation id="3793095274466276777">Konfigūruojamos „<ph name="PRODUCT_NAME" />“ vykdomos numatytosios naršyklės patikros; naudotojams šio nustatymo keisti neleidžiama.
-
-      Jei įgalinsite šį nustatymą, paleidžiant „<ph name="PRODUCT_NAME" />“ visada tikrins, ar ji yra numatytoji naršyklė, ir, jei galima, automatiškai užsiregistruos.
-
-      Jei šio nustatymo neleisite, „<ph name="PRODUCT_NAME" />“ niekada netikrins, ar ji yra numatytoji naršyklė, o naudotojams bus neleidžiama naudoti šios parinkties nustatymo valdiklių.
-
-      Nenustačius šio nustatymo „<ph name="PRODUCT_NAME" />“ leis naudotojui valdyti numatytosios naršyklės parinktis ir nurodyti, ar turi būti pateikti naudotojui skirti pranešimai, jei naršyklė nėra numatytoji.</translation>
 <translation id="379602782757302612">Leidžiama nurodyti, kurių plėtinių naudotojai NEGALI įdiegti. Jei jau įdiegti plėtiniai bus įtraukti į juodąjį sąrašą, jie bus išjungiami, ir naudotojai negalės vėl jų įgalinti. Kai išjungtas plėtinys, kuris buvo įtrauktas į juodąjį sąrašą, iš sąrašo bus pašalintas, jis vėl bus automatiškai įgalintas.
 
           Juodojo sąrašo vertė * nurodo, kad visi plėtiniai yra įtraukti į juodąjį sąrašą, nebent jie yra aiškiai nurodyti baltajame sąraše.
@@ -1193,11 +1190,6 @@
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="4105989332710272578">Sertifikato skaidrumo taikymo URL sąrašui išjungimas</translation>
-<translation id="4111405663956464686">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 72 versija (maždaug 2019 m. sausio mėn.).
-
-      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytąją didžiausią versiją.
-
-      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų, nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="412697421478384751">Leisti naudotojams nustatyti nesudėtingus užrakinimo ekrano PIN kodus</translation>
 <translation id="4138655880188755661">Laiko apribojimas</translation>
@@ -2070,11 +2062,6 @@
       Jei ši politika nenustatyta ar sąrašas yra tuščias, visos schemos bus pasiekiamos „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="6652197835259177259">Vietoje tvarkomų naudotojų paskyrų nustatymai</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
-<translation id="6665599130599311250">Jei ši politika nustatyta kaip „False“ arba palikta nenustatyta, tvarkomas svečių seansas bus dokumentuojamas https://support.google.com/chrome/a/answer/3017014 – įprastas viešas seansas.
-
-      Jei ši politika nustatyta kaip „True“, tvarkomas svečių seansas vyks kaip tvarkomas seansas, kuris padidins daugelį apribojimų, taikomų įprastiems viešiems seansams.
-
-      Jei ši politika nustatyta, naudotojas negali jos keisti ar nepaisyti.</translation>
 <translation id="6665670272107384733">Nustatyti, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą</translation>
 <translation id="6681229465468164801">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama prašyti naudotojo suteikti jiems galimybės pasiekti USB įrenginį, sąrašą.
 
@@ -2236,6 +2223,13 @@
 
       Nenustačius šios politikos, bus naudojama numatytoji vertė, kuri yra 32.</translation>
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
+<translation id="6944167205014013774">Informacija apie „Linux“ programų naudojimą siunčiama atgal į
+      serverį.
+
+      Jei politika nustatyta į „False“ arba nenustatyta, naudojimo informacija nebus
+      pateikiama. Jei nustatyta į „True“, naudojimo informacija bus pateikiama.
+
+      Ši politika taikoma tik įgalinus „Linux“ programų palaikymą.</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
 <translation id="6965859329738616662">Nurodoma, ar išmaniajam pritemdymo modeliui leidžiama pratęsti laiką iki ekrano pritemdymo.
@@ -2622,7 +2616,7 @@
       2. Tai yra „subjectPublicKeyInfo“ vertės, kuri pateikta sertifikatų grandinės CA sertifikate, maiša, CA sertifikatas apribotas naudojant „X.509v3“ „nameConstraints“ plėtinį, kintamajame „permittedSubtrees“ yra viena ar daugiau „directoryName“ „nameConstraints“ verčių ir kintamajame „directoryName“ yra „organizationName“ atributas.
       3. Tai yra „subjectPublicKeyInfo“ vertės, kuri pateikta sertifikatų grandinės CA sertifikate, maiša, CA sertifikato temoje yra vienas ar daugiau „organizationName“ atributų ir serverio sertifikate yra toks pat skaičius „organizationName“ atributų, pateiktų tokia pačia tvarka ir su identiškomis vertėmis (atitinka kiekvienas baitas).
 
-      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI kontrolinis kodas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
+      „subjectPublicKeyInfo“ maiša nurodoma sujungus maišos algoritmo pavadinimą, simbolį „/“ ir to maišos algoritmo „Base64“ koduotę, pritaikytą nurodyto sertifikato DER užkoduotai „subjectPublicKeyInfo“ vertei. Ši „Base64“ koduotė nurodoma tuo pačiu formatu, kaip ir SPKI piršto antspaudas (apibrėžta RFC 7469, 2.4 skiltyje). Neatpažintų maišos algoritmų nepaisoma. Šiuo metu palaikomas tik „sha256“ maišos algoritmas.
 
       Jei ši politika nenustatyta, bet koks sertifikatas, kurį reikia atskleisti taikant sertifikato skaidrumą, bus laikomas nepatikimu, jei nebus atskleistas atsižvelgiant į sertifikato skaidrumo politikos nuostatas.</translation>
 <translation id="7818131573217430250">Nustatyti numatytąją didelio kontrasto režimo prisijungimo ekrane būklę</translation>
@@ -2869,7 +2863,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="841977920223099909">Įspėjimo dėl slaptažodžio apsaugos aktyviklis</translation>
 <translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikomas kiekvieną kartą paleidus iš naujo</translation>
 <translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
-<translation id="8433423491036718210">Įmonių prisijungimo URL, kuriais slaptažodžio apsaugos paslauga turėtų užfiksuoti slaptažodžio kontrolinį kodą, sąrašo konfigūravimas.</translation>
+<translation id="8433423491036718210">Įmonių prisijungimo URL, kuriais slaptažodžio apsaugos paslauga turėtų užfiksuoti slaptažodžio piršto antspaudą, sąrašo konfigūravimas.</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="8459216513698220096">Nurodoma, ar apdorojama naudotojo politika iš kompiuterio GPO ir kaip apdorojama.
 
@@ -2881,6 +2875,26 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
+<translation id="8483004350080020634">Perduodamos neskelbtinos https:// URL privatumo ir saugos dalys prieš pateikiant jas PAC (automatinės tarpinio serverio konfigūracijos) scenarijams, kuriuos „<ph name="PRODUCT_NAME" />“ naudoja per tarpinio serverio nustatymo procesą.
+
+      Kai politika nustatyta į „True“, saugos funkcija yra įgalinta, o https:// URL
+      perduodami prieš pateikiant juos į PAC scenarijų. Taip PAC scenarijus negali
+      peržiūrėti duomenų, kurie paprastai apsaugomi naudojant šifruotą kanalą
+      (pvz., URL kelią ir užklausą).
+
+      Kai politika nustatyta į „False“, saugos funkcija yra išjungta, o PAC
+      scenarijams suteikiama galimybė peržiūrėti visus https:// URL komponentus.
+      Tai taikoma visiems PAC scenarijams, neatsižvelgiant į kilmę (įskaitant
+      perduotus naudojant nesaugų perdavimo protokolą ar nesaugiai aptiktus
+      naudojant WPAD).
+
+      Pagal numatytuosius nustatymus ši politika nustatyta į „True“ (saugos funkcija
+      įgalinta).
+
+      Rekomenduojama šią politiką nustatyti į „True“. Į „False“ nustatytina tik
+      kilus suderinamumo su esamais PAC scenarijais problemų.
+
+      M75 ši politika bus pašalinta.</translation>
 <translation id="8484458986062090479">Tinkinkite URL šablonų, kuriuos prieglobos naršyklė visada turėtų pateikti, sąrašą.
 
           Jei ši politika nenustatyta, numatytasis pateikėjas naudojamas visose svetainėse, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
@@ -2888,7 +2902,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
 <translation id="8498293625012059298">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio piršto antspaudą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
       Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
@@ -3110,11 +3124,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
 <translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
-<translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio kontrolinis kodas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
+<translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio piršto antspaudas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio kontrolinis kodas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
-      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio kontrolinis kodas bus užfiksuotas tik adresu https://accounts.google.com.
+      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio piršto antspaudas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
+      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio piršto antspaudas bus užfiksuotas tik adresu https://accounts.google.com.
       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>

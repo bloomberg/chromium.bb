@@ -40,11 +40,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Пронађи помоћ за коришћење Chrome ОС-а</translation>
 <translation id="1795405610103747296">Инсталирајте Chrome на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Када то укључите, можете да се пријављујете на Google сајтове, као што је Gmail, али се не пријављујете у Chrome</translation>
 <translation id="1860536484129686729">Chrome тражи дозволу да приступи камери за овај сајт</translation>
 <translation id="1873233029667955273">Google Chrome није подразумевани прегледач</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
 <translation id="1915828456209461693">Ново ажурирање за Chrome је доступно и примениће се чим га поново покренете.</translation>
+<translation id="1919130412786645364">Дозволи пријављивање у Chrome</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
 <translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="2094919256425865063">Желите ли ипак да затворите Chrome?</translation>
@@ -293,6 +295,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="9084668267983921457">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome ОС ће се рестартовати за један сат}one{Chrome ОС ће се рестартовати за # сат}few{Chrome ОС ће се рестартовати за # сата}other{Chrome ОС ће се рестартовати за # сати}}</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
+<translation id="9138603949443464873">Да бисте применили промене, поново покрените Chrome</translation>
 <translation id="919706545465235479">Ажурирајте Chrome да бисте започели синхронизацију</translation>
 <translation id="924447568950697217">Поставите Chrome за подразумевани прегледач</translation>
 <translation id="989369509083708165">Google Chrome је подразумевани прегледач</translation>

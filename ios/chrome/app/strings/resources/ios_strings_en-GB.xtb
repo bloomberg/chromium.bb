@@ -111,14 +111,12 @@
 <translation id="2780046210906776326">No Email Accounts</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Leave Tab Switcher</translation>
-<translation id="283291358677939992">Find in Page...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Reset Translate Settings</translation>
 <translation id="285960592395650245">Retry Download</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Hidden Password</translation>
 <translation id="2898963176829412617">New Folder…</translation>
-<translation id="2909437209446960244">Recent Tabs</translation>
 <translation id="2916171785467530738">Autocomplete searches and URLs</translation>
 <translation id="291754862089661335">Position QR code or bar code in this frame</translation>
 <translation id="2921219216347069551">Cannot Share Page</translation>
@@ -132,7 +130,6 @@
 <translation id="3112556859945124369">Mark…</translation>
 <translation id="3151924044251363314">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Mark All…</translation>
-<translation id="3172213052701798825">Google Smart Lock for Passwords</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3210163015918861891">Sync is Off</translation>
@@ -160,13 +157,11 @@
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3551320343578183772">Close Tab</translation>
-<translation id="3567664240939803299">Do you want Google Smart Lock to save your password for this site?</translation>
 <translation id="3588820906588687999">Open Image in New Tab</translation>
 <translation id="3603009562372709545">Copy Link URL</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
 <translation id="360930808415985584">Control Sync, Personalisation and More</translation>
 <translation id="3609785682760573515">Syncing...</translation>
-<translation id="3628119975092896051">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3765471630796399471">Use other password</translation>
@@ -179,7 +174,6 @@
 <translation id="3915450441834151894">Site Information</translation>
 <translation id="3928666092801078803">Combine my data</translation>
 <translation id="3950820424414687140">Sign in</translation>
-<translation id="3963231839620026525">New Incognito Tab</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3989635538409502728">Sign Out</translation>
 <translation id="3995521777587992544">Page load progress bar, <ph name="EMAIL" /> loaded.</translation>
@@ -228,7 +222,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4854345657858711387">Set A Passcode</translation>
 <translation id="4860895144060829044">Call</translation>
-<translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
 <translation id="4904877109095351937">Mark Read</translation>
@@ -243,7 +236,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5062321486222145940">Install Google Drive</translation>
 <translation id="5083464117946352670">Cannot determine file size.</translation>
 <translation id="5094827893301452931">Tweet completed.</translation>
-<translation id="5173593619615111996">Close all incognito tabs</translation>
 <translation id="5181140330217080051">Downloading</translation>
 <translation id="5186185447130319458">Private</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
@@ -264,6 +256,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.</translation>
 <translation id="5554368826343982379">Sync and personalisation</translation>
 <translation id="5556459405103347317">Reload</translation>
+<translation id="5614553682702429503">Save password?</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">The file could not be downloaded at this time.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -295,7 +288,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6012140227487808125">Encrypting…</translation>
 <translation id="6021332621416007159">Open in...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for <ph name="USERNAME" /> for this site?</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="605721222689873409">YY</translation>
@@ -303,7 +295,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item removed</translation>
 <translation id="6136914049981179737">Seconds ago</translation>
-<translation id="6158823227857319455">New Tab</translation>
 <translation id="616831107264507309">Read Later</translation>
 <translation id="6184086493125982861">Show Tabs</translation>
 <translation id="6187302354554850004">Last synced: <ph name="LAST_USED_TIME" /></translation>
@@ -394,7 +385,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7603852183842204213">Pop-ups blocked (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
-<translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="766891008101699113">To browse the web privately, add a new tab.</translation>
 <translation id="7671141431838911305">INSTALL</translation>
@@ -421,7 +411,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8073670137947914548">Download finished</translation>
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
-<translation id="8080028325999236607">Close All Tabs</translation>
 <translation id="8114753159095730575">File download is available. Options available near bottom of screen.</translation>
 <translation id="8160722851663543621">Sends searches from the address bar and search box, and some cookies to your default search engine</translation>
 <translation id="8205564605687841303">Cancel</translation>
@@ -453,6 +442,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8741995161408053644">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8756969031206844760">Update password?</translation>
 <translation id="8775144690796719618">Invalid URL</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8840513115188359703">You won't be signed out of your Google Account.</translation>
@@ -477,7 +467,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Crash report sent.</translation>
 <translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to your Google account so that you can use them on all of your devices.</translation>
-<translation id="939598580284253335">Enter passphrase</translation>
 <translation id="976982866697960176">Manage Synced Data…</translation>
 <translation id="988141524645182168">Other Devices</translation>
 <translation id="989988560359834682">Edit Address</translation>

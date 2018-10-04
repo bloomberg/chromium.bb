@@ -120,11 +120,11 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 
       POZNÁMKA: Tato zásada nefunguje na zařízeních Android. K aktivaci zásady IsolateOrigins na zařízeních Android použijte zásadu IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Aktivuje rozhraní Hardware Platform API pro rozšíření nainstalovaná zásadami</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
+<translation id="1413936351612032792">Hlásit informace o využití Linuxových aplikací</translation>
 <translation id="142346659686073702">Povolit cizím uživatelům používat Crostini</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
@@ -996,13 +996,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
           Pokud je zásada EnableMediaRouter nastavena na hodnotu false, hodnota této zásady se nijak neprojeví a ikona se na liště zobrazovat nebude.</translation>
 <translation id="3788662722837364290">Nastavení řízení spotřeby při neaktivitě uživatele</translation>
-<translation id="3793095274466276777">Slouží ke konfiguraci kontroly výchozího prohlížeče v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby tato nastavení změnili.
-
-      Pokud toto nastavení aktivujete, <ph name="PRODUCT_NAME" /> při spuštění vždy zkontroluje, zda je výchozím prohlížečem, a pokud to bude možné, automaticky se registruje.
-
-      Pokud je toto nastavení deaktivováno, <ph name="PRODUCT_NAME" /> nebude kontrolovat, zda je výchozím prohlížečem, a deaktivuje uživatelské ovládací prvky pro nastavení této možnosti.
-
-      Pokud toto nastavení není nakonfigurováno, může uživatel v prohlížeči <ph name="PRODUCT_NAME" /> určit, zda jej chce nastavit jako výchozí prohlížeč a zda se má zobrazit oznámení v případě, že jím není.</translation>
 <translation id="379602782757302612">Umožňuje zadat, která rozšíření uživatelé NEMOHOU instalovat. Již nainstalovaná rozšíření uvedená na seznamu zakázaných budou deaktivována. Když bude takto deaktivované rozšíření ze seznamu odstraněno, automaticky se znovu aktivuje.
 
           Hodnota * v seznamu zakázaných znamená, že jsou zakázána všechna rozšíření, která nejsou uvedena na seznamu povolených.
@@ -1152,11 +1145,6 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
 
           Hodnota zásady se zadává v milisekundách.</translation>
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
-<translation id="4111405663956464686">Upozornění: Přibližně od verze 72 (cca v lednu 2019) bude zásada maximální verze TLS z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněna.
-
-      Pokud tato zásada není nakonfigurována, použije <ph name="PRODUCT_NAME" /> výchozí maximální verzi.
-
-      Zásadu lze nastavit na jednu z následujících hodnot: tls1.2 nebo tls1.3. Když je nastavena, nebude <ph name="PRODUCT_NAME" /> používat verze SSL/TLS vyšší, než je zadaná verze. Nerozpoznané hodnoty budou ignorovány.</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
 <translation id="412697421478384751">Povolit uživatelům nastavovat slabé kódy PIN pro odemknutí obrazovky</translation>
 <translation id="4138655880188755661">Časový limit</translation>
@@ -2023,11 +2011,6 @@ Adresy URL, které používají schémata uvedená v tomto seznamu, se nebudou n
 Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude v prohlížeči <ph name="PRODUCT_NAME" /> možné používat všechna schémata.</translation>
 <translation id="6652197835259177259">Nastavení místně spravovaných uživatelů</translation>
 <translation id="6658245400435704251">Určí počet sekund, o který může zařízení náhodně zdržet stahování aktualizace od doby, kdy byla poprvé zveřejněna na serveru. Zařízení může čekat určitý čas a pokusit se o určitý počet kontrol aktualizací. Zpoždění je však v každém případě omezeno neměnným maximálním časovým limitem tak, aby zařízení nečekalo na stažení aktualizace donekonečna.</translation>
-<translation id="6665599130599311250">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, spravovaná relace hosta se bude chovat podle dokumentace na stránce https://support.google.com/chrome/a/answer/3017014 (jako standardní veřejná relace).
-
-      Pokud je tato zásada nastavena na hodnotu true, bude se spravovaná relace hosta chovat jako spravovaná relace, což znamená, že se na ni nebudou vztahovat některá omezení, která se vztahují na běžné veřejné relace.
-
-      Pokud je tato zásada nastavena, uživatel ji nemůže změnit ani přepsat.</translation>
 <translation id="6665670272107384733">Nastavit, jak často musí uživatel zadat heslo, pokud chce používat rychlé odemknutí</translation>
 <translation id="6681229465468164801">Umožňuje nastavit seznam vzorů adres URL webů, které uživatele nesmějí žádat o přístup k zařízení USB.
 
@@ -2179,6 +2162,11 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 
      Není-li zásada nastavena, bude použita výchozí hodnota, což je 32.</translation>
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
+<translation id="6944167205014013774">Informace o využití Linuxových aplikací se odesílají na server.
+
+Je-li tato zásada nastavena na hodnotu False nebo nenastavena, nebudou hlášeny žádné informace o využití. Pokud je nastavena na hodnotu True, informace budou hlášeny.
+
+Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Linux.</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
 <translation id="6965859329738616662">Udává, zda chytrý model ztmavování může prodloužit dobu do ztmavení obrazovky.

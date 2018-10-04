@@ -119,11 +119,11 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 
       KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Huwasha Hardware Platform API kwenye viendelezi vilivyosakinishwa kupitia sera</translation>
 <translation id="1384459581748403878">Marejeleo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ikiwa utaruhusu uaminifu katika sera ya Muundomsingi wa PKI ya Symantec Corporation Legacy</translation>
 <translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
 <translation id="1397855852561539316">Mtoa huduma chaguomsingi wa utafutaji anapendekeza URL</translation>
+<translation id="1413936351612032792">Ripoti maelezo kuhusu matumizi ya programu za Linux</translation>
 <translation id="142346659686073702">Ruhusu watumiaji wasio washirika watumie Crostini</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1427655258943162134">Anwani au URL ya seva ya proksi</translation>
@@ -1011,13 +1011,6 @@ Ikiwa sera hii imezimwa, hakuna Utengaji kwa kila Tovuti utaokaotokea waziwazi n
 
               Sera ya "EnableMediaRouter" ikiwekwa kuwa sivyo, basi thamani ya sera hii haitakuwa na athari, na aikoni ya upau wa vidhibiti haitaonyeshwa.</translation>
 <translation id="3788662722837364290">Mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu</translation>
-<translation id="3793095274466276777">Inasanidi ukaguzi wa kivinjari chaguomsingi kwenye <ph name="PRODUCT_NAME" /> na kuzuia watumiaji kwa kuvibadilisha.
-
-      Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> kila mara itakagua inapoanza iwapo ni kivinjari chaguomsingi na kujisajili binafsi kiotomatiki ikiwezekana.
-
-      Ikiwa mpangilio huu umelemazwa, <ph name="PRODUCT_NAME" /> haitakagua ikiwa ni kivinjari chaguomsingi na italemaza vidhibiti vya mtumiaji vya kuweka chaguo hili.
-
-      Ikiwa mpangilio huu haujawekwa, <ph name="PRODUCT_NAME" /> itaruhusu mtumiaji kudhibiti iwapo ni kivinjari chaguomsingi na iwapo arifa za mtumiaji zitaonyeshwa wakati siyo.</translation>
 <translation id="379602782757302612">Hukuruhusu kubainisha viendelezi ambavyo watumiaji HAWAWEZI kusakinisha.  Tutazima viendelezi ambavyo tayari vimesakinishwa ikiwa havijaidhinishwa. Hatutampa mtumiaji uwezo wa kuviwasha. Tutawasha kiotomatiki kiendelezi ambacho kimeidhinishwa ikiwa kilikuwa kimezimwa awali kwa kukosa idhini.
 
 Thamani ya kukosa idhini ya '*' inamaanisha kwamba viendelezi vyote havijaidhinishwa isipokuwa viwe vimebainishwa kwa njia dhahiri kwenye orodha ya viendelezi vilivyoidhinishwa.
@@ -1170,11 +1163,6 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 
           Sera ya thamani inastahili kubainishwa kwa nukta.</translation>
 <translation id="4105989332710272578">Zima utekelezaji wa Uwazi wa Cheti kwa orodha ya URL</translation>
-<translation id="4111405663956464686">Onyo: Sera ya kiwango cha juu cha toleo la TLS itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> takribani baada ya toleo la 72 (katika mwezi Januari 2019).
-
-      Ikiwa sera hii haijawekwa, inamaanisha kuwa <ph name="PRODUCT_NAME" /> inatumia toleo chaguomsingi la kiwango cha juu.
-
-      Vinginevyo, huenda ikawekwa katika mojawapo ya thamani zifuatazo: "tls1.2" au "tls1.3". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS ambayo yamepita toleo lililobainishwa. Thamani isiyotambuliwa haitazingatiwa.</translation>
 <translation id="4121350739760194865">Zuia utambulishaji dhidi ya kuonekana kwenye ukurasa mpya wa kichupo</translation>
 <translation id="412697421478384751">Ruhusu watumiaji waweke PIN ambazo si thabiti zitumike kama PIN ya skrini iliyofungwa</translation>
 <translation id="4138655880188755661">Kikomo cha Muda</translation>
@@ -2032,11 +2020,6 @@ URL zinazotumia miradi kutoka orodha hii hazitapakia na haziwezi kutembelewa.
 Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="6652197835259177259">Mipangilio ya watumiaji inayodhibitiwa kwa ndani</translation>
 <translation id="6658245400435704251">Inabainisha idadi ya sekunde ambazo kifaa kinaweza kuamua kuchelewesha upakuaji wake wa sasisho kutoka wakati ambapo usasishaji ulisukumwa kwanza nje katika seva. Kifaa kinaweza kusubiri kijisehemu cha muda huu kwa hali ya muda wa saa na kijisehemu kinachosalia katika hali ya idadi ya ukaguzi wa visasisho. Katika hali yoyote, utawanyishaji umekitwa katika kiwango cha kudumu cha muda ili kifaa kisikwame tena kikisubiri kupakua sasisho kwa muda mrefu.</translation>
-<translation id="6665599130599311250">Ukiweka sera hii kuwa 'sivyo' au usipoiweka, kipindi cha mgeni kinachodhibitiwa kitatumika kama ilivyowekwa katika https://support.google.com/chrome/a/answer/3017014 -  "Kipindi cha Umma" cha kawaida.
-
-Ukiweka sera hii kuwa 'ndivyo', kipindi cha mgeni kinachodhibitiwa kitachukua sifa ya "Kipindi Kinachodhibitiwa" ambayo huondoa masharti kadhaa yanayowekwa kwa ajili ya"Vipindi vya Umma" vya kawaida.
-
-      Ukiweka sera hii, mtumiaji hawezi kuibadilisha wala kuibatilisha.</translation>
 <translation id="6665670272107384733">Weka mara ambazo mtumiaji anatakiwa kuweka nenosiri ili atumie kipengele cha kufungua haraka.</translation>
 <translation id="6681229465468164801">Hukuruhusu uweke orodha ya ruwaza za url ambayo inabainisha tovuti zinazozuiliwa ili zisimuulize mtumiaji atoe ruhusa ya kufikia kifaa cha USB.
 
@@ -2201,6 +2184,11 @@ Sera hii haipatikani kwenye Windows ambazo hazijaunganishwa kwenye kikoa cha <ph
 
       Ikiwa sera hii itasalia kama haijawekwa thamani chaguomsingi itatumika ambayo ni 32.</translation>
 <translation id="6943577887654905793">Jina la Mac/Linux inayopendelewa:</translation>
+<translation id="6944167205014013774">Maelezo kuhusu matumizi ya programu za Linux yanatumwa kwenye seva. 
+
+      Sera hii ikiwekwa kuwa sivyo au isipowekwa, hakuna maelezo ya matumizi yanayotumwa. Ikiwekwa kuwa ndivyo, maelezo ya matumizi hutumwa.
+
+      Sera hii inatumika tu iwapo programu ya Linux imewashwa.</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguomsingi</translation>
 <translation id="6956272732789158625">Usiruhusu tovuti yoyote itumie uundaji ufunguo</translation>
 <translation id="6965859329738616662">Hubainisha ikiwa muundo mahari wa kufifiliza mwangaza unaruhusiwa kupitisha muda hadi wakati mwangaza wa skrini utakuwa hafifu.
@@ -2832,7 +2820,7 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 
       Ikiwekwa kuwa Sivyo, kipengele cha usalama huzimwa na hati za PAC hupata uwezo bayana wa kuona sehemu zote za URL ya https://. Hii inatumika kwa hati zote za PAC bila kuzingatia asili (ikiwa ni pamoja na zilizotokana na usafirishaji usio salama au zilizogunduliwa kwa njia isiyo salama kupitia WPAD).
 
-      Hii huweka mipangilio chagomsingi kuwa Ndivyo (kipengele cha usalama kimewashwa).
+      Hii huweka mipangilio chaguomsingi kuwa Ndivyo (kipengele cha usalama kimewashwa).
 
       Inapendekezwa kuwa mipangilio hii iwekwe kuwa Ndivyo. Sababu moja tu ya kuiwekea mipangilio ya Sivyo ni kama inasababisha matatizo ya kutumika na hati zilizopo za PAC.
 

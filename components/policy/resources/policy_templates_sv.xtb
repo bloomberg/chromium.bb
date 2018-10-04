@@ -136,11 +136,11 @@
 
       OBS! Den här principen gäller inte Android. Om du vill aktivera IsolateOrigins på Android använder du principen IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Aktiverar Hardware Platform API för tillägg som installerats via en princip</translation>
 <translation id="1384459581748403878">Referens: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="1413936351612032792">Rapportera information om användning av Linux-appar</translation>
 <translation id="142346659686073702">Tillåt oanknutna användare att använda Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
@@ -1039,13 +1039,6 @@
 
           Om falskt har angetts för principen EnableMediaRouter gäller inte värdet för denna princip och ikonen i verktygsfältet visas inte.</translation>
 <translation id="3788662722837364290">Energisparinställningar när användaren är inaktiv</translation>
-<translation id="3793095274466276777">Konfigurerar standardwebbläsarkontrollerna i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar dem.
-
-      Om du aktiverar den här inställningen kontrollerar <ph name="PRODUCT_NAME" /> alltid om den är standardwebbläsare vid start och registrerar sig om det går.
-
-      Om inställningen är inaktiverad kontrollerar <ph name="PRODUCT_NAME" /> aldrig om den är standardwebbläsare och användarkontrollerna för inställningen inaktiveras.
-
-      Om inställningen inte anges kan användaren avgöra om <ph name="PRODUCT_NAME" /> ska vara standardwebbläsare och om ett meddelande ska visas för användaren när den inte är det.</translation>
 <translation id="379602782757302612">Låter dig ange vilka tillägg som användarna INTE får installera. Om ett svartlistat tillägg redan har installerats inaktiveras det och användaren kan inte aktivera det igen. Svartlistade tillägg som tas bort från listan aktiveras igen automatiskt.
 
           Värdet * i listan betyder att alla tillägg är svartlistade såvida de inte uttryckligen står med i vitlistan.
@@ -1199,11 +1192,6 @@
 
           Policyns värde anges i millisekunder.</translation>
 <translation id="4105989332710272578">Inaktivera tillämpning av Certifikattransparens för en lista med webbadresser</translation>
-<translation id="4111405663956464686">Varning! Principen för den högsta TLS-versionen tas bort helt från <ph name="PRODUCT_NAME" /> kring version 72 (runt januari 2019).
-
-      Om denna princip inte konfigureras använder <ph name="PRODUCT_NAME" /> den högsta standardversionen.
-
-      I annat fall kan den anges till värdena tls1.2 eller tls1.3. När ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="412697421478384751">Tillåt att användare anger en osäker pinkod till låsskärmen</translation>
 <translation id="4138655880188755661">Tidsgräns</translation>
@@ -2078,11 +2066,6 @@
       Om den här principen inte ställs in eller om listan är tom är alla scheman tillgängliga i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Inställningar för lokalt hanterade användare</translation>
 <translation id="6658245400435704251">Anger hur många sekunder en nedladdning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att laddas ned.</translation>
-<translation id="6665599130599311250">Om principen är inställd på falskt eller lämnas utan inställning fungerar en hanterad gästsession på det sätt som dokumenteras på https://support.google.com/chrome/a/answer/3017014 – en vanlig ”offentlig session”.
-
-      Om principen är inställd på sant fungerar en hanterad gästsession som en ”hanterad session”, vilket häver många av de begränsningar som gäller för vanliga ”offentliga sessioner”.
-
-      Om principen har ställts in kan användaren inte ändra eller åsidosätta den.</translation>
 <translation id="6665670272107384733">Ställ in hur ofta användaren måste ange lösenord för att kunna använda snabb upplåsning</translation>
 <translation id="6681229465468164801">Låter dig ange med hjälp av en lista med webbadressmönster vilka webbplatser som inte får begära åtkomstbehörighet till en USB-enhet.
 
@@ -2245,6 +2228,13 @@
 
       Om policyn inte anges används standardvärdet 32.</translation>
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
+<translation id="6944167205014013774">Information om användning av Linux-appar skickas till
+      servern.
+
+      Om principen har ställts in på falskt eller lämnats utan värde rapporteras ingen
+      användningsinformation. Om principen har ställts in på sant rapporteras användningsinformation.
+
+      Principen gäller bara om stöd för Linux-appar är aktiverat.</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
 <translation id="6965859329738616662">Anger om en smart modell för nedtoning får utöka tiden tills skärmen tonas ned.

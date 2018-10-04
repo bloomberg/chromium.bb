@@ -137,11 +137,11 @@
 
       TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para ma-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakaran ng IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Ine-enable ang Hardware Platform API sa mga extension na may naka-install na patakaran.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="1413936351612032792">Mag-ulat ng impormasyon tungkol sa paggamit ng mga Linux app</translation>
 <translation id="142346659686073702">Payagan ang mga hindi affiliate na user na gamitin ang Crostini</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
@@ -1034,7 +1034,6 @@
 
           Kung nakatakda sa false ang patakarang "EnableMediaRouter," hindi magkakaroon ng epekto ang value ng patakarang ito, at hindi ipapakita ang icon ng toolbar.</translation>
 <translation id="3788662722837364290">Mga setting ng pamamahala ng power kapag naging idle ang user</translation>
-<translation id="3793095274466276777">Kino-configure ang default na mga pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng mga ito. Kung pinagana mo ang setting na ito, palaging titingnan ng <ph name="PRODUCT_NAME" /> ang startup kahit na default na browser ito at awtomatikong irerehistro ang sarili nito kung posible. Kung hindi pinagana ang setting na ito, hindi kailanmang titingnan ng <ph name="PRODUCT_NAME" /> kung ito ang default na browser at hindi papaganahin ang mga kontrol ng user para sa pagtatakda ng pagpipiliang ito. Kung hindi nakatakda ang setting na ito, papayagan ng <ph name="PRODUCT_NAME" /> ang user na kontrolin kahit na ito ay default na browser at kahit na dapat maipakita ang mga notification ng user kapag hindi ito ipinapakita.</translation>
 <translation id="379602782757302612">Pinapayagan kang tukuyin kung aling mga extension ang HINDI maaaring i-install ng mga user. Idi-disable ang mga extension na naka-install kung naka-blacklist, nang walang paraan upang ma-enable ng user ang mga ito. Kapag inalis dito ang extension na na-disable dahil sa blacklist, awtomatiko itong muling mae-enable.
 
           Nangangahulugan ang value ng blacklist na '*' na naka-blacklist ang lahat ng extension maliban kung tahasang nakalista ang mga ito sa whitelist.
@@ -1188,11 +1187,6 @@
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
 <translation id="4105989332710272578">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga URL</translation>
-<translation id="4111405663956464686">Babala: Ganap nang aalisin ang patakaran sa max na bersyon ng TLS sa <ph name="PRODUCT_NAME" /> sa bandang bersyon 72 (bandang January 2019).
-
-      Kung hindi pa nako-configure ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang default na maximum na bersyon.
-
-      Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3." Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
 <translation id="4138655880188755661">Limitasyon sa Oras</translation>
@@ -2063,11 +2057,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung iiwanang hindi nakatakda ang patakarang ito o kung walang laman ang listahan, maa-access ang lahat ng scheme sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Mga setting ng mga lokal na pinapamahalaang user</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
-<translation id="6665599130599311250">Kung nakatakda ang patakarang ito sa false o hinayaang hindi nakatakda, gagana ang pinapamahalaang session ng bisita gaya ng nakasaad sa https://support.google.com/chrome/a/answer/3017014 - ang karaniwang "Pampublikong Session."
-
-      Kung nakatakda ang patakarang ito sa true, gagana ang pinapamahalaang session ng bisita ayon sa "Pinapamahalaang Session" kung saan pansamantalang inaalis ang maraming paghihigpit na ipinapatupad para sa karaniwang "Mga Pampublikong Session."
-
-      Kung nakatakda ang patakarang ito, hindi ito mababago o mao-override ng user.</translation>
 <translation id="6665670272107384733">Itakda kung gaano kadalas kailangang ilagay ng user ang password para magamit ang mabilisang pag-unlock</translation>
 <translation id="6681229465468164801">Nagbibigay-daan sa iyo na magtakda ng listahan ng mga pattern ng url na tumutukoy sa mga site na pinipigilang magtanong sa user na bigyan siya ng access sa isang USB device.
 
@@ -2230,6 +2219,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na halaga na 32.</translation>
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
+<translation id="6944167205014013774">Ibinabalik sa server ang impormasyon tungkol sa paggamit ng
+      mga Linux app.
+
+      Kung nakatakda ang patakaran sa false o kung hindi ito itinakda, walang iuulat na impormasyon sa
+      paggamit. Kung nakatakda ito sa true, mag-uulat ng impormasyon sa paggamit.
+
+      Nalalapat lang ang patakarang ito kung naka-enable ang suporta sa Linux app.</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
 <translation id="6965859329738616662">Tinutukoy kung papayagan ang smart dim model na patagalin ang oras bago ma-dim ang screen.

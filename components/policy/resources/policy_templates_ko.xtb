@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Symantec Corporation의 Legacy PKI Infrastructure 신뢰 사용 여부</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
+<translation id="1413936351612032792">Linux 앱 사용에 관한 정보 보고</translation>
 <translation id="142346659686073702">제휴되지 않은 사용자가 Crostini를 사용할 수 있게 허용</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
@@ -465,6 +466,9 @@
 <translation id="2201555246697292490">기본 메시지 허용 목록 설정</translation>
 <translation id="2204753382813641270">임시보관함 자동 숨김 제어</translation>
 <translation id="2208976000652006649">POST를 사용하는 검색 URL용 매개변수</translation>
+<translation id="2214880135980649323">이 정책이 사용 설정되면 엔터프라이즈 정책에 의해 설치된 확장 프로그램이 Enterprise Hardware Platform API를 사용할 수 있습니다.
+      이 정책이 사용 중지되거나 설정되지 않으면 어떤 확장 프로그램도 Enterprise Hardware Platform API를 사용할 수 없습니다.
+      이 정책은 행아웃 서비스 확장 프로그램과 같은 구성요소 확장 프로그램에도 적용됩니다.</translation>
 <translation id="2223598546285729819">기본 알림 설정</translation>
 <translation id="2231817271680715693">처음 실행 시 기본 브라우저에서 인터넷 사용기록 가져오기</translation>
 <translation id="2236488539271255289">모든 사이트에서 로컬 데이터 설정 허용 안함</translation>
@@ -1033,7 +1037,6 @@
 
           정책 'EnableMediaRouter'를 'false'로 설정하면 이 정책의 값은 아무런 영향을 미치지 않으며, 툴바 아이콘이 표시되지 않습니다.</translation>
 <translation id="3788662722837364290">사용자가 유휴 상태가 될 때 전원 관리 설정</translation>
-<translation id="3793095274466276777"><ph name="PRODUCT_NAME" />에서 기본 브라우저 확인을 설정하고 사용자가 변경하지 못하게 합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME" />은(는) 시작 시 사용하는 브라우저가 기본 브라우저인지 확인하고 가능한 경우 해당 브라우저를 기본 브라우저로 자동 등록합니다. 이 설정을 사용 중지하면 <ph name="PRODUCT_NAME" />은(는) 기본 브라우저 여부를 확인하지 않고 사용자가 이 옵션을 설정하지 못하도록 합니다. 이 설정을 지정하지 않으면 <ph name="PRODUCT_NAME" />은(는) 사용자가 기본 브라우저 여부를 확인하고 기본 브라우저가 아닐 때 사용자 알림 표시를 할지를 선택할 수 있도록 허용합니다.</translation>
 <translation id="379602782757302612">사용자가 설치할 수 없는 확장 프로그램을 지정하도록 허용합니다. 이미 설치된 확장 프로그램이 블랙리스트에 오를 경우에는 사용이 중지되며, 사용자가 사용 설정할 수 없습니다. 블랙리스트로 인해 중지된 확장 프로그램이 블랙리스트에서 제거되면 자동으로 다시 사용 설정됩니다.
 
           블랙리스트 값 '*'은 허용 목록에 명시적으로 등록되지 않은 경우 확장 프로그램이 모두 블랙리스트에 올라감을 의미합니다.
@@ -1187,11 +1190,6 @@
 
           정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
 <translation id="4105989332710272578">일부 URL 목록에는 인증서 투명성 시행 사용 중지</translation>
-<translation id="4111405663956464686">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 72쯤에서 완전히 삭제됩니다(2019년 1월경).
-
-      이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최대 버전이 사용됩니다.
-
-      정책을 설정하는 경우, 'tls1.2' 또는 'tls1.3' 중 하나로 설정될 수 있습니다. 설정되면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 높은 SSL/TLS 버전이 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="4121350739760194865">앱 프로모션이 새 탭 페이지에 표시되지 않도록 합니다.</translation>
 <translation id="412697421478384751">사용자가 잠금 화면 PIN으로 보안 강도가 약한 PIN을 사용할 수 있게 허용</translation>
 <translation id="4138655880188755661">시간 제한</translation>
@@ -2062,11 +2060,6 @@
       이 정책이 설정되지 않았거나 목록이 비어있는 경우 <ph name="PRODUCT_NAME" />의 모든 스키마에 액세스할 수 있습니다.</translation>
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
-<translation id="6665599130599311250">이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 관리 게스트 세션은 https://support.google.com/chrome/a/answer/3017014에 설명된 대로 표준 '공개 세션'으로 작동합니다.
-
-      이 정책이 true로 설정되어 있으면 관리 게스트 세션은 '관리 세션'으로 작동하여 일반 '공개 세션'에 적용된 여러 제한을 해제합니다.
-
-      이 정책이 설정되어 있으면 사용자가 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
 <translation id="6681229465468164801">사용자에게 USB 기기 액세스 권한 허용을 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
@@ -2228,6 +2221,13 @@
 
       이 정책을 설정하지 않은 경우 기본값인 32가 사용됩니다.</translation>
 <translation id="6943577887654905793">Mac 및 Linux 환경설정 이름:</translation>
+<translation id="6944167205014013774">Linux 앱 사용에 관한 정보가 서버로 다시
+      전송됩니다.
+
+      정책을 False로 설정하거나 설정하지 않으면 사용 정보가
+      보고되지 않습니다. True로 설정하면 사용 정보가 보고됩니다.
+
+      이 정책은 Linux 앱 지원이 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="69525503251220566">기본 검색엔진에 이미지로 검색 기능을 제공하는 매개변수</translation>
 <translation id="6956272732789158625">모든 사이트에서 키 생성 사용 허용 안함</translation>
 <translation id="6965859329738616662">스마트 밝기 낮추기 모델을 사용하여 화면이 어두워질 때까지의 시간을 연장하도록 허용할지 설정합니다.
@@ -2875,6 +2875,25 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8465065632133292531">POST를 사용하는 인스턴트 URL용 매개변수</translation>
 <translation id="847472800012384958">모든 사이트에서 팝업 표시 허용 안함</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">https:// URL의 개인정보 보호 및 보안 관련 민감한 부분을 제거한 후 프록시 확인 시 <ph name="PRODUCT_NAME" />에 의해 사용된 PAC 스크립트(Proxy 자동 설정)에 전달합니다.
+
+      True일 경우 보안 기능이 사용 설정되며 PAC 스크립트에
+      제출하기 전에 https:// URL이 제거됩니다. 이러한 방식으로 PAC
+      스크립트가 암호화된 채널(예: URL 경로 및 검색어)에 의해 일반적으로
+      보호되는 정보를 볼 수 없게 됩니다.
+
+      False일 경우 보안 기능이 사용 중지되며 PAC 스크립트에
+      https:// URL의 모든 구성요소를 볼 수 있는 기능이 암시적으로 부여
+      됩니다. 이는 출처와 상관없이 모든 PAC 스크립트에 적용됩니다.
+      예를 들어 안전하지 않은 전송을 통해 가져온 스크립트나 WPAD를 통해
+      안전하지 않은 방식으로 수집된 스크립트도 여기에 포함됩니다.
+
+      기본값은 True입니다(보안 기능 사용 설정).
+
+      이 정책은 True로 설정하는 것이 좋습니다. 기존의 PAC 스크립트와 호환성
+      문제를 일으킬 때만 False로 설정해야 합니다.
+
+      이 정책은 M75에서 삭제될 예정입니다.</translation>
 <translation id="8484458986062090479">호스트 브라우저에서 항상 렌더링해야 하는 URL 패턴 목록을 맞춤설정합니다.
 
           이 정책을 설정하지 않은 경우 'ChromeFrameRendererSettings' 정책에서 지정한 대로 모든 사이트에서 기본 렌더러가 사용됩니다.

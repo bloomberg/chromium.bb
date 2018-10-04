@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1795405610103747296">Chrome をスマートフォンにインストールしませんか。お客様の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
+<translation id="1812689907177901597">この設定を無効にすると、Chrome にログインすることなく Gmail などの Google サイトにログインできます</translation>
 <translation id="1860536484129686729">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります</translation>
 <translation id="1873233029667955273">Google Chrome はデフォルトのブラウザとして設定されていません</translation>
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1915828456209461693">Chrome の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>
+<translation id="1919130412786645364">Chrome へのログインを許可する</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="2094919256425865063">今すぐ Chrome を終了しますか？</translation>
@@ -285,6 +287,7 @@
 <translation id="9084668267983921457">認証証明書でエラーが発生しました。Google Chrome にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS は 1 時間後に再起動されます}other{Chrome OS は # 時間後に再起動されます}}</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
+<translation id="9138603949443464873">変更を適用するには Chrome を再起動してください</translation>
 <translation id="919706545465235479">同期を開始するには、Chrome を更新します</translation>
 <translation id="924447568950697217">Google Chrome をデフォルトのブラウザにする</translation>
 <translation id="989369509083708165">既定のブラウザは Google Chrome です</translation>

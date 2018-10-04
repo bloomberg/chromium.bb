@@ -21,7 +21,7 @@
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1289185460362160437">Coba lagi hari <ph name="COME_BACK_DAY_OF_WEEK" /> pukul <ph name="COME_BACK_TIME" />.</translation>
+<translation id="1289185460362160437">Gunakan lagi hari <ph name="COME_BACK_DAY_OF_WEEK" /> pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Sinyal lemah</translation>
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1294929383540927798">Ubah setelan notifikasi layar kunci</translation>
@@ -112,7 +112,6 @@
 <translation id="277257480934873581">Menyambungkan lagi ke <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Memilih apakah situs dapat menggunakan layanan lokasi atau mikrofon perangkat, kamera, atau fitur lainnya</translation>
 <translation id="2792498699870441125">Alt+Telusuri</translation>
-<translation id="2808012452536866044">Better Together dialihkan ke ponsel baru</translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Perangkat USB-C (port depan sebelah kiri)</translation>
@@ -217,7 +216,7 @@
 <translation id="4659419629803378708">ChromeVox diaktifkan</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">Administrator perangkat ini memiliki akses ke semua aktivitas, termasuk sandi dan komunikasi.</translation>
-<translation id="4774338217796918551">Coba lagi besok pukul <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4774338217796918551">Gunakan lagi besok pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Sandi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asisten Google tidak tersedia dalam sesi demo.</translation>
 <translation id="479989351350248267">search</translation>
@@ -253,7 +252,6 @@
 <translation id="554893713779400387">Aktifkan dikte</translation>
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
-<translation id="5598551463564921617">Better Together aktif</translation>
 <translation id="5600837773213129531">Tekan Ctrl + Alt + Z untuk menonaktifkan masukan lisan.</translation>
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
@@ -413,7 +411,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat catatan</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8394567579869570560">Orang tua Anda mengunci perangkat ini</translation>
+<translation id="8394567579869570560">Orang tuamu mengunci perangkat ini</translation>
 <translation id="8406981827175133772">Kaca Pembesar Layar Penuh</translation>
 <translation id="8425213833346101688">Ubah</translation>
 <translation id="8427213022735114808">Fitur Pengetikan suara mengirimkan suara Anda ke Google untuk memungkinkan pengetikan menggunakan suara ke kolom teks.</translation>
@@ -469,7 +467,7 @@
 <translation id="9201131092683066720">Baterai terisi <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>
 <translation id="9215934040295798075">Setel wallpaper</translation>
-<translation id="921989828232331238">Orang tua Anda mengunci perangkat untuk hari ini</translation>
+<translation id="921989828232331238">Orang tuamu mengunci perangkat untuk hari ini</translation>
 <translation id="923686485342484400">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="938963181863597773">Apa saja daftar acara di kalender saya?</translation>
 <translation id="945522503751344254">Kirim masukan</translation>

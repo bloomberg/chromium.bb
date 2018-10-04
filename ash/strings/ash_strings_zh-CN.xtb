@@ -112,7 +112,6 @@
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
 <translation id="2790844815106384441">选择是否允许网站使用位置信息服务或使用此设备的麦克风/摄像头/其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
-<translation id="2808012452536866044">Better Together 已改为与新手机连接</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
 <translation id="2825619548187458965">任务栏</translation>
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
@@ -171,7 +170,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">锁定</translation>
 <translation id="3798670284305777884">扬声器（内部）</translation>
-<translation id="380165613292957338">嗨，有什么我可以帮您的吗？</translation>
+<translation id="380165613292957338">嗨，有什么我可以帮你的吗？</translation>
 <translation id="383629559565718788">显示键盘设置</translation>
 <translation id="3846575436967432996">没有可用的网络信息</translation>
 <translation id="385051799172605136">后退</translation>
@@ -254,7 +253,6 @@
 <translation id="554893713779400387">开启/关闭语音输入</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
-<translation id="5598551463564921617">已开启 Better Together 功能</translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5669267381087807207">正在激活</translation>
@@ -470,7 +468,7 @@
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>
 <translation id="9215934040295798075">设置壁纸</translation>
-<translation id="921989828232331238">您的家长为您设定了每日设备使用时长限制</translation>
+<translation id="921989828232331238">您的家长已全天锁定您的设备</translation>
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="938963181863597773">我的日历中有哪些活动？</translation>
 <translation id="945522503751344254">发送反馈</translation>

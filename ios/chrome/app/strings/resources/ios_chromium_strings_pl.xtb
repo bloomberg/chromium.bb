@@ -52,7 +52,6 @@
 <translation id="786327964234957808">Przełączasz synchronizację kont z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Twoimi istniejącymi danymi Chromium zarządza <ph name="DOMAIN" />. Dane zostaną usunięte z tego urządzenia, ale pozostaną na koncie <ph name="USER_EMAIL1" />.</translation>
 <translation id="8175055321229419309">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chromium do Docka<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Włączenie udostępniania lokalizacji w Chromium pozwala w pełni korzystać z usług Google.</translation>
-<translation id="8353224596138547809">Czy Chromium ma zapisać hasło do tej strony?</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />Ustawienia<ph name="END_LINK" /> możesz zmienić w dowolnym momencie. Google może używać zawartości odwiedzanych przez Ciebie stron oraz informacji o Twojej aktywności i interakcjach w przeglądarce, by personalizować Chromium i usługi Google takie jak Tłumacz, wyszukiwarka czy reklamy.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8809780021347235332">Aby zapisać obrazy, kliknij Ustawienia i pozwól Chromium na użycie zdjęć</translation>

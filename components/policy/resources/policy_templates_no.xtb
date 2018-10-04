@@ -130,6 +130,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
+<translation id="1413936351612032792">Rapportér informasjon om bruken av Linux-apper</translation>
 <translation id="142346659686073702">Tillat at brukere uten tilknytning bruker Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
@@ -1010,7 +1011,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis regelen «EnableMediaRouter» angis som «false», har denne regelens verdi ingen virkning, og verktøyradikonet vises ikke.</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
-<translation id="3793095274466276777">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem. Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig. Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og deaktiverer brukerstyrt kontroll av dette alternativet. Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.</translation>
 <translation id="379602782757302612">Lar deg angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, blir deaktivert hvis de er svartelistet – uten at brukeren kan aktivere dem. Når en utvidelse som er deaktivert på grunn av svartelisten, fjernes fra svartelisten, aktiveres den automatisk igjen.
 
           En svartelisteverdi på «*» betyr at alle utvidelser er svartelistet, med mindre de er uttrykkelig oppført i godkjenningslisten.
@@ -1163,11 +1163,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Innstillingsverdien må angis i millisekunder.</translation>
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
-<translation id="4111405663956464686">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 72 (rundt januar 2019).
-
-      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> standarden for maksimumsversjon.
-
-      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="412697421478384751">Gjør det mulig for brukere å angi svake PIN-koder for låseskjermen</translation>
 <translation id="4138655880188755661">Tidsgrense</translation>
@@ -2035,11 +2030,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne innstillingen ikke angis eller listen er tom, blir alle oppsettene tilgjengelige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Innstillinger for lokalt administrerte brukere</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
-<translation id="6665599130599311250">Hvis denne regelen er satt til usann (false) eller ikke er angitt, fungerer administrerte gjesteøkter som dokumentert i https://support.google.com/chrome/a/answer/3017014 – som vanlige «offentlige økter».
-
-      Hvis denne regelen er satt til sann (true), fungerer administrerte gjesteøkter som «administrerte økter», noe som fjerner mange av begrensningene som gjelder for vanlige «offentlige økter».
-
-      Hvis denne regelen er angitt, kan ikke brukeren endre den eller overstyre den.</translation>
 <translation id="6665670272107384733">Angi hvor ofte brukerne må skrive inn passord for å bruke hurtigopplåsing</translation>
 <translation id="6681229465468164801">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder som er forhindret fra å be brukeren om tilgang til en USB-enhet.
 
@@ -2201,6 +2191,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Standardverdien på 32 brukes om denne retningslinjen ikke er angitt.</translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
+<translation id="6944167205014013774">Informasjon om bruken av Linux-apper sendes tilbake til tjeneren. Hvis regelen er angitt som «false» (usann) eller ikke er angitt, blir det ikke rapportert noen bruksinformasjon. Hvis den er angitt som «true» (sann), blir bruksinformasjon rapportert. Denne regelen gjelder bare hvis støtten for Linux-apper er slått på.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
 <translation id="6965859329738616662">Angir om en smart modell for nedtoning kan forlenge tiden det tar før skjermen nedtones.

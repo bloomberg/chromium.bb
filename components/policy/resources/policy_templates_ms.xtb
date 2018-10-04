@@ -139,11 +139,11 @@
 
      NOTA: Dasar ini tidak terpakai pada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Mendayakan API Platform Perkakasan ke sambungan yang dipasang dasar</translation>
 <translation id="1384459581748403878">Rujukan: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="1413936351612032792">Laporkan maklumat tentang penggunaan apl Linux</translation>
 <translation id="142346659686073702">Benarkan pengguna yang bukan ahli gabungan menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
@@ -1038,13 +1038,6 @@
 
           Jika dasar "EnableMediaRouter" ditetapkan kepada palsu, maka nilai dasar ini tidak akan mempunyai kesan dan ikon bar alat tidak akan ditunjukkan.</translation>
 <translation id="3788662722837364290">Tetapan pengurusan kuasa apabila pengguna melahu</translation>
-<translation id="3793095274466276777">Mengkonfigurasi pemeriksaan penyemak imbas lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
-
-      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> sentiasa akan memeriksa pada permulaan sama ada ia adalah penyemak imbas lalai dan mendaftar sendiri jika boleh secara automatik.
-
-      Jika tetapan ini dilumpuhkan, <ph name="PRODUCT_NAME" /> tidak akan sesekali memeriksa jika ia adalah penyemak imbas lalai dan akan melumpuhkan kawalan pengguna untuk menetapkan pilihan ini.
-
-      Jika tetapan ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan membenarkan pengguna untuk mengawal sama ada ia adalah penyemak imbas lalai dan sama ada pemberitahuan pengguna perlu dipaparkan apabila ia tidak perlu.</translation>
 <translation id="379602782757302612">Membolehkan anda menentukan sambungan yang TIDAK boleh dipasang oleh pengguna. Sambungan yang telah dipasang akan dilumpuhkan jika disenaraihitamkan dan pengguna tidak akan ada cara untuk mendayakan sambungan tersebut. Sebaik sahaja sambungan yang dilumpuhkan kerana senarai hitam itu dialih keluar daripada senarai tersebut, sambungan itu akan didayakan semula secara automatik.
 
           Nilai senarai hitam '*' bermakna semua sambungan akan disenaraihitamkan melainkan sambungan itu disenaraikan dalam senarai putih dengan jelas.
@@ -1198,11 +1191,6 @@
 
           Nilai dasar harus dinyatakan dalam milisaat.</translation>
 <translation id="4105989332710272578">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk senarai URL</translation>
-<translation id="4111405663956464686">Amaran: Dasar versi TLS maksimum akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> sekitar versi 72 (sekitar Januari 2019).
-
-      Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum lalai.
-
-      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
 <translation id="412697421478384751">Benarkan pengguna menetapkan PIN yang lemah bagi PIN kunci skrin</translation>
 <translation id="4138655880188755661">Had Masa</translation>
@@ -2072,11 +2060,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan atau senarai tersebut kosong, semua skim akan boleh diakses dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Tetapan pengguna terurus setempat</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
-<translation id="6665599130599311250">Jika dasar ini ditetapkan kepada palsu atau dibiarkan tidak ditetapkan, sesi tetamu yang diurus akan bergelagat seperti yang didokumenkan dalam https://support.google.com/chrome/a/answer/3017014 - "Sesi Umum" standard.
-
-      Jika dasar ini ditetapkan kepada benar, sesi tetamu yang diurus akan mengguna pakai gelagat "Sesi yang Diurus" yang memansuhkan banyak sekatan yang dikenakan pada "Sesi Umum" biasa.
-
-      Jika dasar ini ditetapkan, pengguna tidak dapat mengubah atau mengatasinya.</translation>
 <translation id="6665670272107384733">Tetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas</translation>
 <translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberi tapak tersebut akses kepada peranti USB.
 
@@ -2238,6 +2221,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai, iaitu 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
+<translation id="6944167205014013774">Maklumat tentang penggunaan apl Linux dihantar kembali ke
+      pelayan.
+
+      Jika dasar ditetapkan kepada palsu atau dibiarkan tanpa ditetapkan, tiada maklumat penggunaan akan
+      dilaporkan. Jika dasar ditetapkan kepada benar, maklumat penggunaan akan dilaporkan.
+
+      Dasar ini hanya diguna pakai jika sokongan apl Linux didayakan.</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
 <translation id="6965859329738616662">Menentukan sama ada model pemalapan pintar dibenarkan untuk melanjutkan masa sebelum skrin dimalapkan.
@@ -2885,10 +2875,10 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Mengeluarkan bahagian privasi dan keselamatan URL https:// yang sensitif sebelum menyerahkannya kepada skrip PAC (Konfigurasi Automatik Proksi) yang digunakan oleh <ph name="PRODUCT_NAME" /> semasa peleraian proksi.
+<translation id="8483004350080020634">Mengeluarkan bahagian privasi dan keselamatan yang sensitif daripada URL https:// sebelum menyerahkannya kepada skrip PAC (Konfigurasi Automatik Proksi) yang digunakan oleh <ph name="PRODUCT_NAME" /> semasa peleraian proksi.
 
       Apabila Benar, ciri keselamatan didayakan dan URL https://
-      dibuang sebelum menyerahkannya kepada skrip PAC. Dalam cara ini, skrip PAC
+      dibuang sebelum menyerahkannya kepada skrip PAC. Dengan cara ini, skrip PAC
       tidak dapat melihat data yang lazimnya dilindungi oleh
       saluran yang disulitkan (seperti laluan dan pertanyaan URL).
 

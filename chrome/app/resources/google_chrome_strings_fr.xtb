@@ -39,11 +39,13 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtenir de l'aide sur l'utilisation de Chrome OS</translation>
 <translation id="1795405610103747296">Installez Chrome sur votre téléphone. Vous recevrez un SMS au numéro suivant : <ph name="PHONE_NUMBER" />.</translation>
+<translation id="1812689907177901597">Désactiver cette option vous permet de vous connecter à des sites Google tels que Gmail sans vous connecter à Chrome</translation>
 <translation id="1860536484129686729">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
 <translation id="1873233029667955273">Google Chrome n'est pas votre navigateur par défaut</translation>
 <translation id="1874309113135274312">Version bêta de Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="1915828456209461693">Une nouvelle mise à jour est disponible pour Chrome et sera installée dès que vous le relancerez.</translation>
+<translation id="1919130412786645364">Autoriser la connexion à Chrome</translation>
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="2094919256425865063">Quitter Chrome quand même ?</translation>
@@ -293,6 +295,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="9084668267983921457">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Google Chrome ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS va redémarrer dans une heure}one{Chrome OS va redémarrer dans # heure}other{Chrome OS va redémarrer dans # heures}}</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
+<translation id="9138603949443464873">Pour appliquer vos modifications, relancez Chrome</translation>
 <translation id="919706545465235479">Mettre à jour Chrome pour lancer la synchronisation</translation>
 <translation id="924447568950697217">Définir Chrome comme navigateur par défaut</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>

@@ -36,11 +36,13 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Ricevi assistenza per l'utilizzo di Chrome OS</translation>
 <translation id="1795405610103747296">Installa Chrome sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
+<translation id="1812689907177901597">Se disattivi questa funzione, puoi accedere ai siti Google quali Gmail senza accedere a Chrome</translation>
 <translation id="1860536484129686729">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera</translation>
 <translation id="1873233029667955273">Google Chrome non è il browser predefinito</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="1915828456209461693">È disponibile un nuovo aggiornamento di Chrome che verrà installato al prossimo riavvio.</translation>
+<translation id="1919130412786645364">Consenti l'accesso a Chrome</translation>
 <translation id="2063848847527508675">Per applicare l'aggiornamento è necessario riavviare Chrome OS.</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
 <translation id="2094919256425865063">Vuoi chiudere comunque Chrome?</translation>
@@ -286,6 +288,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="9084668267983921457">Errore del certificato di autenticazione. Accedi di nuovo a Google Chrome o contatta il tuo amministratore per avere ulteriori informazioni. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS verrà riavviato tra un'ora}other{Chrome OS verrà riavviato tra # ore}}</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
+<translation id="9138603949443464873">Riavvia Chrome per applicare le modifiche</translation>
 <translation id="919706545465235479">Aggiorna Chrome per avviare la sincronizzazione</translation>
 <translation id="924447568950697217">Imposta Chrome come browser predefinito</translation>
 <translation id="989369509083708165">Google Chrome è il tuo browser predefinito</translation>

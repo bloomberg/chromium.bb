@@ -137,11 +137,11 @@
 
       LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy sử dụng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Bật API nền tảng phần cứng cho các tiện ích đã cài đặt chính sách</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1413936351612032792">Báo cáo thông tin về việc sử dụng các ứng dụng Linux</translation>
 <translation id="142346659686073702">Cho phép người dùng chưa liên kết sử dụng Crostini</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
@@ -467,8 +467,8 @@
 <translation id="2201555246697292490">Định cấu hình danh sách cho phép nhắn tin gốc</translation>
 <translation id="2204753382813641270">Kiểm soát tự động ẩn giá</translation>
 <translation id="2208976000652006649">Tham số cho URL tìm kiếm sử dụng POST</translation>
-<translation id="2214880135980649323">Khi đặt chính sách này thành bật, các tiện ích được cài đặt theo chính sách doanh nghiệp sẽ được phép sử dụng API nền tảng phần cứng doanh nghiệp.
-      Khi chưa đặt hoặc đặt chính sách này thành tắt, thì không tiện ích nào được phép sử dụng API nền tảng phần cứng doanh nghiệp.
+<translation id="2214880135980649323">Khi đặt chính sách này thành bật, các tiện ích được cài đặt theo chính sách doanh nghiệp sẽ được phép sử dụng Enterprise Hardware Platform API.
+      Khi không đặt hoặc đặt chính sách này thành tắt, thì không tiện ích nào được phép sử dụng Enterprise Hardware Platform API.
       Chính sách này cũng áp dụng cho các tiện ích thành phần, chẳng hạn như tiện ích Dịch vụ Hangout.</translation>
 <translation id="2223598546285729819">Cài đặt thông báo mặc định</translation>
 <translation id="2231817271680715693">Nhập lịch sử duyệt từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
@@ -1037,7 +1037,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu chính sách "EnableMediaRouter" được đặt thành false thì giá trị của chính sách này sẽ không có hiệu lực và biểu tượng thanh công cụ sẽ không được hiển thị.</translation>
 <translation id="3788662722837364290">Cài đặt quản lý nguồn khi người dùng không sử dụng</translation>
-<translation id="3793095274466276777">Định cấu hình kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn kiểm tra khi khởi động để xem đó có phải là trình duyệt mặc định không và tự động đăng ký chính nó nếu có thể. Nếu bạn tắt cài đặt này, <ph name="PRODUCT_NAME" /> sẽ không bao giờ kiểm tra xem đó có phải là trình duyệt mặc định không và vô hiệu hóa kiểm soát của người dùng để đặt tùy chọn này. Nếu cài đặt này không được thiết lập, <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng kiểm soát xem đó có phải là trình duyệt mặc định không và có nên hiển thị thông báo cho người dùng hay không khi không phải là trình duyệt mặc định.</translation>
 <translation id="379602782757302612">Cho phép bạn chỉ định tiện ích mà người dùng KHÔNG thể cài đặt. Những tiện ích đã cài đặt sẽ bị tắt nếu nằm trong danh sách cấm và người dùng không thể bật các tiện ích đó. Khi tiện ích bị tắt do thuộc danh sách cấm được loại bỏ khỏi danh sách này, tiện ích đó sẽ tự động được bật lại.
 
           Giá trị danh sách cấm '*' có nghĩa là tất cả các tiện ích đều được đưa vào danh sách cấm trừ khi chúng được liệt kê rõ ràng trong danh sách cho phép.
@@ -1191,11 +1190,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
-<translation id="4111405663956464686">Cảnh báo: Chúng tôi sẽ xóa hoàn toàn chính sách phiên bản TLS tối đa khỏi <ph name="PRODUCT_NAME" /> từ khoảng phiên bản 72 (vào khoảng tháng 1 năm 2019).
-
-      Nếu bạn không định cấu hình chính sách này thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối đa mặc định.
-
-      Nếu không, bạn có thể đặt chính sách thành một trong các giá trị sau: "tls1.2" hoặc "tls1.3". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS cao hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
 <translation id="412697421478384751">Cho phép người dùng đặt mã PIN yếu cho mã PIN màn hình khóa.</translation>
 <translation id="4138655880188755661">Giới hạn thời gian</translation>
@@ -2067,11 +2061,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không đặt chính sách này hoặc danh sách trống, tất cả lược đồ sẽ có thể truy cập được trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Cài đặt người dùng được quản lý cục bộ</translation>
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
-<translation id="6665599130599311250">Nếu bạn đặt chính sách này thành false hoặc không đặt, thì phiên khách được quản lý sẽ hoạt động như được nêu tại https://support.google.com/chrome/a/answer/3017014 - "Phiên công khai" tiêu chuẩn.
-
-      Nếu bạn đặt chính sách này thành true, thì phiên khách được quản lý sẽ hoạt động như "Phiên được quản lý", trong đó nhiều nội dung hạn chế áp dụng cho "Phiên công khai" thông thường sẽ được gỡ bỏ.
-
-      Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="6665670272107384733">Đặt tần suất người dùng phải nhập mật khẩu để sử dụng tính năng mở khóa nhanh</translation>
 <translation id="6681229465468164801">Cho phép bạn đặt danh sách mẫu URL để chỉ định các trang web không được phép yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
 
@@ -2234,6 +2223,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không đặt chính sách này, giá trị mặc định được sử dụng sẽ là 32.</translation>
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
+<translation id="6944167205014013774">Thông tin về việc sử dụng các ứng dụng Linux được gửi về
+      máy chủ.
+
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thông tin sử dụng sẽ không được
+      báo cáo. Nếu bạn đặt chính sách này thành true, thông tin sử dụng sẽ được báo cáo.
+
+      Chính sách này chỉ áp dụng nếu tính năng hỗ trợ ứng dụng Linux ở trạng thái bật.</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
 <translation id="6965859329738616662">Nêu rõ liệu mô hình giảm độ sáng thông minh có được phép kéo dài thời gian cho đến khi màn hình tối đi hay không.
@@ -2868,25 +2864,25 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Tách các phần nhạy cảm với bảo mật và quyền riêng tư của các URL https:// trước khi đưa vào các tập lệnh PAC (Tự động định cấu hình proxy) được <ph name="PRODUCT_NAME" /> sử dụng trong quá trình phân giải proxy.
+<translation id="8483004350080020634">Tách các phần nhạy cảm liên quan bảo mật và quyền riêng tư khỏi các URL https:// trước khi chuyển các URL này đến các tập lệnh PAC (Tự động định cấu hình proxy) được <ph name="PRODUCT_NAME" /> sử dụng trong quá trình phân giải proxy.
 
       Khi đặt chính sách này thành True, tính năng bảo mật được bật và các URL https:// được
       phân tách trước khi gửi tới tập lệnh PAC. Theo cách này, tập lệnh PAC
       không thể xem dữ liệu thường do kênh đã mã hóa
       bảo vệ (như đường dẫn và truy vấn của URL).
 
-      Khi đặt chính sách này thành False, tính năng bảo mật bị tắt và tập lệnh PAC
-      sẽ có khả năng xem toàn bộ các thành phần của URL https://
-      Tùy chọn này áp dụng cho mọi tập lệnh PAC bất kể nguồn gốc (bao gồm
+      Khi đặt chính sách này thành False, tính năng bảo mật bị tắt và các tập lệnh PAC
+      được tự động cấp phép xem toàn bộ các thành phần của một URL https://
+      Điều này này áp dụng cho mọi tập lệnh PAC bất kể nguồn gốc (bao gồm
       cả những tập lệnh được tìm nạp qua phương thức truyền tải không an toàn hoặc bị phát hiện là không an toàn
       qua WPAD).
 
       Chính sách này được đặt mặc định là True (tính năng bảo mật được bật).
 
       Bạn nên đặt chính sách này là True. Chỉ nên đặt thành
-      False khi chính sách cài đặt này gây ra sự cố tương thích với tập lệnh PAC hiện có.
+      False khi chính sách này gây ra sự cố tương thích với tập lệnh PAC hiện có.
 
-      Chúng tôi sẽ xóa chính sách này trong M75.</translation>
+      Chính sách này sẽ bị xóa trong M75.</translation>
 <translation id="8484458986062090479">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị.
 
           Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.

@@ -15,7 +15,6 @@
 <translation id="1016566241875885511">Informações adicionais (opcional)</translation>
 <translation id="1017280919048282932">&amp;Adicionar ao dicionário</translation>
 <translation id="1018656279737460067">Cancelado</translation>
-<translation id="102272308210570439">Permitir que o Assistente use o que está na sua tela</translation>
 <translation id="1026822031284433028">Carregar Imagem</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469">O URL <ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
@@ -76,7 +75,7 @@
 <translation id="1114202307280046356">Diamante</translation>
 <translation id="1114335938027186412">Seu computador possui um dispositivo de segurança Trusted Platform Module (TPM, na sigla em inglês), que é utilizado para implementar muitos recursos de segurança importantes no Chrome OS. Visite a Central de Ajuda do Chromebook para saber mais: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Colocar em modo de suspensão quando a tampa estiver fechada</translation>
-<translation id="1115324527092594775">Configurar o "Better Together"</translation>
+<translation id="1116639326869298217">Não foi possível verificar sua identidade</translation>
 <translation id="1116694919640316211">Sobre</translation>
 <translation id="1116779635164066733">Esta configuração é aplicada pela extensão "<ph name="NAME" />".</translation>
 <translation id="111844081046043029">Tem certeza que quer sair desta página?</translation>
@@ -123,6 +122,7 @@
 <translation id="1171135284592304528">Destacar o objeto com o foco do teclado quando ele mudar</translation>
 <translation id="1173894706177603556">Renomear</translation>
 <translation id="1174073918202301297">Atalho adicionado</translation>
+<translation id="117445914942805388">Para limpar os dados de navegação de todos os dispositivos sincronizados e da sua Conta do Google, <ph name="BEGIN_LINK" />acesse as configurações de sincronização<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Imprimir...</translation>
 <translation id="117624967391683467">Copiando <ph name="FILE_NAME" />...</translation>
 <translation id="1177138678118607465">O Google pode usar seu histórico de navegação para personalizar a Pesquisa, os anúncios e outros serviços do Google. Você pode alterar essa configuração a qualquer momento em myaccount.google.com/activitycontrols/search</translation>
@@ -137,6 +137,7 @@
 <translation id="1189418886587279221">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo.</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acessar um arquivo armazenado no seu computador}one{Acessar # arquivos armazenados no seu computador.}other{Acessar # arquivos armazenados no seu computador}}</translation>
+<translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta do Google, <ph name="BEGIN_LINK" />saia da sua conta<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, digite sua senha. Na próxima vez, você poderá usar seu smartphone para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
@@ -169,6 +170,7 @@
 <translation id="1225211345201532184">Item 5 da estante</translation>
 <translation id="1227507814927581609">Falha na autenticação ao conectar-se com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1230807973377071856">menu do sistema</translation>
+<translation id="1231733316453485619">Ativar sincronização?</translation>
 <translation id="123186018454553812">Tentar uma chave diferente</translation>
 <translation id="1232569758102978740">Sem título</translation>
 <translation id="1233721473400465416">Localidade</translation>
@@ -207,7 +209,6 @@
 <translation id="1293177648337752319">Parar de ignorar site</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
 <translation id="1293556467332435079">Arquivos</translation>
-<translation id="1295794900245526845">Selecionar sua conta salva com o <ph name="PASSWORD_MANAGER_BRAND" /> para fazer login</translation>
 <translation id="1296497012903089238">Tipo de certificado</translation>
 <translation id="1297175357211070620">Destino</translation>
 <translation id="1297922636971898492">O Google Drive não está disponível no momento. O upload será reiniciado automaticamente assim que o Google Drive estiver de volta.</translation>
@@ -279,10 +280,8 @@
 <translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Nenhum certificado do usuário</translation>
-<translation id="1401165786814632797">Acesse seu Assistente sempre que disser "Ok Google" quando seu dispositivo estiver ativado e desbloqueado.</translation>
 <translation id="140250605646987970">Seu smartphone foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e posterior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
-<translation id="1405476660552109915">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> salve sua conta para este site?</translation>
 <translation id="1406500794671479665">Verificando...</translation>
 <translation id="1407489512183974736">Cortar para centralizar</translation>
 <translation id="1408504635543854729">Explore o conteúdo do dispositivo no app Arquivos. O conteúdo é restrito por um administrador e não pode ser modificado.</translation>
@@ -554,7 +553,6 @@
 <translation id="1792619191750875668">Exibição estendida</translation>
 <translation id="1794791083288629568">Envie um feedback para nos ajudar a corrigir esse problema.</translation>
 <translation id="1795214765651529549">Usar "Clássico"</translation>
-<translation id="179793358054765055">Nome do dispositivo Chromebook (<ph name="REGEX" />)</translation>
 <translation id="1799071797295057738">A extensão "<ph name="EXTENSION_NAME" />" foi desativada automaticamente.</translation>
 <translation id="180035236176489073">É necessário estar conectado para acessar estes arquivos.</translation>
 <translation id="1802687198411089702">A página não está respondendo. Você pode esperar até que ele volte a responder ou sair.</translation>
@@ -593,7 +591,6 @@
 <translation id="1846308012215045257">Aperte Ctrl e clique para executar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="1847880352285315359">Salvo</translation>
 <translation id="1848219224579402567">Sair quando a tampa for fechada</translation>
-<translation id="184823282865851239">Bloquear se o site costuma mostrar anúncios invasivos</translation>
 <translation id="1849186935225320012">Esta página tem controle total de dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Girar no &amp;sentido horário</translation>
 <translation id="1852799913675865625">Ocorreu um erro ao tentar ler o arquivo: <ph name="ERROR_TEXT" /></translation>
@@ -737,7 +734,6 @@
 <translation id="2080070583977670716">Mais definições</translation>
 <translation id="2084108471225856927">Configurações do dispositivo</translation>
 <translation id="2085470240340828803">Já existe um arquivo chamado "<ph name="FILENAME" />". O que você quer fazer?</translation>
-<translation id="2085483813371386023">Acesse <ph name="LINK_BEGIN" />Configurações<ph name="LINK_END" /> para ver suas opções do "Better Together"</translation>
 <translation id="208586643495776849">Tente novamente</translation>
 <translation id="2087822576218954668">Imprimir: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navegue com segurança com o Google Chrome</translation>
@@ -983,6 +979,7 @@
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Utiliza cookies para lembrar suas preferências, mesmo se você não acessar essas páginas</translation>
 <translation id="2468902267404883140">Não foi possível conectar-se ao seu smartphone. Certifique-se de estar usando um smartphone compatível com Android que esteja ativado e acessível. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
+<translation id="247051149076336810">URL de compartilhamento de arquivos</translation>
 <translation id="2470702053775288986">Extensões incompatíveis desativadas</translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -991,6 +988,7 @@
 <translation id="247949520305900375">Compartilhar áudio</translation>
 <translation id="2480868415629598489">Modificar os dados que você copia e cola</translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="2484959914739448251">Para limpar os dados de navegação de todos os dispositivos sincronizados e da sua Conta do Google, <ph name="BEGIN_LINK" />digite sua senha longa<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2487067538648443797">Adicionar novo favorito</translation>
 <translation id="248861575772995840">Não foi possível localizar seu smartphone. Certifique-se de que o Bluetooth do <ph name="DEVICE_TYPE" /> esteja ativado. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
@@ -1034,7 +1032,6 @@
 <translation id="2534460670861217804">Proxy HTTP seguro</translation>
 <translation id="253557089021624350">Contagem de manutenção de atividade</translation>
 <translation id="2538361623464451692">Sincronização desativada</translation>
-<translation id="2539876824180063438">Mova o dedo indicador levemente para adicionar as diferentes partes da sua impressão digital.</translation>
 <translation id="2541002089857695151">Otimizar transmissão em tela cheia?</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
@@ -1048,7 +1045,6 @@
 <translation id="2558896001721082624">Sempre mostrar as opções de acessibilidade no menu do sistema</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">Não conectado a <ph name="SHORT_PRODUCT_NAME" /></translation>
-<translation id="2563856802393254086">Parabéns! Seu serviço de dados "<ph name="NAME" />" foi ativado e está pronto para ser usado.</translation>
 <translation id="2564520396658920462">A execução do JavaScript por AppleScript está desativada. Para ativá-la, na barra de menu, acesse Ver &gt; Desenvolvedor &gt; Permitir o JavaScript do Eventos da Apple. Para ver mais informações: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Verificação ortográfica aprimorada</translation>
 <translation id="2566124945717127842">Use a função "Powerwash" para redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para as condições de fábrica.</translation>
@@ -1116,7 +1112,6 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor do campo</translation>
 <translation id="2654166010170466751">Permitir que sites instalem gerenciadores de pagamento</translation>
-<translation id="2656742821229528729">Conecte o smartphone Android e o Chromebook para enviar mensagens de texto do seu computador, compartilhar sua conexão com a Internet e desbloquear a tela do Chromebook com o smartphone.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Os recursos variam de acordo com o dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">Não é possível conectar a impressora. Verifique se ela está ligada e conectada ao seu Chromebook por Wi-Fi ou USB.</translation>
@@ -1130,7 +1125,6 @@
 <translation id="2667463864537187133">Gerenciar a verificação ortográfica</translation>
 <translation id="2670102641511624474">O app <ph name="APP_NAME" /> está compartilhando uma guia do Chrome.</translation>
 <translation id="2670429602441959756">Esta página contém recursos que ainda não são compatíveis com a realidade virtual. Saindo…</translation>
-<translation id="2670531586141364277">A ativação de "<ph name="NAME" />" requer uma conexão com a rede.</translation>
 <translation id="2671451824761031126">Seus favoritos e configurações estão prontos</translation>
 <translation id="2672142220933875349">Arquivo crx defeituoso, a descompactação falhou.</translation>
 <translation id="2672394958563893062">Ocorreu um erro. Clique para voltar ao início.</translation>
@@ -1166,7 +1160,6 @@
 <translation id="2721695630904737430">Os usuários supervisionados foram desativados pelo administrador.</translation>
 <translation id="2724841811573117416">Registros WebRTC</translation>
 <translation id="2725200716980197196">Conectividade de rede restaurada</translation>
-<translation id="2727176303594781056">Erro de ativação de rede</translation>
 <translation id="2727633948226935816">Não me lembrar novamente</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
 <translation id="273093730430620027">Esta página está acessando sua câmera.</translation>
@@ -1208,6 +1201,7 @@
 <translation id="2783829359200813069">Selecionar tipos de criptografia</translation>
 <translation id="2783952358106015700">Usar sua chave de segurança com <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Ativando seu serviço de dados móveis</translation>
+<translation id="2785008241190445880">Favorito substituído</translation>
 <translation id="2785873697295365461">Descritores de arquivos</translation>
 <translation id="2787047795752739979">Substituir original</translation>
 <translation id="2787354132612937472">—</translation>
@@ -1286,7 +1280,6 @@
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> não conseguiu se comunicar com esta impressora. Verifique se a impressora está conectada e tente novamente.</translation>
 <translation id="2902312830803030883">Mais ações</translation>
 <translation id="2903457445916429186">Abrir itens selecionados</translation>
-<translation id="2903493209154104877">Endereços</translation>
 <translation id="2903882649406874750">Sempre impedir que <ph name="HOST" /> acesse os sensores</translation>
 <translation id="290444763029043472">Download de <ph name="DOWNLOADED_AMOUNT_MB" /> MB de <ph name="TOTAL_AMOUNT_MB" /> MB concluído</translation>
 <translation id="2904456025988372123">Perguntar quando um site tentar fazer o download de arquivos automaticamente após o primeiro arquivo</translation>
@@ -1316,7 +1309,6 @@
 <translation id="2943503720238418293">Use um nome mais curto</translation>
 <translation id="2946119680249604491">Adicionar conexão</translation>
 <translation id="2948300991547862301">Ir para a página <ph name="PAGE_TITLE" /></translation>
-<translation id="2948320633360386059">Bloqueados em sites que costumam mostrar anúncios invasivos</translation>
 <translation id="29488703364906173">Um navegador da Web rápido, simples e seguro, desenvolvido para a Web moderna.</translation>
 <translation id="2951247061394563839">Centralizar janela</translation>
 <translation id="2958721676848865875">Aviso de extensão de pacote</translation>
@@ -1324,7 +1316,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensão fornecida)</translation>
 <translation id="2961695502793809356">Clique para avançar, mantenha pressionado para ver o histórico</translation>
 <translation id="2963151496262057773">Este plug-in não responde: <ph name="PLUGIN_NAME" />. Quer interrompê-lo?</translation>
-<translation id="2966449113954629791">Você pode ter usado a cota de dados do seu dispositivo móvel. Visite o portal de ativação do <ph name="NAME" /> para comprar mais dados.</translation>
 <translation id="2966937470348689686">Gerenciar preferências do Android</translation>
 <translation id="2971213274238188218">diminuir brilho</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1412,7 +1403,6 @@
 <translation id="3085412380278336437">O site pode usar sua câmera</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3088325635286126843">&amp;Renomear...</translation>
-<translation id="3088402208262982892">"Better Together" está desativado</translation>
 <translation id="3090193911106258841">Acessando entrada de áudio e vídeo</translation>
 <translation id="3090819949319990166">Não foi possível copiar o arquivo externo crx em <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" pareado</translation>
@@ -1421,7 +1411,6 @@
 <translation id="3115128645424181617">Não foi possível encontrar seu smartphone. Certifique-se de que ele esteja acessível e com o Bluetooth ativado.</translation>
 <translation id="3115147772012638511">Aguardando o cache...</translation>
 <translation id="3118319026408854581">Ajuda do <ph name="PRODUCT_NAME" /></translation>
-<translation id="3119484583572640616">Ativar o "Better Together" significa poder:</translation>
 <translation id="3120430004221004537">Criptografia insuficiente para uma determinada operação em "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">Restaurar este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1615,7 +1604,6 @@
 <translation id="3428419049384081277">Você está conectado</translation>
 <translation id="3429275422858276529">Adicionar esta página aos favoritos para encontrá-la mais facilmente depois</translation>
 <translation id="3429599832623003132">$1 itens</translation>
-<translation id="3430342160185525240">Permite que o Assistente mostre notificações.</translation>
 <translation id="3432227430032737297">Remover todos os cookies mostrados</translation>
 <translation id="3432757130254800023">Enviar áudio e vídeo para telas na rede local</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
@@ -1643,6 +1631,7 @@
 <translation id="3459697287128633276">Para ativar sua conta para acessar a Google Play Store, autentique com seu Provedor de identidade.</translation>
 <translation id="3459774175445953971">Última modificação:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> quer ver os textos e imagens copiados para a área de transferência</translation>
+<translation id="3462311546193741693">Desconecta você da maioria dos sites. Você permanecerá conectado à sua Conta do Google, então seus dados sincronizados poderão ser excluídos.</translation>
 <translation id="3462413494201477527">Cancelar a configuração da conta?</translation>
 <translation id="346431825526753">Esta é uma conta para as crianças gerenciada por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Clique na sua foto</translation>
@@ -1732,7 +1721,6 @@
 <translation id="3592260987370335752">&amp;Saiba mais</translation>
 <translation id="359283478042092570">Entrar</translation>
 <translation id="3593965109698325041">Restrições de nome do certificado</translation>
-<translation id="3594089623005973443">Páginas por folha</translation>
 <translation id="3596235046596950091">Ativar serviços em nuvem</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
@@ -1742,7 +1730,6 @@
 <translation id="3603622770190368340">Obter certificado de rede</translation>
 <translation id="3604048165392640554">Nenhuma conexão móvel encontrada. Ative o tethering instantâneo nos seus outros dispositivos e tente novamente. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Esporte fino</translation>
-<translation id="3606712892509067288">Remover do "Better Together"</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Visualização da imagem do usuário</translation>
 <translation id="3609446736023031597">Receba as atualizações e recomendações mais recentes sobre os apps da Play Store</translation>
@@ -1782,6 +1769,7 @@
 <translation id="3650952250015018111">Permitir que o app "<ph name="APP_NAME" />" acesse:</translation>
 <translation id="3651488188562686558">Desconectar do Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
+<translation id="3653160965917900914">Compartilhamentos de arquivos de rede</translation>
 <translation id="3653999333232393305">Continuar permitindo que <ph name="HOST" /> acesse seu microfone</translation>
 <translation id="3654045516529121250">Ler suas configurações de acessibilidade</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um arquivo.}one{Tem acesso permanente a # arquivos.}other{Tem acesso permanente a # arquivos.}}</translation>
@@ -1897,7 +1885,6 @@
 <translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812525830114410218">Certificado inválido</translation>
 <translation id="3813296892522778813">Se você não encontrar o que está procurando, acesse a <ph name="BEGIN_LINK_CHROMIUM" />Ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
-<translation id="3813984289128269159">Ok Google</translation>
 <translation id="3817579325494460411">Não fornecido</translation>
 <translation id="3819752733757735746">Acesso com interruptor (controlar o computador com apenas um ou dois interruptores)</translation>
 <translation id="3819800052061700452">&amp;Tela cheia</translation>
@@ -1908,6 +1895,7 @@
 <translation id="38275787300541712">Pressione "Enter" ao terminar</translation>
 <translation id="3827774300009121996">&amp;Tela cheia</translation>
 <translation id="3828029223314399057">Pesquisar favoritos</translation>
+<translation id="3829765597456725595">Compartilhamento de arquivos SMB</translation>
 <translation id="3830674330436234648">Nenhuma reprodução disponível</translation>
 <translation id="3831436149286513437">Sugestões de pesquisa do Google Drive</translation>
 <translation id="3831486154586836914">Iniciado modo de visão geral da janela</translation>
@@ -1949,7 +1937,6 @@
 <translation id="3873315167136380065">Para ativar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /> e remova sua senha longa de sincronização</translation>
 <translation id="3878840326289104869">Criando usuário supervisionado</translation>
 <translation id="3879748587602334249">Gerenciador de downloads</translation>
-<translation id="3885455691202481064">Toque no sensor com o dedo indicador. Ele fica no canto superior esquerdo do Chromebook.</translation>
 <translation id="3888550877729210209">Tomando notas com <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Adicionar OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">Ler e alterar as configurações de acessibilidade</translation>
@@ -1981,7 +1968,6 @@
 <translation id="3930521966936686665">Reproduzir em</translation>
 <translation id="3930737994424905957">Procurando dispositivos</translation>
 <translation id="3933283459331715412">Restaurar senha excluída de <ph name="USERNAME" /></translation>
-<translation id="3936335337858561470">Esquecer este dispositivo</translation>
 <translation id="3936390757709632190">&amp;Abrir áudio em uma nova guia</translation>
 <translation id="3936925983113350642">A senha escolhida será necessária para restaurar este certificado mais tarde. Guarde-a em um local seguro.</translation>
 <translation id="3937640725563832867">Nome alternativo do emissor do certificado</translation>
@@ -2058,7 +2044,6 @@
 <translation id="4044612648082411741">Digite a senha do certificado</translation>
 <translation id="404493185430269859">Mecanismo de pesquisa padrão</translation>
 <translation id="4047112090469382184">É seguro?</translation>
-<translation id="4051049974203704184">Receber informações sobre o que é exibido na tela</translation>
 <translation id="4052120076834320548">Minúscula</translation>
 <translation id="4055023634561256217">Para que seu dispositivo possa ser redefinido com o Powerwash, é necessário reiniciá-lo.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2292,6 +2277,7 @@
 <translation id="4467100756425880649">Galeria da Chrome Web Store</translation>
 <translation id="4467101674048705704">Expandir <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Ajude a melhorar os recursos e o desempenho do Chrome</translation>
+<translation id="4472575034687746823">Primeiros passos</translation>
 <translation id="4474155171896946103">Adicionar todas as guias aos favoritos...</translation>
 <translation id="4475552974751346499">Pesquisar downloads</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -2340,7 +2326,6 @@
 <translation id="4547659257713117923">Nenhuma guia de outros dispositivos</translation>
 <translation id="4547672827276975204">Definir automaticamente</translation>
 <translation id="4547992677060857254">A pasta selecionada contém arquivos confidenciais. Tem certeza que quer conceder a "$1" acesso permanente de gravação a esta pasta?</translation>
-<translation id="4552031286893852992">O Chrome bloqueou anúncios neste site porque ele costuma mostrar anúncios invasivos.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552678318981539154">Comprar mais espaço</translation>
 <translation id="4554591392113183336">A extensão externa está na mesma versão ou em uma versão anterior à existente.</translation>
@@ -2509,7 +2494,6 @@
 <translation id="4821935166599369261">&amp;Criação de perfil ativada</translation>
 <translation id="4823484602432206655">Ler e alterar as configurações do dispositivo e usuário</translation>
 <translation id="4823651846660089135">O dispositivo é somente leitura</translation>
-<translation id="4823955295535347797">Acesse seu Assistente a qualquer momento, dizendo "Ok Google" quando a tela estiver ativada.</translation>
 <translation id="4828937774870308359">Australiano</translation>
 <translation id="4829768588131278040">Configurar PIN</translation>
 <translation id="4830502475412647084">Instalando atualização do SO</translation>
@@ -2632,6 +2616,7 @@
 <translation id="4974733135013075877">Sair e bloquear</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém malware.</translation>
+<translation id="4981449534399733132">Para limpar os dados de navegação de todos os dispositivos sincronizados e da sua Conta do Google, <ph name="BEGIN_LINK" />faça login<ph name="END_LINK" />.</translation>
 <translation id="498294082491145744">Alterar configurações que controlam o acesso dos websites a recursos como cookies, JavaScript, plug-ins, geolocalização, microfone, câmera etc.</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar no s&amp;entido anti-horário</translation>
@@ -2690,7 +2675,6 @@
 <translation id="5072836811783999860">Mostrar favoritos gerenciados</translation>
 <translation id="5074318175948309511">Esta página pode precisar ser recarregada para que as novas configurações tenham efeito.</translation>
 <translation id="5075131525758602494">Digitar o PIN do chip</translation>
-<translation id="5078490485380754244">Esquecer dispositivo</translation>
 <translation id="5078638979202084724">Adicionar todas as guias aos favoritos</translation>
 <translation id="5079950360618752063">Usar senha sugerida</translation>
 <translation id="5084230410268011727">Permitir que sites usem sensores de luz e movimento</translation>
@@ -2788,7 +2772,6 @@
 <translation id="5233736638227740678">&amp;Colar</translation>
 <translation id="5234764350956374838">Dispensar</translation>
 <translation id="5235050375939235066">Desinstalar app?</translation>
-<translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Substituir a página que você vê ao abrir uma nova guia</translation>
 <translation id="5238278114306905396">O aplicativo "<ph name="EXTENSION_NAME" />" foi removido automaticamente.</translation>
 <translation id="5238369540257804368">Escopos</translation>
@@ -2873,7 +2856,7 @@
 <translation id="5332624210073556029">Fuso horário:</translation>
 <translation id="5334142896108694079">Cache de script</translation>
 <translation id="5334844597069022743">Exibir código fonte</translation>
-<translation id="5334899159203764908">Saiba mais sobre o <ph name="BEGIN_LINK" />acesso de site<ph name="END_LINK" /></translation>
+<translation id="5334899159203764908">Saiba mais sobre o <ph name="BEGIN_LINK" />acesso aos sites<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Fazendo backup de <ph name="FILE_COUNT" /> arquivo(s) para o <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Não permitir que nenhum site acesse dispositivos USB</translation>
 <translation id="5337771866151525739">Instalada por terceiro.</translation>
@@ -2907,6 +2890,7 @@
 <translation id="5380103295189760361">Pressione Control, Alt, Shift ou "Pesquisar" para visualizar os atalhos do teclado para estes modificadores.</translation>
 <translation id="5382591305415226340">Gerenciar links compatíveis</translation>
 <translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo de navegação anônima.</translation>
+<translation id="5387961145478138773">Acesse rapidamente seus apps favoritos do Google</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5389237414310520250">Não foi possível criar o novo usuário. Verifique o espaço no seu disco rígido e suas permissões e tente novamente.</translation>
 <translation id="5390100381392048184">Permitir que os sites reproduzam sons</translation>
@@ -2981,7 +2965,6 @@
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5488093641312826914">"<ph name="COPIED_ITEM_NAME" />" copiado</translation>
 <translation id="5488468185303821006">Permitir em modo anônimo</translation>
-<translation id="5489121514345187313">O Chromebook funciona ainda melhor com seu smartphone. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="5489435190927933437">Senhas salvas para <ph name="DOMAIN" /></translation>
 <translation id="5491110079163012109">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. É possível ver essa opção nas configurações. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">tela ativada</translation>
@@ -3063,7 +3046,6 @@
 <translation id="5595152862129936745">Muito longe</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596627076506792578">Mais opções</translation>
-<translation id="5598551463564921617">"Better Together" está ativado</translation>
 <translation id="5600706100022181951">O download da atualização será feito com <ph name="UPDATE_SIZE_MB" /> MB de dados móveis. Quer continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5602765853043467355">Limpar favoritos, histórico, senhas e mais deste dispositivo.</translation>
@@ -3123,7 +3105,6 @@ Não exponha nenhuma informação confidencial.</translation>
    <ph name="LINE_BREAKS" />
    Feche todos os itens do arquivo ou disco virtual e tente novamente.</translation>
 <translation id="5687326903064479980">Fuso horário</translation>
-<translation id="568824803367507355">Detecção de "Ok Google"</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="56907980372820799">Vincular dados</translation>
 <translation id="5691511426247308406">Família</translation>
@@ -3167,6 +3148,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5756163054456765343">Central de ajuda</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão pelo <ph name="APP_NAME" /> podem ser lidos pelo <ph name="APP_NAME" />.</translation>
 <translation id="5762172915276660232">Configurações de cartão de crédito</translation>
+<translation id="5763315388120433852">Configurar ou gerenciar compartilhamentos de arquivos de rede.</translation>
 <translation id="5763751966069581670">Nenhum dispositivo USB encontrado</translation>
 <translation id="5764483294734785780">Sal&amp;var áudio como...</translation>
 <translation id="57646104491463491">Data da modificação</translation>
@@ -3282,7 +3264,6 @@ Não exponha nenhuma informação confidencial.</translation>
   Expoente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">Ativado</translation>
-<translation id="5916878242223710315">Desbloquear configuração</translation>
 <translation id="59174027418879706">Ativada</translation>
 <translation id="5920543303088087579">A conexão a esta rede foi desativada pelo seu administrador</translation>
 <translation id="5920835625712313205">Gravador de imagem do sistema Chrome OS</translation>
@@ -3347,6 +3328,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6020431688553761150">O servidor não autorizou você a acessar este recurso.</translation>
 <translation id="602251597322198729">Este site está tentando fazer o download de vários arquivos. Você deseja permitir isso?</translation>
 <translation id="6022526133015258832">Abrir em tela cheia</translation>
+<translation id="6022659036123304283">Deixe o Chrome do seu jeito</translation>
 <translation id="6022705094403139349">Pronto para parear sua chave de segurança?</translation>
 <translation id="6023643151125006053">Este dispositivo (SN: <ph name="SERIAL_NUMBER" />) foi bloqueado pelo administrador de <ph name="SAML_DOMAIN" />.</translation>
 <translation id="6025215716629925253">Rastreamento de pilha</translation>
@@ -3380,6 +3362,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6057381398996433816">Este site foi impedido de usar sensores de luz e movimento.</translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6060991652695587932">Escolha seu serviço de e-mail para acesso rápido</translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6065289257230303064">Atributos do diretório do requerente do certificado</translation>
 <translation id="6068338049763724728">Ativar registro remoto</translation>
@@ -3396,7 +3379,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6078752646384677957">Verifique seu microfone e os níveis de áudio.</translation>
 <translation id="6080515710685820702">Está usando um computador compartilhado? Tente abrir uma janela anônima.</translation>
 <translation id="6080689532560039067">Verifique a hora do seu sistema</translation>
-<translation id="6082111513049964958">Senha de desbloqueio</translation>
 <translation id="6082651258230788217">Mostrar na barra de ferramentas</translation>
 <translation id="6086846494333236931">Instalada pelo administrador</translation>
 <translation id="6087960857463881712">Rosto maravilhado</translation>
@@ -3441,6 +3423,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6144938890088808325">Ajudar a melhorar os Chromebooks</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">A visualização de impressão falhou.</translation>
+<translation id="6148716538476291841">Limpa o histórico deste dispositivo.</translation>
 <translation id="614940544461990577">Tente:</translation>
 <translation id="6150853954427645995">Para salvar este arquivo para uso off-line, fique on-line novamente, clique com o botão direito no arquivo e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pressione <ph name="SEARCH_KEY" /> para pesquisar <ph name="SITE_NAME" /></translation>
@@ -3476,7 +3459,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6199801702437275229">Aguardando informações sobre espaço...</translation>
 <translation id="6201792273624501289">Aplicativos Linux</translation>
-<translation id="6204015976622790023">Veja sugestões relevantes do seu Assistente relacionadas ao que é exibido na tela.</translation>
 <translation id="6205710420833115353">Algumas operações estão demorando mais tempo que o esperado. Quer cancelar?</translation>
 <translation id="6206311232642889873">&amp;Copiar imagem</translation>
 <translation id="6207200176136643843">Redefinir para o nível de zoom padrão</translation>
@@ -3514,11 +3496,11 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6251870443722440887">Processamentos de GDI</translation>
 <translation id="6251889282623539337">Termos de Serviço de <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Compromisso da chave</translation>
+<translation id="6257602895346497974">Ativar a sincronização…</translation>
 <translation id="6259104249628300056">Descobrir dispositivos na sua rede local</translation>
 <translation id="6263082573641595914">Versão da autoridade de certificação da Microsoft</translation>
 <translation id="6263284346895336537">Não crítico</translation>
 <translation id="6264365405983206840">Selecionar &amp;tudo</translation>
-<translation id="6264422956566238156">Você ativou a sincronização</translation>
 <translation id="6267166720438879315">Selecione um certificado para se autenticar no <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Abrir com <ph name="APP" /></translation>
 <translation id="6268747994388690914">Importar favoritos de arquivo HTML...</translation>
@@ -3730,7 +3712,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6581162200855843583">Link do Google Drive</translation>
 <translation id="6582080224869403177">Redefina seu <ph name="DEVICE_TYPE" /> para aumentar a segurança.</translation>
 <translation id="6582421931165117398">Para proteger suas informações pessoais, altere sua senha agora. Antes de alterar sua senha, você precisará fazer login.</translation>
-<translation id="6583851739559471707">Bloqueados em sites que costumam mostrar anúncios invasivos (recomendado)</translation>
 <translation id="6584878029876017575">Assinatura de tempo de vida da Microsoft</translation>
 <translation id="6586451623538375658">Trocar botão principal do mouse</translation>
 <translation id="6589660129740381104">Para ajudar você a gerenciar sua experiência no <ph name="IDS_SHORT_PRODUCT_NAME" />, os recursos relacionados à sincronização e à personalização estão agora sob um único controle. A ativação pode alterar suas configurações atuais.</translation>
@@ -4178,7 +4159,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="725758059478686223">Serviço de impressão</translation>
 <translation id="7257666756905341374">Ler dados que você copia e cola</translation>
 <translation id="7258697411818564379">Seu PIN foi adicionado</translation>
-<translation id="7260764918845374269">Para ver sua chave de segurança, ela precisa estar no modo de pareamento. Pressione o botão na chave por pelo menos cinco segundos.</translation>
 <translation id="7262004276116528033">Este serviço de login é hospedado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Fechar guias</translation>
 <translation id="7268659760406822741">Serviços disponíveis</translation>
@@ -4290,7 +4270,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7444726222535375658">Continuar para Hangouts Meet</translation>
 <translation id="7444983668544353857">Desativar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7453008956351770337">Ao selecionar esta impressora, você concede permissão para acessar sua impressora à seguinte extensão:</translation>
-<translation id="7453467225369441013">Desconecta você da maioria dos sites, mas não da sua Conta do Google.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7461924472993315131">Fixar</translation>
@@ -4557,6 +4536,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7832084384634357321">Horário de término</translation>
 <translation id="7832327313660264358">Os dados sincronizados com o Google e os recursos usados não serão alterados</translation>
 <translation id="7833720883933317473">As palavras personalizadas salvas serão exibidas aqui</translation>
+<translation id="7835178595033117206">Favorito removido</translation>
 <translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">Sua página inicial foi alterada para <ph name="URL" />.</translation>
 <translation id="7839051173341654115">Ver/fazer backup de mídia</translation>
@@ -4734,13 +4714,11 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8068253693380742035">Toque para fazer login</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
-<translation id="8072033737676488034">Remover seu smartphone e desativar o "Better Together"</translation>
 <translation id="8072988827236813198">Fixar guias</translation>
 <translation id="8074127646604999664">Permitir que sites fechados recentemente concluam o envio e o recebimento de dados</translation>
 <translation id="8075191520954018715">Estado da memória</translation>
 <translation id="8076492880354921740">Guias</translation>
 <translation id="8076835018653442223">O acesso aos arquivos locais do seu dispositivo foi desativado pelo administrador</translation>
-<translation id="8077684120002777443">Nome de usuário (por exemplo, usuario@example.com)</translation>
 <translation id="8077816382010018681">Título da notificação do recurso QU aqui</translation>
 <translation id="8079530767338315840">Repetir</translation>
 <translation id="8079938625609335826">Para ter todas as suas extensões em todos os seus dispositivos, ative a sincronização.</translation>
@@ -4830,7 +4808,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8230134520748321204">Salvar senha para <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Ajude nossos engenheiros a corrigir esse problema. Conte-nos o que aconteceu logo antes de você receber a mensagem de erro de perfil:</translation>
 <translation id="8234989666557591529">Escolha um smartphone para desbloquear seu <ph name="DEVICE_TYPE" /></translation>
-<translation id="8239020549147958415">Sincronizar como <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Nublado</translation>
 <translation id="8241806945692107836">Determinando a configuração do dispositivo...</translation>
 <translation id="8241868517363889229">Ler e alterar seus favoritos</translation>
@@ -4925,7 +4902,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="839736845446313156">Inscrição</translation>
 <translation id="8398790343843005537">Encontrar seu smartphone</translation>
 <translation id="8398877366907290961">Continuar mesmo assim</translation>
-<translation id="8399276228600040370">Fazer login com sua conta salva com o <ph name="PASSWORD_MANAGER_BRAND" /></translation>
 <translation id="8400146488506985033">Gerenciar pessoas</translation>
 <translation id="8410073653152358832">Usar este smartphone</translation>
 <translation id="8410775397654368139">Google Play</translation>
@@ -4978,6 +4954,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8470028084415844044">Para ter todas as suas senhas em todos os seus dispositivos, ative a sincronização.</translation>
 <translation id="8470513973197838199">Senhas salvas para <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">suportado por hardware</translation>
+<translation id="8473863474539038330">Endereços e mais</translation>
 <translation id="8475313423285172237">Outro programa em seu computador adicionou uma extensão que pode mudar a forma como o Google Chrome funciona.</translation>
 <translation id="8475647382427415476">Não foi possível para o Google Drive sincronizar "<ph name="FILENAME" />" no momento. O Google Drive tentará novamente mais tarde.</translation>
 <translation id="8477241577829954800">Substituído</translation>
@@ -5055,10 +5032,10 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8606726445206553943">Usar seus dispositivos MIDI</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8615618338313291042">Aplicativo anônimo: <ph name="APP_NAME" /></translation>
+<translation id="8618141719844947886">Não está sincronizando</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">Status do roaming</translation>
 <translation id="8620765578342452535">Configurar conexões de rede</translation>
-<translation id="8624205858755890468">Permite que o Assistente mostre informações, ações e apps relacionados para você.</translation>
 <translation id="862542460444371744">&amp;Extensões</translation>
 <translation id="8627151598708688654">Selecionar fonte</translation>
 <translation id="862727964348362408">Em suspensão</translation>
@@ -5102,7 +5079,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8666584013686199826">Perguntar quando um site quiser acessar dispositivos USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> está agora em modo de tela inteira e desativou o cursor do mouse.</translation>
 <translation id="8669284339312441707">Mais quentes</translation>
-<translation id="8669919703154928649">Permitir que o Assistente exiba notificações</translation>
 <translation id="8669949407341943408">Movendo...</translation>
 <translation id="8671210955687109937">Pode comentar</translation>
 <translation id="8673026256276578048">Pesquisar na web...</translation>
@@ -5124,7 +5100,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="869884720829132584">Menu Aplicativos</translation>
 <translation id="869891660844655955">Validade</translation>
 <translation id="8699566574894671540">Para ativar essa configuração, primeiro selecione "Verificar ortografia ao digitar" no menu "Editar"</translation>
-<translation id="8701677791353449257">O nome do dispositivo precisa corresponder à expressão regular <ph name="REGEX" />.</translation>
 <translation id="8704521619148782536">Esta ação está levando mais tempo que o habitual. Você pode continuar esperando ou cancelá-la e tentar mais tarde.</translation>
 <translation id="8705331520020532516">Número de série</translation>
 <translation id="8705580154597116082">Wi-Fi disponível via smartphone</translation>
@@ -5140,7 +5115,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8715480913140015283">A guia em segundo plano está usando sua câmera</translation>
 <translation id="8716931980467311658">Excluir todos os aplicativos e dados do Linux da pasta de arquivos do Linux deste <ph name="DEVICE_TYPE" />?</translation>
 <translation id="8719653885894320876">Falha no download do plug-in <ph name="PLUGIN_NAME" /></translation>
-<translation id="8723829621484579639">Subquadros anônimos de: <ph name="PARENT_SITE" /></translation>
 <translation id="8724405322205516354">Sempre que vir este ícone, use sua impressão digital para se identificar ou aprovar compras.</translation>
 <translation id="8724409975248965964">Impressão digital adicionada</translation>
 <translation id="8724859055372736596">&amp;Mostrar na pasta</translation>
@@ -5224,6 +5198,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8845001906332463065">Ajuda</translation>
 <translation id="8846132060409673887">Ler as informações sobre o fabricante e modelo deste computador</translation>
 <translation id="8846141544112579928">Procurando teclado...</translation>
+<translation id="8846319957959474018">Abra apps facilmente com os favoritos</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">Selecione o seu idioma:</translation>
 <translation id="8859174528519900719">Subquadro: <ph name="SUBFRAME_SITE" /></translation>
@@ -5375,7 +5350,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9066773882585798925">Ouvir o texto lido em voz alta</translation>
 <translation id="9066782832737749352">Conversão de texto em voz</translation>
-<translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> conecta você automaticamente a apps e sites qualificados com senhas que você salvou.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="90737709606140813">Pareie sua chave com este dispositivo para fazer login na sua conta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -5434,7 +5408,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="91568222606626347">Criar atalho...</translation>
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os usuários (erro de inicialização de simulação: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ops!  Ocorreu um problema de comunicação de rede durante a autenticação. Verifica sua conexão de rede e tente novamente.</translation>
-<translation id="9161070040817969420">Subquadros de: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Picture-in-picture</translation>
 <translation id="9168436347345867845">Mais tarde</translation>

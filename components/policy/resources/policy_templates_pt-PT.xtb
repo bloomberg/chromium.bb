@@ -142,11 +142,11 @@
 
       NOTA: esta política não é aplicável no Android. Para ativar IsolateOrigins no Android, utilize a definição da política IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Ativa a API Hardware Platform para as extensões instaladas por políticas</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
+<translation id="1413936351612032792">Comunicar informações acerca da utilização de aplicações Linux</translation>
 <translation id="142346659686073702">Permitir que utilizadores não afiliados utilizem o Crostini</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
@@ -176,7 +176,7 @@
 
          Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando o modo de alto contraste. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
-          Se esta política não for definida, o modo de alto contraste é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o modo de alto contraste a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+          Se esta política não for definida, o modo de alto contraste é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o modo de alto contraste em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="1468707346106619889">Se esta política for definida como verdadeira, o Ambiente de trabalho unificado é permitido e
       ativado por predefinição, o que permite que as aplicações se expandam em vários ecrãs.
       O utilizador pode desativar o Ambiente de trabalho unificado para ecrãs
@@ -1019,7 +1019,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se a política "EnableMediaRouter" estiver definida como falsa, o respetivo valor não tem nenhum efeito e o ícone da barra de ferramentas não é apresentado.</translation>
 <translation id="3788662722837364290">Definições de gestão de energia quando o utilizador fica inativo</translation>
-<translation id="3793095274466276777">Configura o navegador predefinido, verifica o <ph name="PRODUCT_NAME" /> e impede que os utilizadores as alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> verificará sempre, durante o arranque, se é o navegador predefinido e registar-se-á automaticamente, se possível. Se esta definição estiver desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se é o navegador predefinido e desativará os controlos dos utilizadors para definirem esta opção. Se a opção não for definida, o <ph name="PRODUCT_NAME" /> permitirá que os utilizadores controlem se é o navegador predefinido e se deverão ser mostradas as notificações de utilizador caso não o seja.</translation>
 <translation id="379602782757302612">Permite-lhe especificar as extensões que os utilizadores NÃO podem instalar. As extensões já instaladas que estejam na lista negra serão desativadas sem que o utilizador tenha qualquer forma de as ativar. Se uma extensão desativada por constar da lista negra for removida desta lista, será automaticamente reativada.
 
           Um valor de lista negra de "*" significa que todas as extensões estão na lista negra, a menos que estejam expressamente incluídas na lista de autorizações.
@@ -1044,7 +1043,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores não a podem alterar nem substituir.
 
-          Se esta política não for definida, o teclado no ecrã está inicialmente desativado, mas o utilizador pode ativá-lo a qualquer momento.</translation>
+          Se esta política não for definida, o teclado no ecrã está inicialmente desativado, mas o utilizador pode ativá-lo em qualquer altura.</translation>
 <translation id="382476126209906314">Configurar o prefixo TalkGadget para anfitriões de acesso remoto</translation>
 <translation id="3831376478177535007">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> considera os certificados emitidos pelas operações da PKI antiga da Symantec Corporation de confiança se forem validados e incluírem com êxito uma cadeia para um certificado da AC (Autoridade de certificação) reconhecido.
 
@@ -1169,11 +1168,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="4105989332710272578">Desativar a imposição da Transparência de certificados para uma lista de URLs</translation>
-<translation id="4111405663956464686">Aviso: a política da versão TLS máxima será totalmente removida do <ph name="PRODUCT_NAME" /> perto da versão 72 (por volta de janeiro de 2019).
-
-      Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão máxima predefinida.
-
-      Caso contrário, pode ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS superiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
 <translation id="412697421478384751">Permitir aos utilizadores definirem PINs fracos para o PIN do ecrã de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
@@ -1402,7 +1396,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores não a poderão alterar ou substituir.
 
-          Se esta política não for definida, o cursor grande estará inicialmente desativado, mas poderá ser ativado a qualquer momento pelo utilizador.</translation>
+          Se esta política não for definida, o cursor grande estará inicialmente desativado, mas poderá ser ativado em qualquer altura pelo utilizador.</translation>
 <translation id="4802905909524200151">Configurar o comportamento de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">Os utilizadores menos recentemente utilizados são removidos até existir espaço livre suficiente</translation>
 <translation id="4815725774537609998">Esta política está obsoleta; em alternativa, utilize o ProxyMode.
@@ -1741,7 +1735,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando as respostas faladas. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
-          Se esta política não for definida, as respostas faladas são desativadas quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar as respostas faladas a qualquer momento e o estado desta funcionalidade no ecrã de início de sessão persiste entre utilizadores.</translation>
+          Se esta política não for definida, as respostas faladas são desativadas quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar as respostas faladas em qualquer altura e o estado desta funcionalidade no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5868414965372171132">Configuração de rede ao nível do utilizador</translation>
 <translation id="5879014913445067283">Controla a deteção de Partilha de ficheiros na rede através de <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Definição de cookies predefinida</translation>
@@ -1774,7 +1768,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando o cursor grande. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
-          Se esta política não for definida, o cursor grande é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o cursor grande a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+          Se esta política não for definida, o cursor grande é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o cursor grande em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5929855945144989709">Permitir aos dispositivos a execução de máquinas virtuais no Chrome OS</translation>
 <translation id="5932767795525445337">Também é possível utilizar esta política para fixar aplicações para Android.</translation>
 <translation id="5936622343001856595">Força a execução de consultas na Pesquisa Web do Google através da Pesquisa Segura definida como ativada e impede os utilizadores de alterar esta definição.
@@ -1980,7 +1974,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores podem substituí-la temporariamente através da ativação ou da desativação do teclado no ecrã. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for apresentado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
-          Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+          Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="6603004149426829878">Enviar sempre quaisquer sinais de localização disponíveis para o servidor durante a resolução do fuso horário</translation>
@@ -2003,11 +1997,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida ou a lista estiver vazia, todos os esquemas estarão acessíveis em <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Definições de utilizadores geridos localmente</translation>
 <translation id="6658245400435704251">Especifica o número de segundos até que um dispositivo possa aleatoriamente atrasar a sua transferência de uma atualização a partir do momento em que a atualização foi retirada pela primeira vez do servidor. O dispositivo pode esperar uma parte deste tempo em termos de tempo total de processamento e a restante parte em termos do número de verificações de atualização. Em qualquer caso, a dispersão está associada de forma superior a uma quantidade constante de tempo para que um dispositivo nunca fique preso indefinidamente à espera de transferir uma atualização.</translation>
-<translation id="6665599130599311250">Se definir esta política como falsa, ou não a definir, a sessão de convidado gerida irá comportar-se conforme documentado em https://support.google.com/chrome/a/answer/3017014 – a "Sessão pública" padrão.
-
-      Se definir esta política como verdadeira, a sessão de convidado gerida assume o comportamento "Sessão gerida" que levanta muitas das restrições em vigor aplicadas às "Sessões públicas" padrão.
-
-      Se esta política estiver definida, o utilizador não a pode alterar nem substituir.</translation>
 <translation id="6665670272107384733">Definir com que frequência o utilizador tem de introduzir a palavra-passe para utilizar o desbloqueio rápido</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam sites impedidos de pedir ao utilizador que lhes conceda acesso a um dispositivo USB.
 
@@ -2136,7 +2125,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores não a podem alterar ou substituir.
 
-           Se esta política não for definida, as respostas faladas estão inicialmente desativadas, mas poderão ser ativadas a qualquer momento pelo utilizador.</translation>
+           Se esta política não for definida, as respostas faladas estão inicialmente desativadas, mas poderão ser ativadas em qualquer altura pelo utilizador.</translation>
 <translation id="6916507170737609563">
       Recomendamos que consulte a definição da política IsolateOriginsAndroid para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar IsolateOriginsAndroid com uma lista dos sites que pretende isolar. Esta definição, SitePerProcessAndroid, isola todos os sites.
       Se a política estiver ativada, cada site é executado no seu próprio processo.
@@ -2168,6 +2157,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for definida, será utilizado o valor predefinido de 32.</translation>
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
+<translation id="6944167205014013774">As informações acerca da utilização de aplicações Linux são enviadas novamente para o
+      servidor.
+
+      Se a política estiver definida como falsa ou não estiver definida, não são comunicadas quaisquer informações
+      de utilização. Se estiver definida como verdadeira, são comunicadas informações de utilização.
+
+      Esta política aplica-se apenas se o apoio técnico para aplicações Linux estiver ativado.</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se é permitido que um modelo de escurecimento inteligente prolongue o tempo que precede o escurecimento do ecrã.
@@ -2280,7 +2276,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando a lupa. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
-          Se esta política não for definida, a lupa é desativada quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar a lupa a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+          Se esta política não for definida, a lupa é desativada quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar a lupa em qualquer altura e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="725322441686394886">Se não estiver definida, caso a Limpeza do Chrome detete software indesejado, esta pode comunicar os metadados da análise à Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Limpeza do Chrome pergunta então ao utilizador se pretende limpar o software indesejado. O utilizador pode optar por partilhar os resultados da limpeza com a Google para ajudar em futuras deteções de software indesejado. Estes resultados contêm metadados de ficheiros, extensões instaladas automaticamente e chaves de registo, conforme descrito no documento técnico da Privacidade do Chrome.
 
@@ -2680,7 +2676,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se definir esta política, os utilizadores não a poderão alterar ou substituir.
 
-           Se esta política não for definida, o modo de alto contraste estará inicialmente desativado, mas poderá ser ativado a qualquer momento pelo utilizador.</translation>
+           Se esta política não for definida, o modo de alto contraste estará inicialmente desativado, mas poderá ser ativado em qualquer altura pelo utilizador.</translation>
 <translation id="815061180603915310">Se for definida como ativada, esta política força a alteração do perfil para o modo temporário. Se esta política for especificada como uma política do SO (por exemplo, GPO no Windows), aplicar-se a todos os perfis no sistema; se a política for definida como uma política da nuvem, apenas se aplica a um perfil com sessão iniciada com uma conta gerida.
 
       Neste modo, os dados do perfil são mantidos no disco apenas enquanto durar a sessão do utilizador. Funcionalidades como o histórico do navegador, as extensões e respetivos dados, e os dados Web, como cookies e bases de dados da Web, não são mantidos após fechar o navegador. Porém, isto não impede o utilizador de transferir quaisquer dados para o disco manualmente, de guardar páginas ou de as imprimir.
@@ -3053,7 +3049,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 
           Os controladores de protocolos registados pela política são unidos com os que são registados pelo utilizador e ambos estão disponíveis para utilização. O utilizador pode substituir os controladores de protocolos instalados pela política ao instalar um novo controlador predefinido, mas não pode remover um controlador de protocolos registado pela política.</translation>
-<translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> que devem ser autorizados para reversão a partir da versão estável a qualquer momento.
+<translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> que devem ser autorizados para reversão a partir da versão estável em qualquer altura.
 
       A predefinição é 0 para consumidores e 4 (aprox. meio ano) para dispositivos inscritos através de empresas.
 

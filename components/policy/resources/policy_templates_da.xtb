@@ -125,11 +125,11 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Aktiverer Hardware Platform API for udvidelser, der er installeret via politikker</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
+<translation id="1413936351612032792">Rapportér oplysninger om brug af Linux-apps</translation>
 <translation id="142346659686073702">Tillad, at brugere uden tilknytning benytter Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
@@ -997,13 +997,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis politikken "EnableMediaRouter" angives som Falsk, træder denne politik ikke i kraft, og ikonet vises ikke på værktøjslinjen.</translation>
 <translation id="3788662722837364290">Indstillinger for strømstyring, når brugeren bliver inaktiv</translation>
-<translation id="3793095274466276777">Konfigurerer standardbrowserens tjek i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre dem. 
-
-Hvis du aktiverer denne indstilling, tjekker <ph name="PRODUCT_NAME" /> altid ved opstart, om den er standardbrowser, og registrerer automatisk sig selv, hvis det er muligt. 
-
-Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME" /> aldrig se om den er standardbrowseren, og deaktivere brugerens kontrol over denne indstilling. 
-
-Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises underretninger til brugeren, når den ikke er det.</translation>
 <translation id="379602782757302612">Giver dig mulighed for at angive, hvilke udvidelser brugerne IKKE kan installere. Udvidelser, der allerede er installeret, deaktiveres, hvis de er sortlistet, og brugeren kan ikke aktivere dem. Når en udvidelse fjernes fra sortlisten efter at have været deaktiveret på grund af den, aktiveres udvidelsen automatisk igen.
 
           Værdien * på en sortliste betyder, at alle udvidelser er sortlistet, medmindre de udtrykkeligt er angivet på hvidlisten.
@@ -1153,11 +1146,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Værdien for politikken bør angives i millisekunder.</translation>
 <translation id="4105989332710272578">Deaktiver håndhævelse af Certifikatsgennemsigtighed for en række webadresser</translation>
-<translation id="4111405663956464686">Advarsel! Politikken for den maksimale TLS-version fjernes fuldstændig fra <ph name="PRODUCT_NAME" /> omkring version 72 (omtrent januar 2019).
-
-      Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardmaksimumversion.
-
-      Den kan også angives som en af følgende værdier: "tls1.2" eller "tls1.3". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er nyere end den angivne version. Ukendte værdier ignoreres.</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
 <translation id="412697421478384751">Giv brugerne mulighed for at konfigurere svage pinkoder som pinkoder til låseskærmen</translation>
 <translation id="4138655880188755661">Tidsgrænse</translation>
@@ -1986,11 +1974,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke indstilles, eller hvis listen er tom, vil alle skemaer være tilgængelige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Indstillinger for lokalt administrerede brugere</translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
-<translation id="6665599130599311250">Hvis politikken er angivet som falsk eller ikke er angivet, reagerer administrerede gæstesessioner som beskrevet på https://support.google.com/chrome/a/answer/3017014 – standarden for "Offentlig session".
-
-      Hvis politikken er angivet som sand, har administrerede gæstesessioner samme adfærd som "Administreret session", hvilket fjerner mange af de begrænsninger, der gælder for "Offentlige sessioner".
-
-      Hvis politikken er konfigureret, kan den ikke ændres eller tilsidesættes af brugeren.</translation>
 <translation id="6665670272107384733">Konfigurer, hvor ofte brugeren skal indtaste adgangskoden for at bruge hurtig oplåsning.</translation>
 <translation id="6681229465468164801">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke må anmode brugeren om adgang til en USB-enhed.
 
@@ -2144,6 +2127,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke angives, anvendes standardværdien på 32.</translation>
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
+<translation id="6944167205014013774">Oplysninger om brug af Linux-apps sendes tilbage til
+      serveren.
+
+      Hvis politikken indstilles til falsk eller ikke indstilles, rapporteres oplysninger om
+      brug ikke. Hvis den indstilles til sand, rapporteres brugsoplysninger.
+
+      Denne politik gælder kun, hvis understøttelse af Linux-apps er aktiveret.</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
 <translation id="6965859329738616662">Angiver, om det er tilladt at bruge en smart nedtoningsmodel for at forlænge den tid, der går, inden skærmen nedtones.
@@ -2764,11 +2754,11 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8483004350080020634">Fjerner følsomme dele vedrørende personlige oplysninger og sikkerhed i webadresser af typen https://, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> under proxyfortolkning.
+<translation id="8483004350080020634">Renser webadresser af typen https:// for følsomme dele vedrørende personlige oplysninger og sikkerhed, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> under proxyfortolkning.
 
       Hvis politikken er angivet som Sand, er sikkerhedsfunktionen aktiveret, og webadresser af typen https://
-      fjernes, før de indsendes til et PAC-script. På den måde kan
-      PAC-scriptet ikke få vist data, der normalt er beskyttet af en
+      renses, før de indsendes til et PAC-script. På den måde kan
+      PAC-scriptet ikke se data, der normalt er beskyttet af en
       krypteret kanal (som f.eks. webadressens sti og forespørgsel).
 
       Hvis politikken er angivet som Falsk, er sikkerhedsfunktionen deaktiveret, og PAC-scripts får

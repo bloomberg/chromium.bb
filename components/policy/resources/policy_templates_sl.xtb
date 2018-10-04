@@ -137,11 +137,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       OPOMBA: ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Omogoča API za okolja za strojno opremo za razširitve, nameščene s pravilnikom</translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
+<translation id="1413936351612032792">Poročanje podatkov o uporabi aplikacij za Linux</translation>
 <translation id="142346659686073702">Omogočanje uporabe Crostinija nepovezanim uporabnikom</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
@@ -914,7 +914,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je več priporočenih jezikov, se domneva, da bodo uporabniki želeli izbirati med temi jeziki. Izbira jezika in postavitve tipkovnice bo vidno ponujena ob začetku upravljane seje. V nasprotnem primeru se domneva, da bo večina uporabnikov želela uporabljati vnaprej izbrani jezik. Izbira jezika in postavitve tipkovnice bo manj vidno ponujena ob začetku upravljane seje.
 
-      Če je ta pravilnik nastavljen in je omogočena samodejna prijava (glejte pravilnika |DeviceLocalAccountAutoLoginId| in |DeviceLocalAccountAutoLoginDelay| policies), bo samodejno začeta upravljana seja uporabljala prvi priporočeni jezik in najbolj priljubljeno postavitev tipkovnice, ki se ujema s tem jezikom.
+      Če je ta pravilnik nastavljen in je omogočena samodejna prijava (glejte pravilnika |DeviceLocalAccountAutoLoginId| in |DeviceLocalAccountAutoLoginDelay|), bo samodejno začeta upravljana seja uporabljala prvi priporočeni jezik in najbolj priljubljeno postavitev tipkovnice, ki se ujema s tem jezikom.
 
       Vnaprej izbrana postavitev tipkovnice bo vedno najbolj priljubljena postavitev, ki se ujema z vnaprej izbranim jezikom.
 
@@ -1043,13 +1043,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je pravilnik »EnableMediaRouter« onemogočen, vrednost tega pravilnika ne bo imela vpliva in ikona v orodni vrstici ne bo prikazana.</translation>
 <translation id="3788662722837364290">Nastavitve upravljanja energije, ko uporabnik postane nedejaven</translation>
-<translation id="3793095274466276777">Nastavi privzeta preverjanja brskalnika v programu <ph name="PRODUCT_NAME" /> in prepreči, da bi jih uporabniki spreminjali.
-
-      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> pri zagonu vedno preveril, ali je privzeti brskalnik, in se samodejno registriral, če je mogoče.
-
-      Če jo onemogočite, <ph name="PRODUCT_NAME" /> ne bo nikoli preveril, ali je privzeti brskalnik, in uporabniki ne bodo mogli nastaviti te možnosti.
-
-      Če ta možnost ni nastavljena, bo <ph name="PRODUCT_NAME" /> uporabniku dovolil, da nadzira, ali je privzeti brskalnik in ali naj bodo prikazana obvestila, če ni.</translation>
 <translation id="379602782757302612">Omogoča izbiro razširitev, ki jih uporabniki NE morejo namestiti. Razširitve, ki so že nameščene, bodo onemogočene, če so na seznamu prepovedanih, in uporabnik jih ne more omogočiti. Ko je razširitev, ki je onemogočena, ker je na seznamu prepovedanih, odstranjena s seznama, je samodejno znova omogočena.
 
          Vrednost »*« na seznamu blokiranih pomeni, da so vse razširitve na seznamu blokirane, razen če so izrecno navedene na seznamu dovoljenih.
@@ -1164,7 +1157,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je vrednost pravilnika nastavljena na »false«, uporabniki ne morejo unovčiti ponudb.</translation>
 <translation id="4008507541867797979">Če je ta pravilnik omogočen ali ni konfiguriran, bo operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo prikazal obstoječe uporabnike in omogočal izbiro enega.
 
-      Če ta pravilnik ni omogočen, operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo ne bo prikazal obstoječih uporabnikov. Prikazan bo zaslon za običajno prijavo (s pozivom za vnosa uporabniškega imena in gesla ali telefonske številke) ali vmesni zaslon za prijavo SAML (če je omogočena s pravilnikom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), razen če je konfigurirana upravljana seja. Če je konfigurirana upravljana seja, bodo prikazani samo računi upravljane seje, in mogoče bo izbrati enega izmed njih.
+      Če ta pravilnik ni omogočen, operacijski sistem <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavo ne bo prikazal obstoječih uporabnikov. Prikazan bo zaslon za običajno prijavo (s pozivom za vnos uporabniškega imena in gesla ali telefonske številke) ali vmesni zaslon za prijavo SAML (če je omogočena s pravilnikom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), razen če je konfigurirana upravljana seja. Če je konfigurirana upravljana seja, bodo prikazani samo računi upravljane seje in mogoče bo izbrati enega izmed njih.
 
       Upoštevajte, da ta pravilnik ne vpliva na to, ali naprava ohrani ali zavrže lokalne uporabniške podatke.</translation>
 <translation id="4010738624545340900">Dovoli proženje pogovornih oken za izbiro datotek</translation>
@@ -1203,11 +1196,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
 <translation id="4105989332710272578">Onemogočanje uveljavljanja pravilnika o preglednosti potrdila za seznam URL-jev</translation>
-<translation id="4111405663956464686">Opozorilo: pravilnik za najvišjo različico protokola TLS bo v celoti odstranjen iz izdelka <ph name="PRODUCT_NAME" /> okoli različice 72 (okoli januarja 2019).
-
-      Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najvišjo različico.
-
-      Sicer bo nastavljen na eno od teh vrednosti: »tls1.2« ali »tls1.3«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, višjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za aplikacije na novem zavihku s povezavami.</translation>
 <translation id="412697421478384751">Omogoči uporabnikom nastavitev šibkih kod PIN za kodo PIN za zaklenjen zaslon.</translation>
 <translation id="4138655880188755661">Časovna omejitev</translation>
@@ -1585,11 +1573,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5219844027738217407">Pri aplikacijah za Android ta pravilnik vpliva samo na mikrofon. Če je ta pravilnik omogočen, ima mikrofon brez izjem izklopljen zvok pri vseh aplikacijah za Android.</translation>
 <translation id="5228316810085661003">Zamik samodejne prijave v lokalni račun v napravi.
 
-      Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, nima vpliva. V nasprotnem primeru:
+      Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, ta pravilnik nima vpliva. V nasprotnem primeru:
 
       Če je ta pravilnik nastavljen, določa čas nedejavnosti uporabnika, ki mora preteči pred samodejno prijavo v lokalni račun v napravi, ki jo določa pravilnik |DeviceLocalAccountAutoLoginId|.
 
-      Če ta pravilnik ni nastavljen, se za časovno omejitev uporabi 0 millisekund.
+      Če ta pravilnik ni nastavljen, se za časovno omejitev uporabi 0 milisekund.
 
       Ta pravilnik je določen v milisekundah.</translation>
 <translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
@@ -2080,11 +2068,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 Če ta pravilnik ni nastavljen ali je seznam prazen, bodo v brskalniku <ph name="PRODUCT_NAME" /> dostopne vse sheme.</translation>
 <translation id="6652197835259177259">Nastavitve lokalno upravljanih uporabnikov</translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
-<translation id="6665599130599311250">Če je ta pravilnik onemogočen ali ni nastavljen, bo upravljana seja gosta delovala, kot je opisano na https://support.google.com/chrome/a/answer/3017014 – standardna »javna seja«.
-
-      Če je ta pravilnik omogočen, bo upravljana seja gosta prevzela delovanje »upravljane seje«, ki odpravlja številne omejitve, ki veljajo za običajne »javne seje«.
-
-      Če je ta pravilnik nastavljen, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="6665670272107384733">Nastavi, kako pogosto mora uporabnik vnesti geslo, če želi uporabljati hitro odklepanje</translation>
 <translation id="6681229465468164801">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je preprečeno pozivanje uporabnikov k odobritvi dostopa do naprave USB.
 
@@ -2247,6 +2230,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ta pravilnik ni nastavljen, bo uporabljena privzeta vrednost, ki je 32.</translation>
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
+<translation id="6944167205014013774">Podatki o uporabi aplikacij za Linux se pošljejo nazaj v
+      strežnik.
+
+      Če je pravilnik onemogočen ali ni nastavljen, se podatki o uporabi ne
+      poročajo. Če je omogočen, se podatki o uporabi poročajo.
+
+      Ta pravilnik se uporabi samo, če je podpora za aplikacije za Linux omogočena.</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
 <translation id="6965859329738616662">Določa, ali je pametnemu modelu zatemnitve dovoljeno podaljšati čas do zatemnitve zaslona.

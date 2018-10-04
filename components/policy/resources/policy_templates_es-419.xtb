@@ -136,11 +136,11 @@
 
       NOTA: Esta política no se aplica en Android. Para habilitar IsolateOrigins en esta plataforma, usa la configuración de la política IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Permitir la API de plataforma de hardware para las extensiones instaladas por políticas</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Habilitar o inhabilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
+<translation id="1413936351612032792">Informar datos sobre el uso de las apps de Linux</translation>
 <translation id="142346659686073702">Permitir que los usuarios no afiliados usen Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
@@ -453,7 +453,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
 <translation id="2214880135980649323">Si se habilita esta política, las extensiones que instale una política empresarial podrán usar la API de plataforma de hardware empresarial.
       Si se establece esta política como inhabilitada, o no se configura, las extensiones no podrán usar la API de plataforma de hardware empresarial.
-      Esta política también se aplica en las extensiones de componentes como la extensión de Servicios de Hangout.</translation>
+      Esta política también se aplica en las extensiones de componentes, como la extensión de Servicios de Hangout.</translation>
 <translation id="2223598546285729819">Configuración de notificación predeterminada</translation>
 <translation id="2231817271680715693">Importar historial de navegación del navegador predeterminado en la primera ejecución</translation>
 <translation id="2236488539271255289">No permitir que ningún sitio configure los datos locales.</translation>
@@ -1000,7 +1000,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si la política "EnableMediaRouter" se establece como falsa, su valor no tendrá efecto y el ícono no aparecerá en la barra de herramientas.</translation>
 <translation id="3788662722837364290">Configuración de la administración de energía cuando el usuario está inactivo</translation>
-<translation id="3793095274466276777">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> siempre comprobará al iniciarse si es el navegador predeterminado y se registrará automáticamente en caso de ser posible. Si esta opción está inhabilitada, <ph name="PRODUCT_NAME" /> nunca verificará si es el navegador predeterminado e inhabilitará los controles de usuario para poder configurar esta opción. Si no se ha establecido esta configuración, <ph name="PRODUCT_NAME" /> permitirá al usuario controlar si es el navegador predeterminado y si las notificaciones para el usuario deben mostrarse cuando no lo es.</translation>
 <translation id="379602782757302612">Permite especificar las extensiones que los usuarios NO pueden instalar. Si se incluyen en la lista negra, se inhabilitarán las extensiones ya instaladas y el usuario no podrá habilitarlas. Cuando una extensión inhabilitada se quite de la lista negra, se volverá a habilitar automáticamente.
 
           El valor "*" en la lista negra significa que todas las extensiones están inhabilitadas a menos que se incluyan de forma explícita en la lista blanca.
@@ -1151,11 +1150,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="4105989332710272578">Inhabilitar la aplicación del Certificado de transparencia para una lista de URL</translation>
-<translation id="4111405663956464686">Advertencia: La política de la versión máxima de TLS se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 72 aproximadamente (alrededor de enero de 2019).
-
-      Si para ese momento no se configuró la política, <ph name="PRODUCT_NAME" /> usará la versión máxima predeterminada.
-
-      De lo contrario, se podrá establecer como uno de los siguientes valores: "tls1.2" o "tls1.3". De esta manera, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS posteriores a la especificada. Se ignorarán los valores no reconocidos.</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
 <translation id="412697421478384751">Permitir que los usuarios establezcan PIN no seguros para la pantalla bloqueada</translation>
 <translation id="4138655880188755661">Límite de tiempo</translation>
@@ -1599,7 +1593,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
 <translation id="5464816904705580310">Permite establecer parámetros de configuración para los usuarios administrados.</translation>
 <translation id="546726650689747237">Demora de atenuación de pantalla con alimentación de CA</translation>
-<translation id="5469143988693423708">Se permite que el usuario ejecute Crostini</translation>
+<translation id="5469143988693423708">Permitir que el usuario ejecute Crostini</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
 <translation id="5475361623548884387">Habilitar la impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios con anuncios intrusivos</translation>
@@ -1981,11 +1975,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política o si la lista está vacía, se podrá acceder a todos los esquemas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuración de los usuarios administrados localmente</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
-<translation id="6665599130599311250">Si esta política se establece como falsa o no se establece, las sesiones de invitado administradas se comportarán como se indica en https://support.google.com/chrome/a/answer/3017014, la "sesión pública" estándar.
-
-      Si esta política se establece como verdadera, las sesiones de invitado administradas se comportarán como "sesiones administradas", que no incluyen muchas de las restricciones que se aplican a las "sesiones públicas" estándar.
-
-      Si no se establece, el usuario no puede cambiarla ni anularla.</translation>
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
 <translation id="6681229465468164801">Te permite establecer una lista de patrones de URL que especifica los sitios que no pueden solicitarle al usuario acceso a un dispositivo USB.
 
@@ -2148,6 +2137,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si no se establece esta política, se utilizará el valor predeterminado de 32.</translation>
 <translation id="6943577887654905793">Nombre de preferencia de Mac/Linux:</translation>
+<translation id="6944167205014013774">Se envía la información sobre el uso de las apps de Linux nuevamente al
+      servidor.
+
+      Si se establece la política como falsa, o no se establece, no se informarán
+      los datos sobre el uso. Si se establece como verdadera, se informarán estos datos.
+
+      Se aplicará esta política solo si está habilitado el soporte para las apps de Linux.</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
 <translation id="6965859329738616662">Especifica si se permite que un modelo de atenuación inteligente extienda el tiempo de atenuación de la pantalla.
@@ -2781,7 +2777,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8483004350080020634">Recorta las partes confidenciales por motivos de seguridad y privacidad de las URL de https:// antes de enviarlas a secuencias de comandos PAC (Configuración automática de proxy) que usa <ph name="PRODUCT_NAME" /> en la resolución del proxy.
 
       Cuando se establece como verdadera, se activa la función
-      de seguridad, y se recortan las URL de https://
+      de seguridad y se recortan las URL de https://
       antes de enviarlas a una secuencia de comandos PAC. De esta forma, la
       secuencia de comandos PAC no puede ver los datos que, por lo general,
       están protegidos por un canal encriptado (como la ruta y la consulta de la
@@ -2790,7 +2786,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Cuando se establece la política como falsa, esta función de seguridad
       se inhabilita, y las secuencias de comandos PAC pueden ver todos los
       componentes de la URL de https://. Esta configuración se aplica a todas las
-      secuencias de comandos PAC, más allá de su origen (incluye las secuencias
+      secuencias de comandos PAC, más allá de su origen (incluidas las secuencias
       de comandos PAC que se obtienen mediante WPAD o un transporte
       no seguro).
 

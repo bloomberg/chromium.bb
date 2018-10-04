@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1018939186200882850">मेनू आयटम</translation>
-<translation id="1020833440720551630">ऑडिओ ट्रॅक निःशब्द करा</translation>
 <translation id="10623998915015855">टॉगल बटण</translation>
 <translation id="1088086359088493902">सेकंद</translation>
 <translation id="1171774979989969504">कृपया एक ईमेल अॅड्रेस एंटर करा.</translation>
@@ -16,7 +15,6 @@
 <translation id="1335095011850992622">श्रेय</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1359897965706325498">बॅनर</translation>
-<translation id="1548116112524424341">व्हिडिओ चित्रात-चित्र मोडमध्ये प्ले करा</translation>
 <translation id="1589122976691792535">प्रदेश</translation>
 <translation id="1591562245178063882">या महिन्यात</translation>
 <translation id="1637811476055996098">फायली निवडा</translation>
@@ -27,7 +25,6 @@
 <translation id="1821985195704844674">ट्री ग्रीड</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">दूरस्थ डिव्हाइसवर प्ले करा</translation>
-<translation id="1838818994221231429">डिस्प्ले कटआउट भागामध्ये फुलस्क्रीन टॉगल करा</translation>
 <translation id="190587075670221089">हटवणे</translation>
 <translation id="1907737156431278478">उदाहरण</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -131,7 +128,6 @@
 <translation id="561939826962581046">time</translation>
 <translation id="5630795885300617244">10 सेकंद वगळण्यासाठी डावीकडे किंवा उजवीकडे दोनदा टॅप करा</translation>
 <translation id="5631759159893697722">अमूर्त</translation>
-<translation id="5641012560118721995">प्लेबॅकला विराम द्या</translation>
 <translation id="5643186887447432888">बटण</translation>
 <translation id="5677946354068040947">अधिक पर्याय</translation>
 <translation id="576709008726043716">परिचय</translation>
@@ -144,7 +140,6 @@
 <translation id="5987525920412732405">स्पिन बटण</translation>
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6023896073578205740">सूची बॉक्स</translation>
-<translation id="6101327004457443354">ऑडिओ ट्रॅक सशब्द करा</translation>
 <translation id="6150588977291308318">ग्रंथसूची</translation>
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6166809985690652833">अंतिम शब्द</translation>
@@ -191,7 +186,6 @@
 <translation id="7673697353781729403">तास</translation>
 <translation id="7681220483256441252">अनुक्रमणिका</translation>
 <translation id="7720026100085573005">शिल्लक वेळ</translation>
-<translation id="7740016676195725605">बंद मथळा प्रदर्शित करणे थांबवा</translation>
 <translation id="7740050170769002709">HTML सामुग्री</translation>
 <translation id="7750228210027921155">चित्रात-चित्र</translation>
 <translation id="7789962463072032349">विराम द्या</translation>
@@ -202,9 +196,7 @@
 <translation id="8053789581856978548">मजकूर फील्ड दर्शवा</translation>
 <translation id="8057695513531652401">सूचना</translation>
 <translation id="8105797009065549151">टीप संदर्भ</translation>
-<translation id="8115662671911883373">बंद मथळा प्रदर्शित करणे प्रारंभ करा</translation>
 <translation id="8117451130807776954">या आठवड्यात</translation>
-<translation id="819205353528511139">पूर्ण स्क्रीन मोडमध्ये चित्रपट प्ले करा</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8284326494547611709">मथळे</translation>
 <translation id="835897206747267392">चुकीचे मूल्य.</translation>
@@ -224,7 +216,6 @@
 <translation id="8613126697340063924">दूरस्थ प्लेबॅक नियंत्रित करा</translation>
 <translation id="862370744433916922">उपशीर्षक</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
-<translation id="8785498733064193001">प्लेबॅक आरंभ करा</translation>
 <translation id="8808573423886751634">प्रकरण</translation>
 <translation id="8845239796550121995">आता तुमच्या टिव्हीवर कास्ट करत आहे</translation>
 <translation id="8851136666856101339">मुख्य</translation>

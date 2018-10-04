@@ -21,7 +21,7 @@
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1289185460362160437">Volte <ph name="COME_BACK_DAY_OF_WEEK" /> às <ph name="COME_BACK_TIME" />.</translation>
+<translation id="1289185460362160437">Volte <ph name="COME_BACK_DAY_OF_WEEK" />, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Sinal fraco</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
 <translation id="1294929383540927798">Alterar as configurações de notificação da tela de bloqueio</translation>
@@ -112,7 +112,6 @@
 <translation id="277257480934873581">Reconectando-se a <ph name="NAME" /></translation>
 <translation id="2790844815106384441">definir se os sites podem usar os serviços de localização, o microfone, a câmera ou outros recursos do dispositivo;</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
-<translation id="2808012452536866044">"Better Together" foi alterado para um novo smartphone</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
@@ -218,7 +217,7 @@
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">O administrador deste dispositivo tem acesso a todas as atividades, inclusive às senhas e comunicações.</translation>
-<translation id="4774338217796918551">Volte amanhã às <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4774338217796918551">Volte amanhã, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Senha para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">O Google Assistente não está disponível para uma sessão de demonstração.</translation>
 <translation id="479989351350248267">pesquisar</translation>
@@ -254,7 +253,6 @@
 <translation id="554893713779400387">Alternar para o ditado</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
-<translation id="5598551463564921617">"Better Together" está ativado</translation>
 <translation id="5600837773213129531">Pressione Ctrl + Alt + Z para desativar o feedback falado.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">Ativando</translation>

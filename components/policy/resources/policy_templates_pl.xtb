@@ -136,11 +136,11 @@
 
       UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins w Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Umożliwia rozszerzeniom zainstalowanym przez zasady dostęp do Hardware Platform API</translation>
 <translation id="1384459581748403878">Odniesienie: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="1413936351612032792">Przesyłaj informacje o używaniu aplikacji na Linuxa</translation>
 <translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
@@ -529,11 +529,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli pozostanie ono nieokreślone, użytkownik będzie mógł zdecydować, czy chce używać tej funkcji.
 
       Ustawienie zostało usunięte z <ph name="PRODUCT_NAME" /> 29 i nowszych wersji.</translation>
-<translation id="2433412232489478893">Ta zasada określa, czy użytkownicy mogą używać sieciowych magazynów plików w <ph name="PRODUCT_NAME" />.
+<translation id="2433412232489478893">Ta zasada określa, czy użytkownicy mogą używać sieciowych udziałów plików w <ph name="PRODUCT_NAME" />.
 
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, użytkownicy mogą używać sieciowych magazynów plików.
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, użytkownicy mogą używać sieciowych udziałów plików.
 
-      Gdy ta zasada ma wartość fałsz, użytkownicy nie mogą używać sieciowych magazynów plików.</translation>
+      Gdy ta zasada ma wartość fałsz, użytkownicy nie mogą używać sieciowych udziałów plików.</translation>
 <translation id="2438609638493026652">Włącza raportowanie do Google najważniejszych zdarzeń podczas instalowania aplikacji na Androida. Zdarzenia są rejestrowane tylko w przypadku aplikacji, których instalacja została spowodowana przez zasadę.
 
       Jeśli zasada ma wartość prawda, zdarzenia będą rejestrowane.
@@ -612,7 +612,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2598508021807251719">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
-<translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi magazynami plików.</translation>
+<translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi udziałami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2627554163382448569">Udostępnia konfiguracje drukarek firmowych.
@@ -696,7 +696,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2823870601012066791">Lokalizacja w rejestrze systemu Windows dla klientów <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
-<translation id="2839294585867804686">Ustawienia sieciowych magazynów plików</translation>
+<translation id="2839294585867804686">Ustawienia sieciowych udziałów plików</translation>
 <translation id="2840269525054388612">Określa drukarki, z których może korzystać użytkownik.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
@@ -1008,7 +1008,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
           Jeśli zasada „EnableMediaRouter” ma wartość fałsz, wartość tej zasady nie ma znaczenia, a ikona na pasku narzędzi jest niewidoczna.</translation>
 <translation id="3788662722837364290">Ustawienia zarządzania energią, gdy użytkownik jest nieaktywny</translation>
-<translation id="3793095274466276777">Pozwala skonfigurować w przeglądarce <ph name="PRODUCT_NAME" /> sprawdzanie przeglądarki domyślnej i uniemożliwia użytkownikom jej zmianę. Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> zawsze po uruchomieniu będzie sprawdzać, czy jest przeglądarką domyślną, oraz w miarę możliwości automatycznie przypisywać sobie tę rolę. W przypadku wyłączenia ustawienia <ph name="PRODUCT_NAME" /> nigdy nie sprawdza, czy jest przeglądarką domyślną, a opcje umożliwiające użytkownikowi zmianę ustawienia są nieaktywne. Jeśli ustawienie jest nieskonfigurowane, użytkownik może kontrolować funkcję sprawdzania, czy <ph name="PRODUCT_NAME" /> jest przeglądarką domyślną, oraz wyświetlanie odpowiednich powiadomień.</translation>
 <translation id="379602782757302612">Umożliwia określenie rozszerzeń, których NIE mogą instalować użytkownicy. Rozszerzenia, które są już zainstalowane, po dodaniu do czarnej listy zostaną odinstalowane, a użytkownik nie będzie mógł ich włączyć. Gdy tylko rozszerzenie zostanie usunięte z czarnej listy, zostanie automatycznie włączone ponownie.
 
           Wartość „*” na czarnej liście oznacza dodanie do niej wszystkich rozszerzeń oprócz tych wymienionych na białej liście.
@@ -1157,11 +1156,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
-<translation id="4111405663956464686">Ostrzeżenie: zasada najwyższej wersji TLS zostanie w całości usunięta z usługi <ph name="PRODUCT_NAME" /> prawdopodobnie w wersji 72 (mniej więcej w styczniu 2019 r.)
-
-      Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najwyższej wersji.
-
-      W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="412697421478384751">Zezwalaj użytkownikom na ustawianie słabych kodów PIN blokady ekranu</translation>
 <translation id="4138655880188755661">Limit czasu</translation>
@@ -1321,7 +1315,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Pełny opis dostępnych ustawień i struktury tej zasady można znaleźć na stronie https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Tryb przetwarzania w pętli zasad dotyczących użytkowników</translation>
-<translation id="4554841826517980623">Ta zasada określa, czy funkcja sieciowych magazynów plików w <ph name="PRODUCT_NAME" /> ma używać <ph name="NETBIOS_PROTOCOL" /> do wykrywania udziałów w sieci.
+<translation id="4554841826517980623">Ta zasada określa, czy funkcja sieciowych udziałów plików w <ph name="PRODUCT_NAME" /> ma używać <ph name="NETBIOS_PROTOCOL" /> do wykrywania udziałów w sieci.
       Gdy zasada ma wartość prawda, udziały w sieci będą wykrywane przy użyciu protokołu <ph name="NETBIOS_PROTOCOL" />.
       Gdy zasada ma wartość fałsz, udziały w sieci nie będą wykrywane przy użyciu protokołu <ph name="NETBIOS_PROTOCOL" />.
       Jeśli zasada pozostanie nieskonfigurowana, będzie domyślnie wyłączona dla użytkowników zarządzanych przez firmę i włączona dla użytkowników niezarządzanych.</translation>
@@ -1734,7 +1728,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania potwierdzenia głosowe są wyłączone. Użytkownicy mogą je w każdej chwili włączyć lub wyłączyć i ich stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="5868414965372171132">Konfiguracja sieci na poziomie użytkownika</translation>
-<translation id="5879014913445067283">Kontroluje wykrywanie sieciowych magazynów plików za pomocą <ph name="NETBIOS_NAME" /></translation>
+<translation id="5879014913445067283">Kontroluje wykrywanie sieciowych udziałów plików za pomocą <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Domyślne ustawienie plików cookie</translation>
 <translation id="5887414688706570295">Konfiguruje przedrostek gadżetu TalkGadget, który będzie używany przez hosty zdalnego dostępu, i uniemożliwia użytkownikom jego zmianę.
 
@@ -1994,11 +1988,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli ta zasada pozostanie nieustawiona lub lista jest pusta, wszystkie schematy są dostępne w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Ustawienia użytkowników zarządzanych lokalnie</translation>
 <translation id="6658245400435704251">Określa, o ile sekund urządzenie może losowo opóźnić pobranie aktualizacji w stosunku do czasu jej opublikowania na serwerze. Urządzenie może odczekać część tego okresu, licząc w sekundach zegara, a pozostałą część, licząc w testach dostępności aktualizacji. Tak czy inaczej okres opóźnienia jest ograniczony z góry, by urządzenie nigdy nie utknęło w stanie oczekiwania na pobranie aktualizacji.</translation>
-<translation id="6665599130599311250">Jeśli ta zasada ma wartość Fałsz lub nie jest ustawiona, zarządzana sesja gościa będzie działać tak, jak opisano na https://support.google.com/chrome/a/answer/3017014, czyli jako standardowa „sesja publiczna”.
-
-      Jeśli ta zasada ma wartość Prawda, sesja będzie „sesją zarządzaną” i nie będzie objęta wieloma ograniczeniami dotyczącymi „sesji publicznych”.
-
-      Jeśli ta zasada jest ustawiona, użytkownik nie może jej zmienić ani zastąpić.</translation>
 <translation id="6665670272107384733">Określ, jak często użytkownik musi podawać hasło, by używać szybkiego odblokowania</translation>
 <translation id="6681229465468164801">Pozwala utworzyć listę wzorców adresów URL określających witryny, które nie mogą prosić użytkownika o przyznanie dostępu do urządzeń USB.
 
@@ -2014,7 +2003,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Zasada <ph name="SYNC_DISABLED_POLICY_NAME" /> powoduje wyłączenie wszystkich synchronizacji danych i zastępuje zasadę RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtruj witryny najwyższego poziomu (ale nie osadzone elementy iframe) pod kątem treści dla dorosłych</translation>
-<translation id="6734521799274931721">Określa dostępność sieciowych magazynów plików w Chrome OS</translation>
+<translation id="6734521799274931721">Określa dostępność sieciowych udziałów plików w Chrome OS</translation>
 <translation id="6735701345096330595">Wymuś włączenie sprawdzania pisowni</translation>
 <translation id="673699536430961464">To ustawienie pozwala użytkownikom zalogowanym na urządzeniu z <ph name="PRODUCT_OS_NAME" /> przełączać konta Google w obszarze treści okna przeglądarki
 
@@ -2149,6 +2138,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
 <translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
+<translation id="6944167205014013774">Informacje o używaniu aplikacji na Linuxa są wysyłane z powrotem
+      na serwer.
+
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o używaniu aplikacji.
+      Jeśli jest włączona, informacje o używaniu aplikacji są wysyłane.
+
+      Ta zasada ma zastosowanie tylko wtedy, gdy jest włączona obsługa aplikacji na Linuxa.</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
 <translation id="6965859329738616662">Określa, czy model inteligentnego przyciemniania może opóźniać przyciemnienie ekranu.
@@ -2792,7 +2788,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
       Zaleca się ustawienie tej zasady na wartość prawda. Wartość fałsz należy ustawić
       tylko wtedy, gdy występuje problem ze zgodnością z istniejącymi skryptami PAC.
 
-      Planujemy usunąć ten problem w M75.</translation>
+      Planujemy usunąć tę zasadę w M75.</translation>
 <translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
 
           Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę ChromeFrameRendererSettings.

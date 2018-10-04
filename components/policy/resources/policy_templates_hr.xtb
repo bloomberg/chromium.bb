@@ -127,11 +127,11 @@
 
       NAPOMENA: ovo pravilo ne odnosi se na Android. Da biste omogućili IsolateOrigins na Androidu, upotrijebite postavku pravila IsolateOriginsAndroid.
       </translation>
-<translation id="1377024960658062022">Omogućuje Hardware Platform API na proširenjima instaliranim prema pravilima</translation>
 <translation id="1384459581748403878">Referenca: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
+<translation id="1413936351612032792">Prijavi informacije o upotrebi Linux aplikacija</translation>
 <translation id="142346659686073702">Omogućuje nepridruženim korisnicima da upotrebljavaju Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
@@ -996,7 +996,6 @@
 
           Ako se pravilo "EnableMediaRouter" postavi na "neistinito", tada vrijednost tog pravila nema učinka i ikona na alatnoj traci neće se prikazivati.</translation>
 <translation id="3788662722837364290">Postavke upravljanja napajanjem kada korisnik postane neaktivan</translation>
-<translation id="3793095274466276777">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> će prilikom svakog pokretanja provjeriti je li zadani preglednik i automatski se registrirati ako je moguće. Ako je ova postavka onemogućena, <ph name="PRODUCT_NAME" /> neće nikad provjeravati je li zadani preglednik i onemogućit će korisničke kontrole za postavljanje ove opcije. Ako ova postavka nije podešena, korisnik će moći odrediti je li <ph name="PRODUCT_NAME" /> zadani preglednik i trebaju li korisničke obavijesti biti prikazane kada to nije slučaj.</translation>
 <translation id="379602782757302612">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Prethodno instalirana proširenja koja stavite na popis zabranjenih bit će onemogućena i korisnici ih neće moći omogućiti. Kad se proširenje koje je onemogućeno zbog toga što se nalazi na popisu zabranjenih ukloni s tog popisa, automatski će biti ponovo omogućeno.
 
           Vrijednost "*" na popisu zabranjenih znači da nije dopušteno nijedno proširenje osim onih koja su izričito navedena na popisu dopuštenih.
@@ -1146,11 +1145,6 @@
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
 <translation id="4105989332710272578">Onemogući provedbu Transparentnosti certifikata za popis URL-ova</translation>
-<translation id="4111405663956464686">Upozorenje: pravilo o maksimalnoj verziji TLS-a u potpunosti će se ukloniti iz proizvoda <ph name="PRODUCT_NAME" /> oko verzije 72 (oko siječnja 2019.).
-
-      Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu maksimalnu verziju.
-
-      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="412697421478384751">Omogući korisnicima da postave slabe PIN-ove za zaključan zaslon</translation>
 <translation id="4138655880188755661">Vremensko ograničenje</translation>
@@ -1986,11 +1980,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se to pravilo ne postavi ili ako je popis prazan, sve će sheme biti dostupne na usluzi <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Postavke lokalno upravljanih korisnika</translation>
 <translation id="6658245400435704251">Određuje do koliko sekundi uređaj može nasumično odgađati preuzimanje ažuriranja od trenutka kad je ažuriranje prvi put poslano na poslužitelj. Uređaj može dio tog vremena čekati u smislu stvarnog proteka vremena, a preostalo vrijeme u smislu broja provjera ažuriranja. U bilo kojem slučaju, gornja granica raspršivanja konstantan je iznos vremena tako da uređaj nikad ne može zauvijek zapeti čekajući ažuriranje.</translation>
-<translation id="6665599130599311250">Ako se to pravilo postavi na False ili se ne postavi, upravljana gostujuća sesija ponašat će se kako je dokumentirano na https://support.google.com/chrome/a/answer/3017014 – standardna "Javna sesija".
-
-      Ako se to pravilo postavi na True ili se ne postavi, upravljana gostujuća sesija poprimit će ponašanje "Upravljane sesije" koja uklanja mnoga ograničenja uspostavljena za regularne "Javne sesije".
-
-      Ako je postavljeno ovo pravilo, korisnik ga ne može ni promijeniti niti nadjačati.</translation>
 <translation id="6665670272107384733">Odredi koliko često korisnik mora unijeti zaporku za upotrebu brzog otključavanja</translation>
 <translation id="6681229465468164801">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima se sprječava da od korisnika traže dopuštenje za pristup USB uređaju.
 
@@ -2143,6 +2132,13 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako to pravilo nije postavljeno, upotrebljavat će se zadana vrijednost, a to je 32.</translation>
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
+<translation id="6944167205014013774">Informacije o upotrebi Linux aplikacija šalju se
+      poslužitelju.
+
+      Ako se to pravilo postavi na False ili se ne postavi, informacije o upotrebi
+      neće se prijavljivati. Ako se postavi na True, te će se informacije prijavljivati.
+
+      To se pravilo primjenjuje samo ako je omogućena podrška za Linux aplikacije.</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
 <translation id="6965859329738616662">Navodi se je li dopušten model pametnog zatamnjenja kako bi se produljilo vrijeme do zatamnjenja zaslona.
