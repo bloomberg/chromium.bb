@@ -98,20 +98,20 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface);
   DCHECK(surface->HasActiveFrame());
-  if (last_activated_surface_id_ != surface->surface_id()) {
+
+  const LocalSurfaceId& local_surface_id =
+      surface->surface_id().local_surface_id();
+  const LocalSurfaceId& last_activated_local_surface_id =
+      last_activated_surface_id_.local_surface_id();
+
+  if (!last_activated_surface_id_.is_valid() ||
+      local_surface_id > last_activated_local_surface_id) {
     if (last_activated_surface_id_.is_valid()) {
-      const LocalSurfaceId& local_surface_id =
-          surface->surface_id().local_surface_id();
-      const LocalSurfaceId& last_activated_local_surface_id =
-          last_activated_surface_id_.local_surface_id();
       CHECK_GE(local_surface_id.parent_sequence_number(),
                last_activated_local_surface_id.parent_sequence_number());
       CHECK_GE(local_surface_id.child_sequence_number(),
                last_activated_local_surface_id.child_sequence_number());
-      CHECK(local_surface_id.parent_sequence_number() >
-                last_activated_local_surface_id.parent_sequence_number() ||
-            local_surface_id.child_sequence_number() >
-                last_activated_local_surface_id.child_sequence_number());
+
       Surface* prev_surface =
           surface_manager_->GetSurfaceForId(last_activated_surface_id_);
       DCHECK(prev_surface);
@@ -119,6 +119,12 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
       surface_manager_->DestroySurface(prev_surface->surface_id());
     }
     last_activated_surface_id_ = surface->surface_id();
+  } else if (surface->surface_id() < last_activated_surface_id_) {
+    // We can get into a situation where a child-initiated synchronization is
+    // deferred until after a parent-initiated synchronization happens resulting
+    // in activations happening out of order. In that case, we simply discard
+    // the stale surface.
+    surface_manager_->DestroySurface(surface->surface_id());
   }
 
   DCHECK(surface->HasActiveFrame());
@@ -126,7 +132,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   // Check if this is a display root surface and the SurfaceId is changing.
   if (is_root_ && (!referenced_local_surface_id_ ||
                    *referenced_local_surface_id_ !=
-                       surface->surface_id().local_surface_id())) {
+                       last_activated_surface_id_.local_surface_id())) {
     UpdateDisplayRootReference(surface);
   }
 }
