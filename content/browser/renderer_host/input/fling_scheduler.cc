@@ -52,10 +52,6 @@ void FlingScheduler::DidStopFlingingOnBrowser(
   host_->DidStopFlinging();
 }
 
-bool FlingScheduler::NeedsBeginFrameForFlingProgress() {
-  return !GetCompositor();
-}
-
 void FlingScheduler::ProgressFlingOnBeginFrameIfneeded(
     base::TimeTicks current_time) {
   // No fling is active.

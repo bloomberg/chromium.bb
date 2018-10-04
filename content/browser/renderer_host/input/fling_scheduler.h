@@ -28,7 +28,6 @@ class CONTENT_EXPORT FlingScheduler : public FlingSchedulerBase,
       base::WeakPtr<FlingController> fling_controller) override;
   void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) override;
-  bool NeedsBeginFrameForFlingProgress() override;
 
   // FlingSchedulerBase
   void ProgressFlingOnBeginFrameIfneeded(base::TimeTicks current_time) override;
