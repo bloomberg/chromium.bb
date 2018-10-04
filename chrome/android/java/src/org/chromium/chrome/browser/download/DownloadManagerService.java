@@ -1174,11 +1174,14 @@ public class DownloadManagerService
                     info, notificationId, systemDownloadId, canResolve, false);
         }
 
-        Profile profile = info.isOffTheRecord()
-                ? Profile.getLastUsedProfile().getOffTheRecordProfile()
-                : Profile.getLastUsedProfile().getOriginalProfile();
-        Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-        tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
+        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            Profile profile = info.isOffTheRecord()
+                    ? Profile.getLastUsedProfile().getOffTheRecordProfile()
+                    : Profile.getLastUsedProfile().getOriginalProfile();
+            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+            tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
+        }
     }
 
     /**
