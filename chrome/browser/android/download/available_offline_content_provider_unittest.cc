@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/download/available_offline_content_provider.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -97,7 +98,7 @@ class AvailableOfflineContentTest : public testing::Test {
     // single MockOfflineContentProvider.
     aggregator_ = static_cast<OfflineContentAggregator*>(
         OfflineContentAggregatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, &BuildOfflineContentAggregator));
+            &profile_, base::BindRepeating(&BuildOfflineContentAggregator)));
     aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
     content_provider_.SetVisuals({});
   }
