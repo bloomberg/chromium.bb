@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -27,7 +28,7 @@ class SyncPromoUITest : public testing::Test {
     testing::Test::SetUp();
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              base::BindRepeating(&BuildFakeSigninManagerBase));
     profile_ = builder.Build();
   }
 
