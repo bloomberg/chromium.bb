@@ -17,7 +17,6 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
@@ -31,7 +30,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -72,6 +71,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -147,44 +147,43 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 NSString* kLogJavascriptKey = @"LogJavascript";
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
-#pragma mark - SigninObserverBridge Class
+#pragma mark - IdentityObserverBridge Class
 
-class SigninObserverBridge : public SigninManagerBase::Observer {
+class IdentityObserverBridge : public identity::IdentityManager::Observer {
  public:
-  SigninObserverBridge(ios::ChromeBrowserState* browserState,
-                       SettingsCollectionViewController* owner);
-  ~SigninObserverBridge() override {}
+  IdentityObserverBridge(ios::ChromeBrowserState* browserState,
+                         SettingsCollectionViewController* owner);
+  ~IdentityObserverBridge() override {}
 
-  // SigninManagerBase::Observer implementation:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // IdentityManager::Observer implementation:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
  private:
   __weak SettingsCollectionViewController* owner_;
-  ScopedObserver<SigninManager, SigninObserverBridge> observer_;
+  ScopedObserver<identity::IdentityManager, IdentityObserverBridge> observer_;
 };
 
-SigninObserverBridge::SigninObserverBridge(
+IdentityObserverBridge::IdentityObserverBridge(
     ios::ChromeBrowserState* browserState,
     SettingsCollectionViewController* owner)
     : owner_(owner), observer_(this) {
   DCHECK(owner_);
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browserState);
-  if (!signin_manager)
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
+  if (!identity_manager)
     return;
-  observer_.Add(signin_manager);
+  observer_.Add(identity_manager);
 }
 
-void SigninObserverBridge::GoogleSigninSucceeded(const std::string& account_id,
-                                                 const std::string& username) {
+void IdentityObserverBridge::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 
-void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
-                                           const std::string& username) {
+void IdentityObserverBridge::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 
@@ -205,7 +204,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // The current browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _browserState;  // weak
 
-  std::unique_ptr<SigninObserverBridge> _notificationBridge;
+  std::unique_ptr<IdentityObserverBridge> _notificationBridge;
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
   // Whether the impression of the Signin button has already been recorded.
   BOOL _hasRecordedSigninImpression;
@@ -283,7 +282,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);
     self.collectionViewAccessibilityIdentifier = kSettingsCollectionViewId;
-    _notificationBridge.reset(new SigninObserverBridge(_browserState, self));
+    _notificationBridge.reset(new IdentityObserverBridge(_browserState, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
