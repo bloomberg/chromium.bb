@@ -49,8 +49,6 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     ProcessMemoryMetricsEmitter::ReceivedProcessInfos(std::move(process_infos));
   }
 
-  bool IsResourceCoordinatorEnabled() override { return true; }
-
   ukm::UkmRecorder* GetUkmRecorder() override { return ukm_recorder_; }
 
   int GetNumberOfExtensions(base::ProcessId pid) override {

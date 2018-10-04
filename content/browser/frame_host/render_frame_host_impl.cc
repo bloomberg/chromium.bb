@@ -3619,10 +3619,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
 
-  if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-    registry_->AddInterface(
-        base::Bind(&CreateFrameResourceCoordinator, base::Unretained(this)));
-  }
+  registry_->AddInterface(
+      base::Bind(&CreateFrameResourceCoordinator, base::Unretained(this)));
 
   // BrowserMainLoop::GetInstance() may be null on unit tests.
   if (BrowserMainLoop::GetInstance()) {
@@ -4569,22 +4567,15 @@ RenderFrameHostImpl::GetFindInPage() {
 
 resource_coordinator::FrameResourceCoordinator*
 RenderFrameHostImpl::GetFrameResourceCoordinator() {
-  if (frame_resource_coordinator_)
-    return frame_resource_coordinator_.get();
-
-  if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
-    frame_resource_coordinator_ =
-        std::make_unique<resource_coordinator::FrameResourceCoordinator>(
-            nullptr);
-  } else {
+  if (!frame_resource_coordinator_) {
     auto* connection = ServiceManagerConnection::GetForProcess();
     frame_resource_coordinator_ =
         std::make_unique<resource_coordinator::FrameResourceCoordinator>(
             connection ? connection->GetConnector() : nullptr);
-  }
-  if (parent_) {
-    parent_->GetFrameResourceCoordinator()->AddChildFrame(
-        *frame_resource_coordinator_);
+    if (parent_) {
+      parent_->GetFrameResourceCoordinator()->AddChildFrame(
+          *frame_resource_coordinator_);
+    }
   }
   return frame_resource_coordinator_.get();
 }

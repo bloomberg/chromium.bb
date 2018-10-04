@@ -207,7 +207,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -2122,11 +2121,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         registry.get(),
         base::Bind(&CreateMemoryCoordinatorHandleForRenderProcess, GetID()));
   }
-  if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
-  }
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
@@ -2507,14 +2505,7 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 
 resource_coordinator::ProcessResourceCoordinator*
 RenderProcessHostImpl::GetProcessResourceCoordinator() {
-  if (process_resource_coordinator_)
-    return process_resource_coordinator_.get();
-
-  if (!resource_coordinator::IsResourceCoordinatorEnabled()) {
-    process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            nullptr);
-  } else {
+  if (!process_resource_coordinator_) {
     auto* connection = ServiceManagerConnection::GetForProcess();
     process_resource_coordinator_ =
         std::make_unique<resource_coordinator::ProcessResourceCoordinator>(

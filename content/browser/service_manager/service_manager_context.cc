@@ -67,7 +67,6 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/connect_params.h"
@@ -551,13 +550,11 @@ ServiceManagerContext::ServiceManagerContext(
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);
 
-  if (base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator)) {
-    service_manager::EmbeddedServiceInfo resource_coordinator_info;
-    resource_coordinator_info.factory =
-        base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
-    packaged_services_connection_->AddEmbeddedService(
-        resource_coordinator::mojom::kServiceName, resource_coordinator_info);
-  }
+  service_manager::EmbeddedServiceInfo resource_coordinator_info;
+  resource_coordinator_info.factory =
+      base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
+  packaged_services_connection_->AddEmbeddedService(
+      resource_coordinator::mojom::kServiceName, resource_coordinator_info);
 
   if (media_session::IsMediaSessionEnabled()) {
     service_manager::EmbeddedServiceInfo media_session_info;

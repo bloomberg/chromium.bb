@@ -15,7 +15,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -35,8 +34,7 @@ RenderProcessProbe* RenderProcessProbe::GetInstance() {
 // static
 bool RenderProcessProbe::IsEnabled() {
   // Check that service_manager is active and GRC is enabled.
-  return content::ServiceManagerConnection::GetForProcess() != nullptr &&
-         resource_coordinator::IsResourceCoordinatorEnabled();
+  return content::ServiceManagerConnection::GetForProcess() != nullptr;
 }
 
 RenderProcessProbeImpl::RenderProcessInfo::RenderProcessInfo() = default;

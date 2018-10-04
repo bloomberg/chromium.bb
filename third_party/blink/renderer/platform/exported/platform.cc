@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters_memory_dump_provider.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -227,8 +226,7 @@ void Platform::InitializeCommon(Platform* platform) {
         base::ThreadTaskRunnerHandle::Get());
   }
 
-  if (BlinkResourceCoordinatorBase::IsEnabled())
-    RendererResourceCoordinator::Initialize();
+  RendererResourceCoordinator::Initialize();
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {

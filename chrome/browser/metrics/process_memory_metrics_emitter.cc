@@ -20,7 +20,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
@@ -439,21 +438,18 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   }
 
   // The callback keeps this object alive until the callback is invoked.
-  if (IsResourceCoordinatorEnabled()) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                             mojo::MakeRequest(&introspector_));
-    auto callback2 =
-        base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
-    introspector_->GetProcessToURLMap(callback2);
-  }
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           mojo::MakeRequest(&introspector_));
+  auto callback2 =
+      base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
+  introspector_->GetProcessToURLMap(callback2);
 }
 
 void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
   memory_dump_in_progress_ = true;
-  if (IsResourceCoordinatorEnabled())
-    get_process_urls_in_progress_ = true;
+  get_process_urls_in_progress_ = true;
 }
 
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
@@ -481,10 +477,6 @@ void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
     process_infos_[pid] = std::move(process_info);
   }
   CollateResults();
-}
-
-bool ProcessMemoryMetricsEmitter::IsResourceCoordinatorEnabled() {
-  return resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
 ukm::UkmRecorder* ProcessMemoryMetricsEmitter::GetUkmRecorder() {
