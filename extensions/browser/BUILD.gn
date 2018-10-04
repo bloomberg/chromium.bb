@@ -316,7 +316,6 @@ jumbo_source_set("browser_sources") {
     "runtime_data.h",
     "sandboxed_unpacker.cc",
     "sandboxed_unpacker.h",
-    "script_execution_observer.h",
     "script_executor.cc",
     "script_executor.h",
     "serial_extension_host_queue.cc",

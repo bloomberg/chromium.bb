@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
@@ -321,8 +320,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Handles find requests and replies for the webview find API.
   WebViewFindHelper find_helper_;
-
-  base::ObserverList<ScriptExecutionObserver>::Unchecked script_observers_;
   std::unique_ptr<ScriptExecutor> script_executor_;
 
   // True if the user agent is overridden.

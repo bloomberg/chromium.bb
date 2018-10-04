@@ -68,9 +68,7 @@ using content::WebContents;
 
 namespace extensions {
 
-TabHelper::~TabHelper() {
-  RemoveScriptExecutionObserver(ActivityLog::GetInstance(profile_));
-}
+TabHelper::~TabHelper() = default;
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -78,8 +76,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       extension_app_(NULL),
       pending_web_app_action_(NONE),
       last_committed_nav_entry_unique_id_(0),
-      script_executor_(
-          new ScriptExecutor(web_contents, &script_execution_observers_)),
+      script_executor_(new ScriptExecutor(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
       registry_observer_(this),
       image_loader_ptr_factory_(this),
@@ -93,7 +90,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents, SessionTabHelper::IdForTab(web_contents).id(), profile_));
 
-  AddScriptExecutionObserver(ActivityLog::GetInstance(profile_));
+  ActivityLog::GetInstance(profile_)->ObserveScripts(script_executor_.get());
 
   InvokeForContentRulesRegistries([this](ContentRulesRegistry* registry) {
     registry->MonitorWebContentsForRuleEvaluation(this->web_contents());
@@ -122,15 +119,6 @@ bool TabHelper::CanCreateBookmarkApp() const {
   return !profile_->IsGuestSession() && !profile_->IsOffTheRecord() &&
          !profile_->IsSystemProfile() &&
          IsValidBookmarkAppUrl(web_contents()->GetURL());
-}
-
-void TabHelper::AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
-  script_execution_observers_.AddObserver(observer);
-}
-
-void TabHelper::RemoveScriptExecutionObserver(
-    ScriptExecutionObserver* observer) {
-  script_execution_observers_.RemoveObserver(observer);
 }
 
 void TabHelper::SetExtensionApp(const Extension* extension) {
@@ -332,10 +320,10 @@ void TabHelper::OnGetAppInstallState(content::RenderFrameHost* host,
 
 void TabHelper::OnContentScriptsExecuting(
     content::RenderFrameHost* host,
-    const ScriptExecutionObserver::ExecutingScriptsMap& executing_scripts_map,
+    const ExecutingScriptsMap& executing_scripts_map,
     const GURL& on_url) {
-  for (auto& observer : script_execution_observers_)
-    observer.OnScriptsExecuted(web_contents(), executing_scripts_map, on_url);
+  ActivityLog::GetInstance(profile_)->OnScriptsExecuted(
+      web_contents(), executing_scripts_map, on_url);
 }
 
 const Extension* TabHelper::GetExtension(const ExtensionId& extension_app_id) {

@@ -783,6 +783,11 @@ void ActivityLog::OnScriptsExecuted(
   }
 }
 
+void ActivityLog::ObserveScripts(ScriptExecutor* executor) {
+  executor->set_observer(base::BindRepeating(&ActivityLog::OnScriptsExecuted,
+                                             weak_factory_.GetWeakPtr()));
+}
+
 // LOOKUP ACTIONS. -------------------------------------------------------------
 
 void ActivityLog::GetFilteredActions(
