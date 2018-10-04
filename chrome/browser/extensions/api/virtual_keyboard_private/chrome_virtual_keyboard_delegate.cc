@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_manager.h"
@@ -106,7 +107,7 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
 
 bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return keyboard::InsertText(text);
+  return keyboard::KeyboardController::Get()->InsertText(text);
 }
 
 bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {
@@ -282,7 +283,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(
       GenerateFeatureFlag("imeservice", keyboard::IsImeServiceEnabled()));
 
-  const keyboard::mojom::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  auto config = ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
       "voiceinput", has_audio_input_devices && config.voice_input &&
@@ -325,7 +326,9 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
   const api::virtual_keyboard::FeatureRestrictions& restrictions =
       params.restrictions;
   api::virtual_keyboard::FeatureRestrictions update;
-  keyboard::mojom::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  keyboard::mojom::KeyboardConfig current_config =
+      ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
+  keyboard::mojom::KeyboardConfig config(current_config);
   if (restrictions.spell_check_enabled &&
       config.spell_check != *restrictions.spell_check_enabled) {
     update.spell_check_enabled =
@@ -357,7 +360,8 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
     config.handwriting = *restrictions.handwriting_enabled;
   }
 
-  if (keyboard::UpdateKeyboardConfig(config)) {
+  if (!config.Equals(current_config)) {
+    ChromeKeyboardControllerClient::Get()->SetKeyboardConfig(config);
     // This reloads virtual keyboard even if it exists. This ensures virtual
     // keyboard gets the correct state through
     // chrome.virtualKeyboardPrivate.getKeyboardConfig.

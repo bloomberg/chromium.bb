@@ -801,7 +801,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   gfx::Rect before =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
-  if (!keyboard::IsKeyboardOverscrollEnabled()) {
+  if (!controller->IsKeyboardOverscrollEnabled()) {
     gfx::Rect after =
         display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
     EXPECT_LT(after, before);

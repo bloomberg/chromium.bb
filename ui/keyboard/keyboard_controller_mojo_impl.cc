@@ -25,7 +25,7 @@ class KeyboardControllerMojoImpl::ControllerObserver
   // KeyboardControllerObserver:
   void OnKeyboardConfigChanged() override {
     service_->NotifyConfigChanged(
-        mojom::KeyboardConfig::New(::keyboard::GetKeyboardConfig()));
+        mojom::KeyboardConfig::New(controller_->keyboard_config()));
   }
   void OnKeyboardVisibilityStateChanged(bool is_visible) override {
     service_->NotifyKeyboardVisibilityChanged(is_visible);
@@ -44,7 +44,8 @@ class KeyboardControllerMojoImpl::ControllerObserver
 
 KeyboardControllerMojoImpl::KeyboardControllerMojoImpl(
     ::keyboard::KeyboardController* controller)
-    : controller_observer_(
+    : controller_(controller),
+      controller_observer_(
           std::make_unique<ControllerObserver>(this, controller)) {}
 
 KeyboardControllerMojoImpl::~KeyboardControllerMojoImpl() {}
@@ -64,12 +65,12 @@ void KeyboardControllerMojoImpl::AddObserver(
 void KeyboardControllerMojoImpl::GetKeyboardConfig(
     GetKeyboardConfigCallback callback) {
   std::move(callback).Run(
-      mojom::KeyboardConfig::New(::keyboard::GetKeyboardConfig()));
+      mojom::KeyboardConfig::New(controller_->keyboard_config()));
 }
 
 void KeyboardControllerMojoImpl::SetKeyboardConfig(
     mojom::KeyboardConfigPtr keyboard_config) {
-  keyboard::UpdateKeyboardConfig(*keyboard_config);
+  controller_->UpdateKeyboardConfig(*keyboard_config);
 }
 
 void KeyboardControllerMojoImpl::NotifyConfigChanged(

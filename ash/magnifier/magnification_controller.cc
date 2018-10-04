@@ -175,9 +175,11 @@ void MagnificationController::SetEnabled(bool enabled) {
   // Keyboard overscroll creates layout issues with fullscreen magnification
   // so it needs to be disabled when magnification is enabled.
   // TODO(spqchan): Fix the keyboard overscroll issues.
-  keyboard::SetKeyboardOverscrollOverride(
-      is_enabled_ ? keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED
-                  : keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+  auto config = keyboard::KeyboardController::Get()->keyboard_config();
+  config.overscroll_override =
+      is_enabled_ ? keyboard::mojom::KeyboardOverscrollOverride::kDisabled
+                  : keyboard::mojom::KeyboardOverscrollOverride::kNone;
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 
 bool MagnificationController::IsEnabled() const {

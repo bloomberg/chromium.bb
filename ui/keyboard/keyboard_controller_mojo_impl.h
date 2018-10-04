@@ -44,8 +44,9 @@ class KEYBOARD_EXPORT KeyboardControllerMojoImpl
   void NotifyKeyboardVisibleBoundsChanged(const gfx::Rect& bounds);
   void NotifyKeyboardEnabledChanged(bool enabled);
 
-  mojo::BindingSet<mojom::KeyboardController> bindings_;
+  ::keyboard::KeyboardController* controller_;
   std::unique_ptr<ControllerObserver> controller_observer_;
+  mojo::BindingSet<mojom::KeyboardController> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::KeyboardControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerMojoImpl);
