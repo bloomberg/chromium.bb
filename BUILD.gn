@@ -269,6 +269,13 @@ group("gn_all") {
     deps += [ "//tools/xdisplaycheck" ]
   }
 
+  if (is_win) {
+    deps += [
+      "//chrome/credential_provider",
+      "//chrome/credential_provider/test:gcp_unittests",
+    ]
+  }
+
   if (is_mac) {
     deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
   }
