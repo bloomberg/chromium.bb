@@ -1111,105 +1111,11 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
 // The SpawnedTestServer does not work on iOS.
 #if !defined(OS_IOS)
 
-class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
- public:
-  explicit AllowBadCertsNetworkServiceClient(
-      mojom::NetworkServiceClientRequest network_service_client_request)
-      : binding_(this, std::move(network_service_client_request)) {}
-  ~AllowBadCertsNetworkServiceClient() override {}
-
-  // mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      const GURL& site_for_cookies,
-      bool first_auth_attempt,
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
-      int32_t resource_type,
-      const base::Optional<ResourceResponseHead>& head,
-      mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
-    NOTREACHED();
-  }
-
-  void OnCertificateRequested(
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
-      override {
-    NOTREACHED();
-  }
-
-  void OnSSLCertificateError(uint32_t process_id,
-                             uint32_t routing_id,
-                             uint32_t request_id,
-                             int32_t resource_type,
-                             const GURL& url,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override {
-    std::move(response).Run(net::OK);
-  }
-
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
-    NOTREACHED();
-  }
-
-  void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
-                            OnLoadingStateUpdateCallback callback) override {
-    NOTREACHED();
-  }
-
-  void OnClearSiteData(int process_id,
-                       int routing_id,
-                       const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override {
-    NOTREACHED();
-  }
-
- private:
-  mojo::Binding<mojom::NetworkServiceClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllowBadCertsNetworkServiceClient);
-};
-
 // Test |primary_network_context|, which is required by AIA fetching, among
 // other things.
 TEST_F(NetworkServiceTestWithService, AIAFetching) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  mojom::NetworkServiceClientPtr network_service_client;
   context_params->primary_network_context = true;
-
-  // Have to allow bad certs when using
-  // SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE.
-  AllowBadCertsNetworkServiceClient allow_bad_certs_client(
-      mojo::MakeRequest(&network_service_client));
 
   network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
                                          std::move(context_params));
