@@ -27,6 +27,7 @@ using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::Pair;
 using ::testing::ReturnRef;
+using ::testing::Sequence;
 using ::testing::SizeIs;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
@@ -155,6 +156,16 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
           paths.emplace_back(script.path);
         }
         EXPECT_THAT(paths, UnorderedElementsAre("script1", "script2"));
+
+        Sequence sequence;
+        // Selecting a script should clean the bottom bar.
+        EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)))
+            .InSequence(sequence);
+        // After the script is done both scripts are again valid and should be
+        // shown.
+        EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(2)))
+            .InSequence(sequence);
+
         GetUiDelegate()->OnScriptSelected("script1");
       });
 
@@ -197,6 +208,10 @@ TEST_F(ControllerTest, Reset) {
     EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
 
     // 2. Execute the "reset" script, which contains a reset action.
+
+    // Selecting a script should clean the bottom bar.
+    EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)));
+
     ActionsResponseProto actions_response;
     actions_response.add_actions()->mutable_reset();
     std::string actions_response_str;

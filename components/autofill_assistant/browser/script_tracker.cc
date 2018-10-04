@@ -58,6 +58,11 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
                                 std::move(callback)));
 }
 
+void ScriptTracker::ClearRunnableScripts() {
+  runnable_scripts_.clear();
+  listener_->OnRunnableScriptsChanged(runnable_scripts_);
+}
+
 void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,
