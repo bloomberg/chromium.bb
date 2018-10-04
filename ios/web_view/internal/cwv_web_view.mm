@@ -36,7 +36,6 @@
 #import "ios/web_view/internal/cwv_script_command_internal.h"
 #import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
-#import "ios/web_view/internal/passwords/cwv_password_controller_internal.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -104,7 +103,6 @@ NSDictionary* NSDictionaryFromDictionaryValue(
 @property(nonatomic, readwrite) NSURL* visibleURL;
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @property(nonatomic, readonly) CWVAutofillController* autofillController;
-@property(nonatomic, readonly) CWVPasswordController* passwordController;
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 // Updates the availability of the back/forward navigation properties exposed
@@ -117,8 +115,6 @@ NSDictionary* NSDictionaryFromDictionaryValue(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVAutofillController created from |_webState|.
 - (CWVAutofillController*)newAutofillController;
-// Returns a new CWVPasswordController created from |_webState|.
-- (CWVPasswordController*)newPasswordController;
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVTranslationController created from |_webState|.
 - (CWVTranslationController*)newTranslationController;
@@ -133,7 +129,6 @@ static NSString* gUserAgentProduct = nil;
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize autofillController = _autofillController;
-@synthesize passwordController = _passwordController;
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize canGoBack = _canGoBack;
 @synthesize canGoForward = _canGoForward;
@@ -509,19 +504,6 @@ static NSString* gUserAgentProduct = nil;
                                      JSSuggestionManager:JSSuggestionManager];
 }
 
-#pragma mark - Password
-
-- (CWVPasswordController*)passwordController {
-  if (!_passwordController) {
-    _passwordController = [self newPasswordController];
-  }
-  return _passwordController;
-}
-
-- (CWVPasswordController*)newPasswordController {
-  return [[CWVPasswordController alloc] initWithWebState:_webState.get()];
-}
-
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #pragma mark - Preserving and Restoring State
@@ -609,7 +591,6 @@ static NSString* gUserAgentProduct = nil;
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   // Recreate and restore the delegate only if previously lazily loaded.
-  // TODO(crbug.com/865114): Add delegate for password controller.
   if (_autofillController) {
     id<CWVAutofillControllerDelegate> delegate = _autofillController.delegate;
     _autofillController = [self newAutofillController];

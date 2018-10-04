@@ -33,6 +33,7 @@
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
+#import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -42,7 +43,8 @@
 @interface CWVAutofillController ()<AutofillDriverIOSBridge,
                                     CRWWebStateObserver,
                                     CWVAutofillClientIOSBridge,
-                                    FormActivityObserver>
+                                    FormActivityObserver,
+                                    CWVPasswordControllerDelegate>
 
 @end
 
@@ -71,6 +73,9 @@
 
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
+
+  // Handles password autofilling related logic.
+  CWVPasswordController* _passwordController;
 }
 
 @synthesize delegate = _delegate;
@@ -116,6 +121,10 @@
     _JSAutofillManager = JSAutofillManager;
 
     _JSSuggestionManager = JSSuggestionManager;
+
+    _passwordController =
+        [[CWVPasswordController alloc] initWithWebState:webState
+                                            andDelegate:self];
   }
   return self;
 }
@@ -150,6 +159,7 @@
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
+                              fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
@@ -379,14 +389,16 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
   NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
+  NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
   if (params.type == "focus") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didFocusOnFieldWithName:fieldIdentifier
-                                         :formName:frameID:value:)]) {
+                                         :fieldType:formName:frameID:value:)]) {
       [_delegate autofillController:self
             didFocusOnFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
+                          fieldType:nsFieldType
                            formName:nsFormName
                             frameID:nsFrameID
                               value:nsValue];
@@ -394,10 +406,11 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   } else if (params.type == "input") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didInputInFieldWithName:fieldIdentifier
-                                         :formName:frameID:value:)]) {
+                                         :fieldType:formName:frameID:value:)]) {
       [_delegate autofillController:self
             didInputInFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
+                          fieldType:nsFieldType
                            formName:nsFormName
                             frameID:nsFrameID
                               value:nsValue];
@@ -405,10 +418,11 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   } else if (params.type == "blur") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didBlurOnFieldWithName:fieldIdentifier
-                                         :formName:frameID:value:)]) {
+                                         :fieldType:formName:frameID:value:)]) {
       [_delegate autofillController:self
              didBlurOnFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
+                          fieldType:nsFieldType
                            formName:nsFormName
                             frameID:nsFrameID
                               value:nsValue];
@@ -440,6 +454,36 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   _webState->RemoveObserver(_webStateObserverBridge.get());
   _webStateObserverBridge.reset();
   _webState = nullptr;
+}
+
+#pragma mark - CWVPasswordControllerDelegate
+
+- (void)passwordController:(CWVPasswordController*)passwordController
+    decidePasswordSavingPolicyForUsername:(NSString*)username
+                          decisionHandler:
+                              (void (^)(CWVPasswordUserDecision decision))
+                                  decisionHandler {
+  if ([self.delegate respondsToSelector:@selector
+                     (autofillController:decidePasswordSavingPolicyForUsername
+                                           :decisionHandler:)]) {
+    [self.delegate autofillController:self
+        decidePasswordSavingPolicyForUsername:username
+                              decisionHandler:decisionHandler];
+  }
+}
+
+- (void)passwordController:(CWVPasswordController*)passwordController
+    decidePasswordUpdatingPolicyForUsername:(NSString*)username
+                            decisionHandler:
+                                (void (^)(CWVPasswordUserDecision decision))
+                                    decisionHandler {
+  if ([self.delegate respondsToSelector:@selector
+                     (autofillController:decidePasswordUpdatingPolicyForUsername
+                                           :decisionHandler:)]) {
+    [self.delegate autofillController:self
+        decidePasswordUpdatingPolicyForUsername:username
+                                decisionHandler:decisionHandler];
+  }
 }
 
 @end

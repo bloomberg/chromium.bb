@@ -84,11 +84,9 @@ if (ios_web_view_enable_autofill) {
     "public/cwv_autofill_suggestion.h",
     "public/cwv_credit_card.h",
     "public/cwv_credit_card_verifier.h",
-    "public/cwv_password_controller.h",
     "public/cwv_preferences_autofill.h",
     "public/cwv_web_view_autofill.h",
     "public/cwv_web_view_configuration_autofill.h",
-    "public/cwv_web_view_password.h",
   ]
 }
 
@@ -235,7 +233,7 @@ if (ios_web_view_enable_autofill) {
     "internal/autofill/cwv_credit_card_verifier.mm",
     "internal/autofill/cwv_credit_card_verifier_internal.h",
     "internal/passwords/cwv_password_controller.mm",
-    "internal/passwords/cwv_password_controller_internal.h",
+    "internal/passwords/cwv_password_controller.h",
   ]
 }
 

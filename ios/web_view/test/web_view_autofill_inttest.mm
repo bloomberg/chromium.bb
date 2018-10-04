@@ -30,6 +30,7 @@ NSString* const kTestFormName = @"FormName";
 NSString* const kTestFormID = @"FormID";
 NSString* const kTestFieldName = @"FieldName";
 NSString* const kTestFieldID = @"FieldID";
+NSString* const kTestFieldType = @"text";
 NSString* const kTestFieldValue = @"FieldValue";
 NSString* const kTestSubmitID = @"SubmitID";
 NSString* const kTestFormHtml =
@@ -83,6 +84,7 @@ class WebViewAutofillTest : public WebViewInttestBase {
         fetchSuggestionsForFormWithName:kTestFormName
                               fieldName:kTestFieldName
                         fieldIdentifier:kTestFieldID
+                              fieldType:kTestFieldType
                                 frameID:GetMainFrameId()
                       completionHandler:^(
                           NSArray<CWVAutofillSuggestion*>* suggestions) {
@@ -122,6 +124,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
   [[delegate expect] autofillController:autofill_controller_
                 didFocusOnFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
+                              fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
                                   value:kTestFieldValue];
@@ -135,6 +138,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
   [[delegate expect] autofillController:autofill_controller_
                  didBlurOnFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
+                              fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
                                   value:kTestFieldValue];
@@ -151,6 +155,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
   [[delegate expect] autofillController:autofill_controller_
                 didInputInFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
+                              fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
                                   value:kTestFieldValue];

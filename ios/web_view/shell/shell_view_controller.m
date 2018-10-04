@@ -270,10 +270,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   _autofillDelegate = [[ShellAutofillDelegate alloc] init];
   _webView.autofillController.delegate = _autofillDelegate;
 
-  // Triggers password controller initiation.
-  // TODO(crbug.com/865114): Add delegate for password controller.
-  [_webView passwordController];
-
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];
   [_containerView addSubview:_webView];
