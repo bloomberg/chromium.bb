@@ -279,7 +279,7 @@ class CORE_EXPORT TextFinder final
   // This flag is used by the scoping effort to determine if we need to figure
   // out which rectangle is the active match. Once we find the active
   // rectangle we clear this flag.
-  bool locating_active_rect_;
+  bool should_locate_active_rect_;
 
   // Keeps track of whether there is an scoping effort ongoing in the frame.
   bool scoping_in_progress_;
