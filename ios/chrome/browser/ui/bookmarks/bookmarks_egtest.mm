@@ -53,10 +53,11 @@
 using chrome_test_util::BookmarksMenuButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::CancelButton;
 using chrome_test_util::ContextMenuCopyButton;
+using chrome_test_util::OmniboxText;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
-using chrome_test_util::CancelButton;
 
 namespace {
 
@@ -205,8 +206,7 @@ id<GREYMatcher> SearchIconButton() {
   NSString* bookmarkTitle = @"my bookmark";
 
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          expectedURLContent)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
   // Add the bookmark from the UI.
@@ -900,8 +900,7 @@ id<GREYMatcher> SearchIconButton() {
   [ChromeEarlGrey loadURL:GURL(kChromeBookmarksURL)];
 
   // Verify chrome://bookmarks appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          kChromeBookmarksURL)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(kChromeBookmarksURL)]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the resulting page is an error page.
@@ -1271,22 +1270,19 @@ id<GREYMatcher> SearchIconButton() {
 // folder.
 + (void)verifyOrderOfTabsWithCurrentTabIndex:(NSUInteger)tabIndex {
   // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Switch to the next Tab and verify "Second URL" appears.
   // TODO(crbug.com/695749): see we if can add switchToNextTab to
   // chrome_test_util so that we don't need to pass tabIndex here.
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 1);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Switch to the next Tab and verify "First URL" appears.
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 2);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -2196,8 +2192,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify "First URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase openBookmarks];
@@ -2216,8 +2211,7 @@ id<GREYMatcher> SearchIconButton() {
                  @"Incognito tab count should be 0");
 
   // Verify "Second URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase openBookmarks];
@@ -2241,8 +2235,7 @@ id<GREYMatcher> SearchIconButton() {
                  @"Failed to switch to incognito mode");
 
   // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase openBookmarks];
@@ -2252,8 +2245,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify "First URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Verify the current tab is an incognito tab.
@@ -2287,8 +2279,7 @@ id<GREYMatcher> SearchIconButton() {
                  @"Failed to staying at incognito mode");
 
   // Verify "Second URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase openBookmarks];
@@ -2312,8 +2303,7 @@ id<GREYMatcher> SearchIconButton() {
                   @"Failed to switch to normal mode");
 
   // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -3871,8 +3861,7 @@ id<GREYMatcher> SearchIconButton() {
   // Open the page.
   std::string expectedURLContent = bookmarkedURL.GetContent();
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          expectedURLContent)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the folder has only one element.
@@ -3997,8 +3986,7 @@ id<GREYMatcher> SearchIconButton() {
   std::string expectedURLContent = bookmarkedURL.GetContent();
 
   [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          expectedURLContent)]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase starCurrentTab];
