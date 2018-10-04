@@ -169,6 +169,12 @@ class ExtendedDesktopTest : public AshTestBase {
                : GetPrimarySystemTray()->HasSystemBubble();
   }
 
+  gfx::Rect GetSystemTrayBoundsInScreen() {
+    return features::IsSystemTrayUnifiedEnabled()
+               ? GetPrimaryUnifiedSystemTray()->GetBoundsInScreen()
+               : GetPrimarySystemTray()->GetBoundsInScreen();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtendedDesktopTest);
 };
@@ -738,8 +744,7 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
 
   // Opens the tray by a dummy click event and makes sure that adding/removing
   // displays doesn't break anything.
-  event_generator->MoveMouseToCenterOf(
-      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->GetNativeWindow());
+  event_generator->MoveMouseTo(GetSystemTrayBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
   EXPECT_TRUE(IsBubbleShown());
 

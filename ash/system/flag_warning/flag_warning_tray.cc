@@ -26,17 +26,11 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
-namespace {
-
-const char kTooltipText[] = "Running with feature mash";
-
-}  // namespace
 
 FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  DCHECK(::features::IsMultiProcessMash());
   container_ = new TrayContainer(shelf);
   AddChildView(container_);
 
@@ -45,7 +39,7 @@ FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   button_->SetProminent(true);
   button_->SetBgColorOverride(gfx::kGoogleYellow300);
   button_->SetEnabledTextColors(SK_ColorBLACK);
-  button_->SetTooltipText(base::ASCIIToUTF16(kTooltipText));
+  button_->SetFocusBehavior(views::View::FocusBehavior::NEVER);
   UpdateButton();
   container_->AddChildView(button_);
   SetVisible(true);
@@ -83,17 +77,27 @@ void FlagWarningTray::UpdateButton() {
 
   // Only the horizontal shelf is wide enough for a text label. Use an icon for
   // vertical shelf alignments.
-  if (shelf_->IsHorizontalAlignment()) {
-    button_->SetText(base::ASCIIToUTF16("mash"));
-    button_->SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
-    button_->SetMinSize(gfx::Size(0, kTrayItemSize));
-  } else {
+  if (!shelf_->IsHorizontalAlignment()) {
     button_->SetText(base::string16());
     button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kSystemMenuInfoIcon, SK_ColorBLACK));
     button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
+    return;
   }
+
+  if (::features::IsSingleProcessMash()) {
+    button_->SetText(base::ASCIIToUTF16("a"));
+    button_->SetTooltipText(
+        base::ASCIIToUTF16("Running with feature SingleProcessMash"));
+  } else if (::features::IsMultiProcessMash()) {
+    button_->SetText(base::ASCIIToUTF16("Mash"));
+    button_->SetTooltipText(base::ASCIIToUTF16("Running with feature Mash"));
+  } else {
+    NOTREACHED();
+  }
+  button_->SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
+  button_->SetMinSize(gfx::Size(0, kTrayItemSize));
 }
 
 }  // namespace ash
