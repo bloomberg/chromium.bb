@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
+import org.chromium.components.language.AndroidLanguageMetricsBridge;
 import org.chromium.components.language.GeoLanguageProviderBridge;
 
 import java.util.ArrayList;
@@ -219,6 +220,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
         for (String language : languagesToAdd) {
             PrefServiceBridge.getInstance().updateUserAcceptLanguages(language, true);
+            AndroidLanguageMetricsBridge.reportExplicitLanguageAskStateChanged(language, true);
         }
 
         HashSet<String> languagesToRemove = new HashSet<String>(mInitialLanguages);
@@ -226,6 +228,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
         for (String language : languagesToRemove) {
             PrefServiceBridge.getInstance().updateUserAcceptLanguages(language, false);
+            AndroidLanguageMetricsBridge.reportExplicitLanguageAskStateChanged(language, false);
         }
     }
 
