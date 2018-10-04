@@ -31,7 +31,7 @@ namespace {
 
 void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
   GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-      context, &BuildFakeGaiaCookieManagerService);
+      context, base::BindRepeating(&BuildFakeGaiaCookieManagerService));
 }
 
 }  // namespace

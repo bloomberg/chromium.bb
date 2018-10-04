@@ -666,7 +666,8 @@ void SyncTest::SetUpInvalidations(int index) {
             invalidation::ProfileInvalidationProviderFactory::GetInstance()
                 ->SetTestingFactoryAndUse(
                     GetProfile(index),
-                    BuildFakeServerProfileInvalidationProvider);
+                    base::BindRepeating(
+                        &BuildFakeServerProfileInvalidationProvider));
 
       } else {
         test_factory =
@@ -674,7 +675,8 @@ void SyncTest::SetUpInvalidations(int index) {
                 GetInstance()
                     ->SetTestingFactoryAndUse(
                         GetProfile(index),
-                        BuildFakeServerProfileInvalidationProvider);
+                        base::BindRepeating(
+                            &BuildFakeServerProfileInvalidationProvider));
       }
       invalidation::InvalidationService* invalidation_service =
           static_cast<invalidation::ProfileInvalidationProvider*>(test_factory)
