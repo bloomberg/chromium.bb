@@ -1611,6 +1611,8 @@ jumbo_split_static_library("browser") {
     "usb/usb_chooser_context_factory.h",
     "usb/usb_chooser_controller.cc",
     "usb/usb_chooser_controller.h",
+    "usb/usb_policy_allowed_devices.cc",
+    "usb/usb_policy_allowed_devices.h",
     "usb/usb_tab_helper.cc",
     "usb/usb_tab_helper.h",
     "usb/web_usb_chooser.cc",
