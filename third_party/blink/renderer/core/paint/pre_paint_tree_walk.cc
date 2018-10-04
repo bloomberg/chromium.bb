@@ -266,8 +266,6 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
   paint_layer.SetPreviousPaintPhaseDescendantOutlinesEmpty(false);
   paint_layer.SetPreviousPaintPhaseFloatEmpty(false);
   paint_layer.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
-  context.paint_invalidator_context.subtree_flags |=
-      PaintInvalidatorContext::kSubtreeVisualRectUpdate;
 }
 
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
@@ -327,13 +325,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
     property_changed = property_tree_builder->UpdateForSelf();
-
-    if (context.tree_builder_context->clip_changed) {
-      // TODO(vmpstr): Investigate if this is required across an isolation
-      // boundary.
-      paint_invalidator_context.subtree_flags |=
-          PaintInvalidatorContext::kSubtreeVisualRectUpdate;
-    }
 
     if (property_changed &&
         !context.tree_builder_context
