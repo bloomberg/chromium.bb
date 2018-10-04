@@ -84,7 +84,6 @@ MockDrmDevice::MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device)
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
-      overlay_flip_call_count_(0),
       overlay_clear_call_count_(0),
       allocate_buffer_count_(0),
       set_crtc_expectation_(true),
@@ -250,17 +249,6 @@ bool MockDrmDevice::PageFlip(uint32_t crtc_id,
   if (page_flip_expectation_)
     callbacks_.push(page_flip_request->AddPageFlip());
   return page_flip_expectation_;
-}
-
-bool MockDrmDevice::PageFlipOverlay(uint32_t crtc_id,
-                                    uint32_t framebuffer,
-                                    const gfx::Rect& location,
-                                    const gfx::Rect& source,
-                                    int overlay_plane) {
-  if (!framebuffer)
-    overlay_clear_call_count_++;
-  overlay_flip_call_count_++;
-  return true;
 }
 
 ScopedDrmPlanePtr MockDrmDevice::GetPlane(uint32_t plane_id) {
