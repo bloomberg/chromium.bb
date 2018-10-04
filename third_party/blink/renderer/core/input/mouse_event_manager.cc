@@ -620,10 +620,8 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
 
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled() ||
-       mouse_pressed_)) {
+      mouse_pressed_)
     return;
-  }
 
   // TODO(lanwei): When the mouse position is unknown, we do not send the fake
   // mousemove event for now, so we cannot update the hover states and mouse

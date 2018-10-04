@@ -20,15 +20,8 @@ extern const base::Feature kResamplingScrollEvents;
 // the native platforms. crbug.com/450631
 extern const base::Feature kSendMouseLeaveEvents;
 
-// When enabled, this feature prevents Blink from changing the hover state and
-// dispatching mouse enter/exit events for elements under the mouse after the
-// layout under the mouse cursor is changed.
+// Do not update hover after the layout is changed.
 extern const base::Feature kNoHoverAfterLayoutChange;
-
-// When enabled, this feature prevents Blink from changing the hover state and
-// dispatching mouse enter/exit events for elements under the mouse as the page
-// is scrolled.
-extern const base::Feature kNoHoverDuringScroll;
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_
