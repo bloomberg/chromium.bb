@@ -884,13 +884,15 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom, display.work_area().bottom());
 
   // Tap the system tray when shelf is shown should open the system tray menu.
-  generator->GestureTapAt(StatusAreaWidgetTestHelper::GetStatusAreaWidget()
-                              ->GetWindowBoundsInScreen()
-                              .CenterPoint());
-  if (features::IsSystemTrayUnifiedEnabled())
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    generator->GestureTapAt(
+        GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
     EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
-  else
+  } else {
+    generator->GestureTapAt(
+        GetPrimarySystemTray()->GetBoundsInScreen().CenterPoint());
     EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
+  }
 
   // Move mouse back up and click to dismiss the opened system tray menu.
   generator->MoveMouseTo(0, 0);

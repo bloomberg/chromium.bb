@@ -83,7 +83,7 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  if (::features::IsMultiProcessMash()) {
+  if (::features::IsSingleProcessMash() || ::features::IsMultiProcessMash()) {
     flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
     status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
   }
