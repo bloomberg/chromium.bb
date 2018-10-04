@@ -60,7 +60,6 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
           this,
           base::Bind(&GetSyncService, delegate_.browserState),
           base::Bind(&GetSigninManager, delegate_.browserState)),
-      ukm_source_id_(0),
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
@@ -189,24 +188,13 @@ IOSChromePasswordManagerClient::GetLogManager() const {
 }
 
 ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
-  // TODO(crbug.com/792662): Update this to get a shared UKM SourceId (e.g.
-  // from web state), once the UKM framework provides a mechanism for that.
-  if (ukm_source_url_ != delegate_.lastCommittedURL) {
-    metrics_recorder_.reset();
-    ukm_source_url_ = delegate_.lastCommittedURL;
-    ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
-    ukm::UkmRecorder::Get()->UpdateSourceURL(ukm_source_id_, ukm_source_url_);
-  }
-  return ukm_source_id_;
+  return delegate_.ukmSourceId;
 }
 
 PasswordManagerMetricsRecorder*
 IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    // Query source_id first, because that has the side effect of initializing
-    // |ukm_source_url_|.
-    ukm::SourceId source_id = GetUkmSourceId();
-    metrics_recorder_.emplace(source_id, ukm_source_url_);
+    metrics_recorder_.emplace(GetUkmSourceId(), delegate_.lastCommittedURL);
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }
