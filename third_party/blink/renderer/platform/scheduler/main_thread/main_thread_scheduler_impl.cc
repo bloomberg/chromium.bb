@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
@@ -2721,10 +2720,8 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
 
-  if (::resource_coordinator::IsResourceCoordinatorEnabled()) {
-    RendererResourceCoordinator::Get().SetExpectedTaskQueueingDuration(
-        queueing_time);
-  }
+  RendererResourceCoordinator::Get().SetExpectedTaskQueueingDuration(
+      queueing_time);
 }
 
 void MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(

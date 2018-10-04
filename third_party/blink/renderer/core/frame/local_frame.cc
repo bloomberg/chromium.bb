@@ -100,7 +100,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -1213,8 +1212,6 @@ ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
 }
 
 FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
-  if (!BlinkResourceCoordinatorBase::IsEnabled())
-    return nullptr;
   if (!frame_resource_coordinator_) {
     auto* local_frame_client = Client();
     if (!local_frame_client)
