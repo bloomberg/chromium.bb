@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 
 #include <memory>
 #include <string>
@@ -22,13 +22,13 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace extensions {
+namespace web_app {
 
-BookmarkAppDataRetriever::BookmarkAppDataRetriever() = default;
+WebAppDataRetriever::WebAppDataRetriever() = default;
 
-BookmarkAppDataRetriever::~BookmarkAppDataRetriever() = default;
+WebAppDataRetriever::~WebAppDataRetriever() = default;
 
-void BookmarkAppDataRetriever::GetWebApplicationInfo(
+void WebAppDataRetriever::GetWebApplicationInfo(
     content::WebContents* web_contents,
     GetWebApplicationInfoCallback callback) {
   // Concurrent calls are not allowed.
@@ -52,20 +52,20 @@ void BookmarkAppDataRetriever::GetWebApplicationInfo(
   // the WebContents or the RenderFrameHost are destroyed and the connection
   // to ChromeRenderFrame is lost.
   chrome_render_frame.set_connection_error_handler(
-      base::BindOnce(&BookmarkAppDataRetriever::OnGetWebApplicationInfoFailed,
+      base::BindOnce(&WebAppDataRetriever::OnGetWebApplicationInfoFailed,
                      weak_ptr_factory_.GetWeakPtr()));
   // Bind the InterfacePtr into the callback so that it's kept alive
   // until there's either a connection error or a response.
   auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(base::Bind(
-      &BookmarkAppDataRetriever::OnGetWebApplicationInfo,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame),
+  web_app_info_proxy->GetWebApplicationInfo(base::BindOnce(
+      &WebAppDataRetriever::OnGetWebApplicationInfo,
+      weak_ptr_factory_.GetWeakPtr(), std::move(chrome_render_frame),
       web_contents, entry->GetUniqueID()));
 }
 
-void BookmarkAppDataRetriever::GetIcons(const GURL& app_url,
-                                        const std::vector<GURL>& icon_urls,
-                                        GetIconsCallback callback) {
+void WebAppDataRetriever::GetIcons(const GURL& app_url,
+                                   const std::vector<GURL>& icon_urls,
+                                   GetIconsCallback callback) {
   // TODO(crbug.com/864904): Download icons using |icon_urls|.
 
   // Generate missing icons.
@@ -105,7 +105,7 @@ void BookmarkAppDataRetriever::GetIcons(const GURL& app_url,
       FROM_HERE, base::BindOnce(std::move(callback), std::move(icons)));
 }
 
-void BookmarkAppDataRetriever::OnGetWebApplicationInfo(
+void WebAppDataRetriever::OnGetWebApplicationInfo(
     chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     content::WebContents* web_contents,
     int last_committed_nav_entry_unique_id,
@@ -129,8 +129,8 @@ void BookmarkAppDataRetriever::OnGetWebApplicationInfo(
   std::move(get_web_app_info_callback_).Run(std::move(info));
 }
 
-void BookmarkAppDataRetriever::OnGetWebApplicationInfoFailed() {
+void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
   std::move(get_web_app_info_callback_).Run(nullptr);
 }
 
-}  // namespace extensions
+}  // namespace web_app

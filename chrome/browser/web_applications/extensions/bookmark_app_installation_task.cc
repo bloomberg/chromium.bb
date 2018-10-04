@@ -13,7 +13,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,7 +59,7 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     : profile_(profile),
       app_info_(std::move(app_info)),
       helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
-      data_retriever_(std::make_unique<BookmarkAppDataRetriever>()),
+      data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()),
       installer_(std::make_unique<BookmarkAppInstaller>(profile)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
@@ -82,7 +82,7 @@ void BookmarkAppInstallationTask::SetBookmarkAppHelperFactoryForTesting(
 }
 
 void BookmarkAppInstallationTask::SetDataRetrieverForTesting(
-    std::unique_ptr<BookmarkAppDataRetriever> data_retriever) {
+    std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
   data_retriever_ = std::move(data_retriever);
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 
 #include <memory>
 #include <utility>
@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
-namespace extensions {
+namespace web_app {
 
 namespace {
 
@@ -68,10 +68,10 @@ class FakeChromeRenderFrame
   mojo::AssociatedBinding<chrome::mojom::ChromeRenderFrame> binding_{this};
 };
 
-class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
+class WebAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
  public:
-  BookmarkAppDataRetrieverTest() = default;
-  ~BookmarkAppDataRetrieverTest() override = default;
+  WebAppDataRetrieverTest() = default;
+  ~WebAppDataRetrieverTest() override = default;
 
   void SetFakeChromeRenderFrame(
       FakeChromeRenderFrame* fake_chrome_render_frame) {
@@ -112,23 +112,22 @@ class BookmarkAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
   base::Optional<std::unique_ptr<WebApplicationInfo>> web_app_info_;
   std::vector<WebApplicationInfo::IconInfo> icons_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppDataRetrieverTest);
+  DISALLOW_COPY_AND_ASSIGN(WebAppDataRetrieverTest);
 };
 
-TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_NoEntry) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_NoEntry) {
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(nullptr, web_app_info());
 }
 
-TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
   WebApplicationInfo original_web_app_info;
@@ -138,12 +137,11 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   // If the WebApplicationInfo has no URL, we fallback to the last committed
@@ -151,7 +149,7 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
   EXPECT_EQ(GURL(kFooUrl), web_app_info()->app_url);
 }
 
-TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
   WebApplicationInfo original_web_app_info;
@@ -161,19 +159,17 @@ TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(original_web_app_info.app_url, web_app_info()->app_url);
 }
 
-TEST_F(BookmarkAppDataRetrieverTest,
-       GetWebApplicationInfo_TitleAbsentFromRenderer) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_TitleAbsentFromRenderer) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
   const auto web_contents_title = base::UTF8ToUTF16(kFooTitle);
@@ -186,12 +182,11 @@ TEST_F(BookmarkAppDataRetrieverTest,
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   // If the WebApplicationInfo has no title, we fallback to the WebContents
@@ -199,7 +194,7 @@ TEST_F(BookmarkAppDataRetrieverTest,
   EXPECT_EQ(web_contents_title, web_app_info()->title);
 }
 
-TEST_F(BookmarkAppDataRetrieverTest,
+TEST_F(WebAppDataRetrieverTest,
        GetWebApplicationInfo_TitleAbsentFromWebContents) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
@@ -212,12 +207,11 @@ TEST_F(BookmarkAppDataRetrieverTest,
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
   // If the WebApplicationInfo has no title and the WebContents has no title,
@@ -226,51 +220,48 @@ TEST_F(BookmarkAppDataRetrieverTest,
             web_app_info()->title);
 }
 
-TEST_F(BookmarkAppDataRetrieverTest,
-       GetWebApplicationInfo_WebContentsDestroyed) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_WebContentsDestroyed) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
   FakeChromeRenderFrame fake_chrome_render_frame{WebApplicationInfo()};
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   DeleteContents();
   run_loop.Run();
 
   EXPECT_EQ(nullptr, web_app_info());
 }
 
-TEST_F(BookmarkAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
+TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
 
   FakeChromeRenderFrame fake_chrome_render_frame{WebApplicationInfo()};
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
 
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetWebApplicationInfo(
       web_contents(),
-      base::BindOnce(
-          &BookmarkAppDataRetrieverTest::GetWebApplicationInfoCallback,
-          base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   web_contents_tester()->NavigateAndCommit(GURL(kFooUrl2));
   run_loop.Run();
 
   EXPECT_EQ(nullptr, web_app_info());
 }
 
-TEST_F(BookmarkAppDataRetrieverTest, GetIcons_NoIconsProvided) {
+TEST_F(WebAppDataRetrieverTest, GetIcons_NoIconsProvided) {
   base::RunLoop run_loop;
-  BookmarkAppDataRetriever retriever;
+  WebAppDataRetriever retriever;
   retriever.GetIcons(
       GURL(kFooUrl), std::vector<GURL>(),
-      base::BindOnce(&BookmarkAppDataRetrieverTest::GetIconsCallback,
+      base::BindOnce(&WebAppDataRetrieverTest::GetIconsCallback,
                      base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -291,4 +282,4 @@ TEST_F(BookmarkAppDataRetrieverTest, GetIcons_NoIconsProvided) {
   }
 }
 
-}  // namespace extensions
+}  // namespace web_app

@@ -22,9 +22,12 @@ namespace content {
 class WebContents;
 }
 
+namespace web_app {
+class WebAppDataRetriever;
+}
+
 namespace extensions {
 
-class BookmarkAppDataRetriever;
 class BookmarkAppHelper;
 class BookmarkAppInstaller;
 class Extension;
@@ -81,11 +84,11 @@ class BookmarkAppInstallationTask {
   void SetBookmarkAppHelperFactoryForTesting(
       BookmarkAppHelperFactory helper_factory);
   void SetDataRetrieverForTesting(
-      std::unique_ptr<BookmarkAppDataRetriever> data_retriever);
+      std::unique_ptr<web_app::WebAppDataRetriever> data_retriever);
   void SetInstallerForTesting(std::unique_ptr<BookmarkAppInstaller> installer);
 
  protected:
-  BookmarkAppDataRetriever& data_retriever() { return *data_retriever_; }
+  web_app::WebAppDataRetriever& data_retriever() { return *data_retriever_; }
   BookmarkAppInstaller& installer() { return *installer_; }
 
  private:
@@ -106,7 +109,7 @@ class BookmarkAppInstallationTask {
   std::unique_ptr<BookmarkAppHelper> helper_;
   BookmarkAppHelperFactory helper_factory_;
 
-  std::unique_ptr<BookmarkAppDataRetriever> data_retriever_;
+  std::unique_ptr<web_app::WebAppDataRetriever> data_retriever_;
   std::unique_ptr<BookmarkAppInstaller> installer_;
 
   base::WeakPtrFactory<BookmarkAppInstallationTask> weak_ptr_factory_{this};

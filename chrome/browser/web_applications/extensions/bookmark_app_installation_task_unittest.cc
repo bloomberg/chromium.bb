@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/installable/installable_data.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "chrome/common/web_application_info.h"
@@ -86,9 +86,9 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
-// All BookmarkAppDataRetriever operations are async, so this class posts tasks
+// All WebAppDataRetriever operations are async, so this class posts tasks
 // when running callbacks to simulate async behavior in tests as well.
-class TestDataRetriever : public BookmarkAppDataRetriever {
+class TestDataRetriever : public web_app::WebAppDataRetriever {
  public:
   explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info)
       : web_app_info_(std::move(web_app_info)) {}

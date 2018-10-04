@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
