@@ -55,10 +55,11 @@ class SigninTrackerTest : public testing::Test {
   SigninTrackerTest() {}
   void SetUp() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              base::BindRepeating(&BuildFakeSigninManagerBase));
     profile_ = builder.Build();
 
     fake_oauth2_token_service_ =
