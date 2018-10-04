@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/info_map.h"
@@ -349,13 +350,23 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
     size_t i = 0;
     auto ruleset_data = rulesets_.begin();
     for (; ruleset_data != rulesets_.end(); ++ruleset_data, ++i) {
-      // As a minor optimization, cache the value of
-      // |ShouldEvaluateRulesetForRequest|.
-      should_evaluate_rulesets_for_request[i] = ShouldEvaluateRulesetForRequest(
+      PermissionsData::PageAccess page_access = ShouldEvaluateRulesetForRequest(
           *ruleset_data, request, is_incognito_context);
 
-      if (!should_evaluate_rulesets_for_request[i])
+      // As a minor optimization, cache the value of
+      // |ShouldEvaluateRulesetForRequest|.
+      should_evaluate_rulesets_for_request[i] =
+          page_access == PermissionsData::PageAccess::kAllowed;
+
+      if (!should_evaluate_rulesets_for_request[i]) {
+        if (page_access == PermissionsData::PageAccess::kWithheld) {
+          DCHECK(ExtensionsAPIClient::Get());
+          ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
+              request.render_process_id, request.frame_id,
+              ruleset_data->extension_id);
+        }
         continue;
+      }
 
       if (ruleset_data->matcher->ShouldBlockRequest(
               url, first_party_origin, element_type, is_third_party)) {
@@ -444,7 +455,7 @@ bool RulesetManager::ShouldEvaluateRequest(
   return true;
 }
 
-bool RulesetManager::ShouldEvaluateRulesetForRequest(
+PermissionsData::PageAccess RulesetManager::ShouldEvaluateRulesetForRequest(
     const ExtensionRulesetData& ruleset,
     const WebRequestInfo& request,
     bool is_incognito_context) const {
@@ -452,11 +463,11 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   // incognito context.
   if (is_incognito_context &&
       !info_map_->IsIncognitoEnabled(ruleset.extension_id)) {
-    return false;
+    return PermissionsData::PageAccess::kDenied;
   }
 
   if (IsRequestPageAllowed(request, ruleset.allowed_pages))
-    return false;
+    return PermissionsData::PageAccess::kDenied;
 
   const int tab_id = request.frame_data ? request.frame_data->tab_id
                                         : extension_misc::kUnknownTabId;
@@ -466,15 +477,10 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   // have to do for split mode incognito extensions, pass false for
   // |crosses_incognito|.
   const bool crosses_incognito = false;
-  PermissionsData::PageAccess result =
-      WebRequestPermissions::CanExtensionAccessURL(
-          info_map_, ruleset.extension_id, request.url, tab_id,
-          crosses_incognito,
-          WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-          request.initiator);
-
-  // TODO(crbug.com/809680): Handle ACCESS_WITHHELD.
-  return result == PermissionsData::PageAccess::kAllowed;
+  return WebRequestPermissions::CanExtensionAccessURL(
+      info_map_, ruleset.extension_id, request.url, tab_id, crosses_incognito,
+      WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+      request.initiator);
 }
 
 }  // namespace declarative_net_request

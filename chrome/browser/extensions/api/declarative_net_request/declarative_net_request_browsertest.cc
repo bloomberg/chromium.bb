@@ -23,12 +23,15 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,6 +60,7 @@
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -67,6 +71,7 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/url_pattern.h"
@@ -256,6 +261,8 @@ class DeclarativeNetRequestBrowserTest
     embedded_test_server()->RegisterRequestMonitor(
         base::BindRepeating(&DeclarativeNetRequestBrowserTest::MonitorRequest,
                             base::Unretained(this)));
+
+    content::SetupCrossSiteRedirector(embedded_test_server());
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1914,6 +1921,121 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   tester.ExpectUniqueSample(
       "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
       true /*sample*/, 1 /*count*/);
+}
+
+// Tests that declarativeNetRequest API works with
+// extensions_features::kRuntimeHostPermissions.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WithheldPermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Load an extension which blocks all script requests to "b.com".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("b.com");
+  rule.condition->resource_types = std::vector<std::string>({"script"});
+  std::vector<std::string> host_permissions = {"*://a.com/", "*://b.com/*"};
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {rule}, "extension" /* directory */, host_permissions));
+
+  const Extension* extension = extension_service()->GetExtensionById(
+      last_loaded_extension_id(), false /*include_disabled*/);
+  ASSERT_TRUE(extension);
+
+  auto verify_script_load = [this, extension](const GURL& page_url,
+                                              bool expect_script_load,
+                                              int expected_blocked_actions) {
+    ui_test_utils::NavigateToURL(browser(), page_url);
+
+    // The page should have loaded correctly.
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    EXPECT_EQ(expect_script_load, WasFrameWithScriptLoaded(GetMainFrame()));
+
+    // The EmbeddedTestServer sees requests after the hostname has been
+    // resolved.
+    const GURL script_url =
+        embedded_test_server()->GetURL("/subresources/script.js");
+    bool did_see_script_request =
+        base::ContainsKey(GetAndResetRequestsToServer(), script_url);
+    EXPECT_EQ(expect_script_load, did_see_script_request);
+
+    ExtensionActionRunner* runner =
+        ExtensionActionRunner::GetForWebContents(web_contents());
+    ASSERT_TRUE(runner);
+    EXPECT_EQ(expected_blocked_actions, runner->GetBlockedActions(extension));
+  };
+
+  {
+    const GURL page_url = embedded_test_server()->GetURL(
+        "example.com", "/cross_site_script.html");
+    SCOPED_TRACE(
+        base::StringPrintf("Navigating to %s", page_url.spec().c_str()));
+
+    // The extension should not block the request to b.com. It has access to the
+    // |script_url| but not its initiator |page_url|.
+    bool expect_script_load = true;
+    verify_script_load(page_url, expect_script_load, BLOCKED_ACTION_NONE);
+  }
+
+  {
+    const GURL page_url =
+        embedded_test_server()->GetURL("a.com", "/cross_site_script.html");
+    SCOPED_TRACE(
+        base::StringPrintf("Navigating to %s", page_url.spec().c_str()));
+
+    // The extension should block the request to b.com. It has access to both
+    // the |script_url| and its initiator |page_url|.
+    bool expect_script_load = false;
+    verify_script_load(page_url, expect_script_load, BLOCKED_ACTION_NONE);
+  }
+
+  // Withhold access to all hosts.
+  ScriptingPermissionsModifier scripting_modifier(
+      profile(), base::WrapRefCounted(extension));
+  scripting_modifier.SetWithholdHostPermissions(true);
+
+  {
+    const GURL page_url =
+        embedded_test_server()->GetURL("a.com", "/cross_site_script.html");
+    SCOPED_TRACE(base::StringPrintf("Navigating to %s with all hosts withheld",
+                                    page_url.spec().c_str()));
+
+    // The extension should not block the request to b.com. It's access to both
+    // the |script_url| and its initiator |page_url| is withheld.
+    bool expect_script_load = true;
+    verify_script_load(page_url, expect_script_load,
+                       BLOCKED_ACTION_WEB_REQUEST);
+  }
+
+  // Grant access to only "b.com".
+  scripting_modifier.GrantHostPermission(GURL("http://b.com"));
+  {
+    const GURL page_url =
+        embedded_test_server()->GetURL("a.com", "/cross_site_script.html");
+    SCOPED_TRACE(base::StringPrintf("Navigating to %s with a.com withheld",
+                                    page_url.spec().c_str()));
+
+    // The extension should not block the request to b.com. It has access to the
+    // |script_url|, baseut access to its initiator |page_url| is withheld.
+    bool expect_script_load = true;
+    verify_script_load(page_url, expect_script_load,
+                       BLOCKED_ACTION_WEB_REQUEST);
+  }
+
+  // Grant access to only "a.com".
+  scripting_modifier.RemoveAllGrantedHostPermissions();
+  scripting_modifier.GrantHostPermission(GURL("http://a.com"));
+  {
+    const GURL page_url =
+        embedded_test_server()->GetURL("a.com", "/cross_site_script.html");
+    SCOPED_TRACE(base::StringPrintf("Navigating to %s with b.com withheld",
+                                    page_url.spec().c_str()));
+
+    // The extension should block the request to b.com. It's access to the
+    // |script_url| is withheld, but it has access to its initiator |page_url|.
+    bool expect_script_load = false;
+    verify_script_load(page_url, expect_script_load, BLOCKED_ACTION_NONE);
+  }
 }
 
 // Test fixture to verify that host permissions for the request url and the

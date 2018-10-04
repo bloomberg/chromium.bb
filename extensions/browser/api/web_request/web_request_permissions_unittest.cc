@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -233,6 +234,90 @@ TEST(ExtensionWebRequestPermissions,
             get_access(chromium_org, chromium_org_origin));
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
             get_access(chromium_org, example_com_origin));
+}
+
+TEST(ExtensionWebRequestPermissions,
+     RequireAccessToURLAndInitiatorWithWithheldPermissions) {
+  // The InfoMap requires methods to be called on the IO thread. Fake it.
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
+  const char* kGoogleCom = "https://google.com/";
+  const char* kExampleCom = "https://example.com/";
+  const char* kYahooCom = "https://yahoo.com";
+
+  // Set up the extension to have access to kGoogleCom and withheld access to
+  // kExampleCom.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("ext").AddPermissions({kGoogleCom, kExampleCom}).Build();
+
+  URLPatternSet kActivePatternSet(
+      {URLPattern(Extension::kValidHostPermissionSchemes, kGoogleCom)});
+  URLPatternSet kWithheldPatternSet(
+      {URLPattern(Extension::kValidHostPermissionSchemes, kExampleCom)});
+
+  extension->permissions_data()->SetPermissions(
+      std::make_unique<PermissionSet>(
+          APIPermissionSet(), ManifestPermissionSet(), kActivePatternSet,
+          kActivePatternSet),  // active permissions.
+      std::make_unique<PermissionSet>(
+          APIPermissionSet(), ManifestPermissionSet(), kWithheldPatternSet,
+          kWithheldPatternSet) /* withheld permissions */);
+
+  scoped_refptr<InfoMap> info_map = base::MakeRefCounted<InfoMap>();
+  info_map->AddExtension(extension.get(), base::Time(), false, false);
+
+  auto get_access = [extension, info_map](
+                        const GURL& url,
+                        base::Optional<url::Origin> initiator) {
+    constexpr int kTabId = 42;
+    constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
+        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR;
+    return WebRequestPermissions::CanExtensionAccessURL(
+        info_map.get(), extension->id(), url, kTabId,
+        false /* crosses incognito */, kPermissionsCheck, initiator);
+  };
+
+  using PageAccess = PermissionsData::PageAccess;
+  const GURL kAllowedUrl(kGoogleCom);
+  const GURL kWithheldUrl(kExampleCom);
+  const GURL kDeniedUrl(kYahooCom);
+  const url::Origin kAllowedOrigin(url::Origin::Create(kAllowedUrl));
+  const url::Origin kWithheldOrigin(url::Origin::Create(kWithheldUrl));
+  const url::Origin kDeniedOrigin(url::Origin::Create(kDeniedUrl));
+  const url::Origin kOpaqueOrigin;
+  struct {
+    base::Optional<url::Origin> initiator;
+    GURL url;
+    PermissionsData::PageAccess expected_access;
+  } cases[] = {
+      {base::nullopt, kAllowedUrl, PageAccess::kAllowed},
+      {base::nullopt, kWithheldUrl, PageAccess::kWithheld},
+      {base::nullopt, kDeniedUrl, PageAccess::kDenied},
+
+      {kOpaqueOrigin, kAllowedUrl, PageAccess::kAllowed},
+      {kOpaqueOrigin, kWithheldUrl, PageAccess::kWithheld},
+      {kOpaqueOrigin, kDeniedUrl, PageAccess::kDenied},
+
+      {kDeniedOrigin, kAllowedUrl, PageAccess::kDenied},
+      {kDeniedOrigin, kWithheldUrl, PageAccess::kDenied},
+      {kDeniedOrigin, kDeniedUrl, PageAccess::kDenied},
+      {kAllowedOrigin, kDeniedUrl, PageAccess::kDenied},
+      {kWithheldOrigin, kDeniedUrl, PageAccess::kDenied},
+
+      {kWithheldOrigin, kWithheldUrl, PageAccess::kWithheld},
+      {kWithheldOrigin, kAllowedUrl, PageAccess::kWithheld},
+      {kAllowedOrigin, kWithheldUrl, PageAccess::kAllowed},
+      {kAllowedOrigin, kAllowedUrl, PageAccess::kAllowed},
+  };
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "url-%s initiator-%s", test_case.url.spec().c_str(),
+        test_case.initiator ? test_case.initiator->Serialize().c_str()
+                            : "empty"));
+    EXPECT_EQ(get_access(test_case.url, test_case.initiator),
+              test_case.expected_access);
+  }
 }
 
 }  // namespace extensions

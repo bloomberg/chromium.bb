@@ -74,27 +74,6 @@ PermissionsData::PageAccess GetHostAccessForURL(
                                                      nullptr /*error*/);
 }
 
-// Returns the most restricted access type out of |access1| and |access2|.
-PermissionsData::PageAccess GetMinimumAccessType(
-    PermissionsData::PageAccess access1,
-    PermissionsData::PageAccess access2) {
-  PermissionsData::PageAccess access = PermissionsData::PageAccess::kDenied;
-  switch (access1) {
-    case PermissionsData::PageAccess::kDenied:
-      access = PermissionsData::PageAccess::kDenied;
-      break;
-    case PermissionsData::PageAccess::kWithheld:
-      access = (access2 == PermissionsData::PageAccess::kDenied
-                    ? PermissionsData::PageAccess::kDenied
-                    : PermissionsData::PageAccess::kWithheld);
-      break;
-    case PermissionsData::PageAccess::kAllowed:
-      access = access2;
-      break;
-  }
-  return access;
-}
-
 PermissionsData::PageAccess CanExtensionAccessURLInternal(
     const extensions::InfoMap* extension_info_map,
     const std::string& extension_id,
@@ -160,11 +139,31 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
       PermissionsData::PageAccess request_access =
           GetHostAccessForURL(*extension, url, tab_id);
-      PermissionsData::PageAccess initiator_access =
-          initiator && !initiator->opaque()
-              ? GetHostAccessForURL(*extension, initiator->GetURL(), tab_id)
-              : PermissionsData::PageAccess::kAllowed;
-      access = GetMinimumAccessType(request_access, initiator_access);
+      if (!initiator || initiator->opaque() ||
+          request_access == PermissionsData::PageAccess::kDenied) {
+        return request_access;
+      }
+
+      DCHECK(request_access == PermissionsData::PageAccess::kWithheld ||
+             request_access == PermissionsData::PageAccess::kAllowed);
+
+      // Possible remaining states:
+      // ----------------------------------------------------
+      // | Initiator access| Request access| Expected access|
+      // ----------------------------------------------------
+      // | Withheld        | Withheld      | Withheld       |
+      // | Withheld        | Allowed       | Withheld       |
+      // | Allowed         | Withheld      | Allowed        |
+      // | Allowed         | Allowed       | Allowed        |
+      // | Denied          | *             | Denied         |
+      // ----------------------------------------------------
+
+      // Note: The only interesting case is when the access to request is
+      // withheld but the access to initiator is allowed. In this case, we allow
+      // access to the request. This is important for extensions with webRequest
+      // to work well with runtime host permissions. See crbug.com/851722.
+
+      return GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
       break;
     }
     case WebRequestPermissions::REQUIRE_ALL_URLS:
