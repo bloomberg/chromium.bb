@@ -2477,7 +2477,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue('hello' in driver.GetPageSource())
 
   def testUnsupportedPageLoadStrategyRaisesException(self):
-    self.assertRaises(chromedriver.UnknownError,
+    self.assertRaises(chromedriver.InvalidArgument,
                       self.CreateDriver, page_load_strategy="unsupported")
 
   def testNetworkConnectionDisabledByDefault(self):
