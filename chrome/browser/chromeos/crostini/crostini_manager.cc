@@ -388,6 +388,10 @@ class CrostiniManager::CrostiniRestarter
 
 CrostiniManager::RestartId
     CrostiniManager::CrostiniRestarter::next_restart_id_ = 0;
+bool CrostiniManager::is_cros_termina_registered_ = false;
+// Unit tests need this initialized to true. In Browser tests and real life,
+// it is updated via MaybeUpgradeCrostini.
+bool CrostiniManager::is_dev_kvm_present_ = true;
 
 void CrostiniManager::SetVmState(std::string vm_name, VmState vm_state) {
   auto vm_info = running_vms_.find(std::move(vm_name));
@@ -465,35 +469,48 @@ CrostiniManager::~CrostiniManager() {
   GetConciergeClient()->RemoveObserver(this);
 }
 
-bool CrostiniManager::IsCrosTerminaInstalled() const {
+// static
+bool CrostiniManager::IsCrosTerminaInstalled() {
   return is_cros_termina_registered_;
 }
 
+// static
+bool CrostiniManager::IsDevKvmPresent() {
+  return is_dev_kvm_present_;
+}
+
 void CrostiniManager::MaybeUpgradeCrostini() {
-  if (!IsCrostiniAllowedForProfile(profile_)) {
-    return;
-  }
   auto* component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   if (!component_manager) {
     // |component_manager| may be nullptr in unit tests.
     return;
   }
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&component_updater::CrOSComponentManager::IsRegistered,
-                     base::Unretained(component_manager),
-                     imageloader::kTerminaComponentName),
-      base::BindOnce(&CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck,
+      base::BindOnce(CrostiniManager::CheckPathsAndComponents),
+      base::BindOnce(&CrostiniManager::MaybeUpgradeCrostiniAfterChecks,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CrostiniManager::MaybeUpgradeCrostiniAfterTerminaCheck(
-    bool is_registered) {
-  is_cros_termina_registered_ = is_registered;
-  VLOG(1) << "cros-termina is "
-          << (is_registered ? "registered" : "not registered");
+// static
+void CrostiniManager::CheckPathsAndComponents() {
+  is_dev_kvm_present_ = base::PathExists(base::FilePath("/dev/kvm"));
+  auto* component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  DCHECK(component_manager);
+  is_cros_termina_registered_ =
+      component_manager->IsRegistered(imageloader::kTerminaComponentName);
+}
+
+void CrostiniManager::MaybeUpgradeCrostiniAfterChecks() {
+  if (!is_dev_kvm_present_) {
+    return;
+  }
   if (!is_cros_termina_registered_) {
+    return;
+  }
+  if (!IsCrostiniAllowedForProfile(profile_)) {
     return;
   }
   termina_update_check_needed_ = true;

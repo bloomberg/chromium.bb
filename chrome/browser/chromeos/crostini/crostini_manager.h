@@ -165,8 +165,11 @@ class CrostiniManager : public KeyedService,
   explicit CrostiniManager(Profile* profile);
   ~CrostiniManager() override;
 
-  // Checks if the cros-termina component is installed.
-  bool IsCrosTerminaInstalled() const;
+  // Returns true if the cros-termina component is installed.
+  static bool IsCrosTerminaInstalled();
+
+  // Returns true if the /dev/kvm directory is present.
+  static bool IsDevKvmPresent();
 
   // Generate the URL for Crostini terminal application.
   static GURL GenerateVshInCroshUrl(
@@ -490,9 +493,13 @@ class CrostiniManager : public KeyedService,
       GetContainerSshKeysCallback callback,
       base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply);
 
+  // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
+  // check for file paths and registered components.
+  static void CheckPathsAndComponents();
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Separated because the
-  // checking registration code may block.
-  void MaybeUpgradeCrostiniAfterTerminaCheck(bool is_registered);
+  // checking component registration code may block.
+  void MaybeUpgradeCrostiniAfterChecks();
 
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.
@@ -515,8 +522,9 @@ class CrostiniManager : public KeyedService,
       component_manager_load_error_for_testing_ =
           component_updater::CrOSComponentManager::Error::NONE;
 
-  bool is_cros_termina_registered_ = false;
+  static bool is_cros_termina_registered_;
   bool termina_update_check_needed_ = false;
+  static bool is_dev_kvm_present_;
 
   // Pending container started callbacks are keyed by <vm_name, container_name>
   // string pairs.
