@@ -61,6 +61,11 @@ class ScriptTracker {
   void ExecuteScript(const std::string& path,
                      ScriptExecutor::RunScriptCallback callback);
 
+  // Clears the set of scripts that could be run.
+  //
+  // Calling this function will clean the bottom bar.
+  void ClearRunnableScripts();
+
   // Checks whether a script is currently running. There can be at most one
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
@@ -86,11 +91,14 @@ class ScriptTracker {
   ScriptTracker::Listener* const listener_;
   std::unique_ptr<std::map<std::string, std::string>> parameters_;
 
-  // Paths and names of scripts known to be runnable.
+  // Paths and names of scripts known to be runnable (they pass the
+  // preconditions).
   //
-  // Note that the set of runnable scripts can survive a SetScripts; as
+  // NOTE 1: Set of runnable scripts can survive a SetScripts; as
   // long as the new set of runnable script has the same path, it won't be seen
   // as a change to the set of runnable, even if the pointers have changed.
+  // NOTE 2: Set of runnable scripts should be in sync with what is displayed on
+  // the bottom bar.
   std::vector<ScriptHandle> runnable_scripts_;
 
   // Sets of available scripts. SetScripts resets this and interrupts
