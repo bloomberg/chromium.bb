@@ -305,7 +305,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
+// Crashes on all platforms. crbug.com/891880.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameSizeChangeVideo) {
 #if defined(OS_ANDROID)
   // https://crbug.com/778245
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
