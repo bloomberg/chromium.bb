@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/mojom/origin.mojom-blink.h"
-#include "url/mojom/origin_mojom_traits.h"
 
 namespace mojo {
 
