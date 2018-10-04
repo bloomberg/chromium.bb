@@ -910,7 +910,6 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
 
   cras_service_available_ = true;
   GetDefaultOutputBufferSizeInternal();
-  GetSystemAecSupported();
   GetNodes();
   GetNumberOfOutputStreams();
 }
@@ -1674,30 +1673,6 @@ void CrasAudioHandler::HandleGetDefaultOutputBufferSize(
   }
 
   default_output_buffer_size_ = buffer_size.value();
-}
-
-bool CrasAudioHandler::system_aec_supported() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  return system_aec_supported_;
-}
-
-// GetSystemAecSupported() is only called in the same thread
-// as the CrasAudioHanler constructor. We are safe here without
-// thread check, because unittest may not have the task runner
-// for the current thread.
-void CrasAudioHandler::GetSystemAecSupported() {
-  GetCrasAudioClient()->GetSystemAecSupported(
-      base::BindOnce(&CrasAudioHandler::HandleGetSystemAecSupported,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrasAudioHandler::HandleGetSystemAecSupported(
-    base::Optional<bool> system_aec_supported) {
-  if (!system_aec_supported.has_value()) {
-    LOG(ERROR) << "Failed to retrieve system aec supported";
-    return;
-  }
-  system_aec_supported_ = system_aec_supported.value();
 }
 
 }  // namespace chromeos
