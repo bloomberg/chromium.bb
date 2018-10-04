@@ -15,9 +15,9 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/display_media_information.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -118,6 +118,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   ~MediaStreamDevice();
 
+  MediaStreamDevice& operator=(const MediaStreamDevice& other);
+
   bool IsSameDevice(const MediaStreamDevice& other_device) const;
 
   // The device's type.
@@ -151,7 +153,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
   base::Optional<CameraCalibration> camera_calibration;
 
   // This field is optional and available only for display media devices.
-  base::Optional<media::DisplayMediaInformation> display_media_info;
+  base::Optional<media::mojom::DisplayMediaInformationPtr> display_media_info;
 };
 
 using MediaStreamDevices = std::vector<MediaStreamDevice>;

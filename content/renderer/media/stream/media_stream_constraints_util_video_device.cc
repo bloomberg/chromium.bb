@@ -13,8 +13,8 @@
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
-#include "media/base/display_media_information.h"
 #include "media/base/limits.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -728,28 +728,28 @@ blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
 }
 
 blink::WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
-    media::DisplayCaptureSurfaceType display_surface) {
+    media::mojom::DisplayCaptureSurfaceType display_surface) {
   switch (display_surface) {
-    case media::DisplayCaptureSurfaceType::MONITOR:
+    case media::mojom::DisplayCaptureSurfaceType::MONITOR:
       return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor;
-    case media::DisplayCaptureSurfaceType::WINDOW:
+    case media::mojom::DisplayCaptureSurfaceType::WINDOW:
       return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow;
-    case media::DisplayCaptureSurfaceType::APPLICATION:
+    case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
       return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::
           kApplication;
-    case media::DisplayCaptureSurfaceType::BROWSER:
+    case media::mojom::DisplayCaptureSurfaceType::BROWSER:
       return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser;
   }
 }
 
 blink::WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
-    media::CursorCaptureType cursor) {
+    media::mojom::CursorCaptureType cursor) {
   switch (cursor) {
-    case media::CursorCaptureType::NEVER:
+    case media::mojom::CursorCaptureType::NEVER:
       return blink::WebMediaStreamTrack::CursorCaptureType::kNever;
-    case media::CursorCaptureType::ALWAYS:
+    case media::mojom::CursorCaptureType::ALWAYS:
       return blink::WebMediaStreamTrack::CursorCaptureType::kAlways;
-    case media::CursorCaptureType::MOTION:
+    case media::mojom::CursorCaptureType::MOTION:
       return blink::WebMediaStreamTrack::CursorCaptureType::kMotion;
   }
 }
