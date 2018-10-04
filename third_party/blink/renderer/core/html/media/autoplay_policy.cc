@@ -109,6 +109,9 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (!document.GetFrame())
     return false;
 
+  bool feature_policy_enabled =
+      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay);
+
   for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
     if (frame->HasBeenActivated() ||
@@ -122,10 +125,8 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
       return true;
     }
 
-    if (!frame->DeprecatedIsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kAutoplay)) {
+    if (!feature_policy_enabled)
       return false;
-    }
   }
 
   return false;
@@ -439,16 +440,19 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
     return;
 
   autoplay_initiated_ = true;
-  for (Frame* frame = element_->GetDocument().GetFrame(); frame;
+
+  const Document& document = element_->GetDocument();
+  bool feature_policy_enabled =
+      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay);
+
+  for (Frame* frame = document.GetFrame(); frame;
        frame = frame->Tree().Parent()) {
     if (frame->HasBeenActivated() ||
         frame->HasReceivedUserGestureBeforeNavigation()) {
       autoplay_initiated_ = false;
       break;
     }
-
-    if (!frame->DeprecatedIsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kAutoplay))
+    if (!feature_policy_enabled)
       break;
   }
 }
