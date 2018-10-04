@@ -61,7 +61,8 @@ class RequestBuild(object):
                email_template=None,
                master_cidb_id=None,
                master_buildbucket_id=None,
-               bucket=constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET):
+               bucket=constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
+               requested_bot=None):
     """Construct the object.
 
     Args:
@@ -78,6 +79,7 @@ class RequestBuild(object):
       master_cidb_id: CIDB id of scheduling builder, or None.
       master_buildbucket_id: buildbucket id of scheduling builder, or None.
       bucket: Which bucket do we request the build in?
+      requested_bot: Name of bot to prefer (for performance), or None.
     """
     self.bucket = bucket
 
@@ -109,6 +111,7 @@ class RequestBuild(object):
     self.email_template = email_template or 'default'
     self.master_cidb_id = master_cidb_id
     self.master_buildbucket_id = master_buildbucket_id
+    self.requested_bot = requested_bot
 
   def _GetRequestBody(self):
     """Generate the request body for a swarming buildbucket request.
@@ -151,6 +154,19 @@ class RequestBuild(object):
           'email': self.user_email,
           'template': self.email_template,
       }]
+
+    # If a specific bot was requested, pass along the request with a
+    # 240 second (4 minute) timeout. If the bot isn't available, we
+    # will fall back to the general builder restrictions (probably
+    # based on role).
+    if self.requested_bot:
+      parameters['swarming'] = {
+          'override_builder_cfg': {
+              'dimensions': [
+                  '240:id:%s' % self.requested_bot,
+              ]
+          }
+      }
 
     return {
         'bucket': self.bucket,

@@ -50,7 +50,8 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
         email_template=self.TEST_TEMPLATE,
         master_cidb_id=self.MASTER_CIDB_ID,
         master_buildbucket_id=self.MASTER_BUILDBUCKET_ID,
-        bucket=self.TEST_BUCKET)
+        bucket=self.TEST_BUCKET,
+        requested_bot='botname')
 
   def _CreateJobUnknown(self):
     return request_build.RequestBuild(
@@ -148,6 +149,13 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
             u'cbb_master_build_id': u'master_cidb_id',
             u'cbb_master_buildbucket_id': u'master_bb_id',
             u'master': u'False',
+        },
+        u'swarming': {
+            u'override_builder_cfg': {
+                u'dimensions': [
+                    u'240:id:botname',
+                ]
+            }
         }
     })
 
@@ -310,6 +318,13 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
                 u'cbb_master_buildbucket_id': u'master_bb_id',
                 u'master': u'False',
             },
+            u'swarming': {
+                u'override_builder_cfg': {
+                    u'dimensions': [
+                        u'240:id:botname',
+                    ]
+                }
+            }
         })
 
     self.assertEqual(
