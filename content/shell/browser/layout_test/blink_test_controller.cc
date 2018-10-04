@@ -412,12 +412,23 @@ bool BlinkTestController::PrepareForLayoutTest(
       main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
 
       // Flush IPC messages on the widget.
-      base::RunLoop run_loop;
-      main_window_->web_contents()
-          ->GetRenderViewHost()
-          ->GetWidget()
-          ->FlushForTesting(run_loop.QuitClosure());
-      run_loop.Run();
+      {
+        base::RunLoop run_loop;
+        main_window_->web_contents()
+            ->GetRenderViewHost()
+            ->GetWidget()
+            ->FlushForTesting(run_loop.QuitClosure());
+        run_loop.Run();
+      }
+
+      // Flush the TestControl interface.
+      {
+        base::RunLoop run_loop;
+        GetLayoutTestControlPtr(
+            main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+            ->FlushForTesting(run_loop.QuitClosure());
+        run_loop.Run();
+      }
 
       // Loading the URL will immediately start the layout test. Manually call
       // LoadURLWithParams on the WebContents to avoid extraneous calls from
@@ -470,12 +481,22 @@ bool BlinkTestController::PrepareForLayoutTest(
     main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
 
     // Flush IPC messages on the widget.
-    base::RunLoop run_loop;
-    main_window_->web_contents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->FlushForTesting(run_loop.QuitClosure());
-    run_loop.Run();
+    {
+      base::RunLoop run_loop;
+      main_window_->web_contents()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->FlushForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
+
+    // Flush the TestControl interface.
+    {
+      base::RunLoop run_loop;
+      GetLayoutTestControlPtr(render_view_host->GetMainFrame())
+          ->FlushForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
 
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
