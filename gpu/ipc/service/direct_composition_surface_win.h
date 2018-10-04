@@ -52,6 +52,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
 
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
+  static int GetNumFramesBeforeSwapChainResizeForTesting();
+
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.
