@@ -1563,6 +1563,103 @@ it or fix the checkout.
       patch_refs[patch_repo] = patch_ref
     return patch_refs, target_branches
 
+  def _RemoveUnversionedGitDirs(self):
+    """Remove directories that are no longer part of the checkout.
+
+    Notify the user if there is an orphaned entry in their working copy.
+    Only delete the directory if there are no changes in it, and
+    delete_unversioned_trees is set to true.
+    """
+
+    entries = [i.name for i in self.root.subtree(False) if i.url]
+    full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
+                    for e in entries]
+
+    for entry, prev_url in self._ReadEntries().iteritems():
+      if not prev_url:
+        # entry must have been overridden via .gclient custom_deps
+        continue
+      # Fix path separator on Windows.
+      entry_fixed = entry.replace('/', os.path.sep)
+      e_dir = os.path.join(self.root_dir, entry_fixed)
+      # Use entry and not entry_fixed there.
+      if (entry not in entries and
+          (not any(path.startswith(entry + '/') for path in entries)) and
+          os.path.exists(e_dir)):
+        # The entry has been removed from DEPS.
+        scm = gclient_scm.GitWrapper(
+            prev_url, self.root_dir, entry_fixed, self.outbuf)
+
+        # Check to see if this directory is now part of a higher-up checkout.
+        scm_root = None
+        try:
+          scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(scm.checkout_path)
+        except subprocess2.CalledProcessError:
+          pass
+        if not scm_root:
+          logging.warning('Could not find checkout root for %s. Unable to '
+                          'determine whether it is part of a higher-level '
+                          'checkout, so not removing.' % entry)
+          continue
+
+        # This is to handle the case of third_party/WebKit migrating from
+        # being a DEPS entry to being part of the main project.
+        # If the subproject is a Git project, we need to remove its .git
+        # folder. Otherwise git operations on that folder will have different
+        # effects depending on the current working directory.
+        if os.path.abspath(scm_root) == os.path.abspath(e_dir):
+          e_par_dir = os.path.join(e_dir, os.pardir)
+          if gclient_scm.scm.GIT.IsInsideWorkTree(e_par_dir):
+            par_scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(e_par_dir)
+            # rel_e_dir : relative path of entry w.r.t. its parent repo.
+            rel_e_dir = os.path.relpath(e_dir, par_scm_root)
+            if gclient_scm.scm.GIT.IsDirectoryVersioned(
+                par_scm_root, rel_e_dir):
+              save_dir = scm.GetGitBackupDirPath()
+              # Remove any eventual stale backup dir for the same project.
+              if os.path.exists(save_dir):
+                gclient_utils.rmtree(save_dir)
+              os.rename(os.path.join(e_dir, '.git'), save_dir)
+              # When switching between the two states (entry/ is a subproject
+              # -> entry/ is part of the outer project), it is very likely
+              # that some files are changed in the checkout, unless we are
+              # jumping *exactly* across the commit which changed just DEPS.
+              # In such case we want to cleanup any eventual stale files
+              # (coming from the old subproject) in order to end up with a
+              # clean checkout.
+              gclient_scm.scm.GIT.CleanupDir(par_scm_root, rel_e_dir)
+              assert not os.path.exists(os.path.join(e_dir, '.git'))
+              print(('\nWARNING: \'%s\' has been moved from DEPS to a higher '
+                     'level checkout. The git folder containing all the local'
+                     ' branches has been saved to %s.\n'
+                     'If you don\'t care about its state you can safely '
+                     'remove that folder to free up space.') %
+                    (entry, save_dir))
+              continue
+
+        if scm_root in full_entries:
+          logging.info('%s is part of a higher level checkout, not removing',
+                       scm.GetCheckoutRoot())
+          continue
+
+        file_list = []
+        scm.status(self._options, [], file_list)
+        modified_files = file_list != []
+        if (not self._options.delete_unversioned_trees or
+            (modified_files and not self._options.force)):
+          # There are modified files in this entry. Keep warning until
+          # removed.
+          print(('\nWARNING: \'%s\' is no longer part of this client.  '
+                 'It is recommended that you manually remove it.\n') %
+                    entry_fixed)
+        else:
+          # Delete the entry
+          print('\n________ deleting \'%s\' in \'%s\'' % (
+              entry_fixed, self.root_dir))
+          gclient_utils.rmtree(e_dir)
+    # record the current list of entries for next time
+    self._SaveEntries()
+
   def RunOnDeps(self, command, args, ignore_requirements=False, progress=True):
     """Runs a command on each dependency in a client and its dependencies.
 
@@ -1624,109 +1721,19 @@ it or fix the checkout.
       if gn_args_dep and gn_args_dep.HasGNArgsFile():
         gn_args_dep.WriteGNArgsFile()
 
-    if not self._options.nohooks:
-      if should_show_progress:
-        pm = Progress('Running hooks', 1)
-      self.RunHooksRecursively(self._options, pm)
-
-    if command == 'update':
-      # Notify the user if there is an orphaned entry in their working copy.
-      # Only delete the directory if there are no changes in it, and
-      # delete_unversioned_trees is set to true.
-      entries = [i.name for i in self.root.subtree(False) if i.url]
-      full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
-                      for e in entries]
-
-      for entry, prev_url in self._ReadEntries().iteritems():
-        if not prev_url:
-          # entry must have been overridden via .gclient custom_deps
-          continue
-        # Fix path separator on Windows.
-        entry_fixed = entry.replace('/', os.path.sep)
-        e_dir = os.path.join(self.root_dir, entry_fixed)
-        # Use entry and not entry_fixed there.
-        if (entry not in entries and
-            (not any(path.startswith(entry + '/') for path in entries)) and
-            os.path.exists(e_dir)):
-          # The entry has been removed from DEPS.
-          scm = gclient_scm.GitWrapper(
-              prev_url, self.root_dir, entry_fixed, self.outbuf)
-
-          # Check to see if this directory is now part of a higher-up checkout.
-          scm_root = None
-          try:
-            scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(scm.checkout_path)
-          except subprocess2.CalledProcessError:
-            pass
-          if not scm_root:
-            logging.warning('Could not find checkout root for %s. Unable to '
-                            'determine whether it is part of a higher-level '
-                            'checkout, so not removing.' % entry)
-            continue
-
-          # This is to handle the case of third_party/WebKit migrating from
-          # being a DEPS entry to being part of the main project.
-          # If the subproject is a Git project, we need to remove its .git
-          # folder. Otherwise git operations on that folder will have different
-          # effects depending on the current working directory.
-          if os.path.abspath(scm_root) == os.path.abspath(e_dir):
-            e_par_dir = os.path.join(e_dir, os.pardir)
-            if gclient_scm.scm.GIT.IsInsideWorkTree(e_par_dir):
-              par_scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(e_par_dir)
-              # rel_e_dir : relative path of entry w.r.t. its parent repo.
-              rel_e_dir = os.path.relpath(e_dir, par_scm_root)
-              if gclient_scm.scm.GIT.IsDirectoryVersioned(
-                  par_scm_root, rel_e_dir):
-                save_dir = scm.GetGitBackupDirPath()
-                # Remove any eventual stale backup dir for the same project.
-                if os.path.exists(save_dir):
-                  gclient_utils.rmtree(save_dir)
-                os.rename(os.path.join(e_dir, '.git'), save_dir)
-                # When switching between the two states (entry/ is a subproject
-                # -> entry/ is part of the outer project), it is very likely
-                # that some files are changed in the checkout, unless we are
-                # jumping *exactly* across the commit which changed just DEPS.
-                # In such case we want to cleanup any eventual stale files
-                # (coming from the old subproject) in order to end up with a
-                # clean checkout.
-                gclient_scm.scm.GIT.CleanupDir(par_scm_root, rel_e_dir)
-                assert not os.path.exists(os.path.join(e_dir, '.git'))
-                print(('\nWARNING: \'%s\' has been moved from DEPS to a higher '
-                       'level checkout. The git folder containing all the local'
-                       ' branches has been saved to %s.\n'
-                       'If you don\'t care about its state you can safely '
-                       'remove that folder to free up space.') %
-                      (entry, save_dir))
-                continue
-
-          if scm_root in full_entries:
-            logging.info('%s is part of a higher level checkout, not removing',
-                         scm.GetCheckoutRoot())
-            continue
-
-          file_list = []
-          scm.status(self._options, [], file_list)
-          modified_files = file_list != []
-          if (not self._options.delete_unversioned_trees or
-              (modified_files and not self._options.force)):
-            # There are modified files in this entry. Keep warning until
-            # removed.
-            print(('\nWARNING: \'%s\' is no longer part of this client.  '
-                   'It is recommended that you manually remove it.\n') %
-                      entry_fixed)
-          else:
-            # Delete the entry
-            print('\n________ deleting \'%s\' in \'%s\'' % (
-                entry_fixed, self.root_dir))
-            gclient_utils.rmtree(e_dir)
-      # record the current list of entries for next time
-      self._SaveEntries()
+      self._RemoveUnversionedGitDirs()
 
     # Sync CIPD dependencies once removed deps are deleted. In case a git
     # dependency was moved to CIPD, we want to remove the old git directory
     # first and then sync the CIPD dep.
     if self._cipd_root:
       self._cipd_root.run(command)
+
+    if not self._options.nohooks:
+      if should_show_progress:
+        pm = Progress('Running hooks', 1)
+      self.RunHooksRecursively(self._options, pm)
+
 
     return 0
 

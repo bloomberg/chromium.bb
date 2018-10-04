@@ -756,7 +756,12 @@ deps = {
     ],
     'dep_type': 'cipd',
   },
-}""",
+}
+hooks = [{
+  # make sure src/repo12 exists and is a CIPD dir.
+  'action': ['python', '-c', 'with open("src/repo12/_cipd"): pass'],
+}]
+""",
       'origin': 'git/repo_13@3\n'
     })
 
