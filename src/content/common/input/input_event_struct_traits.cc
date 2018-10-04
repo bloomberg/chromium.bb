@@ -108,6 +108,7 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
     key_event->dom_code = key_data->dom_code;
     key_event->dom_key = key_data->dom_key;
     key_event->is_system_key = key_data->is_system_key;
+    key_event->is_num_lock = key_data->is_num_lock;
     key_event->is_browser_shortcut = key_data->is_browser_shortcut;
     CopyString(key_event->text, key_data->text);
     CopyString(key_event->unmodified_text, key_data->unmodified_text);
@@ -352,6 +353,7 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::key_data(
   return content::mojom::KeyData::New(
       key_event->dom_key, key_event->dom_code, key_event->windows_key_code,
       key_event->native_key_code, key_event->is_system_key,
+      key_event->is_num_lock,
       key_event->is_browser_shortcut, key_event->text,
       key_event->unmodified_text);
 }
