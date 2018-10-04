@@ -4,7 +4,6 @@
 
 #include "components/viz/host/hit_test/hit_test_query.h"
 
-#include "base/containers/stack.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -28,35 +27,6 @@ bool RegionMatchEventSource(EventSource event_source, uint32_t flags) {
 bool CheckChildCount(int32_t child_count, size_t child_count_max) {
   return (child_count >= 0) &&
          (static_cast<size_t>(child_count) < child_count_max);
-}
-
-const std::string GetFlagNames(uint32_t flag) {
-  std::string names = "";
-  uint32_t mask = 1;
-
-#define CASE_TYPE(t)                       \
-  case kHitTest##t:                        \
-    names += names.empty() ? #t : ", " #t; \
-    break;
-
-  while (flag) {
-    switch (flag & mask) {
-      CASE_TYPE(Mine);
-      CASE_TYPE(Ignore);
-      CASE_TYPE(ChildSurface);
-      CASE_TYPE(Ask);
-      CASE_TYPE(Mouse);
-      CASE_TYPE(Touch);
-      CASE_TYPE(NotActive);
-      case 0:
-        break;
-    }
-
-    flag &= ~mask;
-    mask <<= 1;
-  }
-#undef CASE_TYPE
-  return names;
 }
 
 }  // namespace
@@ -287,49 +257,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
 void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
   if (!bad_message_gpu_callback_.is_null())
     bad_message_gpu_callback_.Run();
-}
-
-std::string HitTestQuery::PrintHitTestData() const {
-  std::ostringstream oss;
-  base::stack<uint32_t> parents;
-  std::string tabs = "";
-
-  for (uint32_t i = 0; i < hit_test_data_.size(); ++i) {
-    const AggregatedHitTestRegion& htr = hit_test_data_[i];
-
-    oss << tabs << "Index: " << i << '\n';
-    oss << tabs << "Children: " << htr.child_count << '\n';
-    oss << tabs << "Flags: " << GetFlagNames(htr.flags) << '\n';
-    oss << tabs << "Frame Sink Id: " << htr.frame_sink_id.ToString() << '\n';
-    oss << tabs << "Rect: " << htr.rect.ToString() << '\n';
-    oss << tabs << "Transform:" << '\n';
-
-    // gfx::Transform::ToString spans multiple lines, so we use an additional
-    // stringstream.
-    {
-      std::string s;
-      std::stringstream transform_ss;
-
-      transform_ss << htr.transform().ToString() << '\n';
-
-      while (getline(transform_ss, s)) {
-        oss << tabs << s << '\n';
-      }
-    }
-
-    tabs += "\t\t";
-    parents.push(i);
-
-    while (!parents.empty() &&
-           parents.top() + hit_test_data_[parents.top()].child_count <= i) {
-      tabs.pop_back();
-      tabs.pop_back();
-
-      parents.pop();
-    }
-  }
-
-  return oss.str();
 }
 
 }  // namespace viz

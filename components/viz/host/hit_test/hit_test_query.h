@@ -101,9 +101,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // data for |frame_sink_id|.
   bool ContainsActiveFrameSinkId(const FrameSinkId& frame_sink_id) const;
 
-  // Returns hit-test data, using indentation to visualize the tree structure.
-  std::string PrintHitTestData() const;
-
  private:
   friend class content::HitTestRegionObserver;
   // Helper function to find |target| for |location_in_parent| in the
