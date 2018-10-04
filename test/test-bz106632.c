@@ -215,7 +215,7 @@ main (void)
 	goto bail;
     }
     fprintf (stderr, "D: Removing %s\n", fontdir);
-    snprintf (cmd, 512, "rm -f %s%s*", fontdir, FC_DIR_SEPARATOR_S);
+    snprintf (cmd, 512, "rm -f %s%s*; sleep 1", fontdir, FC_DIR_SEPARATOR_S);
     system (cmd);
     fprintf (stderr, "D: Reinitializing\n");
     if (!FcConfigUptoDate (config) || !FcInitReinitialize ())
@@ -254,7 +254,7 @@ main (void)
 	goto bail;
     }
     fprintf (stderr, "D: Copying %s to %s\n", FONTFILE, fontdir);
-    snprintf (cmd, 512, "cp -a %s %s", FONTFILE, fontdir);
+    snprintf (cmd, 512, "cp -a %s %s; sleep 1", FONTFILE, fontdir);
     system (cmd);
     fprintf (stderr, "D: Reinitializing\n");
     if (!FcConfigUptoDate (config) || !FcInitReinitialize ())
