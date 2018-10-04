@@ -229,7 +229,8 @@ public final class UiUtils {
     public static void setProgressForOfflineItem(CircularProgressView view, OfflineItem item) {
         Progress progress = item.progress;
         final boolean indeterminate = progress != null && progress.isIndeterminate();
-        final int determinateProgress = progress != null ? progress.getPercentage() : 0;
+        final int determinateProgress =
+                progress != null && !indeterminate ? progress.getPercentage() : 0;
         final int activeProgress =
                 indeterminate ? CircularProgressView.INDETERMINATE : determinateProgress;
         final int inactiveProgress = indeterminate ? 0 : determinateProgress;

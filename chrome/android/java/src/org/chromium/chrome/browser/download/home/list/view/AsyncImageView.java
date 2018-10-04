@@ -142,8 +142,8 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
 
         mCancelable = null;
         mWaitingForResponse = false;
-        setForegroundDrawableCompat(drawable == null ? mUnavailableDrawable : null);
         setImageDrawable(drawable);
+        setForegroundDrawableCompat(drawable == null ? mUnavailableDrawable : null);
     }
 
     private void cancelPreviousDrawableRequest() {
