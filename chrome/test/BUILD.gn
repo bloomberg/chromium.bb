@@ -3203,6 +3203,7 @@ test("unit_tests") {
       "../browser/usb/usb_blocklist_unittest.cc",
       "../browser/usb/usb_chooser_context_unittest.cc",
       "../browser/usb/usb_chooser_controller_unittest.cc",
+      "../browser/usb/usb_policy_allowed_devices_unittest.cc",
       "../browser/usb/web_usb_detector_unittest.cc",
       "../browser/usb/web_usb_service_impl_unittest.cc",
       "../browser/webauthn/authenticator_request_dialog_model_unittest.cc",
