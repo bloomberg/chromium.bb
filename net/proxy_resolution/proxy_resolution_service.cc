@@ -1115,20 +1115,9 @@ int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
                                          CompletionOnceCallback callback,
                                          std::unique_ptr<Request>* out_request,
                                          const NetLogWithSource& net_log) {
-  DCHECK(!callback.is_null());
-  return ResolveProxyHelper(raw_url, method, result, std::move(callback),
-                            out_request, net_log);
-}
-
-int ProxyResolutionService::ResolveProxyHelper(
-    const GURL& raw_url,
-    const std::string& method,
-    ProxyInfo* result,
-    CompletionOnceCallback callback,
-    std::unique_ptr<Request>* out_request,
-    const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(out_request || callback.is_null());
+  DCHECK(!callback.is_null());
+  DCHECK(out_request);
 
   net_log.BeginEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
 
@@ -1155,9 +1144,6 @@ int ProxyResolutionService::ResolveProxyHelper(
     return rv;
   }
 
-  if (callback.is_null())
-    return ERR_IO_PENDING;
-
   std::unique_ptr<RequestImpl> req = std::make_unique<RequestImpl>(
       this, url, method, result, std::move(callback), net_log);
 
@@ -1179,15 +1165,6 @@ int ProxyResolutionService::ResolveProxyHelper(
   // the request using |out_request|.
   *out_request = std::move(req);
   return rv;  // ERR_IO_PENDING
-}
-
-bool ProxyResolutionService::TryResolveProxySynchronously(
-    const GURL& raw_url,
-    const std::string& method,
-    ProxyInfo* result,
-    const NetLogWithSource& net_log) {
-  return ResolveProxyHelper(raw_url, method, result, CompletionOnceCallback(),
-                            nullptr /* out_request*/, net_log) == OK;
 }
 
 int ProxyResolutionService::TryToCompleteSynchronously(
