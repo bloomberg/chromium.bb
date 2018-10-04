@@ -61,6 +61,9 @@ namespace {
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
 
+// Overrides the above.
+const int kMinFileSizeLimit = 5 * 1024 * 1024;
+
 bool g_fd_limit_histogram_has_been_populated = false;
 
 void MaybeHistogramFdLimit() {
@@ -299,7 +302,8 @@ bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
 }
 
 int SimpleBackendImpl::GetMaxFileSize() const {
-  return base::saturated_cast<int>(index_->max_size() / kMaxFileRatio);
+  return std::max(base::saturated_cast<int>(index_->max_size() / kMaxFileRatio),
+                  kMinFileSizeLimit);
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64_t entry_hash) {
