@@ -401,9 +401,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         // During startup the view may not be fully initialized.
         if (!mScrollDelegate.isScrollViewInitialized()) return 0f;
 
-        if (!mScrollDelegate.isChildVisibleAtPosition(0)) {
+        if (isSearchBoxOffscreen()) {
             // getVerticalScrollOffset is valid only for the scroll view if the first item is
-            // visible. If the first item is not visible, we must have scrolled quite far and we
+            // visible. If the search box view is offscreen, we must have scrolled quite far and we
             // know the toolbar transition should be 100%. This might be the initial scroll position
             // due to the scroll restore feature, so the search box will not have been laid out yet.
             return 1f;
@@ -694,25 +694,37 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         translation.set(0, 0);
 
-        View view = mSearchBoxView;
-        while (true) {
-            view = (View) view.getParent();
-            if (view == null) {
-                // The |mSearchBoxView| is not a child of this view. This can happen if the
-                // RecyclerView detaches the NewTabPageLayout after it has been scrolled out of
-                // view. Set the translation to the minimum Y value as an approximation.
-                translation.y = Integer.MIN_VALUE;
-                break;
+        if (isSearchBoxOffscreen()) {
+            translation.y = Integer.MIN_VALUE;
+        } else {
+            View view = mSearchBoxView;
+            while (true) {
+                view = (View) view.getParent();
+                if (view == null) {
+                    // The |mSearchBoxView| is not a child of this view. This can happen if the
+                    // RecyclerView detaches the NewTabPageLayout after it has been scrolled out of
+                    // view. Set the translation to the minimum Y value as an approximation.
+                    translation.y = Integer.MIN_VALUE;
+                    break;
+                }
+                translation.offset(-view.getScrollX(), -view.getScrollY());
+                if (view == parentView) break;
+                translation.offset((int) view.getX(), (int) view.getY());
             }
-            translation.offset(-view.getScrollX(), -view.getScrollY());
-            if (view == parentView) break;
-            translation.offset((int) view.getX(), (int) view.getY());
         }
-        bounds.offset(translation.x, translation.y);
 
+        bounds.offset(translation.x, translation.y);
         if (translation.y != Integer.MIN_VALUE) {
             bounds.inset(0, mSearchBoxBoundsVerticalInset);
         }
+    }
+
+    /**
+     * @return Whether the search box view is scrolled off the screen.
+     */
+    private boolean isSearchBoxOffscreen() {
+        return !mScrollDelegate.isChildVisibleAtPosition(0)
+                || mScrollDelegate.getVerticalScrollOffset() > mSearchBoxView.getTop();
     }
 
     /**

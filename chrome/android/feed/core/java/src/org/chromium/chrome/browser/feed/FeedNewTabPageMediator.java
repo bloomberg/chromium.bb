@@ -263,9 +263,10 @@ class FeedNewTabPageMediator
 
     @Override
     public boolean isChildVisibleAtPosition(int position) {
+        if (!isScrollViewInitialized()) return false;
+
         if (mFeedEnabled) {
-            return isScrollViewInitialized()
-                    && mCoordinator.getStream().isChildAtPositionVisible(position);
+            return mCoordinator.getStream().isChildAtPositionVisible(position);
         } else {
             ScrollView scrollView = mCoordinator.getScrollViewForPolicy();
             Rect rect = new Rect();
