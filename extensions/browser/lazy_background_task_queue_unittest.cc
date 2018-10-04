@@ -105,7 +105,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
 
     process_manager_ = static_cast<TestProcessManager*>(
         ProcessManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            browser_context(), CreateTestProcessManager));
+            browser_context(), base::BindRepeating(&CreateTestProcessManager)));
   }
 
   void TearDown() override {
