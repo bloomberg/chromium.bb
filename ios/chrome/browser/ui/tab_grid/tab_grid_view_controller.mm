@@ -1232,7 +1232,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    if (count == 0) {
+      [self.topToolbar.pageControl setSelectedPage:TabGridPageRegularTabs
+                                          animated:YES];
+      [self setCurrentPage:TabGridPageRegularTabs animated:YES];
+    }
   }
+
   [self broadcastIncognitoContentVisibility];
 }
 
