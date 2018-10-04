@@ -3357,9 +3357,9 @@ const char kNewKoreanImeName[] = "New Korean IME";
 const char kNewKoreanImeDescription[] =
     "New Korean IME, which is based on Google Input Tools' HMM engine.";
 
-const char kNewZipUnpackerName[] = "New ZIP unpacker";
+const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =
-    "New ZIP unpacker flow, based on the File System Provider API.";
+    "Use the ZIP Archiver for mounting/unpacking ZIP files";
 
 const char kOfficeEditingComponentAppName[] =
     "Office Editing for Docs, Sheets & Slides";
@@ -3519,10 +3519,6 @@ const char kVoiceInputDescription[] =
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
-
-const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
-const char kZipArchiverUnpackerDescription[] =
-    "Enable or disable the ability to unpack archives in incognito mode";
 
 #endif  // defined(OS_CHROMEOS)
 

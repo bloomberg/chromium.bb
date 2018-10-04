@@ -223,8 +223,6 @@ extern const char kSpeechSynthesisExtensionId[];
 extern const char kWallpaperManagerId[];
 // The app id of the webstore widget component app.
 extern const char kWebstoreWidgetAppId[];
-// The extension id of the new ZIP unpacker extension.
-extern const char kZIPUnpackerExtensionId[];
 // The extension id of the zip archiver extension.
 extern const char kZipArchiverExtensionId[];
 // Path to preinstalled zip archiver extension.

@@ -370,12 +370,16 @@ function testOpenWithMostRecentlyExecuted(callback) {
   reportPromise(promise, callback);
 }
 
-function testChooseZipArchiverOverZipUnpacker(callback) {
-  var zipUnpackerTaskId = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
+function testOpenZipWithZipArchiver(callback) {
   var zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
 
   chrome.commandLinePrivate.hasSwitch = function(name, callback) {
-    callback(name == 'enable-zip-archiver-unpacker');
+    if (name == 'enable-zip-archiver-unpacker') {
+      // This flag used to exist and was used to switch between the "Zip
+      // Unpacker" and "Zip Archiver" component extensions.
+      failWithMessage('run zip archiver', 'zip archiver flags checked');
+    }
+    callback(false);
   };
 
   window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
@@ -388,13 +392,6 @@ function testChooseZipArchiverOverZipUnpacker(callback) {
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'Zip Archiver',
-              },
-              // Zip unpacker. Will be hidden because Zip Archiver is enabled.
-              {
-                taskId: zipUnpackerTaskId,
-                isDefault: false,
-                isGenericFileHandler: false,
-                title: 'ZIP unpacker',
               },
             ]),
         0);

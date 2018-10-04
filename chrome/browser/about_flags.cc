@@ -3304,15 +3304,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableSmoothScreenRotation)},
 #endif  // OS_CHROMEOS
 
-#if defined(OS_CHROMEOS)
-    {"enable-zip-archiver-unpacker",
-     flag_descriptions::kZipArchiverUnpackerName,
-     flag_descriptions::kZipArchiverUnpackerDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kEnableZipArchiverUnpacker,
-         chromeos::switches::kDisableZipArchiverUnpacker)},
-#endif  // OS_CHROMEOS
-
     {"omnibox-display-title-for-current-url",
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlName,
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription, kOsAll,

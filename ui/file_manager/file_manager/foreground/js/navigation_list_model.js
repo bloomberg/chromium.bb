@@ -402,13 +402,10 @@ function NavigationListModel(
 NavigationListModel.ZIP_VOLUME_TYPE = '_ZIP_VOLUME_';
 
 /**
- * Extension id that can mount zip files.
+ * Id of the Zip Archiver extension, that can mount zip files.
  * @const
  */
-NavigationListModel.ZIP_EXTENSION_IDS = [
-  'dmboannefpncccogfdikhmhpmdnddgoe',  // ZipArchiver
-  'oedeeodfidgoollimchfdnbmhcpnklnd',  // ZipUnpacker
-];
+NavigationListModel.ZIP_EXTENSION_ID = 'dmboannefpncccogfdikhmhpmdnddgoe';
 
 /**
  * NavigationList inherits cr.EventTarget.
@@ -526,8 +523,7 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
         // splitting them apart from PROVIDED.
         volumeId = volumeList[i].volumeInfo.volumeId;
         providedType = VolumeManagerCommon.VolumeType.PROVIDED;
-        if (NavigationListModel.ZIP_EXTENSION_IDS.some(
-                extension_id => volumeId.includes(extension_id)))
+        if (volumeId.includes(NavigationListModel.ZIP_EXTENSION_ID))
           providedType = NavigationListModel.ZIP_VOLUME_TYPE;
         if (!volumeIndexes[providedType]) {
           volumeIndexes[providedType] = [i];
