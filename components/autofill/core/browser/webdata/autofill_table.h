@@ -92,7 +92,10 @@ struct PaymentsCustomerData;
 //   validity_bitfield  A bitfield representing the validity state of different
 //                      fields in the profile.
 //                      Added in version 75.
-//
+//   is_client_validity_states_updated
+//                      A flag indicating whether the validity states of
+//                      different fields according to the client validity api is
+//                      updated or not. Added in version 80.
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
 //                      associated with a profile.
@@ -518,7 +521,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion74AddServerCardTypeColumn();
   bool MigrateToVersion75AddProfileValidityBitfieldColumn();
   bool MigrateToVersion78AddModelTypeColumns();
-
+  bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

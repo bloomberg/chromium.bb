@@ -795,6 +795,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
   home_profile.set_language_code("en");
   home_profile.SetClientValidityFromBitfieldValue(6);
+  home_profile.set_is_client_validity_states_updated(true);
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(home_profile));
@@ -879,6 +880,8 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                              ASCIIToUTF16("18181230000"));
   billing_profile.SetClientValidityFromBitfieldValue(54);
+  billing_profile.set_is_client_validity_states_updated(true);
+
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
@@ -1853,6 +1856,40 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(kOtherValidityBitfieldValue,
             db_profile->GetClientValidityBitfieldValue());
+}
+
+TEST_F(AutofillTableTest, AutofillProfileIsClientValidityStatesUpdatedFlag) {
+  AutofillProfile profile;
+  profile.set_origin(std::string());
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.set_is_client_validity_states_updated(true);
+
+  // Add the profile to the table.
+  EXPECT_TRUE(table_->AddAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was set.
+  std::unique_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_TRUE(db_profile->is_client_validity_states_updated());
+
+  // Test if turning off the validity updated flag works.
+  profile.set_is_client_validity_states_updated(false);
+  // Update the profile in the table.
+  EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was updated.
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_FALSE(db_profile->is_client_validity_states_updated());
+
+  // Test if turning on the validity updated flag works.
+  profile.set_is_client_validity_states_updated(true);
+  // Update the profile in the table.
+  EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was updated.
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_TRUE(db_profile->is_client_validity_states_updated());
 }
 
 TEST_F(AutofillTableTest, SetGetServerCards) {
