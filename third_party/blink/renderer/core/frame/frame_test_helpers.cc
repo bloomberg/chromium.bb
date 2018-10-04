@@ -447,7 +447,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
   return CreateLocalChild(*parent, scope);
 }
 
-void TestWebFrameClient::DidStartLoading(bool) {
+void TestWebFrameClient::DidStartLoading() {
   ++loads_in_progress_;
 }
 

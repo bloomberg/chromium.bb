@@ -617,10 +617,9 @@ void LocalFrameClientImpl::DispatchWillSubmitForm(HTMLFormElement* form) {
     web_frame_->Client()->WillSubmitForm(WebFormElement(form));
 }
 
-void LocalFrameClientImpl::DidStartLoading(LoadStartType load_start_type) {
+void LocalFrameClientImpl::DidStartLoading() {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidStartLoading(load_start_type ==
-                                          kNavigationToDifferentDocument);
+    web_frame_->Client()->DidStartLoading();
   }
 }
 

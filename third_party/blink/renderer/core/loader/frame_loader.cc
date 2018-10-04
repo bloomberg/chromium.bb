@@ -507,7 +507,7 @@ void FrameLoader::UpdateForSameDocumentNavigation(
   // from the document, since a new document is already loading.
   bool was_loading = frame_->IsLoading();
   if (!was_loading)
-    Client()->DidStartLoading(kNavigationWithinSameDocument);
+    Client()->DidStartLoading();
 
   // Update the data source's request with the new URL to fake the URL change
   frame_->GetDocument()->SetURL(new_url);

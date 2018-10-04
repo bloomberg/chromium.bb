@@ -127,7 +127,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       base::TimeTicks input_start_time) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DispatchWillSubmitForm(HTMLFormElement*) override;
-  void DidStartLoading(LoadStartType) override;
+  void DidStartLoading() override;
   void DidStopLoading() override;
   void ProgressEstimateChanged(double progress_estimate) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
