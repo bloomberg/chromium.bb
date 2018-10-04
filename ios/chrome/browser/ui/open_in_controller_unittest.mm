@@ -61,6 +61,17 @@ class OpenInControllerTest : public PlatformTest {
                              suggestedFilename:@"doc.pdf"];
   }
 
+  // Returns the string of a two blank pages created PDF document.
+  std::string CreatePdfString() {
+    NSMutableData* pdf_data = [NSMutableData data];
+    UIGraphicsBeginPDFContextToData(pdf_data, CGRectZero, nil);
+    UIGraphicsBeginPDFPage();
+    UIGraphicsBeginPDFPage();
+    UIGraphicsEndPDFContext();
+    return std::string(reinterpret_cast<char const*>([pdf_data bytes]),
+                       pdf_data.length);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -72,30 +83,44 @@ class OpenInControllerTest : public PlatformTest {
 };
 
 TEST_F(OpenInControllerTest, TestDisplayOpenInMenu) {
-  id documentController =
+  id document_controller =
       [OCMockObject niceMockForClass:[UIDocumentInteractionController class]];
-  [open_in_controller_ setDocumentInteractionController:documentController];
+  [open_in_controller_ setDocumentInteractionController:document_controller];
   [open_in_controller_ startDownload];
-  [[[documentController expect] andReturnValue:[NSNumber numberWithBool:YES]]
-      presentOpenInMenuFromRect:CGRectMake(0, 0, 0, 0)
+  [[[document_controller expect] andReturnValue:@YES]
+      presentOpenInMenuFromRect:CGRectZero
                          inView:OCMOCK_ANY
                        animated:YES];
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
-  DCHECK(pending_request);
+  ASSERT_TRUE(pending_request);
   // Set the response for the set URLFetcher to be a blank PDF.
-  NSMutableData* pdfData = [NSMutableData data];
-  UIGraphicsBeginPDFContextToData(pdfData, CGRectMake(0, 0, 100, 100), @{});
-  UIGraphicsBeginPDFPage();
-  UIGraphicsEndPDFContext();
-  unsigned char* array = (unsigned char*)[pdfData bytes];
-
+  std::string pdf_str = CreatePdfString();
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      pending_request->request.url.spec(),
-      std::string((char*)array, sizeof(pdfData)));
+      pending_request->request.url.spec(), pdf_str);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_OCMOCK_VERIFY(documentController);
+  EXPECT_OCMOCK_VERIFY(document_controller);
+}
+
+TEST_F(OpenInControllerTest, TestCorruptedPDFDownload) {
+  id document_controller =
+      [OCMockObject niceMockForClass:[UIDocumentInteractionController class]];
+  [open_in_controller_ setDocumentInteractionController:document_controller];
+  [open_in_controller_ startDownload];
+  [[[document_controller reject] andReturnValue:@YES]
+      presentOpenInMenuFromRect:CGRectZero
+                         inView:OCMOCK_ANY
+                       animated:YES];
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
+  ASSERT_TRUE(pending_request);
+  std::string pdf_str = CreatePdfString();
+  // Only use half the string so the downloaded PDF is corrupted.
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      pending_request->request.url.spec(), pdf_str.substr(pdf_str.size() / 2));
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_OCMOCK_VERIFY(document_controller);
 }
 
 }  // namespace
