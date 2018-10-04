@@ -40,7 +40,8 @@
         "device": [
           "device:power_monitor",
           "device:screen_orientation",
-          "device:time_zone_monitor"
+          "device:time_zone_monitor",
+          "device:wake_lock"
         ],
         "ui": [
           "discardable_memory",
