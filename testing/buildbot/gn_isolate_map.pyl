@@ -282,6 +282,9 @@
   "chrome_all_tast_tests": {
     "label": "//chromeos:chrome_all_tast_tests",
     "type": "raw",
+    "args": [
+        "--vm-logs-dir=${ISOLATED_OUTDIR}",
+    ]
   },
   "chrome_app_unittests": {
     "label": "//chrome/test:chrome_app_unittests",
@@ -306,6 +309,9 @@
   "chrome_login_tast_tests": {
     "label": "//chromeos:chrome_login_tast_tests",
     "type": "raw",
+    "args": [
+        "--vm-logs-dir=${ISOLATED_OUTDIR}",
+    ]
   },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
