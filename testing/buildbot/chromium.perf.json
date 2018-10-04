@@ -335,16 +335,6 @@
       }
     ]
   },
-  "Linux Builder Perf": {
-    "additional_compile_targets": [
-      "chromedriver"
-    ]
-  },
-  "Mac Builder Perf": {
-    "additional_compile_targets": [
-      "chromedriver"
-    ]
-  },
   "Win 7 Nvidia GPU Perf": {
     "isolated_scripts": [
       {
@@ -790,11 +780,6 @@
       }
     ]
   },
-  "Win Builder Perf": {
-    "additional_compile_targets": [
-      "chromedriver"
-    ]
-  },
   "android-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",
@@ -1132,6 +1117,11 @@
     "additional_compile_targets": [
       "microdump_stackwalk",
       "angle_perftests"
+    ]
+  },
+  "linux-builder-perf": {
+    "additional_compile_targets": [
+      "chromedriver"
     ]
   },
   "linux-perf": {
@@ -1668,6 +1658,11 @@
       }
     ]
   },
+  "mac-builder-perf": {
+    "additional_compile_targets": [
+      "chromedriver"
+    ]
+  },
   "win-10-perf": {
     "isolated_scripts": [
       {
@@ -1844,6 +1839,11 @@
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
+    ]
+  },
+  "win32-builder-perf": {
+    "additional_compile_targets": [
+      "chromedriver"
     ]
   },
   "win64-builder-perf": {
