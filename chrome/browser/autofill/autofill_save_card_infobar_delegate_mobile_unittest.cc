@@ -68,7 +68,8 @@ AutofillSaveCardInfoBarDelegateMobileTest::
 void AutofillSaveCardInfoBarDelegateMobileTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
+  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+      profile(), BrowserContextKeyedServiceFactory::TestingFactory());
 
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->SetPrefService(profile()->GetPrefs());
