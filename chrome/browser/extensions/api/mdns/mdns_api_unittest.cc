@@ -179,8 +179,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     MDnsAPI::GetFactoryInstance()->SetTestingFactory(browser_context(),
                                                      GetMDnsFactory());
 
-    EventRouterFactory::GetInstance()->SetTestingFactory(browser_context(),
-                                                         &BuildEventRouter);
+    EventRouterFactory::GetInstance()->SetTestingFactory(
+        browser_context(), base::BindRepeating(&BuildEventRouter));
 
     // Do some sanity checking
     ASSERT_TRUE(MDnsAPI::Get(browser_context()));      // constructs MDnsAPI
@@ -273,7 +273,7 @@ class MDnsAPIDiscoveryTest : public MDnsAPITest {
 
 TEST_F(MDnsAPIDiscoveryTest, ServiceListenersAddedAndRemoved) {
   EventRouterFactory::GetInstance()->SetTestingFactory(
-      browser_context(), &MockEventRouterFactoryFunction);
+      browser_context(), base::BindRepeating(&MockEventRouterFactoryFunction));
   extensions::EventListenerMap::ListenerList listeners;
 
   extensions::EventListenerInfo listener_info(
@@ -326,7 +326,7 @@ TEST_F(MDnsAPIDiscoveryTest, ServiceListenersAddedAndRemoved) {
 
 TEST_F(MDnsAPIMaxServicesTest, OnServiceListDoesNotExceedLimit) {
   EventRouterFactory::GetInstance()->SetTestingFactory(
-      browser_context(), &MockEventRouterFactoryFunction);
+      browser_context(), base::BindRepeating(&MockEventRouterFactoryFunction));
 
   // This check should change when the [value=2048] changes in the IDL file.
   EXPECT_EQ(2048, api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT);
