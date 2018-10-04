@@ -34,11 +34,11 @@ namespace {
 // Transforms WebTouchEvent touch positions from the root view coordinate
 // space to the target view coordinate space.
 void TransformEventTouchPositions(blink::WebTouchEvent* event,
-                                  const gfx::Vector2dF& delta) {
+                                  const gfx::Transform& transform) {
   for (unsigned i = 0; i < event->touches_length; ++i) {
-    event->touches[i].SetPositionInWidget(
-        event->touches[i].PositionInWidget().x + delta.x(),
-        event->touches[i].PositionInWidget().y + delta.y());
+    gfx::PointF point(event->touches[i].PositionInWidget());
+    transform.TransformPoint(&point);
+    event->touches[i].SetPositionInWidget(point);
   }
 }
 
@@ -725,16 +725,19 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
   bool is_sequence_start = !touch_target_.target && target;
   if (is_sequence_start) {
     touch_target_.target = target;
-    // TODO(wjmaclean): Instead of just computing a delta, we should extract
-    // the complete transform. We assume it doesn't change for the duration
-    // of the touch sequence, though this could be wrong; a better approach
-    // might be to always transform each point to the |touch_target_.target|
-    // for the duration of the sequence.
-    if (target_location.has_value()) {
-      touch_target_.delta =
-          target_location.value() - touch_event.touches[0].PositionInWidget();
-    } else {
-      touch_target_.delta = gfx::Vector2dF();
+    // For now we only compute the transform at TouchStart, but in a follow-on
+    // CL this will be computed for all events in order to account for css
+    // animations, pinches, etc.
+    if (!root_view->GetTransformToViewCoordSpace(touch_target_.target,
+                                                 &touch_target_.transform)) {
+      // Fall-back to just using the delta if we are unable to get the full
+      // transform.
+      touch_target_.transform.MakeIdentity();
+      if (target_location.has_value()) {
+        touch_target_.transform.Translate(
+            target_location.value() -
+            touch_event.touches[0].PositionInWidget());
+      }
     }
 
     DCHECK(touchscreen_gesture_target_map_.find(
@@ -791,7 +794,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
                               touch_target_.target, root_view, event_source);
 
   blink::WebTouchEvent event(touch_event);
-  TransformEventTouchPositions(&event, touch_target_.delta);
+  TransformEventTouchPositions(&event, touch_target_.transform);
   touch_target_.target->ProcessTouchEvent(event, latency);
 
   if (!active_touches_)
@@ -1318,10 +1321,15 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // unique_touch_event_id of 0.
     touchscreen_gesture_target_.target = target;
     touchscreen_gesture_target_in_map_ = IsViewInMap(target);
-    touchscreen_gesture_target_.delta =
-        target_location.has_value()
-            ? target_location.value() - gesture_event.PositionInWidget()
-            : gfx::Vector2dF();
+    if (!root_view->GetTransformToViewCoordSpace(
+            touchscreen_gesture_target_.target,
+            &touchscreen_gesture_target_.transform)) {
+      touchscreen_gesture_target_.transform.MakeIdentity();
+      if (target_location.has_value()) {
+        touch_target_.transform.Translate(target_location.value() -
+                                          gesture_event.PositionInWidget());
+      }
+    }
   } else if (no_matching_id && is_gesture_start) {
     // A long-standing Windows issues where occasionally a GestureStart is
     // encountered with no targets in the event queue. We never had a repro for
@@ -1344,7 +1352,13 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_.target = result.view;
     touchscreen_gesture_target_in_map_ = IsViewInMap(result.view);
-    touchscreen_gesture_target_.delta = transformed_point - original_point;
+    if (!root_view->GetTransformToViewCoordSpace(
+            touchscreen_gesture_target_.target,
+            &touchscreen_gesture_target_.transform)) {
+      touchscreen_gesture_target_.transform.MakeIdentity();
+      if (target_location.has_value())
+        touch_target_.transform.Translate(transformed_point - original_point);
+    }
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
@@ -1373,8 +1387,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   }
 
   blink::WebGestureEvent event(gesture_event);
-  event.SetPositionInWidget(event.PositionInWidget() +
-                            touchscreen_gesture_target_.delta);
+  gfx::PointF transformed_point(gesture_event.PositionInWidget());
+  touchscreen_gesture_target_.transform.TransformPoint(&transformed_point);
+  event.SetPositionInWidget(transformed_point);
 
   if (events_being_flushed_) {
     touchscreen_gesture_target_.target->host()
