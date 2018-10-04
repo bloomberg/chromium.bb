@@ -34,7 +34,6 @@ import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
-import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
@@ -230,7 +229,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         ViewEventSinkImpl.from(this).setAccessDelegate(accessDelegate);
         getRenderCoordinates().setDeviceScaleFactor(windowAndroid.getDisplay().getDipScale());
-        TextSuggestionHost.fromWebContents(this);
     }
 
     @Nullable
