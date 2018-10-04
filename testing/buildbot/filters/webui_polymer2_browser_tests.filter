@@ -35,10 +35,6 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -CrSettingsBluetoothPageTest.All
 -CrSettingsCrostiniPageTest.All
--CrSettingsDevicePageTest.DisplayTest
--CrSettingsDevicePageTest.KeyboardTest
--CrSettingsDevicePageTest.PointersTest
--CrSettingsDevicePageTest.PowerTest
 -CrSettingsFingerprintProgressArcTest.All
 -CrSettingsInternetDetailPageTest.InternetDetailPage
 -CrSettingsInternetPageTest.InternetPage
@@ -131,9 +127,7 @@ CrSettingsCheckboxTest.*
 CrSettingsChromeCleanupPageTest.*
 CrSettingsDateTimePageTest.*
 CrSettingsDefaultBrowserTest.*
-CrSettingsDevicePageTest.DevicePageTest
-CrSettingsDevicePageTest.PointersTest
-CrSettingsDevicePageTest.StylusTest
+CrSettingsDevicePageTest.*
 CrSettingsDownloadsPageTest.*
 CrSettingsDropdownMenuTest.*
 CrSettingsEditDictionaryPageTest.*
