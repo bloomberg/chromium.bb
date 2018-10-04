@@ -280,15 +280,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         base::nullopt /* subresource_overrides */);
   }
 
-  // It is important to understand the default factory of
-  // |subresource_loader_factories_|. |subresource_loader_factories_| was made
-  // from CreateDefaultURLLoaderFactoryBundle, which does not set a default
-  // factory, and |subresource_loader_factories| passed from the browser, whose
-  // default factory is the direct network factory (as SharedWorkerHost sets it
-  // that way). Therefore, the default factory either does not exist or is the
-  // direct network factory. So we don't need to call CloneWithoutDefault() to
-  // bypass features like AppCache, unlike the bundle created for a frame.
-
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
@@ -414,18 +405,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
-  // We know |subresource_loader_factories_|'s default factory is not a feature
-  // like AppCache, so it's OK to call Clone() and not CloneWithoutDefault() to
-  // get the fallback factory. We don't want to call CloneWithoutDefault()
-  // because the default is a NetworkService-backed factory with auto-reconnect
-  // when NetworkService is enabled (it will support auto-reconnect once
-  // https://crbug.com/848256 is addressed). See comments in the constructor.
-  //
-  // TODO(nhiroki): We might need to set the default factory of
-  // |subresource_loader_factories_| to AppCache if requests from this shared
-  // worker are supposed to go through AppCache.
+  // Make the factory used for service worker network fallback. Omit the default
+  // factory in case it is for a non-network factory like AppCache.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
-      subresource_loader_factories_->Clone();
+      subresource_loader_factories_->CloneWithoutDefaultFactory();
 
   auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
       std::move(renderer_preferences_), std::move(preference_watcher_request_),
