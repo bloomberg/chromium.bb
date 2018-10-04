@@ -2053,6 +2053,7 @@ test("base_perftests") {
     "message_loop/message_loop_perftest.cc",
     "message_loop/message_loop_task_runner_perftest.cc",
     "message_loop/message_pump_perftest.cc",
+    "observer_list_perftest.cc",
     "task/sequence_manager/sequence_manager_perftest.cc",
 
     # "test/run_all_unittests.cc",
