@@ -31,6 +31,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
+  typedef Vector<NGLogicalOffset, 16> OffsetVector;
+
   ~NGContainerFragmentBuilder() override;
 
   LayoutUnit InlineSize() const { return size_.inline_size; }
@@ -210,12 +212,17 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // Store NGLinks rather than NGPhysicalOffsets even though we don't have the
   // offsets yet to allow us to move the entire vector to the fragment at
   // construction time.
+  // Unlike OffsetVector, we don't want to keep the inline capacity around
+  // because this vector will be long-lived, and it would be wasteful to reserve
+  // space for 16 children in every fragment. Instead, we reserve some initial
+  // capacity for it when adding the first child  and shrink it down when
+  // creating the fragment.
   Vector<NGLink> children_;
 
   // Logical offsets for the children. Stored as logical offsets as we can't
   // convert to physical offsets until layout of all children has been
   // determined.
-  Vector<NGLogicalOffset> offsets_;
+  OffsetVector offsets_;
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 

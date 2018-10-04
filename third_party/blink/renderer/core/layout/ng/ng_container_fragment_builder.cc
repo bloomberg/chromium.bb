@@ -104,6 +104,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
         has_last_resort_break_ = true;
     }
   }
+  // Assume that if we have one child, we may have more than one and try to
+  // limit the number of allocations we would do in that case.
+  if (!children_.capacity())
+    children_.ReserveCapacity(16);
   children_.emplace_back(std::move(child), NGPhysicalOffset());
   offsets_.push_back(child_offset);
   return *this;

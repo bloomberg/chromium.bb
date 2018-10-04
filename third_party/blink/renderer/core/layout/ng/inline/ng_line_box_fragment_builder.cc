@@ -141,6 +141,10 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
     child->PropagateContentsInkOverflow(&contents_ink_overflow, child.Offset());
   }
 
+  // Because this vector will be long-lived, make sure to not waaste space.
+  // (We reserve an initial capacity when adding the first child)
+  if (children_.size())
+    children_.ShrinkToReasonableCapacity();
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), style_variant_, physical_size, children_,
