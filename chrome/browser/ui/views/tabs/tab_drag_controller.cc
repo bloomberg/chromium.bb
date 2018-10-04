@@ -1537,6 +1537,8 @@ void TabDragController::EndDragImpl(EndDragType type) {
     GetAttachedBrowserWidget()->EndMoveLoop();
   }
 
+  ClearTabDraggingInfo();
+
   if (type != TAB_DESTROYED) {
     // We only finish up the drag if we were actually dragging. If start_drag_
     // is false, the user just clicked and released and didn't move the mouse
@@ -1558,10 +1560,6 @@ void TabDragController::EndDragImpl(EndDragType type) {
     if (started_drag_)
       RevertDrag();
   }  // else case the only tab we were dragging was deleted. Nothing to do.
-
-  // Clear tab dragging info after the complete/revert as CompleteDrag() may
-  // need to use some of the properties.
-  ClearTabDraggingInfo();
 
   // Clear out drag data so we don't attempt to do anything with it.
   drag_data_.clear();
