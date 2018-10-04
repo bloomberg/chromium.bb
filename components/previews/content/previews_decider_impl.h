@@ -163,7 +163,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // Whether |request| is allowed for |type| according to server provided
   // optimization hints, if available. This is meant for checking the committed
   // navigation URL against any specific hint details.
-  PreviewsEligibilityReason IsURLAllowedForPreviewByOptmizationHints(
+  PreviewsEligibilityReason IsURLAllowedForPreviewByOptimizationHints(
       const net::URLRequest& request,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;

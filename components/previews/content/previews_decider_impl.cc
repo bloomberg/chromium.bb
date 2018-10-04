@@ -448,8 +448,8 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
     if (params::IsOptimizationHintsEnabled()) {
       std::vector<PreviewsEligibilityReason> passed_reasons;
       PreviewsEligibilityReason status =
-          IsURLAllowedForPreviewByOptmizationHints(request, type,
-                                                   &passed_reasons);
+          IsURLAllowedForPreviewByOptimizationHints(request, type,
+                                                    &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
         LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                                std::move(passed_reasons),
@@ -505,7 +505,7 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
 }
 
 PreviewsEligibilityReason
-PreviewsDeciderImpl::IsURLAllowedForPreviewByOptmizationHints(
+PreviewsDeciderImpl::IsURLAllowedForPreviewByOptimizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
