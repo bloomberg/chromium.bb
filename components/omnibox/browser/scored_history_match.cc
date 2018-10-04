@@ -397,8 +397,8 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
   if (start_pos == std::string::npos)
     return term_matches;
   TermMatches filtered_matches;
-  WordStarts::const_iterator next_word_starts = word_starts.begin();
-  WordStarts::const_iterator end_word_starts = word_starts.end();
+  auto next_word_starts = word_starts.begin();
+  auto end_word_starts = word_starts.end();
   for (const auto& term_match : term_matches) {
     const size_t term_offset =
         terms_to_word_starts_offsets[term_match.term_num];
@@ -454,10 +454,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // in the same part of the URL/title.
   DCHECK_GT(num_terms, 0);
   std::vector<int> term_scores(num_terms, 0);
-  WordStarts::const_iterator next_word_starts =
-      word_starts.url_word_starts_.begin();
-  WordStarts::const_iterator end_word_starts =
-      word_starts.url_word_starts_.end();
+  auto next_word_starts = word_starts.url_word_starts_.begin();
+  auto end_word_starts = word_starts.url_word_starts_.end();
 
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
   size_t host_pos = parsed.CountCharactersBefore(url::Parsed::HOST, true);

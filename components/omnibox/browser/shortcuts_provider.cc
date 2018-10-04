@@ -250,7 +250,7 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
     std::pair<WordMap::const_iterator, WordMap::const_iterator> range(
         find_words.equal_range(text_lowercase[last_position]));
     size_t next_character = last_position + 1;
-    for (WordMap::const_iterator i(range.first); i != range.second; ++i) {
+    for (auto i(range.first); i != range.second; ++i) {
       const base::string16& word = i->second;
       size_t word_end = last_position + word.length();
       if ((word_end <= text_lowercase.length()) &&
@@ -297,11 +297,9 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   const base::string16 fixed_up_input(FixupUserInput(input).second);
 
   std::vector<ShortcutMatch> shortcut_matches;
-  for (ShortcutsBackend::ShortcutMap::const_iterator it =
-           FindFirstMatch(term_string, backend.get());
+  for (auto it = FindFirstMatch(term_string, backend.get());
        it != backend->shortcuts_map().end() &&
-           base::StartsWith(it->first, term_string,
-                            base::CompareCase::SENSITIVE);
+       base::StartsWith(it->first, term_string, base::CompareCase::SENSITIVE);
        ++it) {
     // Don't return shortcuts with zero relevance.
     int relevance = CalculateScore(term_string, it->second, max_relevance);
@@ -441,8 +439,7 @@ ShortcutsBackend::ShortcutMap::const_iterator ShortcutsProvider::FindFirstMatch(
     const base::string16& keyword,
     ShortcutsBackend* backend) {
   DCHECK(backend);
-  ShortcutsBackend::ShortcutMap::const_iterator it =
-      backend->shortcuts_map().lower_bound(keyword);
+  auto it = backend->shortcuts_map().lower_bound(keyword);
   // Lower bound not necessarily matches the keyword, check for item pointed by
   // the lower bound iterator to at least start with keyword.
   return ((it == backend->shortcuts_map().end()) ||

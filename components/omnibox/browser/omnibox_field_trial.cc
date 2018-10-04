@@ -233,7 +233,7 @@ void InitializeScoreBuckets(const VariationParams& params,
                             const char* score_buckets_param,
                             const char* use_decay_factor_param,
                             ScoreBuckets* score_buckets) {
-  VariationParams::const_iterator it = params.find(relevance_cap_param);
+  auto it = params.find(relevance_cap_param);
   if (it != params.end()) {
     int relevance_cap;
     if (base::StringToInt(it->second, &relevance_cap))

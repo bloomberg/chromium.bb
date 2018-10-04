@@ -345,13 +345,11 @@ bool SearchSuggestionParser::Results::HasServerProvidedScores() const {
   // Right now either all results of one type will be server-scored or they will
   // all be locally scored, but in case we change this later, we'll just check
   // them all.
-  for (SuggestResults::const_iterator i(suggest_results.begin());
-       i != suggest_results.end(); ++i) {
+  for (auto i(suggest_results.begin()); i != suggest_results.end(); ++i) {
     if (i->relevance_from_server())
       return true;
   }
-  for (NavigationResults::const_iterator i(navigation_results.begin());
-       i != navigation_results.end(); ++i) {
+  for (auto i(navigation_results.begin()); i != navigation_results.end(); ++i) {
     if (i->relevance_from_server())
       return true;
   }
