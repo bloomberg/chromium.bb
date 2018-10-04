@@ -1127,14 +1127,14 @@ static float MaxWordFragmentWidth(LayoutText* layout_text,
                                   const Font& font,
                                   TextDirection text_direction,
                                   Hyphenation& hyphenation,
-                                  unsigned word_offset,
-                                  unsigned word_length,
+                                  wtf_size_t word_offset,
+                                  wtf_size_t word_length,
                                   int& suffix_start) {
   suffix_start = 0;
   if (word_length <= Hyphenation::kMinimumSuffixLength)
     return 0;
 
-  Vector<size_t, 8> hyphen_locations = hyphenation.HyphenLocations(
+  Vector<wtf_size_t, 8> hyphen_locations = hyphenation.HyphenLocations(
       StringView(layout_text->GetText(), word_offset, word_length));
   if (hyphen_locations.IsEmpty())
     return 0;
@@ -1144,8 +1144,8 @@ static float MaxWordFragmentWidth(LayoutText* layout_text,
   float max_fragment_width = 0;
   TextRun run = ConstructTextRun(font, layout_text, word_offset, word_length,
                                  style, text_direction);
-  size_t end = word_length;
-  for (size_t start : hyphen_locations) {
+  wtf_size_t end = word_length;
+  for (wtf_size_t start : hyphen_locations) {
     float fragment_width = font.GetCharacterRange(run, start, end).Width();
 
     if (fragment_width <= minimum_fragment_width_to_consider)

@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 
@@ -64,7 +65,7 @@ class PLATFORM_EXPORT QuotedPrintableEncodeDelegate {
 };
 
 PLATFORM_EXPORT void QuotedPrintableEncode(const char*,
-                                           size_t,
+                                           wtf_size_t,
                                            QuotedPrintableEncodeDelegate*,
                                            Vector<char>&);
 
