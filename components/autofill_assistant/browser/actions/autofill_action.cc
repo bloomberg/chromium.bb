@@ -88,7 +88,7 @@ class SelfDeleteFullCardRequester
 }  // namespace
 
 AutofillAction::AutofillAction(const ActionProto& proto)
-    : Action(proto), pending_set_field_value_(0), weak_ptr_factory_(this) {
+    : Action(proto), weak_ptr_factory_(this) {
   if (proto.has_use_address()) {
     is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();
@@ -99,6 +99,8 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     }
     fill_form_message_ = proto.use_address().strings().fill_form();
     check_form_message_ = proto.use_address().strings().check_form();
+    required_fields_value_status_.resize(
+        proto_.use_address().required_fields_size(), UNKNOWN);
   } else {
     DCHECK(proto.has_use_card());
     is_autofill_card_ = true;
@@ -223,8 +225,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
   if (!card) {
     // TODO(crbug.com/806868): The failure might because of cancel, then ask to
     // choose a card again.
-    UpdateProcessedAction(OTHER_ACTION_STATUS);
-    std::move(process_action_callback_).Run(std::move(processed_action_proto_));
+    EndAction(false);
     return;
   }
 
@@ -262,99 +263,153 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
     return;
   }
 
-  int required_fields_size = proto_.use_address().required_fields_size();
-  required_fields_value_status_.clear();
-  required_fields_value_status_.resize(required_fields_size, UNKNOWN);
-  for (int i = 0; i < required_fields_size; i++) {
-    const auto& required_address_field =
-        proto_.use_address().required_fields(i);
-    DCHECK(required_address_field.has_address_field());
-    DCHECK(!required_address_field.element().selectors().empty());
-    std::vector<std::string> selectors;
-    for (const auto& selector : required_address_field.element().selectors()) {
-      selectors.emplace_back(selector);
-    }
-    delegate->GetFieldValue(
-        selectors, base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
-                                  weak_ptr_factory_.GetWeakPtr(), guid,
-                                  delegate, allow_fallback, i));
-  }
+  CheckRequiredFieldsSequentially(guid, delegate, allow_fallback, 0);
 }
 
-void AutofillAction::OnGetRequiredFieldValue(
+void AutofillAction::CheckRequiredFieldsSequentially(
     const std::string& guid,
     ActionDelegate* delegate,
     bool allow_fallback,
-    int index,
-    const std::string& value) {
-  DCHECK(!is_autofill_card_);
-  required_fields_value_status_[index] = value.empty() ? EMPTY : NOT_EMPTY;
-
-  // Wait for the value of all required fields.
-  for (const auto& status : required_fields_value_status_) {
-    if (status == UNKNOWN) {
-      return;
-    }
+    int required_fields_index) {
+  DCHECK_GE(required_fields_index, 0);
+  if (required_fields_index >= proto_.use_address().required_fields_size()) {
+    DCHECK_EQ(required_fields_index,
+              proto_.use_address().required_fields_size());
+    OnCheckRequiredFieldsDone(guid, delegate, allow_fallback);
+    return;
   }
 
-  const autofill::AutofillProfile* profile =
-      delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
-  DCHECK(profile);
+  const auto& required_address_field =
+      proto_.use_address().required_fields(required_fields_index);
+  DCHECK(required_address_field.has_address_field());
+  DCHECK(!required_address_field.element().selectors().empty());
+  std::vector<std::string> selectors;
+  for (const auto& selector : required_address_field.element().selectors()) {
+    selectors.emplace_back(selector);
+  }
+  delegate->GetFieldValue(
+      selectors, base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
+                                weak_ptr_factory_.GetWeakPtr(), guid, delegate,
+                                allow_fallback, required_fields_index));
+}
 
+void AutofillAction::OnGetRequiredFieldValue(const std::string& guid,
+                                             ActionDelegate* delegate,
+                                             bool allow_fallback,
+                                             int required_fields_index,
+                                             const std::string& value) {
+  DCHECK(!is_autofill_card_);
+  required_fields_value_status_[required_fields_index] =
+      value.empty() ? EMPTY : NOT_EMPTY;
+  CheckRequiredFieldsSequentially(guid, delegate, allow_fallback,
+                                  ++required_fields_index);
+}
+
+void AutofillAction::OnCheckRequiredFieldsDone(const std::string& guid,
+                                               ActionDelegate* delegate,
+                                               bool allow_fallback) {
   // We process all fields with an empty value in order to perform the fallback
   // on all those fields, if any.
   bool validation_successful = true;
-  std::vector<std::vector<std::string>> failed_selectors;
-  std::vector<std::string> fallback_values;
-  for (size_t i = 0; i < required_fields_value_status_.size(); i++) {
-    if (required_fields_value_status_[i] == EMPTY) {
-      if (!allow_fallback) {
-        // Validation failed and we don't want to try the fallback, so we stop
-        // the script.
-        delegate->StopCurrentScript(check_form_message_);
-        EndAction(/* successful= */ true);
-        return;
-      }
-
+  for (FieldValueStatus status : required_fields_value_status_) {
+    if (status == EMPTY) {
       validation_successful = false;
-      std::string fallback_value = base::UTF16ToUTF8(GetAddressFieldValue(
-          profile, proto_.use_address().required_fields(i).address_field()));
-      if (fallback_value.empty()) {
-        // If there is no fallback value, we skip this failed field.
-        continue;
-      }
-
-      fallback_values.emplace_back(fallback_value);
-      failed_selectors.emplace_back(std::vector<std::string>());
-      for (const auto& selector :
-           proto_.use_address().required_fields(i).element().selectors()) {
-        failed_selectors.back().emplace_back(selector);
-      }
+      break;
     }
   }
-
-  DCHECK_EQ(failed_selectors.size(), fallback_values.size());
 
   if (validation_successful) {
     EndAction(/* successful= */ true);
     return;
   }
 
-  if (fallback_values.empty()) {
-    // One or more required fields is empty but there is no fallback value, so
-    // we stop the script.
+  if (!allow_fallback) {
+    // Validation failed and we don't want to try the fallback, so we stop
+    // the script.
     delegate->StopCurrentScript(check_form_message_);
     EndAction(/* successful= */ true);
     return;
   }
 
-  pending_set_field_value_ = failed_selectors.size();
-  for (size_t i = 0; i < failed_selectors.size(); i++) {
-    delegate->SetFieldValue(
-        failed_selectors[i], fallback_values[i],
-        base::BindOnce(&AutofillAction::OnSetFieldValue,
-                       weak_ptr_factory_.GetWeakPtr(), guid, delegate));
+  // If there are any fallbacks for the empty fields, set them, otherwise fail
+  // immediately.
+  bool has_fallbacks = false;
+  auto* profile = delegate->GetPersonalDataManager()->GetProfileByGUID(guid);
+  DCHECK(profile);
+  for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
+    if (required_fields_value_status_[i] == EMPTY &&
+        !GetAddressFieldValue(
+             profile, proto_.use_address().required_fields(i).address_field())
+             .empty()) {
+      has_fallbacks = true;
+      break;
+    }
   }
+  if (!has_fallbacks) {
+    delegate->StopCurrentScript(check_form_message_);
+    EndAction(/* successful= */ true);
+    return;
+  }
+
+  // Set the fallback values and check again.
+  SetFallbackFieldValuesSequentially(guid, delegate, 0);
+}
+
+void AutofillAction::SetFallbackFieldValuesSequentially(
+    const std::string& guid,
+    ActionDelegate* delegate,
+    int required_fields_index) {
+  DCHECK_GE(required_fields_index, 0);
+
+  // Skip non-empty fields.
+  const auto& required_fields = proto_.use_address().required_fields();
+  while (required_fields_index < required_fields.size() &&
+         required_fields_value_status_[required_fields_index] != EMPTY) {
+    required_fields_index++;
+  }
+
+  // If there are no more fields to set, check the required fields again,
+  // but this time we don't want to try the fallback in case of failure.
+  if (required_fields_index >= required_fields.size()) {
+    DCHECK_EQ(required_fields_index, required_fields.size());
+
+    CheckRequiredFields(guid, delegate, /* allow_fallback */ false);
+    return;
+  }
+
+  // Set the next field to its fallback value.
+  std::string fallback_value = base::UTF16ToUTF8(GetAddressFieldValue(
+      delegate->GetPersonalDataManager()->GetProfileByGUID(guid),
+      required_fields.Get(required_fields_index).address_field()));
+  if (fallback_value.empty()) {
+    // If there is no fallback value, we skip this failed field.
+    SetFallbackFieldValuesSequentially(guid, delegate, ++required_fields_index);
+    return;
+  }
+
+  std::vector<std::string> selectors;
+  for (const auto& selector :
+       required_fields.Get(required_fields_index).element().selectors()) {
+    selectors.emplace_back(selector);
+  }
+  delegate->SetFieldValue(
+      selectors, fallback_value,
+      base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,
+                     weak_ptr_factory_.GetWeakPtr(), guid, delegate,
+                     required_fields_index));
+}
+
+void AutofillAction::OnSetFallbackFieldValue(const std::string& guid,
+                                             ActionDelegate* delegate,
+                                             int required_fields_index,
+                                             bool successful) {
+  if (!successful) {
+    // Fallback failed: we stop the script without checking the fields.
+    delegate->StopCurrentScript(check_form_message_);
+    EndAction(/* successful= */ true);
+    return;
+  }
+  SetFallbackFieldValuesSequentially(guid, delegate, ++required_fields_index);
 }
 
 base::string16 AutofillAction::GetAddressFieldValue(
@@ -394,30 +449,4 @@ base::string16 AutofillAction::GetAddressFieldValue(
       return base::string16();
   }
 }
-
-void AutofillAction::OnSetFieldValue(const std::string& guid,
-                                     ActionDelegate* delegate,
-                                     bool successful) {
-  DCHECK_LT(0u, pending_set_field_value_);
-  pending_set_field_value_--;
-
-  // Fail early if filling a field failed and we haven't returned anything yet.
-  // We can ignore the other SetFieldValue callbacks given that an action is
-  // processed only once.
-  if (!successful) {
-    // Fallback failed: we stop the script without checking the fields.
-    if (process_action_callback_) {
-      delegate->StopCurrentScript(check_form_message_);
-      EndAction(/* successful= */ true);
-    }
-    return;
-  }
-
-  if (!pending_set_field_value_ && process_action_callback_) {
-    // We check the required fields again, but this time we don't want to try
-    // the fallback in case if failure.
-    CheckRequiredFields(guid, delegate, /* allow_fallback */ false);
-  }
-}
-
 }  // namespace autofill_assistant

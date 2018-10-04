@@ -35,6 +35,14 @@ namespace autofill_assistant {
 class NodeProto;
 
 // Controller to interact with the web pages.
+//
+// WARNING: Accessing or modifying page elements must be run in sequence: wait
+// until the result of the first operation has been given to the callback before
+// starting a new operation.
+//
+// TODO(crbug.com/806868): Figure out the reason for this limitation and fix it.
+// Also, consider structuring the WebController to make it easier to run
+// multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
   // Create web controller for a given |web_contents|.

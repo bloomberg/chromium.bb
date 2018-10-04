@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -21,6 +23,7 @@ namespace {
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::InSequence;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrNe;
 
@@ -109,8 +112,8 @@ class AutofillActionTest : public testing::Test {
   const char* const kAddressName = "billing";
   const char* const kFakeSelector = "#selector";
   const char* const kSelectionPrompt = "prompt";
-  const char* const kFirstName = "Foo";
-  const char* const kLastName = "Bar";
+  const char* const kFirstName = "FirstName";
+  const char* const kLastName = "LastName";
   const char* const kEmail = "foobar@gmail.com";
   const char* const kFillForm = "fill_form";
   const char* const kCheckForm = "check_form";
@@ -123,6 +126,14 @@ class AutofillActionTest : public testing::Test {
     use_address->mutable_strings()->set_fill_form(kFillForm);
     use_address->mutable_strings()->set_check_form(kCheckForm);
     return action;
+  }
+
+  void AddRequiredField(ActionProto* action,
+                        UseAddressProto::RequiredField::AddressField type,
+                        std::string selector) {
+    auto* required_field = action->mutable_use_address()->add_required_fields();
+    required_field->set_address_field(type);
+    required_field->mutable_element()->add_selectors(selector);
   }
 
   ActionProto CreateUseCardAction() {
@@ -218,17 +229,12 @@ TEST_F(AutofillActionTest, FallbackFails) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  std::vector<UseAddressProto::RequiredField::AddressField> address_fields = {
-      UseAddressProto::RequiredField::FIRST_NAME,
-      UseAddressProto::RequiredField::LAST_NAME,
-      UseAddressProto::RequiredField::EMAIL};
-
-  for (size_t i = 0; i < address_fields.size(); i++) {
-    auto* required_field =
-        action_proto.mutable_use_address()->add_required_fields();
-    required_field->set_address_field(address_fields[i]);
-    required_field->mutable_element()->add_selectors(kFakeSelector);
-  }
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
+                   "#first_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
+                   "#last_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
+                   "#email");
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
@@ -242,14 +248,15 @@ TEST_F(AutofillActionTest, FallbackFails) {
 
   // Validation fails when getting FIRST_NAME.
   EXPECT_CALL(mock_action_delegate_,
-              OnGetFieldValue(ElementsAre(kFakeSelector), _))
-      .Times(address_fields.size())
-      .WillOnce(RunOnceCallback<1>(""))
+              OnGetFieldValue(ElementsAre("#first_name"), _))
+      .WillOnce(RunOnceCallback<1>(""));
+  EXPECT_CALL(mock_action_delegate_,
+              OnGetFieldValue(Not(ElementsAre("#first_name")), _))
       .WillRepeatedly(RunOnceCallback<1>("not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(ElementsAre(kFakeSelector), kFirstName, _))
+              OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
       .WillOnce(RunOnceCallback<2>(false));
 
   ExpectActionToStopScript(action_proto, kCheckForm);
@@ -259,17 +266,12 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  std::vector<UseAddressProto::RequiredField::AddressField> address_fields = {
-      UseAddressProto::RequiredField::FIRST_NAME,
-      UseAddressProto::RequiredField::LAST_NAME,
-      UseAddressProto::RequiredField::EMAIL};
-
-  for (size_t i = 0; i < address_fields.size(); i++) {
-    auto* required_field =
-        action_proto.mutable_use_address()->add_required_fields();
-    required_field->set_address_field(address_fields[i]);
-    required_field->mutable_element()->add_selectors(kFakeSelector);
-  }
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
+                   "#first_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
+                   "#last_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
+                   "#email");
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
@@ -281,24 +283,26 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
       OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
       .WillOnce(RunOnceCallback<2>(true));
 
-  // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_action_delegate_,
-              OnGetFieldValue(ElementsAre(kFakeSelector), _))
-      .Times(address_fields.size())
-      .WillOnce(RunOnceCallback<1>(""))
-      .WillRepeatedly(RunOnceCallback<1>("not empty"));
+  {
+    InSequence seq;
 
-  // Fallback succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(ElementsAre(kFakeSelector), kFirstName, _))
-      .WillOnce(RunOnceCallback<2>(true));
+    // Validation fails when getting FIRST_NAME.
+    EXPECT_CALL(mock_action_delegate_,
+                OnGetFieldValue(ElementsAre("#first_name"), _))
+        .WillOnce(RunOnceCallback<1>(""));
+    EXPECT_CALL(mock_action_delegate_,
+                OnGetFieldValue(Not(ElementsAre("#first_name")), _))
+        .WillRepeatedly(RunOnceCallback<1>("not empty"));
 
-  // Second validation succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnGetFieldValue(ElementsAre(kFakeSelector), _))
-      .Times(address_fields.size())
-      .WillRepeatedly(RunOnceCallback<1>("not empty"));
+    // Fallback succeeds.
+    EXPECT_CALL(mock_action_delegate_,
+                OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
+        .WillOnce(RunOnceCallback<2>(true));
 
+    // Second validation succeeds.
+    EXPECT_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
+        .WillRepeatedly(RunOnceCallback<1>("not empty"));
+  }
   EXPECT_TRUE(ProcessAction(action_proto));
 }
 

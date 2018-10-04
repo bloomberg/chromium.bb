@@ -5,14 +5,14 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_AUTOFILL_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_AUTOFILL_ACTION_H_
 
-#include "components/autofill_assistant/browser/actions/action.h"
-
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -32,6 +32,8 @@ class AutofillAction : public Action {
 
  private:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
+
+  void EndAction(bool successful);
 
   // Called when the user selected the data.
   void OnDataSelected(ActionDelegate* delegate,
@@ -59,12 +61,24 @@ class AutofillAction : public Action {
                            ActionDelegate* delegate,
                            bool allow_fallback);
 
-  // Called when we get the value of the required fields.
+  // Triggers the check for a specific field.
+  void CheckRequiredFieldsSequentially(const std::string& guid,
+                                       ActionDelegate* delegate,
+                                       bool allow_fallback,
+                                       int required_fields_index);
+
+  // Process the result of all field checks and continue the flow with
+  // OnCheckRequiredFieldsDone.
   void OnGetRequiredFieldValue(const std::string& guid,
                                ActionDelegate* delegate,
                                bool allow_fallback,
-                               int index,
+                               int required_fields_index,
                                const std::string& value);
+
+  // Called when all required fields have been checked.
+  void OnCheckRequiredFieldsDone(const std::string& guid,
+                                 ActionDelegate* delegate,
+                                 bool allow_fallback);
 
   // Get the value of |address_field| associated to profile |profile|. Return
   // empty string if there is no data available.
@@ -72,13 +86,18 @@ class AutofillAction : public Action {
       const autofill::AutofillProfile* profile,
       const UseAddressProto::RequiredField::AddressField& address_field);
 
+  // Sets fallback field values for empty fields from
+  // |required_fields_value_status_|.
+  void SetFallbackFieldValuesSequentially(const std::string& guid,
+                                          ActionDelegate* delegate,
+                                          int required_fields_index);
+
   // Called after trying to set form values without Autofill in case of fallback
   // after failed validation.
-  void OnSetFieldValue(const std::string& guid,
-                       ActionDelegate* delegate,
-                       bool successful);
-
-  void EndAction(bool successful);
+  void OnSetFallbackFieldValue(const std::string& guid,
+                               ActionDelegate* delegate,
+                               int required_fields_index,
+                               bool successful);
 
   // Usage of the autofilled address. Ignored if autofilling a card.
   std::string name_;
@@ -90,7 +109,7 @@ class AutofillAction : public Action {
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;
   std::vector<FieldValueStatus> required_fields_value_status_;
-  size_t pending_set_field_value_;
+
   ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;
 
