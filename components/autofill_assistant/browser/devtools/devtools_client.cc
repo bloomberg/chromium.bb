@@ -108,7 +108,7 @@ void DevtoolsClient::DispatchProtocolMessage(
                 ? DispatchMessageReply(std::move(message), *message_dict)
                 : DispatchEvent(std::move(message), *message_dict);
   if (!success)
-    DLOG(ERROR) << "Unhandled protocol message: " << json_message;
+    DVLOG(2) << "Unhandled protocol message: " << json_message;
 }
 
 bool DevtoolsClient::DispatchMessageReply(
@@ -192,7 +192,7 @@ bool DevtoolsClient::DispatchEvent(std::unique_ptr<base::Value> owning_message,
   EventHandlerMap::const_iterator it = event_handlers_.find(method);
   if (it == event_handlers_.end()) {
     if (method != "Inspector.targetCrashed")
-      LOG(ERROR) << "Unknown event: " << method;
+      DVLOG(2) << "Unknown event: " << method;
     return false;
   }
   if (!it->second.is_null()) {
