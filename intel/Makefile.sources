@@ -1,4 +1,5 @@
 LIBDRM_INTEL_FILES := \
+	i915_pciids.h \
 	intel_bufmgr.c \
 	intel_bufmgr_priv.h \
 	intel_bufmgr_fake.c \
