@@ -244,17 +244,6 @@ void DrmThread::OnPlanesReadyForPageFlip(
   }
 }
 
-void DrmThread::GetVSyncParameters(
-    gfx::AcceleratedWidget widget,
-    const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
-  DrmWindow* window = screen_manager_->GetWindow(widget);
-  // No need to call the callback if there isn't a window since the vsync
-  // provider doesn't require the callback to be called if there isn't a vsync
-  // data source.
-  if (window)
-    window->GetVSyncParameters(callback);
-}
-
 void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
