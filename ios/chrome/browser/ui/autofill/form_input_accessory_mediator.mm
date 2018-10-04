@@ -164,7 +164,9 @@
 }
 
 - (void)keyboardDidHide {
-  [self reset];
+  if (_webState && _webState->IsVisible()) {
+    [self reset];
+  }
 }
 
 #pragma mark - FormActivityObserver
@@ -198,6 +200,11 @@
 
 #pragma mark - CRWWebStateObserver
 
+- (void)webStateWasShown:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  [self.consumer continueCustomKeyboardView];
+}
+
 - (void)webStateWasHidden:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   // On some iPhone with newers iOS (>11.3) when a view controller is presented,
@@ -209,6 +216,8 @@
   // element gets the focus. On iPad the keyboard stays dismissed.
   if (IsIPadIdiom()) {
     [self reset];
+  } else {
+    [self.consumer pauseCustomKeyboardView];
   }
 }
 
@@ -229,6 +238,7 @@
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(int)reason {
+  [self reset];
   [self updateWithNewWebState:newWebState];
 }
 
@@ -289,7 +299,7 @@
 // Resets the current provider, the consumer view and the navigation handler. As
 // well as reenables suggestions.
 - (void)reset {
-  [self.consumer restoreKeyboardView];
+  [self.consumer restoreOriginalKeyboardView];
   [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryHandler reset];
 
@@ -400,7 +410,7 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
 // begins editing, reset ourselves so that we don't present our custom view over
 // the keyboard.
 - (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
-  [self reset];
+  [self.consumer pauseCustomKeyboardView];
 }
 
 #pragma mark - Tests
