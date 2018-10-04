@@ -48,16 +48,16 @@ class PreviewsHints {
   void Initialize();
 
   // Whether the URL is whitelisted for the given previews type. If so,
-  // |out_inflation_percent| will be populated if meta data available for it.
+  // |out_inflation_percent| will be populated if metadata is available for it.
   // This first checks the top-level whitelist and, if not whitelisted there,
   // it will check the HintCache for having a loaded, matching PageHint that
   // whitelists it.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
-                     int* out_inflation_percent);
+                     int* out_inflation_percent) const;
 
   // Whether the URL is blacklisted for the given previews type.
-  bool IsBlacklisted(const GURL& url, PreviewsType type);
+  bool IsBlacklisted(const GURL& url, PreviewsType type) const;
 
   // Returns whether |url| may have PageHints and triggers asynchronous load
   // of such hints are not currently available synchronously. |callback| is
@@ -69,6 +69,20 @@ class PreviewsHints {
   friend class PreviewsHintsTest;
 
   PreviewsHints();
+
+  // Returns whether |url| is whitelisted in |whitelist_|. If it is, then
+  // |out_inflation_percent| will be populated if metadata is available for it.
+  // NOTE: PreviewsType::RESOURCE_LOADING_HINTS cannot be whitelisted at the
+  // top-level.
+  bool IsWhitelistedAtTopLevel(const GURL& url,
+                               PreviewsType type,
+                               int* out_inflation_percent) const;
+  // Returns whether |url| is whitelisted in the page hints contained within
+  // |hint_cache_|. If it is, then |out_inflation_percent| will be populated if
+  // metadata is available for it.
+  bool IsWhitelistedInPageHints(const GURL& url,
+                                PreviewsType type,
+                                int* out_inflation_percent) const;
 
   // Parses optimization filters from |config| and populates corresponding
   // supported blacklists in this object.

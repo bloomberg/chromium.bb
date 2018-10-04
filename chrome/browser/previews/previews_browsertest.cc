@@ -298,7 +298,7 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
   void SetNoScriptWhitelist(
       std::vector<std::string> whitelisted_noscript_sites) {
     const optimization_guide::ComponentInfo& component_info =
-        test_component_creator_.CreateComponentInfoWithWhitelist(
+        test_component_creator_.CreateComponentInfoWithTopLevelWhitelist(
             optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites);
     g_browser_process->optimization_guide_service()->ProcessHints(
         component_info);
