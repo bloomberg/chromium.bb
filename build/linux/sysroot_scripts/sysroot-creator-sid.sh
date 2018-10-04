@@ -217,6 +217,8 @@ DEBIAN_PACKAGES="\
   libpcre3-dev
   libpcre32-3
   libpcrecpp0v5
+  libpipewire-0.2-1
+  libpipewire-0.2-dev
   libpixman-1-0
   libpixman-1-dev
   libpng-dev
@@ -236,6 +238,7 @@ DEBIAN_PACKAGES="\
   libsndfile1
   libsoup-gnome2.4-1
   libsoup2.4-1
+  libspa-lib-0.1-dev
   libspeechd-dev
   libspeechd2
   libsqlite3-0
