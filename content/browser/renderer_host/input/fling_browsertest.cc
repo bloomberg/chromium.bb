@@ -92,7 +92,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
   void LoadPageWithOOPIF() {
     // navigate main frame to URL.
     GURL main_url(embedded_test_server()->GetURL(
-        "a.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
+        "a.com", "/frame_tree/page_with_positioned_frame.html"));
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
     // Navigate oopif to URL.
@@ -119,21 +119,17 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
         iframe_node->current_frame_host()->GetRenderWidgetHost()->GetView());
   }
 
-  void SimulateTouchscreenFling(
-      RenderWidgetHostImpl* render_widget_host,
-      const gfx::Vector2dF& fling_velocity = gfx::Vector2dF(0.f, -2000.f)) {
+  void SimulateTouchscreenFling(RenderWidgetHostImpl* render_widget_host) {
     DCHECK(render_widget_host);
     // Send a GSB to start scrolling sequence.
-    auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        render_widget_host, blink::WebInputEvent::kGestureScrollBegin);
     blink::WebGestureEvent gesture_scroll_begin(
         blink::WebGestureEvent::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
-    gesture_scroll_begin.data.scroll_begin.delta_x_hint = fling_velocity.x();
-    gesture_scroll_begin.data.scroll_begin.delta_y_hint = fling_velocity.y();
+    gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+    gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
     const gfx::PointF scroll_location_in_widget(1, 1);
     const gfx::PointF scroll_location_in_root =
         child_view_ ? child_view_->TransformPointToRootCoordSpaceF(
@@ -146,31 +142,26 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     gesture_scroll_begin.SetPositionInWidget(scroll_location_in_widget);
     gesture_scroll_begin.SetPositionInScreen(scroll_location_in_screen);
     render_widget_host->ForwardGestureEvent(gesture_scroll_begin);
-    input_msg_watcher->WaitForAck();
 
     //  Send a GFS.
     blink::WebGestureEvent gesture_fling_start(
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
-    gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
-    gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
+    gesture_fling_start.data.fling_start.velocity_x = 0.f;
+    gesture_fling_start.data.fling_start.velocity_y = -2000.f;
     gesture_fling_start.SetPositionInWidget(scroll_location_in_widget);
     gesture_fling_start.SetPositionInScreen(scroll_location_in_screen);
     render_widget_host->ForwardGestureEvent(gesture_fling_start);
   }
 
-  void SimulateTouchpadFling(
-      RenderWidgetHostImpl* render_widget_host,
-      const gfx::Vector2dF& fling_velocity = gfx::Vector2dF(0.f, -2000.f)) {
+  void SimulateTouchpadFling(RenderWidgetHostImpl* render_widget_host) {
     DCHECK(render_widget_host);
     // Send a wheel event to start scrolling sequence.
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        render_widget_host, blink::WebInputEvent::kMouseWheel);
+        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
     blink::WebMouseWheelEvent wheel_event =
-        SyntheticWebMouseWheelEventBuilder::Build(
-            10, 10, fling_velocity.x() / 1000, fling_velocity.y() / 1000, 0,
-            true);
+        SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     const gfx::PointF position_in_widget(1, 1);
     const gfx::PointF position_in_root =
@@ -191,8 +182,8 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
     gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
-    gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
-    gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
+    gesture_fling_start.data.fling_start.velocity_x = 0.f;
+    gesture_fling_start.data.fling_start.velocity_y = -2000.f;
     gesture_fling_start.SetPositionInWidget(position_in_widget);
     gesture_fling_start.SetPositionInScreen(position_in_screen);
     render_widget_host->ForwardGestureEvent(gesture_fling_start);
@@ -221,29 +212,23 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     run_loop.Run();
   }
 
-  void WaitForOOPIFScroll(FrameTreeNode* iframe_node,
-                          int target_scroll_offset = 100,
-                          bool upward = false) {
-    DCHECK(iframe_node);
+  void WaitForChildScroll() {
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    ASSERT_EQ(1U, root->child_count());
+    FrameTreeNode* iframe_node = root->child_at(0);
     int scroll_top = EvalJs(iframe_node->current_frame_host(), "window.scrollY")
                          .ExtractDouble();
-
-    while ((upward && scroll_top > target_scroll_offset) ||
-           (!upward && scroll_top < target_scroll_offset)) {
+    // scrollTop > 0 is not enough since the first progressFling is called from
+    // FlingController::ProcessGestureFlingStart. Wait for scrollTop to exceed
+    // 100 pixels to make sure that ProgressFling has been called through
+    // FlingScheduler at least once.
+    while (scroll_top < 100) {
       GiveItSomeTime();
       scroll_top = EvalJs(iframe_node->current_frame_host(), "window.scrollY")
                        .ExtractDouble();
     }
-  }
-  FrameTreeNode* GetRootNode() {
-    return static_cast<WebContentsImpl*>(shell()->web_contents())
-        ->GetFrameTree()
-        ->root();
-  }
-  FrameTreeNode* GetChildNode() {
-    FrameTreeNode* root = GetRootNode();
-    // ASSERT_EQ(1U, root->child_count());
-    return root->child_at(0);
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -296,44 +281,12 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFlingInOOPIF) {
   LoadPageWithOOPIF();
   SimulateTouchscreenFling(child_view_->host());
-  WaitForOOPIFScroll(GetChildNode());
+  WaitForChildScroll();
 }
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFlingInOOPIF) {
   LoadPageWithOOPIF();
-  SimulateTouchpadFling(child_view_->host());
-  WaitForOOPIFScroll(GetChildNode());
-}
-IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       TouchscreenFlingBubblesFromOOPIF) {
-  LoadPageWithOOPIF();
-  // Scroll the parent down so that it is scrollable upward.
-  EXPECT_TRUE(
-      ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
-  // We expect to have window.scrollY == 20 after scrolling but with zoom for
-  // dsf enabled on android we get window.scrollY == 19 (see
-  // https://crbug.com/891860).
-  WaitForOOPIFScroll(GetRootNode(), 19);
-
-  // Fling and wait for the parent to scroll upward.
-  gfx::Vector2d fling_velocity(0, 2000);
-  SimulateTouchscreenFling(child_view_->host(), fling_velocity);
-  WaitForOOPIFScroll(GetRootNode(), 15, true /* upward */);
-}
-IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       TouchpadFlingBubblesFromOOPIF) {
-  LoadPageWithOOPIF();
-  // Scroll the parent down so that it is scrollable upward.
-  EXPECT_TRUE(
-      ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
-  // We expect to have window.scrollY == 20 after scrolling but with zoom for
-  // dsf enabled on android we get window.scrollY == 19 (see
-  // https://crbug.com/891860).
-  WaitForOOPIFScroll(GetRootNode(), 19);
-
-  // Fling and wait for the parent to scroll upward.
-  gfx::Vector2d fling_velocity(0, 2000);
-  SimulateTouchpadFling(child_view_->host(), fling_velocity);
-  WaitForOOPIFScroll(GetRootNode(), 15, true /* upward */);
+  SimulateTouchscreenFling(child_view_->host());
+  WaitForChildScroll();
 }
 
 // Disabled on MacOS because it doesn't support touchscreen scroll.

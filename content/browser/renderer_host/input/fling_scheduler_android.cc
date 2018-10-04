@@ -50,6 +50,14 @@ void FlingSchedulerAndroid::DidStopFlingingOnBrowser(
   host_->DidStopFlinging();
 }
 
+bool FlingSchedulerAndroid::NeedsBeginFrameForFlingProgress() {
+  ui::WindowAndroid* window = GetRootWindow();
+  // If the root window does not have a Compositor (happens on Android
+  // WebView), we'll never receive an OnAnimate call. In this case fall back
+  // to BeginFrames coming from the host.
+  return !window || !window->GetCompositor();
+}
+
 void FlingSchedulerAndroid::ProgressFlingOnBeginFrameIfneeded(
     base::TimeTicks current_time) {
   // If a WindowAndroid is being observed, there is no need for BeginFrames
