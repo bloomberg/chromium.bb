@@ -94,7 +94,22 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   const GeometryMapperTransformCache& destination_cache =
       destination->GetTransformCache();
 
-  // Case 1: Check if source and destination are known to be coplanar.
+  // Case 1a (fast path of case 1b): check if source and destination are under
+  // the same 2d translation root.
+  if (source_cache.root_of_2d_translation() ==
+      destination_cache.root_of_2d_translation()) {
+    success = true;
+    if (source == destination_cache.root_of_2d_translation())
+      return destination_cache.from_2d_translation_root();
+    if (destination == source_cache.root_of_2d_translation())
+      return source_cache.to_2d_translation_root();
+    temp = destination_cache.from_2d_translation_root();
+    temp.Translate(source_cache.to_2d_translation_root().E(),
+                   source_cache.to_2d_translation_root().F());
+    return temp;
+  }
+
+  // Case 1b: Check if source and destination are known to be coplanar.
   // Even if destination may have invertible screen projection,
   // this formula is likely to be numerically more stable.
   if (source_cache.plane_root() == destination_cache.plane_root()) {
@@ -111,6 +126,9 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   // Case 2: Check if we can fallback to the canonical definition of
   // flatten(destination_to_screen)^-1 * flatten(source_to_screen)
   // If flatten(destination_to_screen)^-1 is invalid, we are out of luck.
+  // Screen transform data are updated lazily because they are rarely used.
+  source->UpdateScreenTransform();
+  destination->UpdateScreenTransform();
   if (!destination_cache.projection_from_screen_is_valid()) {
     success = false;
     return identity;
