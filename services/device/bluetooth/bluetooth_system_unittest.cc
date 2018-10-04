@@ -19,6 +19,10 @@
 
 namespace device {
 
+constexpr const char kFooObjectPathStr[] = "fake/hci0";
+
+namespace {
+
 // Exposes high-level methods to simulate Bluetooth events e.g. a new adapter
 // was added, adapter power state changed, etc.
 //
@@ -60,14 +64,26 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   TestBluetoothAdapterClient() = default;
   ~TestBluetoothAdapterClient() override = default;
 
-  // Simulates a new adapter being added to the system.
-  void SimulateAdapterAdded() {
-    static int next_adapter_index = 0;
-    dbus::ObjectPath adapter_object_path(
-        base::StringPrintf("fake/hci%d", next_adapter_index++));
+  // Simulates a new adapter with |object_path_str|. Its properties are empty,
+  // 0, or false.
+  void SimulateAdapterAdded(const std::string& object_path_str) {
+    dbus::ObjectPath object_path(object_path_str);
 
-    DCHECK(!base::ContainsValue(adapter_object_paths_, adapter_object_path));
-    adapter_object_paths_.push_back(adapter_object_path);
+    ObjectPathToProperties::iterator it;
+    bool was_inserted;
+    std::tie(it, was_inserted) = adapter_object_paths_to_properties_.emplace(
+        object_path,
+        base::BindRepeating(&TestBluetoothAdapterClient::OnPropertyChanged,
+                            base::Unretained(this), object_path));
+    DCHECK(was_inserted);
+  }
+
+  // Simulates adapter at |object_path_str| changing its powered state to
+  // |powered|.
+  void SimulateAdapterPowerStateChanged(const std::string& object_path_str,
+                                        bool powered) {
+    GetProperties(dbus::ObjectPath(object_path_str))
+        ->powered.ReplaceValue(powered);
   }
 
   // BluetoothAdapterClient:
@@ -83,13 +99,19 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   }
 
   std::vector<dbus::ObjectPath> GetAdapters() override {
-    return std::vector<dbus::ObjectPath>(adapter_object_paths_.begin(),
-                                         adapter_object_paths_.end());
+    std::vector<dbus::ObjectPath> object_paths;
+    for (const auto& object_path_to_property :
+         adapter_object_paths_to_properties_) {
+      object_paths.push_back(object_path_to_property.first);
+    }
+    return object_paths;
   }
 
   Properties* GetProperties(const dbus::ObjectPath& object_path) override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    auto it = adapter_object_paths_to_properties_.find(object_path);
+    if (it == adapter_object_paths_to_properties_.end())
+      return nullptr;
+    return &(it->second);
   }
 
   void StartDiscovery(const dbus::ObjectPath& object_path,
@@ -145,10 +167,20 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   }
 
  private:
-  std::vector<dbus::ObjectPath> adapter_object_paths_;
+  void OnPropertyChanged(const dbus::ObjectPath& object_path,
+                         const std::string& property_name) {
+    for (auto& observer : observers_) {
+      observer.AdapterPropertyChanged(object_path, property_name);
+    }
+  }
+
+  using ObjectPathToProperties = std::map<dbus::ObjectPath, Properties>;
+  ObjectPathToProperties adapter_object_paths_to_properties_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 };
+
+}  // namespace
 
 class BluetoothSystemTest : public DeviceServiceTestBase,
                             public mojom::BluetoothSystemClient {
@@ -231,9 +263,10 @@ TEST_F(BluetoothSystemTest, GetState_NoAdapter) {
 }
 
 TEST_F(BluetoothSystemTest, GetState_PoweredOffAdapter) {
-  auto system = CreateBluetoothSystem();
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  // Added adapters are Off by default.
 
-  test_bluetooth_adapter_client_->SimulateAdapterAdded();
+  auto system = CreateBluetoothSystem();
 
   base::RunLoop run_loop;
   system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
@@ -242,6 +275,22 @@ TEST_F(BluetoothSystemTest, GetState_PoweredOffAdapter) {
   run_loop.Run();
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
+}
+
+TEST_F(BluetoothSystemTest, GetState_PoweredOnAdapter) {
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, true);
+
+  auto system = CreateBluetoothSystem();
+
+  base::RunLoop run_loop;
+  system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                  base::Unretained(this),
+                                  run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
 }
 
 }  // namespace device
