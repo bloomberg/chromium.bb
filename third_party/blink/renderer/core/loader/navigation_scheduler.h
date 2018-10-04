@@ -86,6 +86,7 @@ class CORE_EXPORT NavigationScheduler final
   void Schedule(ScheduledNavigation*);
 
   static bool MustReplaceCurrentItem(LocalFrame* target_frame);
+  base::TimeTicks InputTimestamp();
 
   Member<LocalFrame> frame_;
   TaskHandle navigate_task_handle_;

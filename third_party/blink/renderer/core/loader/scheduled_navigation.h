@@ -31,7 +31,8 @@ class ScheduledNavigation
   ScheduledNavigation(Reason,
                       double delay,
                       Document* origin_document,
-                      bool is_location_change);
+                      bool is_location_change,
+                      base::TimeTicks input_timestamp);
   virtual ~ScheduledNavigation();
 
   virtual void Fire(LocalFrame*) = 0;
@@ -45,6 +46,7 @@ class ScheduledNavigation
   Document* OriginDocument() const { return origin_document_.Get(); }
   bool IsLocationChange() const { return is_location_change_; }
   std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator();
+  base::TimeTicks InputTimestamp() const { return input_timestamp_; }
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(origin_document_);
@@ -59,6 +61,7 @@ class ScheduledNavigation
   Member<Document> origin_document_;
   bool is_location_change_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
+  base::TimeTicks input_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledNavigation);
 };
