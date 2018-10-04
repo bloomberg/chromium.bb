@@ -65,7 +65,6 @@ class DownloadOfflineContentProvider
   download::AllDownloadItemNotifier download_notifier_;
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
-  std::string name_space_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;
 
