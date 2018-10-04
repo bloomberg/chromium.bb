@@ -9,10 +9,13 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/network/public/cpp/network_switches.h"
+
+namespace content {
+class RenderFrameHost;
+class WebContents;
+}  // namespace content
 
 namespace captured_sites_test_utils {
 
@@ -118,6 +121,10 @@ class IFrameWaiter : public content::WebContentsObserver {
 
   // content::WebContentsObserver
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void FrameNameChanged(content::RenderFrameHost* render_frame_host,
+                        const std::string& name) override;
 
   QueryType query_type_;
   base::RunLoop run_loop_;
