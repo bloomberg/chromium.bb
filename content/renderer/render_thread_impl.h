@@ -17,7 +17,6 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
@@ -29,7 +28,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
@@ -161,7 +159,6 @@ class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
       public blink::scheduler::WebRAILModeObserver,
-      public base::MemoryCoordinatorClient,
       public mojom::Renderer,
       public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
@@ -486,9 +483,6 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
-  // ChildMemoryCoordinatorDelegate implementation.
-  void OnTrimMemoryImmediately() override;
-
   struct RendererMemoryMetrics {
     size_t partition_alloc_kb;
     size_t blink_gc_kb;
@@ -520,10 +514,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void RecordComputedAction(const std::string& action) override;
 
   bool IsMainThread();
-
-  // base::MemoryCoordinatorClient implementation:
-  void OnMemoryStateChange(base::MemoryState state) override;
-  void OnPurgeMemory() override;
 
   void RecordPurgeMemory(RendererMemoryMetrics before);
 
