@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -67,7 +68,9 @@ ShortcutsProviderExtensionTest::ShortcutsProviderExtensionTest()
 
 void ShortcutsProviderExtensionTest::SetUp() {
   ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting);
+      &profile_,
+      base::BindRepeating(
+          &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting));
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
