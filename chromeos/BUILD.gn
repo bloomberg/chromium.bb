@@ -494,6 +494,8 @@ component("chromeos") {
     "settings/cros_settings_names.h",
     "settings/cros_settings_provider.cc",
     "settings/cros_settings_provider.h",
+    "settings/system_settings_provider.cc",
+    "settings/system_settings_provider.h",
     "settings/timezone_settings.cc",
     "settings/timezone_settings.h",
     "settings/timezone_settings_helper.cc",
