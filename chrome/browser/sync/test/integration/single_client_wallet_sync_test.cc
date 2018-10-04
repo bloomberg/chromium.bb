@@ -992,10 +992,10 @@ class SingleClientWalletSecondaryAccountSyncTest
 };
 
 // ChromeOS doesn't support changes to the primary account after startup, so
-// this test doesn't apply.
+// these secondary-account-related tests don't apply.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
-                       SwitchesFromAccountToProfileStorage) {
+                       SwitchesFromAccountToProfileStorageOnSyncOptIn) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
@@ -1056,7 +1056,234 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   EXPECT_EQ(nullptr, GetPaymentsCustomerData(account_data).get());
   EXPECT_NE(nullptr, GetPaymentsCustomerData(profile_data).get());
 }
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientWalletSecondaryAccountSyncTest,
+    SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
+
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
+
+  // Set up Sync in transport mode for a non-primary account.
+  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should use (ephemeral) account storage.
+  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  auto account_data = GetAccountWebDataService(0);
+  ASSERT_NE(nullptr, account_data);
+  auto profile_data = GetProfileWebDataService(0);
+  ASSERT_NE(nullptr, profile_data);
+
+  // Check that the card is stored in the account storage (ephemeral), but not
+  // in the profile storage (persisted).
+  EXPECT_EQ(1U, GetServerCards(account_data).size());
+  EXPECT_EQ(0U, GetServerCards(profile_data).size());
+
+  // Simulate the user opting in to full Sync: First, make the account primary.
+  secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+
+  // Now start actually configuring Sync.
+  auto setup_handle = GetSyncService(0)->GetSetupInProgressHandle();
+
+  // Adding a primary account triggers a restart of the Sync engine, so it
+  // should now be initializing again.
+  ASSERT_EQ(syncer::SyncService::TransportState::INITIALIZING,
+            GetSyncService(0)->GetTransportState());
+
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
+      /*skip_passphrase_verification=*/false));
+
+  // Since we're still holding on to the setup-in-progress handle, the data
+  // types can't be configured yet.
+  ASSERT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
+            GetSyncService(0)->GetTransportState());
+
+  GetSyncService(0)->OnUserChoseDatatypes(
+      /*sync_everything=*/false, syncer::ModelTypeSet(syncer::AUTOFILL));
+
+  // Once the user finishes the setup, we can actually configure.
+  setup_handle.reset();
+  ASSERT_EQ(syncer::SyncService::TransportState::CONFIGURING,
+            GetSyncService(0)->GetTransportState());
+
+  GetSyncService(0)->SetFirstSetupComplete();
+
+  // Wait for Sync to get reconfigured into feature mode.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched to persistent storage.
+  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // The card should now be in the profile storage (persisted).
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerCards(profile_data).size());
+}
 #endif  // !defined(OS_CHROMEOS)
+
+// This tests that switching between Sync-the-feature and
+// Sync-standalone-transport properly migrates server credit cards between the
+// profile (i.e. persisted) and account (i.e. ephemeral) storage.
+// When turning off Sync-the-feature via SyncService::RequestStop, you can
+// specify either KEEP_DATA or CLEAR_DATA. For full coverage, we test all
+// transitions, and each time verify that the card is in the correct storage:
+// 1. Start out in Sync-the-feature mode -> profile storage.
+// 2. RequestStop(KEEP_DATA) -> account storage.
+// 3. Enable Sync-the-feature again -> profile storage.
+// 4. RequestStop(CLEAR_DATA) -> account storage.
+// 5. Enable Sync-the-feature again -> profile storage.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncStandaloneTransport,
+                            switches::kSyncUSSAutofillWalletData,
+                            autofill::features::
+                                kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
+
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
+
+  // STEP 1. Set up Sync in full feature mode.
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should use the regular persisted (non-account) storage.
+  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  auto account_data = GetAccountWebDataService(0);
+  ASSERT_NE(nullptr, account_data);
+  auto profile_data = GetProfileWebDataService(0);
+  ASSERT_NE(nullptr, profile_data);
+
+  // Check that the card is stored in the profile storage (persisted), but not
+  // in the account storage (ephemeral).
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerCards(profile_data).size());
+
+  // STEP 2. Turn off Sync-the-feature temporarily (e.g. the Sync feature toggle
+  // on Android), i.e. leave the Sync data around.
+  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+
+  // Wait for Sync to get reconfigured into transport mode.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched to ephemeral storage.
+  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // The card should now be in the account storage (ephemeral). Note that even
+  // though we specified KEEP_DATA above, the card is *not* in the profile
+  // storage (persisted) anymore, because AUTOFILL_WALLET_DATA is special-cased
+  // to always clear its data when Sync is turned off.
+  EXPECT_EQ(1U, GetServerCards(account_data).size());
+  EXPECT_EQ(0U, GetServerCards(profile_data).size());
+
+  // STEP 3. Turn Sync-the-feature on again.
+  GetSyncService(0)->RequestStart();
+
+  // Wait for Sync to get reconfigured into full feature mode again.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched back to persistent storage.
+  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // And the card should be in the profile i.e. persistent storage again.
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerCards(profile_data).size());
+
+  // STEP 4. Turn off Sync-the-feature again, but this time clear data.
+  GetSyncService(0)->RequestStop(syncer::SyncService::CLEAR_DATA);
+
+  // Wait for Sync to get reconfigured into transport mode.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched to ephemeral storage.
+  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // The card should now be in the account storage (ephemeral).
+  EXPECT_EQ(1U, GetServerCards(account_data).size());
+  EXPECT_EQ(0U, GetServerCards(profile_data).size());
+
+  // STEP 5. Turn Sync-the-feature on again.
+  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->SetFirstSetupComplete();
+
+  // Wait for Sync to get reconfigured into full feature mode again.
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // PersonalDataManager should have switched back to persistent storage.
+  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+
+  // And the card should be in the profile i.e. persistent storage again.
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+  EXPECT_EQ(1U, GetServerCards(profile_data).size());
+}
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTest,
