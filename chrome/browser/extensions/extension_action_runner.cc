@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 
 #include <memory>
+#include <tuple>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -169,7 +170,12 @@ void ExtensionActionRunner::OnActiveTabPermissionGranted(
 }
 
 void ExtensionActionRunner::OnWebRequestBlocked(const Extension* extension) {
-  web_request_blocked_.insert(extension->id());
+  bool inserted = false;
+  std::tie(std::ignore, inserted) =
+      web_request_blocked_.insert(extension->id());
+  if (inserted)
+    NotifyChange(extension);
+
   if (test_observer_)
     test_observer_->OnBlockedActionAdded();
 }
