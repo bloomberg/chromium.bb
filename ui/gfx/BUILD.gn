@@ -25,15 +25,13 @@ source_set("gfx_export") {
 
 jumbo_component("geometry_skia") {
   sources = [
+    "geometry_skia_export.h",
     "skia_util.cc",
     "skia_util.h",
     "transform.cc",
     "transform.h",
     "transform_util.cc",
     "transform_util.h",
-  ]
-  public_deps = [
-    ":gfx_export",
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
@@ -42,7 +40,7 @@ jumbo_component("geometry_skia") {
     "//skia",
     "//ui/gfx/geometry",
   ]
-  defines = [ "GFX_IMPLEMENTATION" ]
+  defines = [ "GEOMETRY_SKIA_IMPLEMENTATION" ]
 }
 
 jumbo_component("gfx") {
