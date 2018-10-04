@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
@@ -203,6 +203,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // credentials.
   std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate();
 
+  // Helper function for calling form parsing and logging results if logging is
+  // active.
+  std::unique_ptr<autofill::PasswordForm> ParseFormAndMakeLogging(
+      const autofill::FormData& form,
+      FormDataParser::Mode mode);
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -289,8 +295,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // form.
   UserAction user_action_ = UserAction::kNone;
 
-  base::Optional<FormPredictions> predictions_;
-
   // If Chrome has already autofilled a few times, it is probable that autofill
   // is triggered by programmatic changes in the page. We set a maximum number
   // of times that Chrome will autofill to avoid being stuck in an infinite
@@ -307,6 +311,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   // Time when stored credentials are received from the store. Used for metrics.
   base::TimeTicks received_stored_credentials_time_;
+
+  // Used to transform FormData into PasswordForms.
+  FormDataParser parser_;
 
   base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_;
 

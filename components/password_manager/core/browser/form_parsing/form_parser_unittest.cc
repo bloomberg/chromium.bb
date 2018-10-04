@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,14 +32,16 @@ namespace password_manager {
 
 namespace {
 
+using UsernameDetectionMethod = FormDataParser::UsernameDetectionMethod;
+
 // Use this value in FieldDataDescription.value to get an arbitrary unique value
 // generated in GetFormDataAndExpectation().
 constexpr char kNonimportantValue[] = "non-important unique";
 
 // Use this in FieldDataDescription below to mark the expected username and
-// password fields. The *_FILLING variants apply to FormParsingMode::FILLING
-// only, the *_SAVING variants to FormParsingMode::SAVING only, the suffix-less
-// variants to both.
+// password fields. The *_FILLING variants apply to
+// FormDataParser::Mode::kFilling only, the *_SAVING variants to
+// FormDataParser::Mode::kSaving only, the suffix-less variants to both.
 enum class ElementRole {
   NONE,
   USERNAME_FILLING,
@@ -303,17 +306,19 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
     ParseResultIds save_result;
     const FormData form_data = GetFormDataAndExpectation(
         test_case.fields, &predictions, &fill_result, &save_result);
-    for (auto mode : {FormParsingMode::FILLING, FormParsingMode::SAVING}) {
+    FormDataParser parser;
+    parser.set_predictions(std::move(predictions));
+    for (auto mode :
+         {FormDataParser::Mode::kFilling, FormDataParser::Mode::kSaving}) {
       SCOPED_TRACE(
           testing::Message("Test description: ")
           << test_case.description_for_logging << ", parsing mode = "
-          << (mode == FormParsingMode::FILLING ? "Filling" : "Saving"));
+          << (mode == FormDataParser::Mode::kFilling ? "Filling" : "Saving"));
 
-      std::unique_ptr<PasswordForm> parsed_form =
-          ParseFormData(form_data, &predictions, mode);
+      std::unique_ptr<PasswordForm> parsed_form = parser.Parse(form_data, mode);
 
       const ParseResultIds& expected_ids =
-          mode == FormParsingMode::FILLING ? fill_result : save_result;
+          mode == FormDataParser::Mode::kFilling ? fill_result : save_result;
 
       if (expected_ids.IsEmpty()) {
         EXPECT_FALSE(parsed_form) << "Expected no parsed results";

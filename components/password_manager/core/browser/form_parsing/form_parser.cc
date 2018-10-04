@@ -272,7 +272,7 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
 // |first_relevant_password|.
 std::vector<const FormFieldData*> GetRelevantPasswords(
     const std::vector<ProcessedField>& processed_fields,
-    FormParsingMode mode,
+    FormDataParser::Mode mode,
     Interactability best_interactability,
     std::vector<ProcessedField>::const_iterator* first_relevant_password) {
   DCHECK(first_relevant_password);
@@ -280,7 +280,7 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
   std::vector<const FormFieldData*> result;
   result.reserve(processed_fields.size());
 
-  const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
+  const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
 
   for (auto it = processed_fields.begin(); it != processed_fields.end(); ++it) {
     const ProcessedField& processed_field = *it;
@@ -384,12 +384,12 @@ void LocateSpecificPasswords(const std::vector<const FormFieldData*>& passwords,
 const FormFieldData* FindUsernameFieldBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
     const std::vector<ProcessedField>::const_iterator& first_relevant_password,
-    FormParsingMode mode,
+    FormDataParser::Mode mode,
     Interactability best_interactability) {
   DCHECK(first_relevant_password != processed_fields.end());
 
   // For saving filter out empty fields.
-  const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
+  const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
 
   // Search through the text input fields preceding |first_relevant_password|
   // and find the closest one focusable and the closest one in general.
@@ -435,7 +435,7 @@ uint32_t ExtractUniqueId(const FormFieldData* field) {
 // kinds of analysis.
 void ParseUsingBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
-    FormParsingMode mode,
+    FormDataParser::Mode mode,
     SignificantFields* found_fields,
     Interactability* username_max) {
   // If there is both the username and the minimal set of fields to build a
@@ -633,7 +633,7 @@ const FormFieldData* FindUsernameInPredictions(
 // |form_predictions| has |may_use_prefilled_placeholder| == true for the
 // username field.
 bool GetMayUsePrefilledPlaceholder(
-    const FormPredictions* form_predictions,
+    const base::Optional<FormPredictions>& form_predictions,
     const SignificantFields& significant_fields) {
   if (!form_predictions || !significant_fields.username)
     return false;
@@ -658,7 +658,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
     const SignificantFields& significant_fields,
     autofill::ValueElementVector all_possible_passwords,
     autofill::ValueElementVector all_possible_usernames,
-    const FormPredictions* form_predictions) {
+    const base::Optional<FormPredictions>& form_predictions) {
   if (!significant_fields.HasPasswords())
     return nullptr;
 
@@ -686,10 +686,13 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
 
 }  // namespace
 
-std::unique_ptr<PasswordForm> ParseFormData(
+FormDataParser::FormDataParser() = default;
+
+FormDataParser::~FormDataParser() = default;
+
+std::unique_ptr<PasswordForm> FormDataParser::Parse(
     const autofill::FormData& form_data,
-    const FormPredictions* form_predictions,
-    FormParsingMode mode) {
+    Mode mode) {
   autofill::ValueElementVector all_possible_passwords;
   autofill::ValueElementVector all_possible_usernames;
   std::vector<ProcessedField> processed_fields = ProcessFields(
@@ -703,9 +706,8 @@ std::unique_ptr<PasswordForm> ParseFormData(
       UsernameDetectionMethod::kNoUsernameDetected;
 
   // (1) First, try to parse with server predictions.
-  if (form_predictions) {
-    significant_fields =
-        ParseUsingPredictions(processed_fields, *form_predictions);
+  if (predictions_) {
+    significant_fields = ParseUsingPredictions(processed_fields, *predictions_);
     if (significant_fields && significant_fields->username) {
       username_detection_method =
           UsernameDetectionMethod::kServerSidePrediction;
@@ -747,7 +749,7 @@ std::unique_ptr<PasswordForm> ParseFormData(
     const FormFieldData* username_field_by_context = FindUsernameInPredictions(
         form_data.username_predictions, processed_fields, username_max);
     if (username_field_by_context &&
-        !(mode == FormParsingMode::SAVING &&
+        !(mode == FormDataParser::Mode::kSaving &&
           username_field_by_context->value.empty())) {
       significant_fields->username = username_field_by_context;
       if (username_detection_method ==
@@ -764,9 +766,9 @@ std::unique_ptr<PasswordForm> ParseFormData(
                             username_detection_method,
                             UsernameDetectionMethod::kCount);
 
-  return AssemblePasswordForm(
-      form_data, *significant_fields, std::move(all_possible_passwords),
-      std::move(all_possible_usernames), form_predictions);
+  return AssemblePasswordForm(form_data, *significant_fields,
+                              std::move(all_possible_passwords),
+                              std::move(all_possible_usernames), predictions_);
 }
 
 std::string GetSignonRealm(const GURL& url) {
