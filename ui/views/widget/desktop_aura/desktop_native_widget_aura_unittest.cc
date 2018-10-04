@@ -17,7 +17,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_processor.h"
@@ -312,7 +311,7 @@ TEST_F(DesktopNativeWidgetAuraTest, ReorderDoesntRecomputeOcclusion) {
   parent.Show();
 
   aura::Window* parent_window = parent.GetNativeWindow();
-  aura::WindowOcclusionTracker::Track(parent_window);
+  parent_window->TrackOcclusionState();
 
   View* contents_view = parent.GetContentsView();
 
@@ -335,7 +334,8 @@ TEST_F(DesktopNativeWidgetAuraTest, ReorderDoesntRecomputeOcclusion) {
   contents_view->AddChildView(host_view3);
 
   // Reorder child views. Expect occlusion to only be recomputed once.
-  aura::test::WindowOcclusionTrackerTestApi window_occlusion_tracker_test_api;
+  aura::test::WindowOcclusionTrackerTestApi window_occlusion_tracker_test_api(
+      parent_window->env());
   const int num_times_occlusion_recomputed =
       window_occlusion_tracker_test_api.GetNumTimesOcclusionRecomputed();
   contents_view->ReorderChildView(host_view3, 0);

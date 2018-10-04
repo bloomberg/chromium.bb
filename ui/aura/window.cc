@@ -92,7 +92,7 @@ Window::Window(WindowDelegate* delegate,
 }
 
 Window::~Window() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
@@ -160,7 +160,7 @@ Window::~Window() {
 }
 
 void Window::Init(ui::LayerType layer_type) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   if (!port_owner_) {
     port_owner_ = env_->CreateWindowPort(this);
@@ -285,7 +285,7 @@ gfx::Rect Window::GetBoundsInScreen() const {
 }
 
 void Window::SetTransform(const gfx::Transform& transform) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTargetTransformChanging(this, transform);
   layer()->SetTransform(transform);
@@ -373,7 +373,7 @@ void Window::StackChildBelow(Window* child, Window* target) {
 }
 
 void Window::AddChild(Window* child) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   DCHECK(layer()) << "Parent has not been Init()ed yet.";
   DCHECK(child->layer()) << "Child has not been Init()ed yt.";
@@ -415,7 +415,7 @@ void Window::AddChild(Window* child) {
 }
 
 void Window::RemoveChild(Window* child) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   WindowObserver::HierarchyChangeParams params;
   params.target = child;
@@ -837,7 +837,7 @@ void Window::SetVisible(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;  // No change.
 
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   for (WindowObserver& observer : observers_)
     observer.OnWindowVisibilityChanging(this, visible);
@@ -912,7 +912,7 @@ void Window::StackChildRelativeTo(Window* child,
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, target->parent());
 
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   client::WindowStackingClient* stacking_client =
       client::GetWindowStackingClient();
@@ -1149,6 +1149,10 @@ bool Window::IsEmbeddingClient() const {
   return embeds_external_client_;
 }
 
+void Window::TrackOcclusionState() {
+  env_->GetWindowOcclusionTracker()->Track(this);
+}
+
 bool Window::RequiresDoubleTapGestureEvents() const {
   return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
 }
@@ -1166,7 +1170,7 @@ void Window::OnPaintLayer(const ui::PaintContext& context) {
 
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
                                   ui::PropertyChangeReason reason) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   bounds_ = layer()->bounds();
 
@@ -1183,13 +1187,13 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void Window::OnLayerOpacityChanged(ui::PropertyChangeReason reason) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowOpacitySet(this, reason);
 }
 
 void Window::OnLayerAlphaShapeChanged() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowAlphaShapeSet(this);
 }
@@ -1197,7 +1201,7 @@ void Window::OnLayerAlphaShapeChanged() {
 void Window::OnLayerTransformed(const gfx::Transform& old_transform,
                                 ui::PropertyChangeReason reason) {
   port_->OnDidChangeTransform(old_transform, layer()->transform());
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTransformed(this, reason);
 }
@@ -1263,7 +1267,7 @@ gfx::PointF Window::GetScreenLocationF(const ui::LocatedEvent& event) const {
 }
 
 std::unique_ptr<ui::Layer> Window::RecreateLayer() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   ui::LayerAnimator* const animator = layer()->GetAnimator();
   const bool was_animating_opacity =
