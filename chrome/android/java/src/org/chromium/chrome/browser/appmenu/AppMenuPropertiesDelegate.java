@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.appmenu;
 import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -130,7 +133,11 @@ public class AppMenuPropertiesDelegate {
                 forwardMenuItem.setEnabled(currentTab.canGoForward());
 
                 mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
-                mReloadMenuItem.setIcon(R.drawable.btn_reload_stop);
+                Drawable icon =
+                        AppCompatResources.getDrawable(mActivity, R.drawable.btn_reload_stop);
+                DrawableCompat.setTintList(icon,
+                        AppCompatResources.getColorStateList(mActivity, R.color.dark_mode_tint));
+                mReloadMenuItem.setIcon(icon);
                 loadingStateChanged(currentTab.isLoading());
 
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
