@@ -120,9 +120,10 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
   }
 
   // Use custom primaries, if they are representable as a "to XYZD50" matrix.
-  if (const auto* to_XYZD50 = sk_color_space.toXYZD50()) {
+  SkMatrix44 to_XYZD50{SkMatrix44::kUninitialized_Constructor};
+  if (sk_color_space.toXYZD50(&to_XYZD50)) {
     primaries_ = PrimaryID::CUSTOM;
-    SetCustomPrimaries(*to_XYZD50);
+    SetCustomPrimaries(to_XYZD50);
     return;
   }
 
