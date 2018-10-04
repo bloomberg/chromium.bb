@@ -340,6 +340,8 @@ source_set("vr_base") {
     "input_event.cc",
     "input_event.h",
     "keyboard_delegate.h",
+    "keyboard_delegate_for_testing.cc",
+    "keyboard_delegate_for_testing.h",
     "keyboard_ui_interface.h",
     "macros.h",
     "metrics/metrics_helper.cc",

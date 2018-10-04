@@ -94,6 +94,10 @@ public class TestVrShellDelegate extends VrShellDelegate {
         getVrShell().performControllerActionForTesting(elementName, actionType, position);
     }
 
+    public void performKeyboardInputForTesting(int inputType, String inputString) {
+        getVrShell().performKeyboardInputForTesting(inputType, inputString);
+    }
+
     public void registerUiOperationCallbackForTesting(
             int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
         getVrShell().registerUiOperationCallbackForTesting(

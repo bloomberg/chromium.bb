@@ -37,6 +37,7 @@ namespace vr {
 
 class VrInputConnection;
 class VrShell;
+struct KeyboardTestInput;
 
 class VrGLThread : public base::android::JavaHandlerThread,
                    public PlatformInputHandler,
@@ -158,6 +159,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::string16& title) override;
   void RemoveTab(int id, bool incognito) override;
   void RemoveAllTabs() override;
+  void PerformKeyboardInputForTesting(
+      KeyboardTestInput keyboard_input) override;
 
  protected:
   void Init() override;

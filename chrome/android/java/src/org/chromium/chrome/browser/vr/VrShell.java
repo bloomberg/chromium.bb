@@ -1251,6 +1251,12 @@ public class VrShell extends GvrLayout
                 mNativeVrShell, elementName, actionType, position.x, position.y);
     }
 
+    public void performKeyboardInputForTesting(int inputType, String inputString) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            nativePerformKeyboardInputForTesting(mNativeVrShell, inputType, inputString);
+        });
+    }
+
     public void registerUiOperationCallbackForTesting(
             int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
         assert actionType < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES;
@@ -1339,6 +1345,8 @@ public class VrShell extends GvrLayout
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
     private native void nativePerformControllerActionForTesting(
             long nativeVrShell, int elementName, int actionType, float x, float y);
+    private native void nativePerformKeyboardInputForTesting(
+            long nativeVrShell, int inputType, String inputString);
     private native void nativeSetUiExpectingActivityForTesting(
             long nativeVrShell, int quiescenceTimeoutMs);
     private native void nativeSaveNextFrameBufferToDiskForTesting(

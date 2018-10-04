@@ -17,8 +17,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
+#include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
+#include "chrome/browser/vr/keyboard_delegate_for_testing.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
@@ -69,6 +71,8 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOverflowMenuCloseAllIncognitoTabsItem;
     case UserFriendlyElementName::kExitPrompt:
       return kExitPrompt;
+    case UserFriendlyElementName::kSuggestionBox:
+      return kOmniboxSuggestions;
     default:
       NOTREACHED();
       return kNone;
@@ -607,6 +611,44 @@ gfx::Point3F Ui::GetTargetPointForTesting(UserFriendlyElementName element_name,
   direction.GetNormalized(&direction);
   return kOrigin +
          gfx::ScaleVector3d(direction, scene()->background_distance());
+}
+
+void Ui::PerformKeyboardInputForTesting(KeyboardTestInput keyboard_input) {
+  DCHECK(keyboard_delegate_);
+  if (keyboard_input.action == KeyboardTestAction::kRevertToRealKeyboard) {
+    if (using_keyboard_delegate_for_testing_) {
+      DCHECK(static_cast<KeyboardDelegateForTesting*>(keyboard_delegate_.get())
+                 ->IsQueueEmpty())
+          << "Attempted to revert to real keyboard with input still queued";
+      using_keyboard_delegate_for_testing_ = false;
+      keyboard_delegate_for_testing_.swap(keyboard_delegate_);
+      static_cast<Keyboard*>(
+          scene_->GetUiElementByName(UiElementName::kKeyboard))
+          ->SetKeyboardDelegate(keyboard_delegate_.get());
+      text_input_delegate_->SetUpdateInputCallback(
+          base::BindRepeating(&KeyboardDelegate::UpdateInput,
+                              base::Unretained(keyboard_delegate_.get())));
+    }
+    return;
+  }
+  if (!using_keyboard_delegate_for_testing_) {
+    using_keyboard_delegate_for_testing_ = true;
+    if (!keyboard_delegate_for_testing_) {
+      keyboard_delegate_for_testing_ =
+          std::make_unique<KeyboardDelegateForTesting>();
+      keyboard_delegate_for_testing_->SetUiInterface(this);
+    }
+    keyboard_delegate_for_testing_.swap(keyboard_delegate_);
+    static_cast<Keyboard*>(scene_->GetUiElementByName(UiElementName::kKeyboard))
+        ->SetKeyboardDelegate(keyboard_delegate_.get());
+    text_input_delegate_->SetUpdateInputCallback(
+        base::BindRepeating(&KeyboardDelegate::UpdateInput,
+                            base::Unretained(keyboard_delegate_.get())));
+  }
+  if (keyboard_input.action != KeyboardTestAction::kEnableMockedKeyboard) {
+    static_cast<KeyboardDelegateForTesting*>(keyboard_delegate_.get())
+        ->QueueKeyboardInputForTesting(keyboard_input);
+  }
 }
 
 ContentElement* Ui::GetContentElement() {
