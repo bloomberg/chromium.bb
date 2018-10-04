@@ -88,10 +88,12 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up 'switch to tab' button.
   if (match.ShouldShowTabMatch()) {
-    constexpr int ids_hint = IDS_OMNIBOX_TAB_SUGGEST_HINT;
-    constexpr int ids_hint_short = IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT;
+    const base::string16 hint =
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
+    const base::string16 hint_short =
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT);
     suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-        model_, this, ids_hint, ids_hint_short, omnibox::kSwitchIcon);
+        model_, this, hint, hint_short, omnibox::kSwitchIcon);
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {

@@ -74,6 +74,16 @@
     <ph name="RESULT_MODIFIED_DATE">$1<ex>12/31/2018</ex></ph> - <ph name="RESULT_PRODUCT_SOURCE">$2<ex>Google Docs</ex></ph>
   </message>
 
+  <!-- Omnibox Pedals -->
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT" desc="The button text contents to suggest pedal action, clear browsing data.">
+    Clear Data
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, clear browsing data.">
+    Clear
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, clear browsing data.">
+    Clear Chrome's browsing history data
+  </message>
 
   <!-- Accessibility labels for autocomplete match types.
        These are parameterized on the text being completed into the omnibox.
