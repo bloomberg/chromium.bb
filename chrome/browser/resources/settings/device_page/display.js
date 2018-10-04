@@ -495,6 +495,9 @@ Polymer({
    * @private
    */
   showMirror_: function(unifiedDesktopMode, displays) {
+    if (displays === undefined)
+      return false;
+
     return this.isMirrored_(displays) ||
         (!unifiedDesktopMode &&
          ((this.multiMirroringAvailable_ && displays.length > 1) ||
@@ -507,7 +510,8 @@ Polymer({
    * @private
    */
   isMirrored_: function(displays) {
-    return displays.length > 0 && !!displays[0].mirroringSourceId;
+    return displays !== undefined && displays.length > 0 &&
+        !!displays[0].mirroringSourceId;
   },
 
   /**
