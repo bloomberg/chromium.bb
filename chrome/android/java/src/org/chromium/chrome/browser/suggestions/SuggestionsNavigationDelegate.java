@@ -32,8 +32,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * Extension of {@link NativePageNavigationDelegate} with suggestions-specific methods.
  */
 public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateImpl {
-    private static final String CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER =
-            "https://goto.google.com/explore-on-content-viewer";
     private static final String NEW_TAB_URL_HELP = "https://support.google.com/chrome/?p=new_tab";
 
     public SuggestionsNavigationDelegate(ChromeActivity activity, Profile profile,
@@ -136,7 +134,9 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
         // from a page.
         if (article.mCategory == KnownCategories.CONTEXTUAL) {
             loadUrlParams.setReferrer(
-                    new Referrer(CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER, WebReferrerPolicy.ALWAYS));
+                    new Referrer(SuggestionsConfig.getReferrerUrl(
+                                         ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON),
+                            WebReferrerPolicy.ALWAYS));
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);

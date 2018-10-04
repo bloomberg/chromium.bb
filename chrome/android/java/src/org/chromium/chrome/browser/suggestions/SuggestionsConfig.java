@@ -35,10 +35,15 @@ public final class SuggestionsConfig {
     private static final String REFERRER_URL_PARAM = "referrer_url";
 
     /**
-     * Default value for referrer URL.
+     * Default value of referrer URL for content suggestions.
      * It must be kept in sync with //components/ntp_suggestions/features.cc
      */
-    private static final String DEFAULT_REFERRER_URL = "https://discover.google.com/";
+    private static final String DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL =
+            "https://discover.google.com/";
+
+    /** Default value of referrer URL for contextual suggestions. */
+    private static final String DEFAULT_CONTEXTUAL_SUGGESTIONS_REFERRER_URL =
+            "https://goto.google.com/explore-on-content-viewer";
 
     private SuggestionsConfig() {}
 
@@ -83,6 +88,19 @@ public final class SuggestionsConfig {
      * @return The value of referrer URL to use with content suggestions.
      */
     public static String getReferrerUrl(String featureName) {
+        assert ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS.equals(featureName)
+                || ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS.equals(featureName)
+                || ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON.equals(featureName);
+
+        if (ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON.equals(featureName)) {
+            return getReferrerUrlParamOrDefault(
+                    featureName, DEFAULT_CONTEXTUAL_SUGGESTIONS_REFERRER_URL);
+        }
+
+        return getReferrerUrlParamOrDefault(featureName, DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL);
+    }
+
+    private static String getReferrerUrlParamOrDefault(String featureName, String defaultValue) {
         String referrerParamValue =
                 ChromeFeatureList.getFieldTrialParamByFeature(featureName, REFERRER_URL_PARAM);
 
@@ -90,6 +108,6 @@ public final class SuggestionsConfig {
             return referrerParamValue;
         }
 
-        return DEFAULT_REFERRER_URL;
+        return defaultValue;
     }
 }
