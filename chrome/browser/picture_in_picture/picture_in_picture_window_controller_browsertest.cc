@@ -347,6 +347,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // Stop video being played Picture-in-Picture and check if that's tracked.
   window_controller()->Close(true /* should_pause_video */);
   EXPECT_FALSE(active_web_contents->HasPictureInPictureVideo());
+
+  // Reload page should not crash.
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
 }
 
 #if !defined(OS_ANDROID)
@@ -1334,12 +1337,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_FALSE(in_picture_in_picture);
-
-  // TODO(edcourtney): When the renderer process is destroyed, it calls into
-  // MediaWebContentsObserver::ExitPictureInPictureInternal which Closes the
-  // current PIP. However, this may not be a WebContents sourced PIP, so this
-  // close can be spurious.
-  EXPECT_CALL(mock_controller(), Close(_));
 }
 
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,

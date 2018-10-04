@@ -129,7 +129,7 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
-  if (window_ && window_->IsVisible()) {
+  if (media_player_id_.has_value() && window_ && window_->IsVisible()) {
     media_web_contents_observer_->OnPictureInPictureWindowResize(
         window_->GetBounds().size());
   }
@@ -200,6 +200,7 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
         new MediaPlayerDelegateMsg_EndPictureInPictureMode(
             media_player_id_->render_frame_host->GetRoutingID(),
             media_player_id_->delegate_id));
+    media_web_contents_observer_->ResetPictureInPictureVideoMediaPlayerId();
   }
 }
 
