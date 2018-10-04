@@ -40,12 +40,13 @@ InstanceIDApiTest::InstanceIDApiTest() {
 
 void InstanceIDApiTest::SetUp() {
   gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-      &gcm::FakeGCMProfileService::Build);
+      base::BindRepeating(&gcm::FakeGCMProfileService::Build));
   ExtensionApiTest::SetUp();
 }
 
 void InstanceIDApiTest::TearDown() {
-  gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
+  gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+      BrowserContextKeyedServiceFactory::TestingFactory());
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {

@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -501,7 +502,7 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
 
   void SetUp() override {
     gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        &gcm::FakeGCMProfileService::Build);
+        base::BindRepeating(&gcm::FakeGCMProfileService::Build));
     ServiceWorkerTest::SetUp();
   }
 
@@ -520,7 +521,8 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   }
 
   void TearDown() override {
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+        BrowserContextKeyedServiceFactory::TestingFactory());
     ServiceWorkerTest::TearDown();
   }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include <memory>
 
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -67,10 +68,13 @@ void RequestProxyResolvingSocketFactory(
 }
 #endif
 
-}  // namespace
+BrowserContextKeyedServiceFactory::TestingFactory& GetTestingFactory() {
+  static base::NoDestructor<BrowserContextKeyedServiceFactory::TestingFactory>
+      testing_factory;
+  return *testing_factory;
+}
 
-BrowserContextKeyedServiceFactory::TestingFactoryFunction
-    GCMProfileServiceFactory::testing_factory_ = nullptr;
+}  // namespace
 
 // static
 GCMProfileService* GCMProfileServiceFactory::GetForProfile(
@@ -90,8 +94,8 @@ GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
 
 // static
 void GCMProfileServiceFactory::SetGlobalTestingFactory(
-    BrowserContextKeyedServiceFactory::TestingFactoryFunction factory) {
-  testing_factory_ = factory;
+    BrowserContextKeyedServiceFactory::TestingFactory factory) {
+  GetTestingFactory() = std::move(factory);
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
@@ -112,8 +116,9 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
 
-  if (testing_factory_)
-    return testing_factory_(context).release();
+  TestingFactory& testing_factory = GetTestingFactory();
+  if (testing_factory)
+    return testing_factory.Run(context).release();
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
       base::CreateSequencedTaskRunnerWithTraits(

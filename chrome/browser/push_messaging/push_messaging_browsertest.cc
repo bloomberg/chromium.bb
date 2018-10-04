@@ -138,7 +138,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(https_server_->Start());
 
     gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        &gcm::FakeGCMProfileService::Build);
+        base::BindRepeating(&gcm::FakeGCMProfileService::Build));
 
     SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
@@ -169,7 +169,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDown() override {
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+        BrowserContextKeyedServiceFactory::TestingFactory());
     InProcessBrowserTest::TearDown();
   }
 
