@@ -629,6 +629,30 @@ static bool HasLineBox(const LayoutBlockFlow& block_flow) {
   return false;
 }
 
+// Is this the anonymous placeholder for a text control?
+bool AXLayoutObject::IsPlaceholder() const {
+  AXObject* parent_object = ParentObject();
+  if (!parent_object)
+    return false;
+
+  LayoutObject* parent_layout_object = parent_object->GetLayoutObject();
+  if (!parent_layout_object || !parent_layout_object->IsTextControl())
+    return false;
+
+  LayoutTextControl* layout_text_control =
+      ToLayoutTextControl(parent_layout_object);
+  DCHECK(layout_text_control);
+
+  TextControlElement* text_control_element =
+      layout_text_control->GetTextControlElement();
+  if (!text_control_element)
+    return false;
+
+  HTMLElement* placeholder_element = text_control_element->PlaceholderElement();
+
+  return GetElement() == static_cast<Element*>(placeholder_element);
+}
+
 bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
 #if DCHECK_IS_ON()
@@ -687,8 +711,18 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
 
   // Make sure renderers with layers stay in the tree.
   if (GetLayoutObject() && GetLayoutObject()->HasLayer() && GetNode() &&
-      GetNode()->hasChildren())
+      GetNode()->hasChildren()) {
+    if (IsPlaceholder()) {
+      // Placeholder is already exposed via AX attributes, do not expose as
+      // child of text input. Therefore, if there is a child of a text input,
+      // it will contain the value.
+      if (ignored_reasons)
+        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+      return true;
+    }
+
     return false;
+  }
 
   // Find out if this element is inside of a label element.  If so, it may be
   // ignored because it's the label for a checkbox or radio button.
@@ -870,6 +904,14 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
   if (layout_object_->IsPositioned())
     return false;
+
+  // Inner editor element of editable area with empty text provides bounds
+  // used to compute the character extent for index 0. This is the same as
+  // what the caret's bounds would be if the editable area is focused.
+  if (ParentObject() && ParentObject()->GetLayoutObject() &&
+      ParentObject()->GetLayoutObject()->IsTextControl()) {
+    return false;
+  }
 
   // Ignore layout objects that are block flows with inline children. These
   // are usually dummy layout objects that pad out the tree, but there are

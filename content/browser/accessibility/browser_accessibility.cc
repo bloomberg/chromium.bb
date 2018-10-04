@@ -511,9 +511,8 @@ gfx::Rect BrowserAccessibility::GetPageBoundsPastEndOfText() const {
     if (bounds.width() == 0 && bounds.height() == 0)
       return bounds;  // Inline text boxes info not yet available.
   } else {
-    // TODO(accessibility) Support bounds in an empty text field where there are
-    // no child inline text objects.
-    return bounds;
+    // Compute bounds of where caret would be, based on bounds of object.
+    bounds = GetPageBoundsRect();
   }
 
   // Step 2: correct for the thickness of the caret.
