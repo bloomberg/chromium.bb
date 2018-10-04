@@ -92,6 +92,15 @@ Controller::Controller(
       weak_ptr_factory_(this) {
   DCHECK(parameters_);
 
+  // Only set the controller as the delegate if web_contents does not yet have
+  // one.
+  // TODO(crbug.com/806868): Find a better way to get a loading progress instead
+  // of using the controller as a web_contents delegate. It may interfere with
+  // an already existing delegate.
+  if (web_contents->GetDelegate() == nullptr) {
+    web_contents->SetDelegate(this);
+  }
+
   GetUiController()->SetUiDelegate(this);
   GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
@@ -99,7 +108,9 @@ Controller::Controller(
   }
 }
 
-Controller::~Controller() {}
+Controller::~Controller() {
+  web_contents()->SetDelegate(nullptr);
+}
 
 void Controller::GetOrCheckScripts(const GURL& url) {
   if (script_tracker_->running())
@@ -261,16 +272,32 @@ void Controller::OnRunnableScriptsChanged(
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
-  // TODO(crbug.com/806868): Find a better time to get and update assistant
-  // scripts.
-
   // validated_url might not be the page URL. Ignore it and always check the
   // last committed url.
+  // Note that we also check for scripts in LoadProgressChanged below. This is
+  // the last attempt and occurs later than a load progress of 1.0.
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
 void Controller::WebContentsDestroyed() {
   OnDestroy();
+}
+
+void Controller::LoadProgressChanged(content::WebContents* source,
+                                     double progress) {
+  int percent = 100 * progress;
+  // We wait for a page to be at least 40 percent loaded. Then a new
+  // precondition check is started every additional 20 percent.
+  if (percent >= 40 && percent % 20 == 0) {
+    DCHECK(web_contents()->GetLastCommittedURL().is_valid());
+    // In order to show available scripts as early as possible we start checking
+    // preconditions when the page has not yet fully loaded. This can lead to
+    // the behavior where scripts are being added sequentially instead of all
+    // at the same time. Also, depending on the progress values, we may never
+    // actually get here. In that case the only check will happen in
+    // DidFinishLoad.
+    GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+  }
 }
 
 }  // namespace autofill_assistant
