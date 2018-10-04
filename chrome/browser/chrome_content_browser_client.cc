@@ -4601,9 +4601,9 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
     return;
   if (!SystemNetworkContextManager::GetInstance()) {
     DCHECK(!g_browser_process);
-    DCHECK(chrome_feature_list_creator_->simple_local_state());
+    DCHECK(chrome_feature_list_creator_->local_state());
     SystemNetworkContextManager::CreateInstance(
-        chrome_feature_list_creator_->simple_local_state());
+        chrome_feature_list_creator_->local_state());
   }
   // Need to set up global NetworkService state before anything else uses it.
   SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
