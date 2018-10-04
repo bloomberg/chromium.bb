@@ -88,9 +88,6 @@ class DrmWindow {
   // Returns the last buffer associated with this window.
   const DrmOverlayPlane* GetLastModesetBuffer();
 
-  void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) const;
-
  private:
   // Draw next frame in an animated cursor.
   void OnCursorAnimationTimeout();

@@ -54,8 +54,6 @@ source_set("gbm") {
     "gpu/drm_thread_message_proxy.h",
     "gpu/drm_thread_proxy.cc",
     "gpu/drm_thread_proxy.h",
-    "gpu/drm_vsync_provider.cc",
-    "gpu/drm_vsync_provider.h",
     "gpu/drm_window.cc",
     "gpu/drm_window.h",
     "gpu/drm_window_proxy.cc",
