@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.list;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ItemDecoration;
@@ -77,7 +78,7 @@ class DateOrderedListView {
 
         mView = new RecyclerView(context);
         mView.setHasFixedSize(true);
-        mView.getItemAnimator().setChangeDuration(0);
+        ((DefaultItemAnimator) mView.getItemAnimator()).setSupportsChangeAnimations(false);
         mView.getItemAnimator().setMoveDuration(0);
         mView.setLayoutManager(new GridLayoutManagerImpl(context));
         mView.addItemDecoration(new ItemDecorationImpl());
