@@ -642,6 +642,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (browser_->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
     } else {
+      base::RecordAction(
+          base::UserMetricsAction("ProfileChooser_ManageClicked"));
       UserManager::Show(base::FilePath(),
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     }
@@ -726,7 +728,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                          ? profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
                          : profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT);
-    base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
   } else if (sender == signin_current_profile_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == signin_with_gaia_account_button_) {
