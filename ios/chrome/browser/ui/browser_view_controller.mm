@@ -120,6 +120,7 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -404,6 +405,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
+                                    FormInputAccessoryCoordinatorDelegate,
                                     FullscreenUIElement,
                                     InfobarContainerStateDelegate,
                                     KeyCommandsPlumbing,
@@ -983,6 +985,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         initWithBaseViewController:self
                       browserState:browserState
                       webStateList:model.webStateList];
+    _formInputAccessoryCoordinator.delegate = self;
     [_formInputAccessoryCoordinator start];
 
     _javaScriptDialogPresenter.reset(
@@ -3252,6 +3255,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)displaySavedPasswordList {
+  [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
+}
+
+#pragma mark - FormInputAccessoryCoordinatorDelegate
+
+- (void)openPasswordSettings {
   [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
 }
 

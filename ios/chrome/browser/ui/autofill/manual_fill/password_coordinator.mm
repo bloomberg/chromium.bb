@@ -107,4 +107,8 @@ initWithBaseViewController:(UIViewController*)viewController
                          completion:nil];
 }
 
+- (void)openPasswordSettings {
+  [self.delegate openPasswordSettings];
+}
+
 @end

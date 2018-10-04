@@ -683,6 +683,13 @@
     "type": "raw",
     "args": [],
   },
+  "ios_chrome_manual_fill_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_manual_fill_egtests",
+    "type": "raw",
+    "args": [
+      "--enable-features=AutofillManualFallback",
+    ],
+  },
   "ios_chrome_payments_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_payments_egtests",
     "type": "raw",

@@ -469,4 +469,8 @@ id<GREYMatcher> NewTabPageOmnibox() {
       grey_minimumVisiblePercent(0.2), nil);
 }
 
+id<GREYMatcher> WebViewMatcher() {
+  return web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+}
+
 }  // namespace chrome_test_util

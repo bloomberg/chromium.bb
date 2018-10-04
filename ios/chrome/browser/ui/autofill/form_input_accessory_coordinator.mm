@@ -17,7 +17,8 @@
 #endif
 
 @interface FormInputAccessoryCoordinator ()<
-    ManualFillAccessoryViewControllerDelegate>
+    ManualFillAccessoryViewControllerDelegate,
+    PasswordCoordinatorDelegate>
 
 // The Mediator for the input accessory view controller.
 @property(nonatomic, strong)
@@ -103,6 +104,7 @@
                         browserState:self.browserState
                         webStateList:self.webStateList
                     injectionHandler:self.manualFillInjectionHandler];
+  passwordCoordinator.delegate = self;
   [self.formInputAccessoryViewController
       presentView:passwordCoordinator.viewController.view];
   [self.childCoordinators addObject:passwordCoordinator];
@@ -130,6 +132,12 @@
 - (void)passwordButtonPressed {
   [self stopChildren];
   [self startPasswords];
+}
+
+#pragma mark - PasswordCoordinatorDelegate
+
+- (void)openPasswordSettings {
+  [self.delegate openPasswordSettings];
 }
 
 @end
