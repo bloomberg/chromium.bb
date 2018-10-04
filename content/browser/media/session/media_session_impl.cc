@@ -631,6 +631,10 @@ void MediaSessionImpl::Initialize() {
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
     AudioFocusType audio_focus_type) {
+  // |kGainTransient| is not used in MediaSessionImpl.
+  DCHECK_NE(media_session::mojom::AudioFocusType::kGainTransient,
+            audio_focus_type);
+
   AudioFocusDelegate::AudioFocusResult result =
       delegate_->RequestAudioFocus(audio_focus_type);
   desired_audio_focus_type_ = audio_focus_type;
@@ -734,6 +738,10 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
         // If the gain audio focus request failed then we should suspend the
         // media session.
         OnSuspendInternal(SuspendType::kSystem, State::SUSPENDED);
+        break;
+      case AudioFocusType::kGainTransient:
+        // MediaSessionImpl does not use |kGainTransient|.
+        NOTREACHED();
         break;
       case AudioFocusType::kGainTransientMayDuck:
         // The focus request failed, we should suspend any players that have

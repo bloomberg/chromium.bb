@@ -34,10 +34,6 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   ~MediaSession() override = default;
 
-  // Resume the media session.
-  // |type| represents the origin of the request.
-  virtual void Resume(SuspendType suspend_type) = 0;
-
   // Stop the media session.
   // |type| represents the origin of the request.
   virtual void Stop(SuspendType suspend_type) = 0;
@@ -66,6 +62,10 @@ class MediaSession : public media_session::mojom::MediaSession {
   // Suspend the media session.
   // |type| represents the origin of the request.
   void Suspend(SuspendType suspend_type) override = 0;
+
+  // Resume the media session.
+  // |type| represents the origin of the request.
+  void Resume(SuspendType suspend_type) override = 0;
 
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
