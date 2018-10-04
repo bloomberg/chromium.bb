@@ -450,6 +450,23 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
                           device_scale_factor);
   }
 
+  CompositorFrame MakeCompositorFrameFromSurfaceRanges(
+      const std::vector<SurfaceRange>& ranges) {
+    std::vector<Quad> quads;
+    for (const SurfaceRange& range : ranges) {
+      quads.push_back(Quad::SurfaceQuad(range, SK_ColorWHITE, gfx::Rect(5, 5),
+                                        1.f, gfx::Transform(), false));
+    }
+    Pass passes[] = {Pass(&quads[0], quads.size(), SurfaceSize())};
+    RenderPassList pass_list;
+    AddPasses(&pass_list, passes, base::size(passes));
+    return CompositorFrameBuilder()
+        .SetRenderPassList(std::move(pass_list))
+        .SetDeviceScaleFactor(1.f)
+        .SetReferencedSurfaces(ranges)
+        .Build();
+  }
+
   void QueuePassAsFrame(std::unique_ptr<RenderPass> pass,
                         const LocalSurfaceId& local_surface_id,
                         float device_scale_factor,
@@ -2630,13 +2647,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamageSameFrameSinkId) {
   constexpr float device_scale_factor = 1.0f;
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         base::size(embedded_passes), id2, device_scale_factor);
-  Quad quads[] = {Quad::SurfaceQuad(
-      SurfaceRange(fallback_surface_id, primary_surface_id), SK_ColorWHITE,
-      gfx::Rect(5, 5), 1.f, gfx::Transform(), false)};
-  Pass passes[] = {Pass(quads, base::size(quads), SurfaceSize())};
 
-  SubmitCompositorFrame(support_.get(), passes, base::size(passes),
-                        root_local_surface_id_, device_scale_factor);
+  CompositorFrame frame = MakeCompositorFrameFromSurfaceRanges(
+      {SurfaceRange(fallback_surface_id, primary_surface_id)});
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   CompositorFrame aggregated_frame =
@@ -2688,13 +2702,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamageDifferentFrameSinkId) {
   constexpr float device_scale_factor = 1.0f;
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         base::size(embedded_passes), id2, device_scale_factor);
-  Quad quads[] = {Quad::SurfaceQuad(
-      SurfaceRange(fallback_surface_id, primary_surface_id), SK_ColorWHITE,
-      gfx::Rect(5, 5), 1.f, gfx::Transform(), false)};
-  Pass passes[] = {Pass(quads, base::size(quads), SurfaceSize())};
 
-  SubmitCompositorFrame(support_.get(), passes, base::size(passes),
-                        root_local_surface_id_, device_scale_factor);
+  CompositorFrame frame = MakeCompositorFrameFromSurfaceRanges(
+      {SurfaceRange(fallback_surface_id, primary_surface_id)});
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   CompositorFrame aggregated_frame =
@@ -2735,14 +2746,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamagePrimarySurfaceOnly) {
   LocalSurfaceId id2 = allocator_.GenerateId();
   LocalSurfaceId id3 = allocator_.GenerateId();
   SurfaceId primary_surface_id(kArbitraryFrameSinkId1, id2);
-  Quad quads[] = {Quad::SurfaceQuad(
-      SurfaceRange(base::nullopt, primary_surface_id), SK_ColorWHITE,
-      gfx::Rect(5, 5), 1.f, gfx::Transform(), false)};
-  Pass passes[] = {Pass(quads, base::size(quads), SurfaceSize())};
 
-  constexpr float device_scale_factor = 1.0f;
-  SubmitCompositorFrame(support_.get(), passes, base::size(passes),
-                        root_local_surface_id_, device_scale_factor);
+  CompositorFrame frame = MakeCompositorFrameFromSurfaceRanges(
+      {SurfaceRange(base::nullopt, primary_surface_id)});
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   CompositorFrame aggregated_frame =
@@ -2785,12 +2792,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
   SubmitCompositorFrame(embedded_support.get(), embedded_passes,
                         base::size(embedded_passes), id2, device_scale_factor);
 
-  Quad quads[] = {Quad::SurfaceQuad(SurfaceRange(surface_id), SK_ColorWHITE,
-                                    gfx::Rect(5, 5), 1.f, gfx::Transform(),
-                                    false)};
-  Pass passes[] = {Pass(quads, base::size(quads), SurfaceSize())};
-  SubmitCompositorFrame(support_.get(), passes, base::size(passes),
-                        root_local_surface_id_, device_scale_factor);
+  CompositorFrame frame =
+      MakeCompositorFrameFromSurfaceRanges({SurfaceRange(surface_id)});
+  support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   CompositorFrame aggregated_frame =
