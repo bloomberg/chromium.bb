@@ -47,6 +47,7 @@
       <div slot="body" spellcheck="false">
         <cr-searchable-drop-down id="address" label="$i18n{smbShareUrl}"
             value="{{mountUrl_}}" items="[[discoveredShares_]]"
+            placeholder="\\server\share"
             update-value-on-input autofocus>
         </cr-searchable-drop-down>
         <cr-input id="name" label="$i18n{smbShareName}" value="{{mountName_}}"
