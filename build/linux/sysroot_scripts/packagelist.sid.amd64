@@ -274,6 +274,9 @@ http://ftp.us.debian.org/debian/pool/main/p/pcre3/libpcre32-3_8.39-11_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pcre3/libpcre3_8.39-11_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pcre3/libpcre3-dev_8.39-11_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pcre3/libpcrecpp0v5_8.39-11_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/p/pipewire/libpipewire-0.2-1_0.2.3-3_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/p/pipewire/libpipewire-0.2-dev_0.2.3-3_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/p/pipewire/libspa-lib-0.1-dev_0.2.3-3_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pixman/libpixman-1-0_0.34.0-2_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pixman/libpixman-1-dev_0.34.0-2_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/p/pulseaudio/libpulse0_12.0-1_amd64.deb
