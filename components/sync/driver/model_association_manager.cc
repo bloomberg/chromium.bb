@@ -111,6 +111,9 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
   // |desired_types| must be a subset of |preferred_types|.
   DCHECK(preferred_types.HasAll(desired_types));
 
+  bool storage_option_changed =
+      configure_context_.storage_option != context.storage_option;
+
   configure_context_ = context;
 
   // Only keep types that have controllers.
@@ -130,12 +133,17 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
   std::map<DataTypeController*, ShutdownReason> types_to_stop;
   for (const auto& type_and_dtc : *controllers_) {
     DataTypeController* dtc = type_and_dtc.second.get();
-    // We stop a datatype if it's not desired. Independently of being desired,
-    // if the datatype is already STOPPING, we also wait for it to stop, to make
+    // We generally stop all data types which are not desired. When the storage
+    // option changes, we need to restart all data types so that they can
+    // re-wire to the correct storage.
+    bool should_stop =
+        !desired_types_.Has(dtc->type()) || storage_option_changed;
+    // If the datatype is already STOPPING, we also wait for it to stop, to make
     // sure it's ready to start again (if appropriate).
-    if ((dtc->state() != DataTypeController::NOT_RUNNING &&
-         !desired_types_.Has(dtc->type())) ||
+    if ((should_stop && dtc->state() != DataTypeController::NOT_RUNNING) ||
         dtc->state() == DataTypeController::STOPPING) {
+      // Note: STOP_SYNC means we'll keep the Sync data around; DISABLE_SYNC
+      // means we'll clear it.
       const ShutdownReason reason =
           preferred_types.Has(dtc->type()) ? STOP_SYNC : DISABLE_SYNC;
       types_to_stop[dtc] = reason;
