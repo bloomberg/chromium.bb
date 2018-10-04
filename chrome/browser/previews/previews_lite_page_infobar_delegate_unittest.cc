@@ -17,6 +17,10 @@
 #include "components/previews/core/previews_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/android_theme_resources.h"
+#endif
+
 class PreviewsLitePageInfoBarDelegateUnitTest
     : public ChromeRenderViewHostTestHarness {
  protected:
@@ -73,6 +77,12 @@ TEST_F(PreviewsLitePageInfoBarDelegateUnitTest,
   ASSERT_TRUE(infobar);
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_LITE_PAGE_PREVIEWS_MESSAGE),
             infobar->GetMessageText());
+#if defined(OS_ANDROID)
+  ASSERT_EQ(l10n_util::GetStringUTF16(IDS_LITE_PAGE_PREVIEWS_SETTINGS_LINK),
+            infobar->GetLinkText());
+  ASSERT_EQ(IDR_ANDROID_INFOBAR_PREVIEWS, infobar->GetIconId());
+#else
   ASSERT_EQ(base::string16(), infobar->GetLinkText());
   ASSERT_EQ(PreviewsLitePageInfoBarDelegate::kNoIconID, infobar->GetIconId());
+#endif
 }

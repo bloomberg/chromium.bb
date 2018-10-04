@@ -4432,6 +4432,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LITE_PAGE_PREVIEWS_MESSAGE" desc="The text of the infobar notifying the user that Chrome's Lite mode will now also apply to HTTPS pages.">
         Lite Mode now makes browsing faster on all pages, including HTTPS.
       </message>
+      <message name="IDS_LITE_PAGE_PREVIEWS_SETTINGS_LINK" desc="This link opens the Data Saver settings to explain and configure Lite mode settings.">
+        Settings
+      </message>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_infobar_delegate.h"

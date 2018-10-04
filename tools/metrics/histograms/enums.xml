@@ -9992,6 +9992,18 @@ Called by update_net_error_codes.py.-->
   <int value="25" label="Site breakdown sorted by data used"/>
   <int value="26" label="Site breakdown expanded to see more sites"/>
   <int value="27" label="Site breakdown sorted by hostname"/>
+  <int value="28"
+      label="Arrived at settings menu by HTTPS Preview Infobar: entered off,
+             exited off"/>
+  <int value="29"
+      label="Arrived at settings menu by HTTPS Preview Infobar: entered off,
+             exited on"/>
+  <int value="30"
+      label="Arrived at settings menu by HTTPS Preview Infobar: entered on,
+             exited off"/>
+  <int value="31"
+      label="Arrived at settings menu by HTTPS Preview Infobar: entered on,
+             exited on"/>
 </enum>
 
 <enum name="DataReductionProxyWarmupURLFetchAttemptEvent">
@@ -40580,6 +40592,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PreviewsLitePageInfoBarAction">
   <int value="0" label="Infobar shown"/>
   <int value="1" label="Infobar dismissed by user"/>
+  <int value="2" label="Infobar 'Settings' clicked"/>
 </enum>
 
 <enum name="PreviewsOptimizationFilterStatus">

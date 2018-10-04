@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace content {
@@ -26,7 +27,8 @@ class PreviewsLitePageInfoBarDelegate : public ConfirmInfoBarDelegate {
   enum PreviewsLitePageInfoBarAction {
     kInfoBarShown = 0,
     kInfoBarDismissed = 1,
-    kMaxValue = kInfoBarDismissed,
+    kInfoBarLinkClicked = 2,
+    kMaxValue = kInfoBarLinkClicked,
   };
 
   // Shows the InfoBar.
@@ -39,8 +41,12 @@ class PreviewsLitePageInfoBarDelegate : public ConfirmInfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   int GetButtons() const override;
-  int GetIconId() const override;
   base::string16 GetMessageText() const override;
+#if defined(OS_ANDROID)
+  int GetIconId() const override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageInfoBarDelegate);
 };
