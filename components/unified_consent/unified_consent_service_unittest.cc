@@ -419,7 +419,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   // this point.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kUserSignedOut, 1);
+      metrics::ConsentBumpSuppressReason::kUserSignedOut, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
@@ -446,7 +446,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
   // this point.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kPrivacySettingOff, 1);
+      metrics::ConsentBumpSuppressReason::kPrivacySettingOff, 1);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -466,7 +466,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
   // The suppress reason for not showing the consent bump should be recorded.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kSyncEverythingOff, 1);
+      metrics::ConsentBumpSuppressReason::kSyncEverythingOff, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
@@ -546,7 +546,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
   // The suppress reason for not showing the consent bump should be recorded.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kNotSignedIn, 1);
+      metrics::ConsentBumpSuppressReason::kNotSignedIn, 1);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -630,7 +630,7 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
 
   histogram_tester.ExpectUniqueSample(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kNone, 1);
+      metrics::SettingsHistogramValue::kNone, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
@@ -645,22 +645,22 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
 
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kNone, 0);
+      metrics::SettingsHistogramValue::kNone, 0);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kUnifiedConsentGiven, 1);
+      metrics::SettingsHistogramValue::kUnifiedConsentGiven, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kUserEvents, 1);
+      metrics::SettingsHistogramValue::kUserEvents, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
+      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kSafeBrowsingExtendedReporting, 1);
+      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kSpellCheck, 1);
+      metrics::SettingsHistogramValue::kSpellCheck, 1);
   histogram_tester.ExpectTotalCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings", 5);
 }
@@ -675,7 +675,7 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_NoUnifiedConsentGiven) {
   // because the user is not signed in.
   histogram_tester.ExpectUniqueSample(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      SettingsHistogramValue::kSpellCheck, 1);
+      metrics::SettingsHistogramValue::kSpellCheck, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
@@ -744,8 +744,7 @@ TEST_F(UnifiedConsentServiceTest,
   EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff,
-      1);
+      metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.EligibleAtStartup", true, 1);
   histogram_tester.ExpectBucketCount(
@@ -779,8 +778,7 @@ TEST_F(UnifiedConsentServiceTest,
   EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
-      unified_consent::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff,
-      1);
+      metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff, 1);
 }
 
 }  // namespace unified_consent
