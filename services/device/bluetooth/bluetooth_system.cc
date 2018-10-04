@@ -35,10 +35,8 @@ void BluetoothSystem::GetState(GetStateCallback callback) {
     return;
   }
 
-  auto* properties =
-      GetBluetoothAdapterClient()->GetProperties(object_paths[0]);
-  std::move(callback).Run(properties->powered.value() ? State::kPoweredOn
-                                                      : State::kPoweredOff);
+  // TODO(crbug.com/870192): Return the state based on the adapter's state.
+  std::move(callback).Run(State::kPoweredOff);
 }
 
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
