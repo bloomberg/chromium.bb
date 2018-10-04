@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -246,7 +247,7 @@ class RecentTabsSubMenuModelTest
   static void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-        context, BuildMockProfileSyncService);
+        context, base::BindRepeating(&BuildMockProfileSyncService));
   }
 
   base::test::ScopedFeatureList override_features_;
@@ -303,7 +304,8 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
   DisableSync();
 
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+      profile(),
+      base::BindRepeating(&RecentTabsSubMenuModelTest::GetTabRestoreService));
 
   // Add 2 tabs and close them.
   AddTab(browser(), GURL("http://foo/1"));
@@ -368,7 +370,8 @@ TEST_F(RecentTabsSubMenuModelTest,
   DisableSync();
 
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+      profile(),
+      base::BindRepeating(&RecentTabsSubMenuModelTest::GetTabRestoreService));
 
   // Add 2 tabs and close them.
   AddTab(browser(), GURL("http://wnd/tab0"));
@@ -402,7 +405,8 @@ TEST_F(RecentTabsSubMenuModelTest,
   // Create a new TabRestoreService so that it'll load the recently closed tabs
   // and windows afresh.
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
+      profile(),
+      base::BindRepeating(&RecentTabsSubMenuModelTest::GetTabRestoreService));
   // Let the shutdown of previous TabRestoreService run.
   content::RunAllTasksUntilIdle();
 
