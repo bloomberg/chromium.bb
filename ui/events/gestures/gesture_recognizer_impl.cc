@@ -164,6 +164,13 @@ void GestureRecognizerImpl::TransferEventsTo(
     }
   }
 
+  // The underlying gesture provider for current_consumer might have filtered
+  // gesture detection for some reasons but that might not be applied to the new
+  // consumer. See also:
+  // https://docs.google.com/document/d/1AKeK8IuF-j2TJ-2sPsewORXdjnr6oAzy5nnR1zwrsfc/edit#
+  if (base::ContainsKey(consumer_gesture_provider_, new_consumer))
+    GetGestureProviderForConsumer(new_consumer)->ResetGestureHandlingState();
+
   for (int touch_id : touchids_targeted_at_current)
     touch_id_target_[touch_id] = new_consumer;
   for (GestureRecognizerObserver& observer : observers())

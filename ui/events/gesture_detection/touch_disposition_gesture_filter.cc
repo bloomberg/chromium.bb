@@ -259,6 +259,10 @@ bool TouchDispositionGestureFilter::IsEmpty() const {
   return sequences_.empty();
 }
 
+void TouchDispositionGestureFilter::ResetGestureHandlingState() {
+  state_ = GestureHandlingState();
+}
+
 void TouchDispositionGestureFilter::FilterAndSendPacket(
     const GestureEventDataPacket& packet) {
   if (packet.gesture_source() == GestureEventDataPacket::TOUCH_SEQUENCE_START) {
