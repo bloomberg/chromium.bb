@@ -767,7 +767,7 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
 
   base::string16 text = base::ASCIIToUTF16("text");
   test_context_handler.Reset();
-  connection->SetComposingText(text, 0);
+  connection->SetComposingText(text, 0, base::nullopt);
   EXPECT_EQ(1, test_context_handler.update_preedit_text_call_count());
   EXPECT_EQ(
       text,
@@ -779,6 +779,13 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
       base::ASCIIToUTF16(""),
       test_context_handler.last_update_composition_arg().composition_text.text);
   EXPECT_EQ(1, test_context_handler.commit_text_call_count());
+
+  test_context_handler.Reset();
+  connection->SetComposingText(text, 0, base::make_optional<gfx::Range>(1, 3));
+  EXPECT_EQ(1u, test_context_handler.last_update_composition_arg()
+                    .composition_text.selection.start());
+  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
+                    .composition_text.selection.end());
 
   engine_handler->FocusOut();
 

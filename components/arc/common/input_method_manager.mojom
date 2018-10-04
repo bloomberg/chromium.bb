@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -77,8 +77,10 @@ interface InputConnection {
   RequestTextInputState@3() => (TextInputState state);
 
   // Replaces the currently composing text with the given text,
-  // and sets the cursor position.
-  SetComposingText@4(mojo_base.mojom.String16 text, int32 new_cursor_pos);
+  // and sets the cursor position and the selection range.
+  SetComposingText@4(mojo_base.mojom.String16 text,
+                     int32 new_cursor_pos,
+                     [MinVersion=3] Range? new_selection_range);
 };
 
 // This interface is called by container when Android's InputMethodManager state

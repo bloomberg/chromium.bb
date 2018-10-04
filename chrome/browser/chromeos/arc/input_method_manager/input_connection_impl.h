@@ -10,6 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "components/arc/common/input_method_manager.mojom.h"
@@ -38,8 +41,10 @@ class InputConnectionImpl : public mojom::InputConnection {
   void CommitText(const base::string16& text, int new_cursor_pos) override;
   void DeleteSurroundingText(int before, int after) override;
   void FinishComposingText() override;
-  void SetComposingText(const base::string16& text,
-                        int new_cursor_pos) override;
+  void SetComposingText(
+      const base::string16& text,
+      int new_cursor_pos,
+      const base::Optional<gfx::Range>& new_selection_range) override;
   void RequestTextInputState(
       mojom::InputConnection::RequestTextInputStateCallback callback) override;
 
