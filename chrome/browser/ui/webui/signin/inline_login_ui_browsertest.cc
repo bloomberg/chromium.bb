@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -468,9 +469,9 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     // creating the browser so that a bunch of classes don't register as
     // observers and end up needing to unregister when the fake is substituted.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeSigninManagerBase);
+        context, base::BindRepeating(&BuildFakeSigninManagerBase));
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeProfileOAuth2TokenService);
+        context, base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
   }
 
   void SetUp() override {

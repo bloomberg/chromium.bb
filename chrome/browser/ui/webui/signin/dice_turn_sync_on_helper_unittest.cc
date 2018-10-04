@@ -189,19 +189,22 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildFakeProfileOAuth2TokenService);
-    profile_builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                                      BuildFakeSigninManagerBase);
-    profile_builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                                      signin::BuildTestSigninClient);
-    profile_builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
-                                      &BuildMockProfileSyncService);
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    profile_builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerBase));
+    profile_builder.AddTestingFactory(
+        ChromeSigninClientFactory::GetInstance(),
+        base::BindRepeating(&signin::BuildTestSigninClient));
+    profile_builder.AddTestingFactory(
+        ProfileSyncServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildMockProfileSyncService));
     profile_builder.AddTestingFactory(
         policy::UserPolicySigninServiceFactory::GetInstance(),
-        &FakeUserPolicySigninService::Build);
+        base::BindRepeating(&FakeUserPolicySigninService::Build));
     profile_builder.AddTestingFactory(
         UnifiedConsentServiceFactory::GetInstance(),
-        &BuildUnifiedConsentServiceForTesting);
+        base::BindRepeating(&BuildUnifiedConsentServiceForTesting));
     profile_ = profile_builder.Build();
     account_tracker_service_ =
         AccountTrackerServiceFactory::GetForProfile(profile());
