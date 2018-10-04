@@ -4,8 +4,10 @@
 
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidator.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
+#include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -13,6 +15,10 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "google_apis/gaia/gaia_constants.h"
+
+namespace {
+const char kApplicationName[] = "com.google.chrome.fcm.invalidations";
+}
 
 namespace invalidation {
 
@@ -107,7 +113,7 @@ syncer::InvalidatorState FCMInvalidationService::GetInvalidatorState() const {
 }
 
 std::string FCMInvalidationService::GetInvalidatorClientId() const {
-  return std::string();
+  return client_id_;
 }
 
 InvalidationLogger* FCMInvalidationService::GetInvalidationLogger() {
@@ -135,6 +141,8 @@ void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
 void FCMInvalidationService::OnActiveAccountLogout() {
   if (IsStarted()) {
     StopInvalidator();
+    if (!client_id_.empty())
+      ResetClientID();
   }
 }
 
@@ -175,6 +183,7 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK(!invalidator_);
   DCHECK(IsReadyToStart());
 
+  PopulateClientID();
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
       gcm_driver_, instance_id_driver_);
   network->StartListening();
@@ -192,6 +201,36 @@ void FCMInvalidationService::StopInvalidator() {
   // TODO(melandory): reset the network.
   invalidator_->UnregisterHandler(this);
   invalidator_.reset();
+}
+
+void FCMInvalidationService::PopulateClientID() {
+  client_id_ = pref_service_->GetString(prefs::kFCMInvalidationClientIDCache);
+  instance_id::InstanceID* instance_id =
+      instance_id_driver_->GetInstanceID(kApplicationName);
+  instance_id->GetID(base::Bind(&FCMInvalidationService::OnInstanceIdRecieved,
+                                base::Unretained(this)));
+}
+
+void FCMInvalidationService::ResetClientID() {
+  instance_id::InstanceID* instance_id =
+      instance_id_driver_->GetInstanceID(kApplicationName);
+  instance_id->DeleteID(base::Bind(&FCMInvalidationService::OnDeleteIDCompleted,
+                                   base::Unretained(this)));
+  pref_service_->SetString(prefs::kFCMInvalidationClientIDCache, std::string());
+}
+
+void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
+  if (client_id_ != id) {
+    client_id_ = id;
+    pref_service_->SetString(prefs::kFCMInvalidationClientIDCache, id);
+  }
+  // TODO(melandory): Notify profile sync service that the invalidator
+  // id has changed;
+}
+
+void FCMInvalidationService::OnDeleteIDCompleted(
+    instance_id::InstanceID::Result) {
+  // TODO(meandory): report metric in case of unsucesfull deletion.
 }
 
 }  // namespace invalidation

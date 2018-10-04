@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/invalidation/impl/invalidation_logger.h"
 #include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/identity_provider.h"
@@ -40,7 +41,7 @@ class FCMInvalidationService : public InvalidationService,
  public:
   FCMInvalidationService(IdentityProvider* identity_provider,
                          gcm::GCMDriver* gcm_driver,
-                         instance_id::InstanceIDDriver* instance_id_driver,
+                         instance_id::InstanceIDDriver* client_id_driver,
                          PrefService* pref_service,
                          const syncer::ParseJSONCallback& parse_json,
                          network::mojom::URLLoaderFactory* loader_factory);
@@ -87,6 +88,11 @@ class FCMInvalidationService : public InvalidationService,
   void StartInvalidator();
   void StopInvalidator();
 
+  void PopulateClientID();
+  void ResetClientID();
+  void OnInstanceIdRecieved(const std::string& id);
+  void OnDeleteIDCompleted(instance_id::InstanceID::Result);
+
   syncer::InvalidatorRegistrar invalidator_registrar_;
   std::unique_ptr<syncer::Invalidator> invalidator_;
 
@@ -96,6 +102,7 @@ class FCMInvalidationService : public InvalidationService,
 
   gcm::GCMDriver* gcm_driver_;
   instance_id::InstanceIDDriver* instance_id_driver_;
+  std::string client_id_;
 
   IdentityProvider* identity_provider_;
   PrefService* pref_service_;
