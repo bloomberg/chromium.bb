@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
@@ -186,6 +187,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
+  SyncConsentScreen::MaybeLaunchSyncConstentSettings(user_profile);
 }
 
 }  // namespace

@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
+#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_fetcher.h"
@@ -91,7 +92,6 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -2054,11 +2054,8 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // completion of the file system migration necessary for ARC, when needed.
   arc::ShowArcMigrationSuccessNotificationIfNeeded(profile);
 
-  if (should_launch_browser_ &&
-      profile->GetPrefs()->GetBoolean(prefs::kShowSyncSettingsOnSessionStart)) {
-    profile->GetPrefs()->ClearPref(prefs::kShowSyncSettingsOnSessionStart);
-    chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
-  }
+  if (should_launch_browser_)
+    SyncConsentScreen::MaybeLaunchSyncConstentSettings(profile);
 
   // Associates AppListClient with the current active profile.
   AppListClientImpl::GetInstance()->UpdateProfile();
