@@ -1401,12 +1401,44 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
   EXPECT_FALSE(csp->AllowTrustedTypePolicy("four"));
 }
 
+TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("one"));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("two"));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("three"));
+}
+
 TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
   csp->BindToExecutionContext(execution_context.Get());
   csp->DidReceiveHeader("trusted-types",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("somepolicy"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("trusted-types *",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("trusted-types one \"two\" 'three'",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("one"));
+
+  // Quoted strings are considered 'reserved':
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("two"));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("\"two\""));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("three"));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("'three'"));
 }
 
 }  // namespace blink
