@@ -27,6 +27,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/load_notification_details.h"
@@ -1637,6 +1638,14 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
   DISALLOW_COPY_AND_ASSIGN(TestWCDelegateForDialogsAndFullscreen);
 };
 
+class MockFileSelectListener : public FileSelectListener {
+ public:
+  MockFileSelectListener() {}
+  void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    blink::mojom::FileChooserParams::Mode mode) override {}
+  void FileSelectionCanceled() override {}
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2216,7 +2225,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
 
   wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
-  wc->RunFileChooser(wc->GetMainFrame(), blink::mojom::FileChooserParams());
+  wc->RunFileChooser(wc->GetMainFrame(),
+                     std::make_unique<MockFileSelectListener>(),
+                     blink::mojom::FileChooserParams());
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 
   wc->SetDelegate(nullptr);

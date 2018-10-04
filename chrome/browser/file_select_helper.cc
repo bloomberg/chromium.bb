@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -60,11 +61,6 @@ using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {
-
-// There is only one file-selection happening at any given time,
-// so we allocate an enumeration ID for that purpose.  All IDs from
-// the renderer must start at 0 and increase.
-const int kFileSelectEnumerationId = -1;
 
 // Converts a list of FilePaths to a list of ui::SelectedFileInfo.
 std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
@@ -125,10 +121,9 @@ void InterpretSafeBrowsingVerdict(const base::Callback<void(bool)>& recipient,
 
 struct FileSelectHelper::ActiveDirectoryEnumeration {
   explicit ActiveDirectoryEnumeration(const base::FilePath& path)
-      : rvh_(NULL), path_(path) {}
+      : path_(path) {}
 
   std::unique_ptr<net::DirectoryLister> lister_;
-  RenderViewHost* rvh_;
   const base::FilePath path_;
   std::vector<base::FilePath> results_;
 };
@@ -173,8 +168,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
 
   const base::FilePath& path = file.local_path;
   if (dialog_type_ == ui::SelectFileDialog::SELECT_UPLOAD_FOLDER) {
-    StartNewEnumeration(path, kFileSelectEnumerationId,
-                        render_frame_host_->GetRenderViewHost());
+    StartNewEnumeration(path);
     return;
   }
 
@@ -220,15 +214,11 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
 }
 
 void FileSelectHelper::FileSelectionCanceled(void* params) {
-  NotifyRenderFrameHostAndEnd(std::vector<ui::SelectedFileInfo>());
+  RunFileChooserEnd();
 }
 
-void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
-                                           int request_id,
-                                           RenderViewHost* render_view_host) {
-  request_id_ = request_id;
+void FileSelectHelper::StartNewEnumeration(const base::FilePath& path) {
   auto entry = std::make_unique<ActiveDirectoryEnumeration>(path);
-  entry->rvh_ = render_view_host;
   entry->lister_.reset(new net::DirectoryLister(
       path, net::DirectoryLister::NO_SORT_RECURSIVE, this));
   entry->lister_->Start();
@@ -257,8 +247,6 @@ void FileSelectHelper::OnListDone(int error) {
   // This entry needs to be cleaned up when this function is done.
   std::unique_ptr<ActiveDirectoryEnumeration> entry =
       std::move(directory_enumeration_);
-  if (!entry->rvh_)
-    return;
   if (error) {
     FileSelectionCanceled(NULL);
     return;
@@ -267,10 +255,18 @@ void FileSelectHelper::OnListDone(int error) {
   std::vector<ui::SelectedFileInfo> selected_files =
       FilePathListToSelectedFileInfoList(entry->results_);
 
-  if (request_id_ == kFileSelectEnumerationId) {
+  if (dialog_type_ == ui::SelectFileDialog::SELECT_UPLOAD_FOLDER) {
     LaunchConfirmationDialog(entry->path_, std::move(selected_files));
   } else {
-    entry->rvh_->DirectoryEnumerationFinished(request_id_, entry->results_);
+    std::vector<FileChooserFileInfoPtr> chooser_files;
+    for (const auto& file_path : entry->results_) {
+      chooser_files.push_back(FileChooserFileInfo::NewNativeFile(
+          blink::mojom::NativeFileInfo::New(file_path, base::string16())));
+    }
+
+    listener_->FileSelected(std::move(chooser_files),
+                            FileChooserParams::Mode::kUploadFolder);
+    listener_.reset();
     EnumerateDirectoryEnd();
   }
 }
@@ -317,8 +313,8 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
 
 void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
     std::vector<FileChooserFileInfoPtr> list) {
-  if (render_frame_host_)
-    render_frame_host_->FilesSelectedInChooser(list, dialog_mode_);
+  listener_->FileSelected(std::move(list), dialog_mode_);
+  listener_.reset();
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
@@ -421,32 +417,37 @@ FileSelectHelper::GetFileTypesFromAcceptType(
 // static
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   Profile* profile = Profile::FromBrowserContext(
       render_frame_host->GetProcess()->GetBrowserContext());
   // FileSelectHelper will keep itself alive until it sends the result message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
-  file_select_helper->RunFileChooser(render_frame_host, params.Clone());
+  file_select_helper->RunFileChooser(render_frame_host, std::move(listener),
+                                     params.Clone());
 }
 
 // static
-void FileSelectHelper::EnumerateDirectory(content::WebContents* tab,
-                                          int request_id,
-                                          const base::FilePath& path) {
+void FileSelectHelper::EnumerateDirectory(
+    content::WebContents* tab,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const base::FilePath& path) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   // FileSelectHelper will keep itself alive until it sends the result message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
-  file_select_helper->EnumerateDirectory(
-      request_id, tab->GetRenderViewHost(), path);
+  file_select_helper->EnumerateDirectory(std::move(listener), path);
 }
 
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     FileChooserParamsPtr params) {
   DCHECK(!render_frame_host_);
   DCHECK(!web_contents_);
+  DCHECK(listener);
+  DCHECK(!listener_);
   DCHECK(params->default_file_name.empty() ||
          params->mode == FileChooserParams::Mode::kSave)
       << "The default_file_name parameter should only be specified for Save "
@@ -456,6 +457,7 @@ void FileSelectHelper::RunFileChooser(
 
   render_frame_host_ = render_frame_host;
   web_contents_ = WebContents::FromRenderFrameHost(render_frame_host);
+  listener_ = std::move(listener);
   observer_.RemoveAll();
   content::WebContentsObserver::Observe(web_contents_);
   observer_.Add(render_frame_host_->GetRenderViewHost()->GetWidget());
@@ -542,7 +544,7 @@ void FileSelectHelper::ProceedWithSafeBrowsingVerdict(
     FileChooserParamsPtr params,
     bool allowed_by_safe_browsing) {
   if (!allowed_by_safe_browsing) {
-    NotifyRenderFrameHostAndEnd(std::vector<ui::SelectedFileInfo>());
+    RunFileChooserEnd();
     return;
   }
   RunFileChooserOnUIThread(default_file_path, std::move(params));
@@ -616,21 +618,27 @@ void FileSelectHelper::RunFileChooserEnd() {
   if (!temporary_files_.empty())
     return;
 
+  if (listener_)
+    listener_->FileSelectionCanceled();
   render_frame_host_ = nullptr;
   web_contents_ = nullptr;
   Release();
 }
 
-void FileSelectHelper::EnumerateDirectory(int request_id,
-                                          RenderViewHost* render_view_host,
-                                          const base::FilePath& path) {
+void FileSelectHelper::EnumerateDirectory(
+    std::unique_ptr<content::FileSelectListener> listener,
+    const base::FilePath& path) {
+  DCHECK(listener);
+  DCHECK(!listener_);
+  dialog_type_ = ui::SelectFileDialog::SELECT_NONE;
+  listener_ = std::move(listener);
   // Because this class returns notifications to the RenderViewHost, it is
   // difficult for callers to know how long to keep a reference to this
   // instance. We AddRef() here to keep the instance alive after we return
   // to the caller, until the last callback is received from the enumeration
   // code. At that point, we must call EnumerateDirectoryEnd().
   AddRef();
-  StartNewEnumeration(path, request_id, render_view_host);
+  StartNewEnumeration(path);
 }
 
 // This method is called when we receive the last callback from the enumeration

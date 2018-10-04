@@ -498,6 +498,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               bool is_reload,
                               IPC::Message* reply_msg) override;
   void RunFileChooser(RenderFrameHost* render_frame_host,
+                      std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   void DidCancelLoading() override;
   void DidAccessInitialDocument() override;

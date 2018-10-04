@@ -62,6 +62,7 @@ class FileChooserParams;
 }
 
 namespace content {
+class FileSelectListener;
 class FrameTreeNode;
 class InterstitialPage;
 class PageState;
@@ -137,8 +138,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                       IPC::Message* reply_msg) {}
 
   // Called when a file selection is to be done.
-  virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              const blink::mojom::FileChooserParams& params) {}
+  // Overrides of this function must call either listener->FileSelected() or
+  // listener->FileSelectionCanceled().
+  virtual void RunFileChooser(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<content::FileSelectListener> listener,
+      const blink::mojom::FileChooserParams& params);
 
   // The pending page load was canceled, so the address bar should be updated.
   virtual void DidCancelLoading() {}

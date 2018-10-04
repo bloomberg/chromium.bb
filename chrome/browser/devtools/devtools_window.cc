@@ -45,6 +45,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1274,8 +1275,10 @@ content::ColorChooser* DevToolsWindow::OpenColorChooser(
 
 void DevToolsWindow::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 bool DevToolsWindow::PreHandleGestureEvent(
