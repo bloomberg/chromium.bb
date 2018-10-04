@@ -30,6 +30,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
@@ -956,7 +957,8 @@ void CacheStorageCache::QueryCache(
     return;
   }
 
-  if ((!options || !options->ignore_method) && request &&
+  if (owner_ != CacheStorageOwner::kBackgroundFetch &&
+      (!options || !options->ignore_method) && request &&
       !request->method.empty() && request->method != "GET") {
     std::move(callback).Run(CacheStorageError::kSuccess,
                             std::make_unique<QueryCacheResults>());

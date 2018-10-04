@@ -123,6 +123,12 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // request is also secure.
   bool IsMixedContent(const BackgroundFetchRequestInfo& request);
 
+  // Whether the |request| needs CORS preflight.
+  // Requests that require CORS preflights are temporarily blocked, because the
+  // browser side of Background Fetch doesn't yet support performing CORS
+  // checks. TODO(crbug.com/711354): Remove this temporary block.
+  bool RequiresCORSPreflight(const BackgroundFetchRequestInfo& request);
+
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
 

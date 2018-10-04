@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/public/common/origin_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
@@ -84,6 +85,32 @@ bool BackgroundFetchJobController::IsMixedContent(
   return !IsOriginSecure(request.fetch_request().url);
 }
 
+bool BackgroundFetchJobController::RequiresCORSPreflight(
+    const BackgroundFetchRequestInfo& request) {
+  auto fetch_request = request.fetch_request();
+
+  // Same origin requests don't require a CORS preflight.
+  // https://fetch.spec.whatwg.org/#main-fetch
+  // TODO(crbug.com/711354): Make sure that cross-origin redirects are disabled.
+  if (url::IsSameOriginWith(registration_id().origin().GetURL(),
+                            fetch_request.url)) {
+    return false;
+  }
+
+  // Requests that are more involved than what is possible with HTML's form
+  // element require a CORS-preflight request.
+  // https://fetch.spec.whatwg.org/#main-fetch
+  if (!fetch_request.method.empty() &&
+      !network::cors::IsCORSSafelistedMethod(fetch_request.method)) {
+    return true;
+  }
+
+  net::HttpRequestHeaders::HeaderVector headers;
+  for (const auto& header : fetch_request.headers)
+    headers.emplace_back(header.first, header.second);
+  return !network::cors::CORSUnsafeRequestHeaderNames(headers).empty();
+}
+
 void BackgroundFetchJobController::StartRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request,
     RequestFinishedCallback request_finished_callback) {
@@ -95,7 +122,7 @@ void BackgroundFetchJobController::StartRequest(
   active_request_downloaded_bytes_ = 0;
   active_request_finished_callback_ = std::move(request_finished_callback);
 
-  if (IsMixedContent(*request.get())) {
+  if (IsMixedContent(*request.get()) || RequiresCORSPreflight(*request.get())) {
     request->SetEmptyResultWithFailureReason(
         BackgroundFetchResult::FailureReason::FETCH_ERROR);
 

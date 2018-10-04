@@ -92,29 +92,9 @@ bool ShouldBlockDanglingMarkup(const KURL& request_url) {
          request_url.ProtocolIsInHTTPFamily();
 }
 
-bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
-                              const WebServiceWorkerRequest& web_request,
-                              const KURL& request_url) {
-  // Requests that require CORS preflights are temporarily blocked, because the
-  // browser side of Background Fetch doesn't yet support performing CORS
-  // checks. TODO(crbug.com/711354): Remove this temporary block.
-
-  // Same origin requests don't require a CORS preflight.
-  // https://fetch.spec.whatwg.org/#main-fetch
-  // TODO(crbug.com/711354): Make sure that cross-origin redirects are disabled.
-  bool same_origin =
-      execution_context->GetSecurityOrigin()->CanRequest(request_url);
-  if (same_origin)
-    return false;
-
-  // Requests that are more involved than what is possible with HTML's form
-  // element require a CORS-preflight request.
-  // https://fetch.spec.whatwg.org/#main-fetch
-  if (!CORS::IsCORSSafelistedMethod(web_request.Method()) ||
-      !CORS::ContainsOnlyCORSSafelistedHeaders(web_request.Headers())) {
-    return true;
-  }
-
+bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
+                               const WebServiceWorkerRequest& web_request,
+                               const KURL& request_url) {
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
     mojom::IPAddressSpace requestor_space =
         execution_context->GetSecurityContext().AddressSpace();
@@ -235,10 +215,11 @@ ScriptPromise BackgroundFetchManager::fetch(
                                  "it contains dangling markup");
     }
 
-    if (ShouldBlockCORSPreflight(execution_context, web_request, request_url)) {
+    if (ShouldBlockGateWayAttacks(execution_context, web_request,
+                                  request_url)) {
       return RejectWithTypeError(script_state, request_url,
-                                 "CORS preflights are not yet supported "
-                                 "by this browser");
+                                 "Requestor IP address space doesn't match the "
+                                 "target address space.");
     }
 
     kurls.insert(request_url);
