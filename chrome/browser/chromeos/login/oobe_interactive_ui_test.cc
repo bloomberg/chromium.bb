@@ -264,14 +264,8 @@ class OobeInteractiveUITest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 
-// Times out on MSAN: crbug.com/891484.
-#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(ADDRESS_SANITIZER)
-#define MAYBE_SimpleEndToEnd DISABLED_SimpleEndToEnd
-#else
-#define MAYBE_SimpleEndToEnd SimpleEndToEnd
-#endif
-IN_PROC_BROWSER_TEST_F(OobeInteractiveUITest, MAYBE_SimpleEndToEnd) {
+// Flakily times out: crbug.com/891484.
+IN_PROC_BROWSER_TEST_F(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
   WaitForOobeWelcomeScreen();
   RunWelcomeScreenChecks();
   TapWelcomeNext();
