@@ -59,7 +59,6 @@
 #include "extensions/common/url_pattern.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_MACOSX)
@@ -588,25 +587,24 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       base::Time::Now());
 
-  Browser* browser = chrome::FindBrowserWithWebContents(contents_);
-  // If there is no browser, it means that the app is being installed in the
-  // background. We skip some steps in this case.
-  const bool silent_install = !browser;
-
-  if (!silent_install && banners::AppBannerManagerDesktop::IsEnabled() &&
-      web_app_info_.open_as_window) {
-    banners::AppBannerManagerDesktop::FromWebContents(contents_)->OnInstall(
-        false /* is_native app */, blink::kWebDisplayModeStandalone);
-  }
-
 #if !defined(OS_CHROMEOS)
   // Pin the app to the relevant launcher depending on the OS.
   Profile* current_profile = profile_->GetOriginalProfile();
 #endif  // !defined(OS_CHROMEOS)
 
+  // If there is no browser, it means that the app is being installed in the
+  // background. We skip some steps in this case.
+  const bool silent_install =
+      (chrome::FindBrowserWithWebContents(contents_) == nullptr);
+
 // On Mac, shortcuts are automatically created for hosted apps when they are
 // installed, so there is no need to create them again.
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  if (!silent_install && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             ::switches::kDisableHostedAppShimCreation)) {
+    web_app::RevealAppShimInFinderForApp(current_profile, extension);
+  }
+#else
   if (create_shortcuts_) {
 #if !defined(OS_CHROMEOS)
     web_app::ShortcutLocations creation_locations;
@@ -637,13 +635,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     ReparentWebContentsIntoAppBrowser(contents_, extension);
   }
 #endif  // !defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-  if (!silent_install && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             ::switches::kDisableHostedAppShimCreation)) {
-    web_app::RevealAppShimInFinderForApp(current_profile, extension);
-  }
-#endif
 
   callback_.Run(extension, web_app_info_);
 }
