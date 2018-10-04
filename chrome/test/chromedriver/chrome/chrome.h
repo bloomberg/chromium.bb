@@ -41,6 +41,11 @@ class Chrome {
                                int* width,
                                int* height) = 0;
 
+  // Sets the size of the specified WebView.
+  virtual Status SetWindowSize(const std::string& target_id,
+                               int width,
+                               int height) = 0;
+
   // Gets the on-screen position of the specified WebView.
   virtual Status GetWindowPosition(const std::string& target_id,
                                    int* x,

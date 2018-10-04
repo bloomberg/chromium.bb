@@ -42,6 +42,12 @@ Status StubChrome::GetWindowSize(const std::string& id,
   return Status(kOk);
 }
 
+Status StubChrome::SetWindowSize(const std::string& id,
+                                 int width,
+                                 int height) {
+  return Status(kOk);
+}
+
 Status StubChrome::GetWindowPosition(const std::string& target_id,
                                      int* x,
                                      int* y) {

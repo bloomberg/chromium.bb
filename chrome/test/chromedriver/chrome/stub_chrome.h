@@ -30,6 +30,7 @@ class StubChrome : public Chrome {
                        bool w3c_compliant) override;
   Status GetWebViewById(const std::string& id, WebView** web_view) override;
   Status GetWindowSize(const std::string& id, int* width, int* height) override;
+  Status SetWindowSize(const std::string& id, int width, int height) override;
   Status GetWindowPosition(const std::string& target_id,
                            int* x,
                            int* y) override;
