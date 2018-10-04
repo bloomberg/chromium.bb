@@ -389,8 +389,7 @@ bool AppListSyncableService::IsInitialized() const {
 void AppListSyncableService::BuildModel() {
   InitFromLocalStorage();
 
-  // TODO(calamity): make this a DCHECK after a dev channel release.
-  CHECK(IsExtensionServiceReady());
+  DCHECK(IsExtensionServiceReady());
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   AppListControllerDelegate* controller = client;
   apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
