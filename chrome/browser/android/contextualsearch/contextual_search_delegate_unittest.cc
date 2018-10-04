@@ -603,7 +603,8 @@ TEST_F(ContextualSearchDelegateTest, ContextualCardsResponseWithThumbnail) {
 }
 
 // Test that we can destroy the context while resolving without a crash.
-TEST_F(ContextualSearchDelegateTest, DestroyContextDuringResolve) {
+// Test is flaky: https://crbug.com/890427
+TEST_F(ContextualSearchDelegateTest, DISABLED_DestroyContextDuringResolve) {
   CreateTestContext();
   CallResolveSearchTermFromContext();
   DestroyTestContext();
