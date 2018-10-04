@@ -13,9 +13,14 @@ enum AudioFocusType {
   // previous holder of audio focus to stop playing.
   kGain,
 
+  // Request transient focus with ducking to indicate that you expect to play
+  // audio for only a short time and that it's OK for the previous focus owner
+  // to keep playing if it "ducks" (lowers) its audio output.
+  kGainTransientMayDuck,
+
   // Request transient focus when you expect to play audio for only a short
   // time and you expect the previous holder to pause playing.
-  kGainTransientMayDuck,
+  kGainTransient,
 };
 
 // Contains information about |MediaSessions| that have requested audio focus

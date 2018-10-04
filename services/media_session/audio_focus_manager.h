@@ -63,7 +63,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void EnforceAudioFocusRequest(mojom::AudioFocusType);
 
   void AbandonAudioFocusInternal(RequestId);
-  void EnforceAudioFocusAbandon();
+  void EnforceAudioFocusAbandon(mojom::AudioFocusType);
 
   // Flush for testing will flush any pending messages to the observers.
   void FlushForTesting();
