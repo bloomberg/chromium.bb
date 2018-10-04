@@ -137,8 +137,7 @@ scoped_refptr<RulesRegistry> RulesRegistryService::GetRulesRegistry(
 
 void RulesRegistryService::RemoveRulesRegistriesByID(int rules_registry_id) {
   std::set<RulesRegistryKey> registries_to_delete;
-  for (RulesRegistryMap::iterator it = rule_registries_.begin();
-       it != rule_registries_.end(); ++it) {
+  for (auto it = rule_registries_.begin(); it != rule_registries_.end(); ++it) {
     const RulesRegistryKey& key = it->first;
     if (key.rules_registry_id != rules_registry_id)
       continue;
@@ -147,8 +146,8 @@ void RulesRegistryService::RemoveRulesRegistriesByID(int rules_registry_id) {
     registries_to_delete.insert(key);
   }
 
-  for (std::set<RulesRegistryKey>::iterator it = registries_to_delete.begin();
-       it != registries_to_delete.end(); ++it) {
+  for (auto it = registries_to_delete.begin(); it != registries_to_delete.end();
+       ++it) {
     rule_registries_.erase(*it);
   }
 }

@@ -136,8 +136,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
 void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::multiset<std::string>::iterator it =
-      watching_event_set_.find(event_name);
+  auto it = watching_event_set_.find(event_name);
   if (it != watching_event_set_.end()) {
     watching_event_set_.erase(it);
     if (watching_event_set_.count(event_name) > 0)
