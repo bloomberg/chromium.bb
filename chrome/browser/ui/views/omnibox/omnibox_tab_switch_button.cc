@@ -28,16 +28,16 @@ size_t OmniboxTabSwitchButton::full_text_width_;
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
                                                OmniboxResultView* result_view,
-                                               int ids_hint,
-                                               int ids_hint_short,
+                                               const base::string16& hint,
+                                               const base::string16& hint_short,
                                                const gfx::VectorIcon& icon)
     : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
       model_(model),
       result_view_(result_view),
       initialized_(false),
       animation_(new gfx::SlideAnimation(this)),
-      ids_hint_(ids_hint),
-      ids_hint_short_(ids_hint_short) {
+      hint_(hint),
+      hint_short_(hint_short) {
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL, gfx::CreateVectorIcon(
                              icon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
@@ -45,15 +45,15 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   SetImageLabelSpacing(8);
   if (!calculated_widths_) {
     icon_only_width_ = MdTextButton::CalculatePreferredSize().width();
-    SetText(l10n_util::GetStringUTF16(ids_hint_short_));
+    SetText(hint_short_);
     short_text_width_ = MdTextButton::CalculatePreferredSize().width();
-    SetText(l10n_util::GetStringUTF16(ids_hint_));
+    SetText(hint_);
     full_text_width_ = MdTextButton::CalculatePreferredSize().width();
     calculated_widths_ = true;
   } else {
-    SetText(l10n_util::GetStringUTF16(ids_hint_));
+    SetText(hint_);
   }
-  SetTooltipText(l10n_util::GetStringUTF16(ids_hint_));
+  SetTooltipText(hint_);
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
@@ -191,11 +191,11 @@ void OmniboxTabSwitchButton::SetPressed() {
 size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
                                                   base::string16* goal_text) {
   if (full_text_width_ * 5 <= parent_width) {
-    *goal_text = l10n_util::GetStringUTF16(ids_hint_);
+    *goal_text = hint_;
     return full_text_width_;
   }
   if (short_text_width_ * 5 <= parent_width) {
-    *goal_text = l10n_util::GetStringUTF16(ids_hint_short_);
+    *goal_text = hint_short_;
     return short_text_width_;
   }
   *goal_text = base::string16();

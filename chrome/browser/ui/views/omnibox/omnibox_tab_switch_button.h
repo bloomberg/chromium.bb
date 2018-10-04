@@ -18,8 +18,8 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
   OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
                          OmniboxResultView* result_view,
-                         int ids_hint,
-                         int ids_hint_short,
+                         const base::string16& hint,
+                         const base::string16& hint_short,
                          const gfx::VectorIcon& icon);
 
   ~OmniboxTabSwitchButton() override;
@@ -84,9 +84,9 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   base::string16 goal_text_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
-  // String identifiers for hint text and its short version (may be same).
-  int ids_hint_;
-  int ids_hint_short_;
+  // Label strings for hint text and its short version (may be same).
+  base::string16 hint_;
+  base::string16 hint_short_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };

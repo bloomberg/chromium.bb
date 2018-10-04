@@ -16,6 +16,8 @@ class TestOmniboxEditController : public OmniboxEditController {
   TestToolbarModel* GetToolbarModel() override;
   const TestToolbarModel* GetToolbarModel() const override;
 
+  using OmniboxEditController::destination_url;
+
  private:
   TestToolbarModel toolbar_model_;
 
