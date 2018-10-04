@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -191,7 +192,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 
   // The condition set ID is a simple increasing counter that matches the
   // order of hints in the config (where earlier hints in the config take
-  // precendence over later hints in the config if there are multiple matches).
+  // precedence over later hints in the config if there are multiple matches).
   url_matcher::URLMatcherConditionSet::ID id = 0;
   url_matcher::URLMatcherConditionFactory* condition_factory =
       hints->url_matcher_.condition_factory();
@@ -231,11 +232,17 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
       base::Optional<PreviewsType> previews_type =
           ConvertProtoOptimizationTypeToPreviewsOptimizationType(
               optimization.optimization_type());
-      if (previews_type.has_value()) {
-        whitelisted_optimizations.insert(std::make_pair(
-            previews_type.value(), optimization.inflation_percent()));
+      if (!previews_type.has_value()) {
+        continue;
       }
+      // Resource loading hints should always be page hints; if they appear as
+      // top-level whitelisted optimizations, then it indicates a bug.
+      DCHECK(previews_type != PreviewsType::RESOURCE_LOADING_HINTS);
+
+      whitelisted_optimizations.insert(std::make_pair(
+          previews_type.value(), optimization.inflation_percent()));
     }
+
     url_matcher::URLMatcherCondition condition =
         condition_factory->CreateHostSuffixCondition(hint.key());
     all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
@@ -283,7 +290,9 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
         "ResourceLoadingHints.PageHints.TotalReceived",
         total_page_patterns_with_resource_loading_hints_received);
   }
-  hints->url_matcher_.AddConditionSets(all_conditions);
+  if (!all_conditions.empty()) {
+    hints->url_matcher_.AddConditionSets(all_conditions);
+  }
 
   // Extract any supported large scale blacklists from the configuration.
   hints->ParseOptimizationFilters(config);
@@ -396,13 +405,26 @@ void PreviewsHints::Initialize() {
 
 bool PreviewsHints::IsWhitelisted(const GURL& url,
                                   PreviewsType type,
-                                  int* out_inflation_percent) {
+                                  int* out_inflation_percent) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!url.has_host())
     return false;
 
-  // First check for being whitelisted at top level for host suffix.
+  return IsWhitelistedAtTopLevel(url, type, out_inflation_percent) ||
+         IsWhitelistedInPageHints(url, type, out_inflation_percent);
+}
+
+bool PreviewsHints::IsWhitelistedAtTopLevel(const GURL& url,
+                                            PreviewsType type,
+                                            int* out_inflation_percent) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Resource loading hints are not processed in the top-level whitelist.
+  if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
+    return false;
+  }
+
   std::set<url_matcher::URLMatcherConditionSet::ID> matches =
       url_matcher_.MatchURL(url);
 
@@ -424,6 +446,14 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
       }
     }
   }
+
+  return false;
+}
+
+bool PreviewsHints::IsWhitelistedInPageHints(const GURL& url,
+                                             PreviewsType type,
+                                             int* out_inflation_percent) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!hint_cache_)
     return false;
@@ -460,7 +490,7 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
   return false;
 }
 
-bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) {
+bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!url.has_host())

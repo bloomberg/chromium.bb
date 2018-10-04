@@ -299,28 +299,44 @@ TEST_F(PreviewsOptimizationGuideTest,
 // Test when resource loading hints are enabled.
 TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWhitelistForResourceLoadingHintsPopulatedCorrectly) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("facebook.com");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("*");
   optimization_guide::proto::Optimization* optimization1 =
-      hint1->add_whitelisted_optimizations();
+      page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
-  // Add a second optimization to ensure that the applicable optimizations are
-  // still whitelisted.
+
+  // Add additional optimizations to ensure that the applicable optimizations
+  // are still whitelisted.
   optimization_guide::proto::Optimization* optimization2 =
       hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(
       optimization_guide::proto::TYPE_UNSPECIFIED);
+
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization3 =
+      page_hint2->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
   // Add a second hint.
   optimization_guide::proto::Hint* hint2 = config.add_hints();
   hint2->set_key("twitter.com");
   hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::Optimization* optimization3 =
-      hint2->add_whitelisted_optimizations();
-  optimization3->set_optimization_type(
+  optimization_guide::proto::PageHint* page_hint3 = hint2->add_page_hints();
+  page_hint3->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization4 =
+      page_hint3->add_whitelisted_optimizations();
+  optimization4->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
+
   ProcessHints(config, "2.0.0");
 
   RunUntilIdle();
@@ -341,6 +357,9 @@ TEST_F(PreviewsOptimizationGuideTest,
 TEST_F(
     PreviewsOptimizationGuideTest,
     ProcessHintsWhitelistForNoScriptAndResourceLoadingHintsPopulatedCorrectly) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("facebook.com");
@@ -348,20 +367,25 @@ TEST_F(
   optimization_guide::proto::Optimization* optimization1 =
       hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
   // Add a second optimization to ensure that the applicable optimizations are
   // still whitelisted.
   optimization_guide::proto::Optimization* optimization2 =
       hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(
       optimization_guide::proto::TYPE_UNSPECIFIED);
+
   // Add a second hint.
   optimization_guide::proto::Hint* hint2 = config.add_hints();
   hint2->set_key("twitter.com");
   hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint1 = hint2->add_page_hints();
+  page_hint1->set_page_pattern("*");
   optimization_guide::proto::Optimization* optimization3 =
-      hint2->add_whitelisted_optimizations();
+      page_hint1->add_whitelisted_optimizations();
   optimization3->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
+
   ProcessHints(config, "2.0.0");
 
   RunUntilIdle();
@@ -389,6 +413,9 @@ TEST_F(
 void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
     base::Optional<std::string> experiment_name,
     bool expect_enabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
   optimization_guide::proto::Configuration config;
 
   // Create a hint with two optimizations. One may be marked experimental
@@ -403,9 +430,12 @@ void PreviewsOptimizationGuideTest::DoExperimentFlagTest(
     optimization1->set_experiment_name(experiment_name.value());
   }
   optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
   // RESOURCE_LOADING is never marked experimental.
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("*");
   optimization_guide::proto::Optimization* optimization2 =
-      hint1->add_whitelisted_optimizations();
+      page_hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
 
