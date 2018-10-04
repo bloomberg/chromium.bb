@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -151,7 +152,7 @@ void ProfileResetterTest::SetUp() {
 
   profile()->CreateWebDataService();
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), &CreateTemplateURLServiceForTesting);
+      profile(), base::BindRepeating(&CreateTemplateURLServiceForTesting));
   resetter_.reset(new ProfileResetter(profile()));
 }
 
