@@ -11,6 +11,7 @@ related to how build artifacts are generated and published.
 
 from __future__ import print_function
 
+import datetime
 import json
 import os
 
@@ -19,6 +20,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -99,9 +101,25 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
         self.workspace_version_info.chrome_branch
     board_metadata['version_platform'] = \
         self.workspace_version_info.VersionString()
+    board_metadata['version'] = {
+        'platform': self.workspace_version_info.VersionString(),
+        'full': self.firmware_version,
+        'milestone': self.workspace_version_info.chrome_branch,
+    }
+
+    current_time = datetime.datetime.now()
+    current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
+
+    # We report the build as passing, since we can't get here if isn't.
+    board_metadata['status'] = {
+        'status': 'pass',
+        'summary': '',
+        'current-time': current_time_stamp,
+    }
 
     logging.info('Writing firmware metadata to %s.', board_metadata_path)
-    osutils.WriteFile(board_metadata_path, json.dumps(board_metadata),
+    osutils.WriteFile(board_metadata_path, json.dumps(board_metadata,
+                                                      indent=2, sort_keys=True),
                       atomic=True, makedirs=True)
 
     self.UploadArtifact(self.metadata_name, archive=False)
