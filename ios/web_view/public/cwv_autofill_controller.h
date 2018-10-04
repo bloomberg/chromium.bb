@@ -42,11 +42,13 @@ CWV_EXPORT
 // No-op if no such form and field can be found in the current page.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
+// |fieldType| is the 'type' attribute of the html field.
 // |completionHandler| will only be called on success.
 // |frameID| is the ID of the web frame containing the form.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
+                              fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))

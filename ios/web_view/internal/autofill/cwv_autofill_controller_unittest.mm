@@ -116,6 +116,7 @@ TEST_F(CWVAutofillControllerTest, FetchSuggestions) {
   [autofill_controller_ fetchSuggestionsForFormWithName:kTestFormName
                                               fieldName:kTestFieldName
                                         fieldIdentifier:kTestFieldIdentifier
+                                              fieldType:@""
                                                 frameID:kTestFrameId
                                       completionHandler:fetch_completion];
 
@@ -217,6 +218,7 @@ TEST_F(CWVAutofillControllerTest, FocusCallback) {
       [[delegate expect] autofillController:autofill_controller_
                     didFocusOnFieldWithName:kTestFieldName
                             fieldIdentifier:kTestFieldIdentifier
+                                  fieldType:@""
                                    formName:kTestFormName
                                     frameID:kTestFrameId
                                       value:kTestFieldValue];
@@ -247,6 +249,7 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
       [[delegate expect] autofillController:autofill_controller_
                     didInputInFieldWithName:kTestFieldName
                             fieldIdentifier:kTestFieldIdentifier
+                                  fieldType:@""
                                    formName:kTestFormName
                                     frameID:kTestFrameId
                                       value:kTestFieldValue];
@@ -276,6 +279,7 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
     [[delegate expect] autofillController:autofill_controller_
                    didBlurOnFieldWithName:kTestFieldName
                           fieldIdentifier:kTestFieldIdentifier
+                                fieldType:@""
                                  formName:kTestFormName
                                   frameID:kTestFrameId
                                     value:kTestFieldValue];
@@ -307,9 +311,10 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
                     didSubmitFormWithName:kTestFormName
                             userInitiated:YES
                               isMainFrame:YES];
-
+    web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
+                            GURL::EmptyGURL());
     test_form_activity_tab_helper_->DocumentSubmitted(
-        /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
+        /*sender_frame*/ &frame, base::SysNSStringToUTF8(kTestFormName),
         /*form_data=*/"",
         /*user_initiated=*/true,
         /*is_main_frame=*/true);
@@ -320,7 +325,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
                               isMainFrame:YES];
 
     test_form_activity_tab_helper_->DocumentSubmitted(
-        /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
+        /*sender_frame*/ &frame, base::SysNSStringToUTF8(kTestFormName),
         /*form_data=*/"",
         /*user_initiated=*/false,
         /*is_main_frame=*/true);
