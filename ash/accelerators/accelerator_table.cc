@@ -74,6 +74,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
     {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_PAD},
+    {true, ui::VKEY_Q, kDebugModifier, DEBUG_SHOW_QUICK_LAUNCH},
     {true, ui::VKEY_T, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_SCREEN},
     {true, ui::VKEY_T, kDebugModifier, DEBUG_TOGGLE_TABLET_MODE},

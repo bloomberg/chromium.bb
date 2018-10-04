@@ -71,7 +71,6 @@
         "device": [ "device:fingerprint"],
         "local_state": [ "pref_client" ],
         "multidevice_setup": [ "multidevice_setup" ],
-        "quick_launch_app": [ "mash:launchable" ],
         "ui": [
           "ozone",
           "window_manager"

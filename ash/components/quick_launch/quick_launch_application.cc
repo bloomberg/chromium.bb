@@ -47,7 +47,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
     UpdateEntries();
   }
-  ~QuickLaunchUI() override { quick_launch_->RemoveWindow(GetWidget()); }
+  ~QuickLaunchUI() override { quick_launch_->Quit(); }
 
  private:
   // Overridden from views::WidgetDelegate:
@@ -133,6 +133,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   void Launch(const std::string& name, bool new_window) {
+    // TODO(jamescook): Start the service by name. Most services don't
+    // support the Launchable interface any more.
     ::mash::mojom::LaunchablePtr launchable;
     connector_->BindInterface(name, &launchable);
     launchable->Launch(mash::mojom::kWindow,
@@ -152,22 +154,16 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
 }  // namespace
 
-QuickLaunchApplication::QuickLaunchApplication() {
-  registry_.AddInterface<::mash::mojom::Launchable>(base::BindRepeating(
-      &QuickLaunchApplication::Create, base::Unretained(this)));
-}
+QuickLaunchApplication::QuickLaunchApplication() = default;
 
 QuickLaunchApplication::~QuickLaunchApplication() {
-  while (!windows_.empty())
-    windows_.front()->CloseNow();
+  if (window_)
+    window_->CloseNow();
 }
 
-void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
-  auto it = std::find(windows_.begin(), windows_.end(), window);
-  DCHECK(it != windows_.end());
-  windows_.erase(it);
-  if (windows_.empty())
-    context()->QuitNow();
+void QuickLaunchApplication::Quit() {
+  window_ = nullptr;
+  context()->QuitNow();
 }
 
 void QuickLaunchApplication::OnStart() {
@@ -184,7 +180,14 @@ void QuickLaunchApplication::OnStart() {
     return;
   }
 
-  Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::MAKE_NEW);
+  catalog::mojom::CatalogPtr catalog;
+  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
+
+  window_ = views::Widget::CreateWindowWithContextAndBounds(
+      new QuickLaunchUI(this, context()->connector(), std::move(catalog)),
+      nullptr, gfx::Rect(10, 640, 0, 0));
+  window_->GetNativeWindow()->GetHost()->window()->SetName("QuickLaunch");
+  window_->Show();
 }
 
 void QuickLaunchApplication::OnBindInterface(
@@ -192,29 +195,6 @@ void QuickLaunchApplication::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void QuickLaunchApplication::Launch(uint32_t what,
-                                    mash::mojom::LaunchMode how) {
-  bool reuse = how == mash::mojom::LaunchMode::REUSE ||
-               how == mash::mojom::LaunchMode::DEFAULT;
-  if (reuse && !windows_.empty()) {
-    windows_.back()->Activate();
-    return;
-  }
-  catalog::mojom::CatalogPtr catalog;
-  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
-
-  views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(this, context()->connector(), std::move(catalog)),
-      nullptr, gfx::Rect(10, 640, 0, 0));
-  window->GetNativeWindow()->GetHost()->window()->SetName("QuickLaunch");
-  window->Show();
-  windows_.push_back(window);
-}
-
-void QuickLaunchApplication::Create(::mash::mojom::LaunchableRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace quick_launch

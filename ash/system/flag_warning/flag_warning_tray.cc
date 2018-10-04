@@ -15,7 +15,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mash/public/mojom/launchable.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_features.h"
@@ -60,10 +59,7 @@ void FlagWarningTray::ButtonPressed(views::Button* sender,
   DCHECK_EQ(button_, sender);
 
   // Open the quick launch mojo mini-app to demonstrate that mini-apps work.
-  mash::mojom::LaunchablePtr launchable;
-  Shell::Get()->connector()->BindInterface(quick_launch::mojom::kServiceName,
-                                           &launchable);
-  launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
+  Shell::Get()->connector()->StartService(quick_launch::mojom::kServiceName);
 }
 
 void FlagWarningTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
