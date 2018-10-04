@@ -139,7 +139,7 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
   html_source->AddLocalizedString("getStarted",
                                   IDS_NUX_GOOGLE_APPS_GET_STARTED);
-  html_source->AddLocalizedString("nuxDescription",
+  html_source->AddLocalizedString("googleAppsDescription",
                                   IDS_NUX_GOOGLE_APPS_DESCRIPTION);
 
   // Add required resources.
@@ -167,6 +167,10 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_EMAIL_GMAIL_1X);
   html_source->AddResourcePath("apps/gmail_2x.png",
                                IDR_NUX_EMAIL_GMAIL_2X);
+  html_source->AddResourcePath("apps/google_apps_1x.png",
+                               IDR_NUX_GOOGLE_APPS_LOGO_1X);
+  html_source->AddResourcePath("apps/google_apps_2x.png",
+                               IDR_NUX_GOOGLE_APPS_LOGO_2X);
   html_source->AddResourcePath("apps/maps_1x.png", IDR_NUX_GOOGLE_APPS_MAPS_1X);
   html_source->AddResourcePath("apps/maps_2x.png", IDR_NUX_GOOGLE_APPS_MAPS_2X);
   html_source->AddResourcePath("apps/news_1x.png", IDR_NUX_GOOGLE_APPS_NEWS_1X);

@@ -701,6 +701,8 @@
         <include name="IDR_NUX_EMAIL_YAHOO_2X" file="resources\welcome\onboarding_welcome\images\yahoo_2x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="resources\welcome\onboarding_welcome\images\chrome_store_1x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X" file="resources\welcome\onboarding_welcome\images\chrome_store_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_LOGO_1X" file="resources\welcome\onboarding_welcome\images\google_apps_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_GOOGLE_APPS_LOGO_2X" file="resources\welcome\onboarding_welcome\images\google_apps_2x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X" file="resources\welcome\onboarding_welcome\images\maps_1x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X" file="resources\welcome\onboarding_welcome\images\maps_2x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X" file="resources\welcome\onboarding_welcome\images\news_1x.png" type="BINDATA" />

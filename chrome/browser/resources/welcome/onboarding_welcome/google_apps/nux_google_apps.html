@@ -21,30 +21,27 @@
       .apps-ask {
         margin-left: auto;
         margin-right: auto;
-        margin-top: 116px;
+        margin-top: 120px;
         width: fit-content;
       }
 
       .chrome-logo {
         content: -webkit-image-set(
-            url(chrome://welcome/logo.png) 1x,
-            url(chrome://welcome/logo2x.png) 2x);
-        height: 40px;
-        margin-bottom: 36px;
-        width: 40px;
+            url(chrome://welcome/apps/google_apps_1x.png) 1x,
+            url(chrome://welcome/apps/google_apps_2x.png) 2x);
+        height: 38px;
+        margin-bottom: 16px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 42px;
       }
 
       h1 {
         color: var(--cr-primary-text-color);
-        font-size: 28px;
-        margin-bottom: 16px;
+        font-size: 24px;
+        margin-bottom: 48px;
         opacity: .8;
-      }
-
-      .description {
-        color: var(--cr-secondary-text-color);
-        font-size: 16px;
-        margin-bottom: 24px;
+        text-align: center;
       }
 
       apps-chooser {
@@ -65,8 +62,7 @@
 
     <div class="apps-ask">
       <div class="chrome-logo"></div>
-      <h1>$i18n{headerText}</h1>
-      <div class="description">$i18n{nuxDescription}</div>
+      <h1>$i18n{googleAppsDescription}</h1>
 
       <apps-chooser id="appChooser" has-apps-selected="{{hasAppsSelected_}}">
       </apps-chooser>
