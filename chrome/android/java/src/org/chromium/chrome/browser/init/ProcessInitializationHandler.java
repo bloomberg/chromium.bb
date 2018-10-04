@@ -137,10 +137,13 @@ public class ProcessInitializationHandler {
      * startup.
      */
     public final void initializePreNative() {
-        ThreadUtils.checkUiThread();
-        if (mInitializedPreNative) return;
-        handlePreNativeInitialization();
-        mInitializedPreNative = true;
+        try (TraceEvent e =
+                        TraceEvent.scoped("ProcessInitializationHandler.initializePreNative()")) {
+            ThreadUtils.checkUiThread();
+            if (mInitializedPreNative) return;
+            handlePreNativeInitialization();
+            mInitializedPreNative = true;
+        }
     }
 
     /**

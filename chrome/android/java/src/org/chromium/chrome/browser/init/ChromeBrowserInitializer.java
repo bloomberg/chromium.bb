@@ -160,14 +160,21 @@ public class ChromeBrowserInitializer {
      */
     public void handlePreNativeStartup(final BrowserParts parts) {
         ThreadUtils.checkUiThread();
-
-        ProcessInitializationHandler.getInstance().initializePreNative();
-        preInflationStartup();
-        parts.preInflationStartup();
-        if (parts.isActivityFinishing()) return;
-
-        preInflationStartupDone();
-        parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
+        try (TraceEvent e1 =
+                        TraceEvent.scoped("ChromeBrowserInitializer.handlePreNativeStartup()")) {
+            ProcessInitializationHandler.getInstance().initializePreNative();
+            try (TraceEvent e2 =
+                            TraceEvent.scoped("ChromeBrowserInitializer.preInflationStartup")) {
+                preInflationStartup();
+                parts.preInflationStartup();
+            }
+            if (parts.isActivityFinishing()) return;
+            preInflationStartupDone();
+            try (TraceEvent e3 = TraceEvent.scoped(
+                         "ChromeBrowserInitializer.setContentViewAndLoadLibrary")) {
+                parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
+            }
+        }
     }
 
     /**
@@ -200,23 +207,25 @@ public class ChromeBrowserInitializer {
      * Running in an AsyncTask as pre-loading itself may cause I/O.
      */
     private void warmUpSharedPrefs() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            new AsyncTask<Void>() {
-                @Override
-                protected Void doInBackground() {
-                    ContextUtils.getAppSharedPreferences();
-                    DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-                    ActivityAssigner.warmUpSharedPrefs(mApplication);
-                    DownloadManagerService.warmUpSharedPrefs();
-                    return null;
+        try (TraceEvent e = TraceEvent.scoped("ChromeBrowserInitializer.warmUpSharedPrefs")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                new AsyncTask<Void>() {
+                    @Override
+                    protected Void doInBackground() {
+                        ContextUtils.getAppSharedPreferences();
+                        DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+                        ActivityAssigner.warmUpSharedPrefs(mApplication);
+                        DownloadManagerService.warmUpSharedPrefs();
+                        return null;
+                    }
                 }
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                ContextUtils.getAppSharedPreferences();
+                DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+                ActivityAssigner.warmUpSharedPrefs(mApplication);
+                DownloadManagerService.warmUpSharedPrefs();
             }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else {
-            ContextUtils.getAppSharedPreferences();
-            DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-            ActivityAssigner.warmUpSharedPrefs(mApplication);
-            DownloadManagerService.warmUpSharedPrefs();
         }
     }
 
