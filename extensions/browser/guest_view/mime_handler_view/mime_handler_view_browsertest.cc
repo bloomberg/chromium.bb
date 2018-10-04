@@ -342,3 +342,23 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
     run_loop.Run();
   }
 }
+
+// Verify that a BrowserPlugin captures mouse input on MouseDown.
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
+                       MouseCaptureOnMouseDown) {
+  RunTest("testBasic.csv");
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_widget = MimeHandlerViewGuest::FromWebContents(guest_web_contents)
+                           ->GetOwnerRenderWidgetHost();
+  auto* embedder_web_contents = GetEmbedderWebContents();
+
+  SendMouseDownToWidget(guest_widget, 0, blink::WebMouseEvent::Button::kLeft);
+
+  while (!GetMouseCaptureWidget(embedder_web_contents)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  EXPECT_EQ(GetMouseCaptureWidget(embedder_web_contents), guest_widget);
+}

@@ -169,6 +169,12 @@ void SimulateRoutedMouseClickAt(WebContents* web_contents,
                                 blink::WebMouseEvent::Button button,
                                 const gfx::Point& point);
 
+// Simulates MouseDown at the center of the given RenderWidgetHost's area.
+// This does not send a corresponding MouseUp.
+void SendMouseDownToWidget(RenderWidgetHost* target,
+                           int modifiers,
+                           blink::WebMouseEvent::Button button);
+
 // Simulates asynchronously a mouse enter/move/leave event.
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
@@ -839,6 +845,12 @@ RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
 
 // Returns the RenderWidgetHost that holds the keyboard lock.
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents);
+
+// Returns the RenderWidgetHost that holds mouse capture, if any. This is
+// distinct from MouseLock above in that it is a widget that has requested
+// implicit capture, such as during a drag. MouseLock is explicitly gained
+// through the JavaScript API.
+RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents);
 
 // Allows tests to drive keyboard lock functionality without requiring access
 // to the RenderWidgetHostImpl header or setting up an HTTP test server.
