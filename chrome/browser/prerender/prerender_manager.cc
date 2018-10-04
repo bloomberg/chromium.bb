@@ -440,10 +440,9 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
       &web_contents->GetController(), should_replace_current_entry);
   WebContents* raw_new_web_contents = new_web_contents.get();
   std::unique_ptr<content::WebContents> old_web_contents =
-      CoreTabHelper::FromWebContents(web_contents)
-          ->delegate()
-          ->SwapTabContents(web_contents, std::move(new_web_contents), true,
-                            prerender_contents->has_finished_loading());
+      web_contents->GetDelegate()->SwapWebContents(
+          web_contents, std::move(new_web_contents), true,
+          prerender_contents->has_finished_loading());
   prerender_contents->CommitHistory(raw_new_web_contents);
 
   // Update PPLT metrics:

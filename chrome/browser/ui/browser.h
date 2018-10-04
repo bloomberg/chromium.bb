@@ -508,6 +508,11 @@ class Browser : public TabStripModelObserver,
   gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
                                   const gfx::Size&) override;
   void ExitPictureInPicture() override;
+  std::unique_ptr<content::WebContents> SwapWebContents(
+      content::WebContents* old_contents,
+      std::unique_ptr<content::WebContents> new_contents,
+      bool did_start_load,
+      bool did_finish_load) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -719,11 +724,6 @@ class Browser : public TabStripModelObserver,
 #endif
 
   // Overridden from CoreTabHelperDelegate:
-  std::unique_ptr<content::WebContents> SwapTabContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
   bool CanReloadContents(content::WebContents* web_contents) const override;
   bool CanSaveContents(content::WebContents* web_contents) const override;
 

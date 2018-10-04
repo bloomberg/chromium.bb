@@ -3447,6 +3447,7 @@ interface HTMLPictureElement : HTMLElement
 interface HTMLPortalElement : HTMLElement
     attribute @@toStringTag
     getter src
+    method activate
     method constructor
     setter src
 interface HTMLPreElement : HTMLElement

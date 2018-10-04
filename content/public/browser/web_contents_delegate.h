@@ -618,6 +618,18 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void UpdateUserGestureCarryoverInfo(WebContents* web_contents) {}
 #endif
 
+  // Requests the delegate to replace |old_contents| with |new_contents| in the
+  // container that holds |old_contents|. If the  delegate successfully replaces
+  // |old_contents|, the return parameter passes ownership of |old_contents|.
+  // Otherwise, |new_contents| is returned.
+  // |did_finish_load| is true if WebContentsObserver::DidFinishLoad() has
+  // already been called for |new_contents|.
+  virtual std::unique_ptr<content::WebContents> SwapWebContents(
+      content::WebContents* old_contents,
+      std::unique_ptr<content::WebContents> new_contents,
+      bool did_start_load,
+      bool did_finish_load);
+
  protected:
   virtual ~WebContentsDelegate();
 

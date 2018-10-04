@@ -26,6 +26,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
@@ -466,6 +467,25 @@ void TabWebContentsDelegateAndroid::UpdateUserGestureCarryoverInfo(
       navigation_interception::InterceptNavigationDelegate::Get(web_contents);
   if (intercept_navigation_delegate)
     intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
+}
+
+std::unique_ptr<content::WebContents>
+TabWebContentsDelegateAndroid::SwapWebContents(
+    content::WebContents* old_contents,
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TabWebContentsDelegateAndroid_swapWebContents(
+      env, GetJavaDelegate(env), new_contents->GetJavaWebContents(),
+      did_start_load, did_finish_load);
+  new_contents.release();
+  return base::WrapUnique(old_contents);
 }
 
 }  // namespace android

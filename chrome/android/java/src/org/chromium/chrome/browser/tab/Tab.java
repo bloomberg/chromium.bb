@@ -2407,7 +2407,6 @@ public class Tab
 
     /** This is currently called when committing a pre-rendered page. */
     @VisibleForTesting
-    @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;

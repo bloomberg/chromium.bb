@@ -1462,6 +1462,33 @@ void Browser::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
+std::unique_ptr<content::WebContents> Browser::SwapWebContents(
+    content::WebContents* old_contents,
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  // Copies the background color and contents of the old WebContents to a new
+  // one that replaces it on the screen. This allows the new WebContents to
+  // have something to show before having loaded any contents. As a result, we
+  // avoid flashing white when navigating from a site with a dark background to
+  // another site with a dark background.
+  if (old_contents && new_contents) {
+    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
+    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
+    if (old_view && new_view)
+      new_view->TakeFallbackContentFrom(old_view);
+  }
+
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
+  DCHECK_NE(TabStripModel::kNoTab, index);
+  return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
+}
+
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }
@@ -2043,33 +2070,6 @@ void Browser::PrintCrossProcessSubframe(
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, CoreTabHelperDelegate implementation:
-
-std::unique_ptr<content::WebContents> Browser::SwapTabContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  // Copies the background color and contents of the old WebContents to a new
-  // one that replaces it on the screen. This allows the new WebContents to
-  // have something to show before having loaded any contents. As a result, we
-  // avoid flashing white when navigating from a site whith a dark background to
-  // another site with a dark background.
-  if (old_contents && new_contents) {
-    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
-    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
-    if (old_view && new_view)
-      new_view->TakeFallbackContentFrom(old_view);
-  }
-
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
-  DCHECK_NE(TabStripModel::kNoTab, index);
-  return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
-}
 
 bool Browser::CanReloadContents(content::WebContents* web_contents) const {
   return chrome::CanReload(this);

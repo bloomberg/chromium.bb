@@ -286,4 +286,12 @@ gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
 
 void WebContentsDelegate::ExitPictureInPicture() {}
 
+std::unique_ptr<content::WebContents> WebContentsDelegate::SwapWebContents(
+    content::WebContents* old_contents,
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  return new_contents;
+}
+
 }  // namespace content
