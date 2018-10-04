@@ -66,6 +66,10 @@ void GestureProviderAura::OnTouchEventAck(
       is_source_touch_event_set_non_blocking);
 }
 
+void GestureProviderAura::ResetGestureHandlingState() {
+  filtered_gesture_provider_.ResetGestureHandlingState();
+}
+
 void GestureProviderAura::OnGestureEvent(const GestureEventData& gesture) {
   std::unique_ptr<ui::GestureEvent> event(
       new ui::GestureEvent(gesture.x, gesture.y, gesture.flags,
