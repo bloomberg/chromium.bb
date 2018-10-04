@@ -208,6 +208,7 @@ source_set("settings") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//net",
+    "//services/identity/public/cpp",
     "//ui/base",
     "//url",
   ]
