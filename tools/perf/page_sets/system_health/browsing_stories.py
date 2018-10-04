@@ -15,7 +15,6 @@ from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import facebook_login
 from page_sets.login_helpers import pinterest_login
-from page_sets.login_helpers import tumblr_login
 
 from telemetry.util import js_template
 
@@ -573,28 +572,6 @@ class TumblrDesktopStory(_MediaBrowsingStory):
     action_runner.Wait(5)  # Give the lightbox time to appear
     action_runner.MouseClick(selector='#tumblr_lightbox_center_image')
     action_runner.Wait(1)  # To make browsing more realistic.
-
-
-class TumblrDesktopStory2018(_MediaBrowsingStory):
-  NAME = 'browse:media:tumblr:2018'
-  URL = 'https://tumblr.com/search/gifs'
-  ITEM_SELECTOR = '.post_media'
-  IS_SINGLE_PAGE_APP = True
-  ITEMS_TO_VISIT = 8
-  INCREMENT_INDEX_AFTER_EACH_ITEM = True
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2018]
-
-  def _Login(self, action_runner):
-    tumblr_login.LoginDesktopAccount(action_runner, 'tumblr')
-    action_runner.Wait(3)
-
-  def _ViewMediaItem(self, action_runner, index):
-    super(TumblrDesktopStory2018, self)._ViewMediaItem(action_runner, index)
-    action_runner.WaitForElement(selector='#tumblr_lightbox')
-    action_runner.MouseClick(selector='#tumblr_lightbox')
-    action_runner.Wait(1)  # To make browsing more realistic.
-
 
 class PinterestDesktopStory(_MediaBrowsingStory):
   NAME = 'browse:media:pinterest'

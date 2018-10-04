@@ -12,9 +12,6 @@
         "browse:media:tumblr": {
             "DEFAULT": "system_health_desktop_036.wprgo"
         },
-        "browse:media:tumblr:2018": {
-            "DEFAULT": "system_health_desktop_55cb9dd713.wprgo"
-        },
         "browse:media:youtube": {
             "DEFAULT": "system_health_desktop_026.wprgo",
             "linux": "system_health_desktop_026.wprgo",
