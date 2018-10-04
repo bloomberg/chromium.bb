@@ -885,6 +885,8 @@ void RenderWidgetHostViewBase::DidNavigate() {
     host()->SynchronizeVisualProperties();
 }
 
+// TODO(wjmaclean): Would it simplify this function if we re-implemented it
+// using GetTransformToViewCoordSpace()?
 bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     RenderWidgetHostViewBase* original_view,
     RenderWidgetHostViewBase* target_view,
@@ -937,6 +939,64 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   }
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  return true;
+}
+
+bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
+    RenderWidgetHostViewBase* target_view,
+    gfx::Transform* transform) {
+  DCHECK(transform);
+  if (target_view == this) {
+    transform->MakeIdentity();
+    return true;
+  }
+
+  if (!use_viz_hit_test_)
+    return false;
+  viz::FrameSinkId root_frame_sink_id = GetRootFrameSinkId();
+  if (!root_frame_sink_id.is_valid())
+    return false;
+
+  const auto& display_hit_test_query_map =
+      GetHostFrameSinkManager()->display_hit_test_query();
+  const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
+  if (iter == display_hit_test_query_map.end())
+    return false;
+  viz::HitTestQuery* query = iter->second.get();
+
+  gfx::Transform transform_this_to_root;
+  if (GetFrameSinkId() != root_frame_sink_id) {
+    gfx::Transform transform_root_to_this;
+    if (!query->GetTransformToTarget(GetFrameSinkId(), &transform_root_to_this))
+      return false;
+    if (!transform_root_to_this.GetInverse(&transform_this_to_root))
+      return false;
+  }
+  gfx::Transform transform_root_to_target;
+  if (!query->GetTransformToTarget(target_view->GetFrameSinkId(),
+                                   &transform_root_to_target)) {
+    return false;
+  }
+
+  // TODO(wjmaclean): In TransformPointToTargetCoordSpace the device scale
+  // factor is taken from the original view ... does that matter? Presumably
+  // all the views have the same dsf.
+  float device_scale_factor = GetDeviceScaleFactor();
+  gfx::Transform transform_to_pixel;
+  transform_to_pixel.Scale(device_scale_factor, device_scale_factor);
+  gfx::Transform transform_from_pixel;
+  transform_from_pixel.Scale(1.f / device_scale_factor,
+                             1.f / device_scale_factor);
+
+  // Note: gfx::Transform includes optimizations to early-out for scale = 1 or
+  // concatenating an identity matrix, so we don't add those checks here.
+  transform->MakeIdentity();
+
+  transform->ConcatTransform(transform_to_pixel);
+  transform->ConcatTransform(transform_this_to_root);
+  transform->ConcatTransform(transform_root_to_target);
+  transform->ConcatTransform(transform_from_pixel);
+
   return true;
 }
 

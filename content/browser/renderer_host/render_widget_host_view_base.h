@@ -402,6 +402,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY);
 
+  // On success, returns true and modifies |*transform| to represent the
+  // transformation mapping a point in the coordinate space of this view
+  // into the coordinate space of the target view.
+  // On Failure, returns false, and leaves |*transform| unchanged.
+  // This function will fail if viz hit testing is not enabled, or if either
+  // this view or the target view has no current FrameSinkId. The latter may
+  // happen if either view is not currently visible in the viewport.
+  // This function is useful if there are multiple points to transform between
+  // the same two views.
+  bool GetTransformToViewCoordSpace(RenderWidgetHostViewBase* target_view,
+                                    gfx::Transform* transform);
+
   // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
   // RenderWidgetHostViewGuests that is needed for special treatment during
   // input event routing. It can be removed either when RWHVGuests properly

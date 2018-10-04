@@ -25,6 +25,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/transform.h"
 
 struct FrameHostMsg_HittestData_Params;
 
@@ -164,6 +165,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   struct TargetData {
     RenderWidgetHostViewBase* target;
     gfx::Vector2dF delta;
+    gfx::Transform transform;
 
     TargetData() : target(nullptr) {}
   };

@@ -1168,6 +1168,189 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scroll_end_observer.Wait();
 }
 
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       CSSTransformedIframeTouchEventCoordinates) {
+  // This test only makes sense if viz hit testing is enabled.
+  if (std::get<0>(GetParam()) == 0)
+    return;
+
+  GURL url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_scaled_frame.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
+  FrameTreeNode* root_frame_tree_node = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root_frame_tree_node->child_count());
+  FrameTreeNode* child_frame_tree_node = root_frame_tree_node->child_at(0);
+  GURL child_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(child_url, child_frame_tree_node->current_url());
+
+  auto* root_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root_frame_tree_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView());
+  auto* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      child_frame_tree_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(
+      child_frame_tree_node->current_frame_host());
+
+  const float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
+
+  // Some basic tests on the transforms between child and root. These assume
+  // a CSS scale of 0.5 on the child, though should be robust to placement of
+  // the iframe.
+  gfx::Transform transform_to_child;
+  ASSERT_TRUE(
+      root_rwhv->GetTransformToViewCoordSpace(child_rwhv, &transform_to_child));
+  EXPECT_TRUE(transform_to_child.IsScaleOrTranslation());
+  EXPECT_EQ(2.f / scale_factor, transform_to_child.matrix().getFloat(0, 0));
+  EXPECT_EQ(2.f / scale_factor, transform_to_child.matrix().getFloat(1, 1));
+
+  gfx::PointF child_origin =
+      child_rwhv->TransformPointToRootCoordSpaceF(gfx::PointF());
+
+  gfx::Transform transform_from_child;
+  ASSERT_TRUE(child_rwhv->GetTransformToViewCoordSpace(root_rwhv,
+                                                       &transform_from_child));
+  EXPECT_TRUE(transform_from_child.IsScaleOrTranslation());
+  EXPECT_EQ(0.5f * scale_factor, transform_from_child.matrix().getFloat(0, 0));
+  EXPECT_EQ(0.5f * scale_factor, transform_from_child.matrix().getFloat(1, 1));
+  EXPECT_EQ(child_origin.x(), transform_from_child.matrix().getFloat(0, 3));
+  EXPECT_EQ(child_origin.y(), transform_from_child.matrix().getFloat(1, 3));
+
+  gfx::Transform transform_child_to_child =
+      transform_from_child * transform_to_child;
+  // If the scale factor is 1.f, then this multiplication of the transform with
+  // its inverse will be exact, and IsIdentity will indicate that. However, if
+  // the scale is an arbitrary float (as on Android), then we instead compare
+  // element by element using EXPECT_NEAR.
+  if (scale_factor == 1.f) {
+    EXPECT_TRUE(transform_child_to_child.IsIdentity());
+  } else {
+    const float kTolerance = 0.001f;
+    const int kDim = 4;
+    for (int row = 0; row < kDim; ++row) {
+      for (int col = 0; col < kDim; ++col) {
+        EXPECT_NEAR(row == col ? 1.f : 0.f,
+                    transform_child_to_child.matrix().getFloat(row, col),
+                    kTolerance);
+      }
+    }
+  }
+
+  gfx::Transform transform_root_to_root;
+  ASSERT_TRUE(root_rwhv->GetTransformToViewCoordSpace(root_rwhv,
+                                                      &transform_root_to_root));
+  EXPECT_TRUE(transform_root_to_root.IsIdentity());
+
+  // Select two points inside child, one for the touch start and a different
+  // one for a touch move.
+  gfx::PointF touch_start_point_in_child(6, 6);
+  gfx::PointF touch_move_point_in_child(10, 10);
+
+  gfx::PointF touch_start_point =
+      child_rwhv->TransformPointToRootCoordSpaceF(touch_start_point_in_child);
+  gfx::PointF touch_move_point =
+      child_rwhv->TransformPointToRootCoordSpaceF(touch_move_point_in_child);
+
+  // Install InputEventObserver on child, and collect the three events.
+  TestInputEventObserver child_event_observer(
+      child_rwhv->GetRenderWidgetHost());
+  InputEventAckWaiter child_touch_start_waiter(
+      child_rwhv->GetRenderWidgetHost(), blink::WebInputEvent::kTouchStart);
+  InputEventAckWaiter child_touch_move_waiter(child_rwhv->GetRenderWidgetHost(),
+                                              blink::WebInputEvent::kTouchMove);
+  InputEventAckWaiter child_touch_end_waiter(child_rwhv->GetRenderWidgetHost(),
+                                             blink::WebInputEvent::kTouchEnd);
+
+  // Send events and verify each one was sent to the child with correctly
+  // transformed event coordinates.
+  auto* router = web_contents()->GetInputEventRouter();
+  const float kCoordinateTolerance = 0.1f;
+
+  // TouchStart.
+  blink::WebTouchEvent touch_start_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_start_event.touches_length = 1;
+  touch_start_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  SetWebEventPositions(&touch_start_event.touches[0], touch_start_point,
+                       root_rwhv);
+  touch_start_event.unique_touch_event_id = 1;
+  router->RouteTouchEvent(root_rwhv, &touch_start_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  child_touch_start_waiter.Wait();
+
+  ASSERT_EQ(1U, child_event_observer.events_received().size());
+  ASSERT_EQ(blink::WebInputEvent::kTouchStart,
+            child_event_observer.event().GetType());
+  const blink::WebTouchEvent& touch_start_event_received =
+      static_cast<const blink::WebTouchEvent&>(child_event_observer.event());
+  EXPECT_NEAR(touch_start_point_in_child.x(),
+              touch_start_event_received.touches[0].PositionInWidget().x,
+              kCoordinateTolerance);
+  EXPECT_NEAR(touch_start_point_in_child.y(),
+              touch_start_event_received.touches[0].PositionInWidget().y,
+              kCoordinateTolerance);
+
+  // TouchMove.
+  blink::WebTouchEvent touch_move_event(
+      blink::WebInputEvent::kTouchMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_move_event.touches_length = 1;
+  touch_move_event.touches[0].state = blink::WebTouchPoint::kStateMoved;
+  SetWebEventPositions(&touch_move_event.touches[0], touch_move_point,
+                       root_rwhv);
+  touch_move_event.unique_touch_event_id = 2;
+  router->RouteTouchEvent(root_rwhv, &touch_move_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  child_touch_move_waiter.Wait();
+
+  ASSERT_EQ(2U, child_event_observer.events_received().size());
+  ASSERT_EQ(blink::WebInputEvent::kTouchMove,
+            child_event_observer.event().GetType());
+  const blink::WebTouchEvent& touch_move_event_received =
+      static_cast<const blink::WebTouchEvent&>(child_event_observer.event());
+  EXPECT_NEAR(touch_move_point_in_child.x(),
+              touch_move_event_received.touches[0].PositionInWidget().x,
+              kCoordinateTolerance);
+  EXPECT_NEAR(touch_move_point_in_child.y(),
+              touch_move_event_received.touches[0].PositionInWidget().y,
+              kCoordinateTolerance);
+
+  // TouchEnd.
+  blink::WebTouchEvent touch_end_event(
+      blink::WebInputEvent::kTouchEnd, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_end_event.touches_length = 1;
+  touch_end_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
+  SetWebEventPositions(&touch_end_event.touches[0], touch_move_point,
+                       root_rwhv);
+  touch_end_event.unique_touch_event_id = 3;
+  router->RouteTouchEvent(root_rwhv, &touch_end_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  child_touch_end_waiter.Wait();
+
+  ASSERT_EQ(3U, child_event_observer.events_received().size());
+  ASSERT_EQ(blink::WebInputEvent::kTouchEnd,
+            child_event_observer.event().GetType());
+  const blink::WebTouchEvent& touch_end_event_received =
+      static_cast<const blink::WebTouchEvent&>(child_event_observer.event());
+  EXPECT_NEAR(touch_move_point_in_child.x(),
+              touch_end_event_received.touches[0].PositionInWidget().x,
+              kCoordinateTolerance);
+  EXPECT_NEAR(touch_move_point_in_child.y(),
+              touch_end_event_received.touches[0].PositionInWidget().y,
+              kCoordinateTolerance);
+}
+
 // When a scroll event is bubbled, ensure that the bubbled event's coordinates
 // are correctly updated to the ancestor's coordinate space. In particular,
 // ensure that the transformation considers CSS scaling of the child where
