@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
         text run at (0,40) width 564: "have a LayoutBlockFlow and LayoutBlockFlow below it in the dump of the RenderTree."
       LayoutBR {BR} at (564,40) size 0x19
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (788,59) size 0x19
+      LayoutBR {BR} at (788,74) size 0x0
       LayoutBR {BR} at (0,74) size 0x19
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,68) size 788x14

@@ -84,6 +84,7 @@ struct NGInlineBoxState {
   void ComputeTextMetrics(const ComputedStyle& style,
                           FontBaseline baseline_type);
   void EnsureTextMetrics(const ComputedStyle&, FontBaseline);
+  void ResetTextMetrics();
 
   void AccumulateUsedFonts(const ShapeResult*, FontBaseline);
 
