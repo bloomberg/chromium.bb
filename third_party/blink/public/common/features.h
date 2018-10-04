@@ -30,6 +30,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
+BLINK_COMMON_EXPORT extern const base::Feature kJankTracking;
 
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentBgColorParameterName[];

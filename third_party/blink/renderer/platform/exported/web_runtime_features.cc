@@ -176,6 +176,10 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableJankTracking(bool enable) {
+  RuntimeEnabledFeatures::SetJankTrackingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {
   RuntimeEnabledFeatures::SetLayeredAPIEnabled(enable);
 }

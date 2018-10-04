@@ -499,6 +499,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
       base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
+
+  WebRuntimeFeatures::EnableJankTracking(
+      base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
+      enableExperimentalWebPlatformFeatures);
 }
 
 }  // namespace content
