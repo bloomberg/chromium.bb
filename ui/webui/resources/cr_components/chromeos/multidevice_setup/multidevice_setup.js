@@ -18,6 +18,8 @@ cr.define('multidevice_setup', function() {
   const MultiDeviceSetup = Polymer({
     is: 'multidevice-setup',
 
+    behaviors: [WebUIListenerBehavior],
+
     properties: {
       /**
        * Delegate object which performs differently in OOBE vs. non-OOBE mode.
@@ -106,10 +108,10 @@ cr.define('multidevice_setup', function() {
       passwordPageForwardButtonDisabled_: Boolean,
 
       /**
-       * Interface to the MultiDeviceSetup Mojo service.
-       * @private {!chromeos.multideviceSetup.mojom.MultiDeviceSetupImpl}
+       * Provider of an interface to the MultiDeviceSetup Mojo service.
+       * @private {!multidevice_setup.MojoInterfaceProvider}
        */
-      multideviceSetup_: Object
+      mojoInterfaceProvider_: Object
     },
 
     listeners: {
@@ -119,14 +121,20 @@ cr.define('multidevice_setup', function() {
 
     /** @override */
     created: function() {
-      this.multideviceSetup_ =
-          multidevice_setup.MojoInterfaceProviderImpl.getInstance()
-              .getInterfacePtr();
+      this.mojoInterfaceProvider_ =
+          multidevice_setup.MojoInterfaceProviderImpl.getInstance();
     },
 
     /** @override */
-    attached: function() {
-      this.multideviceSetup_.getEligibleHostDevices()
+    ready: function() {
+      this.addWebUIListener(
+          'multidevice_setup.initializeSetupFlow',
+          this.initializeSetupFlow.bind(this));
+    },
+
+    initializeSetupFlow: function() {
+      this.mojoInterfaceProvider_.getInterfacePtr()
+          .getEligibleHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {
               console.warn('Potential host list is empty.');

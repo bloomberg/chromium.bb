@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
 js_library("multidevice_setup_post_oobe") {
   deps = [
     ":post_oobe_delegate",
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup",
   ]
 }
 
