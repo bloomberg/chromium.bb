@@ -193,11 +193,12 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
     ExtensionsBrowserClient::Get()
         ->GetExtensionSystemFactory()
-        ->SetTestingFactoryAndUse(profile_.get(),
-                                  &MockExtensionSystemFactoryFunction);
+        ->SetTestingFactoryAndUse(
+            profile_.get(),
+            base::BindRepeating(&MockExtensionSystemFactoryFunction));
 
-    EventRouterFactory::GetInstance()->SetTestingFactory(profile_.get(),
-                                                         &BuildEventRouter);
+    EventRouterFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), base::BindRepeating(&BuildEventRouter));
   }
 
   void TearDown() override {
