@@ -143,6 +143,13 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	if (!combo)
 		return -EINVAL;
 
+	/* Currently Gralloc does not handle a different map_stride. So to work around,
+	 * aligning the stride to 256 to make bo_stride same as map_stride. b/115946221.
+	 */
+#ifdef __ANDROID__
+	uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
+	width = ALIGN(width, 256 / bytes_per_pixel);
+#endif
 	if (combo->metadata.tiling == TILE_TYPE_DRI)
 		return dri_bo_create(bo, width, height, format, use_flags);
 
