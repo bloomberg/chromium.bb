@@ -107,7 +107,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void ClearResourceReference();
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;
-  bool ExpandUseElementsInShadowTree();
+  void ExpandUseElementsInShadowTree();
   void CloneNonMarkupEventListeners();
   void AddReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
