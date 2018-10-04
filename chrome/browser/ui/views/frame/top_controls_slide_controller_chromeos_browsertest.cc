@@ -54,11 +54,24 @@ void GenerateGestureFlingScrollSequence(ui::test::EventGenerator* generator,
                                         const gfx::Point& start_point,
                                         const gfx::Point& end_point) {
   DCHECK(generator);
-  generator->GestureScrollSequence(
+  generator->GestureScrollSequenceWithCallback(
       start_point, end_point,
       generator->CalculateScrollDurationForFlingVelocity(
           start_point, end_point, 100 /* velocity */, 2 /* steps */),
-      2 /* steps */);
+      2 /* steps */,
+      base::BindRepeating([](ui::EventType, const gfx::Vector2dF&) {
+        // Give the event a chance to propagate to renderer before sending the
+        // next one.
+        base::RunLoop().RunUntilIdle();
+      }));
+}
+
+// Checks that the translation part of the two given transforms are equal.
+void CompareTranslations(const gfx::Transform& t1, const gfx::Transform& t2) {
+  const gfx::Vector2dF t1_translation = t1.To2dTranslation();
+  const gfx::Vector2dF t2_translation = t2.To2dTranslation();
+  EXPECT_FLOAT_EQ(t1_translation.x(), t2_translation.x());
+  EXPECT_FLOAT_EQ(t1_translation.y(), t2_translation.y());
 }
 
 // Waits for the first non-empty paint for a given WebContents. To be able to
@@ -87,7 +100,8 @@ class TabNonEmptyPaintWaiter : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TabNonEmptyPaintWaiter);
 };
 
-// Waits for a given browser top controls shown ratio on a given browser window.
+// Waits for a given terminal value (1.f or 0.f) of the browser top controls
+// shown ratio on a given browser window.
 class TopControlsShownRatioWaiter {
  public:
   explicit TopControlsShownRatioWaiter(
@@ -95,6 +109,10 @@ class TopControlsShownRatioWaiter {
       : controller_(controller) {}
 
   void WaitForRatio(float ratio) {
+    DCHECK(ratio == 1.f || ratio == 0.f) << "Should only be used to wait for "
+                                            "terminal values of the shown "
+                                            "ratio.";
+
     waiting_for_shown_ratio_ = ratio;
     if (CheckRatio())
       return;
@@ -105,7 +123,11 @@ class TopControlsShownRatioWaiter {
 
  private:
   bool CheckRatio() {
-    if (cc::MathUtil::IsWithinEpsilon(controller_->GetShownRatio(),
+    // To avoid flakes, we also check that gesture scrolling is not in progress
+    // which means for a terminal value of the shown ratio (that we're waiting
+    // for) sliding is also not in progress and we reached a steady state.
+    if (!controller_->IsTopControlsGestureScrollInProgress() &&
+        cc::MathUtil::IsWithinEpsilon(controller_->GetShownRatio(),
                                       waiting_for_shown_ratio_)) {
       if (run_loop_)
         run_loop_->Quit();
@@ -272,15 +294,76 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     }
   }
 
- private:
-  void CompareTranslations(const gfx::Transform& t1,
-                           const gfx::Transform& t2) const {
-    const gfx::Vector2dF t1_translation = t1.To2dTranslation();
-    const gfx::Vector2dF t2_translation = t2.To2dTranslation();
-    EXPECT_FLOAT_EQ(t1_translation.x(), t2_translation.x());
-    EXPECT_FLOAT_EQ(t1_translation.y(), t2_translation.y());
+  // This is used as a callback of type |ScrollStepCallback| of the function
+  // EventGenerator::GestureScrollSequenceWithCallback() that will be called at
+  // the scroll steps of ET_GESTURE_SCROLL_BEGIN, ET_GESTURE_SCROLL_UPDATE, and
+  // ET_GESTURE_SCROLL_END.
+  //
+  // It verifies the state of the browser window when the active page is being
+  // scrolled by touch gestures in such a way that will result in the top
+  // controls shown ratio becoming a fractional value (i.e. sliding top-chrome
+  // is in progress).
+  // The |expected_shrink_renderer_size| will be checked against the
+  // `DoBrowserControlsShrinkRendererSize` bit while sliding.
+  // |out_seen_fractional_shown_ratio| will be set to true if a fractional value
+  // of the shown_ratio has been seen.
+  // |event_type| and |delta| are callback parameters of |ScrollStepCallback|.
+  void CheckIntermediateScrollStep(bool expected_shrink_renderer_size,
+                                   bool* out_seen_fractional_shown_ratio,
+                                   ui::EventType event_type,
+                                   const gfx::Vector2dF& delta) {
+    // Give the event a chance to propagate to renderer before sending the
+    // next one.
+    base::RunLoop().RunUntilIdle();
+
+    if (event_type != ui::ET_GESTURE_SCROLL_UPDATE)
+      return;
+
+    const float shown_ratio = top_controls_slide_controller()->GetShownRatio();
+    if (shown_ratio == 1.f || shown_ratio == 0.f) {
+      // Test only intermediate values.
+      return;
+    }
+
+    *out_seen_fractional_shown_ratio = true;
+
+    const int top_controls_height = browser_view()->GetTopControlsHeight();
+    EXPECT_NE(top_controls_height, 0);
+
+    ui::Layer* root_view_layer =
+        browser_view()->frame()->GetRootView()->layer();
+
+    // While sliding is in progress, the root view paints to a layer.
+    ASSERT_TRUE(root_view_layer);
+
+    // This will be called repeatedly while scrolling is in progress. The
+    // `DoBrowserControlsShrinkRendererSize` bit should remain the same as the
+    // expected value.
+    EXPECT_EQ(expected_shrink_renderer_size,
+              browser_view()->DoBrowserControlsShrinkRendererSize(
+                  browser_view()->GetActiveWebContents()));
+
+    // Check intermediate transforms.
+    gfx::Transform expected_transform;
+    const float y_translation = top_controls_height * (shown_ratio - 1.f);
+    expected_transform.Translate(0, y_translation);
+
+    ASSERT_TRUE(browser_view()
+                    ->contents_web_view()
+                    ->holder()
+                    ->GetNativeViewContainer());
+    ui::Layer* contents_container_layer = browser_view()
+                                              ->contents_web_view()
+                                              ->holder()
+                                              ->GetNativeViewContainer()
+                                              ->layer();
+    ASSERT_TRUE(contents_container_layer);
+    CompareTranslations(expected_transform,
+                        contents_container_layer->transform());
+    CompareTranslations(expected_transform, root_view_layer->transform());
   }
 
+ private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsSlideControllerTest);
@@ -799,6 +882,79 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   waiter.WaitForRatio(0.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
+}
+
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       TestIntermediateSliding) {
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+
+  // Navigate to our test page that has a long vertical content which we can use
+  // to test page scrolling.
+  OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
+                 0);
+  content::WebContents* active_contents =
+      browser_view()->GetActiveWebContents();
+  PageStateUpdateWaiter page_state_update_waiter(active_contents);
+  page_state_update_waiter.Wait();
+  EXPECT_TRUE(
+      browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
+
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
+                                           browser_window);
+  const gfx::Point start_point = event_generator.current_location();
+  const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
+
+  // Large number of ET_GESTURE_SCROLL_UPDATE steps that we can see fractional
+  // shown ratios while scrolling is in progress.
+  const int scroll_steps = 1000;
+  const base::TimeDelta scroll_step_delay =
+      event_generator.CalculateScrollDurationForFlingVelocity(
+          start_point, end_point, 1000 /* velocity */, scroll_steps);
+
+  // We need to verify that a fractional value of the shown ratio has been seen,
+  // otherwise the test is useless, since we want to verify the state while
+  // sliding in in progress.
+  bool seen_fractional_shown_ratio = false;
+
+  // We will start scrolling while top-chrome is fully shown, in which case the
+  // `DoBrowserControlsShrinkRendererSize` bit is true. It should remain true
+  // while sliding is in progress.
+  bool expected_shrink_renderer_size = true;
+  event_generator.GestureScrollSequenceWithCallback(
+      start_point, end_point, scroll_step_delay, scroll_steps,
+      base::BindRepeating(
+          &TopControlsSlideControllerTest::CheckIntermediateScrollStep,
+          base::Unretained(this), expected_shrink_renderer_size,
+          &seen_fractional_shown_ratio));
+  EXPECT_TRUE(seen_fractional_shown_ratio);
+  TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
+  waiter.WaitForRatio(0.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
+
+  // Now that sliding ended, and top-chrome is fully hidden, the
+  // `DoBrowserControlsShrinkRendererSize` bit should be false ...
+  EXPECT_FALSE(
+      browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
+
+  // ... and when scrolling in the other direction towards a fully shown
+  // top-chrome, it should remain false while sliding is in progress.
+  expected_shrink_renderer_size = false;
+  seen_fractional_shown_ratio = false;
+  event_generator.GestureScrollSequenceWithCallback(
+      end_point, start_point, scroll_step_delay, scroll_steps,
+      base::BindRepeating(
+          &TopControlsSlideControllerTest::CheckIntermediateScrollStep,
+          base::Unretained(this), expected_shrink_renderer_size,
+          &seen_fractional_shown_ratio));
+  EXPECT_TRUE(seen_fractional_shown_ratio);
+  waiter.WaitForRatio(1.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
 }
 
 }  // namespace
