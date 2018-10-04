@@ -146,7 +146,6 @@ class MediaPermission;
 }
 
 namespace network {
-class WeakWrapperSharedURLLoaderFactory;
 struct ResourceResponseHead;
 }
 
@@ -1118,7 +1117,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetupLoaderFactoryBundle(
       std::unique_ptr<URLLoaderFactoryBundleInfo> info,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-          subresource_overrides);
+          subresource_overrides,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1607,12 +1607,6 @@ class CONTENT_EXPORT RenderFrameImpl
   mojom::FrameHostAssociatedPtr frame_host_ptr_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
-
-  // Set on CommitNavigation when Network Service is enabled, and used
-  // by FrameURLLoaderFactory for prefetch requests.
-  network::mojom::URLLoaderFactoryPtr prefetch_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      prefetch_shared_loader_factory_;
 
   // URLLoaderFactory instances used for subresource loading.
   // Depending on how the frame was created, |loader_factories_| could be:

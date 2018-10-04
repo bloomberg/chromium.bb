@@ -21,6 +21,12 @@ namespace content {
 
 // Holds the internal state of a ChildURLLoaderFactoryBundle in a form that is
 // safe to pass across sequences.
+// |prefetch_loader_factory_info| is used only by the frames who may send
+// prefetch requests by <link rel="prefetch"> tags. The loader factory allows
+// prefetch loading to be done by the browser process (therefore less memory
+// pressure), and also adds special handling for Signed Exchanges (SXG) when the
+// flag is enabled. TODO(crbug/803776): deprecate this once SXG specific code is
+// moved into Network Service unless we see huge memory benefit for doing this.
 class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
     : public URLLoaderFactoryBundleInfo {
  public:
@@ -28,18 +34,23 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>;
 
   ChildURLLoaderFactoryBundleInfo();
-  explicit ChildURLLoaderFactoryBundleInfo(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
+  ChildURLLoaderFactoryBundleInfo(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> base_info,
+      network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info);
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info,
       bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo& direct_network_factory_info() {
     return direct_network_factory_info_;
+  }
+  network::mojom::URLLoaderFactoryPtrInfo& prefetch_loader_factory_info() {
+    return prefetch_loader_factory_info_;
   }
 
  protected:
@@ -47,6 +58,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info_;
+  network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildURLLoaderFactoryBundleInfo);
 };
@@ -112,6 +124,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter_;
   PossiblyAssociatedURLLoaderFactoryPtr direct_network_factory_;
+  network::mojom::URLLoaderFactoryPtr prefetch_loader_factory_;
 
   std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;
 };

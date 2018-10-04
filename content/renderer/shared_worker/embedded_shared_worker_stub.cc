@@ -275,7 +275,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   if (subresource_loader_factories) {
     subresource_loader_factories_->Update(
         std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-            std::move(subresource_loader_factories)),
+            std::move(subresource_loader_factories),
+            nullptr /* prefetch_loader_factory_info */),
         base::nullopt /* subresource_overrides */);
   }
 
