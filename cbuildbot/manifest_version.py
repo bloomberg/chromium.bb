@@ -961,8 +961,7 @@ class BuildSpecsManager(object):
         return
       except cros_build_lib.RunCommandError as e:
         last_error = ('Failed to update the status for %s during remote'
-                      ' command: %s' % (self.build_names[0],
-                                        e.message))
+                      ' command: %s' % (self.build_names[0], e))
         logging.error(last_error)
         logging.error('Retrying to update the status:  Retry %d/%d', index + 1,
                       retries)
