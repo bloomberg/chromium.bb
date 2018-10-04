@@ -59,16 +59,17 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "net/base/network_change_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -347,7 +348,7 @@ std::vector<base::FilePath> GetPinnedFiles(
 
 // Observes drive disable Preference's change.
 class DriveIntegrationService::PreferenceWatcher
-    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
       : pref_service_(pref_service),
@@ -367,19 +368,24 @@ class DriveIntegrationService::PreferenceWatcher
 
   ~PreferenceWatcher() override {
     if (integration_service_ && integration_service_->drivefs_holder_) {
-      net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+      content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
+          this);
     }
   }
 
   void set_integration_service(DriveIntegrationService* integration_service) {
     integration_service_ = integration_service;
     if (integration_service_->drivefs_holder_) {
-      net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+      content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(
+          this);
     }
   }
 
   void UpdateSyncPauseState() {
-    OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
+    auto type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    content::GetNetworkConnectionTracker()->GetConnectionType(
+        &type, base::DoNothing());
+    OnConnectionChanged(type);
   }
 
  private:
@@ -389,14 +395,15 @@ class DriveIntegrationService::PreferenceWatcher
         !pref_service_->GetBoolean(prefs::kDisableDrive));
   }
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override {
+  // network::NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    bool is_offline =
+        type == network::mojom::ConnectionType::CONNECTION_UNKNOWN ||
+        type == network::mojom::ConnectionType::CONNECTION_NONE;
     // Check for a pending remount first. In this case, DriveFS will not be
     // mounted and thus its interface will be null.
     if (integration_service_->drivefs_holder_ &&
-        integration_service_->remount_when_online_ &&
-        !net::NetworkChangeNotifier::IsOffline()) {
+        integration_service_->remount_when_online_ && !is_offline) {
       integration_service_->remount_when_online_ = false;
       integration_service_->AddDriveMountPoint();
       return;
@@ -406,9 +413,9 @@ class DriveIntegrationService::PreferenceWatcher
       return;
 
     integration_service_->GetDriveFsInterface()->UpdateNetworkState(
-        net::NetworkChangeNotifier::IsConnectionCellular(type) &&
+        network::NetworkConnectionTracker::IsConnectionCellular(type) &&
             pref_service_->GetBoolean(prefs::kDisableDriveOverCellular),
-        type == net::NetworkChangeNotifier::CONNECTION_NONE);
+        is_offline);
   }
 
   PrefService* pref_service_;
@@ -914,7 +921,8 @@ void DriveIntegrationService::MaybeRemountFileSystem(
   RemoveDriveMountPoint();
 
   if (!remount_delay) {
-    if (failed_to_mount && net::NetworkChangeNotifier::IsOffline()) {
+    if (failed_to_mount &&
+        content::GetNetworkConnectionTracker()->IsOffline()) {
       logger_->Log(logging::LOG_WARNING,
                    "DriveFs failed to start, will retry when online.");
       remount_when_online_ = true;
