@@ -196,7 +196,8 @@ void DownloadUIControllerTest::SetUp() {
   TestDownloadCoreService* download_core_service =
       static_cast<TestDownloadCoreService*>(
           DownloadCoreServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              browser_context(), &TestingDownloadCoreServiceFactory));
+              browser_context(),
+              base::BindRepeating(&TestingDownloadCoreServiceFactory)));
   ASSERT_TRUE(download_core_service);
   download_core_service->set_download_history(std::move(download_history));
 }
