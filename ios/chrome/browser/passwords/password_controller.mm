@@ -39,6 +39,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
@@ -287,6 +288,11 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 - (id<PasswordFormFiller>)passwordFormFiller {
   return self;
+}
+
+- (ukm::SourceId)ukmSourceId {
+  return _webState ? ukm::GetSourceIdForWebStateDocument(_webState)
+                   : ukm::kInvalidSourceId;
 }
 
 - (PasswordManagerClient*)passwordManagerClient {
