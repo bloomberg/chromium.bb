@@ -314,24 +314,26 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  HitTestLocation local_location;
-  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+  base::Optional<HitTestLocation> local_storage;
+  const HitTestLocation* local_location =
+      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
           *this, LocalToSVGParentTransform(), location_in_parent,
-          local_location))
+          local_storage);
+  if (!local_location)
     return false;
 
-  if (LayoutBlock::NodeAtPoint(result, local_location, accumulated_offset,
+  if (LayoutBlock::NodeAtPoint(result, *local_location, accumulated_offset,
                                hit_test_action))
     return true;
 
   // Consider the bounding box if requested.
   if (StyleRef().PointerEvents() == EPointerEvents::kBoundingBox) {
     if (IsObjectBoundingBoxValid() &&
-        local_location.Intersects(ObjectBoundingBox())) {
+        local_location->Intersects(ObjectBoundingBox())) {
       const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location.TransformedPoint());
+          LayoutPoint(local_location->TransformedPoint());
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(GetElement(), local_location) ==
+      if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;
     }
