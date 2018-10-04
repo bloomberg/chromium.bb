@@ -105,6 +105,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
+      bool start_paused,
       GetRegistrationCallback callback);
 
   // Get the BackgroundFetchRegistration.

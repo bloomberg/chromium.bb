@@ -126,12 +126,14 @@ CreateMetadataTask::CreateMetadataTask(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
       requests_(requests),
       options_(options),
       icon_(icon),
+      start_paused_(start_paused),
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
@@ -360,7 +362,7 @@ void CreateMetadataTask::FinishWithError(
 
     for (auto& observer : data_manager()->observers()) {
       observer.OnRegistrationCreated(registration_id_, registration, options_,
-                                     icon_, requests_.size());
+                                     icon_, requests_.size(), start_paused_);
     }
   }
 

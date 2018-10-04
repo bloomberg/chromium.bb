@@ -98,11 +98,13 @@ void BackgroundFetchDataManager::CreateRegistration(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    bool start_paused,
     GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
-      this, registration_id, requests, options, icon, std::move(callback)));
+      this, registration_id, requests, options, icon, start_paused,
+      std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetRegistration(

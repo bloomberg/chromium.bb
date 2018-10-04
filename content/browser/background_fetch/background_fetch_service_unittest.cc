@@ -155,7 +155,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     base::RunLoop run_loop;
     context_->data_manager_->CreateRegistration(
-        registration_id, requests, options, icon,
+        registration_id, requests, options, icon, /* start_paused = */ false,
         base::BindOnce(&BackgroundFetchServiceTest::DidStartFetch,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

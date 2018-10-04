@@ -136,7 +136,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistration& registration,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
-      int num_requests) override;
+      int num_requests,
+      bool start_paused) override;
   void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
                    const base::Optional<std::string>& title,
                    const base::Optional<SkBitmap>& icon) override;
@@ -179,7 +180,8 @@ class CONTENT_EXPORT BackgroundFetchContext
                         size_t num_completed_requests,
                         size_t num_requests,
                         std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-                            active_fetch_requests);
+                            active_fetch_requests,
+                        bool start_paused);
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.
