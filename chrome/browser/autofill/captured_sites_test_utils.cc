@@ -197,6 +197,38 @@ void IFrameWaiter::RenderFrameCreated(
   }
 }
 
+void IFrameWaiter::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                                 const GURL& validated_url) {
+  if (!run_loop_.running())
+    return;
+  switch (query_type_) {
+    case ORIGIN:
+      if (validated_url.GetOrigin() == origin_)
+        run_loop_.Quit();
+      break;
+    case URL:
+      if (FrameHasSourceUrl(validated_url, render_frame_host))
+        run_loop_.Quit();
+      break;
+    default:
+      break;
+  }
+}
+
+void IFrameWaiter::FrameNameChanged(content::RenderFrameHost* render_frame_host,
+                                    const std::string& name) {
+  if (!run_loop_.running())
+    return;
+  switch (query_type_) {
+    case NAME:
+      if (FrameMatchesName(name, render_frame_host))
+        run_loop_.Quit();
+      break;
+    default:
+      break;
+  }
+}
+
 bool IFrameWaiter::FrameHasOrigin(const GURL& origin,
                                   content::RenderFrameHost* frame) {
   GURL url = frame->GetLastCommittedURL();
@@ -229,7 +261,7 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
           "MAP *:443 127.0.0.1:%d,"
 
           // Uncomment to use the live autofill prediction server.
-          //"EXCLUDE clients1.google.com,"
+          // "EXCLUDE clients1.google.com,"
           "EXCLUDE localhost",
           kHostHttpPort, kHostHttpsPort));
 }
