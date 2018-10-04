@@ -282,9 +282,7 @@ WriteToDiskCacheWithCustomResponseInfoAsync(
 }
 
 MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()
-    : ServiceWorkerResponseReader(0 /* resource_id */,
-                                  base::WeakPtr<AppCacheDiskCacheInterface>()) {
-}
+    : ServiceWorkerResponseReader(/* resource_id=*/0, /*disk_cache=*/nullptr) {}
 
 MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
 
@@ -377,8 +375,7 @@ void MockServiceWorkerResponseReader::CompletePendingRead() {
 }
 
 MockServiceWorkerResponseWriter::MockServiceWorkerResponseWriter()
-    : ServiceWorkerResponseWriter(0 /* resource_id */,
-                                  base::WeakPtr<AppCacheDiskCacheInterface>()),
+    : ServiceWorkerResponseWriter(/*resource_id=*/0, /*disk_cache=*/nullptr),
       info_written_(0),
       data_written_(0) {}
 
