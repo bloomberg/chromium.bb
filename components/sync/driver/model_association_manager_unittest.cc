@@ -37,7 +37,7 @@ class MockModelAssociationManagerDelegate
 FakeDataTypeController* GetController(
     const DataTypeController::TypeMap& controllers,
     ModelType model_type) {
-  DataTypeController::TypeMap::const_iterator it = controllers.find(model_type);
+  auto it = controllers.find(model_type);
   if (it == controllers.end()) {
     return nullptr;
   }

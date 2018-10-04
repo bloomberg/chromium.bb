@@ -307,8 +307,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   // Gets the fake controller for the given type, which should have
   // been previously added via AddController().
   FakeDataTypeController* GetController(ModelType model_type) const {
-    DataTypeController::TypeMap::const_iterator it =
-        controllers_.find(model_type);
+    auto it = controllers_.find(model_type);
     if (it == controllers_.end()) {
       return nullptr;
     }
