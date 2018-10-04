@@ -64,7 +64,7 @@ void P2PSocketClientImpl::Init(
   binding_.Bind(mojo::MakeRequest(&socket_client));
   binding_.set_connection_error_handler(base::Bind(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
-  dispatcher_->GetP2PSocketManager()->CreateSocket(
+  dispatcher_->GetP2PSocketManager()->get()->CreateSocket(
       type, local_address, network::P2PPortRange(min_port, max_port),
       remote_address, std::move(socket_client), mojo::MakeRequest(&socket_));
 }
