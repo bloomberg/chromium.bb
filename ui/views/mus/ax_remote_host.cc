@@ -41,12 +41,12 @@ AXRemoteHost::~AXRemoteHost() {
 
 void AXRemoteHost::Init(service_manager::Connector* connector) {
   connector->BindInterface(ax::mojom::kAXHostServiceName, &ax_host_ptr_);
-  BindAndSetRemote();
+  BindAndRegisterRemote();
 }
 
 void AXRemoteHost::InitForTesting(ax::mojom::AXHostPtr host_ptr) {
   ax_host_ptr_ = std::move(host_ptr);
-  BindAndSetRemote();
+  BindAndRegisterRemote();
 }
 
 void AXRemoteHost::StartMonitoringWidget(Widget* widget) {
@@ -177,16 +177,17 @@ void AXRemoteHost::FlushForTesting() {
   ax_host_ptr_.FlushForTesting();
 }
 
-void AXRemoteHost::BindAndSetRemote() {
+void AXRemoteHost::BindAndRegisterRemote() {
   ax::mojom::AXRemoteHostPtr remote;
   binding_.Bind(mojo::MakeRequest(&remote));
-  ax_host_ptr_->SetRemoteHost(
-      std::move(remote), base::BindOnce(&AXRemoteHost::SetRemoteHostCallback,
-                                        base::Unretained(this)));
+  ax_host_ptr_->RegisterRemoteHost(
+      std::move(remote),
+      base::BindOnce(&AXRemoteHost::RegisterRemoteHostCallback,
+                     base::Unretained(this)));
 }
 
-void AXRemoteHost::SetRemoteHostCallback(const ui::AXTreeID& tree_id,
-                                         bool enabled) {
+void AXRemoteHost::RegisterRemoteHostCallback(const ui::AXTreeID& tree_id,
+                                              bool enabled) {
   tree_id_ = tree_id;
 
   // Set the initial enabled state and send the AX tree if necessary.
