@@ -202,7 +202,7 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   DCHECK_EQ(specifiers.size(), positions.size());
   Vector<ModuleRequest> requests;
   requests.ReserveInitialCapacity(specifiers.size());
-  for (size_t i = 0; i < specifiers.size(); ++i) {
+  for (wtf_size_t i = 0; i < specifiers.size(); ++i) {
     requests.emplace_back(specifiers[i], positions[i]);
   }
   return requests;

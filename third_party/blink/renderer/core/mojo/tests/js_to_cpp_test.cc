@@ -165,7 +165,7 @@ void CheckSampleEchoArgsList(const js_to_cpp::blink::EchoArgsListPtr& list) {
 // messages. The values don't matter so long as all accesses are within
 // bounds.
 void CheckCorruptedString(const String& arg) {
-  for (size_t i = 0; i < arg.length(); ++i)
+  for (wtf_size_t i = 0; i < arg.length(); ++i)
     g_waste_accumulator += arg[i];
 }
 
@@ -173,8 +173,8 @@ void CheckCorruptedStringArray(
     const base::Optional<Vector<String>>& string_array) {
   if (!string_array)
     return;
-  for (size_t i = 0; i < string_array->size(); ++i)
-    CheckCorruptedString((*string_array)[i]);
+  for (const String& element : *string_array)
+    CheckCorruptedString(element);
 }
 
 void CheckCorruptedDataPipe(mojo::DataPipeConsumerHandle data_pipe_handle) {
