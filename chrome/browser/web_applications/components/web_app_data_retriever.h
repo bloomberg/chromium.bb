@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
 
 #include <memory>
 #include <vector>
@@ -18,19 +18,19 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
+namespace web_app {
 
 // Class used by BookmarkAppInstallationTask to retrieve the necessary
 // information to install an app. Should only be called from the UI thread.
-class BookmarkAppDataRetriever {
+class WebAppDataRetriever {
  public:
   using GetWebApplicationInfoCallback =
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
   using GetIconsCallback =
       base::OnceCallback<void(std::vector<WebApplicationInfo::IconInfo>)>;
 
-  BookmarkAppDataRetriever();
-  virtual ~BookmarkAppDataRetriever();
+  WebAppDataRetriever();
+  virtual ~WebAppDataRetriever();
 
   // Runs |callback| with the result of retrieving the WebApplicationInfo from
   // |web_contents|.
@@ -55,11 +55,11 @@ class BookmarkAppDataRetriever {
   // Saved callback from GetWebApplicationInfo().
   GetWebApplicationInfoCallback get_web_app_info_callback_;
 
-  base::WeakPtrFactory<BookmarkAppDataRetriever> weak_ptr_factory_{this};
+  base::WeakPtrFactory<WebAppDataRetriever> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppDataRetriever);
+  DISALLOW_COPY_AND_ASSIGN(WebAppDataRetriever);
 };
 
-}  // namespace extensions
+}  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_DATA_RETRIEVER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
