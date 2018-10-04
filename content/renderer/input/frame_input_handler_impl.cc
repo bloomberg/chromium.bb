@@ -58,11 +58,11 @@ void FrameInputHandlerImpl::CreateMojoService(
   new FrameInputHandlerImpl(render_frame, std::move(request));
 }
 
-void FrameInputHandlerImpl::RunOnMainThread(const base::Closure& closure) {
+void FrameInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   if (input_event_queue_) {
-    input_event_queue_->QueueClosure(closure);
+    input_event_queue_->QueueClosure(std::move(closure));
   } else {
-    closure.Run();
+    std::move(closure).Run();
   }
 }
 
@@ -286,6 +286,49 @@ void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
       window_widget->ConvertWindowPointToViewport(base),
       window_widget->ConvertWindowPointToViewport(extent));
 }
+
+#if defined(OS_ANDROID)
+void FrameInputHandlerImpl::SelectWordAroundCaret(
+    SelectWordAroundCaretCallback callback) {
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    RunOnMainThread(
+        base::BindOnce(&FrameInputHandlerImpl::SelectWordAroundCaret,
+                       weak_this_, std::move(callback)));
+    return;
+  }
+
+  bool did_select = false;
+  int start_adjust = 0;
+  int end_adjust = 0;
+  if (render_frame_) {
+    blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
+    blink::WebRange initial_range = frame->SelectionRange();
+    render_frame_->GetRenderWidget()->SetHandlingInputEvent(true);
+    if (!initial_range.IsNull())
+      did_select = frame->SelectWordAroundCaret();
+    if (did_select) {
+      blink::WebRange adjusted_range = frame->SelectionRange();
+      DCHECK(!adjusted_range.IsNull());
+      start_adjust = adjusted_range.StartOffset() - initial_range.StartOffset();
+      end_adjust = adjusted_range.EndOffset() - initial_range.EndOffset();
+    }
+    render_frame_->GetRenderWidget()->SetHandlingInputEvent(false);
+  }
+
+  // If the mojom channel is registered with compositor thread, we have to run
+  // the callback on compositor thread. Otherwise run it on main thread. Mojom
+  // requires the callback runs on the same thread.
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->compositor_task_runner() &&
+      input_event_queue_) {
+    RenderThreadImpl::current()->compositor_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), did_select, start_adjust,
+                                  end_adjust));
+  } else {
+    std::move(callback).Run(did_select, start_adjust, end_adjust);
+  }
+}
+#endif  // defined(OS_ANDROID)
 
 void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(
     int32_t start,
