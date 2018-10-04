@@ -86,7 +86,8 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     MediaRouterActionController::SetAlwaysShowActionPref(profile(), true);
 
     media_router::MediaRouterUIServiceFactory::GetInstance()->SetTestingFactory(
-        profile()->GetOffTheRecordProfile(), &BuildUIService);
+        profile()->GetOffTheRecordProfile(),
+        base::BindRepeating(&BuildUIService));
   }
 
   void TearDown() override {
