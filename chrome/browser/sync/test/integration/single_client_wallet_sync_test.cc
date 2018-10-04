@@ -409,6 +409,13 @@ class SingleClientWalletSyncTest : public UssSwitchToggler, public SyncTest {
     pdm->RemoveObserver(&personal_data_observer_);
   }
 
+  void WaitForNumberOfCards(autofill::PersonalDataManager* pdm,
+                            size_t expected_count) {
+    while (pdm->GetCreditCards().size() != expected_count) {
+      WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
+    }
+  }
+
   PersonalDataLoadedObserverMock personal_data_observer_;
 
  private:
@@ -540,7 +547,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
 
   // Turn off sync, the data should be gone.
   GetSyncService(0)->RequestStop(syncer::SyncService::CLEAR_DATA);
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
+  WaitForNumberOfCards(pdm, 0);
 
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
@@ -551,7 +558,38 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
   // set it again.
   GetSyncService(0)->SetFirstSetupComplete();
   // Wait until Sync restores the card and it arrives at PDM.
-  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
+  WaitForNumberOfCards(pdm, 1);
+
+  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
+  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+}
+
+// Wallet data should get cleared from the database when sync is (temporarily)
+// stopped, e.g. due to the Sync feature toggle in Android settings.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnStopSync) {
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress(),
+                                  CreateDefaultSyncWalletCard(),
+                                  CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
+  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // Turn off sync, the card should be gone.
+  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+  WaitForNumberOfCards(pdm, 0);
+
+  EXPECT_EQ(0uL, pdm->GetCreditCards().size());
+  EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+
+  // Turn sync on again, the data should come back.
+  GetSyncService(0)->RequestStart();
+  // Wait until Sync restores the card and it arrives at PDM.
+  WaitForNumberOfCards(pdm, 1);
 
   EXPECT_EQ(1uL, pdm->GetCreditCards().size());
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
@@ -575,6 +613,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnSignOut) {
 
   // Turn off sync, the data should be gone.
   GetClient(0)->SignOutPrimaryAccount();
+  WaitForNumberOfCards(pdm, 0);
 
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
