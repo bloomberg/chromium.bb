@@ -635,8 +635,10 @@ SelectToSpeak.prototype = {
               this.currentNodeGroupIndex_ += 1;
               this.currentNode_ = next;
               this.currentNodeWord_ = null;
-              next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
               nodeUpdated = true;
+              if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length)
+                break;
+              next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
             }
             if (nodeUpdated) {
               if (!this.prefsManager_.wordHighlightingEnabled()) {
