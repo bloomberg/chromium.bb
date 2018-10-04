@@ -19,9 +19,9 @@ body {
       0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
   font-family: 'Roboto', arial, sans-serif;
   margin: auto;
+  min-width: 320px;
   padding: 16px;
   top: 0;
-  width: 320px;
   z-index: 10000;
 }
 
