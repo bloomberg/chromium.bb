@@ -105,6 +105,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -803,6 +804,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
   keyboard::InitializeKeyboardResources();
+  chrome_keyboard_controller_client_ =
+      std::make_unique<ChromeKeyboardControllerClient>();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
@@ -1161,9 +1164,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
-  // Destroy ArcKioskAppManager after its observers are removed when Ash is
-  // closed above.
+  // Destroy classes that may have ash observers or dependencies.
   arc_kiosk_app_manager_.reset();
+  chrome_keyboard_controller_client_.reset();
 
   // All ARC related modules should have been shut down by this point, so
   // destroy ARC.

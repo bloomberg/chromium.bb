@@ -1,0 +1,52 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module keyboard.mojom;
+
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+struct KeyboardConfig {
+  // Whether the virtual keyboard can provide auto-complete.
+  bool auto_complete;
+
+  // Whether the virtual keyboard can provide auto-correct.
+  bool auto_correct;
+
+  // Whether the virtual keyboard can provide auto-capitalization.
+  bool auto_capitalize;
+
+  // Whether the virtual keyboard can provide input via handwriting recognition.
+  bool handwriting;
+
+  // Whether the virtual keyboard can provide spell-check.
+  bool spell_check;
+
+  // Whether the virtual keyboard can provide voice input.
+  bool voice_input;
+};
+
+interface KeyboardControllerObserver {
+  // Called when the enabled state of the virtual keyboard changes.
+  OnKeyboardEnabledChanged(bool enabled);
+
+  // Called when the visibility of the virtual keyboard changes.
+  OnKeyboardVisibilityChanged(bool visible);
+
+  // Called when the virtual keyboard configuration changes.
+  OnKeyboardConfigChanged(KeyboardConfig config);
+
+  // Called when the keyboard bounds change.
+  OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect new_bounds);
+};
+
+interface KeyboardController {
+  // Retrieves the current keyboard configuration.
+  GetKeyboardConfig() => (KeyboardConfig config);
+
+  // Sets the current keyboard configuration.
+  SetKeyboardConfig(KeyboardConfig config);
+
+  // Adds a KeyboardControllerObserver.
+  AddObserver(associated KeyboardControllerObserver observer);
+};

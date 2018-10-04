@@ -1041,7 +1041,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
       ui::IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
-  keyboard::KeyboardConfig keyboard_config = keyboard::GetKeyboardConfig();
+  keyboard::mojom::KeyboardConfig keyboard_config =
+      keyboard::GetKeyboardConfig();
   // Turn off these features, which are on by default.
   keyboard_config.auto_correct = false;
   keyboard_config.auto_complete = false;

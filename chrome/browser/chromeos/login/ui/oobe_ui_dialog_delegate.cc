@@ -171,13 +171,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
-  // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsUsingWindowService()) {
-    keyboard_observer_.Add(keyboard::KeyboardController::Get());
-  } else {
-    NOTIMPLEMENTED();
-  }
+  keyboard_observer_.Add(ChromeKeyboardControllerClient::Get());
 
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
@@ -415,7 +409,7 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
   return true;
 }
 
-void OobeUIDialogDelegate::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void OobeUIDialogDelegate::OnKeyboardVisibilityChanged(bool visible) {
   if (!dialog_widget_)
     return;
 
