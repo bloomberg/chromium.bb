@@ -996,16 +996,9 @@ class RenderFrameImpl::FrameURLLoaderFactory
       frame_->GetFrameHost()->IssueKeepAliveHandle(
           mojo::MakeRequest(&keep_alive_handle));
     }
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
-        frame_->GetLoaderFactoryBundle();
-    if (request.GetRequestContext() == WebURLRequest::kRequestContextPrefetch &&
-        frame_->prefetch_shared_loader_factory_) {
-      // The frame should be alive when this factory is used.
-      loader_factory = frame_->prefetch_shared_loader_factory_;
-    }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
-        std::move(task_runner_handle), std::move(loader_factory),
+        std::move(task_runner_handle), frame_->GetLoaderFactoryBundle(),
         std::move(keep_alive_handle));
   }
 
@@ -1695,9 +1688,6 @@ mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
-  if (prefetch_shared_loader_factory_)
-    prefetch_shared_loader_factory_->Detach();
-
   // If file chooser is still waiting for answer, dispatch empty answer.
   if (file_chooser_completion_) {
     file_chooser_completion_->DidChooseFile(WebVector<WebString>());
@@ -3235,15 +3225,6 @@ void RenderFrameImpl::CommitNavigation(
     return;
   }
 
-  if (prefetch_shared_loader_factory_)
-    prefetch_shared_loader_factory_->Detach();
-  prefetch_loader_factory_ = std::move(prefetch_loader_factory);
-  if (prefetch_loader_factory_) {
-    prefetch_shared_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            prefetch_loader_factory_.get());
-  }
-
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
   std::unique_ptr<blink::WebScopedUserGesture> gesture(
@@ -3257,7 +3238,8 @@ void RenderFrameImpl::CommitNavigation(
          subresource_loader_factories);
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                           std::move(subresource_overrides));
+                           std::move(subresource_overrides),
+                           std::move(prefetch_loader_factory));
 
   // Clear pending navigations which weren't sent to the browser because we
   // did not get a didStartProvisionalLoad() notification for them.
@@ -3391,7 +3373,8 @@ void RenderFrameImpl::CommitFailedNavigation(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                           base::nullopt /* subresource_overrides */);
+                           base::nullopt /* subresource_overrides */,
+                           nullptr /* prefetch_loader_factory */);
 
   // Send the provisional load failure.
   WebURLError error(
@@ -6571,7 +6554,8 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
               std::move(bundle_info));
     } else {
       SetupLoaderFactoryBundle(nullptr,
-                               base::nullopt /* subresource_overrides */);
+                               base::nullopt /* subresource_overrides */,
+                               nullptr /* prefetch_loader_factory */);
     }
   }
   return loader_factories_.get();
@@ -6580,7 +6564,8 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
 void RenderFrameImpl::SetupLoaderFactoryBundle(
     std::unique_ptr<URLLoaderFactoryBundleInfo> info,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-        subresource_overrides) {
+        subresource_overrides,
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
@@ -6596,7 +6581,8 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
 
   if (info) {
     loader_factories_->Update(
-        std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)),
+        std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+            std::move(info), prefetch_loader_factory.PassInterface()),
         std::move(subresource_overrides));
   }
 }

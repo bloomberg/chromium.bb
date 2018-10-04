@@ -753,39 +753,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   NavigateAndWaitForTitle(enabled_target_url, "Done");
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           load_prefetch_script, &unused));
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      (GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
-                                  GetParam().sxg_accept_header_enabled))) {
-    // TODO(crbug/890748): Currently SignedExchange prefetch requests from
-    // Service Worker controlled pages aren't handled by
-    // SignedExchangePrefetchHandler when NetworkService is enabled.
-    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
-              GetInterceptedAcceptHeader(enabled_prefetch_target));
-    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
-              GetInterceptedAcceptHeader(disabled_prefetch_target));
-  } else {
-    CheckPrefetchAcceptHeader(
-        {enabled_prefetch_target, disabled_prefetch_target});
-  }
+  CheckPrefetchAcceptHeader(
+      {enabled_prefetch_target, disabled_prefetch_target});
   ClearInterceptedAcceptHeaders();
 
   NavigateAndWaitForTitle(disabled_target_url, "Done");
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           load_prefetch_script, &unused));
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      (GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
-                                  GetParam().sxg_accept_header_enabled))) {
-    // TODO(crbug/890748): Currently SignedExchange prefetch requests from
-    // Service Worker controlled pages aren't handled by
-    // SignedExchangePrefetchHandler when NetworkService is enabled.
-    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
-              GetInterceptedAcceptHeader(enabled_prefetch_target));
-    EXPECT_EQ(std::string(network::kDefaultAcceptHeader),
-              GetInterceptedAcceptHeader(disabled_prefetch_target));
-  } else {
-    CheckPrefetchAcceptHeader(
-        {enabled_prefetch_target, disabled_prefetch_target});
-  }
+  CheckPrefetchAcceptHeader(
+      {enabled_prefetch_target, disabled_prefetch_target});
 }
 
 INSTANTIATE_TEST_CASE_P(
