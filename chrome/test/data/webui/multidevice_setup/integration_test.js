@@ -45,6 +45,20 @@ cr.define('multidevice_setup', () => {
     }
   }
 
+  /** @implements {multidevice_setup.MojoInterfaceProvider} */
+  class FakeMojoInterfaceProviderImpl {
+    /** @param {!FakeMojoService} fakeMojoService */
+    constructor(fakeMojoService) {
+      /** @private {!FakeMojoService} */
+      this.fakeMojoService_ = fakeMojoService;
+    }
+
+    /** @override */
+    getInterfacePtr() {
+      return this.fakeMojoService_;
+    }
+  }
+
   function registerIntegrationTests() {
     suite('MultiDeviceSetup', () => {
       /**
@@ -65,6 +79,9 @@ cr.define('multidevice_setup', () => {
        */
       let backwardButton;
 
+      /** @type {!FakeMojoService} */
+      let fakeMojoService;
+
       const PASSWORD = 'password-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
@@ -72,7 +89,9 @@ cr.define('multidevice_setup', () => {
       setup(() => {
         multiDeviceSetupElement = document.createElement('multidevice-setup');
         multiDeviceSetupElement.delegate = new FakeDelegate();
-        multiDeviceSetupElement.multideviceSetup_ = new FakeMojoService();
+        fakeMojoService = new FakeMojoService();
+        multiDeviceSetupElement.mojoInterfaceProvider_ =
+            new FakeMojoInterfaceProviderImpl(fakeMojoService);
 
         document.body.appendChild(multiDeviceSetupElement);
         forwardButton = multiDeviceSetupElement.$$('button-bar').$$('#forward');
