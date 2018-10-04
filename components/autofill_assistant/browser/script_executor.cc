@@ -104,11 +104,10 @@ void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
                                                std::move(callback));
 }
 
-void ScriptExecutor::BuildNodeTree(const std::vector<std::string>& selectors,
-                                   NodeProto* node_tree_out,
-                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->BuildNodeTree(selectors, node_tree_out,
-                                               std::move(callback));
+void ScriptExecutor::GetOuterHtml(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  delegate_->GetWebController()->GetOuterHtml(selectors, std::move(callback));
 }
 
 void ScriptExecutor::LoadURL(const GURL& url) {

@@ -32,7 +32,6 @@ struct FormFieldData;
 }
 
 namespace autofill_assistant {
-class NodeProto;
 
 // Controller to interact with the web pages.
 //
@@ -107,11 +106,10 @@ class WebController {
                              const std::string& value,
                              base::OnceCallback<void(bool)> callback);
 
-  // Given an element |selectors| on the page as the root element, build a node
-  // tree using the output parameter |node_tree_out| as a starting node.
-  virtual void BuildNodeTree(const std::vector<std::string>& selectors,
-                             NodeProto* node_tree_out,
-                             base::OnceCallback<void(bool)> callback);
+  // Return the outerHTML of |selectors|.
+  virtual void GetOuterHtml(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool, const std::string&)> callback);
 
  private:
   friend class WebControllerBrowserTest;
@@ -242,6 +240,15 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnSetValueAttribute(
       base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForGetOuterHtml(
+      base::OnceCallback<void(bool, const std::string&)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnResult(bool successful,
+                const std::string& result,
+                base::OnceCallback<void(bool, const std::string&)> callback);
+  void OnGetOuterHtml(
+      base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
