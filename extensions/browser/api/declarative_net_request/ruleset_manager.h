@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
 
 class GURL;
@@ -108,9 +109,10 @@ class RulesetManager {
   bool ShouldEvaluateRequest(const WebRequestInfo& request) const;
 
   // Returns whether |ruleset| should be evaluated for the given |request|.
-  bool ShouldEvaluateRulesetForRequest(const ExtensionRulesetData& ruleset,
-                                       const WebRequestInfo& request,
-                                       bool is_incognito_context) const;
+  PermissionsData::PageAccess ShouldEvaluateRulesetForRequest(
+      const ExtensionRulesetData& ruleset,
+      const WebRequestInfo& request,
+      bool is_incognito_context) const;
 
   // Sorted in decreasing order of |extension_install_time|.
   // Use a flat_set instead of std::set/map. This makes [Add/Remove]Ruleset
