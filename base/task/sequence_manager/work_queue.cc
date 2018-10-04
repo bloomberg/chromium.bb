@@ -4,6 +4,7 @@
 
 #include "base/task/sequence_manager/work_queue.h"
 
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 
 namespace base {
@@ -155,8 +156,13 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
   DCHECK(work_queue_sets_);
   bool task_removed = false;
-  while (!tasks_.empty() &&
-         (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
+  const SequenceManagerImpl* sequence_manager = task_queue_->sequence_manager();
+  // TODO(alexclarke): Use IsCancelled once we've understood the bug.
+  // See http://crbug.com/798554
+  while (
+      !tasks_.empty() &&
+      (!tasks_.front().task ||
+       sequence_manager->SetCrashKeysAndCheckIsTaskCancelled(tasks_.front()))) {
     tasks_.pop_front();
     task_removed = true;
   }

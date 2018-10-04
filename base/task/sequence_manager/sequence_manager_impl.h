@@ -159,6 +159,9 @@ class BASE_EXPORT SequenceManagerImpl
 
   WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
+  // TODO(alexclarke): Remove when possible.
+  bool SetCrashKeysAndCheckIsTaskCancelled(const PendingTask& task) const;
+
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.

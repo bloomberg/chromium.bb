@@ -726,6 +726,17 @@ WeakPtr<SequenceManagerImpl> SequenceManagerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+bool SequenceManagerImpl::SetCrashKeysAndCheckIsTaskCancelled(
+    const PendingTask& task) const {
+#if !defined(OS_NACL)
+  debug::SetCrashKeyString(main_thread_only().file_name_crash_key,
+                           task.posted_from.file_name());
+  debug::SetCrashKeyString(main_thread_only().function_name_crash_key,
+                           task.posted_from.function_name());
+#endif  // OS_NACL
+  return task.task.IsCancelled();
+}
+
 void SequenceManagerImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   controller_->SetDefaultTaskRunner(task_runner);
