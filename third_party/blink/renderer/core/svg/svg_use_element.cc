@@ -439,7 +439,7 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   DCHECK(!InUseShadowTree());
 
   // Do not allow self-referencing.
-  if (&target == this || IsDisallowedElement(target))
+  if (IsDisallowedElement(target) || HasCycleUseReferencing(*this, target))
     return;
 
   // Set up root SVG element in shadow tree.
@@ -464,11 +464,7 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
 
   // Expand all <use> elements in the shadow tree.
   // Expand means: replace the actual <use> element by what it references.
-  if (!ExpandUseElementsInShadowTree()) {
-    shadow_root.RemoveChildren(kOmitSubtreeModifiedEvent);
-    ClearResourceReference();
-    return;
-  }
+  ExpandUseElementsInShadowTree();
 
   // If the instance root was a <use>, it could have been replaced now, so
   // reset |m_targetElementInstance|.
@@ -565,14 +561,13 @@ bool SVGUseElement::HasCycleUseReferencing(const ContainerNode& target_instance,
     return true;
 
   AtomicString target_id = target.GetIdAttribute();
-  ContainerNode* instance = target_instance.parentNode();
+  ContainerNode* instance = target_instance.ParentOrShadowHostElement();
   while (instance && instance->IsSVGElement()) {
     SVGElement* element = ToSVGElement(instance);
     if (element->HasID() && element->GetIdAttribute() == target_id &&
         element->GetDocument() == target.GetDocument())
       return true;
-
-    instance = instance->parentNode();
+    instance = instance->ParentOrShadowHostElement();
   }
   return false;
 }
@@ -590,7 +585,7 @@ static void RemoveAttributesFromReplacementElement(
   replacement_element.removeAttribute(XLinkNames::hrefAttr);
 }
 
-bool SVGUseElement::ExpandUseElementsInShadowTree() {
+void SVGUseElement::ExpandUseElementsInShadowTree() {
   // Why expand the <use> elements in the shadow tree here, and not just
   // do this directly in buildShadowTree, if we encounter a <use> element?
   //
@@ -608,7 +603,7 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
         ToSVGElementOrNull(original_use.ResolveTargetElement(kDontAddObserver));
     if (target) {
       if (IsDisallowedElement(*target) || HasCycleUseReferencing(*use, *target))
-        return false;
+        return;
     }
 
     // Don't DCHECK(target) here, it may be "pending", too.
@@ -633,7 +628,6 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
 
     use = Traversal<SVGUseElement>::Next(*replacing_element, &shadow_root);
   }
-  return true;
 }
 
 void SVGUseElement::InvalidateShadowTree() {
