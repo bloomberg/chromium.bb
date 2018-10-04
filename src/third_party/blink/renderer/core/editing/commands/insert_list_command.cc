@@ -642,10 +642,14 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     insertion_pos =
         Position::InParentBeforeNode(*insertion_pos.ComputeContainerNode());
   }
+  while (IsInline(insertion_pos.AnchorNode()) && !insertion_pos.AnchorNode()->HasTagName(brTag)) {
+    insertion_pos = PositionTemplate<EditingStrategy>::InParentBeforeNode(*insertion_pos.AnchorNode());
+  }
+
   // Also avoid the containing list item.
   Node* const list_child = EnclosingListChild(insertion_pos.AnchorNode());
   if (IsHTMLLIElement(list_child))
-    insertion_pos = Position::InParentBeforeNode(*list_child);
+    insertion_pos = PositionTemplate<EditingStrategy>::InParentBeforeNode(*list_child);
 
   HTMLElement* list_element = CreateHTMLElement(GetDocument(), list_tag);
   InsertNodeAt(list_element, insertion_pos, editing_state);
