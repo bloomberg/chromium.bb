@@ -34,7 +34,6 @@
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 #import "ui/views_bridge_mac/views_nswindow_delegate.h"
-#import "ui/views_bridge_mac/widget_owner_nswindow_adapter.h"
 
 using views_bridge_mac::mojom::VisibilityTransition;
 using views_bridge_mac::mojom::WindowVisibilityState;
@@ -317,16 +316,16 @@ void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
   // Disallow creating child windows of views not currently in an NSWindow.
   CHECK([new_parent window]);
 
+  // It is only valid to have a NativeWidgetMac be the parent of another
+  // NativeWidgetMac.
+  CHECK(bridged_native_widget_parent);
+
   // If the parent is another BridgedNativeWidgetImpl, just add to the
   // collection of child windows it owns and manages. Otherwise, create an
   // adapter to anchor the child widget and observe when the parent NSWindow is
   // closed.
-  if (bridged_native_widget_parent) {
-    parent_ = bridged_native_widget_parent;
-    bridged_native_widget_parent->child_windows_.push_back(this);
-  } else {
-    parent_ = new WidgetOwnerNSWindowAdapter(this, new_parent);
-  }
+  parent_ = bridged_native_widget_parent;
+  bridged_native_widget_parent->child_windows_.push_back(this);
 
   // Widget::ShowInactive() could result in a Space switch when the widget has a
   // parent, and we're calling -orderWindow:relativeTo:. Use Transient
@@ -569,8 +568,10 @@ void BridgedNativeWidgetImpl::SetVisibilityState(
 
   // If the parent (or an ancestor) is hidden, return and wait for it to become
   // visible.
-  if (parent() && !parent()->IsVisibleParent())
-    return;
+  for (auto* ancestor = parent_; ancestor; ancestor = ancestor->parent_) {
+    if (!ancestor->window_visible_)
+      return;
+  }
 
   if (IsWindowModalSheet()) {
     ShowAsModalSheet();
@@ -599,7 +600,7 @@ void BridgedNativeWidgetImpl::SetVisibilityState(
       if (window_visible_)
         return;  // Avoid a Spaces transition.
 
-      parent_window_number = [parent_->GetNSWindow() windowNumber];
+      parent_window_number = [parent_->ns_window() windowNumber];
     }
 
     [window_ orderWindow:NSWindowAbove relativeTo:parent_window_number];
@@ -823,7 +824,7 @@ void BridgedNativeWidgetImpl::OnVisibilityChanged() {
     // Sheets don't need a parentWindow set, and setting one causes graphical
     // glitches (http://crbug.com/605098).
     if (parent_ && ![window_ isSheet])
-      [parent_->GetNSWindow() addChildWindow:window_ ordered:NSWindowAbove];
+      [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
   } else {
     ReleaseCapture();  // Capture on hidden windows is not permitted.
 
@@ -831,7 +832,7 @@ void BridgedNativeWidgetImpl::OnVisibilityChanged() {
     // list. Cocoa's childWindow management breaks down when child windows are
     // hidden.
     if (parent_)
-      [parent_->GetNSWindow() removeChildWindow:window_];
+      [parent_->ns_window() removeChildWindow:window_];
   }
 
   // Showing a translucent window after hiding it should trigger shadow
@@ -1127,19 +1128,10 @@ void BridgedNativeWidgetImpl::SetTextInputClient(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetImpl, BridgedNativeWidgetOwner:
-
-NSWindow* BridgedNativeWidgetImpl::GetNSWindow() {
-  return window_;
-}
+// BridgedNativeWidgetImpl, former BridgedNativeWidgetOwner:
 
 gfx::Vector2d BridgedNativeWidgetImpl::GetChildWindowOffset() const {
   return gfx::ScreenRectFromNSRect([window_ frame]).OffsetFromOrigin();
-}
-
-bool BridgedNativeWidgetImpl::IsVisibleParent() const {
-  return parent_ ? window_visible_ && parent_->IsVisibleParent()
-                 : window_visible_;
 }
 
 void BridgedNativeWidgetImpl::RemoveChildWindow(
@@ -1253,7 +1245,7 @@ void BridgedNativeWidgetImpl::ShowAsModalSheet() {
   window_visible_ = true;
   host_->OnVisibilityChanged(window_visible_);
 
-  NSWindow* parent_window = parent_->GetNSWindow();
+  NSWindow* parent_window = parent_->ns_window();
   DCHECK(parent_window);
 
   // -beginSheet: does not retain |modalDelegate| (and we would not want it to).

@@ -339,7 +339,7 @@ void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
   NativeWidgetPrivate* ancestor = nullptr;
   if (bridge_impl() && bridge_impl()->parent()) {
     ancestor =
-        GetNativeWidgetForNativeWindow(bridge_impl()->parent()->GetNSWindow());
+        GetNativeWidgetForNativeWindow(bridge_impl()->parent()->ns_window());
   }
   if (!ancestor) {
     new_bounds = ConstrainBoundsToDisplayWorkArea(new_bounds);
@@ -729,8 +729,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
   NativeWidgetPrivate* ancestor =
       bridge_host->bridge_impl()->parent()
           ? GetTopLevelNativeWidget(
-                [bridge_host->bridge_impl()->parent()->GetNSWindow()
-                        contentView])
+                [bridge_host->bridge_impl()->parent()->ns_window() contentView])
           : nullptr;
   return ancestor ? ancestor : bridge_host->native_widget_mac();
 }
