@@ -46,6 +46,8 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_switches.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_mojo_impl.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -131,6 +133,12 @@ void BindHighlighterControllerRequestOnMainThread(
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
   Shell::Get()->ime_controller()->BindRequest(std::move(request));
+}
+
+void BindKeyboardControllerRequestOnMainThread(
+    keyboard::mojom::KeyboardControllerRequest request) {
+  Shell::Get()->keyboard_controller()->mojo_impl()->BindRequest(
+      std::move(request));
 }
 
 void BindLocaleNotificationControllerOnMainThread(
@@ -270,6 +278,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindKeyboardControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindLocaleNotificationControllerOnMainThread),

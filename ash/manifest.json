@@ -43,7 +43,8 @@
           "ash.mojom.TrayAction",
           "ash.mojom.VoiceInteractionController",
           "ash.mojom.VpnList",
-          "ash.mojom.WallpaperController"
+          "ash.mojom.WallpaperController",
+          "keyboard.mojom.KeyboardController"
         ],
         // Test-only interfaces.
         "test": [

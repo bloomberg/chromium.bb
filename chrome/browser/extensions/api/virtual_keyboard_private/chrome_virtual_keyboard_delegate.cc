@@ -282,7 +282,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(
       GenerateFeatureFlag("imeservice", keyboard::IsImeServiceEnabled()));
 
-  const keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  const keyboard::mojom::KeyboardConfig config = keyboard::GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
       "voiceinput", has_audio_input_devices && config.voice_input &&
@@ -325,7 +325,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
   const api::virtual_keyboard::FeatureRestrictions& restrictions =
       params.restrictions;
   api::virtual_keyboard::FeatureRestrictions update;
-  keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  keyboard::mojom::KeyboardConfig config = keyboard::GetKeyboardConfig();
   if (restrictions.spell_check_enabled &&
       config.spell_check != *restrictions.spell_check_enabled) {
     update.spell_check_enabled =

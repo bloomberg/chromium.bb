@@ -52,7 +52,13 @@ bool g_keyboard_load_time_logged = false;
 base::LazyInstance<base::Time>::DestructorAtExit g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
-struct keyboard::KeyboardConfig g_keyboard_config;
+mojom::KeyboardConfig g_keyboard_config = {
+    true /* auto_complete */, true /* auto_correct */,
+    true /* auto_capitalize */, true /* handwriting */, true /* spell_check */,
+    // Denotes the preferred value, and can be true even if there is no actual
+    // audio input device.
+    true /* voice_input */,
+};
 
 bool g_accessibility_keyboard_enabled = false;
 
@@ -71,8 +77,8 @@ KeyboardShowOverride g_keyboard_show_override = KEYBOARD_SHOW_OVERRIDE_NONE;
 
 }  // namespace
 
-bool UpdateKeyboardConfig(const KeyboardConfig& keyboard_config) {
-  if (g_keyboard_config == keyboard_config)
+bool UpdateKeyboardConfig(const mojom::KeyboardConfig& keyboard_config) {
+  if (g_keyboard_config.Equals(keyboard_config))
     return false;
   g_keyboard_config = keyboard_config;
   auto* controller = KeyboardController::Get();
@@ -81,7 +87,7 @@ bool UpdateKeyboardConfig(const KeyboardConfig& keyboard_config) {
   return true;
 }
 
-const KeyboardConfig& GetKeyboardConfig() {
+const mojom::KeyboardConfig& GetKeyboardConfig() {
   return g_keyboard_config;
 }
 

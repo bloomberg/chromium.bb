@@ -34,6 +34,7 @@
 #include "ui/keyboard/container_fullscreen_behavior.h"
 #include "ui/keyboard/container_type.h"
 #include "ui/keyboard/display_util.h"
+#include "ui/keyboard/keyboard_controller_mojo_impl.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -175,6 +176,7 @@ KeyboardController::KeyboardController()
       weak_factory_will_hide_(this) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
+  mojo_impl_ = std::make_unique<KeyboardControllerMojoImpl>(this);
 }
 
 KeyboardController::~KeyboardController() {

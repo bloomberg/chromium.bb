@@ -13,7 +13,7 @@
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_observer.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_widget_host.h"
@@ -174,20 +174,6 @@ ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
   }
 
   return bridge->GetInputContextHandler()->GetInputMethod();
-}
-
-void ChromeKeyboardUI::SetController(keyboard::KeyboardController* controller) {
-  // During KeyboardController destruction, controller can be set to null.
-  if (!controller) {
-    DCHECK(keyboard_controller());
-    keyboard_controller_observer_.reset();
-    KeyboardUI::SetController(nullptr);
-    return;
-  }
-  KeyboardUI::SetController(controller);
-  keyboard_controller_observer_ =
-      std::make_unique<ChromeKeyboardControllerObserver>(browser_context_,
-                                                         controller);
 }
 
 void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {

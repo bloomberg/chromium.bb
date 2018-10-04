@@ -41,6 +41,7 @@ class TextInputClient;
 namespace keyboard {
 
 class CallbackAnimationObserver;
+class KeyboardControllerMojoImpl;
 class KeyboardControllerObserver;
 class KeyboardUI;
 
@@ -113,6 +114,7 @@ class KEYBOARD_EXPORT KeyboardController
   bool HasObserver(KeyboardControllerObserver* observer) const;
   void RemoveObserver(KeyboardControllerObserver* observer);
 
+  KeyboardControllerMojoImpl* mojo_impl() { return mojo_impl_.get(); }
   KeyboardUI* ui() { return ui_.get(); }
 
   // Gets the currently focused text input client.
@@ -238,7 +240,7 @@ class KEYBOARD_EXPORT KeyboardController
 
   // For access to NotifyKeyboardConfigChanged
   friend bool keyboard::UpdateKeyboardConfig(
-      const keyboard::KeyboardConfig& config);
+      const mojom::KeyboardConfig& config);
 
   // Different ways to hide the keyboard.
   enum HideReason {
@@ -331,6 +333,7 @@ class KEYBOARD_EXPORT KeyboardController
   // Ensures that the current IME is observed if it is changed.
   void UpdateInputMethodObserver();
 
+  std::unique_ptr<KeyboardControllerMojoImpl> mojo_impl_;
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
   ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;

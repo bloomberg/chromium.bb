@@ -15,6 +15,7 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/assistant/buildflags.h"
 
+class ChromeKeyboardControllerClient;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -127,6 +128,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
 
   std::unique_ptr<memory::MemoryKillsMonitor::Handle> memory_kills_monitor_;
+
+  std::unique_ptr<ChromeKeyboardControllerClient>
+      chrome_keyboard_controller_client_;
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;

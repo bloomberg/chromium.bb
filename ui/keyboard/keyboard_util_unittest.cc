@@ -125,7 +125,7 @@ TEST_F(KeyboardUtilTest, HideKeyboardWhenTouchEnabled) {
 
 TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
   ResetAllFlags();
-  keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  mojom::KeyboardConfig config = keyboard::GetKeyboardConfig();
   EXPECT_TRUE(config.spell_check);
   EXPECT_FALSE(keyboard::UpdateKeyboardConfig(config));
 

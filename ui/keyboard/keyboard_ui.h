@@ -56,11 +56,6 @@ class KEYBOARD_EXPORT KeyboardUI {
   // window).
   virtual void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds);
 
-  // KeyboardController owns the KeyboardUI instance so KeyboardUI subclasses
-  // should not take ownership of the |controller|. |controller| can be null
-  // when KeyboardController is destroying.
-  virtual void SetController(KeyboardController* controller);
-
   // Reloads virtual keyboard URL if the current keyboard's web content URL is
   // different. The URL can be different if user switch from password field to
   // any other type input field.
@@ -78,6 +73,9 @@ class KEYBOARD_EXPORT KeyboardUI {
 
   // Resets insets for affected windows.
   virtual void ResetInsets() = 0;
+
+  // |controller| may be null when KeyboardController is being destroyed.
+  void SetController(KeyboardController* controller);
 
  protected:
   KeyboardController* keyboard_controller() { return keyboard_controller_; }
