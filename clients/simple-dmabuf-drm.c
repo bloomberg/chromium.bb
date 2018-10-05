@@ -392,8 +392,11 @@ drm_device_init(struct buffer *buf)
 #ifdef HAVE_LIBDRM_INTEL
 	else if (!strcmp(dev->name, "i915")) {
 		buf->bufmgr = drm_intel_bufmgr_gem_init(buf->drm_fd, 32);
-		if (!buf->bufmgr)
+		if (!buf->bufmgr) {
+			free(dev->name);
+			free(dev);
 			return 0;
+		}
 		dev->alloc_bo = intel_alloc_bo;
 		dev->free_bo = intel_free_bo;
 		dev->export_bo_to_prime = intel_bo_export_to_prime;
@@ -425,6 +428,7 @@ drm_device_init(struct buffer *buf)
 	else {
 		fprintf(stderr, "Error: drm device %s unsupported.\n",
 			dev->name);
+		free(dev->name);
 		free(dev);
 		return 0;
 	}
