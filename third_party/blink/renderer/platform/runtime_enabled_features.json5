@@ -821,6 +821,10 @@
       settable_from_internals: true,
     },
     {
+      name: "NoHoverDuringScroll",
+      settable_from_internals: true,
+    },
+    {
       name: "NoIdleEncodingForLayoutTests",
       status: "test",
     },
