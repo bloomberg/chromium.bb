@@ -71,12 +71,7 @@ class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
 class GainNode;
-class HTMLMediaElement;
 class IIRFilterNode;
-class MediaElementAudioSourceNode;
-class MediaStream;
-class MediaStreamAudioDestinationNode;
-class MediaStreamAudioSourceNode;
 class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
@@ -179,12 +174,6 @@ class MODULES_EXPORT BaseAudioContext
   // JavaScript).
   AudioBufferSourceNode* createBufferSource(ExceptionState&);
   ConstantSourceNode* createConstantSource(ExceptionState&);
-  MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*,
-                                                        ExceptionState&);
-  MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*,
-                                                      ExceptionState&);
-  MediaStreamAudioDestinationNode* createMediaStreamDestination(
-      ExceptionState&);
   GainNode* createGain(ExceptionState&);
   BiquadFilterNode* createBiquadFilter(ExceptionState&);
   WaveShaperNode* createWaveShaper(ExceptionState&);

@@ -14,13 +14,18 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_timestamp.h"
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
+#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -325,6 +330,32 @@ double AudioContext::baseLatency() const {
           destination()->GetAudioDestinationHandler());
   return destination_handler.GetFramesPerBuffer() /
          static_cast<double>(sampleRate());
+}
+
+MediaElementAudioSourceNode* AudioContext::createMediaElementSource(
+    HTMLMediaElement* media_element,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+
+  return MediaElementAudioSourceNode::Create(*this, *media_element,
+                                             exception_state);
+}
+
+MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(
+    MediaStream* media_stream,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+
+  return MediaStreamAudioSourceNode::Create(*this, *media_stream,
+                                            exception_state);
+}
+
+MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination(
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+
+  // Set number of output channels to stereo by default.
+  return MediaStreamAudioDestinationNode::Create(*this, 2, exception_state);
 }
 
 void AudioContext::NotifySourceNodeStart() {

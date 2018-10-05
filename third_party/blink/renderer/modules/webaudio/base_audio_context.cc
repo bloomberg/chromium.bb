@@ -33,10 +33,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
@@ -56,9 +56,6 @@
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/gain_node.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
@@ -366,32 +363,6 @@ ConstantSourceNode* BaseAudioContext::createConstantSource(
   DCHECK(IsMainThread());
 
   return ConstantSourceNode::Create(*this, exception_state);
-}
-
-MediaElementAudioSourceNode* BaseAudioContext::createMediaElementSource(
-    HTMLMediaElement* media_element,
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  return MediaElementAudioSourceNode::Create(*this, *media_element,
-                                             exception_state);
-}
-
-MediaStreamAudioSourceNode* BaseAudioContext::createMediaStreamSource(
-    MediaStream* media_stream,
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  return MediaStreamAudioSourceNode::Create(*this, *media_stream,
-                                            exception_state);
-}
-
-MediaStreamAudioDestinationNode* BaseAudioContext::createMediaStreamDestination(
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  // Set number of output channels to stereo by default.
-  return MediaStreamAudioDestinationNode::Create(*this, 2, exception_state);
 }
 
 ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
