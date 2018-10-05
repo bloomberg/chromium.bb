@@ -13,8 +13,6 @@ Tag = collections.namedtuple('Tag', ['name', 'description'])
 
 GPU_RASTERIZATION = Tag(
     'gpu_rasterization', 'Story tests performance with GPU rasterization.')
-SYNC_SCROLL = Tag(
-    'sync_scroll', 'Story tests rendering with synchronous scrolling.')
 FASTPATH = Tag(
     'fastpath', 'Fast path stories.')
 REQUIRED_WEBGL = Tag(
