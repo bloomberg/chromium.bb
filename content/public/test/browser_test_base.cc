@@ -329,6 +329,7 @@ void BrowserTestBase::SetUp() {
   base::TaskScheduler::Create("Browser");
   DCHECK(!field_trial_list_);
   field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+  StartBrowserTaskScheduler();
   BrowserTaskExecutor::Create();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);

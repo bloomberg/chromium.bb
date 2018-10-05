@@ -874,17 +874,10 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     main_params.startup_data = startup_data_.get();
 
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-      // Create the TaskScheduler early to allow upcoming code to use
-      // the post_task.h API. Note: This is okay because RunBrowserProcessMain()
-      // will soon result in invoking TaskScheduler::GetInstance()->Start().
-      // The TaskScheduler being started soon is a strict requirement (delaying
-      // this start would result in posted tasks not running).
+      // Create and start the TaskScheduler early to allow upcoming code to use
+      // the post_task.h API.
       base::TaskScheduler::Create("Browser");
     }
-
-    // Register the TaskExecutor for posting task to the BrowserThreads. It is
-    // incorrect to post to a BrowserThread before this point.
-    BrowserTaskExecutor::Create();
 
     delegate_->PreCreateMainMessageLoop();
 #if defined(OS_WIN)
@@ -908,6 +901,15 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     }
 
     delegate_->PostEarlyInitialization();
+
+    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
+      // The FeatureList needs to create before starting the TaskScheduler.
+      StartBrowserTaskScheduler();
+    }
+
+    // Register the TaskExecutor for posting task to the BrowserThreads. It is
+    // incorrect to post to a BrowserThread before this point.
+    BrowserTaskExecutor::Create();
 
     return RunBrowserProcessMain(main_params, delegate_);
   }

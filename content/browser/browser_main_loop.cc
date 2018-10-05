@@ -346,46 +346,6 @@ enum WorkerPoolType : size_t {
   WORKER_POOL_COUNT  // Always last.
 };
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-GetDefaultTaskSchedulerInitParams() {
-#if defined(OS_ANDROID)
-  // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
-  return std::make_unique<base::TaskScheduler::InitParams>(
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
-          base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
-          base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-          base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-          base::TimeDelta::FromSeconds(60)));
-#else
-  // Desktop config.
-  return std::make_unique<base::TaskScheduler::InitParams>(
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
-          base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
-          base::TimeDelta::FromSeconds(40)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
-          base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
-          base::TimeDelta::FromSeconds(60))
-#if defined(OS_WIN)
-          ,
-      base::TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA
-#endif  // defined(OS_WIN)
-      );
-#endif
-}
-
 #if !defined(OS_FUCHSIA)
 // Time between updating and recording swap rates.
 constexpr base::TimeDelta kSwapMetricsInterval =
@@ -569,12 +529,18 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
   return g_current_browser_main_loop->audio_manager();
 }
 
-BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
+BrowserMainLoop::BrowserMainLoop(
+    const MainFunctionParams& parameters,
+    std::unique_ptr<base::TaskScheduler::ScopedExecutionFence>
+        scoped_execution_fence)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
-      created_threads_(false) {
+      created_threads_(false),
+      scoped_execution_fence_(std::move(scoped_execution_fence)) {
   DCHECK(!g_current_browser_main_loop);
+  DCHECK(scoped_execution_fence_)
+      << "TaskScheduler must be halted before kicking off content.";
   g_current_browser_main_loop = this;
 
   if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
@@ -977,31 +943,8 @@ void BrowserMainLoop::SynchronouslyFlushStartupTasks() {
 int BrowserMainLoop::CreateThreads() {
   TRACE_EVENT0("startup,rail", "BrowserMainLoop::CreateThreads");
 
-  {
-    auto task_scheduler_init_params =
-        GetContentClient()->browser()->GetTaskSchedulerInitParams();
-    if (!task_scheduler_init_params)
-      task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
-    DCHECK(task_scheduler_init_params);
-
-    // If a renderer lives in the browser process, adjust the number of threads
-    // in the foreground pool.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess)) {
-      const base::SchedulerWorkerPoolParams&
-          current_foreground_worker_pool_params(
-              task_scheduler_init_params->foreground_worker_pool_params);
-      task_scheduler_init_params->foreground_worker_pool_params =
-          base::SchedulerWorkerPoolParams(
-              std::max(GetMinThreadsInRendererTaskSchedulerForegroundPool(),
-                       current_foreground_worker_pool_params.max_tasks()),
-              current_foreground_worker_pool_params.suggested_reclaim_time(),
-              current_foreground_worker_pool_params.backward_compatibility());
-    }
-
-    base::TaskScheduler::GetInstance()->Start(
-        *task_scheduler_init_params.get());
-  }
+  // Release the TaskScheduler's threads.
+  scoped_execution_fence_.reset();
 
   // The |io_thread| can have optionally been injected into Init(), but if not,
   // create it here. Thre thread is only tagged as BrowserThread::IO here in
