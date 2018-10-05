@@ -5236,13 +5236,9 @@ crbug.com/887659 animations/animationworklet/animation-worklet-inside-iframe.htm
 crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
 crbug.com/887659 animations/animationworklet/animator-with-options.html [ Failure ]
 crbug.com/887659 animations/animationworklet/peek-updated-composited-property-on-main.html [ Failure ]
-crbug.com/887659 animations/animationworklet/scroll-timeline-display-none.html [ Crash ]
-crbug.com/887659 animations/animationworklet/scroll-timeline-dynamic-update.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
-crbug.com/887659 animations/animationworklet/worklet-animation-set-keyframes.html [ Crash ]
-crbug.com/887659 animations/animationworklet/worklet-animation-set-timing.html [ Crash ]
 crbug.com/887659 animations/animationworklet/worklet-animation-style-update.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-responsive-to-zoom.html [ Crash ]
 
