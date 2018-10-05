@@ -1476,22 +1476,6 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
 DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
                                 LocalDOMWindow* current_window,
                                 LocalDOMWindow* entered_window,
-                                const String& url,
-                                const AtomicString& target,
-                                const String& features,
-                                ExceptionState& exception_state) {
-  if (document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
-  }
-  return openFromString(executionContext, current_window, entered_window, url,
-                        target, features, exception_state);
-}
-
-DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
-                                LocalDOMWindow* current_window,
-                                LocalDOMWindow* entered_window,
                                 const USVStringOrTrustedURL& stringOrUrl,
                                 const AtomicString& target,
                                 const String& features,
@@ -1523,21 +1507,6 @@ DOMWindow* LocalDOMWindow::openFromString(ExecutionContext* executionContext,
   DCHECK(!target.IsNull());
   return openFromString(url, target, features, current_window, entered_window,
                         exception_state);
-}
-
-DOMWindow* LocalDOMWindow::open(const String& url,
-                                const AtomicString& frame_name,
-                                const String& window_features_string,
-                                LocalDOMWindow* calling_window,
-                                LocalDOMWindow* entered_window,
-                                ExceptionState& exception_state) {
-  if (document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
-  }
-  return openFromString(url, frame_name, window_features_string, calling_window,
-                        entered_window, exception_state);
 }
 
 DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
