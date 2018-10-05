@@ -1219,8 +1219,9 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
 }
 
 #if !defined(OS_CHROMEOS)
-TEST_F(IdentityManagerTest,
-       IdentityManagerGetsSignInEventBeforeSigninManagerObserver) {
+TEST_F(
+    IdentityManagerTest,
+    IdentityManagerGivesConsistentValuesFromSigninManagerObserverNotificationOfSignIn) {
   signin_manager()->ForceSignOut();
 
   base::RunLoop run_loop;
@@ -1245,8 +1246,9 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(kTestEmail, primary_account_from_signin_callback.email);
 }
 
-TEST_F(IdentityManagerTest,
-       IdentityManagerGetsSignOutEventBeforeSigninManagerObserver) {
+TEST_F(
+    IdentityManagerTest,
+    IdentityManagerGivesConsistentValuesFromSigninManagerObserverNotificationOfSignOut) {
   base::RunLoop run_loop;
   TestSigninManagerObserver signin_manager_observer(signin_manager());
   signin_manager_observer.set_on_google_signed_out_callback(
@@ -1485,8 +1487,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
                 ->account_from_refresh_token_removed_callback());
 }
 
-TEST_F(IdentityManagerTest,
-       IdentityManagerGetsTokenUpdateEventBeforeTokenServiceObserver) {
+TEST_F(
+    IdentityManagerTest,
+    IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenUpdate) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
   base::RunLoop run_loop;
@@ -1511,8 +1514,9 @@ TEST_F(IdentityManagerTest,
   run_loop.Run();
 }
 
-TEST_F(IdentityManagerTest,
-       IdentityManagerGetsTokenRemovalEventBeforeTokenServiceObserver) {
+TEST_F(
+    IdentityManagerTest,
+    IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenRemoval) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
   base::RunLoop run_loop;
