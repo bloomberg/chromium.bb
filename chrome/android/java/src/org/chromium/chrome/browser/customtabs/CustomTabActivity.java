@@ -65,6 +65,8 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.ClientAppDataRecorder;
+import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUi;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
@@ -326,7 +328,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     public SnackbarManager getSnackbarManager() {
                         return CustomTabActivity.this.getSnackbarManager();
                     }
-                }, getComponent().getTrustedWebActivityDisclosure());
+                }, getComponent().getTrustedWebActivityDisclosure(),
+                new ClientAppDataRecorder(getPackageManager(), new ClientAppDataRegister()));
     }
 
     /**
