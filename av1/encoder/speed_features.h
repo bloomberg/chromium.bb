@@ -576,6 +576,10 @@ typedef struct SPEED_FEATURES {
 
   // Prune intra mode candidates based on source block gradient stats.
   int intra_angle_estimation;
+
+  // Performs full pixel motion search before none_partition to decide if we
+  // want to split directly without trying other partition types.
+  int full_pixel_motion_search_based_split;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

@@ -3362,6 +3362,122 @@ static void ml_op_svm_early_term(const AV1_COMP *const cpi,
 #undef FEATURES
 #endif
 
+// Performs a full_pixel_motion_search with a single reference frame and extract
+// the variance of residues. Here features is assumed to be a length 6 array.
+// After this function is called, we will store the following in to features:
+// features[0] = log(1 + dc_q**2/256)
+// features[1] = log(1 + variance_of_residue)
+// for i in [2, 3, 4, 5]:
+//  features[i] = log(1 + variance_of_residue_in_block[i]/variance_of_residue)
+static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize,
+                                 float *features) {
+  assert(mi_size_wide[bsize] == mi_size_high[bsize]);
+
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+
+  mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->sb_type = bsize;
+
+  int pred_stride = 128;
+  DECLARE_ALIGNED(16, uint16_t, pred_buffer[MAX_SB_SQUARE]);
+  uint8_t *const pred_buf = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+                                ? CONVERT_TO_BYTEPTR(pred_buffer)
+                                : (uint8_t *)pred_buffer;
+
+  // Perform a single motion search in Y_PLANE to make a prediction
+  const MV_REFERENCE_FRAME ref =
+      cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
+  YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
+  const YV12_BUFFER_CONFIG *scaled_ref_frame =
+      av1_get_scaled_ref_frame(cpi, ref);
+  struct buf_2d backup_yv12;
+  // ref_mv is in units of 1/8-pel whereas ref_mv_full is in units of pel
+  MV ref_mv = { 0, 0 };
+  MV ref_mv_full = { 0, 0 };
+  const int step_param = 1;
+  const MvLimits tmp_mv_limits = x->mv_limits;
+  const SEARCH_METHODS search_methods = NSTEP;
+  const int do_mesh_search = 0;
+  const int sadpb = x->sadperbit16;
+  int cost_list[5];
+  int num_planes = 1;
+  const int ref_idx = 0;
+
+  if (scaled_ref_frame) {
+    backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
+    av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL,
+                         num_planes);
+  } else {
+    av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
+                         &cm->frame_refs[ref - LAST_FRAME].sf, num_planes);
+  }
+
+  mbmi->ref_frame[0] = ref;
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
+  av1_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param, search_methods,
+                        do_mesh_search, sadpb, cond_cost_list(cpi, cost_list),
+                        &ref_mv, INT_MAX, 1, mi_col * MI_SIZE, mi_row * MI_SIZE,
+                        0);
+  // Restore
+  x->mv_limits = tmp_mv_limits;
+
+  // Convert from units of pixel to 1/8-pixels
+  x->best_mv.as_mv.row *= 8;
+  x->best_mv.as_mv.col *= 8;
+  mbmi->mv[0].as_mv = x->best_mv.as_mv;
+
+  // Get a copy of the prediction output
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  xd->plane[0].dst.buf = pred_buf;
+  xd->plane[0].dst.stride = pred_stride;
+  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+
+  aom_clear_system_state();
+
+  if (scaled_ref_frame) {
+    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
+  }
+
+  // Now that we have the frame, we can print features out
+  int f_idx = 0;
+
+  // Q_INDEX
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
+
+  // VARIANCE
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes,
+                       BLOCK_128X128);
+  const uint8_t *src = x->plane[0].src.buf;
+  const int src_stride = x->plane[0].src.stride;
+  unsigned int sse = 0;
+
+  // Whole block
+  const unsigned int var =
+      cpi->fn_ptr[bsize].vf(src, src_stride, pred_buf, pred_stride, &sse);
+  features[f_idx++] = logf(1.0f + (float)var);
+
+  // Regional
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
+  int r_idx = 0;
+  for (r_idx = 0; r_idx < 4; r_idx++) {
+    const int x_idx = (r_idx & 1) * bw / 2;
+    const int y_idx = (r_idx >> 1) * bh / 2;
+    const int src_offset = y_idx * src_stride + x_idx;
+    const int pred_offset = y_idx * pred_stride + x_idx;
+    const unsigned int sub_var =
+        cpi->fn_ptr[subsize].vf(src + src_offset, src_stride,
+                                pred_buf + pred_offset, pred_stride, &sse);
+    const float var_ratio = (1.0f + (float)sub_var) / (4.0f + (float)var);
+    features[f_idx++] = var_ratio;
+  }
+}
+
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -3624,6 +3740,52 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   };
 
   MB_MODE_INFO *split_mbmi[4] = { 0 };
+
+  // Perform a full_pixel_search and use the residue to estimate whether we
+  // should split directly.
+  // TODO(chiyotsai@google.com): Try the algorithm on hbd and speed 0.
+  // Also try pruning PARTITION_SPLIT
+  if (cpi->sf.full_pixel_motion_search_based_split && bsize >= BLOCK_8X8 &&
+      do_square_split && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
+      mi_col + mi_size_wide[bsize] <= cm->mi_cols && !frame_is_intra_only(cm) &&
+      !cm->seq_params.enable_superres) {
+    const NN_CONFIG *nn_config = NULL;
+    float split_only_thresh = 0.0f;
+    if (bsize == BLOCK_128X128) {
+      nn_config = &full_pixel_motion_search_based_split_nn_config_128;
+      split_only_thresh = full_pixel_motion_search_based_split_thresh_128;
+    } else if (bsize == BLOCK_64X64) {
+      nn_config = &full_pixel_motion_search_based_split_nn_config_64;
+      split_only_thresh = full_pixel_motion_search_based_split_thresh_64;
+    } else if (bsize == BLOCK_32X32) {
+      nn_config = &full_pixel_motion_search_based_split_nn_config_32;
+      split_only_thresh = full_pixel_motion_search_based_split_thresh_32;
+    } else if (bsize == BLOCK_16X16) {
+      nn_config = &full_pixel_motion_search_based_split_nn_config_16;
+      split_only_thresh = full_pixel_motion_search_based_split_thresh_16;
+    } else if (bsize == BLOCK_8X8) {
+#if !CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8
+      // Disable BLOCK_8X8 for now
+      nn_config = &full_pixel_motion_search_based_split_nn_config_8;
+      split_only_thresh = full_pixel_motion_search_based_split_thresh_8;
+#endif
+    } else {
+      assert(0 && "Unexpected block size in full_pixel_motion_based_split");
+    }
+    if (nn_config) {
+      float features[6] = { 0 };
+      float score = 0;
+      get_res_var_features(cpi, x, mi_row, mi_col, bsize, features);
+      av1_nn_predict(features, nn_config, &score);
+
+      if (score > split_only_thresh) {
+        partition_none_allowed = 0;
+        partition_horz_allowed = 0;
+        partition_vert_allowed = 0;
+        do_rectangular_split = 0;
+      }
+    }
+  }
 
 BEGIN_PARTITION_SEARCH:
   if (x->must_find_valid_partition) {
