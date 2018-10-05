@@ -61,12 +61,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     : context_(context),
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
-      // TODO(crbug.com/824647): Change |worker_script_type_| based on the
-      // current version's type. This constructor is called when ServiceWorker
-      // scripts have already been installed. |worker_script_type_| will be set
-      // in ContinueWithUpdate().
-      // (https://w3c.github.io/ServiceWorker/#soft-update-algorithm)
-      worker_script_type_(blink::mojom::ScriptType::kClassic),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -240,10 +234,16 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   }
 
   DCHECK(existing_registration->GetNewestVersion());
-  // "If scriptURL is equal to registration.[[ScriptURL]] and
-  // "update_via_cache is equal to registration.[[update_via_cache]], then:"
+  // We also compare |script_type| here to proceed with registration when the
+  // script type is changed.
+  // TODO(asamidoi): Update the spec comment once
+  // https://github.com/w3c/ServiceWorker/issues/1359 is resolved.
+  // "If scriptURL is equal to registration.[[ScriptURL]] and "update_via_cache
+  // is equal to registration.[[update_via_cache]], then:"
   if (existing_registration->GetNewestVersion()->script_url() == script_url_ &&
-      existing_registration->update_via_cache() == update_via_cache_) {
+      existing_registration->update_via_cache() == update_via_cache_ &&
+      existing_registration->GetNewestVersion()->script_type() ==
+          worker_script_type_) {
     // "Set registration.[[Uninstalling]] to false."
     existing_registration->AbortPendingClear(base::BindOnce(
         &ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl,
@@ -290,6 +290,7 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
 
   DCHECK(script_url_.is_empty());
   script_url_ = registration()->GetNewestVersion()->script_url();
+  worker_script_type_ = registration()->GetNewestVersion()->script_type();
 
   // TODO(michaeln): If the last update check was less than 24 hours
   // ago, depending on the freshness of the cached worker script we
