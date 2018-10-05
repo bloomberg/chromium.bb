@@ -284,6 +284,11 @@ void WindowTreeClient::RegisterFrameSinkId(
     WindowMus* window,
     const viz::FrameSinkId& frame_sink_id) {
   tree_->AttachFrameSinkId(window->server_id(), frame_sink_id);
+
+  // Call OnWindowMusBoundsChanged() to force allocation of a LocalSurfaceId as
+  // well as notifying the server of the LocalSurfaceId.
+  const gfx::Rect bounds = window->GetWindow()->bounds();
+  OnWindowMusBoundsChanged(window, bounds, bounds);
 }
 
 void WindowTreeClient::UnregisterFrameSinkId(WindowMus* window) {

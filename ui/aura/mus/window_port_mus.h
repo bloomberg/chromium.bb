@@ -297,7 +297,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
   void UpdatePrimarySurfaceId();
-  void UpdateClientSurfaceEmbedder();
 
   WindowTreeClient* window_tree_client_;
 

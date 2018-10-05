@@ -37,6 +37,8 @@ class AURA_EXPORT ClientSurfaceEmbedder {
   // on the provided |surface_id|.
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
 
+  bool HasPrimarySurfaceId() const;
+
   // Sets the fallback SurfaceInfo of the surface layer. The clip layer is not
   // updated.
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
