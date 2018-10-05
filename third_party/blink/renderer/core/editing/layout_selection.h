@@ -44,7 +44,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
     return new LayoutSelection(frame_selection);
   }
 
-  bool HasPendingSelection() const { return has_pending_selection_; }
   void SetHasPendingSelection();
   void Commit();
 

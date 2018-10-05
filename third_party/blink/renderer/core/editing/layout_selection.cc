@@ -630,7 +630,7 @@ static LayoutTextSelectionStatus ComputeSelectionStatusForNode(
 
 LayoutTextSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const LayoutText& layout_text) const {
-  DCHECK(!HasPendingSelection());
+  DCHECK(!has_pending_selection_);
   const SelectionState selection_state = GetSelectionStateFor(layout_text);
   if (selection_state == SelectionState::kNone)
     return {0, 0, SelectionIncludeEnd::kNotInclude};
@@ -791,7 +791,7 @@ static void AssertLayoutClean(Document* document) {
 }
 
 void LayoutSelection::Commit() {
-  if (!HasPendingSelection())
+  if (!has_pending_selection_)
     return;
   has_pending_selection_ = false;
 
