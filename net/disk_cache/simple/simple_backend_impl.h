@@ -205,7 +205,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Try to create the directory if it doesn't exist. This must run on the IO
   // thread.
   static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
-                                                 uint64_t suggested_max_size);
+                                                 uint64_t suggested_max_size,
+                                                 net::CacheType cache_type);
 
   // Looks at current state of |entries_pending_doom_| and |active_entries_|
   // relevant to |entry_hash|, and, as appropriate, either returns a valid entry

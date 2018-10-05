@@ -112,10 +112,11 @@ base::LazyInstance<SimpleFileTracker>::Leaky g_simple_file_tracker =
 // Detects if the files in the cache directory match the current disk cache
 // backend type and version. If the directory contains no cache, occupies it
 // with the fresh structure.
-bool FileStructureConsistent(const base::FilePath& path) {
+SimpleCacheConsistencyResult FileStructureConsistent(
+    const base::FilePath& path) {
   if (!base::PathExists(path) && !base::CreateDirectory(path)) {
     LOG(ERROR) << "Failed to create directory: " << path.LossyDisplayName();
-    return false;
+    return SimpleCacheConsistencyResult::kCreateDirectoryFailed;
   }
   return disk_cache::UpgradeSimpleCacheOnDisk(path);
 }
@@ -287,7 +288,7 @@ int SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
   PostTaskAndReplyWithResult(
       cache_runner_.get(), FROM_HERE,
       base::BindOnce(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
-                     orig_max_size_),
+                     orig_max_size_, cache_type_),
       base::BindOnce(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
                      std::move(completion_callback)));
   return net::ERR_IO_PENDING;
@@ -709,13 +710,17 @@ void SimpleBackendImpl::IndexReadyForSizeBetweenCalculation(
 // static
 SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
     const base::FilePath& path,
-    uint64_t suggested_max_size) {
+    uint64_t suggested_max_size,
+    net::CacheType cache_type) {
   DiskStatResult result;
   result.max_size = suggested_max_size;
   result.net_error = net::OK;
-  if (!FileStructureConsistent(path)) {
+  SimpleCacheConsistencyResult consistency = FileStructureConsistent(path);
+  SIMPLE_CACHE_UMA(ENUMERATION, "ConsistencyResult", cache_type, consistency);
+  if (consistency != SimpleCacheConsistencyResult::kOK) {
     LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
-               << path.LossyDisplayName();
+               << static_cast<int>(consistency)
+               << " path: " << path.LossyDisplayName();
     result.net_error = net::ERR_FAILED;
   } else {
     bool mtime_result =
