@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/bind.h"
@@ -44,7 +45,9 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
 
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
-    check_rounds = std::ceil(timeout_ms / kCheckPeriodInMilliseconds);
+    check_rounds = std::min(
+        1,
+        static_cast<int>(std::ceil(timeout_ms / kCheckPeriodInMilliseconds)));
 
   CheckElementExists(delegate, check_rounds, std::move(callback));
 }
@@ -52,7 +55,7 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
 void WaitForDomAction::CheckElementExists(ActionDelegate* delegate,
                                           int rounds,
                                           ProcessActionCallback callback) {
-  DCHECK(rounds > 0);
+  DCHECK_GT(rounds, 0);
   std::vector<std::string> selectors;
   for (const auto& selector : proto_.wait_for_dom().selectors()) {
     selectors.emplace_back(selector);
@@ -73,13 +76,14 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
     return;
   }
 
-  if (rounds == 0) {
+  --rounds;
+  if (rounds <= 0) {
+    DCHECK_EQ(rounds, 0);
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
-  --rounds;
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WaitForDomAction::CheckElementExists,
