@@ -242,4 +242,20 @@ if (!is_ios && !is_android) {
       ":generate_license",
     ]
   }
+
+  executable("cronet_native_perf_test") {
+    testonly = true
+    sources = [
+      "native/perftest/main.cc",
+      "native/perftest/perf_test.cc",
+    ]
+    deps = [
+      "//base",
+      "//components/cronet",
+      "//components/cronet/native:cronet_native_headers",
+      "//components/cronet/native/test:cronet_native_tests",
+      "//components/cronet/native/test:cronet_native_testutil",
+      "//net:test_support",
+    ]
+  }
 }
