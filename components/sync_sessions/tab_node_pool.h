@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 
@@ -27,6 +28,8 @@ namespace sync_sessions {
 // A sync node can be in one of the two states:
 // 1. Associated   : Sync node is used and associated with a tab.
 // 2. Free         : Sync node is unused.
+
+extern const base::Feature kTabNodePoolImmediateDeletion;
 
 class TabNodePool {
  public:
@@ -76,8 +79,9 @@ class TabNodePool {
   // Returns tab node IDs for all known (used or free) tab nodes.
   std::set<int> GetAllTabNodeIds() const;
 
+  int GetMaxUsedTabNodeIdForTest() const;
+
  private:
-  friend class SyncTabNodePoolTest;
   using TabNodeIDToTabIDMap = std::map<int, SessionID>;
   using TabIDToTabNodeIDMap = std::map<SessionID, int>;
 

@@ -18,6 +18,9 @@ namespace sync_sessions {
 const size_t TabNodePool::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
+const base::Feature kTabNodePoolImmediateDeletion{
+    "TabNodePoolImmediateDeletion", base::FEATURE_DISABLED_BY_DEFAULT};
+
 TabNodePool::TabNodePool() : max_used_tab_node_id_(kInvalidTabNodeID) {}
 
 // static
@@ -89,10 +92,12 @@ int TabNodePool::AssociateWithFreeTabNode(SessionID tab_id) {
     // were never associated before (but are within 0..max_used_tab_node_id_).
     if (!free_nodes_pool_.empty()) {
       tab_node_id = *free_nodes_pool_.begin();
+      DCHECK_LE(tab_node_id, max_used_tab_node_id_);
     }
     if (!missing_nodes_pool_.empty() &&
         *missing_nodes_pool_.begin() < tab_node_id) {
       tab_node_id = *missing_nodes_pool_.begin();
+      DCHECK_LE(tab_node_id, max_used_tab_node_id_);
       AddTabNode(tab_node_id);
     }
   }
@@ -142,6 +147,27 @@ SessionID TabNodePool::GetTabIdFromTabNodeId(int tab_node_id) const {
 }
 
 void TabNodePool::CleanupTabNodes(std::set<int>* deleted_node_ids) {
+  if (base::FeatureList::IsEnabled(kTabNodePoolImmediateDeletion)) {
+    // Convert all free nodes into missing nodes, each representing a deletion.
+    deleted_node_ids->insert(free_nodes_pool_.begin(), free_nodes_pool_.end());
+    missing_nodes_pool_.insert(free_nodes_pool_.begin(),
+                               free_nodes_pool_.end());
+    free_nodes_pool_.clear();
+
+    // As an optimization to save memory, update |max_used_tab_node_id_| and
+    // shrink |missing_nodes_pool_| appropriately.
+    if (nodeid_tabid_map_.empty()) {
+      max_used_tab_node_id_ = kInvalidTabNodeID;
+    } else {
+      max_used_tab_node_id_ = nodeid_tabid_map_.rbegin()->first;
+    }
+
+    missing_nodes_pool_.erase(
+        missing_nodes_pool_.upper_bound(max_used_tab_node_id_),
+        missing_nodes_pool_.end());
+    return;
+  }
+
   // If number of free nodes exceed kFreeNodesHighWatermark,
   // delete sync nodes till number reaches kFreeNodesLowWatermark.
   // Note: This logic is to mitigate temporary disassociation issues with old
@@ -180,6 +206,10 @@ std::set<int> TabNodePool::GetAllTabNodeIds() const {
     tab_node_ids.insert(entry.first);
   }
   return tab_node_ids;
+}
+
+int TabNodePool::GetMaxUsedTabNodeIdForTest() const {
+  return max_used_tab_node_id_;
 }
 
 }  // namespace sync_sessions
