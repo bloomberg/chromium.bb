@@ -1243,11 +1243,22 @@ const FeatureEntry::FeatureParam
         {resource_coordinator::
              kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
          "true"}};
+const FeatureEntry::FeatureParam
+    kProactiveTabFreezeAndDiscard_DisableHeuristics[] = {
+        {resource_coordinator::
+             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
+         "true"},
+        {resource_coordinator::
+             kProactiveTabFreezeAndDiscard_DisableHeuristicsParam,
+         "true"}};
 const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
     {{"Freeze only", kProactiveTabFreezeAndDiscard_FreezeOnly,
       base::size(kProactiveTabFreezeAndDiscard_FreezeOnly), nullptr},
      {"Freeze and discard", kProactiveTabFreezeAndDiscard_FreezeAndDiscard,
-      base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr}};
+      base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr},
+     {"Freeze and discard, heuristics disabled",
+      kProactiveTabFreezeAndDiscard_DisableHeuristics,
+      base::size(kProactiveTabFreezeAndDiscard_DisableHeuristics), nullptr}};
 #endif
 
 const FeatureEntry::FeatureParam kGamepadPollingRate100Hz[] = {

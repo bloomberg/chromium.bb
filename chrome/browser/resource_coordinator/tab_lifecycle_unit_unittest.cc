@@ -832,4 +832,51 @@ TEST_F(TabLifecycleUnitTest, ReloadingAFrozenTabUnfreezeIt) {
   EXPECT_NE(LifecycleUnitState::FROZEN, tab_lifecycle_unit.GetState());
 }
 
+TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
+  TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  decision_details.Clear();
+
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  decision_details.Clear();
+
+  // Use one of the heuristics on the tab to prevent it from being discarded.
+  InterventionPolicyDatabase* policy_db =
+      TabLifecycleUnitSource::GetInstance()->intervention_policy_database();
+  policy_db->AddOriginPoliciesForTesting(
+      url::Origin::Create(web_contents_->GetLastCommittedURL()),
+      {OriginInterventions::OPT_OUT, OriginInterventions::OPT_OUT});
+
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  decision_details.Clear();
+
+  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  decision_details.Clear();
+
+  // Disable the heuristics and check that the tab can now be safely discarded.
+  GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
+      ->disable_heuristics_protections = true;
+
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  decision_details.Clear();
+
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  decision_details.Clear();
+}
+
 }  // namespace resource_coordinator
