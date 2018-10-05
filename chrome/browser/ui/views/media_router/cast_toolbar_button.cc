@@ -61,7 +61,6 @@ CastToolbarButton::CastToolbarButton(
       browser_(browser),
       profile_(browser_->profile()),
       context_menu_(std::move(context_menu)) {
-  SetVisible(false);
   set_notify_action(Button::NOTIFY_ON_PRESS);
 
   EnableCanvasFlippingForRTLUI(false);
@@ -69,7 +68,10 @@ CastToolbarButton::CastToolbarButton(
 
   ToolbarButton::Init();
   IssuesObserver::Init();
-  MediaRouterUIService::Get(profile_)->action_controller()->AddObserver(this);
+  MediaRouterActionController* controller =
+      MediaRouterUIService::Get(profile_)->action_controller();
+  controller->AddObserver(this);
+  SetVisible(controller->ShouldEnableAction());
 }
 
 CastToolbarButton::~CastToolbarButton() {
