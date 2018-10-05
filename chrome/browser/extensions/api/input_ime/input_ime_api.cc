@@ -197,6 +197,11 @@ bool ImeObserver::HasListener(const std::string& event_name) const {
   return extensions::EventRouter::Get(profile_)->HasEventListener(event_name);
 }
 
+bool ImeObserver::ExtensionHasListener(const std::string& event_name) const {
+  return extensions::EventRouter::Get(profile_)->ExtensionHasEventListener(
+      extension_id_, event_name);
+}
+
 std::string ImeObserver::ConvertInputContextType(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
   std::string input_context_type = "text";
