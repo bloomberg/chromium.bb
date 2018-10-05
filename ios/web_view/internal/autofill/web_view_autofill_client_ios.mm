@@ -23,6 +23,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
+    StrikeDatabase* strike_database,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
@@ -30,6 +31,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(identity_manager),
+      strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service) {}
 
@@ -51,6 +53,10 @@ syncer::SyncService* WebViewAutofillClientIOS::GetSyncService() {
 
 identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
+}
+
+StrikeDatabase* WebViewAutofillClientIOS::GetStrikeDatabase() {
+  return strike_database_;
 }
 
 ukm::UkmRecorder* WebViewAutofillClientIOS::GetUkmRecorder() {

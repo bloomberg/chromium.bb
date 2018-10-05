@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
@@ -67,6 +68,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       bridge_(bridge),
       identity_manager_(IdentityManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
+      strike_database_(StrikeDatabaseFactory::GetForBrowserState(
+          browser_state->GetOriginalChromeBrowserState())),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
               browser_state,
@@ -99,6 +102,10 @@ syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
 
 identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
+}
+
+StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
+  return strike_database_;
 }
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {

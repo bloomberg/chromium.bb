@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
+#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,6 +137,18 @@ identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
+}
+
+StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  // No need to return a StrikeDatabase in incognito mode. It is primarily used
+  // to determine whether or not to offer save of Autofill data. However, we
+  // don't allow saving of Autofill data while in incognito anyway, so an
+  // incognito code path should never get far enough to query StrikeDatabase.
+  return profile->IsOffTheRecord()
+             ? nullptr
+             : StrikeDatabaseFactory::GetForProfile(profile);
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {

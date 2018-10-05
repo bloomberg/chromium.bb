@@ -23,6 +23,7 @@ class CreditCard;
 class FormStructure;
 class MigratableCreditCard;
 class PersonalDataManager;
+class StrikeDatabase;
 }
 
 namespace content {
@@ -63,6 +64,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
+  autofill::StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;

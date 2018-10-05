@@ -53,6 +53,7 @@ class CreditCard;
 class FormStructure;
 class MigratableCreditCard;
 class PersonalDataManager;
+class StrikeDatabase;
 struct Suggestion;
 
 // A client interface that needs to be supplied to the Autofill component by the
@@ -112,6 +113,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the IdentityManager associated with the client.
   virtual identity::IdentityManager* GetIdentityManager() = 0;
+
+  // Gets the StrikeDatabase associated with the client.
+  virtual StrikeDatabase* GetStrikeDatabase() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;

@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -31,6 +32,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
+      StrikeDatabase* strike_database,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
@@ -40,6 +42,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
+  StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -100,6 +103,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<CWVAutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
+  StrikeDatabase* strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
 

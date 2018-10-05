@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
@@ -47,6 +48,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
+  StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -108,6 +110,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
+  StrikeDatabase* strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;
