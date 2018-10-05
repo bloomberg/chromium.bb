@@ -90,6 +90,10 @@ class WebController {
                             const std::string& selected_option,
                             base::OnceCallback<void(bool)> callback);
 
+  // Highlight an element given by |selectors|.
+  virtual void HighlightElement(const std::vector<std::string>& selectors,
+                                base::OnceCallback<void(bool)> callback);
+
   // Focus on element given by |selectors|.
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
@@ -228,6 +232,12 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnSelectOption(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForHighlightElement(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnHighlightElement(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
       base::OnceCallback<void(const std::string&)> callback,
       std::unique_ptr<FindElementResult> element_result);

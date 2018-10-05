@@ -75,6 +75,10 @@ class ActionDelegate {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
+  // Highlight the element given by |selectors|.
+  virtual void HighlightElement(const std::vector<std::string>& selectors,
+                                base::OnceCallback<void(bool)> callback) = 0;
+
   // Get the value of |selectors| and return the result through |callback|. The
   // returned value will be the empty string in case of error or empty value.
   virtual void GetFieldValue(

@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/reset_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
@@ -188,6 +189,14 @@ bool ProtocolUtils::ParseActions(
       }
       case ActionProto::ActionInfoCase::kReset: {
         actions->emplace_back(std::make_unique<ResetAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kHighlightElement: {
+        actions->emplace_back(std::make_unique<HighlightElementAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kUploadDom: {
+        actions->emplace_back(std::make_unique<UploadDomAction>(action));
         break;
       }
       default:

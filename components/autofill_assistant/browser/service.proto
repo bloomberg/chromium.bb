@@ -194,6 +194,7 @@ message ActionProto {
     UseCreditCardProto use_card = 28;
     UseAddressProto use_address = 29;
     UploadDomProto upload_dom = 18;
+    HighlightElementProto highlight_element = 31;
     ResetProto reset = 34;
     StopProto stop = 35;
   }
@@ -331,6 +332,12 @@ message UploadDomProto {
   // The element that should be a root of uploaded DOM. If empty then the whole
   // page is returned.
   optional ElementReferenceProto tree_root = 1;
+}
+
+// Contain all arguments to perform a highlight element action.
+message HighlightElementProto {
+  // The element to highlight.
+  optional ElementReferenceProto element = 1;
 }
 
 // Load the given URL in the current tab.

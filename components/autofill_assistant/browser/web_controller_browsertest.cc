@@ -120,6 +120,24 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+  bool HighlightElement(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->HighlightElement(
+        selectors, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
+                                  base::Unretained(this),
+                                  run_loop.QuitClosure(), &result));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnHighlightElement(base::Closure done_callback,
+                          bool* result_output,
+                          bool result) {
+    *result_output = result;
+    std::move(done_callback).Run();
+  }
+
   bool GetOuterHtml(const std::vector<std::string>& selectors,
                     std::string* html_output) {
     base::RunLoop run_loop;
@@ -414,6 +432,21 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
   web_controller_->LoadURL(GURL(url::kAboutBlankURL));
   WaitForLoadStop(shell()->web_contents());
   EXPECT_EQ(url::kAboutBlankURL, web_controller_->GetUrl().spec());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#select");
+
+  const std::string javascript = R"(
+    let select = document.querySelector("#select");
+    select.style.boxShadow;
+  )";
+  EXPECT_EQ("", content::EvalJs(shell(), javascript));
+  ASSERT_TRUE(HighlightElement(selectors));
+  // We only make sure that the element has a non-empty boxShadow style without
+  // requiring an exact string match.
+  EXPECT_NE("", content::EvalJs(shell(), javascript));
 }
 
 }  // namespace
