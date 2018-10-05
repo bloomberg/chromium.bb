@@ -432,6 +432,12 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     diff = true;
   }
 
+  if (specifics.is_client_validity_states_updated() !=
+      profile->is_client_validity_states_updated()) {
+    profile->set_is_client_validity_states_updated(
+        specifics.is_client_validity_states_updated());
+    diff = true;
+  }
   return diff;
 }
 
@@ -488,6 +494,8 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->set_address_home_language_code(LimitData(profile.language_code()));
   specifics->set_validity_state_bitfield(
       profile.GetClientValidityBitfieldValue());
+  specifics->set_is_client_validity_states_updated(
+      profile.is_client_validity_states_updated());
 
   // TODO(estade): this should be set_email_address.
   specifics->add_email_address(

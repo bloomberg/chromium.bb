@@ -1010,12 +1010,14 @@ TEST_F(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_DefaultValueNoSync) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
   ASSERT_EQ(0, local.GetClientValidityBitfieldValue());
+  ASSERT_FALSE(local.is_client_validity_states_updated());
   AddAutofillProfilesToTable({local});
 
   // Remote data does not have a validity state bitfield value.
   AutofillProfileSpecifics remote =
       CreateAutofillProfileSpecifics(kGuidA, kHttpsOrigin);
   ASSERT_FALSE(remote.has_validity_state_bitfield());
+  ASSERT_FALSE(remote.is_client_validity_states_updated());
 
   // No update to sync, no change in local data.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
