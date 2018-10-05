@@ -330,4 +330,9 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ActivateVideoFromThumbnailMode) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteSingleOpenPhotoOnDownloads) {
+  set_test_case_name("deleteSingleOpenPhotoOnDownloads");
+  StartTest();
+}
+
 }  // namespace file_manager

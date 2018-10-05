@@ -161,3 +161,29 @@ testcase.openMultipleImagesOnDrive = function() {
 testcase.openMultipleImagesAndChangeToSlideModeOnDownloads = function() {
   return openMultipleImagesAndChangeToSlideMode('local', 'downloads');
 };
+
+/**
+ * Runs a test to check whether the rename-input field is hidden after
+ * deleting the only selected image in the gallery.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteSingleOpenPhotoOnDownloads = function() {
+  const launchedPromise = launch('local', 'downloads', [ENTRIES.desktop]);
+  return launchedPromise.then(function(args) {
+    const appId = args.appId;
+    return gallery.waitForElement(appId, 'button.delete')
+        .then(function() {
+          // Click the delete button.
+          return gallery.waitAndClickElement(appId, 'button.delete');
+        })
+        .then(function(result) {
+          chrome.test.assertTrue(!!result);
+          // Wait and click delete button of confirmation dialog.
+          return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
+        })
+        .then(function() {
+          // Check: The edit name field should hide.
+          return gallery.waitForElement(appId, '#rename-input[hidden]');
+        });
+  });
+};
