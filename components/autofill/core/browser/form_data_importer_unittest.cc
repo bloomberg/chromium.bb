@@ -115,12 +115,15 @@ class FormDataImporterTestBase {
   FormDataImporterTestBase() : autofill_table_(nullptr) {}
 
   void ResetPersonalDataManager(UserMode user_mode) {
-    bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
     personal_data_manager_.reset(new PersonalDataManager("en"));
     personal_data_manager_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
-        nullptr, prefs_.get(), nullptr, /*client_profile_validator=*/nullptr,
-        is_incognito);
+        /*account_database=*/nullptr,
+        /*pref_service=*/prefs_.get(),
+        /*identity_manager=*/nullptr,
+        /*client_profile_validator=*/nullptr,
+        /*history_service=*/nullptr,
+        /*is_off_the_record=*/(user_mode == USER_MODE_INCOGNITO));
     personal_data_manager_->AddObserver(&personal_data_observer_);
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
 

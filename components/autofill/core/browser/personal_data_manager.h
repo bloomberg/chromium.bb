@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
@@ -69,6 +70,7 @@ namespace autofill {
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUISequence,
+                            public history::HistoryServiceObserver,
                             public syncer::SyncServiceObserver,
                             public AccountInfoGetter {
  public:
@@ -89,6 +91,7 @@ class PersonalDataManager : public KeyedService,
             PrefService* pref_service,
             identity::IdentityManager* identity_manager,
             AutofillProfileValidator* client_profile_validator,
+            history::HistoryService* history_service,
             bool is_off_the_record);
 
   // KeyedService:
@@ -97,6 +100,10 @@ class PersonalDataManager : public KeyedService,
   // Called once the sync service is known to be instantiated. Note that it may
   // not be started, but it's preferences can be queried.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
+
+  // history::HistoryServiceObserver
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
@@ -719,6 +726,11 @@ class PersonalDataManager : public KeyedService,
 
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_ = nullptr;
+
+  // The HistoryService to observed by the personal data manager. Must
+  // outlive this instance. This unowned pointer is retained so the PDM can
+  // remove itself from the history service's observer list on shutdown.
+  history::HistoryService* history_service_ = nullptr;
 
   // Pref registrar for managing the change observers.
   PrefChangeRegistrar pref_registrar_;

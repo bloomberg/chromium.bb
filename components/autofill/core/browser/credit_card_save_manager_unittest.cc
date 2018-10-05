@@ -104,9 +104,13 @@ class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_.Init(autofill_client_.GetDatabase(), nullptr,
-                        autofill_client_.GetPrefs(), nullptr,
-                        /*client_profile_validator=*/nullptr, false);
+    personal_data_.Init(/*profile_database=*/autofill_client_.GetDatabase(),
+                        /*account_database=*/nullptr,
+                        /*pref_service=*/autofill_client_.GetPrefs(),
+                        /*identity_manager=*/nullptr,
+                        /*client_profile_validator=*/nullptr,
+                        /*history_service=*/nullptr,
+                        /*is_off_the_record=*/false);
     personal_data_.SetSyncServiceForTest(&sync_service_);
     autofill_driver_.reset(new TestAutofillDriver());
     request_context_ = new net::TestURLRequestContextGetter(

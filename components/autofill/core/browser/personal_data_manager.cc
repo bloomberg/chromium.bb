@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -43,6 +44,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -474,6 +476,7 @@ void PersonalDataManager::Init(
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
     AutofillProfileValidator* client_profile_validator,
+    history::HistoryService* history_service,
     bool is_off_the_record) {
   CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
@@ -486,6 +489,11 @@ void PersonalDataManager::Init(
       prefs::kAutofillProfileValidity,
       base::BindRepeating(&PersonalDataManager::ResetProfileValidity,
                           base::Unretained(this)));
+
+  // Listen for URL deletions from browsing history.
+  history_service_ = history_service;
+  if (history_service_)
+    history_service_->AddObserver(this);
 
   identity_manager_ = identity_manager;
   is_off_the_record_ = is_off_the_record;
@@ -523,8 +531,11 @@ PersonalDataManager::~PersonalDataManager() {
 void PersonalDataManager::Shutdown() {
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-
   sync_service_ = nullptr;
+
+  if (history_service_)
+    history_service_->RemoveObserver(this);
+  history_service_ = nullptr;
 }
 
 void PersonalDataManager::OnSyncServiceInitialized(
@@ -569,6 +580,14 @@ void PersonalDataManager::OnSyncServiceInitialized(
       database_helper_->SetUseAccountStorageForServerCards(
           !sync_service->IsSyncFeatureEnabled());
     }
+  }
+}
+
+void PersonalDataManager::OnURLsDeleted(
+    history::HistoryService* /* history_service */,
+    const history::DeletionInfo& deletion_info) {
+  if (!deletion_info.is_from_expiration() && deletion_info.IsAllHistory()) {
+    AutofillDownloadManager::ClearUploadHistory(pref_service_);
   }
 }
 

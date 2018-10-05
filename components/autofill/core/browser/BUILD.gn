@@ -263,6 +263,7 @@ jumbo_static_library("browser") {
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
+    "//components/history/core/browser",
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/leveldb_proto:leveldb_proto",
