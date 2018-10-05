@@ -699,8 +699,11 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
 static bool NeedsEffect(const LayoutObject& object) {
   const ComputedStyle& style = object.StyleRef();
 
+  // For now some objects (e.g. LayoutTableCol) with stacking context style
+  // don't create layer thus are not actual stacking contexts, so the HasLayer()
+  // condition. TODO(crbug.com/892734): Support effects for LayoutTableCol.
   const bool is_css_isolated_group =
-      object.IsBoxModelObject() && style.IsStackingContext();
+      object.HasLayer() && style.IsStackingContext();
 
   if (!is_css_isolated_group && !object.IsSVG())
     return false;
