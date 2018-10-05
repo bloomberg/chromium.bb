@@ -91,3 +91,6 @@
 -TabScrubberTest.RTLSkipped
 -TabScrubberTest.Single
 -TabScrubberTest.Skipped
+
+# OobeInteractiveUITest: crbug.com/892263
+-OobeInteractiveUITest.SimpleEndToEnd
