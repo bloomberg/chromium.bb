@@ -503,6 +503,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableJankTracking(
       base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
       enableExperimentalWebPlatformFeatures);
+
+  WebRuntimeFeatures::EnableNoHoverDuringScroll(
+      base::FeatureList::IsEnabled(features::kNoHoverDuringScroll));
 }
 
 }  // namespace content
