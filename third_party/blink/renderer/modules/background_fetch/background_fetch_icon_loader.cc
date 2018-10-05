@@ -114,10 +114,18 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
     // Update the src of |icon| to include the base URL in case relative paths
     // were used.
     icon.setSrc(execution_context->CompleteURL(icon.src()));
-    icons.emplace_back(blink::ConvertManifestImageResource(icon));
+    Manifest::ImageResource candidate_icon =
+        blink::ConvertManifestImageResource(icon);
+    // Provide default values for 'purpose' and 'sizes' if they are missing.
+    if (candidate_icon.sizes.empty())
+      candidate_icon.sizes.emplace_back(gfx::Size(0, 0));
+    if (candidate_icon.purpose.empty()) {
+      candidate_icon.purpose.emplace_back(
+          Manifest::ImageResource::Purpose::ANY);
+    }
+    icons.emplace_back(candidate_icon);
   }
 
-  // TODO(crbug.com/868875): Handle cases where `sizes` or `purpose` is empty.
   return KURL(ManifestIconSelector::FindBestMatchingIcon(
       std::move(icons), icon_display_size_pixels_.height, kMinimumIconSizeInPx,
       Manifest::ImageResource::Purpose::ANY));
