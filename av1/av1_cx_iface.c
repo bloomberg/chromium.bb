@@ -1342,6 +1342,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     unsigned int lib_flags = 0;
     int is_frame_visible = 0;
     int index_size = 0;
+    int has_fwd_keyframe = 0;
     // invisible frames get packed with the next visible frame
     while (cx_data_sz - index_size >= ctx->cx_data_sz / 2 &&
            !is_frame_visible &&
@@ -1416,6 +1417,9 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         index_size = MAG_SIZE * (ctx->pending_frame_count - 1) + 2;
 
         is_frame_visible = cpi->common.show_frame;
+
+        has_fwd_keyframe |=
+            (!is_frame_visible && cpi->common.frame_type == KEY_FRAME);
       }
     }
     if (is_frame_visible) {
@@ -1447,6 +1451,11 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
       pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
+      if (has_fwd_keyframe) {
+        // If one of the invisible frames in the packet is a keyframe, set
+        // the delayed random access point flag.
+        pkt.data.frame.flags |= AOM_FRAME_IS_DELAYED_RANDOM_ACCESS_POINT;
+      }
       pkt.data.frame.duration = (uint32_t)ticks_to_timebase_units(
           timebase, dst_end_time_stamp - dst_time_stamp);
 

@@ -103,6 +103,8 @@ typedef uint32_t aom_codec_frame_flags_t;
 #define AOM_FRAME_IS_SWITCH 0x20
 /*!\brief this is an error-resilient frame */
 #define AOM_FRAME_IS_ERROR_RESILIENT 0x40
+/*!\brief this is a key-frame dependent recovery-point frame */
+#define AOM_FRAME_IS_DELAYED_RANDOM_ACCESS_POINT 0x80
 
 /*!\brief Error Resilient flags
  *
