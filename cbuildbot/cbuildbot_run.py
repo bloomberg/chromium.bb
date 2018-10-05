@@ -184,6 +184,7 @@ class RunAttributes(object):
       'debug_tarball_generated',      # Set by DebugSymbolsStage.
       'images_generated',             # Set by BuildImageStage.
       'test_artifacts_uploaded',      # Set by UploadHWTestArtifacts.
+      'autotest_tarball_generated',   # Set by ArchiveStage.
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                      # Set by cbuildbot.py:Builder
       'packages_under_test',          # Set by BuildPackagesStage.
