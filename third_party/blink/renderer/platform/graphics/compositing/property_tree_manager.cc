@@ -199,7 +199,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // to the local matrix. Cc applies sticky offset dynamically on top of the
   // local matrix. We should not set the local matrix on cc node if it is a
   // sticky node because the sticky offset would be applied twice otherwise.
-  if (!transform_node->GetStickyConstraint().is_sticky) {
+  if (!transform_node->GetStickyConstraint()) {
     compositor_node.local.matrix() =
         TransformationMatrix::ToSkMatrix44(transform_node->Matrix());
   }
@@ -215,10 +215,11 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
   }
 
-  if (transform_node->GetStickyConstraint().is_sticky) {
+  if (const auto* sticky_constraint = transform_node->GetStickyConstraint()) {
+    DCHECK(sticky_constraint->is_sticky);
     cc::StickyPositionNodeData* sticky_data =
         GetTransformTree().StickyPositionData(id);
-    sticky_data->constraints = transform_node->GetStickyConstraint();
+    sticky_data->constraints = *sticky_constraint;
     // TODO(pdr): This could be a performance issue because it crawls up the
     // transform tree for each pending layer. If this is on profiles, we should
     // cache a lookup of transform node to scroll translation transform node.

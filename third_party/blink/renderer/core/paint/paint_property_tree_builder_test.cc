@@ -6222,44 +6222,50 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 60),
             outer_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            outer_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
-      outer_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+      outer_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), outer_properties->StickyTranslation()
                                        ->GetStickyConstraint()
-                                       .nearest_element_shifting_sticky_box);
+                                       ->nearest_element_shifting_sticky_box);
   EXPECT_EQ(CompositorElementId(),
             outer_properties->StickyTranslation()
                 ->GetStickyConstraint()
-                .nearest_element_shifting_containing_block);
+                ->nearest_element_shifting_containing_block);
 
   const auto* middle_properties = PaintPropertiesForElement("middle");
   ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 15),
             middle_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            middle_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
-      middle_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+      middle_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), middle_properties->StickyTranslation()
                                        ->GetStickyConstraint()
-                                       .nearest_element_shifting_sticky_box);
+                                       ->nearest_element_shifting_sticky_box);
   EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
             middle_properties->StickyTranslation()
                 ->GetStickyConstraint()
-                .nearest_element_shifting_containing_block);
+                ->nearest_element_shifting_containing_block);
 
   const auto* inner_properties = PaintPropertiesForElement("inner");
   ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 20),
             inner_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            inner_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
-      inner_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+      inner_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(middle_properties->StickyTranslation()->GetCompositorElementId(),
             inner_properties->StickyTranslation()
                 ->GetStickyConstraint()
-                .nearest_element_shifting_sticky_box);
+                ->nearest_element_shifting_sticky_box);
   EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
             inner_properties->StickyTranslation()
                 ->GetStickyConstraint()
-                .nearest_element_shifting_containing_block);
+                ->nearest_element_shifting_containing_block);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
@@ -6285,22 +6291,22 @@ TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 60),
             outer_properties->StickyTranslation()->Matrix());
-  EXPECT_FALSE(
-      outer_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(nullptr,
+            outer_properties->StickyTranslation()->GetStickyConstraint());
 
   const auto* middle_properties = PaintPropertiesForElement("middle");
   ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 15),
             middle_properties->StickyTranslation()->Matrix());
-  EXPECT_FALSE(
-      middle_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(nullptr,
+            middle_properties->StickyTranslation()->GetStickyConstraint());
 
   const auto* inner_properties = PaintPropertiesForElement("inner");
   ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
   EXPECT_EQ(TransformationMatrix().Translate(0, 20),
             inner_properties->StickyTranslation()->Matrix());
-  EXPECT_FALSE(
-      inner_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(nullptr,
+            inner_properties->StickyTranslation()->GetStickyConstraint());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {

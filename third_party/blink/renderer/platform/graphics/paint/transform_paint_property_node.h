@@ -57,7 +57,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
-    CompositorStickyConstraint sticky_constraint;
+    std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
 
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
@@ -69,7 +69,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
              scroll == o.scroll &&
              affected_by_outer_viewport_bounds_delta ==
                  o.affected_by_outer_viewport_bounds_delta &&
-             sticky_constraint == o.sticky_constraint;
+             ((!sticky_constraint && !o.sticky_constraint) ||
+              (sticky_constraint && o.sticky_constraint &&
+               *sticky_constraint == *o.sticky_constraint));
     }
   };
 
@@ -123,8 +125,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.affected_by_outer_viewport_bounds_delta;
   }
 
-  const cc::LayerStickyPositionConstraint& GetStickyConstraint() const {
-    return state_.sticky_constraint;
+  const cc::LayerStickyPositionConstraint* GetStickyConstraint() const {
+    return state_.sticky_constraint.get();
   }
 
   // If this is a scroll offset translation (i.e., has an associated scroll

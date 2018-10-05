@@ -479,26 +479,26 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
                 ->GetScrollableArea()
                 ->GetStickyConstraintsMap()
                 .at(layer);
-        CompositorStickyConstraint& constraint = state.sticky_constraint;
-        constraint.is_sticky = true;
-        constraint.is_anchored_left = layout_constraint.is_anchored_left;
-        constraint.is_anchored_right = layout_constraint.is_anchored_right;
-        constraint.is_anchored_top = layout_constraint.is_anchored_top;
-        constraint.is_anchored_bottom = layout_constraint.is_anchored_bottom;
-        constraint.left_offset = layout_constraint.left_offset;
-        constraint.right_offset = layout_constraint.right_offset;
-        constraint.top_offset = layout_constraint.top_offset;
-        constraint.bottom_offset = layout_constraint.bottom_offset;
-        constraint.constraint_box_rect =
+        auto constraint = std::make_unique<CompositorStickyConstraint>();
+        constraint->is_sticky = true;
+        constraint->is_anchored_left = layout_constraint.is_anchored_left;
+        constraint->is_anchored_right = layout_constraint.is_anchored_right;
+        constraint->is_anchored_top = layout_constraint.is_anchored_top;
+        constraint->is_anchored_bottom = layout_constraint.is_anchored_bottom;
+        constraint->left_offset = layout_constraint.left_offset;
+        constraint->right_offset = layout_constraint.right_offset;
+        constraint->top_offset = layout_constraint.top_offset;
+        constraint->bottom_offset = layout_constraint.bottom_offset;
+        constraint->constraint_box_rect =
             box_model.ComputeStickyConstrainingRect();
-        constraint.scroll_container_relative_sticky_box_rect = RoundedIntRect(
+        constraint->scroll_container_relative_sticky_box_rect = RoundedIntRect(
             layout_constraint.scroll_container_relative_sticky_box_rect);
         constraint
-            .scroll_container_relative_containing_block_rect = RoundedIntRect(
+            ->scroll_container_relative_containing_block_rect = RoundedIntRect(
             layout_constraint.scroll_container_relative_containing_block_rect);
         if (PaintLayer* sticky_box_shifting_ancestor =
                 layout_constraint.nearest_sticky_layer_shifting_sticky_box) {
-          constraint.nearest_element_shifting_sticky_box =
+          constraint->nearest_element_shifting_sticky_box =
               CompositorElementIdFromUniqueObjectId(
                   sticky_box_shifting_ancestor->GetLayoutObject().UniqueId(),
                   CompositorElementIdNamespace::kStickyTranslation);
@@ -506,12 +506,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         if (PaintLayer* containing_block_shifting_ancestor =
                 layout_constraint
                     .nearest_sticky_layer_shifting_containing_block) {
-          constraint.nearest_element_shifting_containing_block =
+          constraint->nearest_element_shifting_containing_block =
               CompositorElementIdFromUniqueObjectId(
                   containing_block_shifting_ancestor->GetLayoutObject()
                       .UniqueId(),
                   CompositorElementIdNamespace::kStickyTranslation);
         }
+        state.sticky_constraint = std::move(constraint);
       }
 
       OnUpdate(properties_->UpdateStickyTranslation(*context_.current.transform,
