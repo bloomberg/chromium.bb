@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PDF_UMA_H_
-#define CHROME_COMMON_PDF_UMA_H_
+#ifndef CHROME_COMMON_PDF_UTIL_H_
+#define CHROME_COMMON_PDF_UTIL_H_
+
+#include <string>
+
+class GURL;
 
 // Must be kept in sync with PDFLoadStatus enum in histograms.xml.
 // This enum should be treated as append-only.
@@ -19,6 +23,9 @@ enum class PDFLoadStatus {
 
 void ReportPDFLoadStatus(PDFLoadStatus status);
 
+// Returns the HTML contents of the placeholder.
+std::string GetPDFPlaceholderHTML(const GURL& pdf_url);
+
 constexpr char kPDFMimeType[] = "application/pdf";
 
-#endif  // CHROME_COMMON_PDF_UMA_H_
+#endif  // CHROME_COMMON_PDF_UTIL_H_
