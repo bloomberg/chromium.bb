@@ -720,11 +720,27 @@ static bool NeedsEffect(const LayoutObject& object) {
         return true;
       }
     }
-  } else if (object.IsBoxModelObject()) {
-    if (PaintLayer* layer = ToLayoutBoxModelObject(object).Layer()) {
-      if (layer->HasNonIsolatedDescendantWithBlendMode())
-        return true;
-    }
+  } else {
+    DCHECK(is_css_isolated_group);
+    const auto* layer = ToLayoutBoxModelObject(object).Layer();
+    DCHECK(layer);
+
+    if (layer->HasNonIsolatedDescendantWithBlendMode())
+      return true;
+
+    // In SPv1* a mask layer can be created for clip-path in absence of mask,
+    // and a mask effect node must be created whether the clip-path is
+    // path-based or not.
+    if (layer->GetCompositedLayerMapping() &&
+        layer->GetCompositedLayerMapping()->MaskLayer())
+      return true;
+
+    // An effect node is required by cc if the layer flattens its subtree but it
+    // is treated as a 3D object by its parent.
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+        !layer->Preserves3D() && layer->HasSelfPaintingLayerDescendant() &&
+        layer->Parent() && layer->Parent()->Preserves3D())
+      return true;
   }
 
   SkBlendMode blend_mode = object.IsBlendingAllowed()
@@ -743,34 +759,12 @@ static bool NeedsEffect(const LayoutObject& object) {
   if (object.StyleRef().HasMask())
     return true;
 
-  if (object.HasLayer() &&
-      ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping() &&
-      ToLayoutBoxModelObject(object)
-          .Layer()
-          ->GetCompositedLayerMapping()
-          ->MaskLayer()) {
-    // In SPv1* a mask layer can be created for clip-path in absence of mask,
-    // and a mask effect node must be created whether the clip-path is
-    // path-based or not.
-    return true;
-  }
-
   if (object.StyleRef().ClipPath() &&
       object.FirstFragment().ClipPathBoundingBox() &&
       !object.FirstFragment().ClipPathPath()) {
     // If the object has a valid clip-path but can't use path-based clip-path,
     // a clip-path effect node must be created.
     return true;
-  }
-
-  // An effect node is required by cc if the layer flattens its subtree but it
-  // is treated as a 3D object by its parent.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      object.HasLayer()) {
-    PaintLayer* layer = ToLayoutBoxModelObject(object).Layer();
-    if (!layer->Preserves3D() && layer->HasSelfPaintingLayerDescendant() &&
-        layer->Parent() && layer->Parent()->Preserves3D())
-      return true;
   }
 
   return false;
