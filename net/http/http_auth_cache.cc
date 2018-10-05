@@ -68,6 +68,11 @@ void RecordLookupByPathPosition(int position) {
   UMA_HISTOGRAM_COUNTS_100("Net.HttpAuthCacheLookupByPathPosition", position);
 }
 
+void RecordEntriesExaminedWhenNoMatch(int num_examined_entries) {
+  UMA_HISTOGRAM_COUNTS_100("Net.HttpAuthCacheEntriesExaminedWhenNoMatch",
+                           num_examined_entries);
+}
+
 }  // namespace
 
 namespace net {
@@ -94,6 +99,7 @@ HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
     }
   }
   RecordLookupPosition(0);
+  RecordEntriesExaminedWhenNoMatch(entries_examined);
   return NULL;  // No realm entry found.
 }
 
@@ -128,6 +134,8 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
   }
   if (best_match)
     best_match->last_use_time_ticks_ = tick_clock_->NowTicks();
+  else
+    RecordEntriesExaminedWhenNoMatch(entries_examined);
   RecordLookupByPathPosition(best_match_position);
   return best_match;
 }
