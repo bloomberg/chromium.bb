@@ -1789,6 +1789,9 @@ extern const char kMacRTLDescription[];
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
 
+extern const char kMacV2SandboxName[];
+extern const char kMacV2SandboxDescription[];
+
 extern const char kMacViewsNativeAppWindowsName[];
 extern const char kMacViewsNativeAppWindowsDescription[];
 
