@@ -668,13 +668,6 @@ bool OmniboxFieldTrial::HUPSearchDatabase() {
   return value.empty() || (value == "true");
 }
 
-bool OmniboxFieldTrial::KeywordRequiresRegistry() {
-  const std::string& value = variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kKeywordRequiresRegistryRule);
-  return value.empty() || (value == "true");
-}
-
 bool OmniboxFieldTrial::KeywordRequiresPrefixMatch() {
   const std::string& value = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,

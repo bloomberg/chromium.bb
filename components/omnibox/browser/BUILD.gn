@@ -214,9 +214,6 @@ jumbo_static_library("browser") {
       "//components/vector_icons",
     ]
   }
-
-  # TODO(brettw) Fix the include cycle and remove this line.
-  allow_circular_includes_from = [ "//components/search_engines" ]
 }
 
 if (is_android) {

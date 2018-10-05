@@ -389,11 +389,15 @@ class OmniboxFieldTrial {
   // For the aggressive keyword matching experiment that's part of the bundled
   // omnibox field trial.
 
-  // Returns whether KeywordProvider should consider the registry portion
+  // One function is missing from here to avoid a cyclic dependency
+  // between search_engine and omnibox. In the search_engine component
+  // there is a OmniboxFieldTrialKeywordRequiresRegistry function
+  // that logically should be here.
+  //
+  // It returns whether KeywordProvider should consider the registry portion
   // (e.g., co.uk) of keywords that look like hostnames as an important part of
   // the keyword name for matching purposes.  Returns true if the experiment
   // isn't active.
-  static bool KeywordRequiresRegistry();
 
   // For keywords that look like hostnames, returns whether KeywordProvider
   // should require users to type a prefix of the hostname to match against
