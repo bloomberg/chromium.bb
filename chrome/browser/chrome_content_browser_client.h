@@ -505,6 +505,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::OriginPolicyErrorReason error_reason,
       const url::Origin& origin,
       const GURL& url) override;
+  bool CanIgnoreCertificateErrorIfNeeded() override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

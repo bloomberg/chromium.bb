@@ -8,10 +8,6 @@
 promise_test(async (t) => {
   await waitUntilDidFinishLoadForFrame;
 
-  // The timestamp of the test SXG file is "Apr 1 2018 00:00 UTC" and valid
-  // until "Apr 8 2018 00:00 UTC".
-  await setSignedExchangeVerificationTime(new Date("Apr 1 2018 00:01 UTC"));
-
   try {
     await openSXGInIframeAndWaitForMessage(
         t, 'http://example.test:8080/loading/sxg/resources/sxg-location.sxg');

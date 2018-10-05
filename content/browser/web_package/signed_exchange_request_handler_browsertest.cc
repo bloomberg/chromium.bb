@@ -51,6 +51,7 @@ namespace content {
 namespace {
 
 const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
+const uint64_t kSignatureHeaderExpires = 1520837600;  // 2018-03-12T06:53:20Z
 
 constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
     "application/signed-exchange;v=b2;q=0.9,*/*;q=0.8";
@@ -260,6 +261,47 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Expired) {
+  SignedExchangeHandler::SetVerificationTimeForTesting(
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1));
+
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  mock_cert_verifier()->AddResultForCertAndHost(
+      original_cert, "test.example.org", dummy_result, net::OK);
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  RedirectObserver redirect_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(303, redirect_observer.response_code());
+  histogram_tester_.ExpectUniqueSample(
+      "SignedExchange.LoadResult",
+      SignedExchangeLoadResult::kSignatureVerificationError, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "SignedExchange.SignatureVerificationResult",
+      SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
