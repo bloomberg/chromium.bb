@@ -529,7 +529,7 @@ var ENTRIES = {
     mimeType: 'text/html',
     lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
     nameText: 'tall.html',
-    sizeText: '51 bytes',
+    sizeText: '589 bytes',
     typeText: 'HTML document',
   }),
 
