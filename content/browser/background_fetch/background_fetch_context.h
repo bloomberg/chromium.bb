@@ -201,12 +201,12 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidFinishJob(
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchFailureReason reason_to_abort);
+      blink::mojom::BackgroundFetchFailureReason failure_reason);
 
   // Called when the data manager finishes marking a registration as deleted.
   void DidMarkForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchFailureReason reason_to_abort,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
       blink::mojom::BackgroundFetchError error);
 
@@ -214,7 +214,6 @@ class CONTENT_EXPORT BackgroundFetchContext
   // retrieved from storage, and the Service Worker event can be invoked.
   void DidGetSettledFetches(
       const BackgroundFetchRegistrationId& registration_id,
-      std::unique_ptr<BackgroundFetchRegistration> registration,
       blink::mojom::BackgroundFetchError error,
       blink::mojom::BackgroundFetchFailureReason failure_reason,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
@@ -230,6 +229,11 @@ class CONTENT_EXPORT BackgroundFetchContext
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
 
+  // Dispatches an appropriate event (success, fail, abort).
+  void DispatchCompletionEvent(
+      const BackgroundFetchRegistrationId& registration_id,
+      std::unique_ptr<BackgroundFetchRegistration> registration);
+
   // Called when the notification UI for the background fetch job associated
   // with |unique_id| is activated.
   void DispatchClickEvent(const std::string& unique_id);
@@ -241,16 +245,14 @@ class CONTENT_EXPORT BackgroundFetchContext
           initialization_data);
 
   // Called when all processing for the |registration_id| has been finished and
-  // the job is ready to be deleted. |blob_handles| are unused, but some callers
-  // use it to keep blobs alive for the right duration.
-  // |partial cleanup|, when set, preserves  the registration ID, and the result
-  // of Fetch when it completed, in |completed_fetches_|. This is not done when
-  // fetch is aborted or cancelled. We use this information to propagate
-  // BackgroundFetchClicked event to the developer, when the user taps the UI.
+  // the job is ready to be deleted.
+  // |preserve_info_to_dispatch_click_event|, when set, preserves the
+  // registration ID, and the result of the Fetch when it completed, in
+  // |completed_fetches_|. This is not done when fetch is aborted or cancelled.
+  // We use this information to propagate BackgroundFetchClicked event to the
+  // developer, when the user taps the UI.
   void CleanupRegistration(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<std::unique_ptr<storage::BlobDataHandle>>&
-          blob_data_handles,
       blink::mojom::BackgroundFetchResult background_fetch_result,
       bool preserve_info_to_dispatch_click_event = false);
 
