@@ -291,7 +291,8 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        float start_y,
                        float fling_velocity,
                        bool precise_scrolling_deltas,
-                       bool scroll_by_page) {
+                       bool scroll_by_page,
+                       bool cursor_visible) {
   gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
   rect -= rect.OffsetFromOrigin();
   if (!rect.Contains(start_x, start_y)) {
@@ -309,7 +310,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     mouseMove.SetPositionInWidget(start_x, start_y);
     context->web_view()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
-    context->web_view()->SetCursorVisibilityState(true);
+    context->web_view()->SetCursorVisibilityState(cursor_visible);
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
@@ -669,6 +670,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   float speed_in_pixels_s = 800;
   bool precise_scrolling_deltas = true;
   bool scroll_by_page = false;
+  bool cursor_visible = true;
 
   if (!GetOptionalArg(args, &pixels_to_scroll) ||
       !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &start_x) ||
@@ -677,7 +679,8 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
       !GetOptionalArg(args, &direction) ||
       !GetOptionalArg(args, &speed_in_pixels_s) ||
       !GetOptionalArg(args, &precise_scrolling_deltas) ||
-      !GetOptionalArg(args, &scroll_by_page)) {
+      !GetOptionalArg(args, &scroll_by_page) ||
+      !GetOptionalArg(args, &cursor_visible)) {
     return false;
   }
 
@@ -689,10 +692,10 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
          gesture_source_type == SyntheticGestureParams::MOUSE_INPUT);
 
   EnsureRemoteInterface();
-  return BeginSmoothScroll(&context, args, input_injector_, pixels_to_scroll,
-                           callback, gesture_source_type, direction,
-                           speed_in_pixels_s, true, start_x, start_y, 0,
-                           precise_scrolling_deltas, scroll_by_page);
+  return BeginSmoothScroll(
+      &context, args, input_injector_, pixels_to_scroll, callback,
+      gesture_source_type, direction, speed_in_pixels_s, true, start_x, start_y,
+      0, precise_scrolling_deltas, scroll_by_page, cursor_visible);
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
@@ -758,11 +761,11 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
     fling_velocity = 1000;
 
   EnsureRemoteInterface();
-  return BeginSmoothScroll(&context, args, input_injector_, -pixels_to_scroll,
-                           callback, gesture_source_type, direction,
-                           speed_in_pixels_s, false, start_x, start_y,
-                           fling_velocity, true /* precise_scrolling_deltas */,
-                           false /* scroll_by_page */);
+  return BeginSmoothScroll(
+      &context, args, input_injector_, -pixels_to_scroll, callback,
+      gesture_source_type, direction, speed_in_pixels_s, false, start_x,
+      start_y, fling_velocity, true /* precise_scrolling_deltas */,
+      false /* scroll_by_page */, true /* cursor_visible */);
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {

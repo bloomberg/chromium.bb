@@ -92,7 +92,7 @@ const GestureSourceType = {
 // the synthetic gesture code modified to guarantee the single update behavior.
 const SPEED_INSTANT = 200000;
 
-function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page) {
+function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
@@ -103,7 +103,8 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
                                             direction,
                                             speed_in_pixels_s,
                                             precise_scrolling_deltas,
-                                            scroll_by_page);
+                                            scroll_by_page,
+                                            cursor_visible);
     } else {
       reject('This test requires chrome.gpuBenchmarking');
     }
