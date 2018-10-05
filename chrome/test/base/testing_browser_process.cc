@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -374,7 +375,9 @@ DownloadStatusUpdater* TestingBrowserProcess::download_status_updater() {
 }
 
 DownloadRequestLimiter* TestingBrowserProcess::download_request_limiter() {
-  return nullptr;
+  if (!download_request_limiter_)
+    download_request_limiter_ = base::MakeRefCounted<DownloadRequestLimiter>();
+  return download_request_limiter_.get();
 }
 
 net_log::ChromeNetLog* TestingBrowserProcess::net_log() {
