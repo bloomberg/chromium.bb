@@ -55,6 +55,11 @@ PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestorInternal(
     const TransformPaintPropertyNode&);
 
 template <typename NodeType>
+const NodeType* SafeUnalias(const NodeType* node) {
+  return node ? node->Unalias() : nullptr;
+}
+
+template <typename NodeType>
 class PaintPropertyNode : public RefCounted<NodeType> {
  public:
   // Parent property node, or nullptr if this is the root node.

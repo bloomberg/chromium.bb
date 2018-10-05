@@ -9,11 +9,6 @@
 
 namespace blink {
 
-template <typename NodeType>
-const NodeType* SafeUnalias(const NodeType* node) {
-  return node ? node->Unalias() : nullptr;
-}
-
 const TransformationMatrix& GeometryMapper::SourceToDestinationProjection(
     const TransformPaintPropertyNode* source,
     const TransformPaintPropertyNode* destination) {

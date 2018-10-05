@@ -790,6 +790,23 @@ TEST_F(LayoutObjectTest, HasDistortingVisualEffects) {
   ASSERT_TRUE(inner->GetLayoutObject()->HasDistortingVisualEffects());
 }
 
+TEST_F(LayoutObjectTest, DistortingVisualEffectsUnaliases) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="opacity: 0.2;">
+      <div style="width: 100px height:100px; contain: paint">
+        <div id="child"
+             style="position: relative; width: 100px; height:100px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  const auto* child = GetDocument().getElementById("child");
+  const auto* object = child->GetLayoutObject();
+  // This should pass and not DCHECK if the nodes are unaliased correctly.
+  EXPECT_TRUE(object->HasDistortingVisualEffects());
+  EXPECT_TRUE(object->HasNonZeroEffectiveOpacity());
+}
+
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
