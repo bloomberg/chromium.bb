@@ -14,6 +14,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/CaptivePortalHelper_jni.h"
@@ -26,6 +27,13 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& jhash) {
+  auto default_proto =
+      SSLErrorAssistant::GetErrorAssistantProtoFromResourceBundle();
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
+                     std::move(default_proto)));
+
   const std::string hash = ConvertJavaStringToUTF8(env, jhash);
   auto config_proto =
       std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
