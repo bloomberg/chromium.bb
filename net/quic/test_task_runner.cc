@@ -60,7 +60,7 @@ quic::QuicTime::Delta TestTaskRunner::NextPendingTaskDelay() {
 }
 
 void TestTaskRunner::RunNextTask() {
-  std::vector<PostedTask>::iterator next = FindNextTask();
+  auto next = FindNextTask();
   DCHECK(next != tasks_.end());
   clock_->AdvanceTime(quic::QuicTime::Delta::FromMicroseconds(
       (next->GetTimeToRun() - NowInTicks(*clock_)).InMicroseconds()));

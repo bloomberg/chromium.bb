@@ -2557,7 +2557,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicDispatcher::SessionMap const& map =
       QuicDispatcherPeer::session_map(dispatcher);
-  QuicDispatcher::SessionMap::const_iterator it = map.begin();
+  auto it = map.begin();
   EXPECT_TRUE(it != map.end());
   QuicSession* server_session = it->second.get();
 

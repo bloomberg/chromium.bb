@@ -286,8 +286,8 @@ void QuicUnackedPacketMap::CancelRetransmissionsForStream(
     QuicStreamId stream_id) {
   DCHECK(!session_decides_what_to_write_);
   QuicPacketNumber packet_number = least_unacked_;
-  for (UnackedPacketMap::iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end(); ++it, ++packet_number) {
+  for (auto it = unacked_packets_.begin(); it != unacked_packets_.end();
+       ++it, ++packet_number) {
     QuicFrames* frames = &it->retransmittable_frames;
     if (frames->empty()) {
       continue;
@@ -314,7 +314,7 @@ QuicTransmissionInfo* QuicUnackedPacketMap::GetMutableTransmissionInfo(
 }
 
 QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
-  UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
+  auto it = unacked_packets_.rbegin();
   while (it != unacked_packets_.rend()) {
     if (it->in_flight) {
       QUIC_BUG_IF(it->sent_time == QuicTime::Zero())
@@ -334,8 +334,8 @@ QuicTime QuicUnackedPacketMap::GetLastCryptoPacketSentTime() const {
 size_t QuicUnackedPacketMap::GetNumUnackedPacketsDebugOnly() const {
   size_t unacked_packet_count = 0;
   QuicPacketNumber packet_number = least_unacked_;
-  for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end(); ++it, ++packet_number) {
+  for (auto it = unacked_packets_.begin(); it != unacked_packets_.end();
+       ++it, ++packet_number) {
     if (!IsPacketUseless(packet_number, *it)) {
       ++unacked_packet_count;
     }
@@ -348,8 +348,8 @@ bool QuicUnackedPacketMap::HasMultipleInFlightPackets() const {
     return true;
   }
   size_t num_in_flight = 0;
-  for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
-       it != unacked_packets_.rend(); ++it) {
+  for (auto it = unacked_packets_.rbegin(); it != unacked_packets_.rend();
+       ++it) {
     if (it->in_flight) {
       ++num_in_flight;
     }
@@ -369,8 +369,8 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
   DCHECK(!GetQuicReloadableFlag(quic_optimize_inflight_check));
-  for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
-       it != unacked_packets_.rend(); ++it) {
+  for (auto it = unacked_packets_.rbegin(); it != unacked_packets_.rend();
+       ++it) {
     if (it->in_flight && HasRetransmittableFrames(*it)) {
       return true;
     }

@@ -577,8 +577,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
 void QuicSession::OnFinalByteOffsetReceived(
     QuicStreamId stream_id,
     QuicStreamOffset final_byte_offset) {
-  std::map<QuicStreamId, QuicStreamOffset>::iterator it =
-      locally_closed_streams_highest_offset_.find(stream_id);
+  auto it = locally_closed_streams_highest_offset_.find(stream_id);
   if (it == locally_closed_streams_highest_offset_.end()) {
     return;
   }

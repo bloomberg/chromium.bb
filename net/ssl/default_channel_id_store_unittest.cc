@@ -447,7 +447,7 @@ TEST_F(DefaultChannelIDStoreTest, TestInitializeFrom) {
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
   ASSERT_EQ(3u, channel_ids.size());
 
-  ChannelIDStore::ChannelIDList::iterator channel_id = channel_ids.begin();
+  auto channel_id = channel_ids.begin();
   EXPECT_EQ("both.com", channel_id->server_identifier());
   EXPECT_TRUE(KeysEqual(both_key.get(), channel_id->key()));
 
@@ -492,7 +492,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncInitializeFrom) {
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
   ASSERT_EQ(3u, channel_ids.size());
 
-  ChannelIDStore::ChannelIDList::iterator channel_id = channel_ids.begin();
+  auto channel_id = channel_ids.begin();
   EXPECT_EQ("both.com", channel_id->server_identifier());
   EXPECT_TRUE(KeysEqual(both_key.get(), channel_id->key()));
 

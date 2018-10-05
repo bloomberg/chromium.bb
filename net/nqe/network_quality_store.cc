@@ -44,11 +44,9 @@ void NetworkQualityStore::Add(
 
   if (cached_network_qualities_.size() == kMaximumNetworkQualityCacheSize) {
     // Remove the oldest entry.
-    CachedNetworkQualities::iterator oldest_entry_iterator =
-        cached_network_qualities_.begin();
+    auto oldest_entry_iterator = cached_network_qualities_.begin();
 
-    for (CachedNetworkQualities::iterator it =
-             cached_network_qualities_.begin();
+    for (auto it = cached_network_qualities_.begin();
          it != cached_network_qualities_.end(); ++it) {
       if ((it->second).OlderThan(oldest_entry_iterator->second))
         oldest_entry_iterator = it;
@@ -71,8 +69,7 @@ bool NetworkQualityStore::GetById(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // First check if an exact match can be found.
-  for (CachedNetworkQualities::const_iterator it =
-           cached_network_qualities_.begin();
+  for (auto it = cached_network_qualities_.begin();
        it != cached_network_qualities_.end(); ++it) {
     if (network_id.type != it->first.type || network_id.id != it->first.id) {
       // The |type| and |id| must match.
@@ -95,11 +92,9 @@ bool NetworkQualityStore::GetById(
   // network quality possible for the current network, and serves as a
   // conservative estimate.
   if (network_id.signal_strength == INT32_MIN) {
-    CachedNetworkQualities::const_iterator matching_it =
-        cached_network_qualities_.end();
+    auto matching_it = cached_network_qualities_.end();
 
-    for (CachedNetworkQualities::const_iterator it =
-             cached_network_qualities_.begin();
+    for (auto it = cached_network_qualities_.begin();
          it != cached_network_qualities_.end(); ++it) {
       if (network_id.type != it->first.type || network_id.id != it->first.id) {
         // The |type| and |id| must match.
@@ -130,13 +125,11 @@ bool NetworkQualityStore::GetById(
   // |matching_it| points to the entry that has the same connection type and
   // id as |network_id|, and has the signal strength closest to the signal
   // stength of |network_id|.
-  CachedNetworkQualities::const_iterator matching_it =
-      cached_network_qualities_.end();
+  auto matching_it = cached_network_qualities_.end();
   int matching_it_diff_signal_strength = INT32_MAX;
 
   // Find the closest estimate.
-  for (CachedNetworkQualities::const_iterator it =
-           cached_network_qualities_.begin();
+  for (auto it = cached_network_qualities_.begin();
        it != cached_network_qualities_.end(); ++it) {
     if (network_id.type != it->first.type || network_id.id != it->first.id) {
       // The |type| and |id| must match.

@@ -147,8 +147,7 @@ class TestRTTObserver : public NetworkQualityEstimator::RTTObserver {
 
   // Returns the last received RTT observation that has source set to |source|.
   base::TimeDelta last_rtt(NetworkQualityObservationSource source) {
-    for (std::vector<Observation>::reverse_iterator i = observations_.rbegin();
-         i != observations_.rend(); ++i) {
+    for (auto i = observations_.rbegin(); i != observations_.rend(); ++i) {
       Observation observation = *i;
       if (observation.source == source)
         return base::TimeDelta::FromMilliseconds(observation.rtt_ms);

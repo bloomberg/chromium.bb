@@ -432,7 +432,7 @@ bool QuicCryptoServerConfig::SetConfigs(
          i != parsed_configs.end(); ++i) {
       QuicReferenceCountedPointer<Config> config = *i;
 
-      ConfigMap::iterator it = configs_.find(config->id);
+      auto it = configs_.find(config->id);
       if (it != configs_.end()) {
         QUIC_LOG(INFO) << "Keeping scid: "
                        << QuicTextUtils::HexEncode(config->id) << " orbit: "
@@ -480,8 +480,7 @@ void QuicCryptoServerConfig::SetSourceAddressTokenKeys(
 void QuicCryptoServerConfig::GetConfigIds(
     std::vector<QuicString>* scids) const {
   QuicReaderMutexLock locked(&configs_lock_);
-  for (ConfigMap::const_iterator it = configs_.begin(); it != configs_.end();
-       ++it) {
+  for (auto it = configs_.begin(); it != configs_.end(); ++it) {
     scids->push_back(it->first);
   }
 }
@@ -1170,7 +1169,7 @@ QuicCryptoServerConfig::GetConfigWithScid(
   configs_lock_.AssertReaderHeld();
 
   if (!requested_scid.empty()) {
-    ConfigMap::const_iterator it = configs_.find((QuicString(requested_scid)));
+    auto it = configs_.find((QuicString(requested_scid)));
     if (it != configs_.end()) {
       // We'll use the config that the client requested in order to do
       // key-agreement.
@@ -1205,8 +1204,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   std::vector<QuicReferenceCountedPointer<Config>> configs;
   configs.reserve(configs_.size());
 
-  for (ConfigMap::const_iterator it = configs_.begin(); it != configs_.end();
-       ++it) {
+  for (auto it = configs_.begin(); it != configs_.end(); ++it) {
     // TODO(avd) Exclude expired configs?
     configs.push_back(it->second);
   }

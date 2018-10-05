@@ -1177,7 +1177,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   // Use active session for |session_key| if such exists.
   // TODO(rtenneti): crbug.com/498823 - delete active_sessions_.empty() checks.
   if (!active_sessions_.empty()) {
-    SessionMap::iterator it = active_sessions_.find(session_key);
+    auto it = active_sessions_.find(session_key);
     if (it != active_sessions_.end()) {
       QuicChromiumClientSession* session = it->second;
       request->SetSession(session->CreateHandle(destination));
@@ -1242,7 +1242,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
     // related changes.
     if (active_sessions_.empty())
       return ERR_QUIC_PROTOCOL_ERROR;
-    SessionMap::iterator it = active_sessions_.find(session_key);
+    auto it = active_sessions_.find(session_key);
     DCHECK(it != active_sessions_.end());
     if (it == active_sessions_.end())
       return ERR_QUIC_PROTOCOL_ERROR;
@@ -1304,8 +1304,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
     set_require_confirmation(false);
 
-    SessionMap::iterator session_it =
-        active_sessions_.find(job->key().session_key());
+    auto session_it = active_sessions_.find(job->key().session_key());
     CHECK(session_it != active_sessions_.end());
     QuicChromiumClientSession* session = session_it->second;
     for (auto* request : iter->second->stream_requests()) {
@@ -1332,8 +1331,7 @@ void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
 
 void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   const AliasSet& aliases = session_aliases_[session];
-  for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();
-       ++it) {
+  for (auto it = aliases.begin(); it != aliases.end(); ++it) {
     const QuicSessionKey& session_key = it->session_key();
     DCHECK(active_sessions_.count(session_key));
     DCHECK_EQ(session, active_sessions_[session_key]);
@@ -1407,16 +1405,15 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
     const {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
 
-  for (SessionMap::const_iterator it = active_sessions_.begin();
-       it != active_sessions_.end(); ++it) {
+  for (auto it = active_sessions_.begin(); it != active_sessions_.end(); ++it) {
     const quic::QuicServerId& server_id = it->first.server_id();
     QuicChromiumClientSession* session = it->second;
     const AliasSet& aliases = session_aliases_.find(session)->second;
     // Only add a session to the list once.
     if (server_id == aliases.begin()->server_id()) {
       std::set<HostPortPair> hosts;
-      for (AliasSet::const_iterator alias_it = aliases.begin();
-           alias_it != aliases.end(); ++alias_it) {
+      for (auto alias_it = aliases.begin(); alias_it != aliases.end();
+           ++alias_it) {
         hosts.insert(HostPortPair(alias_it->server_id().host(),
                                   alias_it->server_id().port()));
       }
@@ -1454,7 +1451,7 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkConnected");
-  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
@@ -1481,7 +1478,7 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkMadeDefault");
 
-  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
@@ -1498,7 +1495,7 @@ void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
 
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkDisconnected");
-  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;

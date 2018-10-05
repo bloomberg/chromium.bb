@@ -296,8 +296,7 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto settings_list = std::make_unique<base::ListValue>();
-  for (spdy::SettingsMap::const_iterator it = settings->begin();
-       it != settings->end(); ++it) {
+  for (auto it = settings->begin(); it != settings->end(); ++it) {
     const spdy::SpdySettingsId id = it->first;
     const uint32_t value = it->second;
     settings_list->AppendString(
@@ -932,7 +931,7 @@ int SpdySession::GetPushedStream(const GURL& url,
     return ERR_CONNECTION_CLOSED;
   }
 
-  ActiveStreamMap::iterator active_it = active_streams_.find(pushed_stream_id);
+  auto active_it = active_streams_.find(pushed_stream_id);
   if (active_it == active_streams_.end()) {
     // A previously claimed pushed stream might not be available, for example,
     // if the server has reset it in the meanwhile.
@@ -985,8 +984,7 @@ void SpdySession::InitializeWithSocket(
   session_send_window_size_ = kDefaultInitialWindowSize;
   session_recv_window_size_ = kDefaultInitialWindowSize;
 
-  spdy::SettingsMap::const_iterator it =
-      initial_settings_.find(spdy::SETTINGS_MAX_HEADER_LIST_SIZE);
+  auto it = initial_settings_.find(spdy::SETTINGS_MAX_HEADER_LIST_SIZE);
   uint32_t spdy_max_header_list_size =
       (it == initial_settings_.end()) ? kSpdyMaxHeaderListSize : it->second;
   buffered_spdy_framer_ =
@@ -1219,7 +1217,7 @@ void SpdySession::UpdateStreamPriority(SpdyStream* stream,
 void SpdySession::CloseActiveStream(spdy::SpdyStreamId stream_id, int status) {
   DCHECK_NE(stream_id, 0u);
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
     NOTREACHED();
     return;
@@ -1232,7 +1230,7 @@ void SpdySession::CloseCreatedStream(const base::WeakPtr<SpdyStream>& stream,
                                      int status) {
   DCHECK_EQ(stream->stream_id(), 0u);
 
-  CreatedStreamSet::iterator it = created_streams_.find(stream.get());
+  auto it = created_streams_.find(stream.get());
   if (it == created_streams_.end()) {
     NOTREACHED();
     return;
@@ -1246,7 +1244,7 @@ void SpdySession::ResetStream(spdy::SpdyStreamId stream_id,
                               const std::string& description) {
   DCHECK_NE(stream_id, 0u);
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
     NOTREACHED();
     return;
@@ -1322,8 +1320,7 @@ void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
 
   while (true) {
     size_t old_size = active_streams_.size();
-    ActiveStreamMap::iterator it =
-        active_streams_.lower_bound(last_good_stream_id + 1);
+    auto it = active_streams_.lower_bound(last_good_stream_id + 1);
     if (it == active_streams_.end())
       break;
     LogAbandonedActiveStream(it, status);
@@ -1335,7 +1332,7 @@ void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
 
   while (!created_streams_.empty()) {
     size_t old_size = created_streams_.size();
-    CreatedStreamSet::iterator it = created_streams_.begin();
+    auto it = created_streams_.begin();
     LogAbandonedStream(*it, status);
     CloseCreatedStreamIterator(it, status);
     // No new streams should be created while the session is going
@@ -1478,7 +1475,7 @@ bool SpdySession::ValidatePushedStream(spdy::SpdyStreamId stream_id,
     return false;
   }
 
-  ActiveStreamMap::const_iterator stream_it = active_streams_.find(stream_id);
+  auto stream_it = active_streams_.find(stream_id);
   if (stream_it == active_streams_.end()) {
     // Only active streams should be in Http2PushPromiseIndex.
     NOTREACHED();
@@ -1775,8 +1772,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
   DCHECK(it != headers.end() && (it->second == "GET" || it->second == "HEAD"));
 
   // Verify we have a valid stream association.
-  ActiveStreamMap::iterator associated_it =
-      active_streams_.find(associated_stream_id);
+  auto associated_it = active_streams_.find(associated_stream_id);
   if (associated_it == active_streams_.end()) {
     RecordSpdyPushedStreamFateHistogram(
         SpdyPushedStreamFate::kInactiveAssociatedStream);
@@ -1890,7 +1886,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
 
   InsertActivatedStream(std::move(stream));
 
-  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  auto active_it = active_streams_.find(stream_id);
   DCHECK(active_it != active_streams_.end());
 
   // Notify the push_delegate that a push promise has been received.
@@ -2793,7 +2789,7 @@ void SpdySession::CompleteStreamRequest(
 }
 
 void SpdySession::CancelPushedStreamIfUnclaimed(spdy::SpdyStreamId stream_id) {
-  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  auto active_it = active_streams_.find(stream_id);
   if (active_it == active_streams_.end())
     return;
 
@@ -2829,7 +2825,7 @@ void SpdySession::OnStreamError(spdy::SpdyStreamId stream_id,
                                 const std::string& description) {
   CHECK(in_io_loop_);
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
     // We still want to send a frame to reset the stream even if we
     // don't know anything about it.
@@ -2874,7 +2870,7 @@ void SpdySession::OnRstStream(spdy::SpdyStreamId stream_id,
       NetLogEventType::HTTP2_SESSION_RECV_RST_STREAM,
       base::Bind(&NetLogSpdyRecvRstStreamCallback, stream_id, error_code));
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
     // NOTE:  it may just be that the stream was cancelled.
     LOG(WARNING) << "Received RST for invalid stream" << stream_id;
@@ -2946,7 +2942,7 @@ void SpdySession::OnDataFrameHeader(spdy::SpdyStreamId stream_id,
                                     bool fin) {
   CHECK(in_io_loop_);
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
 
   // By the time data comes in, the stream may already be inactive.
   if (it == active_streams_.end())
@@ -2988,7 +2984,7 @@ void SpdySession::OnStreamFrameData(spdy::SpdyStreamId stream_id,
     DCHECK_EQ(len, 0u);
   }
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
 
   // By the time data comes in, the stream may already be inactive.
   if (it == active_streams_.end())
@@ -3008,7 +3004,7 @@ void SpdySession::OnStreamEnd(spdy::SpdyStreamId stream_id) {
                        base::Bind(&NetLogSpdyDataCallback, stream_id, 0, true));
   }
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   // By the time data comes in, the stream may already be inactive.
   if (it == active_streams_.end())
     return;
@@ -3029,7 +3025,7 @@ void SpdySession::OnStreamPadding(spdy::SpdyStreamId stream_id, size_t len) {
   DecreaseRecvWindowSize(static_cast<int32_t>(len));
   IncreaseRecvWindowSize(static_cast<int32_t>(len));
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end())
     return;
   it->second->OnPaddingConsumed(len);
@@ -3090,7 +3086,7 @@ void SpdySession::OnWindowUpdate(spdy::SpdyStreamId stream_id,
     IncreaseSendWindowSize(delta_window_size);
   } else {
     // WINDOW_UPDATE for a stream.
-    ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+    auto it = active_streams_.find(stream_id);
 
     if (it == active_streams_.end()) {
       // NOTE:  it may just be that the stream was cancelled.
@@ -3142,7 +3138,7 @@ void SpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
                                   fin, stream_id));
   }
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+  auto it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
     // NOTE:  it may just be that the stream was cancelled.
     LOG(WARNING) << "Received HEADERS for invalid stream " << stream_id;

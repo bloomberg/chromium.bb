@@ -721,8 +721,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     const QuicServerInfoMap& quic_server_info_map =
         http_server_properties_.quic_server_info_map();
     EXPECT_EQ(2u, quic_server_info_map.size());
-    QuicServerInfoMap::const_iterator quic_server_info_map_it =
-        quic_server_info_map.begin();
+    auto quic_server_info_map_it = quic_server_info_map.begin();
     EXPECT_EQ(quic_server_info_map_it->first, quic_server_id2);
     ++quic_server_info_map_it;
     EXPECT_EQ(quic_server_info_map_it->first, quic_server_id);

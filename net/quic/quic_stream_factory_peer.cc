@@ -77,8 +77,7 @@ bool QuicStreamFactoryPeer::HasLiveSession(
   QuicSessionKey session_key = QuicSessionKey(server_id, SocketTag());
   QuicStreamFactory::QuicSessionAliasKey alias_key =
       QuicStreamFactory::QuicSessionAliasKey(destination, session_key);
-  for (QuicStreamFactory::SessionIdMap::iterator it =
-           factory->all_sessions_.begin();
+  for (auto it = factory->all_sessions_.begin();
        it != factory->all_sessions_.end(); ++it) {
     if (it->second == alias_key)
       return true;
@@ -88,8 +87,7 @@ bool QuicStreamFactoryPeer::HasLiveSession(
 
 bool QuicStreamFactoryPeer::IsLiveSession(QuicStreamFactory* factory,
                                           QuicChromiumClientSession* session) {
-  for (QuicStreamFactory::SessionIdMap::iterator it =
-           factory->all_sessions_.begin();
+  for (auto it = factory->all_sessions_.begin();
        it != factory->all_sessions_.end(); ++it) {
     if (it->first == session)
       return true;

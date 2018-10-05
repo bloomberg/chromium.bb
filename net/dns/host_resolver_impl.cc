@@ -2608,16 +2608,14 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   // necessary.
   if (key.address_family == ADDRESS_FAMILY_IPV6 ||
       key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
-    DnsHosts::const_iterator it = hosts.find(
-        DnsHostsKey(hostname, ADDRESS_FAMILY_IPV6));
+    auto it = hosts.find(DnsHostsKey(hostname, ADDRESS_FAMILY_IPV6));
     if (it != hosts.end())
       addresses->push_back(IPEndPoint(it->second, host_port));
   }
 
   if (key.address_family == ADDRESS_FAMILY_IPV4 ||
       key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
-    DnsHosts::const_iterator it = hosts.find(
-        DnsHostsKey(hostname, ADDRESS_FAMILY_IPV4));
+    auto it = hosts.find(DnsHostsKey(hostname, ADDRESS_FAMILY_IPV4));
     if (it != hosts.end())
       addresses->push_back(IPEndPoint(it->second, host_port));
   }

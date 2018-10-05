@@ -1023,7 +1023,7 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
 void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
   // Remove |request| from the queue while preserving the order of the
   // other elements.
-  StreamRequestQueue::iterator it =
+  auto it =
       std::find(stream_requests_.begin(), stream_requests_.end(), request);
   if (it != stream_requests_.end()) {
     it = stream_requests_.erase(it);
@@ -1385,7 +1385,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
           base::TimeTicks::Now() - connect_timing_.dns_end);
     }
 
-    HandleSet::iterator it = handles_.begin();
+    auto it = handles_.begin();
     while (it != handles_.end()) {
       Handle* handle = *it;
       ++it;
@@ -2546,8 +2546,7 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   SSLInfo ssl_info;
 
   std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
-  for (std::set<HostPortPair>::const_iterator it = aliases.begin();
-       it != aliases.end(); it++) {
+  for (auto it = aliases.begin(); it != aliases.end(); it++) {
     alias_list->AppendString(it->ToString());
   }
   dict->Set("aliases", std::move(alias_list));

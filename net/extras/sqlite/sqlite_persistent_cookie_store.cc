@@ -661,8 +661,7 @@ void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyInBackground(
 
   bool success = false;
   if (InitializeDatabase()) {
-    std::map<std::string, std::set<std::string>>::iterator it =
-        keys_to_load_.find(key);
+    auto it = keys_to_load_.find(key);
     if (it != keys_to_load_.end()) {
       success = LoadCookiesForDomains(it->second);
       keys_to_load_.erase(it);
@@ -873,8 +872,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
     load_success = false;
   } else if (keys_to_load_.size() > 0) {
     // Load cookies for the first domain key.
-    std::map<std::string, std::set<std::string>>::iterator it =
-        keys_to_load_.begin();
+    auto it = keys_to_load_.begin();
     load_success = LoadCookiesForDomains(it->second);
     keys_to_load_.erase(it);
   }
@@ -927,7 +925,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   }
 
   std::vector<std::unique_ptr<CanonicalCookie>> cookies;
-  std::set<std::string>::const_iterator it = domains.begin();
+  auto it = domains.begin();
   bool ok = true;
   for (; it != domains.end() && ok; ++it) {
     smt.BindString(0, *it);

@@ -1971,8 +1971,7 @@ TEST_F(ProxyResolutionServiceTest, MarkProxiesAsBadTests) {
   ASSERT_EQ(4u, retry_info.size());
   for (const ProxyServer& proxy_server :
        config.proxy_rules().proxies_for_http.GetAll()) {
-    ProxyRetryInfoMap::const_iterator i =
-        retry_info.find(proxy_server.host_port_pair().ToString());
+    auto i = retry_info.find(proxy_server.host_port_pair().ToString());
     ASSERT_TRUE(i != retry_info.end());
   }
 }

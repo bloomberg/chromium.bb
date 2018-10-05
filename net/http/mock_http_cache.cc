@@ -424,7 +424,7 @@ int MockDiskCache::OpenEntry(const std::string& key,
   if (fail_requests_)
     return ERR_CACHE_OPEN_FAILURE;
 
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it == entries_.end())
     return ERR_CACHE_OPEN_FAILURE;
 
@@ -457,7 +457,7 @@ int MockDiskCache::CreateEntry(const std::string& key,
   if (fail_requests_)
     return ERR_CACHE_CREATE_FAILURE;
 
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it != entries_.end()) {
     if (!it->second->is_doomed()) {
       if (double_create_check_)
@@ -504,7 +504,7 @@ int MockDiskCache::DoomEntry(const std::string& key,
                              net::RequestPriority request_priority,
                              CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it != entries_.end()) {
     it->second->Release();
     entries_.erase(it);
@@ -566,14 +566,14 @@ uint8_t MockDiskCache::GetEntryInMemoryData(const std::string& key) {
   if (!support_in_memory_entry_data_)
     return 0;
 
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it != entries_.end())
     return it->second->in_memory_data();
   return 0;
 }
 
 void MockDiskCache::SetEntryInMemoryData(const std::string& key, uint8_t data) {
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it != entries_.end())
     it->second->set_in_memory_data(data);
 }

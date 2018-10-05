@@ -207,8 +207,7 @@ bool LocalTestServer::AddCommandLineArguments(
       const base::ListValue* list = NULL;
       if (!value.GetAsList(&list) || !list || list->empty())
         return false;
-      for (base::ListValue::const_iterator list_it = list->begin();
-           list_it != list->end(); ++list_it) {
+      for (auto list_it = list->begin(); list_it != list->end(); ++list_it) {
         if (!AppendArgumentFromJSONValue(key, *list_it, command_line))
           return false;
       }

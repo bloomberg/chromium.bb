@@ -276,8 +276,8 @@ SpdyString SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
         }
       } else {
         value.append("; v=\"");
-        for (VersionVector::const_iterator it = altsvc.version.begin();
-             it != altsvc.version.end(); ++it) {
+        for (auto it = altsvc.version.begin(); it != altsvc.version.end();
+             ++it) {
           if (it != altsvc.version.begin()) {
             value.append(",");
           }

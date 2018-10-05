@@ -1005,7 +1005,7 @@ void QuicSentPacketManager::CancelRetransmissionsForStream(
     return;
   }
   unacked_packets_.CancelRetransmissionsForStream(stream_id);
-  PendingRetransmissionMap::iterator it = pending_retransmissions_.begin();
+  auto it = pending_retransmissions_.begin();
   while (it != pending_retransmissions_.end()) {
     if (unacked_packets_.HasRetransmittableFrames(it->first)) {
       ++it;

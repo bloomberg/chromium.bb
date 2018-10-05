@@ -270,8 +270,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
     update_keys.insert(std::make_pair(update_key, update));
   }
 
-  for (std::map<MDnsCache::Key, MDnsCache::UpdateType>::iterator i =
-           update_keys.begin(); i != update_keys.end(); i++) {
+  for (auto i = update_keys.begin(); i != update_keys.end(); i++) {
     const RecordParsed* record = cache_.LookupKey(i->first);
     if (!record)
       continue;
@@ -297,8 +296,7 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
 
   cache_.FindDnsRecords(0, record->name(), &records_to_remove, clock_->Now());
 
-  for (std::vector<const RecordParsed*>::iterator i = records_to_remove.begin();
-       i != records_to_remove.end(); i++) {
+  for (auto i = records_to_remove.begin(); i != records_to_remove.end(); i++) {
     if ((*i)->type() == dns_protocol::kTypeNSEC)
       continue;
     if (!rdata->GetBit((*i)->type())) {
@@ -310,8 +308,7 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
   }
 
   // Alert all listeners waiting for the nonexistent RR types.
-  ListenerMap::iterator i =
-      listeners_.upper_bound(ListenerKey(record->name(), 0));
+  auto i = listeners_.upper_bound(ListenerKey(record->name(), 0));
   for (; i != listeners_.end() && i->first.first == record->name(); i++) {
     if (!rdata->GetBit(i->first.second)) {
       for (auto& observer : *i->second)
@@ -329,7 +326,7 @@ void MDnsClientImpl::Core::AlertListeners(
     MDnsCache::UpdateType update_type,
     const ListenerKey& key,
     const RecordParsed* record) {
-  ListenerMap::iterator listener_map_iterator = listeners_.find(key);
+  auto listener_map_iterator = listeners_.find(key);
   if (listener_map_iterator == listeners_.end()) return;
 
   for (auto& observer : *listener_map_iterator->second)
@@ -349,7 +346,7 @@ void MDnsClientImpl::Core::AddListener(
 
 void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
   ListenerKey key(listener->GetName(), listener->GetType());
-  ListenerMap::iterator observer_list_iterator = listeners_.find(key);
+  auto observer_list_iterator = listeners_.find(key);
 
   DCHECK(observer_list_iterator != listeners_.end());
   DCHECK(observer_list_iterator->second->HasObserver(listener));
@@ -367,7 +364,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
 }
 
 void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
-  ListenerMap::iterator found = listeners_.find(key);
+  auto found = listeners_.find(key);
   if (found != listeners_.end() && !found->second->might_have_observers()) {
     listeners_.erase(found);
   }
@@ -689,8 +686,7 @@ void MDnsTransactionImpl::ServeRecordsFromCache() {
 
   if (client_->core()) {
     client_->core()->QueryCache(rrtype_, name_, &records);
-    for (std::vector<const RecordParsed*>::iterator i = records.begin();
-         i != records.end() && weak_this; ++i) {
+    for (auto i = records.begin(); i != records.end() && weak_this; ++i) {
       weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD, *i);
     }
 

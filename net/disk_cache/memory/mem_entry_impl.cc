@@ -619,7 +619,7 @@ bool MemEntryImpl::InitSparseInfo() {
 MemEntryImpl* MemEntryImpl::GetChild(int64_t offset, bool create) {
   DCHECK_EQ(PARENT_ENTRY, type());
   int index = ToChildIndex(offset);
-  EntryMap::iterator i = children_->find(index);
+  auto i = children_->find(index);
   if (i != children_->end())
     return i->second;
   if (create)

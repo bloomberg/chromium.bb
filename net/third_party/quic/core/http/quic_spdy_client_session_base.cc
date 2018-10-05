@@ -150,8 +150,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
     const QuicString& url) {
-  QuicPromisedByUrlMap::iterator it =
-      push_promise_index_->promised_by_url()->find(url);
+  auto it = push_promise_index_->promised_by_url()->find(url);
   if (it != push_promise_index_->promised_by_url()->end()) {
     return it->second;
   }
@@ -160,7 +159,7 @@ QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedById(
     const QuicStreamId id) {
-  QuicPromisedByIdMap::iterator it = promised_by_id_.find(id);
+  auto it = promised_by_id_.find(id);
   if (it != promised_by_id_.end()) {
     return it->second.get();
   }
