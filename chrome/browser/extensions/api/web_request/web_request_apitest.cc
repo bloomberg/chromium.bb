@@ -102,6 +102,7 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/login/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -1671,6 +1672,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   // Create a profile that will be destroyed later.
   base::ScopedAllowBlockingForTesting allow_blocking;
+#if defined(OS_CHROMEOS)
+  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+#endif  // defined(OS_CHROMEOS)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* temp_profile = Profile::CreateProfile(
       profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
