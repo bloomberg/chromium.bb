@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">मान्य कार्ड नंबर जोड़ें</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
 <translation id="6630809736994426279">इस समय <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर आपके Mac पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराते हैं या उसे हटा देते हैं. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6644283850729428850">यह नीति हटा दी गई है.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{कोई नहीं}=1{1 साइट से (आप अपने Google खाते से साइन आउट नहीं होंगे)}one{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}other{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}}</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>

@@ -2359,8 +2359,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7433714841194914373">Google Instant aktivieren</translation>
 <translation id="7443061725198440541">Wenn diese Richtlinie nicht festgelegt oder aktiviert wird, darf der Nutzer die Rechtschreibprüfung verwenden.
 
-      Wenn diese Richtlinie deaktiviert wird, darf der Benutzer die Rechtschreibprüfung nicht verwenden. Die Richtlinie "SpellcheckLanguage" wird darüber hinaus ignoriert, wenn diese Richtlinie deaktiviert ist.
-      </translation>
+      Wenn diese Richtlinie deaktiviert wird, darf der Nutzer die Rechtschreibprüfung nicht verwenden. Die Richtlinie "SpellcheckLanguage" wird darüber hinaus ignoriert, wenn diese Richtlinie deaktiviert ist.</translation>
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
 <translation id="7458437477941640506">Führen Sie kein Rollback auf die Zielversion durch, wenn die Version des Betriebssystems neuer als die der Zielversion ist. Aktualisierungen sind ebenfalls deaktiviert.</translation>
 <translation id="7464991223784276288">Cookies von übereinstimmenden URLs auf die aktuelle Sitzung beschränken</translation>

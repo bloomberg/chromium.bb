@@ -276,6 +276,7 @@
 <translation id="1395730723686586365">Oppdatereringsprogrammet er startet</translation>
 <translation id="1396139853388185343">Feil ved konfigurasjonen av skriveren</translation>
 <translation id="1396963298126346194">Brukernavnet og passordet du skrev inn, stemmer ikke overens</translation>
+<translation id="1397500194120344683">Ingen kvalifiserte enheter. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="1397854323885047133">Synkronisering og personlig tilpasning</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1399511500114202393">Ingen brukersertifikater</translation>
@@ -524,6 +525,7 @@
 <translation id="175772926354468439">Aktiver temaet</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Se i Chrome Nettmarked</translation>
+<translation id="176193854664720708">Fingeravtrykkssensoren er i av/på-knappen. Trykk på den forsiktig.</translation>
 <translation id="1763046204212875858">Opprett snarveier</translation>
 <translation id="1763108912552529023">Fortsett å utforske</translation>
 <translation id="1763808908432309942">Åpner en ny fane</translation>
@@ -814,6 +816,7 @@
 <translation id="2208158072373999562">.zip-arkiv</translation>
 <translation id="220858061631308971">Skriv inn denne PIN-koden på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="2209593327042758816">Hylleelement 2</translation>
+<translation id="2212126039311489237">Skriv ut ved bruk av systemdialogboksen</translation>
 <translation id="2217501013957346740">Lag et navn –</translation>
 <translation id="2218019600945559112">Mus og styreflate</translation>
 <translation id="2218320521449013367">Det oppsto en feil mens Chrome fjernet skadelig programvare</translation>
@@ -1716,6 +1719,7 @@
 <translation id="3596235046596950091">Slå på skytjenester</translation>
 <translation id="3599863153486145794">Tømmer loggen på alle påloggede enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Kutt lyden for nettsteder som spiller av lyd</translation>
+<translation id="360180734785106144">Tilby nye funksjoner etter hvert som de blir tilgjengelige</translation>
 <translation id="3602290021589620013">Forhåndsvisning</translation>
 <translation id="3603533104205588786">Du kan klikke på stjernen for å sette en side som bokmerke</translation>
 <translation id="3603622770190368340">Hent nettverkssertifikat</translation>
@@ -2878,7 +2882,6 @@
 <translation id="5380103295189760361">Hold nede Control, Alt og Shift, eller søk for å se hurtigtaster for disse modifikatorene.</translation>
 <translation id="5382591305415226340">Administrer støttede linker</translation>
 <translation id="5384883051496921101">Dette nettstedet er i ferd med å dele informasjon med en app utenfor inkognitomodus.</translation>
-<translation id="5387961145478138773">Få rask tilgang til favorittappene dine fra Google</translation>
 <translation id="5388885445722491159">Sammenkoblet</translation>
 <translation id="5389237414310520250">Den nye brukeren kunne ikke opprettes. Sjekk hvor mye plass du har på harddisken og hvilke tillatelser som er aktive, og prøv på nytt.</translation>
 <translation id="5390100381392048184">Tillat nettsteder å spille av lyd</translation>
@@ -3122,6 +3125,7 @@
 <translation id="5731409020711461763">1 nytt bilde</translation>
 <translation id="5734362860645681824">Kommunikasjon</translation>
 <translation id="5736796278325406685">Skriv inn et gyldig brukernavn</translation>
+<translation id="5739235828260127894">Venter på bekreftelse. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Veldig stor</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> og <ph name="NUM_ADDITIONAL_LANGUAGES" /> til</translation>
 <translation id="574209121243317957">Stemmeleie</translation>
@@ -3226,6 +3230,7 @@
 <translation id="5870086504539785141">Lukk tilgjengelighetsmenyen</translation>
 <translation id="5870155679953074650">Harde feil</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
+<translation id="5877584842898320529">Den valgte skriveren er ikke tilgjengelig, eller den er ikke installert på riktig måte. <ph name="BR" /> Kontrollér skriveren din, eller prøv å velge en annen skriver.</translation>
 <translation id="5880247576487732437">Token er tilgjengelig</translation>
 <translation id="5882919346125742463">Kjente nettverk</translation>
 <translation id="5884474295213649357">Denne fanen er koblet til en USB-enhet.</translation>
@@ -3291,6 +3296,7 @@
 <translation id="5979469435153841984">For å sette sider som bokmerker, klikk på stjernen i adressefeltet</translation>
 <translation id="5982621672636444458">Sorteringsalternativer</translation>
 <translation id="5984222099446776634">Nylig besøkte</translation>
+<translation id="5985458664595100876">Ugyldig nettadresseformat. Støttede formater er \\tjener\delt og smb://tjener/delt.</translation>
 <translation id="5990142338020175451">Google-tjenester med et mer personlig preg, som for eksempel bedre sideforslag</translation>
 <translation id="5990386583461751448">Oversatt</translation>
 <translation id="5991049340509704927">Forstørr</translation>
@@ -3320,6 +3326,7 @@
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – en USB-enhet er koblet til</translation>
 <translation id="6028117231645531007">Legg til fingeravtrykk</translation>
 <translation id="6029027682598229313">Linux er ferdig installert.</translation>
+<translation id="6029292188939175871">slett [<ph name="FINGERPRINT_NAME" />], knapp</translation>
 <translation id="6029587122245504742">Langsomst</translation>
 <translation id="6032912588568283682">Filsystem</translation>
 <translation id="6034662038931255275">OS-oppdateringen er ferdig</translation>
@@ -3736,6 +3743,7 @@
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6644512095122093795">Tilbud om å lagre passord</translation>
 <translation id="6644846457769259194">Oppdaterer enheten din (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="6645437135153136856">Den valgte Google Cloud Print-enheten støttes ikke lenger. <ph name="BR" /> Prøv å konfigurere skriveren i datamaskinens systeminnstillinger.</translation>
 <translation id="6647228709620733774">Nettadresse for tilbakekalling av Netscape-autoritetssertifikat</translation>
 <translation id="6647838571840953560">Nå på <ph name="CHANNEL_NAME" /></translation>
 <translation id="6648051959475508072">Sikkerhetsnøkkelen er aktivert</translation>
@@ -4101,6 +4109,7 @@
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» er slettet</translation>
 <translation id="7206693748120342859">Laster ned <ph name="PLUGIN_NAME" /> …</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Lukk siden}other{Lukk sidene}}</translation>
+<translation id="7210499381659830293">Utvidelsesskrivere</translation>
 <translation id="721467499098558573">Trykk og hold på knappen på sikkerhetsnøkkelen i minst fem sekunder</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
 <translation id="7216595297012131718">Bestill språk basert på innstillingene dine</translation>
@@ -4178,6 +4187,7 @@
 <translation id="7321545336522791733">Tjeneren er ikke tilgjengelig</translation>
 <translation id="7324297612904500502">Forumet for betaversjoner</translation>
 <translation id="7325437708553334317">Høy kontrast-utvidelse</translation>
+<translation id="7328162502911382168">(<ph name="COUNT" />)</translation>
 <translation id="7328867076235380839">Ugyldig kombinasjon</translation>
 <translation id="7329154610228416156">Påloggingen mislyktes fordi den var konfigurert til å bruke en usikret nettadresse (<ph name="BLOCKED_URL" />). Kontakt administratoren din.</translation>
 <translation id="7334190995941642545">Smart Lock er for øyeblikket utilgjengelig. Prøv igjen senere.</translation>
@@ -4765,6 +4775,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8199300056570174101">Egenskaper for nettverk (tjeneste) og enhet</translation>
 <translation id="8200772114523450471">Fortsett</translation>
 <translation id="8202160505685531999">Legg inn passordet på nytt for å oppdatere <ph name="DEVICE_TYPE" />-profilen din.</translation>
+<translation id="8203732864715032075">Send deg varsler, og husk denne datamaskinen for Meldinger som standard. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>
 <translation id="8206745257863499010">Plystre</translation>
 <translation id="8209677645716428427">En administrert bruker kan utforske nettet med veiledning fra deg. Som administrator for en administrert bruker i Chrome kan du:</translation>

@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6630809736994426279">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programs on your Mac that steal or delete your information (for example, photos, passwords, messages and credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Clear</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{None}=1{From 1 site (you won't be signed out of your Google account)}other{From # sites (you won't be signed out of your Google account)}}</translation>
 <translation id="6657585470893396449">Password</translation>

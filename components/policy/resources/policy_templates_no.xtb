@@ -453,6 +453,9 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2201555246697292490">Konfigurer godkjenning av innebygde meldinger</translation>
 <translation id="2204753382813641270">Kontrollér automatisk skjuling av hyllen</translation>
 <translation id="2208976000652006649">Parametere for søkenettadresser som bruker POST</translation>
+<translation id="2214880135980649323">Når denne innstillingen er aktivert, får utvidelser installert via bedriftsinnstillinger tilgang til å bruke Enterprise Hardware Platform API.
+     Når denne innstillingen er deaktivert eller ingen verdi er angitt, får ingen utvidelser tilgang til Enterprise Hardware Platform API.
+     Denne innstillingen gjelder også for komponentutvidelser, for eksempel Hangout Services-utvidelsen.</translation>
 <translation id="2223598546285729819">Standardinnstilling for varslinger</translation>
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="2236488539271255289">Ikke la noen nettsteder angi lokale data</translation>
@@ -2832,6 +2835,25 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8483004350080020634">Fjerner sensitive deler som personvern- og sikkerhetsrelaterte deler fra https://-nettadresser før adressene går videre til PAC-skript (Proxy Auto Config), som brukes av <ph name="PRODUCT_NAME" /> til å finne proxy-tjeneradresser.
+
+      Når verdien er True (sann), er sikkerhetsfunksjonen aktivert, og https://-nettadresser
+      modifiseres før de videresendes til et PAC-skript. Dermed kan ikke PAC-skript
+      se data som vanligvis er beskyttet av en kryptert kanal (for eksempel
+      nettadressens bane og søkestreng).
+
+      Når verdien er False (usann), blir sikkerhetsfunksjonen deaktivert, og PAC-skript
+      kan dermed se alle komponenter i https://-nettadresser. Dette gjelder for
+      alle PAC-skript, uansett opphav (inkludert de som er hentet via en usikker
+      transportmetode, eller som er oppdaget uten sikkerhet via WPAD).
+
+      Standardverdien er True (usann), og sikkerhetsfunksjon er da aktivert.
+
+      Vi anbefaler at du angir verdien True (sann). Den eneste grunnen til å angi False (usann)
+      er hvis dette er nødvendig for å unngå kompatibilitetsproblemer med
+      eksisterende PAC-skript.
+
+      Innstillingen fjernes i M75.</translation>
 <translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
 
           Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, slik den er angitt i regelen «ChromeFrameRendererSettings».

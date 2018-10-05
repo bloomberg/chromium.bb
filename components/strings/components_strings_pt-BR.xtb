@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Adicionar número de cartão de crédito válido</translation>
 <translation id="6628463337424475685">Pesquisa do <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Invasores presentes no momento em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem tentar instalar programas perigosos no seu Mac e roubar ou excluir suas informações (por exemplo, fotos, senhas, mensagens e cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="6644283850729428850">Esta política foi encerrada.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nenhum}=1{Em 1 site (você não será desconectado da sua Conta do Google)}one{Em # site (você não será desconectado da sua Conta do Google)}other{Em # sites (você não será desconectado da sua Conta do Google)}}</translation>
 <translation id="6657585470893396449">Senha</translation>
