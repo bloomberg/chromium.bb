@@ -17,6 +17,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
@@ -1190,17 +1191,23 @@ void CrostiniManager::OnListVmDisks(
     base::Optional<vm_tools::concierge::ListVmDisksResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to get list of VM disks. Empty response.";
-    std::move(callback).Run(ConciergeClientResult::LIST_VM_DISKS_FAILED, 0);
+    std::move(callback).Run(
+        ConciergeClientResult::LIST_VM_DISKS_FAILED,
+        profile_->GetPrefs()->GetInt64(prefs::kCrostiniLastDiskSize));
     return;
   }
   vm_tools::concierge::ListVmDisksResponse response = std::move(reply).value();
 
   if (!response.success()) {
     LOG(ERROR) << "Failed to list VM disks: " << response.failure_reason();
-    std::move(callback).Run(ConciergeClientResult::LIST_VM_DISKS_FAILED, 0);
+    std::move(callback).Run(
+        ConciergeClientResult::LIST_VM_DISKS_FAILED,
+        profile_->GetPrefs()->GetInt64(prefs::kCrostiniLastDiskSize));
     return;
   }
 
+  profile_->GetPrefs()->SetInt64(prefs::kCrostiniLastDiskSize,
+                                 response.total_size());
   std::move(callback).Run(ConciergeClientResult::SUCCESS,
                           response.total_size());
 }

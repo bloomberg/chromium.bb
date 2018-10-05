@@ -98,6 +98,7 @@ void CrostiniRemover::StopConciergeFinished(bool is_successful) {
   if (cros_component_manager) {
     if (cros_component_manager->Unload("cros-termina")) {
       profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
+      profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
     }
   }
   std::move(callback_).Run(ConciergeClientResult::SUCCESS);

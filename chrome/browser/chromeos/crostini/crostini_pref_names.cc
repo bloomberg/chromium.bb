@@ -28,6 +28,8 @@ const char kCrostiniLastLaunchVersion[] = "crostini.last_launch.version";
 // stored as Java time (ms since epoch).
 const char kCrostiniLastLaunchTimeWindowStart[] =
     "crostini.last_launch.time_window_start";
+// The value of the last sample of the disk space used by Crostini.
+const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
@@ -38,6 +40,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterStringPref(kCrostiniLastLaunchVersion, std::string());
   registry->RegisterInt64Pref(kCrostiniLastLaunchTimeWindowStart, 0u);
+  registry->RegisterInt64Pref(kCrostiniLastDiskSize, 0u);
   registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);
 }
 
