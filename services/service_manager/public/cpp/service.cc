@@ -19,8 +19,6 @@ void Service::OnBindInterface(const BindSourceInfo& source,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-void Service::OnDisconnected() {}
-
 bool Service::OnServiceManagerConnectionLost() {
   return true;
 }
