@@ -61,6 +61,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "garbageCollectedRecordMember",
     "internalDictionarySequenceMember",
     "longMember",
+    "member-with-hyphen-in-name",
     "objectMember",
     "objectOrNullMember",
     "originTrialMember",
@@ -516,8 +517,22 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setLongMember(long_member_cpp_value);
   }
 
+  v8::Local<v8::Value> member_with_hyphen_in_name_value;
+  if (!v8Object->Get(context, keys[26].Get(isolate)).ToLocal(&member_with_hyphen_in_name_value)) {
+    exceptionState.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (member_with_hyphen_in_name_value.IsEmpty() || member_with_hyphen_in_name_value->IsUndefined()) {
+    // Do nothing.
+  } else {
+    bool member_with_hyphen_in_name_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, member_with_hyphen_in_name_value, exceptionState);
+    if (exceptionState.HadException())
+      return;
+    impl.setMemberWithHyphenInName(member_with_hyphen_in_name_cpp_value);
+  }
+
   v8::Local<v8::Value> object_member_value;
-  if (!v8Object->Get(context, keys[26].Get(isolate)).ToLocal(&object_member_value)) {
+  if (!v8Object->Get(context, keys[27].Get(isolate)).ToLocal(&object_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -533,7 +548,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> object_or_null_member_value;
-  if (!v8Object->Get(context, keys[27].Get(isolate)).ToLocal(&object_or_null_member_value)) {
+  if (!v8Object->Get(context, keys[28].Get(isolate)).ToLocal(&object_or_null_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -551,7 +566,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> other_double_or_string_member_value;
-  if (!v8Object->Get(context, keys[30].Get(isolate)).ToLocal(&other_double_or_string_member_value)) {
+  if (!v8Object->Get(context, keys[31].Get(isolate)).ToLocal(&other_double_or_string_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -566,7 +581,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> public_value;
-  if (!v8Object->Get(context, keys[31].Get(isolate)).ToLocal(&public_value)) {
+  if (!v8Object->Get(context, keys[32].Get(isolate)).ToLocal(&public_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -580,7 +595,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> record_member_value;
-  if (!v8Object->Get(context, keys[32].Get(isolate)).ToLocal(&record_member_value)) {
+  if (!v8Object->Get(context, keys[33].Get(isolate)).ToLocal(&record_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -594,7 +609,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> required_callback_function_member_value;
-  if (!v8Object->Get(context, keys[33].Get(isolate)).ToLocal(&required_callback_function_member_value)) {
+  if (!v8Object->Get(context, keys[34].Get(isolate)).ToLocal(&required_callback_function_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -607,7 +622,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> restricted_double_member_value;
-  if (!v8Object->Get(context, keys[34].Get(isolate)).ToLocal(&restricted_double_member_value)) {
+  if (!v8Object->Get(context, keys[35].Get(isolate)).ToLocal(&restricted_double_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -621,7 +636,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> string_member_value;
-  if (!v8Object->Get(context, keys[37].Get(isolate)).ToLocal(&string_member_value)) {
+  if (!v8Object->Get(context, keys[38].Get(isolate)).ToLocal(&string_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -635,7 +650,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> string_or_null_member_value;
-  if (!v8Object->Get(context, keys[38].Get(isolate)).ToLocal(&string_or_null_member_value)) {
+  if (!v8Object->Get(context, keys[39].Get(isolate)).ToLocal(&string_or_null_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -649,7 +664,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> string_or_null_record_member_value;
-  if (!v8Object->Get(context, keys[39].Get(isolate)).ToLocal(&string_or_null_record_member_value)) {
+  if (!v8Object->Get(context, keys[40].Get(isolate)).ToLocal(&string_or_null_record_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -663,7 +678,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> string_or_null_sequence_member_value;
-  if (!v8Object->Get(context, keys[40].Get(isolate)).ToLocal(&string_or_null_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[41].Get(isolate)).ToLocal(&string_or_null_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -677,7 +692,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> string_sequence_member_value;
-  if (!v8Object->Get(context, keys[41].Get(isolate)).ToLocal(&string_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[42].Get(isolate)).ToLocal(&string_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -691,7 +706,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_enum_or_null_or_test_enum_sequence_member_value;
-  if (!v8Object->Get(context, keys[42].Get(isolate)).ToLocal(&test_enum_or_null_or_test_enum_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[43].Get(isolate)).ToLocal(&test_enum_or_null_or_test_enum_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -706,7 +721,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_enum_or_test_enum_or_null_sequence_member_value;
-  if (!v8Object->Get(context, keys[43].Get(isolate)).ToLocal(&test_enum_or_test_enum_or_null_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[44].Get(isolate)).ToLocal(&test_enum_or_test_enum_or_null_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -721,7 +736,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_enum_or_test_enum_sequence_member_value;
-  if (!v8Object->Get(context, keys[44].Get(isolate)).ToLocal(&test_enum_or_test_enum_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[45].Get(isolate)).ToLocal(&test_enum_or_test_enum_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -736,7 +751,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_interface_2_or_uint8_array_member_value;
-  if (!v8Object->Get(context, keys[45].Get(isolate)).ToLocal(&test_interface_2_or_uint8_array_member_value)) {
+  if (!v8Object->Get(context, keys[46].Get(isolate)).ToLocal(&test_interface_2_or_uint8_array_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -751,7 +766,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_interface_member_value;
-  if (!v8Object->Get(context, keys[46].Get(isolate)).ToLocal(&test_interface_member_value)) {
+  if (!v8Object->Get(context, keys[47].Get(isolate)).ToLocal(&test_interface_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -767,7 +782,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_interface_or_null_member_value;
-  if (!v8Object->Get(context, keys[47].Get(isolate)).ToLocal(&test_interface_or_null_member_value)) {
+  if (!v8Object->Get(context, keys[48].Get(isolate)).ToLocal(&test_interface_or_null_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -785,7 +800,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_interface_sequence_member_value;
-  if (!v8Object->Get(context, keys[48].Get(isolate)).ToLocal(&test_interface_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[49].Get(isolate)).ToLocal(&test_interface_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -799,7 +814,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> test_object_sequence_member_value;
-  if (!v8Object->Get(context, keys[49].Get(isolate)).ToLocal(&test_object_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[50].Get(isolate)).ToLocal(&test_object_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -813,7 +828,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> treat_null_as_string_sequence_member_value;
-  if (!v8Object->Get(context, keys[50].Get(isolate)).ToLocal(&treat_null_as_string_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[51].Get(isolate)).ToLocal(&treat_null_as_string_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -827,7 +842,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> uint8_array_member_value;
-  if (!v8Object->Get(context, keys[51].Get(isolate)).ToLocal(&uint8_array_member_value)) {
+  if (!v8Object->Get(context, keys[52].Get(isolate)).ToLocal(&uint8_array_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -845,7 +860,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> union_in_record_member_value;
-  if (!v8Object->Get(context, keys[52].Get(isolate)).ToLocal(&union_in_record_member_value)) {
+  if (!v8Object->Get(context, keys[53].Get(isolate)).ToLocal(&union_in_record_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -859,7 +874,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> union_member_with_sequence_default_value;
-  if (!v8Object->Get(context, keys[53].Get(isolate)).ToLocal(&union_member_with_sequence_default_value)) {
+  if (!v8Object->Get(context, keys[54].Get(isolate)).ToLocal(&union_member_with_sequence_default_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -874,7 +889,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> union_or_null_record_member_value;
-  if (!v8Object->Get(context, keys[54].Get(isolate)).ToLocal(&union_or_null_record_member_value)) {
+  if (!v8Object->Get(context, keys[55].Get(isolate)).ToLocal(&union_or_null_record_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -888,7 +903,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> union_or_null_sequence_member_value;
-  if (!v8Object->Get(context, keys[55].Get(isolate)).ToLocal(&union_or_null_sequence_member_value)) {
+  if (!v8Object->Get(context, keys[56].Get(isolate)).ToLocal(&union_or_null_sequence_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -902,7 +917,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> union_with_typedefs_value;
-  if (!v8Object->Get(context, keys[56].Get(isolate)).ToLocal(&union_with_typedefs_value)) {
+  if (!v8Object->Get(context, keys[57].Get(isolate)).ToLocal(&union_with_typedefs_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -917,7 +932,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> unrestricted_double_member_value;
-  if (!v8Object->Get(context, keys[57].Get(isolate)).ToLocal(&unrestricted_double_member_value)) {
+  if (!v8Object->Get(context, keys[58].Get(isolate)).ToLocal(&unrestricted_double_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -931,7 +946,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> usv_string_or_null_member_value;
-  if (!v8Object->Get(context, keys[58].Get(isolate)).ToLocal(&usv_string_or_null_member_value)) {
+  if (!v8Object->Get(context, keys[59].Get(isolate)).ToLocal(&usv_string_or_null_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -946,7 +961,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
   if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     v8::Local<v8::Value> runtime_member_value;
-    if (!v8Object->Get(context, keys[35].Get(isolate)).ToLocal(&runtime_member_value)) {
+    if (!v8Object->Get(context, keys[36].Get(isolate)).ToLocal(&runtime_member_value)) {
       exceptionState.RethrowV8Exception(block.Exception());
       return;
     }
@@ -960,7 +975,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
 
     v8::Local<v8::Value> runtime_second_member_value;
-    if (!v8Object->Get(context, keys[36].Get(isolate)).ToLocal(&runtime_second_member_value)) {
+    if (!v8Object->Get(context, keys[37].Get(isolate)).ToLocal(&runtime_second_member_value)) {
       exceptionState.RethrowV8Exception(block.Exception());
       return;
     }
@@ -976,7 +991,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
   if (OriginTrials::FeatureNameEnabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_member_value;
-    if (!v8Object->Get(context, keys[28].Get(isolate)).ToLocal(&origin_trial_member_value)) {
+    if (!v8Object->Get(context, keys[29].Get(isolate)).ToLocal(&origin_trial_member_value)) {
       exceptionState.RethrowV8Exception(block.Exception());
       return;
     }
@@ -992,7 +1007,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
   if (OriginTrials::FeatureName1Enabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_second_member_value;
-    if (!v8Object->Get(context, keys[29].Get(isolate)).ToLocal(&origin_trial_second_member_value)) {
+    if (!v8Object->Get(context, keys[30].Get(isolate)).ToLocal(&origin_trial_second_member_value)) {
       exceptionState.RethrowV8Exception(block.Exception());
       return;
     }
@@ -1324,6 +1339,20 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     return false;
   }
 
+  v8::Local<v8::Value> member_with_hyphen_in_name_value;
+  bool member_with_hyphen_in_name_has_value_or_default = false;
+  if (impl.hasMemberWithHyphenInName()) {
+    member_with_hyphen_in_name_value = v8::Boolean::New(isolate, impl.memberWithHyphenInName());
+    member_with_hyphen_in_name_has_value_or_default = true;
+  } else {
+    member_with_hyphen_in_name_value = v8::Boolean::New(isolate, false);
+    member_with_hyphen_in_name_has_value_or_default = true;
+  }
+  if (member_with_hyphen_in_name_has_value_or_default &&
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[26].Get(isolate), member_with_hyphen_in_name_value))) {
+    return false;
+  }
+
   v8::Local<v8::Value> object_member_value;
   bool object_member_has_value_or_default = false;
   if (impl.hasObjectMember()) {
@@ -1332,7 +1361,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     object_member_has_value_or_default = true;
   }
   if (object_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[26].Get(isolate), object_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[27].Get(isolate), object_member_value))) {
     return false;
   }
 
@@ -1347,7 +1376,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     object_or_null_member_has_value_or_default = true;
   }
   if (object_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[27].Get(isolate), object_or_null_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[28].Get(isolate), object_or_null_member_value))) {
     return false;
   }
 
@@ -1361,7 +1390,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     other_double_or_string_member_has_value_or_default = true;
   }
   if (other_double_or_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[30].Get(isolate), other_double_or_string_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[31].Get(isolate), other_double_or_string_member_value))) {
     return false;
   }
 
@@ -1372,7 +1401,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     public_has_value_or_default = true;
   }
   if (public_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[31].Get(isolate), public_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[32].Get(isolate), public_value))) {
     return false;
   }
 
@@ -1383,7 +1412,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     record_member_has_value_or_default = true;
   }
   if (record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[32].Get(isolate), record_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[33].Get(isolate), record_member_value))) {
     return false;
   }
 
@@ -1396,7 +1425,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     NOTREACHED();
   }
   if (required_callback_function_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[33].Get(isolate), required_callback_function_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[34].Get(isolate), required_callback_function_member_value))) {
     return false;
   }
 
@@ -1410,7 +1439,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     restricted_double_member_has_value_or_default = true;
   }
   if (restricted_double_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[34].Get(isolate), restricted_double_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[35].Get(isolate), restricted_double_member_value))) {
     return false;
   }
 
@@ -1421,7 +1450,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_member_has_value_or_default = true;
   }
   if (string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[37].Get(isolate), string_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[38].Get(isolate), string_member_value))) {
     return false;
   }
 
@@ -1435,7 +1464,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_member_has_value_or_default = true;
   }
   if (string_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[38].Get(isolate), string_or_null_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[39].Get(isolate), string_or_null_member_value))) {
     return false;
   }
 
@@ -1446,7 +1475,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_record_member_has_value_or_default = true;
   }
   if (string_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[39].Get(isolate), string_or_null_record_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[40].Get(isolate), string_or_null_record_member_value))) {
     return false;
   }
 
@@ -1457,7 +1486,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_sequence_member_has_value_or_default = true;
   }
   if (string_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[40].Get(isolate), string_or_null_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[41].Get(isolate), string_or_null_sequence_member_value))) {
     return false;
   }
 
@@ -1471,7 +1500,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_sequence_member_has_value_or_default = true;
   }
   if (string_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[41].Get(isolate), string_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[42].Get(isolate), string_sequence_member_value))) {
     return false;
   }
 
@@ -1482,7 +1511,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_null_or_test_enum_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_null_or_test_enum_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[42].Get(isolate), test_enum_or_null_or_test_enum_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[43].Get(isolate), test_enum_or_null_or_test_enum_sequence_member_value))) {
     return false;
   }
 
@@ -1493,7 +1522,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_test_enum_or_null_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_test_enum_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[43].Get(isolate), test_enum_or_test_enum_or_null_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[44].Get(isolate), test_enum_or_test_enum_or_null_sequence_member_value))) {
     return false;
   }
 
@@ -1504,7 +1533,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_test_enum_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_test_enum_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[44].Get(isolate), test_enum_or_test_enum_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[45].Get(isolate), test_enum_or_test_enum_sequence_member_value))) {
     return false;
   }
 
@@ -1515,7 +1544,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_2_or_uint8_array_member_has_value_or_default = true;
   }
   if (test_interface_2_or_uint8_array_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[45].Get(isolate), test_interface_2_or_uint8_array_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[46].Get(isolate), test_interface_2_or_uint8_array_member_value))) {
     return false;
   }
 
@@ -1526,7 +1555,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_member_has_value_or_default = true;
   }
   if (test_interface_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[46].Get(isolate), test_interface_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[47].Get(isolate), test_interface_member_value))) {
     return false;
   }
 
@@ -1537,7 +1566,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_or_null_member_has_value_or_default = true;
   }
   if (test_interface_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[47].Get(isolate), test_interface_or_null_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[48].Get(isolate), test_interface_or_null_member_value))) {
     return false;
   }
 
@@ -1551,7 +1580,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_sequence_member_has_value_or_default = true;
   }
   if (test_interface_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[48].Get(isolate), test_interface_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[49].Get(isolate), test_interface_sequence_member_value))) {
     return false;
   }
 
@@ -1562,7 +1591,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_object_sequence_member_has_value_or_default = true;
   }
   if (test_object_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[49].Get(isolate), test_object_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[50].Get(isolate), test_object_sequence_member_value))) {
     return false;
   }
 
@@ -1576,7 +1605,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     treat_null_as_string_sequence_member_has_value_or_default = true;
   }
   if (treat_null_as_string_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[50].Get(isolate), treat_null_as_string_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[51].Get(isolate), treat_null_as_string_sequence_member_value))) {
     return false;
   }
 
@@ -1587,7 +1616,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     uint8_array_member_has_value_or_default = true;
   }
   if (uint8_array_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[51].Get(isolate), uint8_array_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[52].Get(isolate), uint8_array_member_value))) {
     return false;
   }
 
@@ -1598,7 +1627,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_in_record_member_has_value_or_default = true;
   }
   if (union_in_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[52].Get(isolate), union_in_record_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[53].Get(isolate), union_in_record_member_value))) {
     return false;
   }
 
@@ -1612,7 +1641,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_member_with_sequence_default_has_value_or_default = true;
   }
   if (union_member_with_sequence_default_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[53].Get(isolate), union_member_with_sequence_default_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[54].Get(isolate), union_member_with_sequence_default_value))) {
     return false;
   }
 
@@ -1623,7 +1652,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_or_null_record_member_has_value_or_default = true;
   }
   if (union_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[54].Get(isolate), union_or_null_record_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[55].Get(isolate), union_or_null_record_member_value))) {
     return false;
   }
 
@@ -1634,7 +1663,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_or_null_sequence_member_has_value_or_default = true;
   }
   if (union_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[55].Get(isolate), union_or_null_sequence_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[56].Get(isolate), union_or_null_sequence_member_value))) {
     return false;
   }
 
@@ -1645,7 +1674,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_with_typedefs_has_value_or_default = true;
   }
   if (union_with_typedefs_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[56].Get(isolate), union_with_typedefs_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[57].Get(isolate), union_with_typedefs_value))) {
     return false;
   }
 
@@ -1659,7 +1688,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     unrestricted_double_member_has_value_or_default = true;
   }
   if (unrestricted_double_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[57].Get(isolate), unrestricted_double_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[58].Get(isolate), unrestricted_double_member_value))) {
     return false;
   }
 
@@ -1673,7 +1702,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     usv_string_or_null_member_has_value_or_default = true;
   }
   if (usv_string_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[58].Get(isolate), usv_string_or_null_member_value))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[59].Get(isolate), usv_string_or_null_member_value))) {
     return false;
   }
 
@@ -1685,7 +1714,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       runtime_member_has_value_or_default = true;
     }
     if (runtime_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[35].Get(isolate), runtime_member_value))) {
+        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[36].Get(isolate), runtime_member_value))) {
       return false;
     }
 
@@ -1696,7 +1725,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       runtime_second_member_has_value_or_default = true;
     }
     if (runtime_second_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[36].Get(isolate), runtime_second_member_value))) {
+        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[37].Get(isolate), runtime_second_member_value))) {
       return false;
     }
   }
@@ -1709,7 +1738,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       origin_trial_member_has_value_or_default = true;
     }
     if (origin_trial_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[28].Get(isolate), origin_trial_member_value))) {
+        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[29].Get(isolate), origin_trial_member_value))) {
       return false;
     }
   }
@@ -1722,7 +1751,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       origin_trial_second_member_has_value_or_default = true;
     }
     if (origin_trial_second_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[29].Get(isolate), origin_trial_second_member_value))) {
+        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[30].Get(isolate), origin_trial_second_member_value))) {
       return false;
     }
   }

@@ -462,8 +462,6 @@ def shorten_union_name(union_type):
 
 
 def to_snake_case(name):
-    if name.lower() == name:
-        return name
     return NameStyleConverter(name).to_snake_case()
 
 
