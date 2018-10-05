@@ -76,20 +76,20 @@ static_assert(static_cast<int>(PDFEngine::FormType::kCount) == FORMTYPE_COUNT,
 
 namespace {
 
-const int32_t kPageShadowTop = 3;
-const int32_t kPageShadowBottom = 7;
-const int32_t kPageShadowLeft = 5;
-const int32_t kPageShadowRight = 5;
+constexpr int32_t kPageShadowTop = 3;
+constexpr int32_t kPageShadowBottom = 7;
+constexpr int32_t kPageShadowLeft = 5;
+constexpr int32_t kPageShadowRight = 5;
 
-const int32_t kPageSeparatorThickness = 4;
-const int32_t kHighlightColorR = 153;
-const int32_t kHighlightColorG = 193;
-const int32_t kHighlightColorB = 218;
+constexpr int32_t kPageSeparatorThickness = 4;
+constexpr int32_t kHighlightColorR = 153;
+constexpr int32_t kHighlightColorG = 193;
+constexpr int32_t kHighlightColorB = 218;
 
-const uint32_t kPendingPageColor = 0xFFEEEEEE;
+constexpr uint32_t kPendingPageColor = 0xFFEEEEEE;
 
-const uint32_t kFormHighlightColor = 0xFFE4DD;
-const int32_t kFormHighlightAlpha = 100;
+constexpr uint32_t kFormHighlightColor = 0xFFE4DD;
+constexpr int32_t kFormHighlightAlpha = 100;
 
 constexpr int kMaxPasswordTries = 3;
 
@@ -105,12 +105,12 @@ constexpr bool kViewerImplementedPanning = true;
 
 // See Table 3.20 in
 // http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
-const uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
-const uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
-const uint32_t kPDFPermissionCopyMask = 1 << 4;
-const uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
+constexpr uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
+constexpr uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
+constexpr uint32_t kPDFPermissionCopyMask = 1 << 4;
+constexpr uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
 
-const int32_t kLoadingTextVerticalOffset = 50;
+constexpr int32_t kLoadingTextVerticalOffset = 50;
 
 // The maximum amount of time we'll spend doing a paint before we give back
 // control of the thread.
@@ -147,8 +147,8 @@ PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
                 "PP_BrowserFont_Trusted_Weight min");
   static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_900 == 8,
                 "PP_BrowserFont_Trusted_Weight max");
-  const int kMinimumWeight = 100;
-  const int kMaximumWeight = 900;
+  constexpr int kMinimumWeight = 100;
+  constexpr int kMaximumWeight = 900;
   int normalized_weight =
       std::min(std::max(weight, kMinimumWeight), kMaximumWeight);
   normalized_weight = (normalized_weight / 100) - 1;
@@ -447,7 +447,7 @@ void FormatStringWithHyphens(base::string16* text) {
   std::vector<HyphenPosition> hyphen_positions;
   HyphenPosition current_hyphen_position;
   bool current_hyphen_position_is_valid = false;
-  const base::char16 kPdfiumHyphenEOL = 0xfffe;
+  constexpr base::char16 kPdfiumHyphenEOL = 0xfffe;
 
   for (size_t i = 0; i < text->size(); ++i) {
     const base::char16& current_char = (*text)[i];
@@ -471,7 +471,7 @@ void FormatStringWithHyphens(base::string16* text) {
 
   // With all the hyphen positions, do the search and replace.
   while (!hyphen_positions.empty()) {
-    static const base::char16 kCr[] = {L'\r', L'\0'};
+    static constexpr base::char16 kCr[] = {L'\r', L'\0'};
     const HyphenPosition& position = hyphen_positions.back();
     if (position.next_whitespace_position != 0) {
       (*text)[position.next_whitespace_position] = L'\n';
@@ -482,16 +482,16 @@ void FormatStringWithHyphens(base::string16* text) {
   }
 
   // Adobe Reader also get rid of trailing spaces right before a CRLF.
-  static const base::char16 kSpaceCrCn[] = {L' ', L'\r', L'\n', L'\0'};
-  static const base::char16 kCrCn[] = {L'\r', L'\n', L'\0'};
+  static constexpr base::char16 kSpaceCrCn[] = {L' ', L'\r', L'\n', L'\0'};
+  static constexpr base::char16 kCrCn[] = {L'\r', L'\n', L'\0'};
   base::ReplaceSubstringsAfterOffset(text, 0, kSpaceCrCn, kCrCn);
 }
 
 // Replace CR/LF with just LF on POSIX.
 void FormatStringForOS(base::string16* text) {
 #if defined(OS_POSIX)
-  static const base::char16 kCr[] = {L'\r', L'\0'};
-  static const base::char16 kBlank[] = {L'\0'};
+  static constexpr base::char16 kCr[] = {L'\r', L'\0'};
+  static constexpr base::char16 kBlank[] = {L'\0'};
   base::ReplaceChars(*text, kCr, kBlank, text);
 #elif defined(OS_WIN)
   // Do nothing
@@ -2347,7 +2347,7 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   pp::VarArray children;
 
   // Don't trust PDFium to handle circular bookmarks.
-  const unsigned int kMaxDepth = 128;
+  constexpr unsigned int kMaxDepth = 128;
   if (depth < kMaxDepth) {
     int child_index = 0;
     std::set<FPDF_BOOKMARK> seen_bookmarks;
@@ -3435,7 +3435,7 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
   clip_rect.Offset(page_offset_);
 
   // Page drop shadow parameters.
-  const double factor = 0.5;
+  constexpr double factor = 0.5;
   uint32_t depth =
       std::max(std::max(page_rect.x() - shadow_rect.x(),
                         page_rect.y() - shadow_rect.y()),

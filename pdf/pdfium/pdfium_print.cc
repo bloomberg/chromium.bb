@@ -432,7 +432,7 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
     // Use quality = 40 as this does not significantly degrade the printed
     // document relative to a normal bitmap and provides better compression than
     // a higher quality setting.
-    const int kQuality = 40;
+    constexpr int kQuality = 40;
     SkImageInfo info = SkImageInfo::Make(
         FPDFBitmap_GetWidth(bitmap.get()), FPDFBitmap_GetHeight(bitmap.get()),
         kBGRA_8888_SkColorType, kOpaque_SkAlphaType);

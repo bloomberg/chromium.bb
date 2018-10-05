@@ -47,118 +47,118 @@ namespace chrome_pdf {
 
 namespace {
 
-const char kChromePrint[] = "chrome://print/";
-const char kChromeExtension[] =
+constexpr char kChromePrint[] = "chrome://print/";
+constexpr char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
 
 // Constants used in handling postMessage() messages.
-const char kType[] = "type";
-const char kJSId[] = "id";
+constexpr char kType[] = "type";
+constexpr char kJSId[] = "id";
 // Beep messge arguments. (Plugin -> Page).
-const char kJSBeepType[] = "beep";
+constexpr char kJSBeepType[] = "beep";
 // Viewport message arguments. (Page -> Plugin).
-const char kJSViewportType[] = "viewport";
-const char kJSUserInitiated[] = "userInitiated";
-const char kJSXOffset[] = "xOffset";
-const char kJSYOffset[] = "yOffset";
-const char kJSZoom[] = "zoom";
-const char kJSPinchPhase[] = "pinchPhase";
+constexpr char kJSViewportType[] = "viewport";
+constexpr char kJSUserInitiated[] = "userInitiated";
+constexpr char kJSXOffset[] = "xOffset";
+constexpr char kJSYOffset[] = "yOffset";
+constexpr char kJSZoom[] = "zoom";
+constexpr char kJSPinchPhase[] = "pinchPhase";
 // kJSPinchX and kJSPinchY represent the center of the pinch gesture.
-const char kJSPinchX[] = "pinchX";
-const char kJSPinchY[] = "pinchY";
+constexpr char kJSPinchX[] = "pinchX";
+constexpr char kJSPinchY[] = "pinchY";
 // kJSPinchVector represents the amount of panning caused by the pinch gesture.
-const char kJSPinchVectorX[] = "pinchVectorX";
-const char kJSPinchVectorY[] = "pinchVectorY";
+constexpr char kJSPinchVectorX[] = "pinchVectorX";
+constexpr char kJSPinchVectorY[] = "pinchVectorY";
 // Stop scrolling message (Page -> Plugin)
-const char kJSStopScrollingType[] = "stopScrolling";
+constexpr char kJSStopScrollingType[] = "stopScrolling";
 // Document dimension arguments (Plugin -> Page).
-const char kJSDocumentDimensionsType[] = "documentDimensions";
-const char kJSDocumentWidth[] = "width";
-const char kJSDocumentHeight[] = "height";
-const char kJSPageDimensions[] = "pageDimensions";
-const char kJSPageX[] = "x";
-const char kJSPageY[] = "y";
-const char kJSPageWidth[] = "width";
-const char kJSPageHeight[] = "height";
+constexpr char kJSDocumentDimensionsType[] = "documentDimensions";
+constexpr char kJSDocumentWidth[] = "width";
+constexpr char kJSDocumentHeight[] = "height";
+constexpr char kJSPageDimensions[] = "pageDimensions";
+constexpr char kJSPageX[] = "x";
+constexpr char kJSPageY[] = "y";
+constexpr char kJSPageWidth[] = "width";
+constexpr char kJSPageHeight[] = "height";
 // Document load progress arguments (Plugin -> Page)
-const char kJSLoadProgressType[] = "loadProgress";
-const char kJSProgressPercentage[] = "progress";
+constexpr char kJSLoadProgressType[] = "loadProgress";
+constexpr char kJSProgressPercentage[] = "progress";
 // Document print preview loaded (Plugin -> Page)
-const char kJSPreviewLoadedType[] = "printPreviewLoaded";
+constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
 // Metadata
-const char kJSMetadataType[] = "metadata";
-const char kJSBookmarks[] = "bookmarks";
-const char kJSTitle[] = "title";
+constexpr char kJSMetadataType[] = "metadata";
+constexpr char kJSBookmarks[] = "bookmarks";
+constexpr char kJSTitle[] = "title";
 // Get password (Plugin -> Page)
-const char kJSGetPasswordType[] = "getPassword";
+constexpr char kJSGetPasswordType[] = "getPassword";
 // Get password complete arguments (Page -> Plugin)
-const char kJSGetPasswordCompleteType[] = "getPasswordComplete";
-const char kJSPassword[] = "password";
+constexpr char kJSGetPasswordCompleteType[] = "getPasswordComplete";
+constexpr char kJSPassword[] = "password";
 // Print (Page -> Plugin)
-const char kJSPrintType[] = "print";
+constexpr char kJSPrintType[] = "print";
 // Save (Page -> Plugin)
-const char kJSSaveType[] = "save";
+constexpr char kJSSaveType[] = "save";
 // Go to page (Plugin -> Page)
-const char kJSGoToPageType[] = "goToPage";
-const char kJSPageNumber[] = "page";
+constexpr char kJSGoToPageType[] = "goToPage";
+constexpr char kJSPageNumber[] = "page";
 // Reset print preview mode (Page -> Plugin)
-const char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
-const char kJSPrintPreviewUrl[] = "url";
-const char kJSPrintPreviewGrayscale[] = "grayscale";
-const char kJSPrintPreviewPageCount[] = "pageCount";
+constexpr char kJSResetPrintPreviewModeType[] = "resetPrintPreviewMode";
+constexpr char kJSPrintPreviewUrl[] = "url";
+constexpr char kJSPrintPreviewGrayscale[] = "grayscale";
+constexpr char kJSPrintPreviewPageCount[] = "pageCount";
 // Load preview page (Page -> Plugin)
-const char kJSLoadPreviewPageType[] = "loadPreviewPage";
-const char kJSPreviewPageUrl[] = "url";
-const char kJSPreviewPageIndex[] = "index";
+constexpr char kJSLoadPreviewPageType[] = "loadPreviewPage";
+constexpr char kJSPreviewPageUrl[] = "url";
+constexpr char kJSPreviewPageIndex[] = "index";
 // Set scroll position (Plugin -> Page)
-const char kJSSetScrollPositionType[] = "setScrollPosition";
-const char kJSPositionX[] = "x";
-const char kJSPositionY[] = "y";
+constexpr char kJSSetScrollPositionType[] = "setScrollPosition";
+constexpr char kJSPositionX[] = "x";
+constexpr char kJSPositionY[] = "y";
 // Scroll by (Plugin -> Page)
-const char kJSScrollByType[] = "scrollBy";
+constexpr char kJSScrollByType[] = "scrollBy";
 // Cancel the stream URL request (Plugin -> Page)
-const char kJSCancelStreamUrlType[] = "cancelStreamUrl";
+constexpr char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
-const char kJSNavigateType[] = "navigate";
-const char kJSNavigateUrl[] = "url";
-const char kJSNavigateWindowOpenDisposition[] = "disposition";
+constexpr char kJSNavigateType[] = "navigate";
+constexpr char kJSNavigateUrl[] = "url";
+constexpr char kJSNavigateWindowOpenDisposition[] = "disposition";
 // Open the email editor with the given parameters (Plugin -> Page)
-const char kJSEmailType[] = "email";
-const char kJSEmailTo[] = "to";
-const char kJSEmailCc[] = "cc";
-const char kJSEmailBcc[] = "bcc";
-const char kJSEmailSubject[] = "subject";
-const char kJSEmailBody[] = "body";
+constexpr char kJSEmailType[] = "email";
+constexpr char kJSEmailTo[] = "to";
+constexpr char kJSEmailCc[] = "cc";
+constexpr char kJSEmailBcc[] = "bcc";
+constexpr char kJSEmailSubject[] = "subject";
+constexpr char kJSEmailBody[] = "body";
 // Rotation (Page -> Plugin)
-const char kJSRotateClockwiseType[] = "rotateClockwise";
-const char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
+constexpr char kJSRotateClockwiseType[] = "rotateClockwise";
+constexpr char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
 // Select all text in the document (Page -> Plugin)
-const char kJSSelectAllType[] = "selectAll";
+constexpr char kJSSelectAllType[] = "selectAll";
 // Get the selected text in the document (Page -> Plugin)
-const char kJSGetSelectedTextType[] = "getSelectedText";
+constexpr char kJSGetSelectedTextType[] = "getSelectedText";
 // Reply with selected text (Plugin -> Page)
-const char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
-const char kJSSelectedText[] = "selectedText";
+constexpr char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
+constexpr char kJSSelectedText[] = "selectedText";
 
 // Get the named destination with the given name (Page -> Plugin)
-const char kJSGetNamedDestinationType[] = "getNamedDestination";
-const char kJSGetNamedDestination[] = "namedDestination";
+constexpr char kJSGetNamedDestinationType[] = "getNamedDestination";
+constexpr char kJSGetNamedDestination[] = "namedDestination";
 // Reply with the page number of the named destination (Plugin -> Page)
-const char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
-const char kJSNamedDestinationPageNumber[] = "pageNumber";
+constexpr char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
+constexpr char kJSNamedDestinationPageNumber[] = "pageNumber";
 
-const char kJSTransformPagePointType[] = "transformPagePoint";
-const char kJSTransformPagePointReplyType[] = "transformPagePointReply";
+constexpr char kJSTransformPagePointType[] = "transformPagePoint";
+constexpr char kJSTransformPagePointReplyType[] = "transformPagePointReply";
 
 // Selecting text in document (Plugin -> Page)
-const char kJSSetIsSelectingType[] = "setIsSelecting";
-const char kJSIsSelecting[] = "isSelecting";
+constexpr char kJSSetIsSelectingType[] = "setIsSelecting";
+constexpr char kJSIsSelecting[] = "isSelecting";
 
 // Notify when a form field is focused (Plugin -> Page)
-const char kJSFieldFocusType[] = "formFocusChange";
-const char kJSFieldFocus[] = "focused";
+constexpr char kJSFieldFocusType[] = "formFocusChange";
+constexpr char kJSFieldFocus[] = "focused";
 
-const int kFindResultCooldownMs = 100;
+constexpr int kFindResultCooldownMs = 100;
 
 // Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
 constexpr int kCompletePDFIndex = -1;
@@ -167,11 +167,11 @@ constexpr int kInvalidPDFIndex = -2;
 
 // A delay to wait between each accessibility page to keep the system
 // responsive.
-const int kAccessibilityPageDelayMs = 100;
+constexpr int kAccessibilityPageDelayMs = 100;
 
-const double kMinZoom = 0.01;
+constexpr double kMinZoom = 0.01;
 
-const char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
+constexpr char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
 
 // Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
 enum PDFFeatures {
@@ -183,7 +183,7 @@ enum PDFFeatures {
 
 // Used for UMA. Do not delete entries, and keep in sync with histograms.xml
 // and pdfium/public/fpdf_annot.h.
-const int kAnnotationTypesCount = 28;
+constexpr int kAnnotationTypesCount = 28;
 
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
   pp::Var var;
@@ -1648,7 +1648,7 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  static const int32_t kMaxFileSizeInKB = 12 * 1024 * 1024;
+  static constexpr int32_t kMaxFileSizeInKB = 12 * 1024 * 1024;
   HistogramCustomCounts("PDF.FileSizeInKB", file_size / 1024, 0,
                         kMaxFileSizeInKB, 50);
   HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
