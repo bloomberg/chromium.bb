@@ -364,6 +364,21 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
                                      base::File::FLAG_DELETE_ON_CLOSE))
                       .release()});
 
+  // The test launcher can use a shared data directory for providing tests with
+  // files deployed at runtime. The files are located under the directory
+  // "/data/shared". They will be mounted at "/test-shared" under the child
+  // process' namespace.
+  const base::FilePath kSharedDataSourcePath("/data/shared");
+  const base::FilePath kSharedDataTargetPath("/test-shared");
+  if (base::PathExists(kSharedDataSourcePath)) {
+    zx::handle shared_directory_handle = base::fuchsia::GetHandleFromFile(
+        base::File(kSharedDataSourcePath,
+                   base::File::FLAG_OPEN | base::File::FLAG_READ |
+                       base::File::FLAG_DELETE_ON_CLOSE));
+    new_options.paths_to_transfer.push_back(
+        {kSharedDataTargetPath, shared_directory_handle.release()});
+  }
+
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
