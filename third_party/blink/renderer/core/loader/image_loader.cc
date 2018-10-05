@@ -120,18 +120,22 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
 class ImageLoader::Task {
  public:
   static std::unique_ptr<Task> Create(ImageLoader* loader,
+                                      const KURL& request_url,
                                       UpdateFromElementBehavior update_behavior,
                                       ReferrerPolicy referrer_policy) {
-    return std::make_unique<Task>(loader, update_behavior, referrer_policy);
+    return std::make_unique<Task>(loader, request_url, update_behavior,
+                                  referrer_policy);
   }
 
   Task(ImageLoader* loader,
+       const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
        ReferrerPolicy referrer_policy)
       : loader_(loader),
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
         referrer_policy_(referrer_policy),
+        request_url_(request_url),
         weak_factory_(this) {
     ExecutionContext& context = loader_->GetElement()->GetDocument();
     probe::AsyncTaskScheduled(&context, "Image", this);
@@ -146,8 +150,6 @@ class ImageLoader::Task {
           loader->GetElement()->GetDocument().GetFrame());
       DCHECK(script_state_);
     }
-    request_url_ =
-        loader->ImageSourceToKURL(loader->GetElement()->ImageSourceURL());
   }
 
   void Run() {
@@ -388,10 +390,11 @@ inline void ImageLoader::ClearFailedLoadURL() {
 }
 
 inline void ImageLoader::EnqueueImageLoadingMicroTask(
+    const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
     ReferrerPolicy referrer_policy) {
   std::unique_ptr<Task> task =
-      Task::Create(this, update_behavior, referrer_policy);
+      Task::Create(this, request_url, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
@@ -576,13 +579,15 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
     ClearImage();
   }
 
+  KURL url = ImageSourceToKURL(image_source_url);
+
   // Prevent the creation of a ResourceLoader (and therefore a network request)
   // for ImageDocument loads. In this case, the image contents have already been
   // requested as a main resource and ImageDocumentParser will take care of
   // funneling the main resource bytes into |image_content_|, so just create an
   // ImageResource to be populated later.
   if (loading_image_document_) {
-    ResourceRequest request(ImageSourceToKURL(element_->ImageSourceURL()));
+    ResourceRequest request(url);
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     ImageResource* image_resource = ImageResource::Create(request);
@@ -601,7 +606,6 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
     delay_until_do_update_from_element_ = nullptr;
   }
 
-  KURL url = ImageSourceToKURL(image_source_url);
   if (ShouldLoadImmediately(url)) {
     DoUpdateFromElement(kDoNotBypassMainWorldCSP, update_behavior, url,
                         referrer_policy, UpdateType::kSync);
@@ -627,7 +631,7 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   // raw HTML parsing case by loading images we don't intend to display.
   Document& document = element_->GetDocument();
   if (document.IsActive())
-    EnqueueImageLoadingMicroTask(update_behavior, referrer_policy);
+    EnqueueImageLoadingMicroTask(url, update_behavior, referrer_policy);
 }
 
 KURL ImageLoader::ImageSourceToKURL(AtomicString image_source_url) const {
