@@ -302,8 +302,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   Document* document = To<Document>(execution_context);
 
-  if (!document->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kEncryptedMedia)) {
+  if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kEncryptedMedia,
+                                  ReportOptions::kReportOnFailure)) {
     UseCounter::Count(document,
                       WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
     document->AddConsoleMessage(
