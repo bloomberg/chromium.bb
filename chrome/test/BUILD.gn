@@ -673,6 +673,7 @@ test("browser_tests") {
       "../browser/net/profile_network_context_service_browsertest.cc",
       "../browser/net/proxy_browsertest.cc",
       "../browser/net/reporting_browsertest.cc",
+      "../browser/net/spdyproxy/data_reduction_proxy_browsertest.cc",
       "../browser/net/system_network_context_manager_browsertest.cc",
       "../browser/net/variations_http_headers_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
