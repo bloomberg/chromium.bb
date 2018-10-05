@@ -75,6 +75,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -106,6 +107,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -847,17 +849,31 @@ void WizardController::ShowAssistantOptInFlowScreen() {
 }
 
 void WizardController::ShowMultiDeviceSetupScreen() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    // TODO(khorimoto): Use MultiDeviceSetupClient to determine if any potential
-    // phone(s) on the same GAIA account can be used for multi-device features.
-    // Only show the setup screen if it is possible to use these features.
-    UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
-    SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
-  } else {
+  // If multi-device flags are disabled, skip the associated setup flow.
+  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
+      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
     OnMultiDeviceSetupFinished();
+    return;
   }
+
+  multidevice_setup::MultiDeviceSetupClient* client =
+      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  DCHECK(client);
+
+  // If there is no eligible multi-device host phone or if there is a phone and
+  // it has already been set, skip the setup flow.
+  if (client->GetHostStatus().first !=
+      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
+    VLOG(1) << "Skipping MultiDevice setup screen; host status: "
+            << client->GetHostStatus().first;
+    OnMultiDeviceSetupFinished();
+    return;
+  }
+
+  VLOG(1) << "Showing MultiDevice setup screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
 }
 
 void WizardController::ShowDiscoverScreen() {
