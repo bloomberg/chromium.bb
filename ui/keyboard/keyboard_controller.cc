@@ -292,7 +292,8 @@ aura::Window* KeyboardController::GetRootWindow() {
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   visual_bounds_in_screen_ = new_bounds;
-  if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
+  aura::Window* window = GetKeyboardWindow();
+  if (window && window->IsVisible()) {
     const gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBounds();
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(), new_bounds,
@@ -343,12 +344,13 @@ void KeyboardController::NotifyKeyboardWindowLoaded() {
 }
 
 void KeyboardController::Reload() {
-  if (ui_->HasKeyboardWindow()) {
-    // A reload should never try to show virtual keyboard. If keyboard is not
-    // visible before reload, it should stay invisible after reload.
-    show_on_keyboard_window_load_ = false;
-    ui_->ReloadKeyboardIfNeeded();
-  }
+  if (!GetKeyboardWindow())
+    return;
+
+  // A reload should never try to show virtual keyboard. If keyboard is not
+  // visible before reload, it should stay invisible after reload.
+  show_on_keyboard_window_load_ = false;
+  ui_->ReloadKeyboardIfNeeded();
 }
 
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
@@ -705,13 +707,15 @@ void KeyboardController::PopulateKeyboardContent(
 
   if (parent_container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
+    // TODO(https://crbug.com/845780): This call will create and load the
+    // virtual keyboard window. Redesign the KeyboardUI interface so that
+    // loading is explicit.
     aura::Window* keyboard_window = ui_->GetKeyboardWindow();
     keyboard_window->AddPreTargetHandler(&event_filter_);
     keyboard_window->AddObserver(this);
     parent_container_->AddChild(keyboard_window);
   }
 
-  DCHECK(ui_->HasKeyboardWindow());
   if (layout_delegate_ != nullptr) {
     if (display.is_valid())
       layout_delegate_->MoveKeyboardToDisplay(display);
@@ -719,7 +723,8 @@ void KeyboardController::PopulateKeyboardContent(
       layout_delegate_->MoveKeyboardToTouchableDisplay();
   }
 
-  aura::Window* keyboard_window = ui_->GetKeyboardWindow();
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  DCHECK(keyboard_window);
   DCHECK_EQ(parent_container_, keyboard_window->parent());
 
   switch (state_) {
@@ -738,7 +743,7 @@ void KeyboardController::PopulateKeyboardContent(
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
-      DCHECK_EQ(ui_->GetKeyboardWindow()->bounds().height(), 0);
+      DCHECK_EQ(keyboard_window->bounds().height(), 0);
       show_on_keyboard_window_load_ = show_keyboard;
       ChangeState(KeyboardControllerState::LOADING_EXTENSION);
       return;
