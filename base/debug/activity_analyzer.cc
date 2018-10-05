@@ -118,8 +118,7 @@ std::unique_ptr<GlobalActivityAnalyzer> GlobalActivityAnalyzer::CreateWithFile(
   // Map the file read-write so it can guarantee consistency between
   // the analyzer and any trackers that my still be active.
   std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
-  mmfile->Initialize(file_path, MemoryMappedFile::READ_WRITE);
-  if (!mmfile->IsValid()) {
+  if (!mmfile->Initialize(file_path, MemoryMappedFile::READ_WRITE)) {
     LogAnalyzerCreationError(kInvalidMemoryMappedFile);
     return nullptr;
   }
