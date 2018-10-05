@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -227,7 +228,8 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   browser_sync::ProfileSyncServiceMock* service =
       static_cast<browser_sync::ProfileSyncServiceMock*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile, &ExtensionSessionsTest::BuildProfileSyncService));
+              profile, base::BindRepeating(
+                           &ExtensionSessionsTest::BuildProfileSyncService)));
 
   syncer::ModelTypeSet preferred_types(syncer::SESSIONS, syncer::PROXY_TABS);
   GoogleServiceAuthError no_error(GoogleServiceAuthError::NONE);
