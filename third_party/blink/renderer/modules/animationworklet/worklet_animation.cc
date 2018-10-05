@@ -306,7 +306,6 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   if (play_state_ == Animation::kPending)
     return;
-  document_->GetWorkletAnimationController().AttachAnimation(*this);
 
   String failure_message;
   if (!CheckCanStart(&failure_message)) {
@@ -315,6 +314,7 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
     return;
   }
 
+  document_->GetWorkletAnimationController().AttachAnimation(*this);
   SetPlayState(Animation::kPending);
 
   for (auto& effect : effects_) {
@@ -416,6 +416,8 @@ void WorkletAnimation::SetStartTimeToNow() {
 }
 
 void WorkletAnimation::UpdateCompositingState() {
+  DCHECK(play_state_ != Animation::kIdle && play_state_ != Animation::kUnset);
+
   if (play_state_ == Animation::kPending) {
     String warning_message;
     DCHECK(CheckCanStart(&warning_message));
@@ -429,8 +431,14 @@ void WorkletAnimation::UpdateCompositingState() {
         kOtherMessageSource, kWarningMessageLevel, message));
     StartOnMain();
   } else if (play_state_ == Animation::kRunning) {
-    UpdateOnCompositor();
+    // TODO(majidvp): If keyframes have changed then it may be possible to now
+    // run the animation on compositor. The current logic does not allow this
+    // switch from main to compositor to happen.
+    if (!running_on_main_thread_)
+      UpdateOnCompositor();
   }
+  DCHECK(running_on_main_thread_ != !!compositor_animation_)
+      << "Active worklet animation should either run on main or compositor";
 }
 
 void WorkletAnimation::InvalidateCompositingState() {
