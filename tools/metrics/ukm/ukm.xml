@@ -1769,12 +1769,24 @@ be describing additional metrics about the same event.
       be zero. This score is taken from MediaEngagementService.
     </summary>
   </metric>
+  <metric name="Playbacks.AudioContextTotal">
+    <summary>
+      The total number of significant media playbacks on this origin that came
+      from WebAudio / AudioContext.
+    </summary>
+  </metric>
   <metric name="Playbacks.Delta">
     <summary>
       The number of significant media playbacks on this origin during this
       session (a visit to an origin on the same tab). A playback is determined
       significant if it meets certain criteria such as a video size of at least
       200x140px, is not muted, is playing, etc.
+    </summary>
+  </metric>
+  <metric name="Playbacks.MediaElementTotal">
+    <summary>
+      The total number of significant media playbacks on this origin that came
+      from media elements.
     </summary>
   </metric>
   <metric name="Playbacks.SecondsSinceLast">
