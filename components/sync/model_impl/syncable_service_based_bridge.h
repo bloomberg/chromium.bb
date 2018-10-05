@@ -58,6 +58,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       const EntityData& remote_data) const override;
   StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
+  size_t EstimateSyncOverheadMemoryUsage() const override;
 
  private:
   void OnStoreCreated(const base::Optional<ModelError>& error,

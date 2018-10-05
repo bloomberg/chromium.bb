@@ -1175,8 +1175,9 @@ size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
   memory_usage += EstimateMemoryUsage(model_type_state_);
   memory_usage += EstimateMemoryUsage(entities_);
   memory_usage += EstimateMemoryUsage(storage_key_to_tag_hash_);
-  // TODO(crbug.com/870624): Let bridges provide custom additional memory
-  // overhead, which is important for SyncableServiceBasedBridge.
+  if (bridge_) {
+    memory_usage += bridge_->EstimateSyncOverheadMemoryUsage();
+  }
   return memory_usage;
 }
 

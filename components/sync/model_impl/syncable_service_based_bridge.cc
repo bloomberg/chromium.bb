@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_change.h"
@@ -17,6 +18,7 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/persisted_entity_data.pb.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
 namespace {
@@ -379,6 +381,10 @@ SyncableServiceBasedBridge::ApplyStopSyncChanges(
   }
 
   return StopSyncResponse::kModelStillReadyToSync;
+}
+
+size_t SyncableServiceBasedBridge::EstimateSyncOverheadMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(in_memory_store_);
 }
 
 void SyncableServiceBasedBridge::OnStoreCreated(
