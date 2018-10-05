@@ -2894,6 +2894,120 @@ TEST_F(SplitViewTabDraggingTest, OverviewEndedOnWindowDrag) {
   EXPECT_TRUE(window1_layer > window2_layer);
 }
 
+// When tab dragging a window, the dragged window might need to merge back into
+// the source window when the drag ends. Tests the related functionalities.
+TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
+  UpdateDisplay("600x600");
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> source_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+
+  // 1. If splitview is not active and the dragged window is not the source
+  // window.
+  // a. Drag the window to less than half of the display height, and not in the
+  // snap preview area.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(300, 200));
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  source_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+
+  // b. Drag the window to more than half of the display height and not in the
+  // snap preview area.
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(300, 500));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+
+  // c. Drag the window to the snap preview area.
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(0, 200));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EndSplitView();
+
+  // d. The dragged window is already added into overview before drag ends:
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(300, 200));
+  dragged_window->SetProperty(ash::kIsShowingInOverviewKey, true);
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  dragged_window->ClearProperty(ash::kIsShowingInOverviewKey);
+
+  // 2. If splitview is active and the dragged window is not the source window.
+  // a. Drag the window to less than half of the display height, in the same
+  // split of the source window, and not in the snap preview area.
+  split_view_controller()->SnapWindow(source_window.get(),
+                                      SplitViewController::LEFT);
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(0, 200));
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EndSplitView();
+  source_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+
+  // b. Drag the window to less than half of the display height, in the
+  // different split of the source window, and not in the snap preview area.
+  split_view_controller()->SnapWindow(source_window.get(),
+                                      SplitViewController::LEFT);
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(500, 200));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EndSplitView();
+
+  // c. Drag the window to move a small distance, but is still in the different
+  // split of the source window, and not in the snap preview area.
+  split_view_controller()->SnapWindow(source_window.get(),
+                                      SplitViewController::LEFT);
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(500, 20));
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EndSplitView();
+
+  // d. The dragged window was added to overview before the drag ends.
+  split_view_controller()->SnapWindow(source_window.get(),
+                                      SplitViewController::LEFT);
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  DragWindowTo(resizer.get(), gfx::Point(0, 200));
+  dragged_window->SetProperty(ash::kIsShowingInOverviewKey, true);
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  dragged_window->ClearProperty(ash::kIsShowingInOverviewKey);
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)

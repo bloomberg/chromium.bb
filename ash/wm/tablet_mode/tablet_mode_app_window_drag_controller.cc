@@ -35,17 +35,17 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
 
  private:
   // TabletModeWindowDragDelegate:
-  void PrepareForDraggedWindow(const gfx::Point& location_in_screen) override {
+  void PrepareWindowDrag(const gfx::Point& location_in_screen) override {
     wm::GetWindowState(dragged_window_)
         ->CreateDragDetails(location_in_screen, HTCLIENT,
                             ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   }
-  void UpdateForDraggedWindow(const gfx::Point& location_in_screen) override {}
-  void EndingForDraggedWindow(
-      wm::WmToplevelWindowEventHandler::DragResult result,
-      const gfx::Point& location_in_screen) override {
+  void UpdateWindowDrag(const gfx::Point& location_in_screen) override {}
+  void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
+                        const gfx::Point& location_in_screen) override {
     wm::GetWindowState(dragged_window_)->DeleteDragDetails();
   }
+  void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragDelegate);
 };

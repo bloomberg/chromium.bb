@@ -17,6 +17,7 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -33,14 +34,6 @@ namespace {
 // has dragged the window to pass the |kIndicatorThresholdRatio| vertical
 // threshold.
 constexpr float kSourceWindowScale = 0.85;
-
-// Returns the window selector if overview mode is active, otherwise returns
-// nullptr.
-WindowSelector* GetWindowSelector() {
-  return Shell::Get()->window_selector_controller()->IsSelecting()
-             ? Shell::Get()->window_selector_controller()->window_selector()
-             : nullptr;
-}
 
 // The class to observe the source window's bounds change animation. It's used
 // to prevent the dragged window to merge back into the source window during
@@ -247,7 +240,7 @@ TabletModeBrowserWindowDragDelegate::TabletModeBrowserWindowDragDelegate() =
 TabletModeBrowserWindowDragDelegate::~TabletModeBrowserWindowDragDelegate() =
     default;
 
-void TabletModeBrowserWindowDragDelegate::PrepareForDraggedWindow(
+void TabletModeBrowserWindowDragDelegate::PrepareWindowDrag(
     const gfx::Point& location_in_screen) {
   DCHECK(dragged_window_);
 
@@ -255,7 +248,7 @@ void TabletModeBrowserWindowDragDelegate::PrepareForDraggedWindow(
   window_state->OnDragStarted(window_state->drag_details()->window_component);
 }
 
-void TabletModeBrowserWindowDragDelegate::UpdateForDraggedWindow(
+void TabletModeBrowserWindowDragDelegate::UpdateWindowDrag(
     const gfx::Point& location_in_screen) {
   DCHECK(dragged_window_);
 
@@ -263,7 +256,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateForDraggedWindow(
   UpdateSourceWindow(location_in_screen);
 }
 
-void TabletModeBrowserWindowDragDelegate::EndingForDraggedWindow(
+void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
     wm::WmToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
   if (result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS)
@@ -280,6 +273,11 @@ void TabletModeBrowserWindowDragDelegate::EndingForDraggedWindow(
         wm::GetWindowState(source_window));
   }
   windows_hider_.reset();
+}
+
+void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
+    const gfx::Point& location_in_screen) {
+  MergeBackToSourceWindowIfApplicable(location_in_screen);
 }
 
 bool TabletModeBrowserWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
@@ -299,8 +297,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
   if (!source_window || source_window == dragged_window_ ||
       source_window == split_view_controller_->left_window() ||
       source_window == split_view_controller_->right_window() ||
-      (GetWindowSelector() &&
-       GetWindowSelector()->IsWindowInOverview(source_window))) {
+      source_window->GetProperty(ash::kIsShowingInOverviewKey)) {
     return;
   }
 
@@ -345,6 +342,57 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
     settings.AddObserver(source_window_bounds_observer_.get());
     source_window->SetBounds(expected_bounds);
   }
+}
+
+void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
+    const gfx::Point& location_in_screen) {
+  // No need to merge back if we're not in tab dragging process.
+  if (!wm::IsDraggingTabs(dragged_window_))
+    return;
+
+  aura::Window* source_window =
+      dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+  // Do not merge back if there is no source window or the source window or
+  // the dragged window is currently in overview.
+  if (!source_window ||
+      source_window->GetProperty(ash::kIsShowingInOverviewKey) ||
+      dragged_window_->GetProperty(ash::kIsShowingInOverviewKey)) {
+    return;
+  }
+
+  // Do not merge back if the window has dragged farther than half of the screen
+  // height.
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
+  if (location_in_screen.y() >= work_area_bounds.CenterPoint().y())
+    return;
+
+  SplitViewController::SnapPosition desired_snap_position =
+      GetSnapPosition(location_in_screen);
+  // If splitscreen is not active, do not merge back if the dragged window is
+  // in the drag-to-snap preview area.
+  if (!split_view_controller_->IsSplitViewModeActive() &&
+      desired_snap_position != SplitViewController::NONE) {
+    return;
+  }
+
+  // If source window is currently showing in splitscreen, do not merge back if
+  // the dragged window has been dragged to the other side of the split.
+  if (split_view_controller_->IsSplitViewModeActive() &&
+      wm::GetWindowState(source_window)->IsSnapped()) {
+    if ((source_window == split_view_controller_->left_window() &&
+         desired_snap_position == SplitViewController::RIGHT) ||
+        (source_window == split_view_controller_->right_window() &&
+         desired_snap_position == SplitViewController::LEFT)) {
+      return;
+    }
+  }
+
+  // Arriving here we know the dragged window should merge back into its source
+  // window.
+  source_window->SetProperty(ash::kIsDeferredTabDraggingTargetWindowKey, true);
 }
 
 }  // namespace ash

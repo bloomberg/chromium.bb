@@ -24,11 +24,11 @@ class TabletModeBrowserWindowDragDelegate
   class WindowsHider;
 
   // TabletModeWindowDragDelegate:
-  void PrepareForDraggedWindow(const gfx::Point& location_in_screen) override;
-  void UpdateForDraggedWindow(const gfx::Point& location_in_screen) override;
-  void EndingForDraggedWindow(
-      wm::WmToplevelWindowEventHandler::DragResult result,
-      const gfx::Point& location_in_screen) override;
+  void PrepareWindowDrag(const gfx::Point& location_in_screen) override;
+  void UpdateWindowDrag(const gfx::Point& location_in_screen) override;
+  void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
+                        const gfx::Point& location_in_screen) override;
+  void EndedWindowDrag(const gfx::Point& location_in_screen) override;
   bool ShouldOpenOverviewWhenDragStarts() override;
 
   // Scales down the source window if the dragged window is dragged past the
@@ -36,6 +36,14 @@ class TabletModeBrowserWindowDragDelegate
   // is dragged back toward the top of the screen. |location_in_screen| is the
   // current drag location for the dragged window.
   void UpdateSourceWindow(const gfx::Point& location_in_screen);
+
+  // After drag ends, the dragged window might need to merge back into the
+  // source window if 1) the dragged window or the source window is not added to
+  // overview and 2) the dragged window has dragged farther than half of the
+  // screen height and 3) the dragged window is not in snap preview area and 4)
+  // the dragged window is not dragged to the other side of the split screen.
+  void MergeBackToSourceWindowIfApplicable(
+      const gfx::Point& location_in_screen);
 
   // It's used to hide all visible windows if the source window needs to be
   // scaled up/down during dragging a tab out of the source window. It also
