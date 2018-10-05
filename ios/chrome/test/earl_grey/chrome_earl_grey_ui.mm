@@ -111,6 +111,10 @@ id<GREYAction> ScrollDown() {
                                           ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
 
+  // Wait until activity indicator modal is cleared, meaning clearing browsing
+  // data has been finished.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   // Include sufficientlyVisible condition for the case of the clear browsing
   // dialog, which also has a "Done" button and is displayed over the history
   // panel.
