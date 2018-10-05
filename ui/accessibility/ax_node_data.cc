@@ -22,18 +22,18 @@ namespace ui {
 namespace {
 
 bool IsFlagSet(uint32_t bitfield, uint32_t flag) {
-  return (bitfield & (1 << flag)) != 0;
+  return 0 != (bitfield & (1 << flag));
 }
 
 uint32_t ModifyFlag(uint32_t bitfield, uint32_t flag, bool set) {
   return set ? (bitfield |= (1 << flag)) : (bitfield &= ~(1 << flag));
 }
 
-std::string StateBitfieldToString(uint32_t state_enum) {
+std::string StateBitfieldToString(uint32_t state) {
   std::string str;
   for (uint32_t i = static_cast<uint32_t>(ax::mojom::State::kNone) + 1;
        i <= static_cast<uint32_t>(ax::mojom::State::kMaxValue); ++i) {
-    if (IsFlagSet(state_enum, i))
+    if (IsFlagSet(state, i))
       str += " " +
              base::ToUpperASCII(ui::ToString(static_cast<ax::mojom::State>(i)));
   }
@@ -510,23 +510,16 @@ bool AXNodeData::HasState(ax::mojom::State state_enum) const {
   return IsFlagSet(state, static_cast<uint32_t>(state_enum));
 }
 
-bool AXNodeData::HasAction(ax::mojom::Action action) const {
-  return IsFlagSet(actions, static_cast<uint32_t>(action));
+bool AXNodeData::HasAction(ax::mojom::Action action_enum) const {
+  return IsFlagSet(actions, static_cast<uint32_t>(action_enum));
 }
 
-ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
+void AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_NE(state_enum, ax::mojom::State::kNone);
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), true);
-  return static_cast<ax::mojom::State>(state);
 }
 
-ax::mojom::State AXNodeData::RemoveState(ax::mojom::State state_enum) {
-  DCHECK_NE(state_enum, ax::mojom::State::kNone);
-  state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
-  return static_cast<ax::mojom::State>(state);
-}
-
-ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
+void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   switch (action_enum) {
     case ax::mojom::Action::kNone:
       NOTREACHED();
@@ -570,7 +563,11 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
   }
 
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
-  return static_cast<ax::mojom::Action>(actions);
+}
+
+void AXNodeData::RemoveState(ax::mojom::State state_enum) {
+  DCHECK_NE(state_enum, ax::mojom::State::kNone);
+  state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
 }
 
 std::string AXNodeData::ToString() const {
