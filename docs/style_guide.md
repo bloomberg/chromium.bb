@@ -9,6 +9,15 @@ C++11 language and library features are allowed in the Open Screen Library
 according to the
 [C++11 use in Chromium](https://chromium-cpp.appspot.com#core-whitelist) guidelines.
 
+## Open Screen Library Features
+
+- For public API functions that return values or errors, please return
+  [`ErrorOr<T>`](https://chromium.googlesource.com/openscreen/+/master/base/error.h).
+
+## Style Addenda
+
+- Prefer to omit braces for single-line if statements.
+
 ## Copy and Move Operators
 
 Use the following guidelines when deciding on copy and move semantics for
@@ -25,7 +34,12 @@ to declare the copy and move semantics of objects.  See
 [Stoustrop's C++ FAQ](http://www.stroustrup.com/C++11FAQ.html#default)
 for details on how to do that.
 
-## Disallowed styles and features
+## Noexcept
+
+We prefer to use `noexcept` on move constructors.  Although exceptions are not
+allowed, this declaration [enables STL optimizations](https://en.cppreference.com/w/cpp/language/noexcept_spec).
+
+## Disallowed Styles and Features
 
 Blink style is *not allowed* anywhere in the Open Screen Library.
 
