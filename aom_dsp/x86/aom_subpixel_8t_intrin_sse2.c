@@ -31,9 +31,6 @@ void aom_filter_block1d16_h4_sse2(const uint8_t *src_ptr,
   addFilterReg32 = _mm_set1_epi16(32);
   filtersReg = _mm_loadu_si128((const __m128i *)filter);
   filtersReg = _mm_srai_epi16(filtersReg, 1);
-  // converting the 16 bit (short) to 8 bit (byte) and have the same data
-  // in both lanes of 128 bit register.
-  // filtersReg = _mm_packs_epi16(filtersReg, filtersReg);
 
   // coeffs 0 1 0 1 2 3 2 3
   const __m128i tmp_0 = _mm_unpacklo_epi32(filtersReg, filtersReg);
@@ -127,8 +124,6 @@ void aom_filter_block1d16_v4_sse2(const uint8_t *src_ptr, ptrdiff_t src_pitch,
 
   addFilterReg32 = _mm_set1_epi16(32);
   filtersReg = _mm_loadu_si128((const __m128i *)filter);
-  // converting the 16 bit (short) to  8 bit (byte) and have the
-  // same data in both lanes of 128 bit register.
   filtersReg = _mm_srai_epi16(filtersReg, 1);
 
   // coeffs 0 1 0 1 2 3 2 3
@@ -139,7 +134,7 @@ void aom_filter_block1d16_v4_sse2(const uint8_t *src_ptr, ptrdiff_t src_pitch,
   secondFilters = _mm_unpackhi_epi64(tmp0, tmp0);  // coeffs 2 3 2 3 2 3 2 3
   thirdFilters = _mm_unpacklo_epi64(tmp1, tmp1);   // coeffs 4 5 4 5 4 5 4 5
 
-  // multiple the size of the source and destination stride by two
+  // multiply the size of the source and destination stride by two
   src_stride = src_pitch << 1;
   dst_stride = out_pitch << 1;
 

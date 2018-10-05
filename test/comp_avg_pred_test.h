@@ -215,7 +215,8 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
     jnt_comp_params.use_jnt_comp_avg = 1;
     int sub_x_q3, sub_y_q3;
     int subpel_search;
-    for (subpel_search = 1; subpel_search <= 2; ++subpel_search) {
+    for (subpel_search = USE_4_TAPS; subpel_search <= USE_8_TAPS;
+         ++subpel_search) {
       for (sub_x_q3 = 0; sub_x_q3 < 8; ++sub_x_q3) {
         for (sub_y_q3 = 0; sub_y_q3 < 8; ++sub_y_q3) {
           for (int ii = 0; ii < 2; ii++) {
@@ -283,7 +284,7 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
     const int num_loops = 1000000000 / (in_w + in_h);
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
-    int subpel_search = 2;  // set to 1 to test 4-tap filter.
+    int subpel_search = USE_8_TAPS;  // set to USE_4_TAPS to test 4-tap filter.
 
     for (int i = 0; i < num_loops; ++i)
       aom_jnt_comp_avg_upsampled_pred_c(NULL, NULL, 0, 0, NULL, output, pred8,
