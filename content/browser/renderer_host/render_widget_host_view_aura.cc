@@ -2116,7 +2116,7 @@ void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
 
   if (host()->delegate()) {
     host()->delegate()->SetTopControlsShownRatio(
-        metadata.top_controls_shown_ratio);
+        host(), metadata.top_controls_shown_ratio);
   }
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),

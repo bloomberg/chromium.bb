@@ -2143,9 +2143,17 @@ ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
   return last_committed_source_id_;
 }
 
-void WebContentsImpl::SetTopControlsShownRatio(float ratio) {
-  if (delegate_)
-    delegate_->SetTopControlsShownRatio(this, ratio);
+void WebContentsImpl::SetTopControlsShownRatio(
+    RenderWidgetHostImpl* render_widget_host,
+    float ratio) {
+  if (!delegate_)
+    return;
+
+  RenderFrameHostImpl* rfh = GetMainFrame();
+  if (!rfh || render_widget_host != rfh->GetRenderWidgetHost())
+    return;
+
+  delegate_->SetTopControlsShownRatio(this, ratio);
 }
 
 bool WebContentsImpl::DoBrowserControlsShrinkRendererSize() const {
