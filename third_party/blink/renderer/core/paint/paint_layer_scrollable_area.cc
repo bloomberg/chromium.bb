@@ -158,7 +158,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
-  DCHECK(HasBeenDisposed());
+  CHECK(HasBeenDisposed());
 }
 
 void PaintLayerScrollableArea::DidScroll(const FloatPoint& position) {
