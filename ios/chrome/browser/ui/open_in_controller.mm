@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -61,6 +62,11 @@ const CGFloat kOverlayedViewLabelWidthPercentage = 0.7;
 
 // Bottom margin for the label displayed on the |overlayedView_|.
 const CGFloat kOverlayedViewLabelBottomMargin = 60;
+
+// Logs the result of the download process after the user taps "open in" button.
+void LogOpenInDownloadResult(const OpenInDownloadResult result) {
+  UMA_HISTOGRAM_ENUMERATION("IOS.OpenIn.DownloadResult", result);
+}
 
 // Returns true if the file located at |url| is a valid PDF file.
 bool HasValidPdfAtUrl(NSURL* _Nullable url) {
@@ -599,19 +605,23 @@ class OpenInControllerBridge
   if (!filePath.empty())
     fileURL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
   if (!downloadCanceled_ && HasValidPdfAtUrl(fileURL)) {
+    LogOpenInDownloadResult(OpenInDownloadResult::kSucceeded);
     [self presentOpenInMenuForFileAtURL:fileURL];
     return;
   }
   sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
                                    [self removeDocumentAtPath:fileURL.path];
                                  }));
+  OpenInDownloadResult download_result = OpenInDownloadResult::kCanceled;
   if (!downloadCanceled_) {
+    download_result = OpenInDownloadResult::kFailed;
     if (IsIPadIdiom())
       [self hideOpenInToolbar];
     [self removeOverlayedView];
     [self showErrorWithMessage:l10n_util::GetNSStringWithFixup(
                                    IDS_IOS_OPEN_IN_FILE_DOWNLOAD_FAILED)];
   }
+  LogOpenInDownloadResult(download_result);
 }
 
 #pragma mark -
