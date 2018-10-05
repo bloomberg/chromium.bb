@@ -2028,11 +2028,7 @@ config("optimize_max") {
     if (is_win) {
       # Favor speed over size, /O2 must be before the common flags. The GYP
       # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
-      if (optimize_for_fuzzing) {
-        cflags = [ "/O1" ] + common_optimize_on_cflags
-      } else {
-        cflags = [ "/O2" ] + common_optimize_on_cflags
-      }
+      cflags = [ "/O2" ] + common_optimize_on_cflags
 
       if (is_official_build) {
         if (!is_clang) {
@@ -2079,11 +2075,7 @@ config("optimize_speed") {
     if (is_win) {
       # Favor speed over size, /O2 must be before the common flags. The GYP
       # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
-      if (optimize_for_fuzzing) {
-        cflags = [ "/O1" ] + common_optimize_on_cflags
-      } else {
-        cflags = [ "/O2" ] + common_optimize_on_cflags
-      }
+      cflags = [ "/O2" ] + common_optimize_on_cflags
 
       # TODO(thakis): Remove is_clang here, https://crbug.com/598772
       if (is_official_build && !is_clang) {
@@ -2106,11 +2098,7 @@ config("optimize_speed") {
 }
 
 config("optimize_fuzzing") {
-  if (is_win) {
-    cflags = [ "/O1" ] + common_optimize_on_cflags
-  } else {
-    cflags = [ "-O1" ] + common_optimize_on_cflags
-  }
+  cflags = [ "-O1" ] + common_optimize_on_cflags
   ldflags = common_optimize_on_ldflags
   visibility = [ ":default_optimization" ]
 }
@@ -2125,6 +2113,8 @@ config("default_optimization") {
   } else if (is_debug) {
     configs = [ ":no_optimize" ]
   } else if (optimize_for_fuzzing) {
+    assert(!is_win, "Fuzzing optimize level not supported on Windows")
+
     # Coverage build is quite slow. Using "optimize_for_fuzzing" makes it even
     # slower as it uses "-O1" instead of "-O3". Prevent that from happening.
     assert(!use_clang_coverage,
