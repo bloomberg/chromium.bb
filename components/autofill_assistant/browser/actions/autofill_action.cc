@@ -188,7 +188,6 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
   }
 
   if (guid.empty()) {
-    // User selected 'Fill manually'.
     delegate->StopCurrentScript(fill_form_message_);
     EndAction(/* successful= */ true);
     return;

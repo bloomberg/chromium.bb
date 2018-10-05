@@ -128,7 +128,9 @@ void UiControllerAndroid::OnAddressSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jaddress_guid) {
-  DCHECK(address_or_card_callback_);
+  if (!address_or_card_callback_)  // possibly duplicate call
+    return;
+
   std::string guid;
   base::android::ConvertJavaStringToUTF8(env, jaddress_guid, &guid);
   std::move(address_or_card_callback_).Run(guid);
@@ -138,7 +140,9 @@ void UiControllerAndroid::OnCardSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jcard_guid) {
-  DCHECK(address_or_card_callback_);
+  if (!address_or_card_callback_)  // possibly duplicate call
+    return;
+
   std::string guid;
   base::android::ConvertJavaStringToUTF8(env, jcard_guid, &guid);
   std::move(address_or_card_callback_).Run(guid);

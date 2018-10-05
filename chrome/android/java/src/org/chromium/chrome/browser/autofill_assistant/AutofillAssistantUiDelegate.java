@@ -165,8 +165,10 @@ class AutofillAssistantUiDelegate {
         for (int i = 0; i < scriptHandles.size(); i++) {
             ScriptHandle scriptHandle = scriptHandles.get(i);
             TextView chipView = createChipView(scriptHandle.getName());
-            chipView.setOnClickListener(
-                    (unusedView) -> mClient.onScriptSelected(scriptHandle.getPath()));
+            chipView.setOnClickListener((unusedView) -> {
+                mChipsViewContainer.removeAllViews();
+                mClient.onScriptSelected(scriptHandle.getPath());
+            });
             mChipsViewContainer.addView(chipView);
         }
 
@@ -204,16 +206,21 @@ class AutofillAssistantUiDelegate {
      * @param profiles List of profiles to show.
      */
     public void showProfiles(ArrayList<AutofillProfile> profiles) {
-        mChipsViewContainer.removeAllViews();
+        if (profiles.isEmpty()) {
+            mClient.onAddressSelected("");
+            return;
+        }
 
-        if (profiles.isEmpty()) return;
+        mChipsViewContainer.removeAllViews();
 
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             // TODO(crbug.com/806868): Show more information than the street.
             TextView chipView = createChipView(profile.getStreetAddress());
-            chipView.setOnClickListener(
-                    (unusedView) -> mClient.onAddressSelected(profile.getGUID()));
+            chipView.setOnClickListener((unusedView) -> {
+                mChipsViewContainer.removeAllViews();
+                mClient.onAddressSelected(profile.getGUID());
+            });
             mChipsViewContainer.addView(chipView);
         }
 
@@ -226,15 +233,21 @@ class AutofillAssistantUiDelegate {
      * @param cards List of cards to show.
      */
     public void showCards(ArrayList<CreditCard> cards) {
-        mChipsViewContainer.removeAllViews();
+        if (cards.isEmpty()) {
+            mClient.onCardSelected("");
+            return;
+        }
 
-        if (cards.isEmpty()) return;
+        mChipsViewContainer.removeAllViews();
 
         for (int i = 0; i < cards.size(); i++) {
             CreditCard card = cards.get(i);
             // TODO(crbug.com/806868): Show more information than the card number.
             TextView chipView = createChipView(card.getObfuscatedNumber());
-            chipView.setOnClickListener((unusedView) -> mClient.onCardSelected(card.getGUID()));
+            chipView.setOnClickListener((unusedView) -> {
+                mChipsViewContainer.removeAllViews();
+                mClient.onCardSelected(card.getGUID());
+            });
             mChipsViewContainer.addView(chipView);
         }
 
