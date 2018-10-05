@@ -911,34 +911,26 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
              context.visited_match_type == kVisitedMatchEnabled;
     case CSSSelector::kPseudoDrag:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByDrag();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByDrag();
-        }
       }
       return element.IsDragged();
     case CSSSelector::kPseudoFocus:
-      if (mode_ == kResolvingStyle && !context.in_rightmost_compound) {
-        element_style_->SetUnique();
+      if (mode_ == kResolvingStyle && !context.in_rightmost_compound)
         element.SetChildrenOrSiblingsAffectedByFocus();
-      }
       return MatchesFocusPseudoClass(element);
     case CSSSelector::kPseudoFocusVisible:
-      if (mode_ == kResolvingStyle && !context.in_rightmost_compound) {
-        element_style_->SetUnique();
+      if (mode_ == kResolvingStyle && !context.in_rightmost_compound)
         element.SetChildrenOrSiblingsAffectedByFocusVisible();
-      }
       return MatchesFocusVisiblePseudoClass(element);
     case CSSSelector::kPseudoFocusWithin:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByFocusWithin();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByFocusWithin();
-        }
       }
       probe::forcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
                               &force_pseudo_state);
@@ -947,12 +939,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.HasFocusWithin();
     case CSSSelector::kPseudoHover:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByHover();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByHover();
-        }
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
@@ -963,12 +953,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.IsHovered();
     case CSSSelector::kPseudoActive:
       if (mode_ == kResolvingStyle) {
-        if (context.in_rightmost_compound) {
+        if (context.in_rightmost_compound)
           element_style_->SetAffectedByActive();
-        } else {
-          element_style_->SetUnique();
+        else
           element.SetChildrenOrSiblingsAffectedByActive();
-        }
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
