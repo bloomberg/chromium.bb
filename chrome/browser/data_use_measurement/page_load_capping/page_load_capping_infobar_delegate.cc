@@ -128,9 +128,9 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
     }
 
     RecordInteractionUMA(InfoBarInteraction::kDismissedByNetworkStopped);
-    auto* infobar_manager = infobar()->owner();
+
     // |this| will be gone after this call.
-    infobar_manager->RemoveInfoBar(infobar());
+    infobar()->RemoveSelf();
   }
 
   // |pause_callback| will either pause subresource loading or resume it based
