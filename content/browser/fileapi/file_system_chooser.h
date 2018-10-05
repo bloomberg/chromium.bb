@@ -25,10 +25,12 @@ class FileSystemChooser : public ui::SelectFileDialog::Listener {
 
   static void CreateAndShow(int render_process_id,
                             int frame_id,
+                            blink::mojom::ChooseFileSystemEntryType type,
                             ResultCallback callback,
                             scoped_refptr<base::TaskRunner> callback_runner);
 
   FileSystemChooser(int render_process_id,
+                    blink::mojom::ChooseFileSystemEntryType type,
                     ResultCallback callback,
                     scoped_refptr<base::TaskRunner> callback_runner);
 
@@ -46,6 +48,7 @@ class FileSystemChooser : public ui::SelectFileDialog::Listener {
   int render_process_id_;
   ResultCallback callback_;
   scoped_refptr<base::TaskRunner> callback_runner_;
+  blink::mojom::ChooseFileSystemEntryType type_;
 
   scoped_refptr<ui::SelectFileDialog> dialog_;
 };
