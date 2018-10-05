@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -107,7 +108,7 @@ void PruneSyncChanges(const SyncDataMap* sync_data,
 // Sync and TemplateURLs that were initially local, assuming |sync_data| is the
 // |initial_sync_data| parameter.
 bool IsFromSync(const TemplateURL* turl, const SyncDataMap& sync_data) {
-  return !!sync_data.count(turl->sync_guid());
+  return base::ContainsKey(sync_data, turl->sync_guid());
 }
 
 // Log the number of instances of a keyword that exist, with zero or more

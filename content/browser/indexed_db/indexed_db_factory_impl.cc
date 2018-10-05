@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -605,11 +606,12 @@ void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
 
 bool IndexedDBFactoryImpl::IsDatabaseOpen(const Origin& origin,
                                           const base::string16& name) const {
-  return !!database_map_.count(IndexedDBDatabase::Identifier(origin, name));
+  return base::ContainsKey(database_map_,
+                           IndexedDBDatabase::Identifier(origin, name));
 }
 
 bool IndexedDBFactoryImpl::IsBackingStoreOpen(const Origin& origin) const {
-  return backing_store_map_.find(origin) != backing_store_map_.end();
+  return base::ContainsKey(backing_store_map_, origin);
 }
 
 bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
