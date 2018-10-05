@@ -62,6 +62,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -203,16 +204,20 @@ class PreviewsInfoBarDelegateUnitTest
         base::MessageLoopCurrent::Get()->task_runner(),
         base::MessageLoopCurrent::Get()->task_runner(),
         base::DefaultClock::GetInstance());
+    test_network_quality_tracker_ =
+        std::make_unique<network::TestNetworkQualityTracker>();
     previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
         previews_decider_impl_.get(),
         base::MessageLoopCurrent::Get()->task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
         base::BindRepeating(&IsPreviewsEnabled), std::move(previews_logger),
-        blacklist::BlacklistData::AllowedTypesAndVersions());
+        blacklist::BlacklistData::AllowedTypesAndVersions(),
+        test_network_quality_tracker_.get());
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
+    previews_ui_service_.reset();
     drp_test_context_->DestroySettings();
     ChromeRenderViewHostTestHarness::TearDown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -298,6 +303,7 @@ class PreviewsInfoBarDelegateUnitTest
   TestPreviewsLogger* previews_logger_;
   std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
+  std::unique_ptr<network::NetworkQualityTracker> test_network_quality_tracker_;
 };
 
 // TODO(crbug/782740): Test temporarily disabled on Windows because it crashes

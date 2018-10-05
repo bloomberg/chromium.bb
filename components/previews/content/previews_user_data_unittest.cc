@@ -9,17 +9,17 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/supports_user_data.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace previews {
 
 namespace {
+
+struct TestSupportsUserData : public base::SupportsUserData {};
 
 class PreviewsUserDataTest : public testing::Test {
  public:
@@ -36,19 +36,16 @@ TEST_F(PreviewsUserDataTest, TestConstructor) {
   EXPECT_EQ(id, data->page_id());
 }
 
-TEST_F(PreviewsUserDataTest, AddToURLRequest) {
-  std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
-  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  PreviewsUserData* data = PreviewsUserData::GetData(*fake_request);
+TEST_F(PreviewsUserDataTest, AddToSupportsUserData) {
+  TestSupportsUserData owner;
+  PreviewsUserData* data = PreviewsUserData::GetData(owner);
   EXPECT_FALSE(data);
 
-  data = PreviewsUserData::Create(fake_request.get(), 1u);
+  data = PreviewsUserData::Create(&owner, 1u);
   EXPECT_TRUE(data);
-  EXPECT_EQ(data, PreviewsUserData::GetData(*fake_request));
+  EXPECT_EQ(data, PreviewsUserData::GetData(owner));
 
-  EXPECT_EQ(data, PreviewsUserData::Create(fake_request.get(), 1u));
+  EXPECT_EQ(data, PreviewsUserData::Create(&owner, 1u));
 }
 
 TEST_F(PreviewsUserDataTest, DeepCopy) {

@@ -503,56 +503,46 @@ TEST_F(ContentLoFiDeciderTest, DetermineCommittedServerPreviewsStateLitePage) {
   content::PreviewsState enabled_previews =
       content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
       content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
-  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false /* https */, enabled_previews);
 
   // Add DataReductionProxyData for LitePage to URLRequest.
-  data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
-      data_reduction_proxy::DataReductionProxyData::GetDataAndCreateIfNecessary(
-          request.get());
-  data_reduction_proxy_data->set_used_data_reduction_proxy(true);
-  data_reduction_proxy_data->set_lite_page_received(true);
-  data_reduction_proxy_data->set_lofi_policy_received(false);
+  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
+  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
+  data_reduction_proxy_data.set_lite_page_received(true);
+  data_reduction_proxy_data.set_lofi_policy_received(false);
 
   // Verify selects LitePage bit but doesn't touch client-only NoScript bit.
   EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
             ContentLoFiDecider::DetermineCommittedServerPreviewsState(
-                *request, enabled_previews));
+                &data_reduction_proxy_data, enabled_previews));
 }
 
 TEST_F(ContentLoFiDeciderTest, DetermineCommittedServerPreviewsStateLoFi) {
   content::PreviewsState enabled_previews =
       content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
       content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
-  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false /* https */, enabled_previews);
 
   // Add DataReductionProxyData for LitePage to URLRequest.
-  data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
-      data_reduction_proxy::DataReductionProxyData::GetDataAndCreateIfNecessary(
-          request.get());
-  data_reduction_proxy_data->set_used_data_reduction_proxy(true);
-  data_reduction_proxy_data->set_lite_page_received(false);
-  data_reduction_proxy_data->set_lofi_policy_received(true);
+  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
+  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
+  data_reduction_proxy_data.set_lite_page_received(false);
+  data_reduction_proxy_data.set_lofi_policy_received(true);
 
   // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
   EXPECT_EQ(
       content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
       ContentLoFiDecider::DetermineCommittedServerPreviewsState(
-          *request, enabled_previews));
+          &data_reduction_proxy_data, enabled_previews));
 }
 
 TEST_F(ContentLoFiDeciderTest, DetermineCommittedServerPreviewsStateNoProxy) {
   content::PreviewsState enabled_previews =
       content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
       content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
-  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false /* https */, enabled_previews);
 
   // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
   EXPECT_EQ(content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
             ContentLoFiDecider::DetermineCommittedServerPreviewsState(
-                *request, enabled_previews));
+                nullptr, enabled_previews));
 }
 
 }  // namespace data_reduction_proxy

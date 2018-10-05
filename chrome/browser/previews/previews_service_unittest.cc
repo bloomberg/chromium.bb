@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -72,6 +73,7 @@ class PreviewsServiceTest : public testing::Test {
       : field_trial_list_(nullptr), scoped_feature_list_() {}
 
   void SetUp() override {
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>();
 
     service_ = std::make_unique<PreviewsService>(nullptr);
@@ -95,6 +97,7 @@ class PreviewsServiceTest : public testing::Test {
   }
 
  private:
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   content::TestBrowserThreadBundle threads_;
   base::FieldTrialList field_trial_list_;
   std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;

@@ -698,26 +698,31 @@ ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
   previews::PreviewsDeciderImpl* previews_decider_impl =
       io_data->previews_decider_impl();
   if (data_reduction_proxy_io_data && previews_decider_impl) {
-    previews::PreviewsUserData::Create(url_request,
-                                       previews_decider_impl->GeneratePageId());
+    bool is_reload = (url_request->load_flags() &
+                      (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE));
+
+    previews::PreviewsUserData* previews_data =
+        previews::PreviewsUserData::Create(
+            url_request, previews_decider_impl->GeneratePageId());
+
     if (url_request->url().SchemeIsHTTPOrHTTPS() &&
         previews_decider_impl->ShouldAllowPreviewAtECT(
-            *url_request, previews::PreviewsType::LITE_PAGE,
+            previews_data, url_request->url(), is_reload,
+            previews::PreviewsType::LITE_PAGE,
             net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
             true) &&
         previews_decider_impl->ShouldAllowPreviewAtECT(
-            *url_request, previews::PreviewsType::LOFI,
-            net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
-            true)) {
+            previews_data, url_request->url(), is_reload,
+            previews::PreviewsType::LOFI, net::EFFECTIVE_CONNECTION_TYPE_4G,
+            std::vector<std::string>(), true)) {
       previews_state |= content::SERVER_LOFI_ON;
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }
 
     // Check for enabled client-side previews if data saver is enabled.
-    if (data_reduction_proxy_io_data->IsEnabled()) {
-      previews_state |= previews::DetermineEnabledClientPreviewsState(
-          *url_request, previews_decider_impl);
-    }
+    previews_state |= previews::DetermineEnabledClientPreviewsState(
+        previews_data, url_request->url(), is_reload,
+        data_reduction_proxy_io_data->IsEnabled(), previews_decider_impl);
   }
 
   if (previews_state == content::PREVIEWS_UNSPECIFIED)
@@ -770,9 +775,16 @@ ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
   if (!previews::HasEnabledPreviews(initial_state))
     return content::PREVIEWS_OFF;
 
+  DCHECK_EQ(
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      content::ResourceRequestInfo::ForRequest(request)->GetResourceType());
+
+  data_reduction_proxy::DataReductionProxyData* drp_data =
+      data_reduction_proxy::DataReductionProxyData::GetData(*request);
+
   content::PreviewsState previews_state =
       data_reduction_proxy::ContentLoFiDecider::
-          DetermineCommittedServerPreviewsState(*request, initial_state);
+          DetermineCommittedServerPreviewsState(drp_data, initial_state);
 
   // TODO(crbug.com/842233): This should be removed in the previews s13n work.
   if (PreviewsLitePageNavigationThrottle::GetOriginalURL(
@@ -780,6 +792,9 @@ ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
     previews_state = previews_state & content::LITE_PAGE_REDIRECT_ON;
   }
 
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(*request);
+
   return previews::DetermineCommittedClientPreviewsState(
-      *request, previews_state, previews_decider);
+      previews_user_data, request->url(), previews_state, previews_decider);
 }

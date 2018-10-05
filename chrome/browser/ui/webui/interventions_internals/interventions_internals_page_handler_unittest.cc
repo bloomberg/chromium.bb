@@ -41,6 +41,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -213,15 +214,18 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
 // Mocked TestPreviewsService for testing InterventionsInternalsPageHandler.
 class TestPreviewsUIService : public previews::PreviewsUIService {
  public:
-  TestPreviewsUIService(TestPreviewsDeciderImpl* previews_decider_impl,
-                        std::unique_ptr<previews::PreviewsLogger> logger)
+  TestPreviewsUIService(
+      TestPreviewsDeciderImpl* previews_decider_impl,
+      std::unique_ptr<previews::PreviewsLogger> logger,
+      network::TestNetworkQualityTracker* test_network_quality_tracker)
       : PreviewsUIService(previews_decider_impl,
                           nullptr, /* io_task_runner */
                           nullptr, /* previews_opt_out_store */
                           nullptr, /* previews_opt_guide */
                           base::Bind(&MockedPreviewsIsEnabled),
                           std::move(logger),
-                          blacklist::BlacklistData::AllowedTypesAndVersions()),
+                          blacklist::BlacklistData::AllowedTypesAndVersions(),
+                          test_network_quality_tracker),
         blacklist_ignored_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -250,8 +254,8 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     std::unique_ptr<TestPreviewsLogger> logger =
         std::make_unique<TestPreviewsLogger>();
     logger_ = logger.get();
-    previews_ui_service_ =
-        std::make_unique<TestPreviewsUIService>(&io_data, std::move(logger));
+    previews_ui_service_ = std::make_unique<TestPreviewsUIService>(
+        &io_data, std::move(logger), &test_network_quality_tracker_);
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
@@ -278,6 +282,7 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   TestingProfileManager profile_manager_;
 
   TestPreviewsLogger* logger_;
+  network::TestNetworkQualityTracker test_network_quality_tracker_;
   std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
 
   // InterventionsInternalPageHandler's variables.
