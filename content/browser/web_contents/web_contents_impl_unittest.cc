@@ -2506,28 +2506,25 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 // Test that if a pending contents is deleted before it is shown, we don't
 // crash.
 TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
-  std::unique_ptr<WebContentsImpl> other_contents(
-      static_cast<WebContentsImpl*>(CreateTestWebContents().release()));
-  content::TestWebContents* raw_other_contents =
-      static_cast<TestWebContents*>(other_contents.get());
+  auto other_contents = base::WrapUnique(
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
+  content::TestWebContents* test_web_contents = other_contents.get();
   contents()->AddPendingContents(std::move(other_contents));
   RenderWidgetHost* widget =
-      raw_other_contents->GetMainFrame()->GetRenderWidgetHost();
+      test_web_contents->GetMainFrame()->GetRenderWidgetHost();
   int process_id = widget->GetProcess()->GetID();
   int widget_id = widget->GetRoutingID();
 
   // TODO(erikchen): Fix ownership semantics of WebContents. Nothing should be
   // able to delete it beside from the owner. https://crbug.com/832879.
-  delete raw_other_contents;
+  delete test_web_contents;
   EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));
 }
 
 TEST_F(WebContentsImplTest, PendingContentsShown) {
-  std::unique_ptr<WebContents> other_contents(
-      static_cast<WebContents*>(CreateTestWebContents().release()));
-  content::WebContents* raw_other_contents = other_contents.get();
-  content::TestWebContents* test_web_contents =
-      static_cast<content::TestWebContents*>(other_contents.get());
+  auto other_contents = base::WrapUnique(
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
+  content::TestWebContents* test_web_contents = other_contents.get();
   contents()->AddPendingContents(std::move(other_contents));
 
   RenderWidgetHost* widget =
@@ -2536,7 +2533,7 @@ TEST_F(WebContentsImplTest, PendingContentsShown) {
   int widget_id = widget->GetRoutingID();
 
   // The first call to GetCreatedWindow pops it off the pending list.
-  EXPECT_EQ(raw_other_contents,
+  EXPECT_EQ(test_web_contents,
             contents()->GetCreatedWindow(process_id, widget_id).get());
   // A second call should return nullptr, verifying that it's been forgotten.
   EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));

@@ -1319,8 +1319,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Finds the new WebContentsImpl by |main_frame_widget_route_id|, initializes
   // it for renderer-initiated creation, and returns it. Note that this can only
   // be called once as this call also removes it from the internal map.
-  std::unique_ptr<WebContents> GetCreatedWindow(int process_id,
-                                                int main_frame_widget_route_id);
+  std::unique_ptr<WebContentsImpl> GetCreatedWindow(
+      int process_id,
+      int main_frame_widget_route_id);
 
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);
@@ -1444,7 +1445,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Tracks created WebContentsImpl objects that have not been shown yet. They
   // are identified by the process ID and routing ID passed to CreateNewWindow.
-  std::map<GlobalRoutingID, std::unique_ptr<WebContents>> pending_contents_;
+  std::map<GlobalRoutingID, std::unique_ptr<WebContentsImpl>> pending_contents_;
 
   // This map holds widgets that were created on behalf of the renderer but
   // haven't been shown yet.

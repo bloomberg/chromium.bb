@@ -132,7 +132,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   }
 
   // Allows us to simulate that a contents was created via CreateNewWindow.
-  void AddPendingContents(std::unique_ptr<WebContents> contents);
+  void AddPendingContents(std::unique_ptr<WebContentsImpl> contents);
 
   // Establish expected arguments for |SetHistoryOffsetAndLength()|. When
   // |SetHistoryOffsetAndLength()| is called, the arguments are compared
