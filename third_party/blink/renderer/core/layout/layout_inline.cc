@@ -999,6 +999,10 @@ bool LayoutInline::HitTestCulledInline(
   Region region_result;
   HitTestCulledInlinesGeneratorContext context(region_result,
                                                adjusted_location);
+
+  // NG generates purely physical rectangles here, while legacy sets the block
+  // offset on the rectangles relatively to the block-start. NG is doing the
+  // right thing. Legacy is wrong.
   if (container_fragment) {
     DCHECK(EnclosingNGBlockFlow());
     DCHECK(container_fragment->IsDescendantOfNotSelf(
