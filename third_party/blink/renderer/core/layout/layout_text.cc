@@ -1559,15 +1559,18 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
 }
 
 FloatPoint LayoutText::FirstRunOrigin() const {
-  return FloatPoint(FirstRunX(), FirstRunY());
-}
-
-float LayoutText::FirstRunX() const {
-  return FirstTextBox() ? FirstTextBox()->X().ToFloat() : 0;
-}
-
-float LayoutText::FirstRunY() const {
-  return FirstTextBox() ? FirstTextBox()->Y().ToFloat() : 0;
+  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
+    LayoutPoint origin = fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
+      LayoutRect line_box_rect(origin, fragment->Size().ToLayoutSize());
+      ContainingBlock()->FlipForWritingMode(line_box_rect);
+      return FloatPoint(line_box_rect.Location());
+    }
+    return FloatPoint(origin);
+  }
+  if (const auto* text_box = FirstTextBox())
+    return FloatPoint(text_box->Location());
+  return FloatPoint();
 }
 
 bool LayoutText::CanOptimizeSetText() const {
@@ -2396,19 +2399,7 @@ void LayoutText::InvalidateDisplayItemClients(
 // the first run's x and y, but that would involve updating many test results.
 LayoutRect LayoutText::DebugRect() const {
   IntRect lines_box = EnclosingIntRect(LinesBoundingBox());
-  FloatPoint first_run_offset;
-  if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragment()) {
-    const auto fragments =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    if (fragments.size()) {
-      const auto& child = fragments[0];
-      first_run_offset = {child.offset_to_container_box.left.ToFloat(),
-                          child.offset_to_container_box.top.ToFloat()};
-    }
-  } else {
-    first_run_offset = {FirstRunX(), FirstRunY()};
-  }
+  FloatPoint first_run_offset = FirstRunOrigin();
   LayoutRect rect =
       LayoutRect(IntRect(first_run_offset.X(), first_run_offset.Y(),
                          lines_box.Width(), lines_box.Height()));

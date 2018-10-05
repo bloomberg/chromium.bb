@@ -187,8 +187,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   LayoutRect VisualOverflowRect() const;
 
   FloatPoint FirstRunOrigin() const;
-  float FirstRunX() const;
-  float FirstRunY() const;
 
   virtual void SetText(scoped_refptr<StringImpl>,
                        bool force = false,
