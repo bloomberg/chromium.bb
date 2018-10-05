@@ -23,6 +23,9 @@ class TestAuditNonBlinkUsageTest(unittest.TestCase):
                 self.assertIsInstance(entry['allowed'], self._REGEXP_CLASS)
             if 'disallowed' in entry:
                 self.assertIsInstance(entry['disallowed'], self._REGEXP_CLASS)
+            for match, advice in entry.get('advice', []):
+                self.assertIsInstance(match, self._REGEXP_CLASS)
+                self.assertIsInstance(advice, str)
 
 
 if __name__ == '__main__':

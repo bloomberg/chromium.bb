@@ -166,9 +166,12 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
         if errors:
             errors = audit_non_blink_usage.check(path, f.ChangedContents())
             if errors:
-                for line_number, disallowed_identifier in errors:
-                    results.append(output_api.PresubmitError(
-                        '%s:%d uses disallowed identifier %s' % (path, line_number, disallowed_identifier)))
+                for error in errors:
+                    msg = '%s:%d uses disallowed identifier %s' % (
+                        path, error.line, error.identifier)
+                    if error.advice:
+                        msg += ". Advice: %s" % "\n".join(error.advice)
+                    results.append(output_api.PresubmitError(msg))
     return results
 
 
