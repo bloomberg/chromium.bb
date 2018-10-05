@@ -406,12 +406,12 @@ bool KeyboardController::IsKeyboardOverscrollEnabled() const {
   if (enabled() && !IsOverscrollAllowed())
     return false;
 
-  // If overscroll enabled override is set, use it instead. Currently
+  // If overscroll enabled behavior is set, use it instead. Currently
   // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
-  if (keyboard_config_.overscroll_override !=
-      mojom::KeyboardOverscrollOverride::kNone) {
-    return keyboard_config_.overscroll_override ==
-           mojom::KeyboardOverscrollOverride::kEnabled;
+  if (keyboard_config_.overscroll_behavior !=
+      mojom::KeyboardOverscrollBehavior::kDefault) {
+    return keyboard_config_.overscroll_behavior ==
+           mojom::KeyboardOverscrollBehavior::kEnabled;
   }
 
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(

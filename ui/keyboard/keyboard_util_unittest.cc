@@ -147,15 +147,15 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard::SetTouchKeyboardEnabled(true);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
-  // Override overscroll enabled state.
+  // Set overscroll enabled state.
   auto config = keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kDisabled;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kNone;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 

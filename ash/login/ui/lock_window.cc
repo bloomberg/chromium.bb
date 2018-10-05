@@ -30,16 +30,16 @@ LockWindow::LockWindow() {
   // login/lock content. See crbug.com/363635.
   keyboard::mojom::KeyboardConfig config =
       keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kDisabled;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 
 LockWindow::~LockWindow() {
   keyboard::mojom::KeyboardConfig config =
       keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kNone;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 
   // We need to destroy the root view before destroying |data_dispatcher_|

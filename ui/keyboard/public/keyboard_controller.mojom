@@ -5,35 +5,7 @@
 module keyboard.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
-
-enum KeyboardOverscrollOverride {
-  kDisabled = 0,
-  kEnabled,
-  kNone,
-};
-
-struct KeyboardConfig {
-  // Whether the virtual keyboard can provide auto-complete.
-  bool auto_complete;
-
-  // Whether the virtual keyboard can provide auto-correct.
-  bool auto_correct;
-
-  // Whether the virtual keyboard can provide auto-capitalization.
-  bool auto_capitalize;
-
-  // Whether the virtual keyboard can provide input via handwriting recognition.
-  bool handwriting;
-
-  // Whether the virtual keyboard can provide spell-check.
-  bool spell_check;
-
-  // Whether the virtual keyboard can provide voice input.
-  bool voice_input;
-
-  // Whether overscroll is currently allowed by the active keyboard container.
-  KeyboardOverscrollOverride overscroll_override;
-};
+import "ui/keyboard/public/keyboard_config.mojom";
 
 interface KeyboardControllerObserver {
   // Called when the enabled state of the virtual keyboard changes.

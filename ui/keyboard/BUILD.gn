@@ -46,7 +46,6 @@ jumbo_component("keyboard") {
     "keyboard_util.h",
     "notification_manager.cc",
     "notification_manager.h",
-    "public/keyboard_config_util.h",
     "queued_container_type.cc",
     "queued_container_type.h",
     "queued_display_change.cc",
@@ -144,6 +143,7 @@ build_closure("inputview") {
 
 mojom("mojom") {
   sources = [
+    "public/keyboard_config.mojom",
     "public/keyboard_controller.mojom",
   ]
   deps = [
