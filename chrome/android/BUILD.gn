@@ -1500,7 +1500,9 @@ template("monochrome_public_apk_or_module_tmpl") {
     }
 
     version_name = chrome_version_name
-    enable_multidex = true
+    if (experimental_r8_path == "") {
+      enable_multidex = true
+    }
   }
 }
 
@@ -1848,7 +1850,9 @@ android_app_bundle("monochrome_public_bundle") {
   base_module_target = ":monochrome_public_base_module"
   if (!is_java_debug) {
     proguard_enabled = true
-    enable_multidex = true
+    if (experimental_r8_path == "") {
+      enable_multidex = true
+    }
     proguard_android_sdk_dep = webview_framework_dep
   }
   if (modularize_ar) {
