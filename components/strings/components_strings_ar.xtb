@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">إضافة رقم بطاقة صالح</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">‏قد يحاول المهاجمون حاليًا على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت برامج خطيرة على جهاز Mac تؤدي إلى سرقة أو حذف معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل، وبطاقات الائتمان) <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">محو</translation>
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{بدون}=1{‏من موقع ويب واحد (لن يتم تسجيل خروجك من حسابك على Google)}two{‏من موقعي ويب (#) (لن يتم تسجيل خروجك من حسابك على Google)}few{‏من # مواقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}many{‏من # موقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}other{‏من # موقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}}</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>

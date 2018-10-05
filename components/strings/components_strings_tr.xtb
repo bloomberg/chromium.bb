@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Geçerli kart numarası ekle</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Arama</translation>
 <translation id="6630809736994426279">Şu anda <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar bilgilerinizi (örneğin, fotoğraflar, şifreler, mesajlar ve kredi kartları) çalabilecek veya silebilecek tehlikeli programları Mac'inize yüklemeye çalışabilir. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Temizle</translation>
 <translation id="6644283850729428850">Bu politika uygun bulunmadı.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Yok}=1{1 siteden (Google Hesabınızdan çıkış yapılmaz)}other{# siteden (Google Hesabınızdan çıkış yapılmaz)}}</translation>
 <translation id="6657585470893396449">Şifre</translation>

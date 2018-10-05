@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Tambahkan kartu yang valid</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
 <translation id="6630809736994426279">Saat ini, penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha menginstal program berbahaya di Mac Anda yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Hapus</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs (Anda tidak akan logout dari Akun Google)}other{Dari # situs (Anda tidak akan logout dari Akun Google)}}</translation>
 <translation id="6657585470893396449">Sandi</translation>

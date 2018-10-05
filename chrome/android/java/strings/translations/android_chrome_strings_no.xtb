@@ -338,6 +338,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå på Bluetooth<ph name="END_LINK" /> for å tillate tilkobling</translation>
 <translation id="3778956594442850293">Lagt til på startskjermen</translation>
+<translation id="3781011235031427080">Mer av dette ble åpnet i halv høyde</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrer</translation>
@@ -504,6 +505,7 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="5087580092889165836">Legg til et kort</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
+<translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5129038482087801250">Installer nettprogram</translation>
 <translation id="5139940364318403933">Finn ut hvordan du bruker Google Disk</translation>
@@ -651,6 +653,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6177111841848151710">Blokkert for den aktive søkemotoren</translation>
 <translation id="6177390657002841081">Slå på Datasparing</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
+<translation id="618993374665929060">Mer av dette ble åpnet i full høyde</translation>
 <translation id="6192333916571137726">Last ned filen</translation>
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6206551242102657620">Tilkoblingen er sikker. Informasjon om nettstedet</translation>
@@ -722,9 +725,11 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6697947395630195233">Chrome trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6710213216561001401">Forrige</translation>
+<translation id="6712388303105732168">Se mer av dette fra Google ved å bruke Mer av dette-knappen</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
 <translation id="6746124502594467657">Flytt ned</translation>
 <translation id="6762156594045689028">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
+<translation id="6766622839693428701">Sveip ned for å lukke.</translation>
 <translation id="6768277682697012280">Installerer AR-modulen …</translation>
 <translation id="6776813977906306442">Last ned videoer du vil se senere, med Last ned-knappen</translation>
 <translation id="6790428901817661496">Spill av</translation>
@@ -778,7 +783,9 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
+<translation id="7139148793369023665">Mer av dette lukket</translation>
 <translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
+<translation id="7149158118503947153"><ph name="BEGIN_LINK" />Last inn original side<ph name="END_LINK" /> fra <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Siste døgn</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
@@ -866,6 +873,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
+<translation id="7854964836418414587">Lukk Mer av dette</translation>
 <translation id="7875915731392087153">Opprett e-post</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7882131421121961860">Fant ingen logg</translation>

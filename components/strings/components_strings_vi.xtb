@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Thêm số thẻ hợp lệ</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy Mac của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Xóa</translation>
 <translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Không có trang web nào}=1{Từ 1 trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}other{Từ # trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}}</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>

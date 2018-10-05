@@ -811,6 +811,7 @@
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Извършители на атака, понастоящем използващи <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, може да опитат да инсталират опасни програми на компютъра ви Mac, които крадат или изтриват информацията ви (например снимки, пароли, съобщения и номера на кредитни карти). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6643016212128521049">Изчистване</translation>
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Няма}=1{От 1 сайт (няма да излезете от профила си в Google)}other{От # сайта (няма да излезете от профила си в Google)}}</translation>
 <translation id="6657585470893396449">Парола</translation>
