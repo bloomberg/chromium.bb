@@ -129,10 +129,11 @@ class BASE_EXPORT TaskTracker {
   // FlushAsyncForTesting() may be pending at any given time.
   void FlushAsyncForTesting(OnceClosure flush_callback);
 
-  // Informs this TaskTracker that |task| is about to be posted. Returns true if
-  // this operation is allowed (|task| should be posted if-and-only-if it is).
-  // This method may also modify metadata on |task| if desired.
-  bool WillPostTask(Task* task);
+  // Informs this TaskTracker that |task| from a |shutdown_behavior| sequence
+  // is about to be posted. Returns true if this operation is allowed (|task|
+  // should be posted if-and-only-if it is). This method may also modify
+  // metadata on |task| if desired.
+  bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
 
   // Informs this TaskTracker that |sequence| is about to be scheduled. If this
   // returns |sequence|, it is expected that RunAndPopNextTask() will soon be
@@ -292,17 +293,17 @@ class BASE_EXPORT TaskTracker {
   // Called before WillPostTask() informs the tracing system that a task has
   // been posted. Updates |num_tasks_blocking_shutdown_| if necessary and
   // returns true if the current shutdown state allows the task to be posted.
-  bool BeforePostTask(TaskShutdownBehavior shutdown_behavior);
+  bool BeforePostTask(TaskShutdownBehavior effective_shutdown_behavior);
 
-  // Called before a task with |shutdown_behavior| is run by RunTask(). Updates
-  // |num_tasks_blocking_shutdown_| if necessary and returns true if the current
-  // shutdown state allows the task to be run.
-  bool BeforeRunTask(TaskShutdownBehavior shutdown_behavior);
+  // Called before a task with |effective_shutdown_behavior| is run by
+  // RunTask(). Updates |num_tasks_blocking_shutdown_| if necessary and returns
+  // true if the current shutdown state allows the task to be run.
+  bool BeforeRunTask(TaskShutdownBehavior effective_shutdown_behavior);
 
-  // Called after a task with |shutdown_behavior| has been run by RunTask().
-  // Updates |num_tasks_blocking_shutdown_| and signals |shutdown_cv_| if
-  // necessary.
-  void AfterRunTask(TaskShutdownBehavior shutdown_behavior);
+  // Called after a task with |effective_shutdown_behavior| has been run by
+  // RunTask(). Updates |num_tasks_blocking_shutdown_| and signals
+  // |shutdown_cv_| if necessary.
+  void AfterRunTask(TaskShutdownBehavior effective_shutdown_behavior);
 
   // Called when the number of tasks blocking shutdown becomes zero after
   // shutdown has started.

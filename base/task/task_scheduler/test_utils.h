@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/task_scheduler/scheduler_worker_observer.h"
 #include "base/task/task_scheduler/sequence.h"
+#include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -35,8 +36,10 @@ class MockSchedulerWorkerObserver : public SchedulerWorkerObserver {
 // parametrize relevant task_scheduler tests.
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
 
-// Creates a Sequence and pushes |task| to it. Returns that sequence.
-scoped_refptr<Sequence> CreateSequenceWithTask(Task task);
+// Creates a Sequence with given |traits| and pushes |task| to it. Returns that
+// Sequence.
+scoped_refptr<Sequence> CreateSequenceWithTask(Task task,
+                                               const TaskTraits& traits);
 
 // Creates a TaskRunner that posts tasks to |worker_pool| with the
 // |execution_mode| execution mode and the WithBaseSyncPrimitives() trait.

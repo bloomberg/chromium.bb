@@ -62,8 +62,8 @@ class SchedulerParallelTaskRunner : public TaskRunner {
 
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
-        Task(from_here, std::move(closure), traits_, delay),
-        MakeRefCounted<Sequence>());
+        Task(from_here, std::move(closure), delay),
+        MakeRefCounted<Sequence>(traits_));
   }
 
   bool RunsTasksInCurrentSequence() const override {
@@ -87,7 +87,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   // TODO(robliao): Find a concrete way to manage |worker_pool|'s memory.
   SchedulerSequencedTaskRunner(const TaskTraits& traits,
                                SchedulerWorkerPool* worker_pool)
-      : traits_(traits), worker_pool_(worker_pool) {
+      : sequence_(MakeRefCounted<Sequence>(traits)), worker_pool_(worker_pool) {
     DCHECK(worker_pool_);
   }
 
@@ -98,7 +98,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
     if (!g_active_pools_count)
       return false;
 
-    Task task(from_here, std::move(closure), traits_, delay);
+    Task task(from_here, std::move(closure), delay);
     task.sequenced_task_runner_ref = this;
 
     // Post the task as part of |sequence_|.
@@ -120,9 +120,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   ~SchedulerSequencedTaskRunner() override = default;
 
   // Sequence for all Tasks posted through this TaskRunner.
-  const scoped_refptr<Sequence> sequence_ = MakeRefCounted<Sequence>();
-
-  const TaskTraits traits_;
+  const scoped_refptr<Sequence> sequence_;
   SchedulerWorkerPool* const worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerSequencedTaskRunner);
@@ -145,8 +143,10 @@ bool SchedulerWorkerPool::PostTaskWithSequence(
   DCHECK(task.task);
   DCHECK(sequence);
 
-  if (!task_tracker_->WillPostTask(&task))
+  if (!task_tracker_->WillPostTask(&task,
+                                   sequence->traits().shutdown_behavior())) {
     return false;
+  }
 
   if (task.delayed_run_time.is_null()) {
     PostTaskWithSequenceNow(std::move(task), std::move(sequence));

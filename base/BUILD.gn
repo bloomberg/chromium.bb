@@ -2460,7 +2460,6 @@ test("base_unittests") {
     "task/task_scheduler/service_thread_unittest.cc",
     "task/task_scheduler/task_scheduler_impl_unittest.cc",
     "task/task_scheduler/task_tracker_unittest.cc",
-    "task/task_scheduler/task_unittest.cc",
     "task/task_scheduler/test_task_factory.cc",
     "task/task_scheduler/test_task_factory.h",
     "task/task_scheduler/test_utils.cc",
