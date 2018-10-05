@@ -187,7 +187,9 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
   } else if (name == HTMLNames::onerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
+        CreateAttributeEventListener(
+            GetDocument().GetFrame(), name, value,
+            JSEventHandler::HandlerType::kOnErrorEventHandler));
   } else if (SVGZoomAndPan::ParseAttribute(name, value)) {
   } else {
     SVGElement::ParseAttribute(params);

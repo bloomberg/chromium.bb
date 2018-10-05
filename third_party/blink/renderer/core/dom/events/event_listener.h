@@ -52,11 +52,11 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
   virtual const String& Code() const { return g_empty_string; }
-  virtual bool WasCreatedFromMarkup() const { return false; }
+  virtual bool IsEventHandlerForContentAttribute() const { return false; }
   virtual bool BelongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }
-  virtual bool IsAttribute() const { return false; }
+  virtual bool IsEventHandler() const { return false; }
 
   // Only DevTools is allowed to use this method.
   // This method may return an empty handle.
@@ -66,7 +66,7 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   }
 
   // Only DevTools is allowed to use this method.
-  virtual DOMWrapperWorld* GetWorldForInspector() const { return nullptr; }
+  virtual DOMWrapperWorld* GetWorldPtrForInspector() const { return nullptr; }
 
   ListenerType GetType() const { return type_; }
 

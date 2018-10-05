@@ -62,7 +62,7 @@ v8::Local<v8::Function> V8EventListenerOrEventHandler::GetListenerFunction(
   // attributes in HTML) has [TreatNonObjectAsNull], which implies that
   // non-function objects should be treated as no-op functions that return
   // undefined.
-  if (IsAttribute())
+  if (IsEventHandler())
     return v8::Local<v8::Function>();
 
   // Getting the handleEvent property can runs script in the getter.

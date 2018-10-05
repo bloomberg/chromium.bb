@@ -105,11 +105,6 @@ def attribute_context(interface, attribute, interfaces):
     if is_save_same_object:
         includes.add('platform/bindings/v8_private_property.h')
 
-    if (base_idl_type == 'EventHandler' and
-            interface.name in ['Window', 'WorkerGlobalScope'] and
-            attribute.name == 'onerror'):
-        includes.add('bindings/core/v8/v8_error_handler.h')
-
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
     if cached_attribute_validation_method or keep_alive_for_gc:
@@ -494,17 +489,16 @@ def setter_expression(interface, attribute, context):
         getter_name = scoped_name(interface, attribute, cpp_name(attribute))
         context['event_handler_getter_expression'] = '%s(%s)' % (
             getter_name, ', '.join(arguments))
-        if (interface.name in ['Window', 'WorkerGlobalScope'] and
-                attribute.name == 'onerror'):
-            includes.add('bindings/core/v8/v8_error_handler.h')
-            arguments.append(
-                'V8EventListenerHelper::EnsureErrorHandler(' +
-                'ScriptState::ForRelevantRealm(info), v8Value)')
-        else:
-            arguments.append(
-                'V8EventListenerHelper::GetEventListener(' +
-                'ScriptState::ForRelevantRealm(info), v8Value, true, ' +
-                'kListenerFindOrCreate)')
+        handler_type = 'kEventHandler'
+        if attribute.name == 'onerror':
+            handler_type = 'kOnErrorEventHandler'
+        elif attribute.name == 'onbeforeunload':
+            handler_type = 'kOnBeforeUnloadEventHandler'
+        arguments.append(
+            'V8EventListenerHelper::GetEventHandler(' +
+            'ScriptState::ForRelevantRealm(info), v8Value, ' +
+            'JSEventHandler::HandlerType::' + handler_type +
+            ', kListenerFindOrCreate)')
     elif idl_type.base_type == 'SerializedScriptValue':
         arguments.append('std::move(cppValue)')
     else:

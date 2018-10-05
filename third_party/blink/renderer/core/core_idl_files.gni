@@ -564,6 +564,7 @@ core_typedefs_enums_only_idl_files =
 
 core_callback_function_idl_files =
     get_path_info([
+                    "html/event_handler.idl",
                     "dom/frame_request_callback.idl",
                     "dom/function_string_callback.idl",
                     "dom/idle_request_callback.idl",

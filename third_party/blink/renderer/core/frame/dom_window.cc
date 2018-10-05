@@ -66,6 +66,10 @@ const DOMWindow* DOMWindow::ToDOMWindow() const {
   return this;
 }
 
+bool DOMWindow::IsWindowOrWorkerGlobalScope() const {
+  return true;
+}
+
 Location* DOMWindow::location() const {
   if (!location_)
     location_ = Location::Create(const_cast<DOMWindow*>(this));
