@@ -184,9 +184,8 @@ bool TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
   // Post |task| as part of a one-off single-task Sequence.
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return GetWorkerPoolForTraits(new_traits)
-      ->PostTaskWithSequence(
-          Task(from_here, std::move(task), new_traits, delay),
-          MakeRefCounted<Sequence>());
+      ->PostTaskWithSequence(Task(from_here, std::move(task), delay),
+                             MakeRefCounted<Sequence>(new_traits));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(

@@ -158,6 +158,18 @@ int GetMaxNumScheduledBestEffortSequences() {
   return std::numeric_limits<int>::max();
 }
 
+// Returns shutdown behavior based on |traits|; returns SKIP_ON_SHUTDOWN if
+// shutdown behavior is BLOCK_SHUTDOWN and |is_delayed|, because delayed tasks
+// are not allowed to block shutdown.
+TaskShutdownBehavior GetEffectiveShutdownBehavior(const TaskTraits& traits,
+                                                  bool is_delayed) {
+  const TaskShutdownBehavior shutdown_behavior = traits.shutdown_behavior();
+  if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN && is_delayed) {
+    return TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
+  }
+  return shutdown_behavior;
+}
+
 }  // namespace
 
 // Atomic internal state used by TaskTracker. Sequential consistency shouldn't
@@ -429,10 +441,13 @@ void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
   }
 }
 
-bool TaskTracker::WillPostTask(Task* task) {
+bool TaskTracker::WillPostTask(Task* task,
+                               TaskShutdownBehavior shutdown_behavior) {
+  DCHECK(task);
   DCHECK(task->task);
 
-  if (!BeforePostTask(task->traits.shutdown_behavior()))
+  if (!BeforePostTask(GetEffectiveShutdownBehavior(shutdown_behavior,
+                                                   !task->delay.is_zero())))
     return false;
 
   if (task->delayed_run_time.is_null())
@@ -453,6 +468,7 @@ bool TaskTracker::WillPostTask(Task* task) {
 scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
     scoped_refptr<Sequence> sequence,
     CanScheduleSequenceObserver* observer) {
+  DCHECK(sequence);
   const SequenceSortKey sort_key = sequence->GetSortKey();
   const int priority_index = static_cast<int>(sort_key.priority());
 
@@ -483,22 +499,23 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   // TODO(fdoray): Support TakeTask() returning null. https://crbug.com/783309
   DCHECK(task);
 
-  const TaskShutdownBehavior shutdown_behavior =
-      task->traits.shutdown_behavior();
-  const TaskPriority task_priority = task->traits.priority();
-  const bool can_run_task = BeforeRunTask(shutdown_behavior);
-  const bool is_delayed = !task->delayed_run_time.is_null();
+  const TaskShutdownBehavior effective_shutdown_behavior =
+      GetEffectiveShutdownBehavior(sequence->traits().shutdown_behavior(),
+                                   !task->delay.is_zero());
+
+  const bool can_run_task = BeforeRunTask(effective_shutdown_behavior);
 
   RunOrSkipTask(std::move(task.value()), sequence.get(), can_run_task);
   if (can_run_task) {
     IncrementNumTasksRun();
-    AfterRunTask(shutdown_behavior);
+    AfterRunTask(effective_shutdown_behavior);
   }
 
-  if (!is_delayed)
+  if (task->delayed_run_time.is_null())
     DecrementNumIncompleteUndelayedTasks();
 
   const bool sequence_is_empty_after_pop = sequence->Pop();
+  const TaskPriority priority = sequence->traits().priority();
 
   // Never reschedule a Sequence emptied by Pop(). The contract is such that
   // next poster to make it non-empty is responsible to schedule it.
@@ -508,7 +525,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   // Allow |sequence| to be rescheduled only if its next task is set to run
   // earlier than the earliest currently preempted sequence
   return ManageSequencesAfterRunningTask(std::move(sequence), observer,
-                                         task_priority);
+                                         priority);
 }
 
 bool TaskTracker::HasShutdownStarted() const {
@@ -572,17 +589,18 @@ void TaskTracker::IncrementNumTasksRun() {
 void TaskTracker::RunOrSkipTask(Task task,
                                 Sequence* sequence,
                                 bool can_run_task) {
-  RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, task.traits,
+  DCHECK(sequence);
+  RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, sequence->traits(),
                          task.sequenced_time);
 
   const bool previous_singleton_allowed =
       ThreadRestrictions::SetSingletonAllowed(
-          task.traits.shutdown_behavior() !=
+          sequence->traits().shutdown_behavior() !=
           TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
   const bool previous_io_allowed =
-      ThreadRestrictions::SetIOAllowed(task.traits.may_block());
+      ThreadRestrictions::SetIOAllowed(sequence->traits().may_block());
   const bool previous_wait_allowed = ThreadRestrictions::SetWaitAllowed(
-      task.traits.with_base_sync_primitives());
+      sequence->traits().with_base_sync_primitives());
 
   {
     const SequenceToken& sequence_token = sequence->token();
@@ -590,7 +608,8 @@ void TaskTracker::RunOrSkipTask(Task task,
     ScopedSetSequenceTokenForCurrentThread
         scoped_set_sequence_token_for_current_thread(sequence_token);
     ScopedSetTaskPriorityForCurrentThread
-        scoped_set_task_priority_for_current_thread(task.traits.priority());
+        scoped_set_task_priority_for_current_thread(
+            sequence->traits().priority());
     ScopedSetSequenceLocalStorageMapForCurrentThread
         scoped_set_sequence_local_storage_map_for_current_thread(
             sequence->sequence_local_storage());
@@ -620,7 +639,7 @@ void TaskTracker::RunOrSkipTask(Task task,
       // http://crbug.com/652692 is resolved.
       TRACE_EVENT1("task_scheduler", "TaskTracker::RunTask", "task_info",
                    std::make_unique<TaskTracingInfo>(
-                       task.traits, execution_mode, sequence_token));
+                       sequence->traits(), execution_mode, sequence_token));
 
       {
         // Put this in its own scope so it preceeds rather than overlaps with
@@ -768,8 +787,9 @@ bool TaskTracker::HasIncompleteUndelayedTasksForTesting() const {
   return subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0;
 }
 
-bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
-  if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
+bool TaskTracker::BeforePostTask(
+    TaskShutdownBehavior effective_shutdown_behavior) {
+  if (effective_shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
     // BLOCK_SHUTDOWN tasks block shutdown between the moment they are posted
     // and the moment they complete their execution.
     const bool shutdown_started = state_->IncrementNumTasksBlockingShutdown();
@@ -819,8 +839,9 @@ bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
   return !state_->HasShutdownStarted();
 }
 
-bool TaskTracker::BeforeRunTask(TaskShutdownBehavior shutdown_behavior) {
-  switch (shutdown_behavior) {
+bool TaskTracker::BeforeRunTask(
+    TaskShutdownBehavior effective_shutdown_behavior) {
+  switch (effective_shutdown_behavior) {
     case TaskShutdownBehavior::BLOCK_SHUTDOWN: {
       // The number of tasks blocking shutdown has been incremented when the
       // task was posted.
@@ -863,9 +884,10 @@ bool TaskTracker::BeforeRunTask(TaskShutdownBehavior shutdown_behavior) {
   return false;
 }
 
-void TaskTracker::AfterRunTask(TaskShutdownBehavior shutdown_behavior) {
-  if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN ||
-      shutdown_behavior == TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {
+void TaskTracker::AfterRunTask(
+    TaskShutdownBehavior effective_shutdown_behavior) {
+  if (effective_shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN ||
+      effective_shutdown_behavior == TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {
     const bool shutdown_started_and_no_tasks_block_shutdown =
         state_->DecrementNumTasksBlockingShutdown();
     if (shutdown_started_and_no_tasks_block_shutdown)
