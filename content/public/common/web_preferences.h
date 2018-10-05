@@ -131,7 +131,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool application_cache_enabled;
   bool tabs_to_links;
   bool history_entry_requires_user_gesture;
-  bool disable_ipc_flooding_protection;
+  bool disable_pushstate_throttle;
   bool hyperlink_auditing_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;

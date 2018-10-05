@@ -103,7 +103,13 @@ class CORE_EXPORT History final : public ScriptWrappable,
   SerializedScriptValue* StateInternal() const;
   HistoryScrollRestorationType ScrollRestorationInternal() const;
 
+  bool ShouldThrottleStateObjectChanges();
+
   scoped_refptr<SerializedScriptValue> last_state_object_requested_;
+  struct {
+    int count;
+    TimeTicks last_updated;
+  } state_flood_guard;
 };
 
 }  // namespace blink

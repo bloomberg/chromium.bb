@@ -694,8 +694,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.application_cache_enabled);
   settings->SetHistoryEntryRequiresUserGesture(
       prefs.history_entry_requires_user_gesture);
-  settings->SetShouldProtectAgainstIpcFlooding(
-      !prefs.disable_ipc_flooding_protection);
+  settings->SetShouldThrottlePushState(!prefs.disable_pushstate_throttle);
   settings->SetHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);
   settings->SetCookieEnabled(prefs.cookie_enabled);
   settings->SetNavigateOnDragDrop(prefs.navigate_on_drag_drop);

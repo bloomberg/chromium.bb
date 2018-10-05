@@ -162,12 +162,6 @@ const char kDisableGpuWatchdog[] = "disable-gpu-watchdog";
 // many frames. Only effective if compositor image animations are enabled.
 const char kDisableImageAnimationResync[] = "disable-image-animation-resync";
 
-// Disables the IPC flooding protection.
-// It is activated by default. Some javascript functions can be used to flood
-// the browser process with IPC. This protection limits the rate at which they
-// can be used.
-const char kDisableIpcFloodingProtection[] = "disable-ipc-flooding-protection";
-
 // Suppresses hang monitor dialogs in renderer processes.  This may allow slow
 // unload handlers on a page to prevent the tab from closing, but the Task
 // Manager can be used to terminate the offending process in this case.

@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -26,7 +25,6 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -163,29 +161,6 @@ class BrowserMessageObserver : public content::BrowserMessageFilter {
   uint32_t observed_message_type_;
   base::RunLoop loop;
   DISALLOW_COPY_AND_ASSIGN(BrowserMessageObserver);
-};
-
-// Execute a callback whenever an observed IPC is received
-class BrowserMessageCallback : public content::BrowserMessageFilter {
- public:
-  BrowserMessageCallback(uint32_t observed_message_class,
-                         uint32_t observed_message_type,
-                         base::RepeatingClosure callback)
-      : content::BrowserMessageFilter(observed_message_class),
-        observed_message_type_(observed_message_type),
-        callback_(callback) {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == observed_message_type_)
-      callback_.Run();
-    return false;
-  }
-
- private:
-  ~BrowserMessageCallback() override {}
-  uint32_t observed_message_type_;
-  base::RepeatingClosure callback_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserMessageCallback);
 };
 
 }  // namespace
@@ -1241,106 +1216,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // 3) Check the first pending navigation has been canceled.
   navigation.WaitForNavigationFinished();  // Resume navigation.
   EXPECT_FALSE(navigation.was_successful());
-}
-
-// Ensure the renderer process doesn't send too much IPC to the browser process
-// when history.pushState() and history.back() are called in a loop.
-// Failing to do so causes the browser to freeze.
-// See https://crbug.com/882238
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_GoToEntryAtOffset) {
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
-
-  // Count the maximum number of GoToEntryAtOffset IPC the renderer process
-  // autorizes itself to send.
-  int count_history_back = 0;
-  auto observer_history_back = base::MakeRefCounted<BrowserMessageCallback>(
-      ViewMsgStart, ViewHostMsg_GoToEntryAtOffset::ID,
-      base::BindLambdaForTesting([&]() { ++count_history_back; }));
-  int count_replace_state = 0;
-  auto observer_push_state = base::MakeRefCounted<BrowserMessageCallback>(
-      FrameMsgStart, FrameHostMsg_UpdateState::ID,
-      base::BindLambdaForTesting([&]() { ++count_replace_state; }));
-
-  RenderProcessHost* process =
-      static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
-          ->GetProcess();
-  process->AddFilter(observer_push_state.get());
-  process->AddFilter(observer_history_back.get());
-
-  EXPECT_TRUE(ExecuteScript(shell(), R"(
-    var start = new Date().getTime();
-    while(new Date().getTime() < start + 2000) {
-      history.pushState({},"page 2", "bar.html");
-      history.back();
-    }
-  )"));
-
-  // The quota is shared in between history.back() and history.pushState().
-  EXPECT_EQ(100, count_history_back);
-  EXPECT_EQ(100, count_replace_state);
-}
-
-// Ensure the renderer process doesn't send too much IPC to the browser process
-// when doing a same-document navigation is requested in a loop.
-// Failing to do so causes the browser to freeze.
-// See https://crbug.com/882238
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_NavigationLocal) {
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
-
-  NavigationRecorder recorder(shell()->web_contents());
-
-  EXPECT_TRUE(ExecuteScript(shell(), R"(
-    var start = new Date().getTime();
-    let i = 0;
-    while(new Date().getTime() < start + 2000) {
-      location.href = "#" + i;
-      ++i;
-    }
-  )"));
-
-  // For each IPC, DidStartNavigation and DidFinishNavigation are recorded, so
-  // twice the quota is recorded.
-  EXPECT_EQ(400u, recorder.records().size());
-}
-
-// Ensure the renderer process doesn't send too much IPC to the browser process
-// when a frame request another one in a different process to navigate.
-// Failing to do so causes the browser to freeze.
-// See https://crbug.com/882238
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_NavigationRemote) {
-  GURL url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  NavigateToURL(shell(), url);
-
-  // This test assumes A and B are not sharing the same process. This requires
-  // site isolation to be enabled.
-  if (!SiteIsolationPolicy::AreIsolatedOriginsEnabled())
-    return;
-
-  // Count the maximum number of GoToEntryAtOffset IPC the renderer process
-  // autorizes itself to send.
-  int count = 0;
-  auto increment_count =
-      base::BindRepeating([](int* count) { (*count)++; }, &count);
-  auto observer = base::MakeRefCounted<BrowserMessageCallback>(
-      FrameMsgStart, FrameHostMsg_OpenURL::ID, increment_count);
-  static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
-      ->GetProcess()
-      ->AddFilter(observer.get());
-
-  EXPECT_TRUE(ExecuteScript(shell(), R"(
-    let iframe = document.querySelector("iframe");
-    let initial_url = iframe.src;
-    var start = new Date().getTime();
-    while(new Date().getTime() < start + 2000) {
-      iframe.src = initial_url;
-    }
-  )"));
-
-  EXPECT_EQ(200, count);
 }
 
 }  // namespace content

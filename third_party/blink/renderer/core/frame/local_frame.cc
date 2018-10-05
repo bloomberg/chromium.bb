@@ -273,16 +273,12 @@ void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
                                     WebFrameLoadType frame_load_type,
                                     UserGestureStatus user_gesture_status) {
-  if (!navigation_rate_limiter().CanProceed())
-    return;
   navigation_scheduler_->ScheduleFrameNavigation(&origin_document, url,
                                                  frame_load_type);
 }
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
-  if (!navigation_rate_limiter().CanProceed())
-    return;
   loader_.StartNavigation(request, frame_load_type);
 }
 

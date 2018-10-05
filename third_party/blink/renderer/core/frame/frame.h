@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
-#include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -57,9 +56,9 @@ class Document;
 class FrameClient;
 class FrameOwner;
 class HTMLFrameOwnerElement;
-class KURL;
 class LayoutEmbeddedContent;
 class LocalFrame;
+class KURL;
 class Page;
 class SecurityContext;
 class Settings;
@@ -232,10 +231,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     return detach_stack_;
   }
 
-  NavigationRateLimiter& navigation_rate_limiter() {
-    return navigation_rate_limiter_;
-  }
-
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
@@ -272,9 +267,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   FrameLifecycle lifecycle_;
-
-  NavigationRateLimiter navigation_rate_limiter_;
-
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;

@@ -225,7 +225,7 @@ class WebSettings {
   virtual void SetAvailableHoverTypes(int) = 0;
   virtual void SetPrimaryHoverType(HoverType) = 0;
   virtual void SetPreferHiddenVolumeControls(bool) = 0;
-  virtual void SetShouldProtectAgainstIpcFlooding(bool) = 0;
+  virtual void SetShouldThrottlePushState(bool) = 0;
   virtual void SetRenderVSyncNotificationEnabled(bool) = 0;
   virtual void SetReportScreenSizeInPhysicalPixelsQuirk(bool) = 0;
   virtual void SetRubberBandingOnCompositorThread(bool) = 0;

@@ -151,6 +151,36 @@ HistoryScrollRestorationType History::ScrollRestorationInternal() const {
   return history_item->ScrollRestorationType();
 }
 
+// TODO(crbug.com/394296): This is not the long-term fix to IPC flooding that we
+// need. However, it does somewhat mitigate the immediate concern of |pushState|
+// and |replaceState| DoS (assuming the renderer has not been compromised).
+bool History::ShouldThrottleStateObjectChanges() {
+  if (!GetFrame()->GetSettings()->GetShouldThrottlePushState())
+    return false;
+
+  // The aim is to enable 8 'frames' (history updates) per second, but we
+  // express it as 80 frames per 10 seconds because some use cases (including
+  // tests) do more than 8 updates in 1 second. But over time, applications
+  // shooting for 8 FPS should work. If necessary to support legitimate
+  // applications, we can increase this threshold somewhat.
+  const int kStateUpdateLimit = 80;
+
+  if (state_flood_guard.count > kStateUpdateLimit) {
+    static constexpr auto kStateUpdateLimitResetInterval =
+        TimeDelta::FromSeconds(10);
+    const auto now = CurrentTimeTicks();
+    if (now - state_flood_guard.last_updated > kStateUpdateLimitResetInterval) {
+      state_flood_guard.count = 0;
+      state_flood_guard.last_updated = now;
+      return false;
+    }
+    return true;
+  }
+
+  state_flood_guard.count++;
+  return false;
+}
+
 bool History::stateChanged() const {
   return last_state_object_requested_ != StateInternal();
 }
@@ -190,9 +220,6 @@ void History::go(ScriptState* script_state,
       !NavigationDisablerForBeforeUnload::IsNavigationAllowed()) {
     return;
   }
-
-  if (!GetFrame()->navigation_rate_limiter().CanProceed())
-    return;
 
   if (delta) {
     GetFrame()->Client()->NavigateBackForward(delta);
@@ -281,7 +308,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     return;
   }
 
-  if (!GetFrame()->navigation_rate_limiter().CanProceed()) {
+  if (ShouldThrottleStateObjectChanges()) {
     // TODO(769592): Get an API spec change so that we can throw an exception:
     //
     //  exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
@@ -289,6 +316,11 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     //                                    "prevent the browser from hanging.");
     //
     // instead of merely warning.
+
+    GetFrame()->Console().AddMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "Throttling history state changes to prevent "
+                               "the browser from hanging."));
     return;
   }
 

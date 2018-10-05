@@ -458,8 +458,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.history_entry_requires_user_gesture =
       command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
 
-  prefs.disable_ipc_flooding_protection =
-      command_line.HasSwitch(switches::kDisableIpcFloodingProtection) ||
+  prefs.disable_pushstate_throttle =
       command_line.HasSwitch(switches::kDisablePushStateThrottle);
 
 #if defined(OS_ANDROID)
