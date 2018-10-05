@@ -160,16 +160,16 @@ bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
 
 std::string VideoDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
-  s << "codec: " << GetCodecName(codec()) << " format: " << format()
-    << " profile: " << GetProfileName(profile()) << " coded size: ["
+  s << "codec: " << GetCodecName(codec()) << ", format: " << format()
+    << ", profile: " << GetProfileName(profile()) << ", coded size: ["
     << coded_size().width() << "," << coded_size().height() << "]"
-    << " visible rect: [" << visible_rect().x() << "," << visible_rect().y()
+    << ", visible rect: [" << visible_rect().x() << "," << visible_rect().y()
     << "," << visible_rect().width() << "," << visible_rect().height() << "]"
-    << " natural size: [" << natural_size().width() << ","
+    << ", natural size: [" << natural_size().width() << ","
     << natural_size().height() << "]"
-    << " has extra data? " << (extra_data().empty() ? "false" : "true")
-    << " encryption scheme: " << encryption_scheme()
-    << " rotation: " << VideoRotationToString(video_rotation());
+    << ", has extra data: " << (extra_data().empty() ? "false" : "true")
+    << ", encryption scheme: " << encryption_scheme()
+    << ", rotation: " << VideoRotationToString(video_rotation());
   return s.str();
 }
 

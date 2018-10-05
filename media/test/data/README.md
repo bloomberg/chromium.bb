@@ -267,7 +267,8 @@ Encrypted Bear video with VP9 codec (profile 2) in WebM container, using key ID
 [1] and key [2]. Codec string: `vp09.02.10.10.01.02.02.02.00`.
 Generated with [Shaka Packager] at 4ba5bec66054cfd4af13c07ac62a97f1a1a2e5f9:
 ```
-packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.web--enable_fixed_key_encryption --key_id 30313233343536373839303132333435
+packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.webm
+         --enable_fixed_key_encryption --key_id 30313233343536373839303132333435
          --key ebdd62f16814d27b68ef122afce4ae3c --clear_lead 0
          --pssh 0000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000000000467073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000261210303132333435363738393031323334351A00221030313233343536373839303132333435
 ```
@@ -276,7 +277,8 @@ packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_p
 Same as above, in MP4 container. Codec string: vp09.02.10.10.01.02.02.02.00.
 Generated with [Shaka Packager] at 4ba5bec66054cfd4af13c07ac62a97f1a1a2e5f9:
 ```
-packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.mp--enable_fixed_key_encryption --key_id 30313233343536373839303132333435
+packager in=bear-320x240-vp9_profile2.webm,stream=video,out=bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4
+         --enable_fixed_key_encryption --key_id 30313233343536373839303132333435
          --key ebdd62f16814d27b68ef122afce4ae3c --clear_lead 0
          --pssh 0000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000000000467073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000261210303132333435363738393031323334351A00221030313233343536373839303132333435
 ```
