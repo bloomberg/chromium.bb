@@ -4881,3 +4881,10 @@ ChromeContentBrowserClient::GetOriginPolicyErrorPage(
   return security_interstitials::OriginPolicyUI::GetErrorPage(error_reason,
                                                               origin, url);
 }
+
+bool ChromeContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+  // We require --user-data-dir flag too so that no dangerous changes are made
+  // in the user's regular profile.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUserDataDir);
+}

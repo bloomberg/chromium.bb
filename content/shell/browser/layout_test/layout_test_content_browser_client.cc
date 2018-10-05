@@ -297,6 +297,11 @@ bool LayoutTestContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return false;
 }
 
+bool LayoutTestContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRunWebTests);
+}
+
 void LayoutTestContentBrowserClient::ExposeInterfacesToFrame(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry) {

@@ -1349,6 +1349,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       OriginPolicyErrorReason error_reason,
       const url::Origin& origin,
       const GURL& url);
+
+  // Returns true if it is OK to ignore errors for certificates specified by the
+  // --ignore-certificate-errors-spki-list command line flag. The embedder may
+  // perform additional checks, such as requiring --user-data-dir flag too to
+  // make sure that insecure contents will not persist accidentally.
+  virtual bool CanIgnoreCertificateErrorIfNeeded();
 };
 
 }  // namespace content

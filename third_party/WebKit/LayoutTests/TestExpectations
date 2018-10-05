@@ -4691,7 +4691,7 @@ crbug.com/803774 http/tests/devtools/sxg/ [ Skip ]
 crbug.com/803774 http/tests/loading/sxg/ [ Skip ]
 
 # Prefetching Signed Exchange DevTools tests are flaky.
-crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-expired.js [ Pass Failure ]
+crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
 crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22

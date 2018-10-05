@@ -815,4 +815,8 @@ base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
   return base::nullopt;
 }
 
+bool ContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+  return false;
+}
+
 }  // namespace content
