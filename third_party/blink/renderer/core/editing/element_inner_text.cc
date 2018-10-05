@@ -471,6 +471,7 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   if (IsHTMLBRElement(node)) {
     ProcessChildren(node);
     result_.EmitNewline();
+    result_.SetShouldCollapseWhitespace(true);
     return;
   }
 
