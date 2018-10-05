@@ -344,6 +344,15 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
   if (!registration_->active())
     return ScriptPromise::CastUndefined(script_state);
 
+  ScriptState::Scope scope(script_state);
+
+  if (id.IsEmpty()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                          "The provided id is invalid."));
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
