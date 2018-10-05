@@ -20,6 +20,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -368,6 +369,9 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
+    SSLErrorHandler::SetErrorAssistantProto(
+        SSLErrorAssistant::GetErrorAssistantProtoFromResourceBundle());
+
     SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
     ResetErrorHandlerFromFile(kOkayCertName,
                               net::CERT_STATUS_COMMON_NAME_INVALID);

@@ -190,7 +190,7 @@ namespace {
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-const uint32_t kLargeVersionId = 0xFFFFFFu;
+const int kLargeVersionId = 0xFFFFFF;
 
 const char kHstsTestHostName[] = "hsts-example.test";
 
@@ -6641,6 +6641,7 @@ IN_PROC_BROWSER_TEST_P(
   // the certificate issued by our server won't match.
   auto config_proto =
       std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->set_version_id(kLargeVersionId);
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name(kTestMITMSoftwareName);
@@ -6649,7 +6650,8 @@ IN_PROC_BROWSER_TEST_P(
   mitm_software->set_issuer_organization_regex(
       "pattern-that-does-not-match-anything");
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
+  ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+            kLargeVersionId);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -6687,6 +6689,7 @@ IN_PROC_BROWSER_TEST_P(
   // the certificate issued by our server won't match.
   auto config_proto =
       std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->set_version_id(kLargeVersionId);
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name(kTestMITMSoftwareName);
@@ -6695,7 +6698,8 @@ IN_PROC_BROWSER_TEST_P(
   mitm_software->set_issuer_organization_regex(
       https_server()->GetCertificate().get()->issuer().organization_names[0]);
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
+  ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+            kLargeVersionId);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -6731,6 +6735,7 @@ IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest,
   // the certificate issued by our server won't match.
   auto config_proto =
       std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->set_version_id(kLargeVersionId);
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
   mitm_software->set_name("Non-Matching MITM Software");
@@ -6739,7 +6744,8 @@ IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest,
   mitm_software->set_issuer_organization_regex(
       "pattern-that-does-not-match-anything");
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
+  ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+            kLargeVersionId);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -6876,6 +6882,10 @@ IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
 // update will be ignored and a non-MITM interstitial will be shown.
 IN_PROC_BROWSER_TEST_P(SSLUIMITMSoftwareEnabledTest,
                        IgnoreDynamicUpdateWithSmallVersionId) {
+  auto config_proto =
+      SSLErrorAssistant::GetErrorAssistantProtoFromResourceBundle();
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   SSLErrorHandler::SetEnterpriseManagedForTesting(false);
   ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
@@ -7381,12 +7391,13 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, Match) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
     AddMatchingDynamicInterstitial(config_proto.get());
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7409,6 +7420,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MatchUnknownCertError) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a matching dynamic interstitial with the UNKNOWN_CERT_ERROR status.
@@ -7418,8 +7430,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MatchUnknownCertError) {
         chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR);
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7443,6 +7455,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a matching dynamic interstitial with an empty issuer common name
@@ -7452,8 +7465,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     match->set_issuer_common_name_regex(std::string());
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7477,6 +7490,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a matching dynamic interstitial with an empty issuer organization
@@ -7486,8 +7500,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     match->set_issuer_organization_regex(std::string());
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7510,6 +7524,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchHash) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a dynamic interstitial with matching fields, except for the
@@ -7521,8 +7536,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchHash) {
     match->add_sha256_hash("sha256/flowerpiercer");
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7544,6 +7559,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCertError) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a dynamic interstitial with matching fields, except for the
@@ -7554,8 +7570,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCertError) {
         chrome_browser_ssl::DynamicInterstitial::ERR_CERT_DATE_INVALID);
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7577,6 +7593,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCommonNameRegex) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a dynamic interstitial with matching fields, except for the
@@ -7586,8 +7603,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCommonNameRegex) {
     match->set_issuer_common_name_regex("beeeater");
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7610,6 +7627,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a dynamic interstitial with matching fields, except for the
@@ -7619,8 +7637,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     match->set_issuer_organization_regex("honeycreeper");
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
@@ -7642,6 +7660,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchWhenOverridable) {
   {
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
         CreateSSLErrorAssistantConfig();
+    config_proto->set_version_id(kLargeVersionId);
     AddMismatchDynamicInterstitial(config_proto.get());
 
     // Add a matching dynamic interstitial, except for the
@@ -7652,8 +7671,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchWhenOverridable) {
         chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR);
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
-                0);
+    ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
+              kLargeVersionId);
 
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
