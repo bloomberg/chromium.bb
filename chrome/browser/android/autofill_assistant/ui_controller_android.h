@@ -36,6 +36,8 @@ class UiControllerAndroid : public UiController, public Client {
       base::OnceCallback<void(const std::string&)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
+  void HideDetails() override;
+  void ShowDetails(const DetailsProto& details) override;
 
   // Overrides Client:
   std::string GetApiKey() override;

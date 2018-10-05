@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/reset_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
+#include "components/autofill_assistant/browser/actions/show_details_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
@@ -197,6 +198,10 @@ bool ProtocolUtils::ParseActions(
       }
       case ActionProto::ActionInfoCase::kUploadDom: {
         actions->emplace_back(std::make_unique<UploadDomAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kShowDetails: {
+        actions->emplace_back(std::make_unique<ShowDetailsAction>(action));
         break;
       }
       default:

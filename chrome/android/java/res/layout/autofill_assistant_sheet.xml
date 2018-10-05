@@ -83,10 +83,44 @@
                 android:contentDescription="@string/close" />
         </LinearLayout>
 
-        <ViewStub
+        <RelativeLayout
             android:id="@+id/details"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/details_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/details_image"/>
+            <TextView
+                android:id="@+id/details_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/details_title"
+                android:layout_above="@+id/details_time"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/details_image"
+                android:gravity="center_vertical" />
+            <TextView
+                android:id="@+id/details_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/details_image"/>
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/details_image"
+                android:layout_width="@dimen/autofill_assistant_details_image_size"
+                android:layout_height="@dimen/autofill_assistant_details_image_size"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="24dp"
+                android:scaleType="centerCrop">
+            </android.support.v7.widget.AppCompatImageView>
+        </RelativeLayout>
 
         <HorizontalScrollView
             android:layout_width="match_parent"

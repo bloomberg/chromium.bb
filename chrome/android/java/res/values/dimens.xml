@@ -555,4 +555,7 @@
 
     <!-- Explicit Language Ask Prompt dimensions -->
     <dimen name="explicit_ask_checkbox_end_padding">4dp</dimen>
+
+    <!-- Autofill Assistant dimensions -->
+    <dimen name="autofill_assistant_details_image_size">60dp</dimen>
 </resources>

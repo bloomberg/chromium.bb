@@ -147,6 +147,14 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
+void ScriptExecutor::HideDetails() {
+  delegate_->GetUiController()->HideDetails();
+}
+
+void ScriptExecutor::ShowDetails(const DetailsProto& details) {
+  delegate_->GetUiController()->ShowDetails(details);
+}
+
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   if (!result) {
     RunCallback(false);
