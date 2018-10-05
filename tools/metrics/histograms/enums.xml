@@ -30123,6 +30123,7 @@ from previous Chrome versions.
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
   <int value="1005684777" label="PictureInPicture:disabled"/>
+  <int value="1006608931" label="ArcEnableUnifiedAudioFocus:disabled"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
@@ -30293,6 +30294,7 @@ from previous Chrome versions.
   <int value="1298981651" label="disable-new-task-manager"/>
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
+  <int value="1304636193" label="ArcEnableUnifiedAudioFocus:enabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>

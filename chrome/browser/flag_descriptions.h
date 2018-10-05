@@ -1931,6 +1931,9 @@ extern const char kEnableAppShortcutSearchDescription[];
 extern const char kEnableAppsGridGapFeatureName[];
 extern const char kEnableAppsGridGapFeatureDescription[];
 
+extern const char kEnableArcUnifiedAudioFocusName[];
+extern const char kEnableArcUnifiedAudioFocusDescription[];
+
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 

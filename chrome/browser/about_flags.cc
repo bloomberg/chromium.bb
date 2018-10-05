@@ -4422,12 +4422,17 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-shill-sandboxing", flag_descriptions::kShillSandboxingName,
      flag_descriptions::kShillSandboxingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShillSandboxing)},
-#endif
 
-    // NOTE: Adding a new flag requires adding a corresponding entry to enum
-    // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
-    // Histograms" in tools/metrics/histograms/README.md (run the
-    // AboutFlagsHistogramTest unit test to verify this process).
+    {"enable-arc-unified-audio-focus",
+     flag_descriptions::kEnableArcUnifiedAudioFocusName,
+     flag_descriptions::kEnableArcUnifiedAudioFocusDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableUnifiedAudioFocusFeature)},
+#endif  // defined(OS_CHROMEOS)
+
+// NOTE: Adding a new flag requires adding a corresponding entry to enum
+// "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
+// Histograms" in tools/metrics/histograms/README.md (run the
+// AboutFlagsHistogramTest unit test to verify this process).
 
 #if defined(OS_WIN)
     {"use-angle", flag_descriptions::kUseAngleName,
