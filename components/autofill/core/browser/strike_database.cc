@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/strike_database.h"
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -35,14 +36,14 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
 
 StrikeDatabase::~StrikeDatabase() {}
 
-void StrikeDatabase::GetStrikes(const std::string key,
+void StrikeDatabase::GetStrikes(const std::string& key,
                                 const StrikesCallback& outer_callback) {
   GetStrikeData(key, base::BindRepeating(&StrikeDatabase::OnGetStrikes,
                                          base::Unretained(this),
-                                         std::move(outer_callback)));
+                                         std::move(outer_callback), key));
 }
 
-void StrikeDatabase::AddStrike(const std::string key,
+void StrikeDatabase::AddStrike(const std::string& key,
                                const StrikesCallback& outer_callback) {
   GetStrikeData(key, base::BindRepeating(&StrikeDatabase::OnAddStrike,
                                          base::Unretained(this),
@@ -60,7 +61,11 @@ void StrikeDatabase::ClearAllStrikesForKey(
           leveldb_proto::ProtoDatabase<StrikeData>::KeyEntryVector>(),
       /*keys_to_remove=*/std::move(keys_to_remove),
       base::BindRepeating(&StrikeDatabase::OnClearAllStrikesForKey,
-                          base::Unretained(this), outer_callback));
+                          base::Unretained(this), outer_callback, key));
+}
+
+void StrikeDatabase::ClearCache() {
+  strike_map_cache_.clear();
 }
 
 std::string StrikeDatabase::GetKeyForCreditCardSave(
@@ -70,64 +75,85 @@ std::string StrikeDatabase::GetKeyForCreditCardSave(
 
 void StrikeDatabase::OnDatabaseInit(bool success) {}
 
-void StrikeDatabase::GetStrikeData(const std::string key,
-                                   const GetValueCallback& callback) {
-  db_->GetEntry(key, callback);
+void StrikeDatabase::GetStrikeData(const std::string& key,
+                                   const GetValueCallback& inner_callback) {
+  std::unordered_map<std::string, StrikeData>::iterator it =
+      strike_map_cache_.find(key);
+  if (it != strike_map_cache_.end()) {  // key is in cache
+    StrikeData data_copy(it->second);
+    inner_callback.Run(/*success=*/true,
+                       std::make_unique<StrikeData>(data_copy));
+  } else {
+    db_->GetEntry(key, inner_callback);
+  }
 }
 
 void StrikeDatabase::SetStrikeData(const std::string& key,
                                    const StrikeData& data,
-                                   const SetValueCallback& callback) {
+                                   const SetValueCallback& inner_callback) {
   std::unique_ptr<StrikeDataProto::KeyEntryVector> entries(
       new StrikeDataProto::KeyEntryVector());
   entries->push_back(std::make_pair(key, data));
   db_->UpdateEntries(
       /*entries_to_save=*/std::move(entries),
       /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(),
-      callback);
+      inner_callback);
 }
 
-void StrikeDatabase::OnGetStrikes(StrikesCallback callback,
+void StrikeDatabase::OnGetStrikes(StrikesCallback outer_callback,
+                                  const std::string& key,
                                   bool success,
                                   std::unique_ptr<StrikeData> strike_data) {
-  if (success && strike_data)
-    callback.Run(strike_data->num_strikes());
-  else
-    callback.Run(0);
+  if (success && strike_data) {
+    outer_callback.Run(strike_data->num_strikes());
+    UpdateCache(key, *strike_data.get());
+  } else {
+    outer_callback.Run(0);
+  }
 }
 
-void StrikeDatabase::OnAddStrike(StrikesCallback callback,
-                                 std::string key,
+void StrikeDatabase::OnAddStrike(StrikesCallback outer_callback,
+                                 const std::string& key,
                                  bool success,
                                  std::unique_ptr<StrikeData> strike_data) {
   if (!success) {
-    // Failed to get strike data; abort adding strike.
-    callback.Run(0);
+    outer_callback.Run(0);
     return;
   }
   int num_strikes = strike_data ? strike_data->num_strikes() + 1 : 1;
-  StrikeData data;
-  data.set_num_strikes(num_strikes);
-  data.set_last_update_timestamp(
+  std::unique_ptr<StrikeData> data = std::make_unique<StrikeData>(StrikeData());
+  data->set_num_strikes(num_strikes);
+  data->set_last_update_timestamp(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  SetStrikeData(
-      key, data,
-      base::BindRepeating(&StrikeDatabase::OnAddStrikeComplete,
-                          base::Unretained(this), callback, num_strikes));
+  SetStrikeData(key, *data.get(),
+                base::BindRepeating(&StrikeDatabase::OnAddStrikeComplete,
+                                    base::Unretained(this), outer_callback, key,
+                                    *data.get()));
 }
 
-void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
-                                         int num_strikes,
+void StrikeDatabase::OnAddStrikeComplete(StrikesCallback outer_callback,
+                                         const std::string& key,
+                                         const StrikeData& data,
                                          bool success) {
-  if (success)
-    callback.Run(num_strikes);
-  else
-    callback.Run(0);
+  if (success) {
+    outer_callback.Run(data.num_strikes());
+    UpdateCache(key, data);
+  } else {
+    outer_callback.Run(0);
+  }
 }
 
-void StrikeDatabase::OnClearAllStrikesForKey(ClearStrikesCallback callback,
-                                             bool success) {
-  callback.Run(success);
+void StrikeDatabase::OnClearAllStrikesForKey(
+    ClearStrikesCallback outer_callback,
+    const std::string& key,
+    bool success) {
+  strike_map_cache_.erase(key);
+  outer_callback.Run(success);
+}
+
+void StrikeDatabase::UpdateCache(const std::string& key,
+                                 const StrikeData& data) {
+  strike_map_cache_[key] = data;
 }
 
 std::string StrikeDatabase::CreateKey(const std::string& type_prefix,
