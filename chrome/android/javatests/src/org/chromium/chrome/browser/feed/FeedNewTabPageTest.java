@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -196,6 +197,7 @@ public class FeedNewTabPageTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/888996")
     @Feature({"FeedNewTabPage"})
     public void testFeedDisabledByPolicy() throws Exception {
         final boolean pref = ThreadUtils.runOnUiThreadBlocking(
