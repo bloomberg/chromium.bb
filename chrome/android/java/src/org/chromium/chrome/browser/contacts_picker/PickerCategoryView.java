@@ -247,8 +247,6 @@ public class PickerCategoryView
 
         // If all items have been selected, only show the Undo button if there's a meaningful
         // state to revert to (one might not exist if they were all selected manually).
-        // TODO(finnur): Add automatic test that exercises the visibility of the action button,
-        //               including when all items are selected manually (special case).
         mActionButton.setVisibility(!mToolbar.isSearching() && mMultiSelectionAllowed
                                 && (selectedItems.size() != mPickerAdapter.getItemCount()
                                            || mPreviousSelection != null)
@@ -280,11 +278,15 @@ public class PickerCategoryView
                         new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
                 mActionButton.setImageResource(R.drawable.ic_undo);
                 mActionButton.setContentDescription(mLabelUndo);
+                mListener.onContactsPickerUserAction(
+                        ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
             } else {
                 mSelectionDelegate.setSelectedItems(mPreviousSelection);
                 mActionButton.setImageResource(R.drawable.ic_select_all);
                 mActionButton.setContentDescription(mLabelSelectAll);
                 mPreviousSelection = null;
+                mListener.onContactsPickerUserAction(
+                        ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
             }
             mSelectAllMode = !mSelectAllMode;
         } else {

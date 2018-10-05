@@ -440,6 +440,10 @@ public class SelectFileDialog
             case CONTACTS_SELECTED:
                 onFileNotSelected();
                 break;
+
+            case SELECT_ALL:
+            case UNDO_SELECT_ALL:
+                break;
         }
     }
 

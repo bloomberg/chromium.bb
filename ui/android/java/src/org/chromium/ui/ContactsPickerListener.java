@@ -14,6 +14,8 @@ public interface ContactsPickerListener {
     enum ContactsPickerAction {
         CANCEL,
         CONTACTS_SELECTED,
+        SELECT_ALL,
+        UNDO_SELECT_ALL,
     }
 
     /**
