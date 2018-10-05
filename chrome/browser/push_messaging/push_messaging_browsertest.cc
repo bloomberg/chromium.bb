@@ -182,8 +182,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
   void RestartPushService() {
     Profile* profile = GetBrowser()->profile();
-    PushMessagingServiceFactory::GetInstance()->SetTestingFactory(profile,
-                                                                  nullptr);
+    PushMessagingServiceFactory::GetInstance()->SetTestingFactory(
+        profile, BrowserContextKeyedServiceFactory::TestingFactory());
     ASSERT_EQ(nullptr, PushMessagingServiceFactory::GetForProfile(profile));
     PushMessagingServiceFactory::GetInstance()->RestoreFactoryForTests(profile);
     PushMessagingServiceImpl::InitializeForProfile(profile);
