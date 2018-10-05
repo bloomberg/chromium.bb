@@ -1868,9 +1868,11 @@ void RenderFrameImpl::PepperSelectionChanged(
 
 RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
     PepperPluginInstanceImpl* plugin) {
-  GURL active_url;
-  if (render_view()->webview())
-    active_url = render_view()->GetURLForGraphicsContext3D();
+  // Get the URL of the main frame if possible.
+  blink::WebURL main_frame_url;
+  WebFrame* main_frame = render_view()->webview()->MainFrame();
+  if (main_frame->IsWebLocalFrame())
+    main_frame_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
 
   mojom::WidgetPtr widget_channel;
   mojom::WidgetRequest widget_channel_request =
@@ -1892,7 +1894,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
-      GetRenderWidget()->compositor_deps(), plugin, active_url,
+      GetRenderWidget()->compositor_deps(), plugin, std::move(main_frame_url),
       GetRenderWidget()->GetWebScreenInfo(), std::move(widget_channel_request));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and

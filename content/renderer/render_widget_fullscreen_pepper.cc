@@ -130,9 +130,9 @@ void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {
 // necessary.
 class PepperWidget : public WebWidget {
  public:
-  explicit PepperWidget(RenderWidgetFullscreenPepper* widget)
-      : widget_(widget) {
-  }
+  explicit PepperWidget(RenderWidgetFullscreenPepper* widget,
+                        const blink::WebURL& local_main_frame_url)
+      : widget_(widget), local_main_frame_url_(local_main_frame_url) {}
 
   virtual ~PepperWidget() {}
 
@@ -243,9 +243,12 @@ class PepperWidget : public WebWidget {
                   : WebInputEventResult::kNotHandled;
   }
 
+  blink::WebURL GetURLForDebugTrace() override { return local_main_frame_url_; }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
   WebSize size_;
+  blink::WebURL local_main_frame_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
@@ -258,16 +261,16 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
-    const GURL& active_url,
+    const blink::WebURL& local_main_frame_url,
     const ScreenInfo& screen_info,
     mojom::WidgetRequest widget_request) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
   DCHECK(show_callback);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
-                                       active_url, screen_info,
-                                       std::move(widget_request)));
-  widget->Init(std::move(show_callback), new PepperWidget(widget.get()));
+                                       screen_info, std::move(widget_request)));
+  widget->Init(std::move(show_callback),
+               new PepperWidget(widget.get(), local_main_frame_url));
   widget->AddRef();
   return widget.get();
 }
@@ -276,7 +279,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
-    const GURL& active_url,
     const ScreenInfo& screen_info,
     mojom::WidgetRequest widget_request)
     : RenderWidget(routing_id,
@@ -288,7 +290,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
                    false,
                    false,
                    std::move(widget_request)),
-      active_url_(active_url),
       plugin_(plugin),
       layer_(nullptr),
       mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {}
@@ -381,10 +382,6 @@ void RenderWidgetFullscreenPepper::OnSynchronizeVisualProperties(
     const VisualProperties& visual_properties) {
   RenderWidget::OnSynchronizeVisualProperties(visual_properties);
   UpdateLayerBounds();
-}
-
-GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {
-  return active_url_;
 }
 
 void RenderWidgetFullscreenPepper::UpdateLayerBounds() {

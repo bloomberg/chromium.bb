@@ -117,7 +117,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
@@ -130,7 +129,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
-
   void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
                            const WebFloatSize& layout_viewport_delta,
                            const WebFloatSize& elastic_overscroll_delta,
@@ -149,6 +147,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
+  WebURL GetURLForDebugTrace() override;
 
   // WebView methods:
   bool IsWebView() const override { return true; }

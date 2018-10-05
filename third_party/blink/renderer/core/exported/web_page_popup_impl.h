@@ -96,6 +96,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool IsAcceleratedCompositingActive() const override {
     return is_accelerated_compositing_active_;
   }
+  WebURL GetURLForDebugTrace() override;
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

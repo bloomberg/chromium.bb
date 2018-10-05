@@ -530,6 +530,13 @@ void WebPagePopupImpl::SetFocus(bool enable) {
   page_->GetFocusController().SetFocused(enable);
 }
 
+WebURL WebPagePopupImpl::GetURLForDebugTrace() {
+  WebFrame* main_frame = web_view_->MainFrame();
+  if (main_frame->IsWebLocalFrame())
+    return main_frame->ToWebLocalFrame()->GetDocument().Url();
+  return {};
+}
+
 void WebPagePopupImpl::Close() {
   closing_ = true;
   // In case closePopup() was not called.

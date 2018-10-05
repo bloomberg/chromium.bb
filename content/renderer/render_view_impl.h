@@ -394,7 +394,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void ScrollFocusedNodeIntoViewForWidget() override;
   void DidReceiveSetFocusEventForWidget() override;
   void DidChangeFocusForWidget() override;
-  GURL GetURLForGraphicsContext3DForWidget() override;
   void DidCommitCompositorFrameForWidget() override;
   void DidCompletePageScaleAnimationForWidget() override;
   void ResizeWebWidgetForWidget(
