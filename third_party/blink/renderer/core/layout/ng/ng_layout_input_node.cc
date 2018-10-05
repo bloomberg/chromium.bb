@@ -62,14 +62,6 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-bool NGLayoutInputNode::IsInline() const {
-  return type_ == kInline;
-}
-
-bool NGLayoutInputNode::IsBlock() const {
-  return type_ == kBlock;
-}
-
 bool NGLayoutInputNode::IsColumnSpanAll() const {
   return IsBlock() && box_->IsColumnSpanAll();
 }
