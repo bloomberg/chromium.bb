@@ -637,12 +637,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (style.HasAppearance())
     LayoutTheme::GetTheme().AdjustStyle(style, element);
 
-  // If we have first-letter pseudo style, transitions, or animations, do not
-  // share this style.
-  if (style.HasPseudoStyle(kPseudoIdFirstLetter) || style.Transitions() ||
-      style.Animations())
-    style.SetUnique();
-
   AdjustStyleForEditing(style);
 
   bool is_svg_root = false;
