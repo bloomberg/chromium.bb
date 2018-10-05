@@ -1056,6 +1056,7 @@ jumbo_component("base") {
     "win/wait_chain.h",
     "win/win_util.cc",
     "win/win_util.h",
+    "win/wincrypt_shim.h",
     "win/windows_defines.inc",
     "win/windows_types.h",
     "win/windows_undefines.inc",
