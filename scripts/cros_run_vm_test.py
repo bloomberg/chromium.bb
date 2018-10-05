@@ -35,6 +35,7 @@ class VMTest(object):
 
     self.build = opts.build
     self.deploy = opts.deploy
+    self.nostrip = opts.nostrip
     self.build_dir = opts.build_dir
 
     self.catapult_tests = opts.catapult_tests
@@ -121,6 +122,14 @@ class VMTest(object):
       deploy_cmd += ['--board', self.board]
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
+    if self.nostrip:
+      deploy_cmd += [
+          '--nostrip',
+          # An unstripped Chrome likey won't fit on the default partition. So
+          # tell deploy_chrome to deploy to a separate partition and bind it
+          # at the default deploy dir.
+          '--mount',
+      ]
     cros_build_lib.RunCommand(deploy_cmd)
     self._vm.WaitForBoot()
 
@@ -300,6 +309,8 @@ def ParseCommandLine(argv):
   parser.add_argument('--deploy', action='store_true', default=False,
                       help='Before running tests, deploy chrome to the VM, '
                       '--build-dir must be specified.')
+  parser.add_argument('--nostrip', action='store_true', default=False,
+                      help="Don't strip symbols from binaries if deploying.")
   parser.add_argument('--cwd', help='Change working directory.'
                       'An absolute path or a path relative to CWD on the host.')
   parser.add_argument('--files', default=[], action='append',
