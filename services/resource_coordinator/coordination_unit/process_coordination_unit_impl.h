@@ -13,7 +13,6 @@
 namespace resource_coordinator {
 
 class FrameCoordinationUnitImpl;
-class ProcessCoordinationUnitImpl;
 
 class ProcessCoordinationUnitImpl
     : public CoordinationUnitInterface<ProcessCoordinationUnitImpl,
