@@ -318,8 +318,7 @@ void Layer::SetOverscrollBehavior(const OverscrollBehavior& behavior) {
   if (!layer_tree_host_)
     return;
 
-  // TODO(pdr): This should not be needed when using layer lists.
-  if (scrollable()) {
+  if (scrollable() && !layer_tree_host_->IsUsingLayerLists()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
       scroll_node->overscroll_behavior = behavior;
@@ -338,8 +337,7 @@ void Layer::SetSnapContainerData(base::Optional<SnapContainerData> data) {
   if (!layer_tree_host_)
     return;
 
-  // TODO(pdr): This should not be needed when using layer lists.
-  if (scrollable()) {
+  if (scrollable() && !layer_tree_host_->IsUsingLayerLists()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
       scroll_node->snap_container_data = inputs_.snap_container_data;
@@ -579,18 +577,21 @@ void Layer::SetOpacity(float opacity) {
   bool force_rebuild = opacity == 1.f || inputs_.opacity == 1.f;
   inputs_.opacity = opacity;
   SetSubtreePropertyChanged();
-  // TODO(pdr): This should not be needed when using layer lists.
-  if (layer_tree_host_ && !force_rebuild) {
-    PropertyTrees* property_trees = layer_tree_host_->property_trees();
-    if (EffectNode* node =
-            property_trees->effect_tree.Node(effect_tree_index())) {
-      node->opacity = opacity;
-      node->effect_changed = true;
-      property_trees->effect_tree.set_needs_update(true);
+
+  if (layer_tree_host_ && !layer_tree_host_->IsUsingLayerLists()) {
+    if (!force_rebuild) {
+      PropertyTrees* property_trees = layer_tree_host_->property_trees();
+      if (EffectNode* node =
+              property_trees->effect_tree.Node(effect_tree_index())) {
+        node->opacity = opacity;
+        node->effect_changed = true;
+        property_trees->effect_tree.set_needs_update(true);
+      }
+    } else {
+      SetPropertyTreesNeedRebuild();
     }
   }
-  if (force_rebuild)
-    SetPropertyTreesNeedRebuild();
+
   SetNeedsCommit();
 }
 
@@ -692,17 +693,19 @@ void Layer::SetPosition(const gfx::PointF& position) {
     return;
 
   SetSubtreePropertyChanged();
-  if (has_transform_node_) {
-    // TODO(pdr): This should not be needed when using layer lists.
-    TransformNode* transform_node =
-        layer_tree_host_->property_trees()->transform_tree.Node(
-            transform_tree_index_);
-    transform_node->update_post_local_transform(position, transform_origin());
-    transform_node->needs_local_transform_update = true;
-    transform_node->transform_changed = true;
-    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
-  } else {
-    SetPropertyTreesNeedRebuild();
+
+  if (!layer_tree_host_->IsUsingLayerLists()) {
+    if (has_transform_node_) {
+      TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index_);
+      transform_node->update_post_local_transform(position, transform_origin());
+      transform_node->needs_local_transform_update = true;
+      transform_node->transform_changed = true;
+      layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
+    } else {
+      SetPropertyTreesNeedRebuild();
+    }
   }
 
   SetNeedsCommit();
@@ -733,9 +736,8 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     return;
 
   SetSubtreePropertyChanged();
-  if (layer_tree_host_) {
+  if (layer_tree_host_ && !layer_tree_host_->IsUsingLayerLists()) {
     if (has_transform_node_) {
-      // TODO(pdr): This should not be needed when using layer lists.
       TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index_);
@@ -770,19 +772,21 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
     return;
 
   SetSubtreePropertyChanged();
-  if (has_transform_node_) {
-    // TODO(pdr): This should not be needed when using layer lists.
-    TransformNode* transform_node =
-        layer_tree_host_->property_trees()->transform_tree.Node(
-            transform_tree_index_);
-    DCHECK_EQ(transform_tree_index(), transform_node->id);
-    transform_node->update_pre_local_transform(transform_origin);
-    transform_node->update_post_local_transform(position(), transform_origin);
-    transform_node->needs_local_transform_update = true;
-    transform_node->transform_changed = true;
-    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
-  } else {
-    SetPropertyTreesNeedRebuild();
+
+  if (!layer_tree_host_->IsUsingLayerLists()) {
+    if (has_transform_node_) {
+      TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index_);
+      DCHECK_EQ(transform_tree_index(), transform_node->id);
+      transform_node->update_pre_local_transform(transform_origin);
+      transform_node->update_post_local_transform(position(), transform_origin);
+      transform_node->needs_local_transform_update = true;
+      transform_node->transform_changed = true;
+      layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
+    } else {
+      SetPropertyTreesNeedRebuild();
+    }
   }
 
   SetNeedsCommit();
@@ -928,8 +932,7 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   if (!layer_tree_host_)
     return;
 
-  // TODO(pdr): This should not be needed when using layer lists.
-  if (scrollable()) {
+  if (scrollable() && !layer_tree_host_->IsUsingLayerLists()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_)) {
       scroll_node->user_scrollable_horizontal = horizontal;
