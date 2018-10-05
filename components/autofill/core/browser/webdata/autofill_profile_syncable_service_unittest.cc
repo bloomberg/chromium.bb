@@ -172,6 +172,7 @@ std::unique_ptr<AutofillProfile> ConstructCompleteProfile() {
                       ASCIIToUTF16("Santa Clara"));
   profile->set_language_code("en");
   profile->SetClientValidityFromBitfieldValue(kValidityStateBitfield);
+  profile->set_is_client_validity_states_updated(true);
   return profile;
 }
 
@@ -210,6 +211,7 @@ syncer::SyncData ConstructCompleteSyncData() {
   specifics->set_address_home_dependent_locality("Santa Clara");
   specifics->set_address_home_language_code("en");
   specifics->set_validity_state_bitfield(kValidityStateBitfield);
+  specifics->set_is_client_validity_states_updated(true);
 
   return syncer::SyncData::CreateLocalData(kGuid1, kGuid1, entity_specifics);
 }
@@ -1175,7 +1177,8 @@ TEST_F(AutofillProfileSyncableServiceTest, DefaultValidityStateNoSync) {
 }
 
 // Default validity state bitfield should be overwritten by sync.
-TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
+TEST_F(AutofillProfileSyncableServiceTest,
+       SyncUpdatesDefaultValidityBitfieldAndFlag) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
 
   // Local autofill profile has a default validity state.
@@ -1196,6 +1199,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   autofill_specifics->set_validity_state_bitfield(kValidityStateBitfield);
+  autofill_specifics->set_is_client_validity_states_updated(true);
   EXPECT_TRUE(autofill_specifics->has_validity_state_bitfield());
 
   syncer::SyncDataList data_list;
@@ -1207,6 +1211,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
   AutofillProfile expected_profile(kGuid1, kEmptyOrigin);
   expected_profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_profile.set_is_client_validity_states_updated(true);
   expected_bundle.profiles_to_update.push_back(&expected_profile);
 
   // Expect no changes to remote data.
