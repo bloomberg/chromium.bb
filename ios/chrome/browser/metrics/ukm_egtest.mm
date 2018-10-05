@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -69,7 +70,7 @@ class UkmEGTestHelper {
 
   static bool HasDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();
-    return service ? !!service->sources().count(source_id) : false;
+    return service && base::ContainsKey(service->sources(), source_id);
   }
 
   static void RecordDummySource(ukm::SourceId source_id) {

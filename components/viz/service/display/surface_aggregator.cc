@@ -889,8 +889,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         render_pass->filters.HasFilterThatMovesPixels();
     if (has_pixel_moving_filter)
       moved_pixel_passes_.insert(remapped_pass_id);
-    bool in_moved_pixel_pass = has_pixel_moving_filter ||
-                               !!moved_pixel_passes_.count(remapped_pass_id);
+    bool in_moved_pixel_pass =
+        has_pixel_moving_filter ||
+        base::ContainsKey(moved_pixel_passes_, remapped_pass_id);
     for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
         const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);

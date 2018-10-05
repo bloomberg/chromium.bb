@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
@@ -177,7 +178,7 @@ class UkmBrowserTestBase : public SyncTest {
   }
   bool HasSource(ukm::SourceId source_id) const {
     auto* service = ukm_service();
-    return service ? !!service->sources().count(source_id) : false;
+    return service && base::ContainsKey(service->sources(), source_id);
   }
   void RecordDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();
