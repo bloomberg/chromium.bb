@@ -144,6 +144,11 @@ class AuthenticatorRequestDialogModel {
     return transport_availability()->is_ble_powered;
   }
 
+  const AuthenticatorReference* selected_authenticator() const {
+    DCHECK_EQ(Step::kBlePinEntry, current_step());
+    return selected_authenticator_;
+  }
+
   // Starts the UX flow, by either showing the welcome screen, the transport
   // selection screen, or the guided flow for them most likely transport.
   //
@@ -261,6 +266,9 @@ class AuthenticatorRequestDialogModel {
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
 
+  void SetSelectedAuthenticatorForTesting(
+      AuthenticatorReference* authenticator);
+
   std::vector<AuthenticatorReference>& saved_authenticators() {
     return saved_authenticators_;
   }
@@ -288,6 +296,10 @@ class AuthenticatorRequestDialogModel {
   // that the WebAuthN request for the corresponding authenticators can be
   // dispatched lazily after the user interacts with the UI element.
   std::vector<AuthenticatorReference> saved_authenticators_;
+
+  // Represents the Bluetooth authenticator that the user is trying to connect
+  // to or conduct WebAuthN request to via the WebAuthN UI.
+  AuthenticatorReference* selected_authenticator_ = nullptr;
   RequestCallback request_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
 
