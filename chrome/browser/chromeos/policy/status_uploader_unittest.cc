@@ -87,7 +87,7 @@ class StatusUploaderTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     client_.SetDMToken("dm_token");
     collector_.reset(new MockDeviceStatusCollector(&prefs_));
-    settings_helper_.ReplaceProvider(chromeos::kReportUploadFrequency);
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
 
     // Keep a pointer to the mock collector because collector_ gets cleared
     // when it is passed to the StatusUploader constructor.

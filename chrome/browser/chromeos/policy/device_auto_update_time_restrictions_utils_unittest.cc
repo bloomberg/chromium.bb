@@ -82,8 +82,8 @@ class DeviceAutoUpdateTimeRestrictionsUtilTest : public testing::Test {
   void TearDown() override { icu::TimeZone::adoptDefault(timezone_.release()); }
 
   void SetCrosSettings(const std::string& path, const Value& in_value) {
+    cros_settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     cros_settings_helper_.Set(path, in_value);
-    cros_settings_helper_.ReplaceProvider(path);
   }
 
   ListValue GetIntervalsAsList(const vector<WeeklyTimeInterval>& intervals) {
