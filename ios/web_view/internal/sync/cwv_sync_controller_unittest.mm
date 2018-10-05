@@ -19,12 +19,15 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
 #import "ios/web_view/public/cwv_sync_controller_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -35,6 +38,9 @@
 #endif
 
 namespace ios_web_view {
+
+using testing::_;
+using testing::Invoke;
 
 class CWVSyncControllerTest : public PlatformTest {
  protected:
@@ -64,12 +70,28 @@ class CWVSyncControllerTest : public PlatformTest {
     account_tracker_service_.Initialize(browser_state_.GetPrefs(),
                                         base::FilePath());
 
+    EXPECT_CALL(*profile_sync_service_, AddObserver(_))
+        .WillOnce(Invoke(this, &CWVSyncControllerTest::AddObserver));
+
     sync_controller_ = [[CWVSyncController alloc]
         initWithProfileSyncService:profile_sync_service_.get()
              accountTrackerService:&account_tracker_service_
                      signinManager:&signin_manager_
                       tokenService:&token_service_];
   };
+
+  ~CWVSyncControllerTest() override {
+    EXPECT_CALL(*profile_sync_service_, RemoveObserver(_));
+  }
+
+  void AddObserver(syncer::SyncServiceObserver* observer) {
+    sync_service_observer_ = observer;
+  }
+
+  void OnConfigureDone(const syncer::DataTypeManager::ConfigureResult& result) {
+    sync_service_observer_->OnSyncConfigurationCompleted(
+        profile_sync_service_.get());
+  }
 
   web::TestWebThreadBundle web_thread_bundle_;
   ios_web_view::WebViewBrowserState browser_state_;
@@ -81,13 +103,14 @@ class CWVSyncControllerTest : public PlatformTest {
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
   CWVSyncController* sync_controller_;
+  syncer::SyncServiceObserver* sync_service_observer_;
 };
 
 // Verifies CWVSyncControllerDataSource methods are invoked with the correct
 // parameters.
 TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
-  // [delegate expect] returns an autoreleased object, but it must be destroyed
-  // before this test exits to avoid holding on to |sync_controller_|.
+  // [data_source expect] returns an autoreleased object, but it must be
+  // destroyed before this test exits to avoid holding on to |sync_controller_|.
   @autoreleasepool {
     id data_source = OCMProtocolMock(@protocol(CWVSyncControllerDataSource));
 
@@ -98,6 +121,9 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
                  [scopes containsObject:@"scope2.chromium.org"];
         }]
               completionHandler:[OCMArg any]];
+
+    EXPECT_CALL(*profile_sync_service_, RequestStart());
+    EXPECT_CALL(*profile_sync_service_, SetFirstSetupComplete());
 
     CWVIdentity* identity =
         [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
@@ -111,6 +137,42 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
     [sync_controller_ fetchAccessTokenForScopes:scopes callback:callback];
 
     [data_source verify];
+  }
+}
+
+// Verifies CWVSyncControllerDelegate methods are invoked with the correct
+// parameters.
+TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
+  // [delegate expect] returns an autoreleased object, but it must be destroyed
+  // before this test exits to avoid holding on to |sync_controller_|.
+  @autoreleasepool {
+    id delegate = OCMProtocolMock(@protocol(CWVSyncControllerDelegate));
+    sync_controller_.delegate = delegate;
+
+    [[delegate expect] syncControllerDidStartSync:sync_controller_];
+    EXPECT_CALL(*profile_sync_service_, OnConfigureDone(_))
+        .WillOnce(Invoke(
+            this,
+            &CWVSyncControllerTest_DelegateCallbacks_Test::OnConfigureDone));
+    syncer::DataTypeManager::ConfigureResult result;
+    profile_sync_service_->OnConfigureDone(result);
+
+    [[delegate expect]
+          syncController:sync_controller_
+        didFailWithError:[OCMArg checkWithBlock:^BOOL(NSError* error) {
+          return error.code == CWVSyncErrorInvalidGAIACredentials;
+        }]];
+    GoogleServiceAuthError auth_error(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+    [sync_controller_ didUpdateAuthError:auth_error];
+
+    [[delegate expect] syncController:sync_controller_
+                didStopSyncWithReason:CWVStopSyncReasonServer];
+    [sync_controller_
+        didSignoutWithSourceMetric:signin_metrics::ProfileSignout::
+                                       SERVER_FORCED_DISABLE];
+
+    [delegate verify];
   }
 }
 
