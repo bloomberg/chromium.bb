@@ -514,11 +514,14 @@ FileFilter.prototype.setAllAndroidFoldersVisible = function(visible) {
     this.addFilter('android_hidden', entry => {
       if (entry.filesystem && entry.filesystem.name !== 'android_files')
         return true;
-      // If |entry| is an Android top-level folder which is not whitelisted, it
-      // should be hidden.
-      if (entry.fullPath && entry.fullPath.substr(1) == entry.name &&
-          FileFilter.DEFAULT_ANDROID_FOLDERS.indexOf(entry.name) == -1) {
-        return false;
+      // If |entry| is an Android top-level folder which is not whitelisted or
+      // its sub folder, it should be hidden.
+      if (entry.fullPath) {
+        const components = entry.fullPath.split('/');
+        if (components[1] &&
+            FileFilter.DEFAULT_ANDROID_FOLDERS.indexOf(components[1]) == -1) {
+          return false;
+        }
       }
       return true;
     });
