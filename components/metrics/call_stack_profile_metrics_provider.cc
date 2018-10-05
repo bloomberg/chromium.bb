@@ -4,6 +4,8 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
+#include <algorithm>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -37,6 +39,34 @@ const size_t kMaxPendingProfiles = 1250;
 // profile representation.
 constexpr size_t kMaxPendingUnserializedProfiles = 250;
 
+// Merges the serialized profiles into the unserialized ones, by appending them.
+// The params are not const& because they should be passed using std::move.
+// Implementation note: In order to maintain the invariant that profiles are
+// reported in correct temporal sequence, it's important to order the serialized
+// profiles to follow the unserialized profiles. This way, profiles that were
+// serialized simply for space efficiency will end up ordered correctly.
+std::vector<SampledProfile> MergeProfiles(
+    std::vector<SampledProfile> profiles,
+    std::vector<std::string> serialized_profiles) {
+  // Deserialize all serialized profiles, skipping over any that fail to parse.
+  std::vector<SampledProfile> deserialized_profiles;
+  deserialized_profiles.reserve(serialized_profiles.size());
+  for (const auto& serialized_profile : serialized_profiles) {
+    SampledProfile profile;
+    if (profile.ParseFromArray(serialized_profile.data(),
+                               serialized_profile.size())) {
+      deserialized_profiles.push_back(std::move(profile));
+    }
+  }
+
+  // Merge the profiles.
+  profiles.reserve(profiles.size() + deserialized_profiles.size());
+  std::move(deserialized_profiles.begin(), deserialized_profiles.end(),
+            std::back_inserter(profiles));
+
+  return profiles;
+}
+
 // PendingProfiles ------------------------------------------------------------
 
 // Singleton class responsible for retaining profiles received from
@@ -51,31 +81,27 @@ class PendingProfiles {
  public:
   static PendingProfiles* GetInstance();
 
-  // Retrieves all the pending unserialized profiles.
-  std::vector<SampledProfile> RetrieveUnserializedProfiles();
+  // Retrieves all the pending profiles.
+  std::vector<SampledProfile> RetrieveProfiles();
 
-  // Retrieves all the pending serialized profiles.
-  std::vector<std::string> RetrieveSerializedProfiles();
-
-  // Enables the collection of profiles by CollectUnserializedProfile or
-  // CollectSerializedProfile if |enabled| is true. Otherwise, clears current
-  // profiles and ignores profiles provided to future invocations of
-  // CollectUnserializedProfile or CollectSerializedProfile.
+  // Enables the collection of profiles by MaybeCollect*Profile if |enabled| is
+  // true. Otherwise, clears the currently collected profiles and ignores
+  // profiles provided to future invocations of MaybeCollect*Profile.
   void SetCollectionEnabled(bool enabled);
 
-  // Returns true if collection is enabled for a given profile based on its
-  // |profile_start_time|.
-  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const;
-
   // Collects |profile|. It may be stored as it is, or in a serialized form, or
-  // ignored, depending on the pre-defined storage capacity; it is not const&
-  // because it must be passed with std::move.
-  void CollectUnserializedProfile(SampledProfile profile);
+  // ignored, depending on the pre-defined storage capacity and whether
+  // collection is enabled. |profile| is not const& because it must be passed
+  // with std::move.
+  void MaybeCollectProfile(base::TimeTicks profile_start_time,
+                           SampledProfile profile);
 
   // Collects |serialized_profile|. It may be ignored depending on the
-  // pre-defined storage capacity; it is not const& because it must be passed
-  // with std::move.
-  void CollectSerializedProfile(std::string serialized_profile);
+  // pre-defined storage capacity and whether collection is enabled.
+  // |serialized_profile| is not const& because it must be passed with
+  // std::move.
+  void MaybeCollectSerializedProfile(base::TimeTicks profile_start_time,
+                                     std::string serialized_profile);
 
   // Allows testing against the initial state multiple times.
   void ResetToDefaultStateForTesting();
@@ -86,11 +112,19 @@ class PendingProfiles {
   PendingProfiles();
   ~PendingProfiles() = delete;
 
+  // Returns true if collection is enabled for a given profile based on its
+  // |profile_start_time|. The |lock_| must be held prior to calling this
+  // method.
+  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const;
+
+  // Whether there is spare capacity to store an additional profile.
+  // The |lock_| must be held prior to calling this method.
+  bool HasSpareCapacity() const;
+
   mutable base::Lock lock_;
 
-  // If true, profiles provided to CollectUnserializedProfile or
-  // CollectSerializedProfile should be collected. Otherwise they will be
-  // ignored.
+  // If true, profiles provided to MaybeCollect*Profile should be collected.
+  // Otherwise they will be ignored.
   bool collection_enabled_;
 
   // The last time collection was disabled. Used to determine if collection was
@@ -117,14 +151,20 @@ PendingProfiles* PendingProfiles::GetInstance() {
   return instance.get();
 }
 
-std::vector<SampledProfile> PendingProfiles::RetrieveUnserializedProfiles() {
-  base::AutoLock scoped_lock(lock_);
-  return std::move(unserialized_profiles_);
-}
+std::vector<SampledProfile> PendingProfiles::RetrieveProfiles() {
+  std::vector<SampledProfile> profiles;
+  std::vector<std::string> serialized_profiles;
 
-std::vector<std::string> PendingProfiles::RetrieveSerializedProfiles() {
-  base::AutoLock scoped_lock(lock_);
-  return std::move(serialized_profiles_);
+  {
+    base::AutoLock scoped_lock(lock_);
+    profiles.swap(unserialized_profiles_);
+    serialized_profiles.swap(serialized_profiles_);
+  }
+
+  // Merge the serialized profiles by deserializing them. Note that this work is
+  // performed without holding the lock, to avoid blocking the lock for an
+  // extended period of time.
+  return MergeProfiles(std::move(profiles), std::move(serialized_profiles));
 }
 
 void PendingProfiles::SetCollectionEnabled(bool enabled) {
@@ -143,7 +183,7 @@ void PendingProfiles::SetCollectionEnabled(bool enabled) {
 
 bool PendingProfiles::IsCollectionEnabledForProfile(
     base::TimeTicks profile_start_time) const {
-  base::AutoLock scoped_lock(lock_);
+  lock_.AssertAcquired();
 
   // Scenario 1: return false if collection is disabled.
   if (!collection_enabled_)
@@ -168,33 +208,50 @@ bool PendingProfiles::IsCollectionEnabledForProfile(
   return true;
 }
 
-void PendingProfiles::CollectUnserializedProfile(SampledProfile profile) {
-  base::AutoLock scoped_lock(lock_);
-
-  // Store the unserialized profile directly if we are under the capacity for
-  // unserialized profiles.
-  if (unserialized_profiles_.size() < kMaxPendingUnserializedProfiles) {
-    unserialized_profiles_.push_back(std::move(profile));
-    return;
-  }
-
-  // If there is no room for unserialized profiles but there is still room for
-  // serialized profiles, convert the unserialized profile to serialized form.
-  if ((unserialized_profiles_.size() + serialized_profiles_.size()) <
-      kMaxPendingProfiles) {
-    std::string serialized_profile;
-    profile.SerializeToString(&serialized_profile);
-    serialized_profiles_.push_back(std::move(serialized_profile));
-  }
+bool PendingProfiles::HasSpareCapacity() const {
+  lock_.AssertAcquired();
+  return (unserialized_profiles_.size() + serialized_profiles_.size()) <
+         kMaxPendingProfiles;
 }
 
-void PendingProfiles::CollectSerializedProfile(std::string serialized_profile) {
+void PendingProfiles::MaybeCollectProfile(base::TimeTicks profile_start_time,
+                                          SampledProfile profile) {
+  {
+    base::AutoLock scoped_lock(lock_);
+
+    if (!IsCollectionEnabledForProfile(profile_start_time))
+      return;
+
+    // Store the unserialized profile directly if there's room.
+    if (unserialized_profiles_.size() < kMaxPendingUnserializedProfiles) {
+      unserialized_profiles_.push_back(std::move(profile));
+      return;
+    }
+
+    // This early return is strictly a performance optimization to avoid doing
+    // unnecessary serialization below.  For correctness, since the
+    // serialization happens without holding the lock, it's necessary to check
+    // this condition again prior to actually collecting the serialized profile.
+    if (!HasSpareCapacity())
+      return;
+  }
+
+  // There was no room to store the unserialized profile directly, but there was
+  // room to store it in serialized form. Serialize the profile without holding
+  // the lock, then try again to store it.
+  std::string serialized_profile;
+  profile.SerializeToString(&serialized_profile);
+  MaybeCollectSerializedProfile(profile_start_time,
+                                std::move(serialized_profile));
+}
+
+void PendingProfiles::MaybeCollectSerializedProfile(
+    base::TimeTicks profile_start_time,
+    std::string serialized_profile) {
   base::AutoLock scoped_lock(lock_);
 
-  if ((unserialized_profiles_.size() + serialized_profiles_.size()) <
-      kMaxPendingProfiles) {
+  if (IsCollectionEnabledForProfile(profile_start_time) && HasSpareCapacity())
     serialized_profiles_.push_back(std::move(serialized_profile));
-  }
 }
 
 void PendingProfiles::ResetToDefaultStateForTesting() {
@@ -229,26 +286,16 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 void CallStackProfileMetricsProvider::ReceiveProfile(
     base::TimeTicks profile_start_time,
     SampledProfile profile) {
-  if (!PendingProfiles::GetInstance()->IsCollectionEnabledForProfile(
-          profile_start_time)) {
-    return;
-  }
-
-  PendingProfiles::GetInstance()->CollectUnserializedProfile(
-      std::move(profile));
+  PendingProfiles::GetInstance()->MaybeCollectProfile(profile_start_time,
+                                                      std::move(profile));
 }
 
 // static
 void CallStackProfileMetricsProvider::ReceiveSerializedProfile(
     base::TimeTicks profile_start_time,
     std::string serialized_profile) {
-  if (!PendingProfiles::GetInstance()->IsCollectionEnabledForProfile(
-          profile_start_time)) {
-    return;
-  }
-
-  PendingProfiles::GetInstance()->CollectSerializedProfile(
-      std::move(serialized_profile));
+  PendingProfiles::GetInstance()->MaybeCollectSerializedProfile(
+      profile_start_time, std::move(serialized_profile));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
@@ -262,25 +309,13 @@ void CallStackProfileMetricsProvider::OnRecordingDisabled() {
 
 void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
-  std::vector<SampledProfile> unserialized_profiles =
-      PendingProfiles::GetInstance()->RetrieveUnserializedProfiles();
+  std::vector<SampledProfile> profiles =
+      PendingProfiles::GetInstance()->RetrieveProfiles();
 
-  std::vector<std::string> serialized_profiles =
-      PendingProfiles::GetInstance()->RetrieveSerializedProfiles();
+  DCHECK(base::FeatureList::IsEnabled(kEnableReporting) || profiles.empty());
 
-  DCHECK(base::FeatureList::IsEnabled(kEnableReporting) ||
-         (unserialized_profiles.empty() && serialized_profiles.empty()));
-
-  for (auto& profile : unserialized_profiles)
+  for (auto& profile : profiles)
     *uma_proto->add_sampled_profile() = std::move(profile);
-
-  for (auto& serialized_profile : serialized_profiles) {
-    SampledProfile profile;
-    if (profile.ParseFromArray(serialized_profile.data(),
-                               serialized_profile.size())) {
-      *uma_proto->add_sampled_profile() = std::move(profile);
-    }
-  }
 }
 
 // static
