@@ -11,7 +11,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
@@ -21,6 +20,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -349,7 +349,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_selected));
             mIconView.setImageDrawable(mCheckDrawable);
-            ImageViewCompat.setImageTintList(mIconView, mCheckedIconForegroundColorList);
+            ApiCompatibilityUtils.setImageTintList(mIconView, mCheckedIconForegroundColorList);
             mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
@@ -358,13 +358,13 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                     Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false),
                     getResources().getDimensionPixelSize(
                             R.dimen.list_item_start_icon_corner_radius)));
-            ImageViewCompat.setImageTintList(mIconView, null);
+            ApiCompatibilityUtils.setImageTintList(mIconView, null);
         } else {
             mIconView.setBackgroundResource(mIconBackgroundResId);
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_default));
             mIconView.setImageResource(mIconResId);
-            ImageViewCompat.setImageTintList(mIconView, mIconForegroundColorList);
+            ApiCompatibilityUtils.setImageTintList(mIconView, mIconForegroundColorList);
         }
     }
 

@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.toolbar;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.design.widget.TabLayout;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -110,14 +110,15 @@ public class IncognitoToggleTabLayout extends TabLayout {
         final boolean isIncognitoSelected = mTabModelSelector.isIncognitoSelected();
         if (isIncognitoSelected) {
             setSelectedTabIndicatorColor(mTabIconSelectedLightColor.getDefaultColor());
-            ImageViewCompat.setImageTintList(mStandardButtonIcon, mTabIconLightColor);
+            ApiCompatibilityUtils.setImageTintList(mStandardButtonIcon, mTabIconLightColor);
             mTabSwitcherDrawable.setTint(mTabIconLightColor);
-            ImageViewCompat.setImageTintList(mIncognitoButtonIcon, mTabIconSelectedLightColor);
+            ApiCompatibilityUtils.setImageTintList(
+                    mIncognitoButtonIcon, mTabIconSelectedLightColor);
         } else {
             setSelectedTabIndicatorColor(mTabIconSelectedDarkColor.getDefaultColor());
-            ImageViewCompat.setImageTintList(mStandardButtonIcon, mTabIconSelectedDarkColor);
+            ApiCompatibilityUtils.setImageTintList(mStandardButtonIcon, mTabIconSelectedDarkColor);
             mTabSwitcherDrawable.setTint(mTabIconSelectedDarkColor);
-            ImageViewCompat.setImageTintList(mIncognitoButtonIcon, mTabIconDarkColor);
+            ApiCompatibilityUtils.setImageTintList(mIncognitoButtonIcon, mTabIconDarkColor);
         }
         // Ensure the tab in tab layout is correctly selected when tab switcher is
         // first opened.

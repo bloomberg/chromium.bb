@@ -13,12 +13,14 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -33,6 +35,8 @@ import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.widget.ImageViewCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
@@ -40,6 +44,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.textclassifier.TextClassifier;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -467,6 +472,17 @@ public class ApiCompatibilityUtils {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    public static void setImageTintList(
+            @NonNull ImageView view, @Nullable ColorStateList tintList) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+            // Work around broken workaround in ImageViewCompat, see https://crbug.com/891609#c3.
+            if (tintList != null && view.getImageTintMode() == null) {
+                view.setImageTintMode(PorterDuff.Mode.SRC_IN);
+            }
+        }
+        ImageViewCompat.setImageTintList(view, tintList);
     }
 
     /**

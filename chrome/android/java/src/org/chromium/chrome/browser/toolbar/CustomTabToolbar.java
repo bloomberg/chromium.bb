@@ -23,7 +23,6 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.widget.AppCompatImageButton;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -504,7 +503,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     private void updateButtonsTint() {
         if (getMenuButton() != null) {
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     getMenuButton(), mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
         updateButtonTint(mCloseButton);
@@ -551,7 +550,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(securityIconResource);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mSecurityButton, getToolbarDataProvider().getSecurityIconColorStateList());
             mAnimDelegate.showSecurityButton();
         }
