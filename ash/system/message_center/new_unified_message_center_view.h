@@ -24,7 +24,8 @@ namespace ash {
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
 class ASH_EXPORT NewUnifiedMessageCenterView
     : public views::View,
-      public MessageCenterScrollBar::Observer {
+      public MessageCenterScrollBar::Observer,
+      public views::ButtonListener {
  public:
   NewUnifiedMessageCenterView();
   ~NewUnifiedMessageCenterView() override;
@@ -39,10 +40,22 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   // UnifiedMessageListView.
   void ConfigureMessageView(message_center::MessageView* message_view);
 
+  // views::View:
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
+
   // MessageCenterScrollBar::Observer:
   void OnMessageCenterScrolled() override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
+  friend class NewUnifiedMessageCenterViewTest;
+
+  void UpdateVisibility();
+  views::View* CreateScrollerContents();
+
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
 

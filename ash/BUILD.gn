@@ -1850,6 +1850,7 @@ test("ash_unittests") {
     "system/message_center/arc/arc_notification_view_unittest.cc",
     "system/message_center/ash_popup_alignment_delegate_unittest.cc",
     "system/message_center/inactive_user_notification_blocker_unittest.cc",
+    "system/message_center/new_unified_message_center_view_unittest.cc",
     "system/message_center/notification_tray_unittest.cc",
     "system/message_center/session_state_notification_blocker_unittest.cc",
     "system/message_center/unified_message_list_view_unittest.cc",
