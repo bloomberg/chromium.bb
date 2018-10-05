@@ -50,6 +50,12 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
 void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
     const std::string& field_trial_name,
     const std::string& group_name) {
+  // The FieldTrialSynchronizer may have been created before any BrowserThread
+  // is created, so we don't need to synchronize with child processes in which
+  // case there are no child processes to notify yet.
+  if (!content::BrowserThread::IsThreadInitialized(BrowserThread::UI))
+    return;
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&FieldTrialSynchronizer::NotifyAllRenderers, this,
