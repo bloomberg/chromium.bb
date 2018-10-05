@@ -328,13 +328,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
     std::string trailer =
         (m == "PUT" || m == "POST") ? "Content-Length: 0\r\n" : "";
 
-    std::string request1 =
-        base::StringPrintf("%s http://www.google.com/ HTTP/1.1\r\n"
-                           "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n%s"
-                           "User-Agent:\r\n"
-                           "Accept-Encoding: gzip, deflate\r\n\r\n",
-                           method, trailer.c_str());
+    std::string request1 = base::StringPrintf(
+        "%s http://www.google.com/ HTTP/1.1\r\n"
+        "Host: www.google.com\r\n"
+        "Proxy-Connection: keep-alive\r\n%s"
+        "User-Agent: \r\n"
+        "Accept-Encoding: gzip, deflate\r\n\r\n",
+        method, trailer.c_str());
 
     std::string payload1 =
         (expected_retry ? "Bypass message" : "content");
@@ -387,7 +387,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
                                       : "";
 
     std::string request2_suffix =
-        "User-Agent:\r\n"
+        "User-Agent: \r\n"
         "Accept-Encoding: gzip, deflate\r\n\r\n";
 
     request2 = request2_prefix + request2_middle + request2_suffix;
@@ -1069,11 +1069,11 @@ TEST_F(DataReductionProxyProtocolTest,
     MockRead(net::SYNCHRONOUS, net::OK),
   };
   MockWrite data_writes[] = {
-    MockWrite("GET / HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n"
-              "User-Agent:\r\n"
-              "Accept-Encoding: gzip, deflate\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.google.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent: \r\n"
+                "Accept-Encoding: gzip, deflate\r\n\r\n"),
   };
   StaticSocketDataProvider data1(data_reads, data_writes);
   mock_socket_factory_.AddSocketDataProvider(&data1);

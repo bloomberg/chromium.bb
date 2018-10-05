@@ -389,7 +389,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                              .append(
                                  "\r\n"
                                  "Proxy-Connection: keep-alive\r\n"
-                                 "User-Agent:\r\n"
+                                 "User-Agent: \r\n"
                                  "Accept-Encoding: gzip, deflate\r\n"
                                  "Accept-Language: en-us,fr\r\n");
 
@@ -555,7 +555,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                      .append(
                                          "\r\n"
                                          "Proxy-Connection: keep-alive\r\n");
-    std::string user_agent_header = "User-Agent:\r\n";
+    std::string user_agent_header = "User-Agent: \r\n";
 
     // Set the base Accept-Encoding header value; Brotli may be added to it.
     std::string accept_encoding_header_value;
@@ -711,7 +711,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     std::string mock_write =
         "GET http://www.google.com/ HTTP/1.1\r\nHost: "
         "www.google.com\r\nProxy-Connection: "
-        "keep-alive\r\nUser-Agent:\r\nAccept-Encoding: gzip, "
+        "keep-alive\r\nUser-Agent: \r\nAccept-Encoding: gzip, "
         "deflate\r\nAccept-Language: en-us,fr\r\n"
         "chrome-proxy-ect: Unknown\r\n"
         "Chrome-Proxy: " +

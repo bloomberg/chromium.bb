@@ -175,12 +175,8 @@ void HttpRequestHeaders::MergeFrom(const HttpRequestHeaders& other) {
 std::string HttpRequestHeaders::ToString() const {
   std::string output;
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
-    if (!it->value.empty()) {
-      base::StringAppendF(&output, "%s: %s\r\n",
-                          it->key.c_str(), it->value.c_str());
-    } else {
-      base::StringAppendF(&output, "%s:\r\n", it->key.c_str());
-    }
+    base::StringAppendF(&output, "%s: %s\r\n", it->key.c_str(),
+                        it->value.c_str());
   }
   output.append("\r\n");
   return output;
