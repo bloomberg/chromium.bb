@@ -110,9 +110,9 @@ public interface ToolbarDataProvider {
     @ColorRes
     default int getVerboseStatusTextColor(Resources res, boolean useDarkColors) {
         if (isPreview()) {
-            return ApiCompatibilityUtils.getColor(res,
-                    useDarkColors ? R.color.locationbar_status_preview_color
-                                  : R.color.locationbar_status_preview_color_light);
+            // There will never be a Preview in Incognito and the site theme color is not used. So
+            // ignore useDarkColors.
+            return ApiCompatibilityUtils.getColor(res, R.color.locationbar_status_preview_color);
         }
 
         if (isOfflinePage()) {

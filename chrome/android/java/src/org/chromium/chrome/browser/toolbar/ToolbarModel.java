@@ -397,6 +397,11 @@ public class ToolbarModel implements ToolbarDataProvider {
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
             list = AppCompatResources.getColorStateList(mContext, R.color.light_mode_tint);
+        } else if (isPreview()) {
+            // There will never be a preview in incognito. Always use the darker color rather than
+            // incorporating with the block above.
+            list = AppCompatResources.getColorStateList(
+                    mContext, R.color.locationbar_status_preview_color);
         } else if (!hasTab() || isUsingBrandColor()
                 || ChromeFeatureList.isEnabled(
                            ChromeFeatureList.OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE)
