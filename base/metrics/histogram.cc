@@ -465,6 +465,16 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   Sample current = minimum;
   ranges->set_range(bucket_index, current);
   size_t bucket_count = ranges->bucket_count();
+
+  // Temporary for https://crbug.com/836238
+  uint32_t checksum = static_cast<uint32_t>(bucket_count + 1);
+  checksum = Crc32(checksum, 0);
+  checksum = Crc32(checksum, current);
+  debug::Alias(&minimum);
+  debug::Alias(&maximum);
+  debug::Alias(&bucket_count);
+  debug::Alias(&checksum);
+
   while (bucket_count > ++bucket_index) {
     double log_current;
     log_current = log(static_cast<double>(current));
@@ -479,9 +489,12 @@ void Histogram::InitializeBucketRanges(Sample minimum,
     else
       ++current;  // Just do a narrow bucket, and keep trying.
     ranges->set_range(bucket_index, current);
+    checksum = Crc32(checksum, current);
   }
   ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
+  checksum = Crc32(checksum, HistogramBase::kSampleType_MAX);
+  CHECK_EQ(checksum, ranges->checksum());
 }
 
 // static
@@ -1094,7 +1107,7 @@ double LinearHistogram::GetBucketSize(Count current, uint32_t i) const {
 
 const std::string LinearHistogram::GetAsciiBucketRange(uint32_t i) const {
   int range = ranges(i);
-  auto it = bucket_description_.find(range);
+  BucketDescriptionMap::const_iterator it = bucket_description_.find(range);
   if (it == bucket_description_.end())
     return Histogram::GetAsciiBucketRange(i);
   return it->second;
@@ -1111,13 +1124,33 @@ void LinearHistogram::InitializeBucketRanges(Sample minimum,
   double min = minimum;
   double max = maximum;
   size_t bucket_count = ranges->bucket_count();
+
+  // Temporary for https://crbug.com/836238
+  bool is_enum = (minimum == 1 &&
+                  static_cast<Sample>(bucket_count) == maximum - minimum + 2);
+  uint32_t checksum = static_cast<uint32_t>(bucket_count + 1);
+  checksum = Crc32(checksum, 0);
+  debug::Alias(&minimum);
+  debug::Alias(&maximum);
+  debug::Alias(&min);
+  debug::Alias(&max);
+  debug::Alias(&bucket_count);
+  debug::Alias(&checksum);
+  debug::Alias(&is_enum);
+
   for (size_t i = 1; i < bucket_count; ++i) {
     double linear_range =
         (min * (bucket_count - 1 - i) + max * (i - 1)) / (bucket_count - 2);
-    ranges->set_range(i, static_cast<Sample>(linear_range + 0.5));
+    uint32_t range = static_cast<Sample>(linear_range + 0.5);
+    if (is_enum)
+      CHECK_EQ(static_cast<uint32_t>(i), range);
+    ranges->set_range(i, range);
+    checksum = Crc32(checksum, range);
   }
   ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
+  checksum = Crc32(checksum, HistogramBase::kSampleType_MAX);
+  CHECK_EQ(checksum, ranges->checksum());
 }
 
 // static
