@@ -271,6 +271,9 @@ extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
 extern const char
     kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
 
+extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
+extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
+
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 

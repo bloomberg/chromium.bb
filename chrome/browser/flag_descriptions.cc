@@ -400,6 +400,13 @@ const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
     "If enabled, changes the server save card prompt's explanation to mention "
     "the saving of the billing address.";
 
+const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
+    "Show the upload results dialog after local card migration";
+const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =
+    "If enabled, the local card migration offer dialog will remain pending "
+    "after the user clicks the save button. Once migration is finished, "
+    "the dialog will be updated with the results of each card.";
+
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =
