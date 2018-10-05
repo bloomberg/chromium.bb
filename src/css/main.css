@@ -377,8 +377,16 @@ body.capturing #camera-mode {
 }
 
 #toggle-device.animate {
-  -webkit-transform: rotate(-180deg);
-  transition: transform 350ms ease-out;
+  animation: toggle-device-rotate 350ms ease-out;
+}
+
+@keyframes toggle-device-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-180deg);
+  }
 }
 
 #gallery-enter {
