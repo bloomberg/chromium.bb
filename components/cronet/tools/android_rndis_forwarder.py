@@ -9,6 +9,13 @@ import re
 import socket
 import struct
 import subprocess
+import sys
+
+REPOSITORY_ROOT = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
+from core import path_util
+sys.path.append(path_util.GetTelemetryDir())
 
 from telemetry.core import platform
 from telemetry.core import util
@@ -282,7 +289,11 @@ function doit() {
   # For some combinations of devices and host kernels, adb won't work unless the
   # interface is up, but if we bring it up immediately, it will break adb.
   #sleep 1
-  ifconfig rndis0 %(device_ip_address)s netmask 255.255.255.0 up
+  if ip link show rndis0 ; then
+    ifconfig rndis0 %(device_ip_address)s netmask 255.255.255.0 up
+  else
+    ifconfig usb0 %(device_ip_address)s netmask 255.255.255.0 up
+  fi
   echo DONE >> %(prefix)s.log
 }
 
