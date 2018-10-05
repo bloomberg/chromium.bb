@@ -1444,12 +1444,20 @@ String AXObject::GetName(NameSources* name_sources) const {
 String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
                                           bool in_aria_labelled_by_traversal,
                                           AXObjectSet& visited) {
+  ax::mojom::NameFrom tmp_name_from;
+  return RecursiveTextAlternative(ax_obj, in_aria_labelled_by_traversal,
+                                  visited, tmp_name_from);
+}
+
+String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
+                                          bool in_aria_labelled_by_traversal,
+                                          AXObjectSet& visited,
+                                          ax::mojom::NameFrom& name_from) {
   if (visited.Contains(&ax_obj) && !in_aria_labelled_by_traversal)
     return String();
 
-  ax::mojom::NameFrom tmp_name_from;
   return ax_obj.TextAlternative(true, in_aria_labelled_by_traversal, visited,
-                                tmp_name_from, nullptr, nullptr);
+                                name_from, nullptr, nullptr);
 }
 
 bool AXObject::IsHiddenForTextAlternativeCalculation() const {
@@ -1820,10 +1828,62 @@ bool AXObject::SupportsARIAExpanded() const {
   }
 }
 
-bool AXObject::SupportsARIAAttributes() const {
-  return IsLiveRegion() || SupportsARIADragging() || SupportsARIADropping() ||
-         SupportsARIAFlowTo() || SupportsARIAOwns() ||
-         HasAttribute(aria_labelAttr) || HasAttribute(aria_currentAttr);
+bool AXObject::HasGlobalARIAAttribute() const {
+  if (!GetElement())
+    return false;
+
+  AttributeCollection attributes = GetElement()->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    // Attributes cache their uppercase names.
+    auto name = attr.GetName().LocalNameUpper();
+    if (!name.StartsWith("ARIA"))
+      continue;
+    if (name.StartsWith("ARIA-ATOMIC"))
+      return true;
+    if (name.StartsWith("ARIA-BUSY"))
+      return true;
+    if (name.StartsWith("ARIA-CONTROLS"))
+      return true;
+    if (name.StartsWith("ARIA-CURRENT"))
+      return true;
+    if (name.StartsWith("ARIA-DESCRIBEDBY"))
+      return true;
+    if (name.StartsWith("ARIA-DETAILS"))
+      return true;
+    if (name.StartsWith("ARIA-DISABLED"))
+      return true;
+    if (name.StartsWith("ARIA-DROPEFFECT"))
+      return true;
+    if (name.StartsWith("ARIA-ERRORMESSAGE"))
+      return true;
+    if (name.StartsWith("ARIA-FLOWTO"))
+      return true;
+    if (name.StartsWith("ARIA-GRABBED"))
+      return true;
+    if (name.StartsWith("ARIA-HASPOPUP"))
+      return true;
+    if (name.StartsWith("ARIA-HIDDEN"))
+      return true;
+    if (name.StartsWith("ARIA-INVALID"))
+      return true;
+    if (name.StartsWith("ARIA-KEYSHORTCUTS"))
+      return true;
+    if (name.StartsWith("ARIA-LABEL"))
+      return true;
+    if (name.StartsWith("ARIA-LABELEDBY"))
+      return true;
+    if (name.StartsWith("ARIA-LABELLEDBY"))
+      return true;
+    if (name.StartsWith("ARIA-LIVE"))
+      return true;
+    if (name.StartsWith("ARIA-OWNS"))
+      return true;
+    if (name.StartsWith("ARIA-RELEVANT"))
+      return true;
+    if (name.StartsWith("ARIA-ROLEDESCRIPTION"))
+      return true;
+  }
+  return false;
 }
 
 bool AXObject::SupportsRangeValue() const {
@@ -1891,9 +1951,11 @@ ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
   ax::mojom::Role role = AriaRoleToWebCoreRole(aria_role);
 
   // ARIA states if an item can get focus, it should not be presentational.
+  // It also states user agents should ignore the presentational role if
+  // the element has global ARIA states and properties.
   if ((role == ax::mojom::Role::kNone ||
        role == ax::mojom::Role::kPresentational) &&
-      CanSetFocusAttribute())
+      (CanSetFocusAttribute() || HasGlobalARIAAttribute()))
     return ax::mojom::Role::kUnknown;
 
   if (role == ax::mojom::Role::kButton)
