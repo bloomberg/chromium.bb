@@ -173,7 +173,7 @@
 <translation id="1231733316453485619">क्या सिंक करना चालू करें?</translation>
 <translation id="123186018454553812">कोई दूसरी चाबी आज़माएं</translation>
 <translation id="1232569758102978740">शीर्षक रहित</translation>
-<translation id="1233721473400465416">स्थान</translation>
+<translation id="1233721473400465416">स्थान-भाषा</translation>
 <translation id="1234808891666923653">सेवा कार्यकर्ता</translation>
 <translation id="1235458158152011030">ज्ञात नेटवर्क</translation>
 <translation id="123578888592755962">डिस्‍क भरी हुई है</translation>
@@ -656,7 +656,7 @@
 <translation id="1942765061641586207">चित्र रिज़ॉल्यूशन</translation>
 <translation id="1943097386230153518">नई सेवा इंस्टॉल करें</translation>
 <translation id="1944921356641260203">अपडेट मिला</translation>
-<translation id="1951615167417147110">एक पृष्‍ठ ऊपर स्‍क्रॉल करें</translation>
+<translation id="1951615167417147110">एक पेज ऊपर स्क्रोल करें</translation>
 <translation id="1954813140452229842">शेयर माउंट करने में गड़बड़ी. कृपया अपने क्रेडेंशियल देखें और दोबारा कोशिश करें.</translation>
 <translation id="1956050014111002555">फ़ाइल में एकाधिक प्रमाणपत्र थे, जिनमें से किसी को भी आयात नहीं किया गया था:</translation>
 <translation id="1956390763342388273">यह "<ph name="FOLDER_PATH" />" से सभी फ़ाइलों को अपलोड कर देगा. ऐसा तभी करें जब आपको साइट पर विश्वास हो.</translation>
@@ -1144,7 +1144,7 @@
 <translation id="270358213449696159">Google Chrome OS की शर्तों संबंधी सामग्री</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">टचपैड की गति</translation>
-<translation id="2705736684557713153">स्क्रीन के सबसे नीचे तक स्क्रोल करें और अगर इंस्टैंट टेदरिंग दिखाई देता है तो, उसे चालू करें. अगर वह दिखाई नहीं देता है तो, आप पूरी तरह तैयार हैं.</translation>
+<translation id="2705736684557713153">स्क्रीन के सबसे नीचे तक स्क्रोल करें और अगर 'झटपट टेदरिंग' की सुविधा दिखाई देती है, तो उसे चालू करें. अगर वह नहीं दिखाई देती, तो आप पूरी तरह तैयार हैं.</translation>
 <translation id="2707024448553392710">घटक डाउनलोड करना</translation>
 <translation id="270921614578699633">औसत से अधिक</translation>
 <translation id="2709453993673701466">सिंक और मनमुताबिक बनाने की सुविधा के चालू होने से पहले उन्हें प्रबंधित करना चाहते हैं? <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> पर जाएं.</translation>
