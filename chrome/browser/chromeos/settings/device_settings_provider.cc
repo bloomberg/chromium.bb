@@ -21,7 +21,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -256,7 +255,8 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                          base::Value(entry->deprecated_public_session_id()));
       entry_dict->SetKey(
           kAccountsPrefDeviceLocalAccountsKeyType,
-          base::Value(policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+          base::Value(
+              em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION));
     }
     account_list->Append(std::move(entry_dict));
   }
