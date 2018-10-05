@@ -238,7 +238,7 @@ Tests name sources in buttons.
   },
   "name": {
     "type": "computedString",
-    "value": "I love cake!",
+    "value": "I love cake !",
     "sources": [
       {
         "type": "relatedElement",
@@ -256,7 +256,7 @@ Tests name sources in buttons.
         "type": "contents",
         "value": {
           "type": "computedString",
-          "value": "I love cake!"
+          "value": "I love cake !"
         }
       },
       {

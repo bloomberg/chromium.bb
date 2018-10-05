@@ -1876,6 +1876,7 @@ String AXNodeObject::TextAlternative(bool recursive,
   const AtomicString& title = GetAttribute(titleAttr);
   if (!title.IsEmpty()) {
     text_alternative = title;
+    name_from = ax::mojom::NameFrom::kTitle;
     if (name_sources) {
       found_text_alternative = true;
       name_sources->back().text = text_alternative;
@@ -1900,8 +1901,11 @@ String AXNodeObject::TextAlternative(bool recursive,
   return String();
 }
 
-static bool ShouldInsertSpaceBetweenObjectsIfNeeded(AXObject* previous,
-                                                    AXObject* next) {
+static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
+    AXObject* previous,
+    AXObject* next,
+    ax::mojom::NameFrom last_used_name_from,
+    ax::mojom::NameFrom name_from) {
   // If we're going between two layoutObjects that are in separate
   // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
   // you have <span>Hello</span><span>World</span>, those are part of the same
@@ -1911,6 +1915,39 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(AXObject* previous,
   if (!IsInSameNonInlineBlockFlow(next->GetLayoutObject(),
                                   previous->GetLayoutObject()))
     return true;
+
+  // Even if it is in the same inline block flow, if we are using a text
+  // alternative such as an ARIA label or HTML title, we should separate
+  // the strings. Doing so is consistent with what is stated in the AccName
+  // spec and with what is done in other user agents.
+  switch (last_used_name_from) {
+    case ax::mojom::NameFrom::kNone:
+    case ax::mojom::NameFrom::kUninitialized:
+    case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
+    case ax::mojom::NameFrom::kContents:
+      break;
+    case ax::mojom::NameFrom::kAttribute:
+    case ax::mojom::NameFrom::kCaption:
+    case ax::mojom::NameFrom::kPlaceholder:
+    case ax::mojom::NameFrom::kRelatedElement:
+    case ax::mojom::NameFrom::kTitle:
+    case ax::mojom::NameFrom::kValue:
+      return true;
+  }
+  switch (name_from) {
+    case ax::mojom::NameFrom::kNone:
+    case ax::mojom::NameFrom::kUninitialized:
+    case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
+    case ax::mojom::NameFrom::kContents:
+      break;
+    case ax::mojom::NameFrom::kAttribute:
+    case ax::mojom::NameFrom::kCaption:
+    case ax::mojom::NameFrom::kPlaceholder:
+    case ax::mojom::NameFrom::kRelatedElement:
+    case ax::mojom::NameFrom::kTitle:
+    case ax::mojom::NameFrom::kValue:
+      return true;
+  }
 
   // According to the AccName spec, we need to separate controls from text nodes
   // using a space.
@@ -1924,6 +1961,7 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
 
   StringBuilder accumulated_text;
   AXObject* previous = nullptr;
+  ax::mojom::NameFrom last_used_name_from = ax::mojom::NameFrom::kUninitialized;
 
   AXObjectVector children;
 
@@ -1945,22 +1983,39 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       continue;
 
+    ax::mojom::NameFrom child_name_from = ax::mojom::NameFrom::kUninitialized;
     String result;
-    if (child->IsPresentational())
+    if (child->IsPresentational()) {
       result = child->TextFromDescendants(visited, true);
-    else
-      result = RecursiveTextAlternative(*child, false, visited);
+    } else {
+      result =
+          RecursiveTextAlternative(*child, false, visited, child_name_from);
+    }
 
     if (!result.IsEmpty() && previous && accumulated_text.length() &&
         !IsHTMLSpace(accumulated_text[accumulated_text.length() - 1]) &&
         !IsHTMLSpace(result[0])) {
-      if (ShouldInsertSpaceBetweenObjectsIfNeeded(previous, child)) {
+      if (ShouldInsertSpaceBetweenObjectsIfNeeded(
+              previous, child, last_used_name_from, child_name_from)) {
         accumulated_text.Append(' ');
       }
     }
 
     accumulated_text.Append(result);
+
+    // We keep track of all non-hidden children, even those whose content is
+    // not included, because all rendered children impact whether or not a
+    // space should be inserted between objects. Example: A label which has
+    // a single, nameless input surrounded by CSS-generated content should
+    // have a space separating the before and after content.
     previous = child;
+
+    // We only keep track of the source of children whose content is included.
+    // Example: Three spans, the first with an aria-label, the second with no
+    // content, and the third whose name comes from content. There should be a
+    // space between the first and third because of the aria-label in the first.
+    if (!result.IsEmpty())
+      last_used_name_from = child_name_from;
   }
 
   return accumulated_text.ToString();

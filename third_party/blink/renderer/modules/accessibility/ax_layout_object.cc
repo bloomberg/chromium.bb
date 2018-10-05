@@ -852,7 +852,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
 
   // if this element has aria attributes on it, it should not be ignored.
-  if (SupportsARIAAttributes())
+  if (HasGlobalARIAAttribute())
     return false;
 
   if (IsImage())

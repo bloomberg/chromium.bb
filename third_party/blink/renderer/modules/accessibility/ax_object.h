@@ -748,7 +748,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsRichlyEditable() const { return false; }
   bool AriaCheckedIsPresent() const;
   bool AriaPressedIsPresent() const;
-  bool SupportsARIAAttributes() const;
+  bool HasGlobalARIAAttribute() const;
   bool SupportsARIAExpanded() const;
   virtual bool SupportsARIADragging() const { return false; }
   virtual bool SupportsARIADropping() const { return false; }
@@ -1019,6 +1019,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static String RecursiveTextAlternative(const AXObject&,
                                          bool in_aria_labelled_by_traversal,
                                          AXObjectSet& visited);
+  static String RecursiveTextAlternative(const AXObject&,
+                                         bool in_aria_labelled_by_traversal,
+                                         AXObjectSet& visited,
+                                         ax::mojom::NameFrom& name_from);
   bool IsHiddenForTextAlternativeCalculation() const;
   String AriaTextAlternative(bool recursive,
                              bool in_aria_labelled_by_traversal,

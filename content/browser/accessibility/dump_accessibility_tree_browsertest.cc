@@ -1859,6 +1859,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("label-with-selected-option.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityLabelWithPresentationalChild) {
+  RunHtmlTest(FILE_PATH_LITERAL("label-with-presentational-child.html"));
+}
+
 //
 // Regression tests. These don't test a specific web platform feature,
 // they test a specific web page that crashed or had some bad behavior
