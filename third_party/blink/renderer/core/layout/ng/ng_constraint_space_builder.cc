@@ -26,73 +26,6 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
   flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
 }
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
-    NGLogicalSize available_size) {
-  available_size_ = available_size;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
-    NGLogicalSize percentage_resolution_size) {
-  percentage_resolution_size_ = percentage_resolution_size;
-  return *this;
-}
-
-NGConstraintSpaceBuilder&
-NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
-    NGLogicalSize replaced_percentage_resolution_size) {
-  replaced_percentage_resolution_size_ = replaced_percentage_resolution_size;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetTextDirection(
-    TextDirection text_direction) {
-  text_direction_ = text_direction;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetMarginStrut(
-    const NGMarginStrut& margin_strut) {
-  margin_strut_ = margin_strut;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
-    const NGBfcOffset& bfc_offset) {
-  bfc_offset_ = bfc_offset;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcBlockOffset(
-    const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
-  floats_bfc_block_offset_ = floats_bfc_block_offset;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
-    LayoutUnit clearance_offset) {
-  clearance_offset_ = clearance_offset;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetExclusionSpace(
-    const NGExclusionSpace& exclusion_space) {
-  exclusion_space_ = &exclusion_space;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFragmentationType(
-    NGFragmentationType fragmentation_type) {
-  fragmentation_type_ = fragmentation_type;
-  return *this;
-}
-
-void NGConstraintSpaceBuilder::AddBaselineRequests(
-    const Vector<NGBaselineRequest>& requests) {
-  DCHECK(baseline_requests_.IsEmpty());
-  baseline_requests_.AppendVector(requests);
-}
-
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
     const NGBaselineRequest& request) {
   for (const auto& existing : baseline_requests_) {
@@ -101,13 +34,6 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
   }
   baseline_requests_.push_back(request);
   return *this;
-}
-
-const NGConstraintSpace NGConstraintSpaceBuilder::ToConstraintSpace(
-    WritingMode out_writing_mode) {
-  return NGConstraintSpace(out_writing_mode,
-                           flags_ & NGConstraintSpace::kNewFormattingContext,
-                           *this);
 }
 
 }  // namespace blink

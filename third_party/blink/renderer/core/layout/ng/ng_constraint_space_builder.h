@@ -31,11 +31,22 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // setters are in.
   NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size);
 
-  NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
+  NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
+    available_size_ = available_size;
+    return *this;
+  }
 
-  NGConstraintSpaceBuilder& SetPercentageResolutionSize(NGLogicalSize);
+  NGConstraintSpaceBuilder& SetPercentageResolutionSize(
+      NGLogicalSize percentage_resolution_size) {
+    percentage_resolution_size_ = percentage_resolution_size;
+    return *this;
+  }
 
-  NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(NGLogicalSize);
+  NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
+      NGLogicalSize replaced_percentage_resolution_size) {
+    replaced_percentage_resolution_size_ = replaced_percentage_resolution_size;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
     fragmentainer_block_size_ = size;
@@ -47,7 +58,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetTextDirection(TextDirection);
+  NGConstraintSpaceBuilder& SetTextDirection(TextDirection text_direction) {
+    text_direction_ = text_direction;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
     SetFlag(NGConstraintSpace::kFixedSizeInline, b);
@@ -74,7 +88,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
+  NGConstraintSpaceBuilder& SetFragmentationType(
+      NGFragmentationType fragmentation_type) {
+    fragmentation_type_ = fragmentation_type;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool b) {
     SetFlag(NGConstraintSpace::kSeparateLeadingFragmentainerMargins, b);
@@ -100,13 +118,25 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
+  NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut) {
+    margin_strut_ = margin_strut;
+    return *this;
+  }
 
-  NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset);
+  NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset) {
+    bfc_offset_ = bfc_offset;
+    return *this;
+  }
   NGConstraintSpaceBuilder& SetFloatsBfcBlockOffset(
-      const base::Optional<LayoutUnit>&);
+      const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
+    floats_bfc_block_offset_ = floats_bfc_block_offset;
+    return *this;
+  }
 
-  NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset);
+  NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset) {
+    clearance_offset_ = clearance_offset;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetShouldForceClearance(bool b) {
     SetFlag(NGConstraintSpace::kForceClearance, b);
@@ -130,9 +160,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetExclusionSpace(
-      const NGExclusionSpace& exclusion_space);
+      const NGExclusionSpace& exclusion_space) {
+    exclusion_space_ = &exclusion_space;
+    return *this;
+  }
 
-  void AddBaselineRequests(const Vector<NGBaselineRequest>&);
+  void AddBaselineRequests(const Vector<NGBaselineRequest>& requests) {
+    DCHECK(baseline_requests_.IsEmpty());
+    baseline_requests_.AppendVector(requests);
+  }
   NGConstraintSpaceBuilder& AddBaselineRequest(const NGBaselineRequest&);
 
   // Creates a new constraint space. This may be called multiple times, for
@@ -143,7 +179,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   //  - Has its size is determined by its parent layout (flex, abs-pos).
   //
   // WritingMode specifies the writing mode of the generated space.
-  const NGConstraintSpace ToConstraintSpace(WritingMode);
+  const NGConstraintSpace ToConstraintSpace(WritingMode out_writing_mode) {
+    return NGConstraintSpace(out_writing_mode,
+                             flags_ & NGConstraintSpace::kNewFormattingContext,
+                             *this);
+  }
 
  private:
   void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
