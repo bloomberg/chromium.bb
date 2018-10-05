@@ -28,6 +28,10 @@ class URLLoaderFactory;
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace net_log {
+class NetExportFileWriter;
+}
+
 // Responsible for creating and managing access to the system NetworkContext.
 // Lives on the UI thread. The NetworkContext this owns is intended for requests
 // not associated with a profile. It stores no data on disk, and has no HTTP
@@ -124,6 +128,11 @@ class SystemNetworkContextManager {
   // Returns default set of parameters for configuring the network service.
   network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
 
+  // Returns a shared global NetExportFileWriter instance, used by net-export.
+  // It lives here so it can outlive chrome://net-export/ if the tab is closed
+  // or destroyed, and so that it's destroyed before Mojo is shut down.
+  net_log::NetExportFileWriter* GetNetExportFileWriter();
+
   // Flushes all pending SSL configuration changes.
   void FlushSSLConfigManagerForTesting();
 
@@ -186,6 +195,9 @@ class SystemNetworkContextManager {
   PrefChangeRegistrar pref_change_registrar_;
 
   BooleanPrefMember enable_referrers_;
+
+  // Initialized on first access.
+  std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

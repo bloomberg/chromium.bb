@@ -54,7 +54,8 @@ class TestingApplicationContext : public ApplicationContext {
   ukm::UkmRecorder* GetUkmRecorder() override;
   variations::VariationsService* GetVariationsService() override;
   rappor::RapporServiceImpl* GetRapporServiceImpl() override;
-  net_log::ChromeNetLog* GetNetLog() override;
+  net::NetLog* GetNetLog() override;
+  net_log::NetExportFileWriter* GetNetExportFileWriter() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;
   gcm::GCMDriver* GetGCMDriver() override;

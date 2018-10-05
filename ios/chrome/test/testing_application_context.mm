@@ -150,7 +150,13 @@ rappor::RapporServiceImpl* TestingApplicationContext::GetRapporServiceImpl() {
   return nullptr;
 }
 
-net_log::ChromeNetLog* TestingApplicationContext::GetNetLog() {
+net::NetLog* TestingApplicationContext::GetNetLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
+net_log::NetExportFileWriter*
+TestingApplicationContext::GetNetExportFileWriter() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }

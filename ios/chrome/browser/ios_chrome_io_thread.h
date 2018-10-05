@@ -12,9 +12,9 @@
 
 class PrefService;
 
-namespace net_log {
-class ChromeNetLog;
-}  // namespace net_log
+namespace net {
+class NetLog;
+}  // namespace net
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -29,7 +29,7 @@ class NetworkContextOwner;
 // primarily used on, the IO thread.
 class IOSChromeIOThread : public io_thread::IOSIOThread {
  public:
-  IOSChromeIOThread(PrefService* local_state, net_log::ChromeNetLog* net_log);
+  IOSChromeIOThread(PrefService* local_state, net::NetLog* net_log);
   ~IOSChromeIOThread() override;
 
   network::mojom::NetworkContext* GetSystemNetworkContext();
