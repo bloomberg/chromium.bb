@@ -195,6 +195,7 @@ message ActionProto {
     UseAddressProto use_address = 29;
     UploadDomProto upload_dom = 18;
     HighlightElementProto highlight_element = 31;
+    ShowDetailsProto show_details = 32;
     ResetProto reset = 34;
     StopProto stop = 35;
   }
@@ -350,3 +351,44 @@ message ResetProto {}
 
 // Stop Autofill Assistant.
 message StopProto {}
+
+message DateProto {
+  optional int64 year = 1;
+
+  // Month of the year in the range [1-12].
+  optional int32 month = 2;
+
+  // Day of the month in the range [1-31].
+  optional int32 day = 3;
+}
+
+message TimeProto {
+  // Hour in the range [0-23].
+  optional int32 hour = 1;
+
+  // Minute in the range [0-59].
+  optional int32 minute = 2;
+
+  // Second in the range [0-59].
+  optional int32 second = 3;
+}
+
+message DateTimeProto {
+  optional DateProto date = 1;
+  optional TimeProto time = 2;
+}
+
+message DetailsProto {
+  optional string title = 1;
+
+  optional string url = 2;
+
+  optional DateTimeProto datetime = 3;
+
+  optional string description = 4;
+}
+
+// Show contextual information.
+message ShowDetailsProto {
+  optional DetailsProto details = 1;
+}

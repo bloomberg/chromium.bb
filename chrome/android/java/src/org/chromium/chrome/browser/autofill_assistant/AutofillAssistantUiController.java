@@ -19,6 +19,7 @@ import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -180,6 +181,22 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private void onChooseCard() {
         mUiDelegate.showCards(PersonalDataManager.getInstance().getCreditCardsToSuggest(
                 true /* includeServerCards */));
+    }
+
+    @CalledByNative
+    private void onHideDetails() {
+        mUiDelegate.hideDetails();
+    }
+
+    @CalledByNative
+    private void onShowDetails(String title, String url, long msSinceEpoch, String description) {
+        Date date = null;
+        if (msSinceEpoch > 0) {
+            date = new Date(msSinceEpoch);
+        }
+
+        mUiDelegate.showDetails(
+                new AutofillAssistantUiDelegate.Details(title, url, date, description));
     }
 
     // native methods.

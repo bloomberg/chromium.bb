@@ -88,6 +88,8 @@ class ScriptExecutor : public ActionDelegate {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void StopCurrentScript(const std::string& message) override;
+  void HideDetails() override;
+  void ShowDetails(const DetailsProto& details) override;
 
  private:
   void OnGetActions(bool result, const std::string& response);

@@ -5,22 +5,43 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
+import android.os.AsyncTask;
+import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.widget.AppCompatImageView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.Promise;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /** Delegate to interact with the assistant UI. */
 class AutofillAssistantUiDelegate {
+    // TODO(crbug.com/806868): Use correct user locale.
+    private static final SimpleDateFormat sDetailsTimeFormat =
+            new SimpleDateFormat("H:mma", Locale.getDefault());
+    private static final SimpleDateFormat sDetailsDateFormat =
+            new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
+
     private final Activity mActivity;
     private final Client mClient;
     private final View mFullContainer;
@@ -28,6 +49,14 @@ class AutofillAssistantUiDelegate {
     private final LinearLayout mBottomBar;
     private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
+
+    private final ViewGroup mDetails;
+    private final AppCompatImageView mDetailsImage;
+    private final TextView mDetailsTitle;
+    private final TextView mDetailsText;
+    private final TextView mDetailsTime;
+    private final int mDetailsImageWidth;
+    private final int mDetailsImageHeight;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -94,6 +123,41 @@ class AutofillAssistantUiDelegate {
     }
 
     /**
+     * Java side equivalent of autofill_assistant::DetailsProto.
+     */
+    protected static class Details {
+        private final String mTitle;
+        private final String mUrl;
+        @Nullable
+        private final Date mDate;
+        private final String mDescription;
+
+        public Details(String title, String url, @Nullable Date date, String description) {
+            this.mTitle = title;
+            this.mUrl = url;
+            this.mDate = date;
+            this.mDescription = description;
+        }
+
+        public String getTitle() {
+            return mTitle;
+        }
+
+        public String getUrl() {
+            return mUrl;
+        }
+
+        @Nullable
+        public Date getDate() {
+            return mDate;
+        }
+
+        public String getDescription() {
+            return mDescription;
+        }
+    }
+
+    /**
      * Constructs an assistant UI delegate.
      *
      * @param activity The Activity
@@ -109,28 +173,26 @@ class AutofillAssistantUiDelegate {
                                  .findViewById(R.id.autofill_assistant);
         // TODO(crbug.com/806868): Set hint text on overlay.
         mOverlay = mFullContainer.findViewById(R.id.overlay);
-        mOverlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mClient.onClickOverlay();
-            }
-        });
+        mOverlay.setOnClickListener(unusedView -> mClient.onClickOverlay());
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
-        mBottomBar.findViewById(R.id.close_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                shutdown();
-            }
-        });
+        mBottomBar.findViewById(R.id.close_button).setOnClickListener(unusedView -> shutdown());
         mBottomBar.findViewById(R.id.feedback_button)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // TODO(crbug.com/806868): Send feedback.
-                    }
-                });
+                .setOnClickListener(unusedView
+                        -> {
+                                // TODO(crbug.com/806868): Send feedback.
+                        });
         mChipsViewContainer = mBottomBar.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
+
+        mDetails = (ViewGroup) mBottomBar.findViewById(R.id.details);
+        mDetailsImage = (AppCompatImageView) mDetails.findViewById(R.id.details_image);
+        mDetailsTitle = (TextView) mDetails.findViewById(R.id.details_title);
+        mDetailsText = (TextView) mDetails.findViewById(R.id.details_text);
+        mDetailsTime = (TextView) mDetails.findViewById(R.id.details_time);
+        mDetailsImageWidth = mActivity.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_details_image_size);
+        mDetailsImageHeight = mActivity.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_details_image_size);
 
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
     }
@@ -190,6 +252,60 @@ class AutofillAssistantUiDelegate {
     /** Called to hide overlay. */
     public void hideOverlay() {
         mOverlay.setVisibility(View.GONE);
+    }
+
+    public void hideDetails() {
+        mDetails.setVisibility(View.GONE);
+    }
+
+    /** Called to show contextual information. */
+    public void showDetails(Details details) {
+        mDetailsTitle.setText(details.getTitle());
+        mDetailsText.setText(getDetailsText(details));
+        mDetailsTime.setText(getDetailsTime(details.getDate()));
+
+        mDetailsImage.setVisibility(View.GONE);
+        mDetails.setVisibility(View.VISIBLE);
+        ensureFullContainerIsShown();
+
+        String url = details.getUrl();
+        if (!url.isEmpty()) {
+            // The URL is safe given because it comes from the knowledge graph and is hosted on
+            // Google servers.
+            downloadImage(url).then(image -> {
+                mDetailsImage.setImageDrawable(getRoundedImage(image));
+                mDetailsImage.setVisibility(View.VISIBLE);
+            }, ignoredError -> {});
+        }
+    }
+
+    private String getDetailsText(Details details) {
+        List<String> parts = new ArrayList<>();
+        Date date = details.getDate();
+        if (date != null) {
+            parts.add(sDetailsDateFormat.format(date));
+        }
+
+        String description = details.getDescription();
+        if (description != null && !description.isEmpty()) {
+            parts.add(description);
+        }
+
+        // TODO(crbug.com/806868): Use a view instead of this dot text.
+        return TextUtils.join(" • ", parts);
+    }
+
+    private String getDetailsTime(@Nullable Date date) {
+        return date != null ? sDetailsTimeFormat.format(date).toLowerCase(Locale.getDefault()) : "";
+    }
+
+    private Drawable getRoundedImage(Bitmap bitmap) {
+        RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(
+                mActivity.getResources(),
+                ThumbnailUtils.extractThumbnail(bitmap, mDetailsImageWidth, mDetailsImageHeight));
+        // TODO(crbug.com/806868): Get radius from resources dimensions.
+        roundedBitmap.setCornerRadius(10);
+        return roundedBitmap;
     }
 
     /**
@@ -252,5 +368,40 @@ class AutofillAssistantUiDelegate {
         }
 
         ensureFullContainerIsShown();
+    }
+
+    private Promise<Bitmap> downloadImage(String url) {
+        Promise<Bitmap> promise = new Promise<>();
+        new DownloadImageTask(promise).execute(url);
+        return promise;
+    }
+
+    private static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        private final Promise<Bitmap> mPromise;
+        private Exception mError = null;
+
+        private DownloadImageTask(Promise<Bitmap> promise) {
+            this.mPromise = promise;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            try (InputStream in = new URL(urls[0]).openStream()) {
+                return BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                mError = e;
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (mError != null) {
+                mPromise.reject(mError);
+                return;
+            }
+
+            mPromise.fulfill(bitmap);
+        }
     }
 }

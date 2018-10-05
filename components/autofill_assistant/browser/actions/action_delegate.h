@@ -23,6 +23,7 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
+class DetailsProto;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -118,6 +119,12 @@ class ActionDelegate {
 
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Hide contextual information.
+  virtual void HideDetails() = 0;
+
+  // Show contextual information.
+  virtual void ShowDetails(const DetailsProto& details) = 0;
 
  protected:
   ActionDelegate() = default;

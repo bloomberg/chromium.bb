@@ -14,6 +14,7 @@
 
 namespace autofill_assistant {
 struct ScriptHandle;
+class DetailsProto;
 
 // Controller to control autofill assistant UI.
 class UiController {
@@ -55,6 +56,12 @@ class UiController {
   // after synchronization with the server).
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Hide contextual information.
+  virtual void HideDetails() = 0;
+
+  // Show contextual information.
+  virtual void ShowDetails(const DetailsProto& details) = 0;
 
  protected:
   UiController() = default;

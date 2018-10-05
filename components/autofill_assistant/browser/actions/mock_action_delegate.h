@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -108,6 +109,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(StopCurrentScript, void(const std::string& message));
+  MOCK_METHOD0(HideDetails, void());
+  MOCK_METHOD1(ShowDetails, void(const DetailsProto& details));
 };
 
 }  // namespace autofill_assistant
