@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_router.h"
+#include "ash/accelerators/pre_target_accelerator_handler.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -41,13 +41,14 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
 
 }  // namespace
 
-AcceleratorRouter::AcceleratorRouter() = default;
+PreTargetAcceleratorHandler::PreTargetAcceleratorHandler() = default;
 
-AcceleratorRouter::~AcceleratorRouter() = default;
+PreTargetAcceleratorHandler::~PreTargetAcceleratorHandler() = default;
 
-bool AcceleratorRouter::ProcessAccelerator(aura::Window* target,
-                                           const ui::KeyEvent& key_event,
-                                           const ui::Accelerator& accelerator) {
+bool PreTargetAcceleratorHandler::ProcessAccelerator(
+    const ui::KeyEvent& key_event,
+    const ui::Accelerator& accelerator) {
+  aura::Window* target = static_cast<aura::Window*>(key_event.target());
   // Callers should never supply null.
   DCHECK(target);
   RecordSearchKeyStats(accelerator);
@@ -67,7 +68,7 @@ bool AcceleratorRouter::ProcessAccelerator(aura::Window* target,
   return Shell::Get()->accelerator_controller()->Process(accelerator);
 }
 
-void AcceleratorRouter::RecordSearchKeyStats(
+void PreTargetAcceleratorHandler::RecordSearchKeyStats(
     const ui::Accelerator& accelerator) {
   if (accelerator.IsCmdDown()) {
     if (search_key_state_ == RELEASED) {
@@ -87,15 +88,16 @@ void AcceleratorRouter::RecordSearchKeyStats(
   }
 }
 
-bool AcceleratorRouter::CanConsumeSystemKeys(aura::Window* target,
-                                             const ui::KeyEvent& event) {
+bool PreTargetAcceleratorHandler::CanConsumeSystemKeys(
+    aura::Window* target,
+    const ui::KeyEvent& event) {
   // Uses the top level window so if the target is a web contents window the
   // containing parent window will be checked for the property.
   aura::Window* top_level = ::wm::GetToplevelWindow(target);
   return top_level && wm::GetWindowState(top_level)->CanConsumeSystemKeys();
 }
 
-bool AcceleratorRouter::ShouldProcessAcceleratorNow(
+bool PreTargetAcceleratorHandler::ShouldProcessAcceleratorNow(
     aura::Window* target,
     const ui::KeyEvent& event,
     const ui::Accelerator& accelerator) {
@@ -112,7 +114,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   AcceleratorController* accelerator_controller =
       Shell::Get()->accelerator_controller();
 
-  // Reserved accelerators (such as Power button) always have a prority.
+  // Reserved accelerators (such as Power button) always have a priority.
   if (accelerator_controller->IsReserved(accelerator))
     return true;
 
