@@ -128,6 +128,13 @@ void MediaRouterActionController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool MediaRouterActionController::ShouldEnableAction() const {
+  return shown_by_policy_ || has_local_display_route_ || has_issue_ ||
+         dialog_count_ || context_menu_shown_ ||
+         keep_visible_for_right_mouse_button_ ||
+         GetAlwaysShowActionPref(profile_);
+}
+
 MediaRouterActionController::MediaRouterActionController(
     Profile* profile,
     media_router::MediaRouter* router,
@@ -178,11 +185,4 @@ void MediaRouterActionController::MaybeAddOrRemoveTrustedAreaIcon() {
     for (Observer& observer : observers_)
       observer.HideIcon();
   }
-}
-
-bool MediaRouterActionController::ShouldEnableAction() const {
-  return shown_by_policy_ || has_local_display_route_ || has_issue_ ||
-         dialog_count_ || context_menu_shown_ ||
-         keep_visible_for_right_mouse_button_ ||
-         GetAlwaysShowActionPref(profile_);
 }
