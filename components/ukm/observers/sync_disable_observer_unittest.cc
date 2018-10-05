@@ -154,7 +154,7 @@ TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentEnabled) {
+TEST_F(SyncDisableObserverTest, DISABLED_OneEnabled_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kEnabledNoBump);
   sync_preferences::TestingPrefServiceSyncable prefs;
@@ -247,7 +247,7 @@ TEST_F(SyncDisableObserverTest, MixedProfiles2_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, MixedProfiles_UnifiedConsentEnabled) {
+TEST_F(SyncDisableObserverTest, DISABLED_MixedProfiles_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kEnabledNoBump);
   sync_preferences::TestingPrefServiceSyncable prefs1;
@@ -283,7 +283,7 @@ TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentEnabled) {
+TEST_F(SyncDisableObserverTest, DISABLED_TwoEnabled_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kEnabledNoBump);
   sync_preferences::TestingPrefServiceSyncable prefs1;
@@ -323,7 +323,7 @@ TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentEnabled) {
+TEST_F(SyncDisableObserverTest, DISABLED_OneAddRemove_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kEnabledNoBump);
   sync_preferences::TestingPrefServiceSyncable prefs;
@@ -364,7 +364,7 @@ TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentDisabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentEnabled) {
+TEST_F(SyncDisableObserverTest, DISABLED_PurgeOnDisable_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
       UnifiedConsentFeatureState::kEnabledNoBump);
 
