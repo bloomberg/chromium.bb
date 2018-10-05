@@ -116,10 +116,13 @@ void FontFaceCache::RemoveFontFace(FontFace* font_face, bool css_connected) {
   IncrementVersion();
 }
 
-void FontFaceCache::ClearCSSConnected() {
+bool FontFaceCache::ClearCSSConnected() {
+  if (style_rule_to_font_face_.IsEmpty())
+    return false;
   for (const auto& item : style_rule_to_font_face_)
     RemoveFontFace(item.value.Get(), true);
   style_rule_to_font_face_.clear();
+  return true;
 }
 
 void FontFaceCache::ClearAll() {

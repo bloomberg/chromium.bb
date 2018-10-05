@@ -343,7 +343,7 @@ void StyleEngine::WatchedSelectorsChanged() {
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
-  return all_tree_scopes_dirty_ || document_scope_dirty_ || font_cache_dirty_;
+  return all_tree_scopes_dirty_ || document_scope_dirty_;
 }
 
 bool StyleEngine::ShouldUpdateShadowTreeStyleSheetCollection() const {
@@ -419,9 +419,7 @@ void StyleEngine::UpdateActiveUserStyleSheets() {
       new_active_sheets.push_back(std::make_pair(sheet.second, rule_set));
   }
 
-  ApplyRuleSetChanges(*document_, active_user_style_sheets_, new_active_sheets,
-                      kInvalidateAllScopes);
-
+  ApplyUserRuleSetChanges(active_user_style_sheets_, new_active_sheets);
   new_active_sheets.swap(active_user_style_sheets_);
 }
 
@@ -593,25 +591,17 @@ void StyleEngine::DidDetach() {
   environment_variables_ = nullptr;
 }
 
-void StyleEngine::ClearFontCache() {
-  if (font_selector_)
-    font_selector_->GetFontFaceCache()->ClearCSSConnected();
-  if (resolver_)
+void StyleEngine::ClearFontCacheAndAddUserFonts() {
+  if (font_selector_ &&
+      font_selector_->GetFontFaceCache()->ClearCSSConnected() && resolver_) {
     resolver_->InvalidateMatchedPropertiesCache();
-}
-
-void StyleEngine::RefreshFontCache() {
-  DCHECK(IsFontCacheDirty());
-
-  ClearFontCache();
+  }
 
   // Rebuild the font cache with @font-face rules from user style sheets.
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
     DCHECK(active_user_style_sheets_[i].second);
     AddFontFaceRules(*active_user_style_sheets_[i].second);
   }
-
-  font_cache_dirty_ = false;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -1284,90 +1274,11 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
 
 }  // namespace
 
-void StyleEngine::ApplyRuleSetChanges(
+void StyleEngine::InvalidateForRuleSetChanges(
     TreeScope& tree_scope,
-    const ActiveStyleSheetVector& old_style_sheets,
-    const ActiveStyleSheetVector& new_style_sheets,
+    const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
+    unsigned changed_rule_flags,
     InvalidationScope invalidation_scope) {
-  DCHECK(IsMaster());
-  DCHECK(global_rule_set_);
-  HeapHashSet<Member<RuleSet>> changed_rule_sets;
-
-  ActiveSheetsChange change = CompareActiveStyleSheets(
-      old_style_sheets, new_style_sheets, changed_rule_sets);
-  bool append_all_sheets = false;
-
-  if (invalidation_scope == kInvalidateCurrentScope) {
-    if (ScopedStyleResolver* scoped_resolver =
-            tree_scope.GetScopedStyleResolver())
-      append_all_sheets = scoped_resolver->NeedsAppendAllSheets();
-
-    // When the font cache is dirty we have to rebuild it and then add all the
-    // @font-face rules in the document scope.
-    if (IsFontCacheDirty()) {
-      DCHECK(tree_scope.RootNode().IsDocumentNode());
-      append_all_sheets = true;
-    }
-
-    if (change == kNoActiveSheetsChanged && !append_all_sheets)
-      return;
-  }
-
-  // With rules added or removed, we need to re-aggregate rule meta data.
-  global_rule_set_->MarkDirty();
-
-  unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
-  bool fonts_changed = tree_scope.RootNode().IsDocumentNode() &&
-                       (changed_rule_flags & kFontFaceRules);
-  bool keyframes_changed = changed_rule_flags & kKeyframesRules;
-  unsigned append_start_index = 0;
-
-  // We don't need to mark the font cache dirty if new sheets are appended.
-  if (fonts_changed && (invalidation_scope == kInvalidateAllScopes ||
-                        change == kActiveSheetsChanged)) {
-    MarkFontCacheDirty();
-  }
-
-  if (invalidation_scope == kInvalidateAllScopes) {
-    if (keyframes_changed) {
-      if (change == kActiveSheetsChanged)
-        ClearKeyframeRules();
-
-      for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
-           it++) {
-        DCHECK(it->second);
-        AddKeyframeRules(*it->second);
-      }
-    }
-  }
-
-  if (invalidation_scope == kInvalidateCurrentScope) {
-    if (IsFontCacheDirty()) {
-      DCHECK(tree_scope.RootNode().IsDocumentNode());
-      DCHECK(change != kActiveSheetsAppended || append_all_sheets);
-      RefreshFontCache();
-    }
-
-    // - If all sheets were removed, we remove the ScopedStyleResolver.
-    // - If new sheets were appended to existing ones, start appending after the
-    //   common prefix.
-    // - For other diffs, reset author style and re-add all sheets for the
-    //   TreeScope.
-    if (tree_scope.GetScopedStyleResolver()) {
-      if (new_style_sheets.IsEmpty())
-        ResetAuthorStyle(tree_scope);
-      else if (change == kActiveSheetsAppended && !append_all_sheets)
-        append_start_index = old_style_sheets.size();
-      else
-        tree_scope.GetScopedStyleResolver()->ResetAuthorStyle();
-    }
-
-    if (!new_style_sheets.IsEmpty()) {
-      tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
-          append_start_index, new_style_sheets);
-    }
-  }
-
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
 
@@ -1382,15 +1293,14 @@ void StyleEngine::ApplyRuleSetChanges(
   if (changed_rule_sets.IsEmpty())
     return;
 
-  if (keyframes_changed)
-    ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
-
   Node& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
   if (invalidation_root.GetStyleChangeType() >= kSubtreeStyleChange)
     return;
 
-  if (fonts_changed || (changed_rule_flags & kFullRecalcRules)) {
+  if (changed_rule_flags & kFullRecalcRules ||
+      ((changed_rule_flags & kFontFaceRules) &&
+       tree_scope.RootNode().IsDocumentNode())) {
     invalidation_root.SetNeedsStyleRecalc(
         kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                  StyleChangeReason::kActiveStylesheetsUpdate));
@@ -1399,6 +1309,111 @@ void StyleEngine::ApplyRuleSetChanges(
 
   ScheduleInvalidationsForRuleSets(tree_scope, changed_rule_sets,
                                    invalidation_scope);
+}
+
+void StyleEngine::ApplyUserRuleSetChanges(
+    const ActiveStyleSheetVector& old_style_sheets,
+    const ActiveStyleSheetVector& new_style_sheets) {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  HeapHashSet<Member<RuleSet>> changed_rule_sets;
+
+  ActiveSheetsChange change = CompareActiveStyleSheets(
+      old_style_sheets, new_style_sheets, changed_rule_sets);
+
+  if (change == kNoActiveSheetsChanged)
+    return;
+
+  // With rules added or removed, we need to re-aggregate rule meta data.
+  global_rule_set_->MarkDirty();
+
+  unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
+  if (changed_rule_flags & kFontFaceRules) {
+    if (ScopedStyleResolver* scoped_resolver =
+            GetDocument().GetScopedStyleResolver()) {
+      // User style and document scope author style shares the font cache. If
+      // @font-face rules are added/removed from user stylesheets, we need to
+      // reconstruct the font cache because @font-face rules from author style
+      // need to be added to the cache after user rules.
+      scoped_resolver->SetNeedsAppendAllSheets();
+      MarkDocumentDirty();
+    } else {
+      ClearFontCacheAndAddUserFonts();
+    }
+  }
+
+  if (changed_rule_flags & kKeyframesRules) {
+    if (change == kActiveSheetsChanged)
+      ClearKeyframeRules();
+
+    for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
+         it++) {
+      DCHECK(it->second);
+      AddKeyframeRules(*it->second);
+    }
+    ScopedStyleResolver::KeyframesRulesAdded(GetDocument());
+  }
+
+  InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
+                              changed_rule_flags, kInvalidateAllScopes);
+}
+
+void StyleEngine::ApplyRuleSetChanges(
+    TreeScope& tree_scope,
+    const ActiveStyleSheetVector& old_style_sheets,
+    const ActiveStyleSheetVector& new_style_sheets) {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  HeapHashSet<Member<RuleSet>> changed_rule_sets;
+
+  ActiveSheetsChange change = CompareActiveStyleSheets(
+      old_style_sheets, new_style_sheets, changed_rule_sets);
+
+  unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
+
+  bool rebuild_font_cache = change == kActiveSheetsChanged &&
+                            (changed_rule_flags & kFontFaceRules) &&
+                            tree_scope.RootNode().IsDocumentNode();
+  ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
+  if (scoped_resolver && scoped_resolver->NeedsAppendAllSheets()) {
+    rebuild_font_cache = true;
+    change = kActiveSheetsChanged;
+  }
+
+  if (change == kNoActiveSheetsChanged)
+    return;
+
+  // With rules added or removed, we need to re-aggregate rule meta data.
+  global_rule_set_->MarkDirty();
+
+  if (changed_rule_flags & kKeyframesRules)
+    ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
+
+  if (rebuild_font_cache)
+    ClearFontCacheAndAddUserFonts();
+
+  unsigned append_start_index = 0;
+  if (scoped_resolver) {
+    // - If all sheets were removed, we remove the ScopedStyleResolver.
+    // - If new sheets were appended to existing ones, start appending after the
+    //   common prefix.
+    // - For other diffs, reset author style and re-add all sheets for the
+    //   TreeScope.
+    if (new_style_sheets.IsEmpty())
+      ResetAuthorStyle(tree_scope);
+    else if (change == kActiveSheetsAppended)
+      append_start_index = old_style_sheets.size();
+    else
+      scoped_resolver->ResetAuthorStyle();
+  }
+
+  if (!new_style_sheets.IsEmpty()) {
+    tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
+        append_start_index, new_style_sheets);
+  }
+
+  InvalidateForRuleSetChanges(tree_scope, changed_rule_sets, changed_rule_flags,
+                              kInvalidateCurrentScope);
 }
 
 const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {

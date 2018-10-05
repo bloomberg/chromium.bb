@@ -318,8 +318,9 @@ class CORE_EXPORT StyleEngine final
 
   void ApplyRuleSetChanges(TreeScope&,
                            const ActiveStyleSheetVector& old_style_sheets,
-                           const ActiveStyleSheetVector& new_style_sheets,
-                           InvalidationScope = kInvalidateCurrentScope);
+                           const ActiveStyleSheetVector& new_style_sheets);
+  void ApplyUserRuleSetChanges(const ActiveStyleSheetVector& old_style_sheets,
+                               const ActiveStyleSheetVector& new_style_sheets);
 
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 
@@ -413,6 +414,11 @@ class CORE_EXPORT StyleEngine final
   void ScheduleTypeRuleSetInvalidations(ContainerNode&,
                                         const HeapHashSet<Member<RuleSet>>&);
   void InvalidateSlottedElements(HTMLSlotElement&);
+  void InvalidateForRuleSetChanges(
+      TreeScope& tree_scope,
+      const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
+      unsigned changed_rule_flags,
+      InvalidationScope invalidation_scope);
 
   void UpdateViewport();
   void UpdateActiveUserStyleSheets();
@@ -425,11 +431,7 @@ class CORE_EXPORT StyleEngine final
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
   void UpdateStyleSheetList(TreeScope&);
 
-  void ClearFontCache();
-  void RefreshFontCache();
-  void MarkFontCacheDirty() { font_cache_dirty_ = true; }
-  bool IsFontCacheDirty() const { return font_cache_dirty_; }
-
+  void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
 
   void AddFontFaceRules(const RuleSet&);
@@ -492,7 +494,6 @@ class CORE_EXPORT StyleEngine final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   Member<CSSFontSelector> font_selector_;
-  bool font_cache_dirty_ = false;
 
   HeapHashMap<AtomicString, WeakMember<StyleSheetContents>>
       text_to_sheet_cache_;
