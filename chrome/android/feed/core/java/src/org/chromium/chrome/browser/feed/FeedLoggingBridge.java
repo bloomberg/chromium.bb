@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Provides access to native implementation of feed logging.
@@ -16,9 +17,11 @@ public class FeedLoggingBridge {
     /**
      * Creates a {@link FeedLoggingBridge} for accessing native feed logging
      * implementation for the current user, and initial native side bridge.
+     *
+     * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
-    public FeedLoggingBridge() {
-        mNativeFeedLoggingBridge = nativeInit();
+    public FeedLoggingBridge(Profile profile) {
+        mNativeFeedLoggingBridge = nativeInit(profile);
     }
 
     /** Cleans up native half of this bridge. */
@@ -28,12 +31,73 @@ public class FeedLoggingBridge {
         mNativeFeedLoggingBridge = 0;
     }
 
-    public void onOpenedWithContent(int contentCount) {
+    public void onContentViewed(
+            int position, long publishedTimeSeconds, long timeContentBecameAvailable, float score) {
         assert mNativeFeedLoggingBridge != 0;
-        nativeOnOpenedWithContent(mNativeFeedLoggingBridge, contentCount);
+        nativeOnContentViewed(mNativeFeedLoggingBridge, position, publishedTimeSeconds,
+                timeContentBecameAvailable, score);
     }
 
-    private native long nativeInit();
+    public void onContentDismissed(String uri) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnContentDismissed(mNativeFeedLoggingBridge, uri);
+    }
+
+    public void onContentClicked(int position, long publishedTimeSeconds, float score) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnContentClicked(mNativeFeedLoggingBridge, position, publishedTimeSeconds, score);
+    }
+
+    public void onClientAction(int actionType) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnClientAction(mNativeFeedLoggingBridge, actionType);
+    }
+
+    public void onContentContextMenuOpened(int position, long publishedTimeSeconds, float score) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnContentContextMenuOpened(
+                mNativeFeedLoggingBridge, position, publishedTimeSeconds, score);
+    }
+
+    public void onMoreButtonViewed(int position) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnMoreButtonViewed(mNativeFeedLoggingBridge, position);
+    }
+
+    public void onMoreButtonClicked(int position) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnMoreButtonClicked(mNativeFeedLoggingBridge, position);
+    }
+
+    public void onOpenedWithContent(int timeToPopulateMs, int contentCount) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnOpenedWithContent(mNativeFeedLoggingBridge, timeToPopulateMs, contentCount);
+    }
+
+    public void onOpenedWithNoImmediateContent() {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnOpenedWithNoImmediateContent(mNativeFeedLoggingBridge);
+    }
+
+    public void onOpenedWithNoContent() {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnOpenedWithNoContent(mNativeFeedLoggingBridge);
+    }
+
+    private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedLoggingBridge);
-    private native void nativeOnOpenedWithContent(long nativeFeedLoggingBridge, int contentCount);
+    private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
+            long publishedTimeSeconds, long timeContentBecameAvailable, float score);
+    private native void nativeOnContentDismissed(long nativeFeedLoggingBridge, String uri);
+    private native void nativeOnContentClicked(
+            long nativeFeedLoggingBridge, int position, long publishedTimeSeconds, float score);
+    private native void nativeOnClientAction(long nativeFeedLoggingBridge, int actionType);
+    private native void nativeOnContentContextMenuOpened(
+            long nativeFeedLoggingBridge, int position, long publishedTimeSeconds, float score);
+    private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);
+    private native void nativeOnMoreButtonClicked(long nativeFeedLoggingBridge, int position);
+    private native void nativeOnOpenedWithContent(
+            long nativeFeedLoggingBridge, int timeToPopulateMs, int contentCount);
+    private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
+    private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
 }

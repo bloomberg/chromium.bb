@@ -19,9 +19,52 @@ class FeedLoggingBridge {
 
   void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
 
+  void OnContentViewed(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this,
+                       const jint position,
+                       const jlong publishedTimeSeconds,
+                       const jlong timeContentBecameAvailable,
+                       const jfloat score);
+
+  void OnContentDismissed(JNIEnv* j_env,
+                          const base::android::JavaRef<jobject>& j_this,
+                          const base::android::JavaRef<jstring>& j_url);
+
+  void OnContentClicked(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jint position,
+                        const jlong publishedTimeSeconds,
+                        const jfloat score);
+
+  void OnClientAction(JNIEnv* j_env,
+                      const base::android::JavaRef<jobject>& j_this,
+                      const jint j_action_type);
+
+  void OnContentContextMenuOpened(JNIEnv* j_env,
+                                  const base::android::JavaRef<jobject>& j_this,
+                                  const jint position,
+                                  const jlong publishedTimeSeconds,
+                                  const jfloat score);
+
+  void OnMoreButtonViewed(JNIEnv* j_env,
+                          const base::android::JavaRef<jobject>& j_this,
+                          const jint j_position);
+
+  void OnMoreButtonClicked(JNIEnv* j_env,
+                           const base::android::JavaRef<jobject>& j_this,
+                           const jint j_position);
+
   void OnOpenedWithContent(JNIEnv* j_env,
                            const base::android::JavaRef<jobject>& j_this,
+                           const jint j_time_to_Populate,
                            const jint j_content_count);
+
+  void OnOpenedWithNoImmediateContent(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this);
+
+  void OnOpenedWithNoContent(JNIEnv* j_env,
+                             const base::android::JavaRef<jobject>& j_this);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeedLoggingBridge);
