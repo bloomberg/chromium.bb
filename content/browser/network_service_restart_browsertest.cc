@@ -811,12 +811,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   service_worker_context->RemoveObserver(&observer);
 }
 
-// Make sure fetch from shared worker context works after crash.
-//
-// Disabled since shared workers don't support recovery from a NS crash:
-// https://crbug.com/848256.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       DISABLED_SharedWorkerFetch) {
+// Make sure shared workers terminate after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SharedWorker) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -827,19 +823,18 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   // Navigate to the page and prepare a shared worker.
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
 
-  // Fetch from the shared worker.
-  const std::string script =
-      "fetch_from_shared_worker('" + fetch_url.spec() + "');";
-  EXPECT_EQ("Echo", EvalJs(shell(), script));
+  // There should be one worker host. We will later wait for it to terminate.
+  SharedWorkerServiceImpl* service = partition->GetSharedWorkerService();
+  EXPECT_EQ(1u, service->worker_hosts_.size());
+  base::RunLoop loop;
+  service->SetWorkerTerminationCallbackForTesting(loop.QuitClosure());
 
-  // Crash the NetworkService process. Existing interfaces should receive error
-  // notifications at some point.
+  // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
-  // Flush the interface to make sure the error notification was received.
-  partition->FlushNetworkInterfaceForTesting();
 
-  // Fetch from the shared worker again.
-  EXPECT_EQ("Echo", EvalJs(shell(), script));
+  // Wait for the worker to detect the crash and self-terminate.
+  loop.Run();
+  EXPECT_TRUE(service->worker_hosts_.empty());
 }
 
 // Make sure the entry in |NetworkService::GetTotalNetworkUsages()| was cleared
