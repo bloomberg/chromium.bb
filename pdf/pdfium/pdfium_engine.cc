@@ -1931,42 +1931,65 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                        character_to_start_searching_from, text_length, data);
   api_string_adapter.Close(written);
 
-  base::string16 stripped_page_text;
-  stripped_page_text.reserve(page_text.size());
-  // Values in |stripped_indices| are in the stripped text index space and
+  base::string16 adjusted_page_text;
+  adjusted_page_text.reserve(page_text.size());
+  // Values in |removed_indices| are in the adjusted text index space and
   // indicate a character was removed from the page text before the given
   // index. If multiple characters are removed in a row then there will be
   // multiple entries with the same value.
-  std::vector<size_t> stripped_indices;
+  std::vector<size_t> removed_indices;
+  // When walking through the page text collapse any whitespace regions,
+  // including \r and \n, down to a single ' ' character. This code does
+  // not use base::CollapseWhitespace(), because that function does not
+  // return where the collapsing occurs, but uses the same underlying list of
+  // whitespace characters. Calculating where the collapsed regions are after
+  // the fact is as complex as collapsing them manually.
   for (size_t i = 0; i < page_text.size(); i++) {
     base::char16 c = page_text[i];
+    // Collapse whitespace regions by inserting a ' ' into the
+    // adjusted text and recording any removed whitespace indices as preceding
+    // it.
+    if (base::IsUnicodeWhitespace(c)) {
+      size_t whitespace_region_begin = i;
+      while (i < page_text.size() && base::IsUnicodeWhitespace(page_text[i]))
+        ++i;
+
+      size_t count = i - whitespace_region_begin - 1;
+      removed_indices.insert(removed_indices.end(), count,
+                             adjusted_page_text.size());
+      adjusted_page_text.push_back(' ');
+      if (i >= page_text.size())
+        break;
+      c = page_text[i];
+    }
+
     if (IsIgnorableCharacter(c))
-      stripped_indices.push_back(stripped_page_text.size());
+      removed_indices.push_back(adjusted_page_text.size());
     else
-      stripped_page_text.push_back(c);
+      adjusted_page_text.push_back(c);
   }
 
   std::vector<PDFEngine::Client::SearchStringResult> results =
-      client_->SearchString(stripped_page_text.c_str(), term.c_str(),
+      client_->SearchString(adjusted_page_text.c_str(), term.c_str(),
                             case_sensitive);
   for (const auto& result : results) {
-    // Need to convert from stripped page text start to page text start, by
-    // incrementing for all the characters stripped before it in the string.
-    auto stripped_indices_begin = std::upper_bound(
-        stripped_indices.begin(), stripped_indices.end(), result.start_index);
+    // Need to convert from adjusted page text start to page text start, by
+    // incrementing for all the characters adjusted before it in the string.
+    auto removed_indices_begin = std::upper_bound(
+        removed_indices.begin(), removed_indices.end(), result.start_index);
     size_t page_text_result_start_index =
         result.start_index +
-        std::distance(stripped_indices.begin(), stripped_indices_begin);
+        std::distance(removed_indices.begin(), removed_indices_begin);
 
-    // Need to convert the stripped page length into a page text length, since
-    // the matching range may have stripped characters within it. This
+    // Need to convert the adjusted page length into a page text length, since
+    // the matching range may have adjusted characters within it. This
     // conversion only cares about skipped characters in the result interval.
-    auto stripped_indices_end =
-        std::upper_bound(stripped_indices_begin, stripped_indices.end(),
+    auto removed_indices_end =
+        std::upper_bound(removed_indices_begin, removed_indices.end(),
                          result.start_index + result.length);
-    int term_stripped_count =
-        std::distance(stripped_indices_begin, stripped_indices_end);
-    int page_text_result_length = result.length + term_stripped_count;
+    int term_removed_count =
+        std::distance(removed_indices_begin, removed_indices_end);
+    int page_text_result_length = result.length + term_removed_count;
 
     // Need to map the indexes from the page text, which may have generated
     // characters like space etc, to character indices from the page.
@@ -1988,7 +2011,7 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
       end = original_text_length;
     }
     DCHECK_LT(start, end);
-    DCHECK_EQ(term.size() + term_stripped_count,
+    DCHECK_EQ(term.size() + term_removed_count,
               static_cast<size_t>(end - start));
     AddFindResult(PDFiumRange(pages_[current_page].get(), start, end - start));
   }

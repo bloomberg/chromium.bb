@@ -98,4 +98,23 @@ TEST_F(FindTextTest, FindHyphenatedText) {
   engine.StartFind("application", /*case_sensitive=*/true);
 }
 
+TEST_F(FindTextTest, FindLineBreakText) {
+  SetDocumentForTest(FILE_PATH_LITERAL("spanner.pdf"));
+  pp::URLLoader dummy_loader;
+  FindTextTestClient client;
+  PDFiumEngine engine(&client, true);
+  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
+  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+
+  {
+    InSequence sequence;
+
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, false));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, true));
+  }
+
+  engine.StartFind("is the first system", /*case_sensitive=*/true);
+}
+
 }  // namespace chrome_pdf
