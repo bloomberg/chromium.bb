@@ -16,6 +16,10 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -245,6 +249,25 @@ bool PreviewsLitePageDecider::CheckSingleBypass(std::string url) {
 uint64_t PreviewsLitePageDecider::GeneratePageID() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ++page_id_;
+}
+
+void PreviewsLitePageDecider::ReportDataSavings(int64_t network_bytes,
+                                                int64_t original_bytes,
+                                                const std::string& host) {
+  if (!drp_settings_ || !drp_settings_->data_reduction_proxy_service())
+    return;
+
+  drp_settings_->data_reduction_proxy_service()->UpdateDataUseForHost(
+      network_bytes, original_bytes, host);
+
+  drp_settings_->data_reduction_proxy_service()->UpdateContentLengths(
+      network_bytes, original_bytes, true /* data_reduction_proxy_enabled */,
+      data_reduction_proxy::DataReductionProxyRequestType::
+          VIA_DATA_REDUCTION_PROXY,
+      "text/html", true /* is_user_traffic */,
+      data_use_measurement::DataUseUserData::DataUseContentType::
+          MAIN_FRAME_HTML,
+      0);
 }
 
 bool PreviewsLitePageDecider::NeedsToNotifyUser() {
