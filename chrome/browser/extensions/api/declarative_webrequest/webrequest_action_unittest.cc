@@ -52,9 +52,7 @@ std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
   CHECK(parsed_value->GetAsList(&parsed_list));
 
   WebRequestActionSet::Values actions;
-  for (base::ListValue::const_iterator it = parsed_list->begin();
-       it != parsed_list->end();
-       ++it) {
+  for (auto it = parsed_list->begin(); it != parsed_list->end(); ++it) {
     const base::DictionaryValue* dict;
     CHECK(it->GetAsDictionary(&dict));
     actions.push_back(dict->CreateDeepCopy());
@@ -590,10 +588,8 @@ TEST(WebRequestActionTest, GetName) {
   std::unique_ptr<WebRequestActionSet> action_set(CreateSetOfActions(kActions));
   ASSERT_EQ(arraysize(kExpectedNames), action_set->actions().size());
   size_t index = 0;
-  for (WebRequestActionSet::Actions::const_iterator it =
-           action_set->actions().begin();
-       it != action_set->actions().end();
-       ++it) {
+  for (auto it = action_set->actions().cbegin();
+       it != action_set->actions().cend(); ++it) {
     EXPECT_EQ(kExpectedNames[index], (*it)->GetName());
     ++index;
   }

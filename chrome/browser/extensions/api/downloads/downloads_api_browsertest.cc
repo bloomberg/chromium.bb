@@ -1163,9 +1163,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     ASSERT_FALSE(base::PathExists(fake_path));
   }
 
-  for (DownloadManager::DownloadVector::iterator iter = all_downloads.begin();
-       iter != all_downloads.end();
-       ++iter) {
+  for (auto iter = all_downloads.begin(); iter != all_downloads.end(); ++iter) {
     std::string result_string;
     // Use a MockIconExtractorImpl to test if the correct path is being passed
     // into the DownloadFileIconExtractor.
@@ -4196,8 +4194,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(&items);
-    for (DownloadManager::DownloadVector::iterator iter = items.begin();
-          iter != items.end(); ++iter) {
+    for (auto iter = items.begin(); iter != items.end(); ++iter) {
       if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
         // There should be only one IN_PROGRESS item.
         EXPECT_EQ(NULL, item);

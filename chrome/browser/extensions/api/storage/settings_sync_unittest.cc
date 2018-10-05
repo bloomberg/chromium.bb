@@ -115,8 +115,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
           "MockSyncChangeProcessor: configured to fail",
           change_list[0].sync_data().GetDataType());
     }
-    for (syncer::SyncChangeList::const_iterator it = change_list.begin();
-        it != change_list.end(); ++it) {
+    for (auto it = change_list.cbegin(); it != change_list.cend(); ++it) {
       changes_.push_back(std::make_unique<SettingSyncData>(*it));
     }
     return syncer::SyncError();
@@ -231,8 +230,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     syncer::SyncDataList as_list =
         GetSyncableService(model_type)->GetAllSyncData(model_type);
     SettingSyncDataMultimap as_map;
-    for (syncer::SyncDataList::iterator it = as_list.begin();
-        it != as_list.end(); ++it) {
+    for (auto it = as_list.begin(); it != as_list.end(); ++it) {
       std::unique_ptr<SettingSyncData> sync_data(new SettingSyncData(*it));
       std::unique_ptr<SettingSyncDataList>& list_for_extension =
           as_map[sync_data->extension_id()];

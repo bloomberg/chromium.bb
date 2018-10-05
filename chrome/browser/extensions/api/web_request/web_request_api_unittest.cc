@@ -763,7 +763,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
                                                                      false);
 
   IPC::Message* message = NULL;
-  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+  auto i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kExpected); ++test) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
@@ -853,7 +853,7 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id4,
                                                                      false);
 
-  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+  auto i = ipc_sender_.sent_begin();
 
   for (size_t test = 0; test < arraysize(kExpected); ++test, ++i) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
@@ -976,7 +976,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
 
-  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+  auto i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kMethods); ++test, ++i) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());

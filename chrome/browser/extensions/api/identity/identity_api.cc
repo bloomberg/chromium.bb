@@ -107,7 +107,7 @@ IdentityMintRequestQueue* IdentityAPI::mint_queue() { return &mint_queue_; }
 
 void IdentityAPI::SetCachedToken(const ExtensionTokenKey& key,
                                  const IdentityTokenCacheValue& token_data) {
-  CachedTokens::iterator it = token_cache_.find(key);
+  auto it = token_cache_.find(key);
   if (it != token_cache_.end() && it->second.status() <= token_data.status())
     token_cache_.erase(it);
 
