@@ -15,7 +15,6 @@
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -203,14 +202,6 @@ class WebServiceWorkerNetworkProviderForSharedWorker
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 };
 
-// "ForSharedWorker" is to avoid collisions in Jumbo builds.
-bool IsOutOfProcessNetworkServiceForSharedWorker() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
-}
-
 }  // namespace
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
@@ -226,7 +217,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
     blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
@@ -281,30 +272,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         base::nullopt /* subresource_overrides */);
   }
 
-  // |factory_bundle| is provided in the
-  // ServiceWorkerServicification or NetworkService case.
-  DCHECK(factory_bundle ||
-         !blink::ServiceWorkerUtils::IsServicificationEnabled());
-  if (factory_bundle) {
-    // If the network service crashes, then self-destruct so clients don't get
-    // stuck with a worker with a broken loader. Self-destruction is effectively
-    // the same as the worker's process crashing.
-    // The default factory might not be to the network service if a feature like
-    // AppCache set itself to the default, but treat a connection error as fatal
-    // anyway so clients don't get stuck.
-    if (IsOutOfProcessNetworkServiceForSharedWorker()) {
-      default_factory_connection_error_handler_holder_.Bind(
-          std::move(factory_bundle->default_factory_info()));
-      default_factory_connection_error_handler_holder_->Clone(
-          mojo::MakeRequest(&factory_bundle->default_factory_info()));
-      default_factory_connection_error_handler_holder_
-          .set_connection_error_handler(base::BindOnce(
-              &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
-    }
-
+  if (subresource_loader_factories) {
     subresource_loader_factories_->Update(
         std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-            std::move(factory_bundle),
+            std::move(subresource_loader_factories),
             nullptr /* prefetch_loader_factory_info */),
         base::nullopt /* subresource_overrides */);
   }
@@ -495,7 +466,7 @@ void EmbeddedSharedWorkerStub::Connect(int connection_request_id,
 }
 
 void EmbeddedSharedWorkerStub::Terminate() {
-  // After this we should ignore any IPC for this stub.
+  // After this we wouldn't get any IPC for this stub.
   running_ = false;
   impl_->TerminateWorkerContext();
 }

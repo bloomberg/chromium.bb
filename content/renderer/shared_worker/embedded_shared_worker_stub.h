@@ -148,12 +148,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // taking a resource pre-requested by the browser process.
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
-  // Out-of-process NetworkService:
-  // Detects disconnection from the default factory of the loader factory bundle
-  // used by this worker (typically the network service).
-  network::mojom::URLLoaderFactoryPtr
-      default_factory_connection_error_handler_holder_;
-
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
 
