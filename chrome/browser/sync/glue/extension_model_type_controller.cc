@@ -15,11 +15,13 @@ ExtensionModelTypeController::ExtensionModelTypeController(
     syncer::ModelType type,
     syncer::OnceModelTypeStoreFactory store_factory,
     SyncableServiceProvider syncable_service_provider,
+    const base::RepeatingClosure& dump_stack,
     Profile* profile)
     : SyncableServiceBasedModelTypeController(
           type,
           std::move(store_factory),
-          std::move(syncable_service_provider)),
+          std::move(syncable_service_provider),
+          dump_stack),
       profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS ||
          type == syncer::THEMES);

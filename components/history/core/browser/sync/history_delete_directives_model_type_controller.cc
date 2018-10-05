@@ -14,13 +14,16 @@
 namespace browser_sync {
 
 HistoryDeleteDirectivesModelTypeController::
-    HistoryDeleteDirectivesModelTypeController(syncer::SyncClient* sync_client)
+    HistoryDeleteDirectivesModelTypeController(
+        const base::RepeatingClosure& dump_stack,
+        syncer::SyncClient* sync_client)
     : SyncableServiceBasedModelTypeController(
           syncer::HISTORY_DELETE_DIRECTIVES,
           sync_client->GetModelTypeStoreService()->GetStoreFactory(),
           base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                          base::Unretained(sync_client),
-                         syncer::HISTORY_DELETE_DIRECTIVES)),
+                         syncer::HISTORY_DELETE_DIRECTIVES),
+          dump_stack),
       sync_client_(sync_client) {}
 
 HistoryDeleteDirectivesModelTypeController::
