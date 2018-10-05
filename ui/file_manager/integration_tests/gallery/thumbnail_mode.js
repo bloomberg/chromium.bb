@@ -118,9 +118,6 @@ function deleteAllImagesInThumbnailMode(testVolumeName, volumeType, operation) {
     chrome.test.assertTrue(!!result);
     // Wait until error banner is shown.
     return gallery.waitForElement(appId, '.gallery[error] .error-banner');
-  }).then(function() {
-    // Check: The edit name field should hide.
-    return gallery.waitForElement(appId, '#rename-input[hidden]');
   });
 }
 
@@ -163,9 +160,6 @@ function emptySpaceClickUnselectsInThumbnailMode(testVolumeName, volumeType) {
   }).then(function(result) {
     // Confirm slideshow button is disabled.
     return gallery.waitForElement(appId, 'button.slideshow[disabled]');
-  }).then(function() {
-    // Check: The edit name field should hide.
-    return gallery.waitForElement(appId, '#rename-input[hidden]');
   }).then(function() {
     // Switch back to slide mode by clicking mode button.
     return gallery.waitAndClickElement(appId, 'button.mode:not([disabled])');
