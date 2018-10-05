@@ -111,6 +111,7 @@ var CLASSES = {
   HIDE_NOTIFICATION: 'notice-hide',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
   MATERIAL_DESIGN_ICONS:
       'md-icons',  // Applies Material Design styles to Most Visited.
   // Vertically centers the most visited section for a non-Google provided page.
@@ -938,8 +939,18 @@ function handlePostMessage(event) {
 function enableMDIcons() {
   $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  enableMD();
   addRippleAnimations();
 }
+
+
+/**
+ * Enables Material Design styles for all NTP components except Most Visited.
+ */
+function enableMD() {
+  document.body.classList.add(CLASSES.MATERIAL_DESIGN);
+}
+
 
 /**
  * Enables ripple animations for elements with CLASSES.RIPPLE. The target
@@ -1080,6 +1091,8 @@ function init() {
   if (configData.isGooglePage) {
     if (configData.isMDIconsEnabled || configData.isCustomLinksEnabled) {
       enableMDIcons();
+    } else if (configData.isMDUIEnabled) {
+      enableMD();
     }
 
     if (configData.isCustomLinksEnabled) {

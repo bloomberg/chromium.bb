@@ -2534,7 +2534,8 @@
                     "enable_features": [
                         "NewTabPageBackgrounds",
                         "NewTabPageCustomLinks",
-                        "NewTabPageIcons"
+                        "NewTabPageIcons",
+                        "NewTabPageUIMd"
                     ]
                 }
             ]

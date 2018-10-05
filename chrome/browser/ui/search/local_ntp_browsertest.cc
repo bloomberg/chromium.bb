@@ -602,7 +602,7 @@ class LocalNTPCustomLinksTest : public LocalNTPTest {
   LocalNTPCustomLinksTest()
       : LocalNTPTest(
             /*enabled_features=*/{features::kUseGoogleLocalNtp,
-                                  features::kNtpIcons,
+                                  features::kNtpUIMd, features::kNtpIcons,
                                   ntp_tiles::kNtpCustomLinks},
             /*disabled_features=*/{}) {}
 
@@ -768,9 +768,9 @@ class LocalNTPNonMDTest : public LocalNTPTest {
   LocalNTPNonMDTest()
       : LocalNTPTest(
             /*enabled_features=*/{features::kUseGoogleLocalNtp},
-            /*disabled_features=*/{features::kNtpBackgrounds,
-                                   features::kNtpIcons,
-                                   ntp_tiles::kNtpCustomLinks}) {}
+            /*disabled_features=*/{
+                features::kNtpUIMd, features::kNtpBackgrounds,
+                features::kNtpIcons, ntp_tiles::kNtpCustomLinks}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNonMDTest, LoadsNonMDIframe) {

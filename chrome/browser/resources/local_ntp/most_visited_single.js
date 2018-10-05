@@ -43,6 +43,7 @@ const IDS = {
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
   // Material Design classes.
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   MD_EMPTY_TILE: 'md-empty-tile',
   MD_FALLBACK_BACKGROUND: 'md-fallback-background',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
@@ -975,6 +976,7 @@ var init = function() {
   // Enable Material Design.
   if (queryArgs['enableMD'] == '1') {
     isMDEnabled = true;
+    document.body.classList.add(CLASSES.MATERIAL_DESIGN);
   }
 
   // Enable custom links.

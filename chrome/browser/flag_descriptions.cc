@@ -1233,6 +1233,10 @@ const char kNtpIconsDescription[] =
     "Show Material Design icons on the New Tab Page, instead of Most Visited "
     "tiles. Implicitly enables 'ntp-ui-md'.";
 
+const char kNtpUIMdName[] = "New Tab Page Material Design UI";
+const char kNtpUIMdDescription[] =
+    "Updates the New Tab Page with Material Design elements.";
+
 const char kNumRasterThreadsName[] = "Number of raster threads";
 const char kNumRasterThreadsDescription[] =
     "Specify the number of raster threads.";
