@@ -4,7 +4,7 @@
       "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]\\windows_sdk",
+      "[CACHE]\\windows_sdk",
       "-ensure-file",
       "chrome_internal/third_party/sdk/windows uploaded:2018-06-13",
       "-json-output",
@@ -31,7 +31,7 @@
       "python",
       "-u",
       "\nimport shutil\nimport sys\nshutil.copy(sys.argv[1], sys.argv[2])\n",
-      "[START_DIR]\\windows_sdk\\win_sdk\\bin\\SetEnv.x64.json",
+      "[CACHE]\\windows_sdk\\win_sdk\\bin\\SetEnv.x64.json",
       "/path/to/tmp/json"
     ],
     "name": "read SetEnv.x64.json",
@@ -65,11 +65,11 @@
       "out/Release"
     ],
     "env": {
-      "VSINSTALLDIR": "[START_DIR]\\windows_sdk"
+      "VSINSTALLDIR": "[CACHE]\\windows_sdk"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]\\windows_sdk\\win_sdk\\bin\\x64"
+        "[CACHE]\\windows_sdk\\win_sdk\\bin\\x64"
       ]
     },
     "name": "gn"
@@ -81,11 +81,11 @@
       "out/Release"
     ],
     "env": {
-      "VSINSTALLDIR": "[START_DIR]\\windows_sdk"
+      "VSINSTALLDIR": "[CACHE]\\windows_sdk"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]\\windows_sdk\\win_sdk\\bin\\x64"
+        "[CACHE]\\windows_sdk\\win_sdk\\bin\\x64"
       ]
     },
     "name": "ninja"

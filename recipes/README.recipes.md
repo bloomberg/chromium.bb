@@ -869,7 +869,7 @@ Setups the SDK environment when enabled.
 
 Args:
   path (path): Path to a directory where to install the SDK
-    (default is '[start_dir]/windows_sdk')
+    (default is '[CACHE]/windows_sdk')
   version (str): CIPD version of the SDK
     (default is set via $infra/windows_sdk.version property)
   enabled (bool): Whether the SDK should be used or not.
