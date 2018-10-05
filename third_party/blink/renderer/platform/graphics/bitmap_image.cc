@@ -53,19 +53,16 @@ namespace blink {
 
 int GetRepetitionCountWithPolicyOverride(int actual_count,
                                          ImageAnimationPolicy policy) {
-  switch (policy) {
-    case kImageAnimationPolicyAllowed:
-      // Default policy, no count override.
-      return actual_count;
-    case kImageAnimationPolicyAnimateOnce:
-      // Only a single loop allowed.
-      return kAnimationLoopOnce;
-    case kImageAnimationPolicyNoAnimation:
-      // Dont animate.
-      return kAnimationNone;
+  if (actual_count == kAnimationNone ||
+      policy == kImageAnimationPolicyNoAnimation) {
+    return kAnimationNone;
   }
 
-  NOTREACHED();
+  if (actual_count == kAnimationLoopOnce ||
+      policy == kImageAnimationPolicyAnimateOnce) {
+    return kAnimationLoopOnce;
+  }
+
   return actual_count;
 }
 

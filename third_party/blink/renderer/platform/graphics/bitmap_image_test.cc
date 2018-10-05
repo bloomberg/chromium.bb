@@ -652,7 +652,65 @@ TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
   }
 };
 
-TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionNone) {
+  repetition_count_ = kAnimationNone;
+  frame_count_ = 4u;
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
+
+  PaintImage image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // In all cases, the image shouldn't animate.
+
+  // Only one loop allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // No animation allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyNoAnimation);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // Default policy.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAllowed);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+}
+
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionOnce) {
+  repetition_count_ = kAnimationLoopOnce;
+  frame_count_ = 4u;
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
+
+  PaintImage image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // If the policy is no animation, then the repetition count is none. In all
+  // other cases, it remains loop once.
+
+  // Only one loop allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationLoopOnce);
+
+  // No animation allowed.
+  image_->SetAnimationPolicy(kImageAnimationPolicyNoAnimation);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationNone);
+
+  // Default policy.
+  image_->SetAnimationPolicy(kImageAnimationPolicyAllowed);
+  image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image.repetition_count(), kAnimationLoopOnce);
+}
+
+TEST_F(BitmapImageTestWithMockDecoder,
+       AnimationPolicyOverrideOriginalRepetitionInfinite) {
   repetition_count_ = kAnimationLoopInfinite;
   frame_count_ = 4u;
   last_frame_complete_ = true;
@@ -660,6 +718,8 @@ TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
 
   PaintImage image = image_->PaintImageForCurrentFrame();
   EXPECT_EQ(image.repetition_count(), repetition_count_);
+
+  // The repetition count is determined by the animation policy.
 
   // Only one loop allowed.
   image_->SetAnimationPolicy(kImageAnimationPolicyAnimateOnce);
