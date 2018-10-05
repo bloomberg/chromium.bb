@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_USER_DATA_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_USER_DATA_H_
+#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_USER_DATA_H_
+#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_USER_DATA_H_
 
 #include <stdint.h>
 
@@ -116,4 +116,4 @@ class PreviewsUserData : public base::SupportsUserData::Data {
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_USER_DATA_H_
+#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_USER_DATA_H_

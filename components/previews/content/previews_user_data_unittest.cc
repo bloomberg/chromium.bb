@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
 
 #include <stdint.h>
 
