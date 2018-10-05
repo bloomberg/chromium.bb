@@ -64,14 +64,14 @@ class TabletModeWindowDragDelegate {
   }
 
  protected:
-  // These three methods are used by its child class to do its special handling
+  // These four methods are used by its child class to do its special handling
   // before/during/after dragging.
-  virtual void PrepareForDraggedWindow(
-      const gfx::Point& location_in_screen) = 0;
-  virtual void UpdateForDraggedWindow(const gfx::Point& location_in_screen) = 0;
-  virtual void EndingForDraggedWindow(
+  virtual void PrepareWindowDrag(const gfx::Point& location_in_screen) = 0;
+  virtual void UpdateWindowDrag(const gfx::Point& location_in_screen) = 0;
+  virtual void EndingWindowDrag(
       wm::WmToplevelWindowEventHandler::DragResult result,
       const gfx::Point& location_in_screen) = 0;
+  virtual void EndedWindowDrag(const gfx::Point& location_in_screen) = 0;
 
   // Returns true if we should open overview behind the dragged window when drag
   // starts.

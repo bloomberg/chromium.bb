@@ -78,7 +78,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   dragged_window_ = dragged_window;
   initial_location_in_screen_ = location_in_screen;
 
-  PrepareForDraggedWindow(location_in_screen);
+  PrepareWindowDrag(location_in_screen);
 
   // Update the shelf's visibility to keep shelf visible during drag.
   RootWindowController::ForWindow(dragged_window_)
@@ -151,7 +151,7 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
   }
 
   // For child classes to do their special handling if any.
-  UpdateForDraggedWindow(location_in_screen);
+  UpdateWindowDrag(location_in_screen);
 
   // Update drag indicators and preview window if necessary.
   IndicatorState indicator_state = GetIndicatorState(location_in_screen);
@@ -185,7 +185,7 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverviewOnDragPosition(
 void TabletModeWindowDragDelegate::EndWindowDrag(
     wm::WmToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
-  EndingForDraggedWindow(result, location_in_screen);
+  EndingWindowDrag(result, location_in_screen);
 
   dragged_window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
@@ -210,6 +210,8 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   // Reset the dragged window's window shadow elevation.
   ::wm::SetShadowElevation(dragged_window_, original_shadow_elevation_);
 
+  // For child class to do its special handling if any.
+  EndedWindowDrag(location_in_screen);
   dragged_window_ = nullptr;
   did_move_ = false;
 }
@@ -262,26 +264,14 @@ int TabletModeWindowDragDelegate::GetIndicatorsVerticalThreshold(
 
 SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
-  gfx::Rect work_area_bounds = display::Screen::GetScreen()
-                                   ->GetDisplayNearestWindow(dragged_window_)
-                                   .work_area();
-
-  // The user has to drag pass the indicator vertical threshold to snap the
-  // window.
-  if (!did_move_ && location_in_screen.y() <
-                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
-    return SplitViewController::NONE;
-  }
-
-  const bool is_landscape =
-      split_view_controller_->IsCurrentScreenOrientationLandscape();
-  const bool is_primary =
-      split_view_controller_->IsCurrentScreenOrientationPrimary();
-
   // If split view mode is active during dragging, the dragged window will be
   // either snapped left or right (if it's not merged into overview window),
   // depending on the relative position of |location_in_screen| and the current
   // divider position.
+  const bool is_landscape =
+      split_view_controller_->IsCurrentScreenOrientationLandscape();
+  const bool is_primary =
+      split_view_controller_->IsCurrentScreenOrientationPrimary();
   if (split_view_controller_->IsSplitViewModeActive()) {
     const int position =
         is_landscape ? location_in_screen.x() : location_in_screen.y();
@@ -294,8 +284,18 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     }
   }
 
-  // Otherwise, check to see if the current event location |location_in_screen|
-  // is within the drag indicators bounds.
+  // Otherwise, the user has to drag pass the indicator vertical threshold to
+  // snap the window.
+  gfx::Rect work_area_bounds = display::Screen::GetScreen()
+                                   ->GetDisplayNearestWindow(dragged_window_)
+                                   .work_area();
+  if (!did_move_ && location_in_screen.y() <
+                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
+    return SplitViewController::NONE;
+  }
+
+  // Check to see if the current event location |location_in_screen|is within
+  // the drag indicators bounds.
   if (is_landscape) {
     const int screen_edge_inset =
         work_area_bounds.width() * kHighlightScreenPrimaryAxisRatio +

@@ -568,6 +568,18 @@ void TabDragController::EndDrag(EndDragReason reason) {
   // dragged tabs to it first.
   if (reason == END_DRAG_COMPLETE && deferred_target_tabstrip_observer_)
     PerformDeferredAttach();
+
+  // It's also possible that we need to merge the dragged tabs back into the
+  // source window even if the dragged tabs is dragged away from the source
+  // window.
+  // TODO(xdai/mukai): Move ClearTabDraggingInfo() to a later point and let
+  // RevertDrag() handle this case.
+  if (source_tabstrip_ &&
+      GetWindowForTabDraggingProperties(source_tabstrip_)
+          ->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+    SetDeferredTargetTabstrip(source_tabstrip_);
+    PerformDeferredAttach();
+  }
 #endif
 
   EndDragImpl(reason != END_DRAG_COMPLETE && source_tabstrip_ ?
