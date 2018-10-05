@@ -8,15 +8,6 @@ from recipe_engine import recipe_test_api
 
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
-  def properties(self, apply_patch_on_gclient):
-    ret = self.test(None)
-    ret.properties = {
-        '$depot_tools/bot_update': {
-            'apply_patch_on_gclient': apply_patch_on_gclient,
-        }
-    }
-    return ret
-
   def output_json(self, root, first_sln, revision_mapping, fail_patch=False,
                   fixed_revisions=None):
     """Deterministically synthesize json.output test data for gclient's
@@ -45,11 +36,11 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
     })
     output.update({
       'manifest': {
-				project_name: {
-					'repository': 'https://fake.org/%s.git' % project_name,
-					'revision': self.gen_revision(project_name),
-				}
-			for project_name in set(revision_mapping.values())}})
+          project_name: {
+              'repository': 'https://fake.org/%s.git' % project_name,
+              'revision': self.gen_revision(project_name),
+          }
+          for project_name in set(revision_mapping.values())}})
 
     output.update({
       'source_manifest': {

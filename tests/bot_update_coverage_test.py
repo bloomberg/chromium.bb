@@ -156,7 +156,6 @@ class BotUpdateUnittests(unittest.TestCase):
       'cleanup_dir': None,
       'gerrit_reset': None,
       'disable_syntax_validation': False,
-      'apply_patch_on_gclient': False,
   }
 
   def setUp(self):
@@ -209,11 +208,10 @@ class BotUpdateUnittests(unittest.TestCase):
     self.assertEquals(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
-  def testEnableGclientExperiment(self):
+  def testApplyPatchOnGclient(self):
     ref = 'refs/changes/12/345/6'
     repo = 'https://chromium.googlesource.com/v8/v8'
     self.params['patch_refs'] = ['%s@%s' % (repo, ref)]
-    self.params['apply_patch_on_gclient'] = True
     bot_update.ensure_checkout(**self.params)
     args = self.gclient.records[0]
     idx = args.index('--patch-ref')
@@ -228,7 +226,6 @@ class BotUpdateUnittests(unittest.TestCase):
     self.params['patch_refs'] = [
         'https://chromium.googlesource.com/chromium/src@refs/changes/12/345/6',
         'https://chromium.googlesource.com/v8/v8@refs/changes/1/234/56']
-    self.params['apply_patch_on_gclient'] = True
     bot_update.ensure_checkout(**self.params)
     args = self.gclient.records[0]
     patch_refs = set(

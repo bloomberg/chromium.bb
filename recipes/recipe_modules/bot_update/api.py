@@ -11,8 +11,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, properties, deps_revision_overrides, fail_patch, *args,
                **kwargs):
-    self._apply_patch_on_gclient = properties.get(
-        'apply_patch_on_gclient', True)
     self._deps_revision_overrides = deps_revision_overrides
     self._fail_patch = fail_patch
 
@@ -227,8 +225,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_rebase_patch_ref')
     if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
-    if not self._apply_patch_on_gclient:
-      cmd.append('--no-apply-patch-on-gclient')
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
