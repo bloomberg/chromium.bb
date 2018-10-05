@@ -3615,37 +3615,47 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-#if defined(THREAD_SANITIZER)
-// SearchProviderTest.SendsWarmUpRequestOnFocus is flaky on Linux TSan Tests
-// crbug.com/891959.
-#define MAYBE_SendsWarmUpRequestOnFocus DISABLED_SendsWarmUpRequestOnFocus
-#else
-#define MAYBE_SendsWarmUpRequestOnFocus SendsWarmUpRequestOnFocus
-#endif  // defined(THREAD_SANITIZER)
-TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
+// SearchProviderWarmUpTest --------------------------------------------------
+//
+// Like SearchProviderTest.  The only addition is that it's a
+// TestWithParam<bool>, where the boolean parameter represents whether the
+// omnibox::kSearchProviderWarmUpOnFocus feature flag should be enabled.
+class SearchProviderWarmUpTest : public SearchProviderTest,
+                                 public testing::WithParamInterface<bool> {
+ public:
+  SearchProviderWarmUpTest() {}
+  void SetUp() override;
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchProviderWarmUpTest);
+};
+
+void SearchProviderWarmUpTest::SetUp() {
+  if (GetParam())
+    feature_list_.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  else
+    feature_list_.InitAndDisableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  SearchProviderTest::SetUp();
+}
+
+TEST_P(SearchProviderWarmUpTest, SendsWarmUpRequestOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("f"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
   input.set_prefer_keyword(true);
   input.set_from_omnibox_focus(true);
 
-  {
-    // First, verify that without the warm-up feature enabled, the provider
-    // immediately terminates with no matches.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  if (!GetParam()) {  // The warm-up feature ought to be disabled.
+    // The provider immediately terminates with no matches.
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider has a chance to create the
     // URLFetchers (if it wants to, which it shouldn't in this case).
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(provider_->done());
     EXPECT_TRUE(provider_->matches().empty());
-  }
-
-  {
-    // Then, check the behavior with the warm-up feature enabled.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  } else {  // The warm-up feature ought to be enabled.
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider create the URLFetcher.
     base::RunLoop().RunUntilIdle();
@@ -3663,3 +3673,7 @@ TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
     EXPECT_TRUE(provider_->matches().empty());
   }
 }
+
+INSTANTIATE_TEST_CASE_P(SearchProviderTest,
+                        SearchProviderWarmUpTest,
+                        testing::Values(false, true));
