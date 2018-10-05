@@ -90,6 +90,7 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
+#include "media/mojo/services/android_mojo_media_client.h"
 #if !BUILDFLAG(USE_CHROMECAST_CDMS)
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "url/origin.h"
@@ -124,6 +125,10 @@ namespace {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 static std::unique_ptr<service_manager::Service> CreateMediaService(
     CastContentBrowserClient* browser_client) {
+#if defined(OS_ANDROID)
+  return std::make_unique<::media::MediaService>(
+      std::make_unique<::media::AndroidMojoMediaClient>());
+#else
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
@@ -132,6 +137,7 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
       browser_client->GetVideoResolutionPolicy(),
       browser_client->media_resource_tracker());
   return std::make_unique<::media::MediaService>(std::move(mojo_media_client));
+#endif  // defined(OS_ANDROID)
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
@@ -660,7 +666,7 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
-#endif
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
   std::string application_session_id =
       CastNavigationUIData::GetSessionIdForWebContents(

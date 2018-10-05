@@ -39,8 +39,6 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
       const std::string& audio_device_id) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) override;
-  std::unique_ptr<::media::AudioDecoder> CreateAudioDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   service_manager::Connector* connector_;

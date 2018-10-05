@@ -4,18 +4,12 @@
 
 #include "chromecast/media/service/cast_mojo_media_client.h"
 
-#include "build/build_config.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/overlay_info.h"
-
-#if defined(OS_ANDROID)
-#include "media/filters/android/media_codec_audio_decoder.h"
-#endif  // defined(OS_ANDROID)
 
 namespace chromecast {
 namespace media {
@@ -57,14 +51,6 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
   return create_cdm_factory_cb_.Run();
-}
-
-std::unique_ptr<::media::AudioDecoder> CastMojoMediaClient::CreateAudioDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-#if defined(OS_ANDROID)
-  return std::make_unique<::media::MediaCodecAudioDecoder>(task_runner);
-#endif  // defined(OS_ANDROID)
-  return nullptr;
 }
 
 }  // namespace media
