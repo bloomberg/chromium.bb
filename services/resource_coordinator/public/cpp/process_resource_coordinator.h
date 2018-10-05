@@ -14,10 +14,10 @@
 
 namespace resource_coordinator {
 
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ProcessResourceCoordinator
-    : public ResourceCoordinatorInterface<
-          mojom::ProcessCoordinationUnitPtr,
-          mojom::ProcessCoordinationUnitRequest> {
+class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
+    ProcessResourceCoordinator : public ResourceCoordinatorInterface<
+                                     mojom::ProcessCoordinationUnitPtr,
+                                     mojom::ProcessCoordinationUnitRequest> {
  public:
   ProcessResourceCoordinator(service_manager::Connector* connector);
   ~ProcessResourceCoordinator() override;
