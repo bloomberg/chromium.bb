@@ -14,7 +14,7 @@
 #endif
 
 IOSChromeIOThread::IOSChromeIOThread(PrefService* local_state,
-                                     net_log::ChromeNetLog* net_log)
+                                     net::NetLog* net_log)
     : IOSIOThread(local_state, net_log) {
   IOSChromeNetworkDelegate::InitializePrefsOnUIThread(nullptr, local_state);
 }

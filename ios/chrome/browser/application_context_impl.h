@@ -60,7 +60,8 @@ class ApplicationContextImpl : public ApplicationContext {
   ukm::UkmRecorder* GetUkmRecorder() override;
   variations::VariationsService* GetVariationsService() override;
   rappor::RapporServiceImpl* GetRapporServiceImpl() override;
-  net_log::ChromeNetLog* GetNetLog() override;
+  net::NetLog* GetNetLog() override;
+  net_log::NetExportFileWriter* GetNetExportFileWriter() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;
   gcm::GCMDriver* GetGCMDriver() override;
@@ -80,7 +81,8 @@ class ApplicationContextImpl : public ApplicationContext {
 
   base::ThreadChecker thread_checker_;
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<net_log::ChromeNetLog> net_log_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   std::unique_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>

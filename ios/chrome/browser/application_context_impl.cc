@@ -26,7 +26,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
-#include "components/net_log/chrome_net_log.h"
+#include "components/net_log/net_export_file_writer.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -53,6 +53,7 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -101,7 +102,7 @@ ApplicationContextImpl::ApplicationContextImpl(
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 
-  net_log_.reset(new net_log::ChromeNetLog());
+  net_log_ = std::make_unique<net::NetLog>();
 
   SetApplicationLocale(locale);
 
@@ -133,6 +134,8 @@ void ApplicationContextImpl::StartTearDown() {
 
   metrics_services_manager_.reset();
   network_time_tracker_.reset();
+
+  net_export_file_writer_.reset();
 
   // Need to clear browser states before the IO thread.
   chrome_browser_state_manager_.reset();
@@ -289,9 +292,17 @@ rappor::RapporServiceImpl* ApplicationContextImpl::GetRapporServiceImpl() {
   return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
-net_log::ChromeNetLog* ApplicationContextImpl::GetNetLog() {
+net::NetLog* ApplicationContextImpl::GetNetLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return net_log_.get();
+}
+
+net_log::NetExportFileWriter* ApplicationContextImpl::GetNetExportFileWriter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!net_export_file_writer_) {
+    net_export_file_writer_ = std::make_unique<net_log::NetExportFileWriter>();
+  }
+  return net_export_file_writer_.get();
 }
 
 network_time::NetworkTimeTracker*

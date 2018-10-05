@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
+#include "components/net_log/net_export_file_writer.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -639,6 +640,14 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       http_09_on_non_default_ports_enabled;
 
   return network_context_params;
+}
+
+net_log::NetExportFileWriter*
+SystemNetworkContextManager::GetNetExportFileWriter() {
+  if (!net_export_file_writer_) {
+    net_export_file_writer_ = std::make_unique<net_log::NetExportFileWriter>();
+  }
+  return net_export_file_writer_.get();
 }
 
 void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
