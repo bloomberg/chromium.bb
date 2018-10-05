@@ -167,6 +167,13 @@ class ModelTypeSyncBridge {
   virtual StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
+  // Returns an estimate of memory usage attributed to sync (that is, excludes
+  // the actual model). Because the resulting UMA metrics are often used to
+  // compare with the non-USS equivalent implementations (SyncableService), it's
+  // a good idea to account for overhead that would also get accounted for the
+  // SyncableService by other means.
+  virtual size_t EstimateSyncOverheadMemoryUsage() const;
+
   // Needs to be informed about any model change occurring via Delete() and
   // Put(). The changing metadata should be stored to persistent storage
   // before or atomically with the model changes.

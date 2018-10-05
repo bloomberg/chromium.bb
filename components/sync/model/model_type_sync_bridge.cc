@@ -56,6 +56,10 @@ ModelTypeSyncBridge::StopSyncResponse ModelTypeSyncBridge::ApplyStopSyncChanges(
   return StopSyncResponse::kModelStillReadyToSync;
 }
 
+size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {
+  return 0U;
+}
+
 ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() {
   return change_processor_.get();
 }
