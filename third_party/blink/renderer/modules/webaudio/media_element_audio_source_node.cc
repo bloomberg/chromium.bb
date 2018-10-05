@@ -29,8 +29,8 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_options.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -217,14 +217,14 @@ void MediaElementAudioSourceHandler::unlock() {
 // ----------------------------------------------------------------
 
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(
-    BaseAudioContext& context,
+    AudioContext& context,
     HTMLMediaElement& media_element)
     : AudioNode(context) {
   SetHandler(MediaElementAudioSourceHandler::Create(*this, media_element));
 }
 
 MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
-    BaseAudioContext& context,
+    AudioContext& context,
     HTMLMediaElement& media_element,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -261,7 +261,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
 }
 
 MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
-    BaseAudioContext* context,
+    AudioContext* context,
     const MediaElementAudioSourceOptions& options,
     ExceptionState& exception_state) {
   return Create(*context, *options.mediaElement(), exception_state);

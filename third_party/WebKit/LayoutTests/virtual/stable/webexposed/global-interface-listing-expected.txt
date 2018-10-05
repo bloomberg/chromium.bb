@@ -126,6 +126,9 @@ interface AudioContext : BaseAudioContext
     getter baseLatency
     method close
     method constructor
+    method createMediaElementSource
+    method createMediaStreamDestination
+    method createMediaStreamSource
     method getOutputTimestamp
     method resume
     method suspend
@@ -252,9 +255,6 @@ interface BaseAudioContext : EventTarget
     method createDynamicsCompressor
     method createGain
     method createIIRFilter
-    method createMediaElementSource
-    method createMediaStreamDestination
-    method createMediaStreamSource
     method createOscillator
     method createPanner
     method createPeriodicWave

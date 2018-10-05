@@ -49,10 +49,8 @@ enum AudioContextLatencyCategory {
     // passing the audio from the AudioDestinationNode to the audio subsystem
     readonly attribute double baseLatency;
 
-    // Sources
-    // TODO(rtoy): The following methods should be here instead of in BaseAudioContext:
-    //
-    // createMediaElementSource(HTMLMediaElement mediaElement)
-    // createMediaStreamSource(MediaStream mediaStream)
-    // createMediaStreamDestination()
+    [RaisesException, MeasureAs=AudioContextCreateMediaElementSource] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
+    [RaisesException, MeasureAs=AudioContextCreateMediaStreamSource] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
+    [RaisesException, MeasureAs=AudioContextCreateMediaStreamDestination] MediaStreamAudioDestinationNode createMediaStreamDestination();
+
 };

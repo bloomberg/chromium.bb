@@ -44,10 +44,10 @@ PASS AudioContext interface: operation getOutputTimestamp()
 PASS AudioContext interface: operation resume()
 PASS AudioContext interface: operation suspend()
 PASS AudioContext interface: operation close()
-FAIL AudioContext interface: operation createMediaElementSource(HTMLMediaElement) assert_own_property: interface prototype object missing non-static operation expected property "createMediaElementSource" missing
-FAIL AudioContext interface: operation createMediaStreamSource(MediaStream) assert_own_property: interface prototype object missing non-static operation expected property "createMediaStreamSource" missing
+PASS AudioContext interface: operation createMediaElementSource(HTMLMediaElement)
+PASS AudioContext interface: operation createMediaStreamSource(MediaStream)
 FAIL AudioContext interface: operation createMediaStreamTrackSource(MediaStreamTrack) assert_own_property: interface prototype object missing non-static operation expected property "createMediaStreamTrackSource" missing
-FAIL AudioContext interface: operation createMediaStreamDestination() assert_own_property: interface prototype object missing non-static operation expected property "createMediaStreamDestination" missing
+PASS AudioContext interface: operation createMediaStreamDestination()
 PASS AudioContext must be primary interface of context
 PASS Stringification of context
 PASS AudioContext interface: context must inherit property "baseLatency" with the proper type

@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
@@ -142,7 +142,7 @@ unsigned long MediaStreamAudioDestinationHandler::MaxChannelCount() const {
 // ----------------------------------------------------------------
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
-    BaseAudioContext& context,
+    AudioContext& context,
     size_t number_of_channels)
     : AudioBasicInspectorNode(context) {
   SetHandler(
@@ -150,7 +150,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
 }
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
-    BaseAudioContext& context,
+    AudioContext& context,
     size_t number_of_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -164,7 +164,7 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
 }
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
-    BaseAudioContext* context,
+    AudioContext* context,
     const AudioNodeOptions& options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -181,12 +181,6 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     node->setChannelCount(options.channelCount(), exception_state);
 
   node->HandleChannelOptions(options, exception_state);
-
-  if (!context->HasRealtimeConstraint()) {
-    Deprecation::CountDeprecation(
-        node->GetExecutionContext(),
-        WebFeature::kMediaStreamDestinationOnOfflineContext);
-  }
 
   return node;
 }
