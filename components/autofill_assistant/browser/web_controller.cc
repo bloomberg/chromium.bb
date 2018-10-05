@@ -507,17 +507,14 @@ void WebController::OnClickObjectForFillingForm(
     DLOG(ERROR) << "Failed to click the element for filling form.";
     OnResult(false, std::move(callback));
   }
-
-  std::vector<std::string> element_selectors = selectors;
-  DCHECK(element_selectors.size() >
-         element_result->container_frame_selector_index);
-  for (size_t i = element_result->container_frame_selector_index; i > 0; i++) {
-    element_selectors.erase(element_selectors.begin());
-  }
   ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
       element_result->container_frame_host);
+  DCHECK(!selectors.empty());
+  // TODO(crbug.com/806868): Figure out whether there are cases where we need
+  // more than one selector, and come up with a solution that can figure out the
+  // right number of selectors to include.
   driver->GetAutofillAgent()->GetElementFormAndFieldData(
-      element_selectors,
+      std::vector<std::string>(1, selectors.back()),
       base::BindOnce(&WebController::OnGetFormAndFieldDataForFillingForm,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(data_to_autofill), std::move(callback),
