@@ -31,9 +31,16 @@ public abstract class TabWebContentsUserData implements UserData {
         });
     }
 
-    protected WebContents getWebContents() {
-        return mWebContents;
+    @Override
+    public final void destroy() {
+        cleanupWebContents(mWebContents);
+        destroyInternal();
     }
+
+    /**
+     * Performs additional tasks upon destruction.
+     */
+    protected void destroyInternal() {}
 
     /**
      * Called when {@link WebContents} becomes active (swapped in) for a {@link Tab}.
