@@ -936,9 +936,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (policy == kNavigationPolicyIgnore)
     return;
 
-  if (request.Form())
-    Client()->DispatchWillSubmitForm(request.Form());
-
   if (policy == kNavigationPolicyCurrentTab) {
     CommitNavigation(resource_request, SubstituteData(),
                      request.ClientRedirect(), base::UnguessableToken::Create(),

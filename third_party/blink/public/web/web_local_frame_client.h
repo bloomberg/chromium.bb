@@ -401,9 +401,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // hasn't yet had a chance to run (and possibly alter/interrupt the submit.)
   virtual void WillSendSubmitEvent(const WebFormElement&) {}
 
-  // A form submission is about to occur.
-  virtual void WillSubmitForm(const WebFormElement&) {}
-
   // A datasource has been created for a new navigation.  The given
   // datasource will become the provisional datasource for the frame.
   virtual void DidCreateDocumentLoader(WebDocumentLoader*) {}
