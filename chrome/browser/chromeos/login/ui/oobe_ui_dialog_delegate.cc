@@ -67,8 +67,9 @@ class CaptivePortalDialogDelegate
       public ChromeWebModalDialogManagerDelegate,
       public web_modal::WebContentsModalDialogHost {
  public:
-  explicit CaptivePortalDialogDelegate(content::WebContents* web_contents)
-      : web_contents_(web_contents) {
+  explicit CaptivePortalDialogDelegate(views::WebDialogView* host_dialog_view)
+      : host_view_(host_dialog_view),
+        web_contents_(host_dialog_view->web_contents()) {
     view_ = new views::WebDialogView(ProfileHelper::GetSigninProfile(), this,
                                      new ChromeWebContentsHandler);
     view_->SetVisible(false);
@@ -106,7 +107,10 @@ class CaptivePortalDialogDelegate
 
   // web_modal::WebContentsModalDialogHost:
   gfx::NativeView GetHostView() const override {
-    return widget_->GetNativeWindow();
+    if (widget_->IsVisible())
+      return widget_->GetNativeWindow();
+    else
+      return host_view_->GetWidget()->GetNativeWindow();
   }
 
   gfx::Point GetDialogPosition(const gfx::Size& size) override {
@@ -160,6 +164,7 @@ class CaptivePortalDialogDelegate
  private:
   views::Widget* widget_ = nullptr;
   views::WebDialogView* view_ = nullptr;
+  views::WebDialogView* host_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalDialogDelegate);
@@ -202,8 +207,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
-  captive_portal_delegate_ =
-      new CaptivePortalDialogDelegate(dialog_view_->web_contents());
+  captive_portal_delegate_ = new CaptivePortalDialogDelegate(dialog_view_);
 
   GetOobeUI()->GetErrorScreen()->MaybeInitCaptivePortalWindowProxy(
       dialog_view_->web_contents());
