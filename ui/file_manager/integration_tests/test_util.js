@@ -544,6 +544,17 @@ var ENTRIES = {
     typeText: 'HTML document',
   }),
 
+  tallPdf: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'tall.pdf',
+    targetPath: 'tall.pdf',
+    mimeType: 'application/pdf',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'tall.pdf',
+    sizeText: '15 KB',
+    typeText: 'PDF document',
+  }),
+
   pinned: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
