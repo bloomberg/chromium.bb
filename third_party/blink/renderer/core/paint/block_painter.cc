@@ -65,6 +65,20 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   // any painting order steps within the CSS spec.
   if (original_phase == PaintPhase::kForeground &&
       layout_block_.ShouldPaintCarets()) {
+    // Apply overflow clip if needed. TODO(wangxianzhu): Move PaintCarets()
+    // under |contents_paint_state| in the above block and let the caret
+    // painters paint in the space of scrolling contents.
+    base::Optional<ScopedPaintChunkProperties> paint_chunk_properties;
+    if (const auto* fragment = paint_state.FragmentToPaint()) {
+      if (const auto* properties = fragment->PaintProperties()) {
+        if (const auto* overflow_clip = properties->OverflowClip()) {
+          paint_chunk_properties.emplace(
+              paint_info.context.GetPaintController(), overflow_clip,
+              layout_block_, DisplayItem::kCaret);
+        }
+      }
+    }
+
     PaintCarets(paint_info, paint_offset);
   }
 
