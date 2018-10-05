@@ -50,8 +50,7 @@ message FrameStatsMessage {
   // generates this frame.
   optional uint32 capturer_id = 12;
 
-  // The last quantizer chosen by the encoder for this frame. Higher numbers
-  // represent lower-quality images. Values are between 0 and 63, as used by
-  // the rc_*_quantizer config parameters.
-  optional uint32 frame_quantizer = 13;
+  // A simple indication of the quality of the frame, scored between 0 and 100,
+  // with 100 representing a lossless encoded frame.
+  optional uint32 frame_quality = 13;
 }
