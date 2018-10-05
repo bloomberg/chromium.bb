@@ -16,7 +16,6 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
-import android.support.v4.widget.ImageViewCompat;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
@@ -252,7 +251,7 @@ public class SuggestionsBinder {
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         }
-        if (!mIsContextual) ImageViewCompat.setImageTintList(mThumbnailView, null);
+        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
 
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
@@ -301,7 +300,7 @@ public class SuggestionsBinder {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(thumbnail);
-        if (!mIsContextual) ImageViewCompat.setImageTintList(mThumbnailView, null);
+        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
     }
 
     private void setThumbnailFromFileType(@DownloadFilter.Type int fileType) {
@@ -314,7 +313,7 @@ public class SuggestionsBinder {
         mThumbnailView.setImageResource(
                 DownloadUtils.getIconResId(fileType, DownloadUtils.IconSize.DP_36));
         if (!mIsContextual) {
-            ImageViewCompat.setImageTintList(mThumbnailView, iconForegroundColorList);
+            ApiCompatibilityUtils.setImageTintList(mThumbnailView, iconForegroundColorList);
         }
     }
 
@@ -344,7 +343,7 @@ public class SuggestionsBinder {
 
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
-        if (!mIsContextual) ImageViewCompat.setImageTintList(mThumbnailView, null);
+        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
         int duration = (int) (FADE_IN_ANIMATION_TIME_MS
                 * ChromeAnimation.Animation.getAnimationMultiplier());
         if (duration == 0) {

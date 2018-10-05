@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -103,7 +103,7 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
         if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             mBookmarkButton.setContentDescription(mActivity.getString(R.string.edit_bookmark));
-            ImageViewCompat.setImageTintList(mBookmarkButton,
+            ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
                     AppCompatResources.getColorStateList(getContext(), R.color.blue_mode_tint));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);

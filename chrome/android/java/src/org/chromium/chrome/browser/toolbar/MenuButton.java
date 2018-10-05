@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -71,6 +71,6 @@ class MenuButton extends FrameLayout {
      *                 tinted).
      */
     void setTint(ColorStateList tintList) {
-        ImageViewCompat.setImageTintList(mMenuImageButton, tintList);
+        ApiCompatibilityUtils.setImageTintList(mMenuImageButton, tintList);
     }
 }

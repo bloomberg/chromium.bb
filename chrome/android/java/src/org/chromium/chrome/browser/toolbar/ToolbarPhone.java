@@ -30,7 +30,6 @@ import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
@@ -1722,7 +1721,7 @@ public class ToolbarPhone extends ToolbarLayout
         mHomeButton.setVisibility(
                 urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
         ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-        ImageViewCompat.setImageTintList(mHomeButton, tintList);
+        ApiCompatibilityUtils.setImageTintList(mHomeButton, tintList);
         mBrowsingModeViews.add(mHomeButton);
     }
 
@@ -2577,13 +2576,13 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (getMenuButton() != null) {
             ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-            ImageViewCompat.setImageTintList(getMenuButton(), tintList);
+            ApiCompatibilityUtils.setImageTintList(getMenuButton(), tintList);
         }
 
         updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
         if (mExperimentalButton != null) {
             ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-            ImageViewCompat.setImageTintList(mExperimentalButton, tintList);
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tintList);
         }
 
         setMenuButtonHighlightDrawable(mHighlightingMenu);
@@ -2592,7 +2591,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
         if (mIsHomeButtonEnabled && mHomeButton != null) {
-            ImageViewCompat.setImageTintList(mHomeButton, tint);
+            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
         }
 
         mLocationBar.updateVisualsForState();
@@ -2714,7 +2713,7 @@ public class ToolbarPhone extends ToolbarLayout
         mExperimentalButton.setImageResource(drawableResId);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
-        ImageViewCompat.setImageTintList(
+        ApiCompatibilityUtils.setImageTintList(
                 mExperimentalButton, mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
         if (mTabSwitcherState == STATIC_TAB) {

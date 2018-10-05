@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatImageView;
@@ -312,13 +311,13 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.WhiteTitle1);
             ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.WhiteBody);
-            ImageViewCompat.setImageTintList(mCloseButton, mLightCloseIconColor);
+            ApiCompatibilityUtils.setImageTintList(mCloseButton, mLightCloseIconColor);
         } else {
             setBackgroundResource(R.color.modern_primary_color);
             mFaviconView.getBackground().setLevel(mDefaultLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.BlackTitle1);
             ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.BlackBody);
-            ImageViewCompat.setImageTintList(mCloseButton, mDarkCloseIconColor);
+            ApiCompatibilityUtils.setImageTintList(mCloseButton, mDarkCloseIconColor);
         }
 
         if (TextUtils.isEmpty(url)) {
@@ -334,11 +333,11 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             Bitmap bitmap = mTab.getFavicon();
             if (bitmap != null) {
                 // Don't tint favicon bitmaps.
-                ImageViewCompat.setImageTintList(mFaviconView, null);
+                ApiCompatibilityUtils.setImageTintList(mFaviconView, null);
                 mFaviconView.setImageBitmap(bitmap);
             } else {
                 mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
-                ImageViewCompat.setImageTintList(mFaviconView, mDarkIconColor);
+                ApiCompatibilityUtils.setImageTintList(mFaviconView, mDarkIconColor);
             }
         }
     }

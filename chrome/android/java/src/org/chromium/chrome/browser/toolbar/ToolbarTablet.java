@@ -11,7 +11,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -383,15 +383,15 @@ public class ToolbarTablet
             setBackgroundColor(color);
             getProgressBar().setThemeColor(color, isIncognito());
 
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     getMenuButton(), incognito ? mLightModeTint : mDarkModeTint);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mHomeButton, incognito ? mLightModeTint : mDarkModeTint);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mBackButton, incognito ? mLightModeTint : mDarkModeTint);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mForwardButton, incognito ? mLightModeTint : mDarkModeTint);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mSaveOfflineButton, incognito ? mLightModeTint : mDarkModeTint);
             if (incognito) {
                 mLocationBar.getContainerView().getBackground().setAlpha(
@@ -477,7 +477,7 @@ public class ToolbarTablet
             mReloadButton.setContentDescription(getContext().getString(
                     R.string.accessibility_btn_refresh));
         }
-        ImageViewCompat.setImageTintList(
+        ApiCompatibilityUtils.setImageTintList(
                 mReloadButton, isIncognito() ? mLightModeTint : mDarkModeTint);
         mReloadButton.setEnabled(!mIsInTabSwitcherMode);
     }
@@ -487,7 +487,7 @@ public class ToolbarTablet
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             // Non-incognito mode shows a blue filled star.
-            ImageViewCompat.setImageTintList(mBookmarkButton,
+            ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
                     isIncognito() ? mLightModeTint
                                   : AppCompatResources.getColorStateList(
                                             getContext(), R.color.blue_mode_tint));
@@ -495,7 +495,7 @@ public class ToolbarTablet
                     R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mBookmarkButton, isIncognito() ? mLightModeTint : mDarkModeTint);
             mBookmarkButton.setContentDescription(getContext().getString(
                     R.string.accessibility_menu_bookmark));

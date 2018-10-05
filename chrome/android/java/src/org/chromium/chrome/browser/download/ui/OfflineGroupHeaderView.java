@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateUtils;
@@ -16,6 +15,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter.SubsectionHeader;
 import org.chromium.chrome.browser.download.ui.DownloadItemSelectionDelegate.SubsectionHeaderSelectionObserver;
@@ -117,7 +117,7 @@ public class OfflineGroupHeaderView
                     getResources().getInteger(R.integer.list_item_level_selected));
 
             mIconImageView.setImageDrawable(mCheckDrawable);
-            ImageViewCompat.setImageTintList(mIconImageView, mCheckedIconForegroundColorList);
+            ApiCompatibilityUtils.setImageTintList(mIconImageView, mCheckedIconForegroundColorList);
             mCheckDrawable.start();
         } else {
             mIconImageView.setBackgroundResource(mIconBackgroundResId);
@@ -125,7 +125,7 @@ public class OfflineGroupHeaderView
                     getResources().getInteger(R.integer.list_item_level_default));
 
             mIconImageView.setImageResource(R.drawable.ic_chrome);
-            ImageViewCompat.setImageTintList(mIconImageView, mIconForegroundColorList);
+            ApiCompatibilityUtils.setImageTintList(mIconImageView, mIconForegroundColorList);
         }
     }
 

@@ -21,7 +21,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
@@ -764,7 +763,7 @@ public class LocationBarLayout extends FrameLayout
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(id);
-            ImageViewCompat.setImageTintList(
+            ApiCompatibilityUtils.setImageTintList(
                     mSecurityButton, mToolbarDataProvider.getSecurityIconColorStateList());
         }
 
@@ -1434,8 +1433,8 @@ public class LocationBarLayout extends FrameLayout
         if (updateUseDarkColors()) updateSecurityIcon();
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
-        ImageViewCompat.setImageTintList(mMicButton, colorStateList);
-        ImageViewCompat.setImageTintList(mDeleteButton, colorStateList);
+        ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
+        ApiCompatibilityUtils.setImageTintList(mDeleteButton, colorStateList);
 
         setNavigationButtonType(mNavigationButtonType);
 
