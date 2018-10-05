@@ -48,6 +48,7 @@ constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
 constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
+constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
 constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
@@ -78,6 +79,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       background_thread_.task_runner());
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
+  connector->BindInterface(ash::mojom::kServiceName,
+                           &ash_message_center_controller_);
 
   // TODO(b/112281490): Combine this observer with the one in service.cc.
   ash::mojom::VoiceInteractionObserverPtr ptr;
@@ -620,6 +623,12 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
         weak_factory_.GetWeakPtr(), modify_setting_args));
   }
 
+  if (modify_setting_args.setting_id() == kDoNotDisturbDeviceSettingId) {
+    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
+      ash_message_center_controller_->SetQuietMode(enabled);
+    });
+  }
+
   if (modify_setting_args.setting_id() == kNightLightDeviceSettingId) {
     HandleOnOffChange(modify_setting_args, [&](bool enabled) {
       this->service_->device_actions()->SetNightLightEnabled(enabled);
@@ -644,6 +653,7 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
           setting_id == kBluetoothDeviceSettingId ||
           setting_id == kVolumeLevelDeviceSettingId ||
           setting_id == kScreenBrightnessDeviceSettingId ||
+          setting_id == kDoNotDisturbDeviceSettingId ||
           setting_id == kNightLightDeviceSettingId);
 }
 

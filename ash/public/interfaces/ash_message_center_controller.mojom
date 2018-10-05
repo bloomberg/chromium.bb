@@ -55,6 +55,9 @@ interface AshMessageCenterController {
   // Gets a list of all the notifications in the message center.
   GetActiveNotifications() =>
       (array<message_center.mojom.Notification> notifications);
+
+  // Changes the quiet mode state in the message center.
+  SetQuietMode(bool enabled);
 };
 
 // The message center client interface mimics

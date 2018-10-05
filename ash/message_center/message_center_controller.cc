@@ -4,6 +4,8 @@
 
 #include "ash/message_center/message_center_controller.h"
 
+#include <utility>
+
 #include "ash/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -44,7 +46,7 @@ namespace {
 // --suppress-message-center-notifications.
 class PopupNotificationBlocker : public message_center::NotificationBlocker {
  public:
-  PopupNotificationBlocker(MessageCenter* message_center)
+  explicit PopupNotificationBlocker(MessageCenter* message_center)
       : NotificationBlocker(message_center) {}
   ~PopupNotificationBlocker() override = default;
 
@@ -238,6 +240,10 @@ void MessageCenterController::GetActiveNotifications(
     notification_vector.back().set_vector_small_image(gfx::kNoneIcon);
   }
   std::move(callback).Run(notification_vector);
+}
+
+void MessageCenterController::SetQuietMode(bool enabled) {
+  MessageCenter::Get()->SetQuietMode(enabled);
 }
 
 void MessageCenterController::GetArcAppIdByPackageName(

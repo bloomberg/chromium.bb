@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/threading/thread.h"
@@ -217,7 +218,7 @@ class AssistantManagerServiceImpl
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
-
+  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
   Service* service_;  // unowned.
 
   base::Optional<std::string> arc_version_;
