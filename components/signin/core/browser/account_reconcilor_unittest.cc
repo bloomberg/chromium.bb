@@ -869,8 +869,8 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
     std::string cookie(1, GetParam().gaia_api_calls[i]);
     EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(cookie)).Times(1);
     // MergeSession fixes an existing cookie or appends it at the end.
-    std::vector<Cookie>::iterator it = std::find(
-        cookies.begin(), cookies.end(), Cookie{cookie, false /* is_valid */});
+    auto it = std::find(cookies.begin(), cookies.end(),
+                        Cookie{cookie, false /* is_valid */});
     if (it == cookies.end())
       cookies.push_back({cookie, true});
     else

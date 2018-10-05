@@ -428,8 +428,7 @@ ClientSafeBrowsingReportRequest::Resource* ThreatDetails::AddUrl(
     url_resource->set_parent_id(parent_resource->id());
   }
   if (children) {
-    for (std::vector<GURL>::const_iterator it = children->begin();
-         it != children->end(); ++it) {
+    for (auto it = children->begin(); it != children->end(); ++it) {
       // TODO(lpz): Should this first check if the child URL is reportable
       // before creating the resource?
       ClientSafeBrowsingReportRequest::Resource* child_resource =

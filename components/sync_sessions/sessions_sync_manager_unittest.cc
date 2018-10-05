@@ -267,7 +267,7 @@ class SessionsSyncManagerTest : public testing::Test {
   }
 
   SyncChangeList* FilterOutLocalHeaderChanges(SyncChangeList* list) {
-    SyncChangeList::iterator it = list->begin();
+    auto it = list->begin();
     bool found = false;
     while (it != list->end()) {
       if (it->sync_data().IsLocal() &&
@@ -701,8 +701,7 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   meta1_reference[0].pop_back();
   sync_pb::SessionWindow* win = meta1.mutable_header()->mutable_window(0);
   win->clear_tab();
-  for (std::vector<SessionID>::const_iterator iter = kTabIds1.begin();
-       iter + 1 != kTabIds1.end(); ++iter) {
+  for (auto iter = kTabIds1.begin(); iter + 1 != kTabIds1.end(); ++iter) {
     win->add_tab(iter->id());
   }
   SyncChangeList removal;
@@ -740,8 +739,7 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
 
   // Update associator with the session's meta node, window, and tabs.
   UpdateTrackerWithSpecifics(meta, base::Time(), &manager()->session_tracker_);
-  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs.begin();
-       iter != tabs.end(); ++iter) {
+  for (auto iter = tabs.begin(); iter != tabs.end(); ++iter) {
     UpdateTrackerWithSpecifics(*iter, base::Time(),
                                &manager()->session_tracker_);
   }

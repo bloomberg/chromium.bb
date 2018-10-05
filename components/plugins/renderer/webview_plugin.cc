@@ -79,8 +79,7 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
   if (!response_.IsNull()) {
     plugin->DidReceiveResponse(response_);
     size_t total_bytes = 0;
-    for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
-         ++it) {
+    for (auto it = data_.begin(); it != data_.end(); ++it) {
       plugin->DidReceiveData(it->c_str(), it->length());
       total_bytes += it->length();
     }

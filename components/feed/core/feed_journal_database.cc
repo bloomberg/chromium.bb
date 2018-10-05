@@ -187,8 +187,7 @@ void FeedJournalDatabase::CommitOperations(
     journals_to_save->emplace_back(journal_name, std::move(*journal));
   }
 
-  for (JournalMap::iterator it = copy_to_journal.begin();
-       it != copy_to_journal.end(); ++it) {
+  for (auto it = copy_to_journal.begin(); it != copy_to_journal.end(); ++it) {
     journals_to_save->emplace_back(it->first, std::move(it->second));
   }
 

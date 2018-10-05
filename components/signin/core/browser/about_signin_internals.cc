@@ -459,9 +459,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
   token_info->SetString("service", consumer_id);
 
   std::string scopes_str;
-  for (OAuth2TokenService::ScopeSet::const_iterator it = scopes.begin();
-       it != scopes.end();
-       ++it) {
+  for (auto it = scopes.begin(); it != scopes.end(); ++it) {
     scopes_str += *it + "<br/>";
   }
   token_info->SetString("scopes", scopes_str);

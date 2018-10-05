@@ -164,7 +164,7 @@ class PrefServiceSyncableTest : public testing::Test {
 
   std::unique_ptr<base::Value> FindValue(const std::string& name,
                                          const syncer::SyncChangeList& list) {
-    syncer::SyncChangeList::const_iterator it = list.begin();
+    auto it = list.begin();
     for (; it != list.end(); ++it) {
       if (syncer::SyncDataLocal(it->sync_data()).GetTag() == name) {
         return base::JSONReader::Read(
@@ -408,7 +408,7 @@ class PrefServiceSyncableMergeTest : public testing::Test {
 
   std::unique_ptr<base::Value> FindValue(const std::string& name,
                                          const syncer::SyncChangeList& list) {
-    syncer::SyncChangeList::const_iterator it = list.begin();
+    auto it = list.begin();
     for (; it != list.end(); ++it) {
       if (syncer::SyncDataLocal(it->sync_data()).GetTag() == name) {
         return base::JSONReader::Read(

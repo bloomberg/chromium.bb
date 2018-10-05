@@ -480,8 +480,7 @@ void VisitedLinkMaster::DeleteFingerprintsFromCurrentTable(
   bool bulk_write = (fingerprints.size() > kBigDeleteThreshold);
 
   // Delete the URLs from the table.
-  for (std::set<Fingerprint>::const_iterator i = fingerprints.begin();
-       i != fingerprints.end(); ++i)
+  for (auto i = fingerprints.begin(); i != fingerprints.end(); ++i)
     DeleteFingerprint(*i, !bulk_write);
 
   // These deleted fingerprints may make us shrink the table.

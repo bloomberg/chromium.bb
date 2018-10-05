@@ -337,8 +337,7 @@ void ProfileSyncService::StartSyncingWithServer() {
 bool ProfileSyncService::IsDataTypeControllerRunning(
     syncer::ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DataTypeController::TypeMap::const_iterator iter =
-      data_type_controllers_.find(type);
+  auto iter = data_type_controllers_.find(type);
   if (iter == data_type_controllers_.end()) {
     return false;
   }

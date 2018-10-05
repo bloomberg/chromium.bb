@@ -126,7 +126,7 @@ void ThreatDetailsCacheCollector::OpenEntry() {
 
 ClientSafeBrowsingReportRequest::Resource*
 ThreatDetailsCacheCollector::GetResource(const GURL& url) {
-  ResourceMap::iterator it = resources_->find(url.spec());
+  auto it = resources_->find(url.spec());
   if (it != resources_->end()) {
     return it->second.get();
   }

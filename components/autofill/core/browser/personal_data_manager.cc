@@ -855,8 +855,7 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
 AutofillProfile* PersonalDataManager::GetProfileFromProfilesByGUID(
     const std::string& guid,
     const std::vector<AutofillProfile*>& profiles) {
-  std::vector<AutofillProfile*>::const_iterator iter =
-      FindElementByGUID<AutofillProfile>(profiles, guid);
+  auto iter = FindElementByGUID<AutofillProfile>(profiles, guid);
   return iter != profiles.end() ? *iter : nullptr;
 }
 
@@ -1140,8 +1139,7 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
 
 CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   const std::vector<CreditCard*>& credit_cards = GetCreditCards();
-  std::vector<CreditCard*>::const_iterator iter =
-      FindElementByGUID<CreditCard>(credit_cards, guid);
+  auto iter = FindElementByGUID<CreditCard>(credit_cards, guid);
   return iter != credit_cards.end() ? *iter : nullptr;
 }
 
@@ -2086,8 +2084,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
 
   // Take the most common country code.
   if (!votes.empty()) {
-    std::map<std::string, int>::iterator iter =
-        std::max_element(votes.begin(), votes.end(), CompareVotes);
+    auto iter = std::max_element(votes.begin(), votes.end(), CompareVotes);
     return iter->first;
   }
 

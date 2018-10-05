@@ -718,9 +718,7 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
 // Remove the account from the list that is being merged.
 bool AccountReconcilor::MarkAccountAsAddedToCookie(
     const std::string& account_id) {
-  for (std::vector<std::string>::iterator i = add_to_cookie_.begin();
-       i != add_to_cookie_.end();
-       ++i) {
+  for (auto i = add_to_cookie_.begin(); i != add_to_cookie_.end(); ++i) {
     if (account_id == *i) {
       add_to_cookie_.erase(i);
       return true;

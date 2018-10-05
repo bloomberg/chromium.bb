@@ -292,7 +292,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::OnURLLoadComplete(
     return;
   }
 
-  LoaderToToken::iterator it = loaders_.find(source);
+  auto it = loaders_.find(source);
   if (it == loaders_.end())
     return;
 

@@ -739,8 +739,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   WebInputElement mutable_element = element;  // We need a non-const.
   mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
 
-  WebInputToPasswordInfoMap::iterator iter =
-      web_input_to_password_info_.find(element);
+  auto iter = web_input_to_password_info_.find(element);
   if (iter != web_input_to_password_info_.end()) {
     iter->second.password_was_edited_last = false;
   }
@@ -763,7 +762,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
 
   if (element.IsPasswordFieldForAutofill()) {
-    PasswordToLoginMap::iterator iter = password_to_username_.find(element);
+    auto iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
       web_input_to_password_info_[iter->second].password_was_edited_last = true;
       // Note that the suggested value of |mutable_element| was reset when its
@@ -937,8 +936,7 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
 
     *password_element = element;
 
-    WebInputToPasswordInfoMap::iterator iter =
-        web_input_to_password_info_.find(element);
+    auto iter = web_input_to_password_info_.find(element);
     if (iter == web_input_to_password_info_.end()) {
       PasswordToLoginMap::const_iterator password_iter =
           password_to_username_.find(element);
@@ -962,8 +960,7 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
     // Otherwise |username_element| has been set above.
   }
 
-  WebInputToPasswordInfoMap::iterator iter =
-      web_input_to_password_info_.find(*username_element);
+  auto iter = web_input_to_password_info_.find(*username_element);
   if (iter == web_input_to_password_info_.end())
     return false;
 

@@ -73,8 +73,7 @@ sync_pb::SessionSpecifics SessionTabToSpecifics(
 void AppendDeletionsForTabNodes(const std::set<int>& tab_node_ids,
                                 const std::string& machine_tag,
                                 syncer::SyncChangeList* change_output) {
-  for (std::set<int>::const_iterator it = tab_node_ids.begin();
-       it != tab_node_ids.end(); ++it) {
+  for (auto it = tab_node_ids.begin(); it != tab_node_ids.end(); ++it) {
     change_output->push_back(syncer::SyncChange(
         FROM_HERE, SyncChange::ACTION_DELETE,
         SyncData::CreateLocalDelete(TabNodeIdToTag(machine_tag, *it),
@@ -330,8 +329,7 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
     return error;
   }
 
-  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end(); ++it) {
+  for (auto it = change_list.begin(); it != change_list.end(); ++it) {
     DCHECK(it->IsValid());
     DCHECK(it->sync_data().GetSpecifics().has_session());
     const sync_pb::SessionSpecifics& session =
@@ -412,8 +410,7 @@ bool SessionsSyncManager::InitFromSyncModel(
     syncer::SyncChangeList* new_changes) {
   bool found_current_header = false;
   int bad_foreign_hash_count = 0;
-  for (syncer::SyncDataList::const_iterator it = sync_data.begin();
-       it != sync_data.end(); ++it) {
+  for (auto it = sync_data.begin(); it != sync_data.end(); ++it) {
     const syncer::SyncData& data = *it;
     DCHECK(data.GetSpecifics().has_session());
     syncer::SyncDataRemote remote(data);

@@ -48,9 +48,7 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
       identity_manager_->GetPrimaryAccountInfo().account_id;
   std::vector<AccountIds> accounts;
 
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end(); ++it) {
+  for (auto it = accounts_.begin(); it != accounts_.end(); ++it) {
     const AccountState& state = it->second;
     bool is_visible = state.is_signed_in && !state.ids.gaia.empty();
 

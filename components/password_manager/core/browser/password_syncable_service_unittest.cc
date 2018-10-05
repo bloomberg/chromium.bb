@@ -418,8 +418,7 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
 
   SyncDataList actual_list = service()->GetAllSyncData(syncer::PASSWORDS);
   std::vector<autofill::PasswordForm> actual_form_list;
-  for (SyncDataList::iterator it = actual_list.begin(); it != actual_list.end();
-       ++it) {
+  for (auto it = actual_list.begin(); it != actual_list.end(); ++it) {
     actual_form_list.push_back(
         PasswordFromSpecifics(GetPasswordSpecifics(*it)));
   }

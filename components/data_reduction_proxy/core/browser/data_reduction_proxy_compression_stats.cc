@@ -559,7 +559,7 @@ int64_t DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
   if (delay_.is_zero())
     return pref_service_->GetInt64(pref_path);
 
-  DataReductionProxyPrefMap::iterator iter = pref_map_.find(pref_path);
+  auto iter = pref_map_.find(pref_path);
   return iter->second;
 }
 
@@ -597,8 +597,7 @@ void DataReductionProxyCompressionStats::WritePrefs() {
   if (delay_.is_zero())
     return;
 
-  for (DataReductionProxyPrefMap::iterator iter = pref_map_.begin();
-       iter != pref_map_.end(); ++iter) {
+  for (auto iter = pref_map_.begin(); iter != pref_map_.end(); ++iter) {
     pref_service_->SetInt64(iter->first, iter->second);
   }
 

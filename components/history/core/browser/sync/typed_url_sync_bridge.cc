@@ -50,8 +50,7 @@ static const int kTypedUrlVisitThrottleMultiple = 10;
 // Enforce oldest to newest visit order.
 static bool CheckVisitOrdering(const VisitVector& visits) {
   int64_t previous_visit_time = 0;
-  for (VisitVector::const_iterator visit = visits.begin();
-       visit != visits.end(); ++visit) {
+  for (auto visit = visits.begin(); visit != visits.end(); ++visit) {
     if (visit != visits.begin() &&
         previous_visit_time > visit->visit_time.ToInternalValue())
       return false;
@@ -655,9 +654,9 @@ TypedURLSyncBridge::MergeResult TypedURLSyncBridge::MergeUrls(
     // new visits from the server need to be added to the vector containing
     // local visits. These visits will be passed to the server.
     // Insert new visits into the appropriate place in the visits vector.
-    VisitVector::iterator visit_ix = visits->begin();
-    for (std::vector<VisitInfo>::iterator new_visit = new_visits->begin();
-         new_visit != new_visits->end(); ++new_visit) {
+    auto visit_ix = visits->begin();
+    for (auto new_visit = new_visits->begin(); new_visit != new_visits->end();
+         ++new_visit) {
       while (visit_ix != visits->end() &&
              new_visit->first > visit_ix->visit_time) {
         ++visit_ix;
@@ -789,7 +788,7 @@ void TypedURLSyncBridge::MergeURLWithSync(
   }
 
   // Check if local db already has the url from sync.
-  TypedURLMap::iterator it = local_typed_urls->find(GURL(sync_url.url()));
+  auto it = local_typed_urls->find(GURL(sync_url.url()));
   if (it == local_typed_urls->end()) {
     // There are no matching typed urls from the local db, check for untyped
     URLRow untyped_url(GURL(sync_url.url()));
@@ -870,7 +869,7 @@ void TypedURLSyncBridge::MergeURLWithSync(
       if (sync_url.visits_size() > 0) {
         base::Time earliest_visit =
             base::Time::FromInternalValue(sync_url.visits(0));
-        for (VisitVector::iterator i = visits.begin();
+        for (auto i = visits.begin();
              i != visits.end() && i->visit_time < earliest_visit;) {
           i = visits.erase(i);
         }

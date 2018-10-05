@@ -202,8 +202,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   SyncEntries sync_entries;
   // Changes from password db that need to be propagated to sync.
   syncer::SyncChangeList updated_db_entries;
-  for (syncer::SyncDataList::const_iterator sync_iter =
-           initial_sync_data.begin();
+  for (auto sync_iter = initial_sync_data.begin();
        sync_iter != initial_sync_data.end(); ++sync_iter) {
     CreateOrUpdateEntry(*sync_iter,
                         &new_local_entries,
@@ -211,8 +210,8 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
                         &updated_db_entries);
   }
 
-  for (PasswordEntryMap::iterator it = new_local_entries.begin();
-       it != new_local_entries.end(); ++it) {
+  for (auto it = new_local_entries.begin(); it != new_local_entries.end();
+       ++it) {
     updated_db_entries.push_back(
         syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
                            SyncDataFromPassword(*it->second)));
@@ -275,8 +274,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
   SyncEntries sync_entries;
   base::Time time_now = base::Time::Now();
 
-  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end(); ++it) {
+  for (auto it = change_list.begin(); it != change_list.end(); ++it) {
     const sync_pb::EntitySpecifics& specifics = it->sync_data().GetSpecifics();
     std::vector<std::unique_ptr<autofill::PasswordForm>>* entries =
         sync_entries.EntriesForChangeType(it->change_type());
@@ -309,8 +307,7 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
   if (is_processing_sync_changes_)
     return;
   syncer::SyncChangeList sync_changes;
-  for (PasswordStoreChangeList::const_iterator it = local_changes.begin();
-       it != local_changes.end(); ++it) {
+  for (auto it = local_changes.begin(); it != local_changes.end(); ++it) {
     syncer::SyncData data = (it->type() == PasswordStoreChange::REMOVE ?
         syncer::SyncData::CreateLocalDelete(MakePasswordSyncTag(it->form()),
                                             syncer::PASSWORDS) :
@@ -388,8 +385,7 @@ void PasswordSyncableService::CreateOrUpdateEntry(
   std::string tag = MakePasswordSyncTag(password_specifics);
 
   // Check whether the data from sync is already in the password store.
-  PasswordEntryMap::iterator existing_local_entry_iter =
-      unmatched_data_from_password_db->find(tag);
+  auto existing_local_entry_iter = unmatched_data_from_password_db->find(tag);
   base::Time time_now = base::Time::Now();
   if (existing_local_entry_iter == unmatched_data_from_password_db->end()) {
       // The sync data is not in the password store, so we need to create it in

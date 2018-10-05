@@ -340,8 +340,7 @@ bool DeleteDirectiveHandler::CreateDeleteDirectives(
     time_range_directive->set_start_time_usec(begin_time_usecs);
     time_range_directive->set_end_time_usec(end_time_usecs);
   } else {
-    for (std::set<int64_t>::const_iterator it = global_ids.begin();
-         it != global_ids.end(); ++it) {
+    for (auto it = global_ids.begin(); it != global_ids.end(); ++it) {
       sync_pb::GlobalIdDirective* global_id_directive =
           delete_directive.mutable_global_id_directive();
       global_id_directive->add_global_id(*it);
@@ -390,8 +389,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
   }
 
   syncer::SyncDataList delete_directives;
-  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end(); ++it) {
+  for (auto it = change_list.begin(); it != change_list.end(); ++it) {
     switch (it->change_type()) {
       case syncer::SyncChange::ACTION_ADD:
         delete_directives.push_back(it->sync_data());

@@ -39,15 +39,14 @@ void FrameEvictionManager::AddFrame(FrameEvictionManagerClient* frame,
 }
 
 void FrameEvictionManager::RemoveFrame(FrameEvictionManagerClient* frame) {
-  std::map<FrameEvictionManagerClient*, size_t>::iterator locked_iter =
-      locked_frames_.find(frame);
+  auto locked_iter = locked_frames_.find(frame);
   if (locked_iter != locked_frames_.end())
     locked_frames_.erase(locked_iter);
   unlocked_frames_.remove(frame);
 }
 
 void FrameEvictionManager::LockFrame(FrameEvictionManagerClient* frame) {
-  std::list<FrameEvictionManagerClient*>::iterator unlocked_iter =
+  auto unlocked_iter =
       std::find(unlocked_frames_.begin(), unlocked_frames_.end(), frame);
   if (unlocked_iter != unlocked_frames_.end()) {
     DCHECK(locked_frames_.find(frame) == locked_frames_.end());

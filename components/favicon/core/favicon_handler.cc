@@ -52,7 +52,7 @@ bool HasExpiredOrIncompleteResult(
     return false;
 
   // Check if at least one of the bitmaps is expired.
-  std::vector<favicon_base::FaviconRawBitmapResult>::const_iterator it =
+  auto it =
       std::find_if(bitmap_results.begin(), bitmap_results.end(), IsExpired);
   if (it != bitmap_results.end())
     return true;

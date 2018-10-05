@@ -478,7 +478,7 @@ void DiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
 
   MemorySegmentMap& client_segments = clients_[client_id];
 
-  MemorySegmentMap::iterator segment_it = client_segments.find(id);
+  auto segment_it = client_segments.find(id);
   if (segment_it == client_segments.end()) {
     LOG(ERROR) << "Invalid discardable shared memory ID";
     return;

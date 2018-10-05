@@ -123,8 +123,7 @@ void GetCandidateIndicesWithBestScores(
     return;
   }
 
-  std::vector<int>::const_iterator zero_size_it =
-      std::find(desired_sizes.begin(), desired_sizes.end(), 0);
+  auto zero_size_it = std::find(desired_sizes.begin(), desired_sizes.end(), 0);
   if (zero_size_it != desired_sizes.end()) {
     // Just return the biggest image available.
     SelectionResult result;
@@ -225,8 +224,8 @@ gfx::ImageSkia CreateFaviconImageSkia(
   if (desired_size_in_dip == 0) {
     desired_sizes.push_back(0);
   } else {
-    for (std::vector<float>::const_iterator iter = favicon_scales.begin();
-         iter != favicon_scales.end(); ++iter) {
+    for (auto iter = favicon_scales.begin(); iter != favicon_scales.end();
+         ++iter) {
       desired_sizes.push_back(
           static_cast<int>(ceil(desired_size_in_dip * (*iter))));
     }

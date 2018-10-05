@@ -103,8 +103,7 @@ void CompareAutofillEntrySets(const AutofillEntrySet& actual,
                               const AutofillEntrySet& expected) {
   ASSERT_EQ(expected.size(), actual.size());
   size_t count = 0;
-  for (AutofillEntrySet::const_iterator it = actual.begin();
-       it != actual.end(); ++it) {
+  for (auto it = actual.begin(); it != actual.end(); ++it) {
     count += expected.count(*it);
   }
   EXPECT_EQ(actual.size(), count);
