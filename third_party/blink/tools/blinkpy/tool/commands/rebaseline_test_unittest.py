@@ -21,7 +21,8 @@ class TestRebaselineTest(BaseTestCase):
             'test': 'userscripts/another-test.html',
             'suffixes': 'txt',
             'results_directory': None,
-            'build_number': None
+            'build_number': None,
+            'step_name': None,
         }, **kwargs))
 
     def test_rebaseline_test_internal_with_port_that_lacks_buildbot(self):
@@ -44,7 +45,8 @@ class TestRebaselineTest(BaseTestCase):
                 'verbose': True,
                 'test': 'failures/expected/image.html',
                 'results_directory': None,
-                'build_number': None
+                'build_number': None,
+                'step_name': None,
             })
             oc.capture_output()
             self.command.execute(options, [], self.tool)
