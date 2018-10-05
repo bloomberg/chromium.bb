@@ -4101,7 +4101,7 @@
     To set up Smart Lock for Chromebook, Google needs to make sure it’s you—type your password to get started.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE" desc="Message on lock screen user pod shown in place of password field when Easy Unlock is enabled and a phone that can unlock the Chromebook is detected in proximity.">
-    Click your photo
+    Select your photo
   </message>
   <message name="IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL" desc="Label for the spinner icon used for accessibility purposes. This label is needed because this state does not have a tooltip.">
     Finding your phone
