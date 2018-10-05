@@ -76,19 +76,19 @@ BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
   return found->second;
 }
 
-BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
-    NativeWidgetMac* parent)
+BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
     : widget_id_(++g_last_bridged_native_widget_id),
-      native_widget_mac_(parent),
+      native_widget_mac_(owner),
       root_view_id_(ui::NSViewIds::GetNewId()),
       host_mojo_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().insert(std::make_pair(widget_id_, this));
-  DCHECK(parent);
+  DCHECK(owner);
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
+  DCHECK(children_.empty());
   if (bridge_factory_host_) {
     bridge_ptr_.reset();
     host_mojo_binding_.Unbind();
@@ -395,6 +395,22 @@ void* BridgedNativeWidgetHostImpl::GetNativeWindowProperty(
   if (found == native_window_properties_.end())
     return nullptr;
   return found->second;
+}
+
+void BridgedNativeWidgetHostImpl::SetParent(
+    BridgedNativeWidgetHostImpl* new_parent) {
+  if (new_parent == parent_)
+    return;
+
+  if (parent_) {
+    auto found =
+        std::find(parent_->children_.begin(), parent_->children_.end(), this);
+    DCHECK(found != parent_->children_.end());
+    parent_->children_.erase(found);
+  }
+  parent_ = new_parent;
+  if (parent_)
+    parent_->children_.push_back(this);
 }
 
 void BridgedNativeWidgetHostImpl::SetAssociationForView(const View* view,
@@ -719,9 +735,14 @@ void BridgedNativeWidgetHostImpl::OnWindowWillClose() {
   if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
     dialog->RemoveObserver(this);
   native_widget_mac_->WindowDestroying();
+  // Remove |this| from the parent's list of children.
+  SetParent(nullptr);
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowHasClosed() {
+  // OnWindowHasClosed will be called only after all child windows have had
+  // OnWindowWillClose called on them.
+  DCHECK(children_.empty());
   native_widget_mac_->WindowDestroyed();
 }
 

@@ -133,6 +133,10 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
         [CreateNSWindow(params) retain]);
     bridge_host_->CreateLocalBridge(std::move(window), params.parent);
   }
+
+  if (parent_host)
+    bridge_host_->SetParent(parent_host);
+
   bridge_host_->InitWindow(params);
 
   // Only set always-on-top here if it is true since setting it may affect how
@@ -305,7 +309,7 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
   // A peculiarity of the constrained window framework is that it permits a
   // dialog of MODAL_TYPE_WINDOW to have a null parent window; falling back to
   // a non-modal window in this case.
-  DCHECK(bridge_impl()->parent() || modal_type == ui::MODAL_TYPE_WINDOW);
+  DCHECK(bridge_host_->parent() || modal_type == ui::MODAL_TYPE_WINDOW);
 
   // Everything happens upon show.
 }
@@ -332,20 +336,14 @@ void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
-  if (!bridge_impl())
+  if (!bridge_host_)
     return;
-
   gfx::Rect new_bounds(bounds);
-  NativeWidgetPrivate* ancestor = nullptr;
-  if (bridge_impl() && bridge_impl()->parent()) {
-    ancestor =
-        GetNativeWidgetForNativeWindow(bridge_impl()->parent()->ns_window());
-  }
-  if (!ancestor) {
-    new_bounds = ConstrainBoundsToDisplayWorkArea(new_bounds);
-  } else {
+  if (bridge_host_->parent()) {
     new_bounds.AdjustToFit(
-        gfx::Rect(ancestor->GetWindowBoundsInScreen().size()));
+        gfx::Rect(bridge_host_->parent()->GetWindowBoundsInScreen().size()));
+  } else {
+    new_bounds = ConstrainBoundsToDisplayWorkArea(new_bounds);
   }
   SetBounds(new_bounds);
 }
@@ -725,13 +723,9 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
   if (!bridge_host)
     return nullptr;
-
-  NativeWidgetPrivate* ancestor =
-      bridge_host->bridge_impl()->parent()
-          ? GetTopLevelNativeWidget(
-                [bridge_host->bridge_impl()->parent()->ns_window() contentView])
-          : nullptr;
-  return ancestor ? ancestor : bridge_host->native_widget_mac();
+  while (bridge_host->parent())
+    bridge_host = bridge_host->parent();
+  return bridge_host->native_widget_mac();
 }
 
 // static
@@ -766,36 +760,34 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   // |native_view|, not the Widget for |native_view|. |native_view| doesn't have
   // a corresponding Widget of its own in this case (and so can't have Widget
   // children of its own on Mac).
-  if (bridge_host->bridge_impl()->ns_view() != native_view)
+  if (bridge_host->native_widget_mac()->GetNativeView() != native_view)
     return;
 
   // Code expects widget for |native_view| to be added to |children|.
   if (bridge_host->native_widget_mac()->GetWidget())
     children->insert(bridge_host->native_widget_mac()->GetWidget());
 
-  // When the NSWindow *is* a Widget, only consider child_windows(). I.e. do not
+  // When the NSWindow *is* a Widget, only consider children(). I.e. do not
   // look through -[NSWindow childWindows] as done for the (!bridge_host) case
   // above. -childWindows does not support hidden windows, and anything in there
-  // which is not in child_windows() would have been added by AppKit.
-  for (BridgedNativeWidgetImpl* child :
-       bridge_host->bridge_impl()->child_windows()) {
-    GetAllChildWidgets(child->ns_view(), children);
-  }
+  // which is not in children() would have been added by AppKit.
+  for (BridgedNativeWidgetHostImpl* child : bridge_host->children())
+    GetAllChildWidgets(child->native_widget_mac()->GetNativeView(), children);
 }
 
 // static
 void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* owned) {
-  BridgedNativeWidgetImpl* bridge =
-      BridgedNativeWidgetImpl::GetFromNativeWindow([native_view window]);
-  if (!bridge) {
+  BridgedNativeWidgetHostImpl* bridge_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
+  if (!bridge_host) {
     GetAllChildWidgets(native_view, owned);
     return;
   }
-  if (bridge->ns_view() != native_view)
+  if (bridge_host->native_widget_mac()->GetNativeView() != native_view)
     return;
-  for (BridgedNativeWidgetImpl* child : bridge->child_windows())
-    GetAllChildWidgets(child->ns_view(), owned);
+  for (BridgedNativeWidgetHostImpl* child : bridge_host->children())
+    GetAllChildWidgets(child->native_widget_mac()->GetNativeView(), owned);
 }
 
 // static
@@ -807,13 +799,13 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     return;
   }
 
-  BridgedNativeWidgetImpl* bridge =
-      BridgedNativeWidgetImpl::GetFromNativeWindow([native_view window]);
-  BridgedNativeWidgetImpl* parent_bridge =
-      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
-  DCHECK(bridge);
+  BridgedNativeWidgetHostImpl* bridge_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
+  BridgedNativeWidgetHostImpl* parent_bridge_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([new_parent window]);
+  DCHECK(bridge_host);
   if (Widget::GetWidgetForNativeView(native_view)->is_top_level() &&
-      bridge->parent() == parent_bridge)
+      bridge_host->parent() == parent_bridge_host)
     return;
 
   Widget::Widgets widgets;
@@ -824,7 +816,14 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   for (auto* child : widgets)
     child->NotifyNativeViewHierarchyWillChange();
 
-  bridge->ReparentNativeView(native_view, new_parent);
+  // Update |brige_host|'s parent only if
+  // BridgedNativeWidgetImpl::ReparentNativeView will.
+  bool native_view_is_root_view =
+      native_view == bridge_host->native_widget_mac()->GetNativeView();
+  if (native_view_is_root_view)
+    bridge_host->SetParent(parent_bridge_host);
+
+  bridge_host->bridge_impl()->ReparentNativeView(native_view, new_parent);
 
   // And now, notify them that they have a brand new parent.
   for (auto* child : widgets)
