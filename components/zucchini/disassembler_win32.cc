@@ -327,7 +327,7 @@ bool DisassemblerWin32<Traits>::ParseAndStoreAbs32() {
 
   // Abs32 reference bodies must not overlap. If found, simply remove them.
   size_t num_removed =
-      RemoveOverlappingAbs32Locations(Traits::kBitness, &abs32_locations_);
+      RemoveOverlappingAbs32Locations(Traits::kVAWidth, &abs32_locations_);
   LOG_IF(WARNING, num_removed) << "Found and removed " << num_removed
                                << " abs32 locations with overlapping bodies.";
   return true;

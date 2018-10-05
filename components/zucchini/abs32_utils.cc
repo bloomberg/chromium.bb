@@ -167,12 +167,11 @@ void Abs32WriterWin32::PutNext(Reference ref) {
 
 /******** Exported Functions ********/
 
-size_t RemoveOverlappingAbs32Locations(Bitness bitness,
+size_t RemoveOverlappingAbs32Locations(uint32_t width,
                                        std::vector<offset_t>* locations) {
   if (locations->size() <= 1)
     return 0;
 
-  uint32_t width = WidthOf(bitness);
   auto slow = locations->begin();
   auto fast = locations->begin() + 1;
   for (;;) {

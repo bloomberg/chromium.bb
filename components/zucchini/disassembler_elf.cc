@@ -154,23 +154,6 @@ std::unique_ptr<ReferenceWriter> DisassemblerElf<Traits>::MakeWriteRelocs(
 }
 
 template <class Traits>
-std::unique_ptr<ReferenceReader> DisassemblerElf<Traits>::MakeReadAbs32(
-    offset_t lo,
-    offset_t hi) {
-  Abs32RvaExtractorWin32 abs_rva_extractor(image_, {Traits::kBitness, 0},
-                                           abs32_locations_, lo, hi);
-  return std::make_unique<Abs32ReaderWin32>(std::move(abs_rva_extractor),
-                                            translator_);
-}
-
-template <class Traits>
-std::unique_ptr<ReferenceWriter> DisassemblerElf<Traits>::MakeWriteAbs32(
-    MutableBufferView image) {
-  return std::make_unique<Abs32WriterWin32>(
-      image, AbsoluteAddress(Traits::kBitness, 0), translator_);
-}
-
-template <class Traits>
 bool DisassemblerElf<Traits>::ParseHeader() {
   BufferSource source(image_);
 
@@ -303,7 +286,7 @@ void DisassemblerElf<Traits>::ExtractInterestingSectionHeaders() {
 
 template <class Traits>
 void DisassemblerElf<Traits>::GetAbs32FromRelocSections() {
-  constexpr int kAbs32Width = 4;
+  constexpr int kAbs32Width = Traits::kVAWidth;
   DCHECK(abs32_locations_.empty());
   auto relocs = MakeReadRelocs(0, offset_t(size()));
   for (auto ref = relocs->GetNext(); ref; ref = relocs->GetNext()) {
@@ -317,7 +300,7 @@ void DisassemblerElf<Traits>::GetAbs32FromRelocSections() {
 
   // Abs32 reference bodies must not overlap. If found, simply remove them.
   size_t num_removed =
-      RemoveOverlappingAbs32Locations(Traits::kBitness, &abs32_locations_);
+      RemoveOverlappingAbs32Locations(kAbs32Width, &abs32_locations_);
   if (num_removed) {
     LOG(WARNING) << "Warning: Found and removed " << num_removed
                  << " abs32 locations with overlapping bodies.";
@@ -349,15 +332,17 @@ DisassemblerElfIntel<Traits>::~DisassemblerElfIntel() = default;
 template <class Traits>
 std::vector<ReferenceGroup> DisassemblerElfIntel<Traits>::MakeReferenceGroups()
     const {
-  return {{ReferenceTypeTraits{4, TypeTag(kReloc), PoolTag(kReloc)},
-           &DisassemblerElfIntel<Traits>::MakeReadRelocs,
-           &DisassemblerElfIntel<Traits>::MakeWriteRelocs},
-          {ReferenceTypeTraits{4, TypeTag(kAbs32), PoolTag(kAbs32)},
-           &DisassemblerElfIntel<Traits>::MakeReadAbs32,
-           &DisassemblerElfIntel<Traits>::MakeWriteAbs32},
-          {ReferenceTypeTraits{4, TypeTag(kRel32), PoolTag(kRel32)},
-           &DisassemblerElfIntel<Traits>::MakeReadRel32,
-           &DisassemblerElfIntel<Traits>::MakeWriteRel32}};
+  return {
+      {ReferenceTypeTraits{sizeof(Traits::Elf_Rel::r_offset), TypeTag(kReloc),
+                           PoolTag(kReloc)},
+       &DisassemblerElfIntel<Traits>::MakeReadRelocs,
+       &DisassemblerElfIntel<Traits>::MakeWriteRelocs},
+      {ReferenceTypeTraits{Traits::kVAWidth, TypeTag(kAbs32), PoolTag(kAbs32)},
+       &DisassemblerElfIntel<Traits>::MakeReadAbs32,
+       &DisassemblerElfIntel<Traits>::MakeWriteAbs32},
+      {ReferenceTypeTraits{4, TypeTag(kRel32), PoolTag(kRel32)},
+       &DisassemblerElfIntel<Traits>::MakeReadRel32,
+       &DisassemblerElfIntel<Traits>::MakeWriteRel32}};
 }
 
 template <class Traits>
@@ -401,6 +386,24 @@ template <class Traits>
 void DisassemblerElfIntel<Traits>::PostProcessRel32() {
   rel32_locations_.shrink_to_fit();
   std::sort(rel32_locations_.begin(), rel32_locations_.end());
+}
+
+template <class Traits>
+std::unique_ptr<ReferenceReader> DisassemblerElfIntel<Traits>::MakeReadAbs32(
+    offset_t lo,
+    offset_t hi) {
+  Abs32RvaExtractorWin32 abs_rva_extractor(this->image_,
+                                           AbsoluteAddress(Traits::kBitness, 0),
+                                           this->abs32_locations_, lo, hi);
+  return std::make_unique<Abs32ReaderWin32>(std::move(abs_rva_extractor),
+                                            this->translator_);
+}
+
+template <class Traits>
+std::unique_ptr<ReferenceWriter> DisassemblerElfIntel<Traits>::MakeWriteAbs32(
+    MutableBufferView image) {
+  return std::make_unique<Abs32WriterWin32>(
+      image, AbsoluteAddress(Traits::kBitness, 0), this->translator_);
 }
 
 template <class Traits>
