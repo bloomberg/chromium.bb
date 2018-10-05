@@ -647,7 +647,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
-  void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,

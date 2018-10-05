@@ -163,7 +163,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       base::TimeTicks input_start_time) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
-  virtual void DispatchWillSubmitForm(HTMLFormElement*) = 0;
 
   virtual void DidStartLoading() = 0;
   virtual void ProgressEstimateChanged(double progress_estimate) = 0;

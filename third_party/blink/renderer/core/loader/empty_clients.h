@@ -281,7 +281,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                              base::TimeTicks) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
-  void DispatchWillSubmitForm(HTMLFormElement*) override;
 
   void DidStartLoading() override {}
   void ProgressEstimateChanged(double) override {}

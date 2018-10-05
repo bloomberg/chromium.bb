@@ -114,8 +114,6 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
-void EmptyLocalFrameClient::DispatchWillSubmitForm(HTMLFormElement*) {}
-
 DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,
     const ResourceRequest& request,

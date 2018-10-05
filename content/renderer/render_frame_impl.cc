@@ -4177,11 +4177,6 @@ void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
     observer.WillSendSubmitEvent(form);
 }
 
-void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
-  for (auto& observer : observers_)
-    observer.WillSubmitForm(form);
-}
-
 void RenderFrameImpl::DidCreateDocumentLoader(
     blink::WebDocumentLoader* document_loader) {
   DocumentState* document_state =
@@ -6174,6 +6169,10 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       !url.SchemeIs(url::kDataScheme);
 
   if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
+    if (!info.form.IsNull()) {
+      for (auto& observer : observers_)
+        observer.WillSubmitForm(info.form);
+    }
     // If the navigation is not synchronous, send it to the browser.  This
     // includes navigations with no request being sent to the network stack.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
