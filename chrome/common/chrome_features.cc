@@ -138,12 +138,6 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX)
-// Enables the suggested text touch bar for autocomplete in textfields.
-const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // Enables the blocking of third-party modules.
 // Note: Due to a limitation in the implementation of this feature, it is

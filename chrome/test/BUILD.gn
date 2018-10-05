@@ -1968,7 +1968,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
         "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
 
         ## TODO(crbug/845389): Re-Enable the following, which were temporarily
         ## omitted from the build, but still in use by the Cocoa browser.
@@ -4149,7 +4148,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
         "../browser/ui/cocoa/view_resizer_pong.h",
         "../browser/ui/cocoa/view_resizer_pong.mm",
