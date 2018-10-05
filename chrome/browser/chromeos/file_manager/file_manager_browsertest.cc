@@ -386,6 +386,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("openQuickView"),
                       TestCase("openQuickView").InGuestMode(),
                       TestCase("openQuickView").TabletMode(),
+                      TestCase("openQuickViewImage"),
                       TestCase("openQuickViewScrollText"),
                       TestCase("openQuickViewScrollHtml"),
                       TestCase("openQuickViewBackgroundColorText"),
