@@ -23,7 +23,7 @@ namespace ui_devtools {
 
 namespace {
 const char kChromeDeveloperToolsPrefix[] =
-    "chrome-devtools://devtools/bundled/inspector.html?ws=";
+    "chrome-devtools://devtools/bundled/devtools_app.html?ws=";
 
 bool IsDevToolsEnabled(const char* enable_devtools_flag) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
