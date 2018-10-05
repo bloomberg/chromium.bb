@@ -370,7 +370,7 @@ void WebRtcLogUploader::SetupMultipart(
 
   // Add the rtp dumps if they exist.
   base::FilePath rtp_dumps[2] = {incoming_rtp_dump, outgoing_rtp_dump};
-  static const char* kRtpDumpNames[2] = {"rtpdump_recv", "rtpdump_send"};
+  static const char* const kRtpDumpNames[2] = {"rtpdump_recv", "rtpdump_send"};
 
   for (size_t i = 0; i < 2; ++i) {
     if (!rtp_dumps[i].empty() && base::PathExists(rtp_dumps[i])) {

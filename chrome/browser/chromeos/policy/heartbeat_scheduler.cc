@@ -22,32 +22,32 @@ const int kMinHeartbeatIntervalMs = 30 * 1000;  // 30 seconds
 const int kMaxHeartbeatIntervalMs = 24 * 60 * 60 * 1000;  // 24 hours
 
 // Our sender ID we send up with all of our GCM messages.
-const char* kHeartbeatGCMAppID = "com.google.chromeos.monitoring";
+const char kHeartbeatGCMAppID[] = "com.google.chromeos.monitoring";
 
 // The default destination we send our GCM messages to.
-const char* kHeartbeatGCMDestinationID = "1013309121859";
-const char* kHeartbeatGCMSenderSuffix = "@google.com";
+const char kHeartbeatGCMDestinationID[] = "1013309121859";
+const char kHeartbeatGCMSenderSuffix[] = "@google.com";
 
 // Destination of upstream notification sign up message.
-const char* kUpstreamNotificationSignUpDestinationID =
+const char kUpstreamNotificationSignUpDestinationID[] =
     "https://gcm.googleapis.com/gcm/gcm.event_tracker";
 
 // A bit mask, listening events of upstream notification.
-const char* kUpstreamNotificationSignUpListeningEvents =
+const char kUpstreamNotificationSignUpListeningEvents[] =
     "7";  // START | DISCONNECTED | HEARTBEAT
 
-const char* kGcmMessageTypeKey = "type";
-const char* kHeartbeatTimestampKey = "timestamp";
-const char* kHeartbeatDomainNameKey = "domain_name";
-const char* kHeartbeatDeviceIDKey = "device_id";
-const char* kHeartbeatTypeValue = "hb";
-const char* kUpstreamNotificationNotifyKey = "notify";
-const char* kUpstreamNotificationRegIdKey = "registration_id";
+const char kGcmMessageTypeKey[] = "type";
+const char kHeartbeatTimestampKey[] = "timestamp";
+const char kHeartbeatDomainNameKey[] = "domain_name";
+const char kHeartbeatDeviceIDKey[] = "device_id";
+const char kHeartbeatTypeValue[] = "hb";
+const char kUpstreamNotificationNotifyKey[] = "notify";
+const char kUpstreamNotificationRegIdKey[] = "registration_id";
 
 // If we get an error registering with GCM, try again in two minutes.
 const int64_t kRegistrationRetryDelayMs = 2 * 60 * 1000;
 
-const char* kHeartbeatSchedulerScope =
+const char kHeartbeatSchedulerScope[] =
     "policy.heartbeat_scheduler.upstream_notification";
 
 // Returns the destination ID for GCM heartbeats.

@@ -44,9 +44,9 @@ const char kOpenLabel[] = "_Open";
 const char kSaveLabel[] = "_Save";
 #else
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-const char* kCancelLabel = GTK_STOCK_CANCEL;
-const char* kOpenLabel = GTK_STOCK_OPEN;
-const char* kSaveLabel = GTK_STOCK_SAVE;
+const char* const kCancelLabel = GTK_STOCK_CANCEL;
+const char* const kOpenLabel = GTK_STOCK_OPEN;
+const char* const kSaveLabel = GTK_STOCK_SAVE;
 G_GNUC_END_IGNORE_DEPRECATIONS;
 #endif
 

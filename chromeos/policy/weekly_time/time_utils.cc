@@ -22,7 +22,7 @@ namespace policy {
 namespace weekly_time_utils {
 namespace {
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
-const char* kFormatWeekdayHourMinute = "EEEE jj:mm a";
+const char kFormatWeekdayHourMinute[] = "EEEE jj:mm a";
 }  // namespace
 
 bool GetOffsetFromTimezoneToGmt(const std::string& timezone,

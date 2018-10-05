@@ -20,13 +20,13 @@
 
 namespace chromeos {
 // Supported service names for printers.
-const char* ZeroconfPrinterDetector::kIppServiceName = "_ipp._tcp.local";
-const char* ZeroconfPrinterDetector::kIppsServiceName = "_ipps._tcp.local";
+const char ZeroconfPrinterDetector::kIppServiceName[] = "_ipp._tcp.local";
+const char ZeroconfPrinterDetector::kIppsServiceName[] = "_ipps._tcp.local";
 
 // IppEverywhere printers are also required to advertise these services.
-const char* ZeroconfPrinterDetector::kIppEverywhereServiceName =
+const char ZeroconfPrinterDetector::kIppEverywhereServiceName[] =
     "_ipp._tcp.local,_print";
-const char* ZeroconfPrinterDetector::kIppsEverywhereServiceName =
+const char ZeroconfPrinterDetector::kIppsEverywhereServiceName[] =
     "_ipps._tcp.local,_print";
 
 namespace {
