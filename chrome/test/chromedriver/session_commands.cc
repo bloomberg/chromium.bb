@@ -929,13 +929,9 @@ Status ExecuteSetWindowPosition(Session* session,
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
     return Status(kUnknownError, "missing or invalid 'x' or 'y'");
 
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  return desktop->SetWindowPosition(session->window, static_cast<int>(x),
-                                      static_cast<int>(y));
+  return session->chrome->SetWindowPosition(session->window,
+                                            static_cast<int>(x),
+                                            static_cast<int>(y));
 }
 
 Status ExecuteGetWindowSize(Session* session,
@@ -963,11 +959,6 @@ Status ExecuteSetWindowRect(Session* session,
   double x = 0;
   double y = 0;
 
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
   // to pass to the set window rect command
   base::DictionaryValue rect_params;
 
@@ -981,7 +972,7 @@ Status ExecuteSetWindowRect(Session* session,
     rect_params.SetInteger("width", static_cast<int>(width));
     rect_params.SetInteger("height", static_cast<int>(height));
   }
-  status = desktop->SetWindowRect(session->window, rect_params);
+  Status status = session->chrome->SetWindowRect(session->window, rect_params);
   if (status.IsError())
     return status;
 
@@ -1006,12 +997,7 @@ Status ExecuteSetWindowSize(Session* session,
 Status ExecuteMaximizeWindow(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  status = desktop->MaximizeWindow(session->window);
+  Status status = session->chrome->MaximizeWindow(session->window);
   if (status.IsError())
     return status;
 
@@ -1021,12 +1007,7 @@ Status ExecuteMaximizeWindow(Session* session,
 Status ExecuteMinimizeWindow(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  status = desktop->MinimizeWindow(session->window);
+  Status status = session->chrome->MinimizeWindow(session->window);
   if (status.IsError())
     return status;
 
@@ -1036,12 +1017,7 @@ Status ExecuteMinimizeWindow(Session* session,
 Status ExecuteFullScreenWindow(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = NULL;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  status = desktop->FullScreenWindow(session->window);
+  Status status = session->chrome->FullScreenWindow(session->window);
   if (status.IsError())
     return status;
 

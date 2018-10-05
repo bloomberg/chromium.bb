@@ -39,7 +39,13 @@ class ChromeImpl : public Chrome {
   Status GetWindowSize(const std::string& id, int* width, int* height) override;
   Status SetWindowSize(const std::string& target_id,
                        int width, int height) override;
+  Status SetWindowRect(const std::string& target_id,
+                       const base::DictionaryValue& params) override;
   Status GetWindowPosition(const std::string& id, int* x, int* y) override;
+  Status SetWindowPosition(const std::string& target_id, int x, int y) override;
+  Status MaximizeWindow(const std::string& target_id) override;
+  Status MinimizeWindow(const std::string& target_id) override;
+  Status FullScreenWindow(const std::string& target_id) override;
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;
   Status SetAcceptInsecureCerts() override;

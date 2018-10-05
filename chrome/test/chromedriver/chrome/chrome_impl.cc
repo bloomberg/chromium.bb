@@ -149,6 +149,135 @@ Status ChromeImpl::GetWindowPosition(const std::string& target_id,
   return Status(kOk);
 }
 
+Status ChromeImpl::SetWindowPosition(const std::string& target_id,
+                                            int x,
+                                            int y) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state != "normal") {
+    // restore window to normal first to allow position change.
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+  bounds->SetInteger("left", x);
+  bounds->SetInteger("top", y);
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
+Status ChromeImpl::MaximizeWindow(const std::string& target_id) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state == "maximized")
+    return Status(kOk);
+
+  if (window.state != "normal") {
+    // always restore window to normal first, since chrome ui doesn't allow
+    // maximizing a minimized or fullscreen window.
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+  bounds->SetString("windowState", "maximized");
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
+Status ChromeImpl::MinimizeWindow(const std::string& target_id) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state == "minimized")
+    return Status(kOk);
+
+  if (window.state != "normal") {
+    // restore window to normal first
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+  bounds->SetString("windowState", "minimized");
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
+Status ChromeImpl::FullScreenWindow(const std::string& target_id) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state == "fullscreen")
+    return Status(kOk);
+
+  if (window.state != "normal") {
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+  bounds->SetString("windowState", "fullscreen");
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
+Status ChromeImpl::SetWindowRect(const std::string& target_id,
+                                        const base::DictionaryValue& params) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  auto bounds = std::make_unique<base::DictionaryValue>();
+
+  // fully exit fullscreen
+  if (window.state != "normal") {
+    auto bounds = std::make_unique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  // window position
+  int x = 0;
+  int y = 0;
+  if (params.GetInteger("x", &x) && params.GetInteger("y", &y)) {
+    bounds->SetInteger("left", x);
+    bounds->SetInteger("top", y);
+  }
+  // window size
+  int width = 0;
+  int height = 0;
+  if (params.GetInteger("width", &width) &&
+      params.GetInteger("height", &height)) {
+    bounds->SetInteger("width", width);
+    bounds->SetInteger("height", height);
+  }
+
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
 Status ChromeImpl::GetWindowSize(const std::string& target_id,
                                  int* width,
                                  int* height) {
