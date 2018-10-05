@@ -300,6 +300,36 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   }
 }
 
+// Test effects.
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamEffects) {
+  AudioDeviceInfoAccessorForTests device_info_accessor(audio_manager_.get());
+  ABORT_AUDIO_TEST_IF_NOT(device_info_accessor.HasAudioInputDevices() &&
+                          device_info_accessor.HasAudioOutputDevices() &&
+                          CoreAudioUtil::IsSupported());
+
+  // Retrieve a list of all available input devices.
+  media::AudioDeviceDescriptions device_descriptions;
+  device_info_accessor.GetAudioInputDeviceDescriptions(&device_descriptions);
+
+  // All devices in the device description list should have the experimental
+  // echo canceller capability.
+  for (const auto& device : device_descriptions) {
+    AudioParameters params =
+        device_info_accessor.GetInputStreamParameters(device.unique_id);
+    EXPECT_EQ(params.effects(), AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  }
+
+  // The two loopback devices is not included in the device description list
+  // above. They should have no effects.
+  AudioParameters params = device_info_accessor.GetInputStreamParameters(
+      AudioDeviceDescription::kLoopbackInputDeviceId);
+  EXPECT_EQ(params.effects(), AudioParameters::NO_EFFECTS);
+
+  params = device_info_accessor.GetInputStreamParameters(
+      AudioDeviceDescription::kLoopbackWithMuteDeviceId);
+  EXPECT_EQ(params.effects(), AudioParameters::NO_EFFECTS);
+}
+
 // Test Create(), Close() calling sequence.
 TEST_P(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
@@ -455,7 +485,7 @@ TEST_P(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
                           CoreAudioUtil::IsSupported());
   AudioParameters params = device_info_accessor.GetInputStreamParameters(
       AudioDeviceDescription::kLoopbackInputDeviceId);
-  EXPECT_EQ(params.effects(), 0);
+  EXPECT_EQ(params.effects(), AudioParameters::NO_EFFECTS);
 
   AudioParameters output_params =
       device_info_accessor.GetOutputStreamParameters(std::string());

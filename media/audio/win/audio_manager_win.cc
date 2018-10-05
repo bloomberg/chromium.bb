@@ -187,8 +187,11 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
   if (user_buffer_size)
     parameters.set_frames_per_buffer(user_buffer_size);
 
-  parameters.set_effects(parameters.effects() |
-                         AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  if (device_id != AudioDeviceDescription::kLoopbackInputDeviceId &&
+      device_id != AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
+    parameters.set_effects(parameters.effects() |
+                           AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  }
 
   return parameters;
 }
