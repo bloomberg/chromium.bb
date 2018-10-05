@@ -1072,8 +1072,7 @@ bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {
   // manager.  See https://crbug.com/756587.
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   blink::WebURL url = frame->GetDocument().Url();
-  if (url.ProtocolIs(url::kAboutScheme) || url.ProtocolIs(url::kBlobScheme) ||
-      url.ProtocolIs(url::kFileSystemScheme))
+  if (!url.ProtocolIs(url::kHttpScheme) && !url.ProtocolIs(url::kHttpsScheme))
     return false;
   return frame->GetSecurityOrigin().CanAccessPasswordManager();
 }
