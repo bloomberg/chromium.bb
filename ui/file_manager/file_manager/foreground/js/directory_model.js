@@ -315,7 +315,21 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
  * @private
  */
 DirectoryModel.prototype.onFilterChanged_ = function() {
-  this.rescanSoon(false);
+  const currentDirectory = this.getCurrentDirEntry();
+  if (currentDirectory && util.isNativeEntry(currentDirectory) &&
+      !this.fileFilter_.filter(
+          /** @type {!DirectoryEntry} */ (currentDirectory))) {
+    // If the current directory should be hidden in the new filter setting,
+    // change the current directory to the current volume's root.
+    const volumeInfo = this.volumeManager_.getVolumeInfo(currentDirectory);
+    if (volumeInfo) {
+      volumeInfo.resolveDisplayRoot().then(displayRoot => {
+        this.changeDirectoryEntry(displayRoot);
+      });
+    }
+  } else {
+    this.rescanSoon(false);
+  }
 };
 
 /**
@@ -1064,7 +1078,7 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
 /**
  * Activates the given directory.
  * This method:
- *  - Changes the current directory, if the given directory is the current
+ *  - Changes the current directory, if the given directory is not the current
  *    directory.
  *  - Clears the selection, if the given directory is the current directory.
  *

@@ -448,6 +448,123 @@ testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = function() {
 };
 
 /**
+ * Tests that the current directory is changed to "Play files" after the
+ * current directory is hidden by toggle-hidden-android-folders option.
+ */
+testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = function() {
+  let appId;
+  const MENU_ITEM_SELECTOR = '#gear-menu-toggle-hidden-android-folders';
+  const steps = [
+    function() {
+      openNewWindow(null, RootPath.ANDROID_FILES).then(this.next);
+    },
+    function(inAppId) {
+      appId = inAppId;
+      addEntries(
+          ['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN, this.next);
+    },
+    // Wait for the file list to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
+    },
+    // Wait for the gear menu button to appear.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button:not([hidden])')
+          .then(this.next);
+    },
+    // Open the gear menu by clicking the gear button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for menu to not be hidden.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // Wait for menu item to appear.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId, MENU_ITEM_SELECTOR + ':not([disabled]):not([checked])')
+          .then(this.next);
+    },
+    // Click the menu item.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [MENU_ITEM_SELECTOR], this.next);
+    },
+    // Wait for item to be checked.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, MENU_ITEM_SELECTOR + '[checked]')
+          .then(this.next);
+    },
+    // Check the hidden files are displayed.
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows(
+                  BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN),
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to "/My files/Play files/A".
+    function() {
+      remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/A', 'My files/Play files', 'android_files')
+          .then(this.next);
+    },
+    // Wait until current directory is changed to "/My files/Play files/A".
+    function() {
+      remoteCall
+          .waitUntilCurrentDirectoryIsChanged(appId, '/My files/Play files/A')
+          .then(this.next);
+    },
+    // Open the gear menu by clicking the gear button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for menu to not be hidden.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // Wait for menu item to appear.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId, MENU_ITEM_SELECTOR + '[checked]:not([disabled])')
+          .then(this.next);
+    },
+    // Click the menu item.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [MENU_ITEM_SELECTOR], this.next);
+    },
+    // Wait until the current directory is changed from
+    // "/My files/Play files/A" to "/My files/Play files" since
+    // "/My files/Play files/A" is invisible now.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall
+          .waitUntilCurrentDirectoryIsChanged(appId, '/My files/Play files')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ];
+  StepsRunner.run(steps);
+};
+
+/**
  * Tests the paste-into-current-folder menu item.
  */
 testcase.showPasteIntoCurrentFolder = function() {
