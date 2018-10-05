@@ -758,6 +758,7 @@ test("content_browsertests") {
     # These tests have incorrect threading (https://crbug.com/860547).
     #"../browser/fileapi/file_system_url_loader_factory_browsertest.cc",
 
+    "../browser/fileapi/file_system_chooser_browsertest.cc",
     "../browser/fileapi/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
     "../browser/font_unique_name_lookup/font_unique_name_browsertest.cc",

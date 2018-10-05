@@ -125,7 +125,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
                        GetPlatformPathCallback callback) override;
   void CreateWriter(const GURL& file_path,
                     CreateWriterCallback callback) override;
-  void ChooseEntry(ChooseEntryCallback callback) override;
+  void ChooseEntry(blink::mojom::ChooseFileSystemEntryType type,
+                   ChooseEntryCallback callback) override;
 
  private:
   class FileSystemCancellableOperationImpl;

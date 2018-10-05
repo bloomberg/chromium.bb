@@ -72,6 +72,13 @@ interface ReceivedSnapshotListener {
   DidReceiveSnapshotFile();
 };
 
+enum ChooseFileSystemEntryType {
+  kOpenFile,
+  kOpenMultipleFiles,
+  kSaveFile,
+  kOpenDirectory
+};
+
 // Interface provided by the browser to the renderer to carry out filesystem
 // operations. All [Sync] methods should only be called synchronously on worker
 // threads (and asynchronously otherwise).
@@ -219,7 +226,7 @@ interface FileSystemManager {
   // success.
   // TODO(https://crbug.com/878581): Add more options to this method to support
   //     multiple files, directories, "open" vs "save" dialogs, etc.
-  ChooseEntry() =>
+  ChooseEntry(ChooseFileSystemEntryType type) =>
       (mojo_base.mojom.FileError error_code,
        array<FileSystemEntry> entries);
 };
