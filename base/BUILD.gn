@@ -2872,6 +2872,13 @@ if (is_android) {
     classes = [ "java/lang/Runtime.class" ]
   }
 
+  java_library("jni_processor_annotations_java") {
+    supports_android = true
+    java_files = [
+      "android/java/src/org/chromium/base/annotations/JniStaticNatives.java",
+    ]
+  }
+
   android_library("base_java") {
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
