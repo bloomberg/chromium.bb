@@ -76,15 +76,15 @@ TEST_F(PDFiumPrintTest, Basic) {
 
   PDFiumPrint print(&engine);
 
-  const PP_PrintSettings_Dev print_settings = {kUSLetterRect,
-                                               kUSLetterRect,
-                                               kUSLetterSize,
-                                               72,
-                                               PP_PRINTORIENTATION_NORMAL,
-                                               PP_PRINTSCALINGOPTION_NONE,
-                                               PP_FALSE,
-                                               PP_PRINTOUTPUTFORMAT_PDF};
-  const PP_PdfPrintSettings_Dev pdf_print_settings = {1, 100};
+  constexpr PP_PrintSettings_Dev print_settings = {kUSLetterRect,
+                                                   kUSLetterRect,
+                                                   kUSLetterSize,
+                                                   72,
+                                                   PP_PRINTORIENTATION_NORMAL,
+                                                   PP_PRINTSCALINGOPTION_NONE,
+                                                   PP_FALSE,
+                                                   PP_PRINTOUTPUTFORMAT_PDF};
+  constexpr PP_PdfPrintSettings_Dev pdf_print_settings = {1, 100};
 
   {
     // Print 2 pages.
