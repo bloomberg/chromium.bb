@@ -27,6 +27,32 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
 }
 
+static int enc_row_mt_worker_hook(void *arg1, void *unused) {
+  EncWorkerData *const thread_data = (EncWorkerData *)arg1;
+  AV1_COMP *const cpi = thread_data->cpi;
+  const AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+  int t;
+
+  (void)unused;
+
+  for (t = thread_data->start; t < tile_rows * tile_cols;
+       t += cpi->num_workers) {
+    int tile_row = t / tile_cols;
+    int tile_col = t % tile_cols;
+
+    TileDataEnc *const this_tile =
+        &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+    thread_data->td->tctx = &this_tile->tctx;
+    thread_data->td->mb.e_mbd.tile_ctx = thread_data->td->tctx;
+    thread_data->td->mb.backup_tile_ctx = &this_tile->backup_tctx;
+    av1_encode_tile(cpi, thread_data->td, tile_row, tile_col);
+  }
+
+  return 1;
+}
+
 static int enc_worker_hook(void *arg1, void *unused) {
   EncWorkerData *const thread_data = (EncWorkerData *)arg1;
   AV1_COMP *const cpi = thread_data->cpi;
@@ -273,4 +299,26 @@ void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
   const unsigned int n_counts = sizeof(FRAME_COUNTS) / sizeof(unsigned int);
 
   for (unsigned int i = 0; i < n_counts; i++) acc[i] += cnt[i];
+}
+
+void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+  int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols * tile_rows);
+
+  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
+    av1_alloc_tile_data(cpi);
+
+  av1_init_tile_data(cpi);
+  // Only run once to create threads and allocate thread data.
+  if (cpi->num_workers == 0) {
+    create_enc_workers(cpi, num_workers);
+  } else {
+    num_workers = AOMMIN(num_workers, cpi->num_workers);
+  }
+  prepare_enc_workers(cpi, enc_row_mt_worker_hook, num_workers);
+  launch_enc_workers(cpi, num_workers);
+  sync_enc_workers(cpi, num_workers);
+  accumulate_counters_enc_workers(cpi, num_workers);
 }

@@ -26,6 +26,7 @@ typedef struct EncWorkerData {
 } EncWorkerData;
 
 void av1_encode_tiles_mt(struct AV1_COMP *cpi);
+void av1_encode_tiles_row_mt(struct AV1_COMP *cpi);
 
 void av1_accumulate_frame_counts(struct FRAME_COUNTS *acc_counts,
                                  const struct FRAME_COUNTS *counts);
