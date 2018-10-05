@@ -82,7 +82,10 @@ HttpHandler::HttpHandler(
   device_manager_.reset(new DeviceManager(adb_.get()));
 
   CommandMapping commands[] = {
+      //
       // W3C standard endpoints
+      //
+
       CommandMapping(kPost, internal::kNewSessionPathPattern,
                      base::BindRepeating(
                          &ExecuteCreateSession, &session_thread_map_,
@@ -300,84 +303,12 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/element/:id/screenshot",
           WrapToCommand("ElementScreenshot",
                         base::BindRepeating(&ExecuteElementScreenshot))),
-      // End of W3C standard endpoints
 
-      CommandMapping(
-          kPost, "session/:sessionId/goog/page/freeze",
-          WrapToCommand("Freeze", base::BindRepeating(&ExecuteFreeze))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/page/resume",
-          WrapToCommand("Resume", base::BindRepeating(&ExecuteResume))),
+      //
+      // Json wire protocol endpoints
+      //
 
-      // minimize/maximize oss version
-      CommandMapping(
-          kPost, "session/:sessionId/window/:windowHandle/maximize",
-          WrapToCommand("MaximizeWindow",
-                        base::BindRepeating(&ExecuteMaximizeWindow))),
-      CommandMapping(
-          kPost, "session/:sessionId/window/:windowHandle/minimize",
-          WrapToCommand("MinimizeWindow",
-                        base::BindRepeating(&ExecuteMinimizeWindow))),
-
-      // Json wire protocol only
-      // similar to /session/{session id}/window
-      CommandMapping(
-          kGet, "session/:sessionId/window_handle",
-          WrapToCommand("GetWindow",
-                        base::BindRepeating(&ExecuteGetCurrentWindowHandle))),
-
-      // similar to /session/{session id}/window/handles
-      CommandMapping(
-          kGet, "session/:sessionId/window_handles",
-          WrapToCommand("GetWindows",
-                        base::BindRepeating(&ExecuteGetWindowHandles))),
-
-      // similar to /session/{session id}/alert/dismiss
-      CommandMapping(
-          kPost, "session/:sessionId/dismiss_alert",
-          WrapToCommand(
-              "DismissAlert",
-              base::BindRepeating(&ExecuteAlertCommand,
-                                  base::BindRepeating(&ExecuteDismissAlert)))),
-
-      // similar to /session/{session id}/alert/accept
-      CommandMapping(
-          kPost, "session/:sessionId/accept_alert",
-          WrapToCommand(
-              "AcceptAlert",
-              base::BindRepeating(&ExecuteAlertCommand,
-                                  base::BindRepeating(&ExecuteAcceptAlert)))),
-      // similar to /session/{session id}/alert/text
-      CommandMapping(
-          kGet, "session/:sessionId/alert_text",
-          WrapToCommand(
-              "GetAlertMessage",
-              base::BindRepeating(&ExecuteAlertCommand,
-                                  base::BindRepeating(&ExecuteGetAlertText)))),
-      // similar to /session/{session id}/alert/text
-      CommandMapping(
-          kPost, "session/:sessionId/alert_text",
-          WrapToCommand(
-              "SetAlertPrompt",
-              base::BindRepeating(&ExecuteAlertCommand,
-                                  base::BindRepeating(&ExecuteSetAlertText)))),
-      // similar to /session/{session id}/execute/sync
-      CommandMapping(kPost, "session/:sessionId/execute",
-                     WrapToCommand("ExecuteScript",
-                                   base::BindRepeating(&ExecuteExecuteScript))),
-
-      // similar to /session/{session id}/execute/async
-      CommandMapping(
-          kPost, "session/:sessionId/execute_async",
-          WrapToCommand("ExecuteAsyncScript",
-                        base::BindRepeating(&ExecuteExecuteAsyncScript))),
-
-      // similar to /session/{session id}/execute/sync but GET request
-      CommandMapping(
-          kPost, "session/:sessionId/element/active",
-          WrapToCommand("GetActiveElement",
-                        base::BindRepeating(&ExecuteGetActiveElement))),
-
+      // No W3C equivalent.
       CommandMapping(
           kGet, "sessions",
           base::BindRepeating(
@@ -386,131 +317,173 @@ HttpHandler::HttpHandler(
                                                &ExecuteGetSessionCapabilities)),
               &session_thread_map_)),
 
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId",
           WrapToCommand("GetSessionCapabilities",
                         base::BindRepeating(&ExecuteGetSessionCapabilities))),
+
+      // Subset of W3C POST /session/:sessionId/timeouts.
+      CommandMapping(
+          kPost, "session/:sessionId/timeouts/implicit_wait",
+          WrapToCommand("SetImplicitWait",
+                        base::BindRepeating(&ExecuteImplicitlyWait))),
+
+      // Subset of W3C POST /session/:sessionId/timeouts.
+      CommandMapping(
+          kPost, "session/:sessionId/timeouts/async_script",
+          WrapToCommand("SetScriptTimeout",
+                        base::BindRepeating(&ExecuteSetScriptTimeout))),
+
+      // Similar to W3C GET /session/:sessionId/window.
+      CommandMapping(
+          kGet, "session/:sessionId/window_handle",
+          WrapToCommand("GetWindow",
+                        base::BindRepeating(&ExecuteGetCurrentWindowHandle))),
+
+      // Similar to W3C GET /session/:sessionId/window/handles
+      CommandMapping(
+          kGet, "session/:sessionId/window_handles",
+          WrapToCommand("GetWindows",
+                        base::BindRepeating(&ExecuteGetWindowHandles))),
+
+      // Similar to W3C POST /session/:sessionId/execute/sync.
+      CommandMapping(kPost, "session/:sessionId/execute",
+                     WrapToCommand("ExecuteScript",
+                                   base::BindRepeating(&ExecuteExecuteScript))),
+
+      // Similar to W3C POST /session/:sessionId/execute/async.
+      CommandMapping(
+          kPost, "session/:sessionId/execute_async",
+          WrapToCommand("ExecuteAsyncScript",
+                        base::BindRepeating(&ExecuteExecuteAsyncScript))),
+
+      // Subset of W3C POST /session/:sessionId/window/rect.
+      CommandMapping(kPost, "session/:sessionId/window/:windowHandle/size",
+                     WrapToCommand("SetWindowSize",
+                                   base::BindRepeating(&ExecuteSetWindowSize))),
+
+      // Subset of W3C GET /session/:sessionId/window/rect.
+      CommandMapping(kGet, "session/:sessionId/window/:windowHandle/size",
+                     WrapToCommand("GetWindowSize",
+                                   base::BindRepeating(&ExecuteGetWindowSize))),
+
+      // Subset of W3C POST /session/:sessionId/window/rect.
+      CommandMapping(
+          kPost, "session/:sessionId/window/:windowHandle/position",
+          WrapToCommand("SetWindowPosition",
+                        base::BindRepeating(&ExecuteSetWindowPosition))),
+
+      // Subset of W3C GET /session/:sessionId/window/rect.
+      CommandMapping(
+          kGet, "session/:sessionId/window/:windowHandle/position",
+          WrapToCommand("GetWindowPosition",
+                        base::BindRepeating(&ExecuteGetWindowPosition))),
+
+      // Similar to W3C POST /session/:sessionId/window/maximize.
+      CommandMapping(
+          kPost, "session/:sessionId/window/:windowHandle/maximize",
+          WrapToCommand("MaximizeWindow",
+                        base::BindRepeating(&ExecuteMaximizeWindow))),
+
+      // Similar to W3C GET /session/:sessionId/element/active, but is POST.
+      CommandMapping(
+          kPost, "session/:sessionId/element/active",
+          WrapToCommand("GetActiveElement",
+                        base::BindRepeating(&ExecuteGetActiveElement))),
+
+      // No W3C equivalent.
       CommandMapping(kPost, "session/:sessionId/element/:id/submit",
                      WrapToCommand("SubmitElement",
                                    base::BindRepeating(&ExecuteSubmitElement))),
+
+      // No W3C equivalent.
+      CommandMapping(
+          kPost, "session/:sessionId/keys",
+          WrapToCommand("Type",
+                        base::BindRepeating(&ExecuteSendKeysToActiveElement))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/element/:id/equals/:other",
+                     WrapToCommand("IsElementEqual",
+                                   base::BindRepeating(&ExecuteElementEquals))),
+
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/element/:id/displayed",
           WrapToCommand("IsElementDisplayed",
                         base::BindRepeating(&ExecuteIsElementDisplayed))),
+
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/element/:id/location",
           WrapToCommand("GetElementLocation",
                         base::BindRepeating(&ExecuteGetElementLocation))),
 
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/element/:id/location_in_view",
           WrapToCommand("GetElementLocationInView",
                         base::BindRepeating(
                             &ExecuteGetElementLocationOnceScrolledIntoView))),
+
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/element/:id/size",
           WrapToCommand("GetElementSize",
                         base::BindRepeating(&ExecuteGetElementSize))),
-      CommandMapping(kGet, "session/:sessionId/element/:id/equals/:other",
-                     WrapToCommand("IsElementEqual",
-                                   base::BindRepeating(&ExecuteElementEquals))),
 
-      CommandMapping(kGet, "session/:sessionId/window/:windowHandle/size",
-                     WrapToCommand("GetWindowSize",
-                                   base::BindRepeating(&ExecuteGetWindowSize))),
-      CommandMapping(
-          kGet, "session/:sessionId/window/:windowHandle/position",
-          WrapToCommand("GetWindowPosition",
-                        base::BindRepeating(&ExecuteGetWindowPosition))),
-      CommandMapping(kPost, "session/:sessionId/window/:windowHandle/size",
-                     WrapToCommand("SetWindowSize",
-                                   base::BindRepeating(&ExecuteSetWindowSize))),
-
-      CommandMapping(
-          kPost, "session/:sessionId/window/:windowHandle/position",
-          WrapToCommand("SetWindowPosition",
-                        base::BindRepeating(&ExecuteSetWindowPosition))),
-      CommandMapping(
-          kPost, "session/:sessionId/timeouts/implicit_wait",
-          WrapToCommand("SetImplicitWait",
-                        base::BindRepeating(&ExecuteImplicitlyWait))),
-      CommandMapping(
-          kPost, "session/:sessionId/timeouts/async_script",
-          WrapToCommand("SetScriptTimeout",
-                        base::BindRepeating(&ExecuteSetScriptTimeout))),
-      CommandMapping(kGet, "session/:sessionId/location",
-                     WrapToCommand("GetGeolocation",
-                                   base::BindRepeating(&ExecuteGetLocation))),
-      CommandMapping(kPost, "session/:sessionId/location",
-                     WrapToCommand("SetGeolocation",
-                                   base::BindRepeating(&ExecuteSetLocation))),
-      CommandMapping(kGet, "session/:sessionId/application_cache/status",
-                     base::BindRepeating(&ExecuteGetStatus)),
-      CommandMapping(kGet, "session/:sessionId/local_storage/key/:key",
-                     WrapToCommand("GetLocalStorageItem",
-                                   base::BindRepeating(&ExecuteGetStorageItem,
-                                                       kLocalStorage))),
-      CommandMapping(
-          kDelete, "session/:sessionId/local_storage/key/:key",
-          WrapToCommand(
-              "RemoveLocalStorageItem",
-              base::BindRepeating(&ExecuteRemoveStorageItem, kLocalStorage))),
-      CommandMapping(kGet, "session/:sessionId/local_storage",
-                     WrapToCommand("GetLocalStorageKeys",
-                                   base::BindRepeating(&ExecuteGetStorageKeys,
-                                                       kLocalStorage))),
-      CommandMapping(kPost, "session/:sessionId/local_storage",
-                     WrapToCommand("SetLocalStorageKeys",
-                                   base::BindRepeating(&ExecuteSetStorageItem,
-                                                       kLocalStorage))),
-      CommandMapping(kDelete, "session/:sessionId/local_storage",
-                     WrapToCommand("ClearLocalStorage",
-                                   base::BindRepeating(&ExecuteClearStorage,
-                                                       kLocalStorage))),
-      CommandMapping(kGet, "session/:sessionId/local_storage/size",
-                     WrapToCommand("GetLocalStorageSize",
-                                   base::BindRepeating(&ExecuteGetStorageSize,
-                                                       kLocalStorage))),
-      CommandMapping(kGet, "session/:sessionId/session_storage/key/:key",
-                     WrapToCommand("GetSessionStorageItem",
-                                   base::BindRepeating(&ExecuteGetStorageItem,
-                                                       kSessionStorage))),
-      CommandMapping(
-          kDelete, "session/:sessionId/session_storage/key/:key",
-          WrapToCommand(
-              "RemoveSessionStorageItem",
-              base::BindRepeating(&ExecuteRemoveStorageItem, kSessionStorage))),
-      CommandMapping(kGet, "session/:sessionId/session_storage",
-                     WrapToCommand("GetSessionStorageKeys",
-                                   base::BindRepeating(&ExecuteGetStorageKeys,
-                                                       kSessionStorage))),
-      CommandMapping(kPost, "session/:sessionId/session_storage",
-                     WrapToCommand("SetSessionStorageItem",
-                                   base::BindRepeating(&ExecuteSetStorageItem,
-                                                       kSessionStorage))),
-      CommandMapping(kDelete, "session/:sessionId/session_storage",
-                     WrapToCommand("ClearSessionStorage",
-                                   base::BindRepeating(&ExecuteClearStorage,
-                                                       kSessionStorage))),
-      CommandMapping(kGet, "session/:sessionId/session_storage/size",
-                     WrapToCommand("GetSessionStorageSize",
-                                   base::BindRepeating(&ExecuteGetStorageSize,
-                                                       kSessionStorage))),
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/orientation",
           WrapToCommand("GetScreenOrientation",
                         base::BindRepeating(&ExecuteGetScreenOrientation))),
+
+      // No W3C equivalent.
       CommandMapping(
           kPost, "session/:sessionId/orientation",
           WrapToCommand("SetScreenOrientation",
                         base::BindRepeating(&ExecuteSetScreenOrientation))),
+
+      // Similar to W3C GET /session/:sessionId/alert/text.
+      CommandMapping(
+          kGet, "session/:sessionId/alert_text",
+          WrapToCommand(
+              "GetAlertMessage",
+              base::BindRepeating(&ExecuteAlertCommand,
+                                  base::BindRepeating(&ExecuteGetAlertText)))),
+
+      // Similar to W3C POST /session/:sessionId/alert/text.
+      CommandMapping(
+          kPost, "session/:sessionId/alert_text",
+          WrapToCommand(
+              "SetAlertPrompt",
+              base::BindRepeating(&ExecuteAlertCommand,
+                                  base::BindRepeating(&ExecuteSetAlertText)))),
+
+      // Similar to W3C POST /session/:sessionId/alert/accept.
+      CommandMapping(
+          kPost, "session/:sessionId/accept_alert",
+          WrapToCommand(
+              "AcceptAlert",
+              base::BindRepeating(&ExecuteAlertCommand,
+                                  base::BindRepeating(&ExecuteAcceptAlert)))),
+
+      // Similar to W3C POST /session/:sessionId/alert/dismiss.
+      CommandMapping(
+          kPost, "session/:sessionId/dismiss_alert",
+          WrapToCommand(
+              "DismissAlert",
+              base::BindRepeating(&ExecuteAlertCommand,
+                                  base::BindRepeating(&ExecuteDismissAlert)))),
+
+      // The following set of commands form a subset of W3C Actions API.
+      CommandMapping(
+          kPost, "session/:sessionId/moveto",
+          WrapToCommand("MouseMove", base::BindRepeating(&ExecuteMouseMoveTo))),
       CommandMapping(
           kPost, "session/:sessionId/click",
           WrapToCommand("Click", base::BindRepeating(&ExecuteMouseClick))),
-      CommandMapping(
-          kPost, "session/:sessionId/doubleclick",
-          WrapToCommand("DoubleClick",
-                        base::BindRepeating(&ExecuteMouseDoubleClick))),
       CommandMapping(kPost, "session/:sessionId/buttondown",
                      WrapToCommand("MouseDown", base::BindRepeating(
                                                     &ExecuteMouseButtonDown))),
@@ -518,12 +491,9 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/buttonup",
           WrapToCommand("MouseUp", base::BindRepeating(&ExecuteMouseButtonUp))),
       CommandMapping(
-          kPost, "session/:sessionId/moveto",
-          WrapToCommand("MouseMove", base::BindRepeating(&ExecuteMouseMoveTo))),
-      CommandMapping(
-          kPost, "session/:sessionId/keys",
-          WrapToCommand("Type",
-                        base::BindRepeating(&ExecuteSendKeysToActiveElement))),
+          kPost, "session/:sessionId/doubleclick",
+          WrapToCommand("DoubleClick",
+                        base::BindRepeating(&ExecuteMouseDoubleClick))),
       CommandMapping(
           kPost, "session/:sessionId/touch/click",
           WrapToCommand("Tap", base::BindRepeating(&ExecuteTouchSingleTap))),
@@ -550,48 +520,139 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/touch/flick",
           WrapToCommand("TouchFlick", base::BindRepeating(&ExecuteFlick))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/location",
+                     WrapToCommand("GetGeolocation",
+                                   base::BindRepeating(&ExecuteGetLocation))),
+
+      // No W3C equivalent.
+      CommandMapping(kPost, "session/:sessionId/location",
+                     WrapToCommand("SetGeolocation",
+                                   base::BindRepeating(&ExecuteSetLocation))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/local_storage",
+                     WrapToCommand("GetLocalStorageKeys",
+                                   base::BindRepeating(&ExecuteGetStorageKeys,
+                                                       kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kPost, "session/:sessionId/local_storage",
+                     WrapToCommand("SetLocalStorageKeys",
+                                   base::BindRepeating(&ExecuteSetStorageItem,
+                                                       kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kDelete, "session/:sessionId/local_storage",
+                     WrapToCommand("ClearLocalStorage",
+                                   base::BindRepeating(&ExecuteClearStorage,
+                                                       kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/local_storage/key/:key",
+                     WrapToCommand("GetLocalStorageItem",
+                                   base::BindRepeating(&ExecuteGetStorageItem,
+                                                       kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(
+          kDelete, "session/:sessionId/local_storage/key/:key",
+          WrapToCommand(
+              "RemoveLocalStorageItem",
+              base::BindRepeating(&ExecuteRemoveStorageItem, kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/local_storage/size",
+                     WrapToCommand("GetLocalStorageSize",
+                                   base::BindRepeating(&ExecuteGetStorageSize,
+                                                       kLocalStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/session_storage",
+                     WrapToCommand("GetSessionStorageKeys",
+                                   base::BindRepeating(&ExecuteGetStorageKeys,
+                                                       kSessionStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kPost, "session/:sessionId/session_storage",
+                     WrapToCommand("SetSessionStorageItem",
+                                   base::BindRepeating(&ExecuteSetStorageItem,
+                                                       kSessionStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kDelete, "session/:sessionId/session_storage",
+                     WrapToCommand("ClearSessionStorage",
+                                   base::BindRepeating(&ExecuteClearStorage,
+                                                       kSessionStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/session_storage/key/:key",
+                     WrapToCommand("GetSessionStorageItem",
+                                   base::BindRepeating(&ExecuteGetStorageItem,
+                                                       kSessionStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(
+          kDelete, "session/:sessionId/session_storage/key/:key",
+          WrapToCommand(
+              "RemoveSessionStorageItem",
+              base::BindRepeating(&ExecuteRemoveStorageItem, kSessionStorage))),
+
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/session_storage/size",
+                     WrapToCommand("GetSessionStorageSize",
+                                   base::BindRepeating(&ExecuteGetStorageSize,
+                                                       kSessionStorage))),
+
+      // No W3C equivalent.
       CommandMapping(
           kPost, "session/:sessionId/log",
           WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
+
+      // No W3C equivalent.
       CommandMapping(
           kGet, "session/:sessionId/log/types",
           WrapToCommand("GetLogTypes",
                         base::BindRepeating(&ExecuteGetAvailableLogTypes))),
 
-      // extension commands
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/application_cache/status",
+                     base::BindRepeating(&ExecuteGetStatus)),
+
+      //
+      // Extension commands from other specs.
+      //
+
+      // Extension for Reporting API:
+      // https://w3c.github.io/reporting/#generate-test-report-command
       CommandMapping(
           kPost, "session/:sessionId/reporting/generate_test_report",
           WrapToCommand("GenerateTestReport",
                         base::BindRepeating(&ExecuteGenerateTestReport))),
 
-      // chromedriver only
-      CommandMapping(
-          kPost, "session/:sessionId/chromium/launch_app",
-          WrapToCommand("LaunchApp", base::BindRepeating(&ExecuteLaunchApp))),
-      CommandMapping(kGet, "session/:sessionId/alert",
-                     WrapToCommand("IsAlertOpen",
-                                   base::BindRepeating(
-                                       &ExecuteAlertCommand,
-                                       base::BindRepeating(&ExecuteGetAlert)))),
-      CommandMapping(
-          kGet, "session/:sessionId/chromium/heap_snapshot",
-          WrapToCommand("HeapSnapshot",
-                        base::BindRepeating(&ExecuteTakeHeapSnapshot))),
-      CommandMapping(
-          kPost, "session/:sessionId/file",
-          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
-      CommandMapping(
-          kGet, "session/:sessionId/element/:id/value",
-          WrapToCommand("GetElementValue",
-                        base::BindRepeating(&ExecuteGetElementValue))),
-      CommandMapping(
-          kPost, "session/:sessionId/element/:id/hover",
-          WrapToCommand("HoverElement",
-                        base::BindRepeating(&ExecuteHoverOverElement))),
+      // Extensions from Mobile JSON Wire Protocol:
+      // https://github.com/SeleniumHQ/mobile-spec/blob/master/spec-draft.md
       CommandMapping(
           kGet, "session/:sessionId/network_connection",
           WrapToCommand("GetNetworkConnection",
                         base::BindRepeating(&ExecuteGetNetworkConnection))),
+      CommandMapping(
+          kPost, "session/:sessionId/network_connection",
+          WrapToCommand("SetNetworkConnection",
+                        base::BindRepeating(&ExecuteSetNetworkConnection))),
+
+      //
+      // ChromeDriver specific extension commands.
+      //
+
+      CommandMapping(
+          kPost, "session/:sessionId/chromium/launch_app",
+          WrapToCommand("LaunchApp", base::BindRepeating(&ExecuteLaunchApp))),
+      CommandMapping(
+          kGet, "session/:sessionId/chromium/heap_snapshot",
+          WrapToCommand("HeapSnapshot",
+                        base::BindRepeating(&ExecuteTakeHeapSnapshot))),
       CommandMapping(
           kGet, "session/:sessionId/chromium/network_conditions",
           WrapToCommand("GetNetworkConditions",
@@ -604,6 +665,50 @@ HttpHandler::HttpHandler(
           kDelete, "session/:sessionId/chromium/network_conditions",
           WrapToCommand("DeleteNetworkConditions",
                         base::BindRepeating(&ExecuteDeleteNetworkConditions))),
+      CommandMapping(kPost, "session/:sessionId/chromium/send_command",
+                     WrapToCommand("SendCommand",
+                                   base::BindRepeating(&ExecuteSendCommand))),
+      CommandMapping(
+          kPost, "session/:sessionId/goog/cdp/execute",
+          WrapToCommand("ExecuteCDP",
+                        base::BindRepeating(&ExecuteSendCommandAndGetResult))),
+      CommandMapping(
+          kPost, "session/:sessionId/chromium/send_command_and_get_result",
+          WrapToCommand("SendCommandAndGetResult",
+                        base::BindRepeating(&ExecuteSendCommandAndGetResult))),
+      CommandMapping(
+          kPost, "session/:sessionId/goog/page/freeze",
+          WrapToCommand("Freeze", base::BindRepeating(&ExecuteFreeze))),
+      CommandMapping(
+          kPost, "session/:sessionId/goog/page/resume",
+          WrapToCommand("Resume", base::BindRepeating(&ExecuteResume))),
+
+      //
+      // Commands of unknown origins.
+      //
+
+      // Similar to W3C POST /session/:sessionId/window/minimize.
+      CommandMapping(
+          kPost, "session/:sessionId/window/:windowHandle/minimize",
+          WrapToCommand("MinimizeWindow",
+                        base::BindRepeating(&ExecuteMinimizeWindow))),
+
+      CommandMapping(kGet, "session/:sessionId/alert",
+                     WrapToCommand("IsAlertOpen",
+                                   base::BindRepeating(
+                                       &ExecuteAlertCommand,
+                                       base::BindRepeating(&ExecuteGetAlert)))),
+      CommandMapping(
+          kPost, "session/:sessionId/file",
+          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
+      CommandMapping(
+          kGet, "session/:sessionId/element/:id/value",
+          WrapToCommand("GetElementValue",
+                        base::BindRepeating(&ExecuteGetElementValue))),
+      CommandMapping(
+          kPost, "session/:sessionId/element/:id/hover",
+          WrapToCommand("HoverElement",
+                        base::BindRepeating(&ExecuteHoverOverElement))),
       CommandMapping(
           kDelete, "session/:sessionId/orientation",
           WrapToCommand("DeleteScreenOrientation",
@@ -634,23 +739,6 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/touch/pinch",
           WrapToCommand("TouchPinch", base::BindRepeating(&ExecuteTouchPinch))),
-      CommandMapping(kPost, "session/:sessionId/chromium/send_command",
-                     WrapToCommand("SendCommand",
-                                   base::BindRepeating(&ExecuteSendCommand))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/cdp/execute",
-          WrapToCommand("ExecuteCDP",
-                        base::BindRepeating(&ExecuteSendCommandAndGetResult))),
-      CommandMapping(
-          kPost, "session/:sessionId/chromium/send_command_and_get_result",
-          WrapToCommand("SendCommandAndGetResult",
-                        base::BindRepeating(&ExecuteSendCommandAndGetResult))),
-
-      // mobile json protocol cmomand
-      CommandMapping(
-          kPost, "session/:sessionId/network_connection",
-          WrapToCommand("SetNetworkConnection",
-                        base::BindRepeating(&ExecuteSetNetworkConnection))),
   };
   command_map_.reset(
       new CommandMap(commands, commands + arraysize(commands)));
