@@ -288,21 +288,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                   LocalDOMWindow* entered_window,
                   ExceptionState&);
 
-  DOMWindow* open(ExecutionContext*,
-                  LocalDOMWindow* current_window,
-                  LocalDOMWindow* entered_window,
-                  const String& str_url,
-                  const AtomicString& target,
-                  const String& features,
-                  ExceptionState&);
-
-  DOMWindow* open(const String& str_url,
-                  const AtomicString& frame_name,
-                  const String& window_features_string,
-                  LocalDOMWindow* calling_window,
-                  LocalDOMWindow* entered_window,
-                  ExceptionState&);
-
   FrameConsole* GetFrameConsole() const;
 
   void PrintErrorMessage(const String&) const;
