@@ -302,8 +302,7 @@ void ManagedValueStoreCache::OnPolicyServiceInitialized(
     return;
 
   const policy::PolicyMap empty_map;
-  for (policy::ComponentMap::const_iterator it = map->begin();
-       it != map->end(); ++it) {
+  for (auto it = map->cbegin(); it != map->cend(); ++it) {
     const policy::PolicyNamespace ns(policy_domain_, it->first);
     // If there is no policy for |ns| then this will clear the previous store,
     // if there is one.

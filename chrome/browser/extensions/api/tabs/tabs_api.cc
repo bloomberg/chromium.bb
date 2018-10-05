@@ -486,8 +486,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       url_strings.swap(*create_data->url->as_strings);
 
     // Second, resolve, validate and convert them to GURLs.
-    for (std::vector<std::string>::iterator i = url_strings.begin();
-         i != url_strings.end(); ++i) {
+    for (auto i = url_strings.begin(); i != url_strings.end(); ++i) {
       GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(*i, extension());
       if (!url.is_valid())
         return RespondNow(Error(tabs_constants::kInvalidUrlError, *i));

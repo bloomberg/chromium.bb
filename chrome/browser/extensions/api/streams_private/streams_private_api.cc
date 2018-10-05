@@ -166,14 +166,14 @@ StreamsPrivateAPI::~StreamsPrivateAPI() {}
 void StreamsPrivateAPI::AbortStream(const std::string& extension_id,
                                     const GURL& stream_url,
                                     const base::Closure& callback) {
-  StreamMap::iterator extension_it = streams_.find(extension_id);
+  auto extension_it = streams_.find(extension_id);
   if (extension_it == streams_.end()) {
     callback.Run();
     return;
   }
 
   StreamMap::mapped_type* url_map = &extension_it->second;
-  StreamMap::mapped_type::iterator url_it = url_map->find(stream_url);
+  auto url_it = url_map->find(stream_url);
   if (url_it == url_map->end()) {
     callback.Run();
     return;

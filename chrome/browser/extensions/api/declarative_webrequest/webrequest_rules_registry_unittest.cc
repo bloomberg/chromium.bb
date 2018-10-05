@@ -223,9 +223,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     rule->id.reset(new std::string(rule_id));
     rule->priority.reset(new int(1));
     rule->actions.push_back(action_dict.CreateDeepCopy());
-    for (std::vector<const std::string*>::const_iterator it =
-             attributes.begin();
-         it != attributes.end(); ++it)
+    for (auto it = attributes.cbegin(); it != attributes.cend(); ++it)
       rule->conditions.push_back(CreateCondition(**it));
     return rule;
   }
@@ -293,8 +291,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   EXPECT_EQ(2u, matches.size());
 
   std::set<WebRequestRule::GlobalRuleId> matches_ids;
-  for (std::set<const WebRequestRule*>::const_iterator it = matches.begin();
-       it != matches.end(); ++it)
+  for (auto it = matches.cbegin(); it != matches.cend(); ++it)
     matches_ids.insert((*it)->id());
   EXPECT_TRUE(
       base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
@@ -437,7 +434,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   ASSERT_EQ(2u, deltas.size());
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
 
-  std::list<LinkedPtrEventResponseDelta>::iterator i = deltas.begin();
+  auto i = deltas.begin();
   LinkedPtrEventResponseDelta winner = *i++;
   LinkedPtrEventResponseDelta loser = *i;
 

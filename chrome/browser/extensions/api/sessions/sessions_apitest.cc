@@ -73,8 +73,7 @@ void BuildWindowSpecifics(int window_id,
   window->set_window_id(window_id);
   window->set_selected_tab_index(0);
   window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-  for (std::vector<int>::const_iterator iter = tab_list.begin();
-       iter != tab_list.end(); ++iter) {
+  for (auto iter = tab_list.cbegin(); iter != tab_list.cend(); ++iter) {
     window->add_tab(*iter);
   }
 }

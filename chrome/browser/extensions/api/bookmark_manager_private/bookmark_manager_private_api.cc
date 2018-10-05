@@ -221,8 +221,7 @@ void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
     if (!new_meta_info) {
       changes.additional_properties[it->first] = "";
     } else {
-      BookmarkNode::MetaInfoMap::const_iterator new_meta_field =
-          new_meta_info->find(it->first);
+      auto new_meta_field = new_meta_info->find(it->first);
       if (new_meta_field == new_meta_info->end()) {
         changes.additional_properties[it->first] = "";
       } else if (it->second != new_meta_field->second) {
@@ -233,11 +232,8 @@ void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
 
   // Identify added fields:
   if (new_meta_info) {
-    for (BookmarkNode::MetaInfoMap::const_iterator it = new_meta_info->begin();
-         it != new_meta_info->end();
-         ++it) {
-      BookmarkNode::MetaInfoMap::const_iterator prev_meta_field =
-          prev_meta_info_.find(it->first);
+    for (auto it = new_meta_info->cbegin(); it != new_meta_info->cend(); ++it) {
+      auto prev_meta_field = prev_meta_info_.find(it->first);
       if (prev_meta_field == prev_meta_info_.end())
         changes.additional_properties[it->first] = it->second;
     }

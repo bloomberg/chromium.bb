@@ -173,8 +173,7 @@ void WebNavigationEventRouter::RecordNewWebContents(
 }
 
 void WebNavigationEventRouter::TabAdded(content::WebContents* tab) {
-  std::map<content::WebContents*, PendingWebContents>::iterator iter =
-      pending_web_contents_.find(tab);
+  auto iter = pending_web_contents_.find(tab);
   if (iter == pending_web_contents_.end())
     return;
 
@@ -199,8 +198,8 @@ void WebNavigationEventRouter::TabAdded(content::WebContents* tab) {
 
 void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
   pending_web_contents_.erase(tab);
-  for (std::map<content::WebContents*, PendingWebContents>::iterator i =
-           pending_web_contents_.begin(); i != pending_web_contents_.end(); ) {
+  for (auto i = pending_web_contents_.begin();
+       i != pending_web_contents_.end();) {
     if (i->second.source_web_contents == tab)
       pending_web_contents_.erase(i++);
     else
@@ -222,7 +221,7 @@ WebNavigationTabObserver::~WebNavigationTabObserver() {}
 // static
 WebNavigationTabObserver* WebNavigationTabObserver::Get(
     content::WebContents* web_contents) {
-  TabObserverMap::iterator i = g_tab_observer.Get().find(web_contents);
+  auto i = g_tab_observer.Get().find(web_contents);
   return i == g_tab_observer.Get().end() ? NULL : i->second;
 }
 
@@ -535,8 +534,7 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
       observer->frame_navigation_state();
 
   std::vector<GetAllFrames::Results::DetailsType> result_list;
-  for (FrameNavigationState::const_iterator it = navigation_state.begin();
-       it != navigation_state.end(); ++it) {
+  for (auto it = navigation_state.begin(); it != navigation_state.end(); ++it) {
     GURL frame_url = navigation_state.GetUrl(*it);
     if (!navigation_state.IsValidUrl(frame_url))
       continue;

@@ -332,8 +332,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end(); ++it) {
+  for (auto it = plugins.cbegin(); it != plugins.cend(); ++it) {
     std::unique_ptr<PluginMetadata> plugin_metadata(
         finder->GetPluginMetadata(*it));
     const std::string& group_identifier = plugin_metadata->identifier();
