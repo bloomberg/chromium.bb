@@ -677,11 +677,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
-      // Signed Exchange is currently disabled when Network Service is enabled
-      // (https://crbug.com/849935), but still create
-      // SignedExchangeRequestHandler in order to show error message (and
-      // devtools warning) to users.
-
       // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
