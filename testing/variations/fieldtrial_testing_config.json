@@ -5107,6 +5107,25 @@
             ]
         }
     ],
+    "WebAudioAutoplay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "disable_features": [
+                        "AutoplayIgnoreWebAudio"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebAuthenticationUI": [
         {
             "platforms": [
