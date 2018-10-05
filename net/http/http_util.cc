@@ -65,10 +65,13 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
 
   std::string charset_value;
   bool type_has_charset = false;
+  bool type_has_boundary = false;
 
   // Iterate over parameters. Can't split the string around semicolons
-  // preemptively because quoted strings may include semicolons. Matches logic
-  // in https://mimesniff.spec.whatwg.org/.
+  // preemptively because quoted strings may include semicolons. Mostly matches
+  // logic in https://mimesniff.spec.whatwg.org/. Main differences: Does not
+  // validate characters are HTTP token code points / HTTP quoted-string token
+  // code points, and ignores spaces after "=" in parameters.
   std::string::size_type offset = content_type_str.find_first_of(';', type_end);
   while (offset < content_type_str.size()) {
     DCHECK_EQ(';', content_type_str[offset]);
@@ -107,9 +110,10 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
     offset = content_type_str.find_first_not_of(HTTP_LWS, offset);
 
     std::string param_value;
-    if (offset == std::string::npos) {
-      // Nothing to do here - an unquoted string of only whitespace is
-      // considered to have an empty value.
+    if (offset == std::string::npos || content_type_str[offset] == ';') {
+      // Nothing to do here - an unquoted string of only whitespace should be
+      // skipped.
+      continue;
     } else if (content_type_str[offset] != '"') {
       // If the first character is not a quotation mark, copy data directly.
       std::string::size_type value_start = offset;
@@ -148,26 +152,24 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
         ++offset;
       }
 
+      param_value = TrimLWS(param_value).as_string();
+
       offset = content_type_str.find_first_of(';', offset);
     }
 
-    // 0-length parameter values are not considered valid.
-    if (!param_value.size())
-      continue;
-
-    // TODO(mmenke): Take first, rather than last, value in the case of
-    // duplicates.
     // TODO(mmenke): Check that name has only valid characters.
-    if (base::LowerCaseEqualsASCII(param_name, "charset")) {
-      // Ignore the part after '('.  This is not in the standard, but may
-      // occur in rare cases.
-      // TODO(bnc): Do not ignore the part after '('.
-      // See https://crbug.com/772343.
-      charset_value = param_value.substr(0, param_value.find("("));
+    if (!type_has_charset &&
+        base::LowerCaseEqualsASCII(param_name, "charset")) {
       type_has_charset = true;
-    } else if (base::LowerCaseEqualsASCII(param_name, "boundary")) {
-      if (boundary)
-        boundary->assign(std::move(param_value));
+      charset_value = param_value;
+      continue;
+    }
+
+    if (boundary && !type_has_boundary &&
+        base::LowerCaseEqualsASCII(param_name, "boundary")) {
+      type_has_boundary = true;
+      boundary->assign(std::move(param_value));
+      continue;
     }
   }
 
