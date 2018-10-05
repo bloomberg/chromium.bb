@@ -43,9 +43,15 @@ class AssistantResponse {
   // Returns all suggestions belongs to the response, mapped to a unique id.
   std::map<int, const AssistantSuggestion*> GetSuggestions() const;
 
+  // Get/Set if the current server response has TTS. This can only be reliably
+  // checked after the response is finalized for obvious reasons.
+  bool has_tts() const { return has_tts_; }
+  void set_has_tts(bool has_tts) { has_tts_ = has_tts; }
+
  private:
   std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::vector<AssistantSuggestionPtr> suggestions_;
+  bool has_tts_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantResponse);
 };
