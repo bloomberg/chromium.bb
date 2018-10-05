@@ -7,13 +7,13 @@ import logging
 import os
 import sys
 
-import rappor_model
+import model
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import presubmit_util
 
 def main(argv):
   presubmit_util.DoPresubmitMain(argv, 'rappor.xml', 'rappor.old.xml',
-                                 'pretty_print.py', rappor_model.UpdateXML)
+                                 'pretty_print.py', model.UpdateXML)
 
 
 if '__main__' == __name__:
