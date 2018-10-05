@@ -109,6 +109,10 @@ void SignedExchangePrefetchHandler::OnStartLoadingResponseBody(
 
 void SignedExchangePrefetchHandler::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  // We only reach here on error, since successful completion of the
+  // outer sxg load should trigger redirect and land on ::OnReceiveRedirect.
+  DCHECK_NE(net::OK, status.error_code);
+
   forwarding_client_->OnComplete(status);
 }
 
