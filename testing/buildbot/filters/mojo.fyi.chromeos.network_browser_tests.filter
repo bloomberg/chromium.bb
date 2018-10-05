@@ -137,9 +137,6 @@
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh
 -HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh_touch_optimized
 
-# Failed with error: `profile_impl.cc(469)] Check failed: user`.
--ExtensionWebRequestApiTest.WebRequestApiDoesNotCrashOnErrorAfterProfileDestroyed
-
 # Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
 -DevToolsSanityTest.DisposeEmptyBrowserContext
 
