@@ -412,15 +412,14 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillProcessResponse() {
-  const net::HttpResponseHeaders* response_headers =
-      navigation_handle()->GetResponseHeaders();
-  DCHECK(response_headers);
-
   std::string original_url;
   if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
     // Return early if this request was not for a Preview.
     return content::NavigationThrottle::PROCEED;
   }
+
+  const net::HttpResponseHeaders* response_headers =
+      navigation_handle()->GetResponseHeaders();
 
   // After this point, the given response is known to be for a Preview.
   // The Previews server will only send the following response codes: 200, 307,
