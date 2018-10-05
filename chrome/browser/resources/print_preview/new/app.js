@@ -252,8 +252,8 @@ Polymer({
       return;
     }
 
-    // On Mac, Cmd-. should close the print dialog.
-    if (cr.isMac && e.code == 'Minus' && e.metaKey) {
+    // On Mac, Cmd+Period should close the print dialog.
+    if (cr.isMac && e.code == 'Period' && e.metaKey) {
       this.close_();
       e.preventDefault();
       return;
