@@ -9,29 +9,22 @@
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
-#include "ui/compositor/layer.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
 
-namespace gfx {
-class SlideAnimation;
-}  // namespace gfx
-
 namespace ash {
 
+class AssistantContainerViewAnimator;
 class AssistantController;
 class AssistantMainView;
 class AssistantMiniView;
 class AssistantWebView;
 
 class AssistantContainerView : public views::BubbleDialogDelegateView,
-                               public AssistantUiModelObserver,
-                               public gfx::AnimationDelegate {
+                               public AssistantUiModelObserver {
  public:
   explicit AssistantContainerView(AssistantController* assistant_controller);
   ~AssistantContainerView() override;
@@ -46,10 +39,9 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   void AddedToWidget() override;
   int GetDialogButtons() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void PreferredSizeChanged() override;
+  void SizeToContents() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void Init() override;
   void RequestFocus() override;
 
@@ -57,16 +49,19 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   void OnUiModeChanged(AssistantUiMode ui_mode) override;
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
 
-  // gfx::AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationEnded(const gfx::Animation* animation) override;
+  // Returns background color.
+  SkColor GetBackgroundColor() const;
+
+  // Returns/sets corner radius.
+  int GetCornerRadius() const;
+  void SetCornerRadius(int corner_radius);
+
+  // Returns the layer for the non-client view.
+  ui::Layer* GetNonClientViewLayer();
 
  private:
   // Update anchor rect with respect to the current usable work area.
   void UpdateAnchor();
-
-  // Update the shadow layer.
-  void UpdateShadow();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
@@ -74,23 +69,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   AssistantMiniView* assistant_mini_view_;  // Owned by view hierarchy.
   AssistantWebView* assistant_web_view_;    // Owned by view hierarchy.
 
-  std::unique_ptr<gfx::SlideAnimation> resize_animation_;
-  gfx::SizeF resize_start_;
-  gfx::SizeF resize_end_;
-
-  // Cache the corner radius start value.
-  int radius_start_ = 0;
-
-  // Cache the corner radius target value.
-  int radius_end_ = 0;
-
-  // ui::LayerDelegate to paint rounded rectangle with shadow.
-  std::unique_ptr<views::BorderShadowLayerDelegate> border_shadow_delegate_;
-
-  // This layer shows a rounded rectangle with drop shadow.
-  ui::Layer shadow_layer_;
-
-  int animation_start_frame_number_ = 0;
+  std::unique_ptr<AssistantContainerViewAnimator> animator_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
