@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -30,6 +29,7 @@
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/url_formatter/url_fixer.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
@@ -150,12 +150,31 @@ base::string16 GetDomainAndRegistry(const base::string16& host) {
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
 }
 
+// For keywords that look like hostnames, returns whether KeywordProvider
+// should require users to type a prefix of the hostname to match against
+// them, rather than just the domain name portion. In other words, returns
+// whether the prefix before the domain name should be considered important
+// for matching purposes. Returns true if the experiment isn't active.
+bool OmniboxFieldTrialKeywordRequiresRegistry() {
+  // This would normally be
+  // bool OmniboxFieldTrial::KeywordRequiresRegistry()
+  // but that would create a dependency cycle since omnibox depends on
+  // search_engines (and search -> search_engines)
+  constexpr char kBundledExperimentFieldTrialName[] =
+      "OmniboxBundledExperimentV1";
+  constexpr char kKeywordRequiresRegistryRule[] = "KeywordRequiresRegistry";
+  const std::string value = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, kKeywordRequiresRegistryRule);
+  return value.empty() || (value == "true");
+}
+
 // Returns the length of the important part of the |keyword|, assumed to be
 // associated with the TemplateURL.  For instance, for the keyword
 // google.co.uk, this can return 6 (the length of "google").
 size_t GetMeaningfulKeywordLength(const base::string16& keyword,
                                   const TemplateURL* turl) {
-  if (OmniboxFieldTrial::KeywordRequiresRegistry())
+  // Using Omnibox from here is a layer violation and should be fixed.
+  if (OmniboxFieldTrialKeywordRequiresRegistry())
     return keyword.length();
   const size_t registry_length = GetRegistryLength(keyword);
   if (registry_length == std::string::npos)
