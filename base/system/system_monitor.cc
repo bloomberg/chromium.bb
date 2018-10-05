@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor/system_monitor.h"
+#include "base/system/system_monitor.h"
 
 #include <utility>
 
@@ -14,7 +14,7 @@ namespace base {
 static SystemMonitor* g_system_monitor = nullptr;
 
 SystemMonitor::SystemMonitor()
-    :  devices_changed_observer_list_(
+    : devices_changed_observer_list_(
           new ObserverListThreadSafe<DevicesChangedObserver>()) {
   DCHECK(!g_system_monitor);
   g_system_monitor = this;
