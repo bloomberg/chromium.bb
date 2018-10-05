@@ -4,6 +4,7 @@
 
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -44,7 +45,8 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
 };
 
 // Sets |has_range_out| to true if |headers| specify a single range request, and
-// |offset_out| and |size_out| to the range. Returns true on valid input
+// |offset_out| and |length_out| to the range. If the range has an unbounded
+// end, |length_out| is set to uint64_t's max value. Returns true on valid input
 // (regardless of |has_range_out|), and false if there is more than one range or
 // if the bounds overflow.
 bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
@@ -67,14 +69,26 @@ bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
   // Safely parse the single range to our more-sane output format.
   *has_range_out = true;
   const net::HttpByteRange& byte_range = ranges[0];
+
+  // The first byte must be non-negative.
   if (byte_range.first_byte_position() < 0)
     return false;
-  // Allow the range [0, -1] to be valid and specify the entire range.
-  if (byte_range.first_byte_position() == 0 &&
-      byte_range.last_byte_position() == -1) {
-    *has_range_out = false;
+
+  // The last byte can be -1 to specify unbounded end.
+  if (byte_range.last_byte_position() == -1) {
+    // The range [0, -1] is the same as the entire range (no range specified).
+    if (byte_range.first_byte_position() == 0 &&
+        byte_range.last_byte_position() == -1) {
+      *has_range_out = false;
+      return true;
+    }
+
+    // Otherwise, return the range with unbounded end.
+    *length_out = std::numeric_limits<uint64_t>::max();
     return true;
   }
+
+  // The last byte must be non-negative.
   if (byte_range.last_byte_position() < 0)
     return false;
 
@@ -133,6 +147,11 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
     if (out_head->headers->GetCharset(&charset))
       out_head->charset = charset;
   }
+
+  // Populate |out_head|'s content length with the value from the HTTP response
+  // headers.
+  if (out_head->content_length == -1)
+    out_head->content_length = out_head->headers->GetContentLength();
 }
 
 // static
@@ -189,9 +208,8 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
   // We don't support multiple range requests in one single URL request,
   // because we need to do multipart encoding here.
   // TODO(falken): Support multipart byte range requests.
-  if (!ExtractSinglePartHttpRange(headers, &byte_range_set, &offset, &length)) {
+  if (!ExtractSinglePartHttpRange(headers, &byte_range_set, &offset, &length))
     return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
-  }
 
   mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity(blob_size));
   blink::mojom::BlobReaderClientPtr blob_reader_client;
