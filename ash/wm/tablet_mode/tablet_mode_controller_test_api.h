@@ -26,9 +26,10 @@ class TabletModeControllerTestApi {
   TabletModeControllerTestApi();
   ~TabletModeControllerTestApi();
 
-  // Enters or exits tablet mode.
+  // Enters or exits tablet mode. Use these instead when stuff such as tray
+  // visibilty depends on the event blocker instead of the actual tablet mode.
   void EnterTabletMode();
-  void LeaveTabletMode();
+  void LeaveTabletMode(bool called_by_device_update);
 
   // Called to attach an external mouse. If we're currently in tablet mode,
   // tablet mode will be ended because of this.

@@ -357,7 +357,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringTabletMode) {
   TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   // Toggle tablet mode off.
-  TabletModeControllerTestApi().LeaveTabletMode();
+  TabletModeControllerTestApi().LeaveTabletMode(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
@@ -400,7 +400,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInTabletMode) {
   ASSERT_TRUE(notified());
   ASSERT_FALSE(IsVirtualKeyboardSuppressed());
   // Toggle tablet mode oFF.
-  TabletModeControllerTestApi().LeaveTabletMode();
+  TabletModeControllerTestApi().LeaveTabletMode(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 

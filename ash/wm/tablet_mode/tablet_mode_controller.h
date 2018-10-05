@@ -164,12 +164,17 @@ class ASH_EXPORT TabletModeController
   // a certain range of time before using unstable angle.
   bool CanUseUnstableLidAngle() const;
 
-  // Attempts to enter tablet mode and update the internal keyboard and
-  // touchpad.
+  // True if it is possible to enter tablet mode in the current
+  // configuration. If this returns false, it should never be the case that
+  // tablet mode becomes enabled.
+  bool CanEnterTabletMode();
+
+  // Attempts to enter tablet mode and locks the internal keyboard and touchpad.
   void AttemptEnterTabletMode();
 
-  // Attempts to exit tablet mode and update the internal keyboard and touchpad.
-  void AttemptLeaveTabletMode();
+  // Attempts to exit tablet mode and unlocks the internal keyboard and touchpad
+  // if |called_by_device_update| is false.
+  void AttemptLeaveTabletMode(bool called_by_device_update);
 
   // Record UMA stats tracking TabletMode usage. If |type| is
   // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
@@ -198,17 +203,6 @@ class ASH_EXPORT TabletModeController
   // sent from device manager. This will exit tablet mode if needed.
   void HandleMouseAddedOrRemoved();
 
-  // Update the internal mouse and keyboard event blocker |event_blocker_|
-  // according to current configuration. The internal input events should be
-  // blocked if 1) we are currently in tablet mode or 2) we are currently in
-  // laptop mode but the lid is flipped over (i.e., we are in laptop mode
-  // because of an external attached mouse).
-  void UpdateInternalMouseAndKeyboardEventBlocker();
-
-  // Returns true if the current lid angle can be detected and is in tablet mode
-  // angle range.
-  bool LidAngleIsInTabletModeRange();
-
   // Callback function for |bluetooth_devices_observer_|. Called when |device|
   // changes.
   void UpdateBluetoothDevice(device::BluetoothDevice* device);
@@ -219,6 +213,9 @@ class ASH_EXPORT TabletModeController
   // A helper class which when instantiated will block native events from the
   // internal keyboard and touchpad.
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
+
+  // Whether we have ever seen accelerometer data.
+  bool have_seen_accelerometer_data_ = false;
 
   // Whether the lid angle can be detected. If it's true, the device is a
   // convertible device (both screen acclerometer and keyboard acclerometer are
