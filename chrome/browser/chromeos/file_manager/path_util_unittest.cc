@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -214,7 +215,8 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
     arc_service_manager_->set_browser_context(primary_profile);
     arc::ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
-        primary_profile, &CreateFileSystemOperationRunnerForTesting);
+        primary_profile,
+        base::BindRepeating(&CreateFileSystemOperationRunnerForTesting));
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
     arc::WaitForInstanceReady(
