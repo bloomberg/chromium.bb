@@ -65,8 +65,8 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
         }
 
         mTaskFinishedCallback = callback;
-        ExploreSitesBridge.updateCatalogFromNetwork(
-                getProfile(), (ignored) -> mTaskFinishedCallback.taskFinished(false));
+        ExploreSitesBridge.updateCatalogFromNetwork(getProfile(), false /*isImmediateFetch*/,
+                (ignored) -> mTaskFinishedCallback.taskFinished(false));
     }
 
     @Override

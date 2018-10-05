@@ -48,8 +48,8 @@ public class ExploreSitesBridge {
      * Causes a network request for updating the catalog.
      */
     public static void updateCatalogFromNetwork(
-            Profile profile, Callback<Boolean> finishedCallback) {
-        nativeUpdateCatalogFromNetwork(profile, finishedCallback);
+            Profile profile, boolean isImmediateFetch, Callback<Boolean> finishedCallback) {
+        nativeUpdateCatalogFromNetwork(profile, isImmediateFetch, finishedCallback);
     }
 
     /**
@@ -73,5 +73,5 @@ public class ExploreSitesBridge {
             Profile profile, int siteID, Callback<Bitmap> callback);
 
     private static native void nativeUpdateCatalogFromNetwork(
-            Profile profile, Callback<Boolean> callback);
+            Profile profile, boolean isImmediateFetch, Callback<Boolean> callback);
 }

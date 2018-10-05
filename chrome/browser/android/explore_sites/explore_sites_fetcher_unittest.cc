@@ -36,6 +36,7 @@ namespace {
 const char kAcceptLanguages[] = "en-US,en;q=0.5";
 const char kCountryOverride[] = "country_override";
 const char kExperimentData[] = "FooBar";
+const char kTestData[] = "Any data.";
 }  // namespace
 
 namespace explore_sites {
@@ -52,6 +53,16 @@ class ExploreSitesFetcherTest : public testing::Test {
       net::HttpStatusCode http_error);
   ExploreSitesRequestStatus RunFetcherWithData(const std::string& response_data,
                                                std::string* data_received);
+  ExploreSitesRequestStatus RunFetcherWithBackoffs(
+      bool is_immediate_fetch,
+      size_t num_of_backoffs,
+      std::vector<base::TimeDelta> backoff_delays,
+      std::vector<base::OnceCallback<void(void)>> respond_callbacks,
+      std::string* data_received);
+
+  void RespondWithData(const std::string& data);
+  void RespondWithNetError(int net_error);
+  void RespondWithHttpError(net::HttpStatusCode http_error);
 
   void SetUpExperimentOption(std::string option, std::string data) {
     const std::string kTrialName = "trial_name";
@@ -77,12 +88,11 @@ class ExploreSitesFetcherTest : public testing::Test {
   ExploreSitesFetcher::Callback StoreResult();
   network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
       size_t index);
+  std::unique_ptr<ExploreSitesFetcher> CreateFetcher(bool disable_retry,
+                                                     bool is_immediate_fetch);
   ExploreSitesRequestStatus RunFetcher(
       base::OnceCallback<void(void)> respond_callback,
       std::string* data_received);
-  void RespondWithData(const std::string& data);
-  void RespondWithNetError(int net_error);
-  void RespondWithHttpError(net::HttpStatusCode http_error);
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -192,9 +202,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
-      ExploreSitesFetcher::CreateForGetCatalog(StoreResult(), "123",
-                                               kAcceptLanguages,
-                                               test_shared_url_loader_factory_);
+      CreateFetcher(true /* disable_retry*/, true /*is_immediate_fetch*/);
 
   std::move(respond_callback).Run();
   task_runner_->RunUntilIdle();
@@ -204,19 +212,60 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
   return last_status_;
 }
 
+ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithBackoffs(
+    bool is_immediate_fetch,
+    size_t num_of_backoffs,
+    std::vector<base::TimeDelta> backoff_delays,
+    std::vector<base::OnceCallback<void(void)>> respond_callbacks,
+    std::string* data_received) {
+  DCHECK_EQ(num_of_backoffs, backoff_delays.size());
+  DCHECK(num_of_backoffs <= respond_callbacks.size() &&
+         respond_callbacks.size() <= num_of_backoffs + 1);
+
+  std::unique_ptr<ExploreSitesFetcher> fetcher =
+      CreateFetcher(false /* disable_retry*/, is_immediate_fetch);
+
+  std::move(respond_callbacks[0]).Run();
+  task_runner_->RunUntilIdle();
+
+  for (size_t i = 0; i < num_of_backoffs; ++i) {
+    task_runner_->FastForwardBy(backoff_delays[i]);
+    if (i + 1 <= respond_callbacks.size() - 1)
+      std::move(respond_callbacks[i + 1]).Run();
+    task_runner_->RunUntilIdle();
+  }
+
+  if (last_data_)
+    *data_received = *last_data_;
+  return last_status_;
+}
+
+std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcherTest::CreateFetcher(
+    bool disable_retry,
+    bool is_immediate_fetch) {
+  std::unique_ptr<ExploreSitesFetcher> fetcher =
+      ExploreSitesFetcher::CreateForGetCatalog(
+          is_immediate_fetch, "123", kAcceptLanguages,
+          test_shared_url_loader_factory_, StoreResult());
+  if (disable_retry)
+    fetcher->disable_retry_for_testing();
+  fetcher->Start();
+  return fetcher;
+}
+
 TEST_F(ExploreSitesFetcherTest, NetErrors) {
   EXPECT_EQ(ExploreSitesRequestStatus::kShouldSuspendBlockedByAdministrator,
             RunFetcherWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR));
 
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_INTERNET_DISCONNECTED));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_NETWORK_CHANGED));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_CONNECTION_RESET));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_CONNECTION_CLOSED));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_CONNECTION_REFUSED));
 }
 
@@ -224,37 +273,35 @@ TEST_F(ExploreSitesFetcherTest, HttpErrors) {
   EXPECT_EQ(ExploreSitesRequestStatus::kShouldSuspendBadRequest,
             RunFetcherWithHttpError(net::HTTP_BAD_REQUEST));
 
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_NOT_IMPLEMENTED));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_UNAUTHORIZED));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_NOT_FOUND));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_CONFLICT));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_BAD_GATEWAY));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_SERVICE_UNAVAILABLE));
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_GATEWAY_TIMEOUT));
 }
 
 TEST_F(ExploreSitesFetcherTest, EmptyResponse) {
   std::string data;
-  EXPECT_EQ(ExploreSitesRequestStatus::kShouldRetry,
-            RunFetcherWithData("", &data));
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure, RunFetcherWithData("", &data));
   EXPECT_TRUE(data.empty());
 }
 
 TEST_F(ExploreSitesFetcherTest, Success) {
   std::string data;
   EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
-            RunFetcherWithData("Any data.", &data));
-  EXPECT_FALSE(data.empty());
-  EXPECT_EQ(data, "Any data.");
+            RunFetcherWithData(kTestData, &data));
+  EXPECT_EQ(kTestData, data);
 
   EXPECT_EQ(last_resource_request.url.spec(),
             "https://exploresites-pa.googleapis.com/v1/"
@@ -265,9 +312,8 @@ TEST_F(ExploreSitesFetcherTest, DefaultCountry) {
   SetUpExperimentOption(kCountryOverride, "KZ");
   std::string data;
   EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
-            RunFetcherWithData("Any data.", &data));
-  EXPECT_FALSE(data.empty());
-  EXPECT_EQ(data, "Any data.");
+            RunFetcherWithData(kTestData, &data));
+  EXPECT_EQ(kTestData, data);
 
   EXPECT_EQ(last_resource_request.url.spec(),
             "https://exploresites-pa.googleapis.com/v1/"
@@ -277,7 +323,7 @@ TEST_F(ExploreSitesFetcherTest, DefaultCountry) {
 TEST_F(ExploreSitesFetcherTest, TestHeaders) {
   std::string data;
   EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
-            RunFetcherWithData("Any data.", &data));
+            RunFetcherWithData(kTestData, &data));
 
   net::HttpRequestHeaders headers = last_resource_request.headers;
   std::string content_type;
@@ -311,7 +357,7 @@ TEST_F(ExploreSitesFetcherTest, TestFinchHeader) {
 
   std::string data;
   EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
-            RunFetcherWithData("Any data.", &data));
+            RunFetcherWithData(kTestData, &data));
 
   net::HttpRequestHeaders headers = last_resource_request.headers;
   std::string header_text;
@@ -319,6 +365,138 @@ TEST_F(ExploreSitesFetcherTest, TestFinchHeader) {
 
   success = headers.GetHeader("X-Google-Chrome-Experiment-Tag", &header_text);
   EXPECT_EQ(std::string(kExperimentData), header_text);
+}
+
+TEST_F(ExploreSitesFetcherTest, OneBackoffForImmediateFetch) {
+  std::string data;
+  int initial_delay_ms =
+      ExploreSitesFetcher::kImmediateFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays = {
+      base::TimeDelta::FromMilliseconds(initial_delay_ms)};
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                     base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
+                     base::Unretained(this), kTestData));
+  EXPECT_EQ(
+      ExploreSitesRequestStatus::kSuccess,
+      RunFetcherWithBackoffs(true /*is_immediate_fetch*/, 1u, backoff_delays,
+                             std::move(respond_callbacks), &data));
+  EXPECT_EQ(kTestData, data);
+}
+
+TEST_F(ExploreSitesFetcherTest, OneBackoffForBackgroundFetch) {
+  std::string data;
+  int initial_delay_ms =
+      ExploreSitesFetcher::kBackgroundFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays = {
+      base::TimeDelta::FromMilliseconds(initial_delay_ms)};
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                     base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
+                     base::Unretained(this), kTestData));
+  EXPECT_EQ(
+      ExploreSitesRequestStatus::kSuccess,
+      RunFetcherWithBackoffs(false /*is_immediate_fetch*/, 1u, backoff_delays,
+                             std::move(respond_callbacks), &data));
+  EXPECT_EQ(kTestData, data);
+}
+
+TEST_F(ExploreSitesFetcherTest, TwoBackoffsForImmediateFetch) {
+  std::string data;
+  int initial_delay_ms =
+      ExploreSitesFetcher::kImmediateFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays = {
+      base::TimeDelta::FromMilliseconds(initial_delay_ms),
+      base::TimeDelta::FromMilliseconds(initial_delay_ms * 2)};
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                     base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithHttpError,
+                     base::Unretained(this), net::HTTP_INTERNAL_SERVER_ERROR));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
+                     base::Unretained(this), kTestData));
+  EXPECT_EQ(
+      ExploreSitesRequestStatus::kSuccess,
+      RunFetcherWithBackoffs(true /*is_immediate_fetch*/, 2u, backoff_delays,
+                             std::move(respond_callbacks), &data));
+  EXPECT_EQ(kTestData, data);
+}
+
+TEST_F(ExploreSitesFetcherTest, TwoBackoffsForBackgroundFetch) {
+  std::string data;
+  int initial_delay_ms =
+      ExploreSitesFetcher::kBackgroundFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays = {
+      base::TimeDelta::FromMilliseconds(initial_delay_ms),
+      base::TimeDelta::FromMilliseconds(initial_delay_ms * 2)};
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                     base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithHttpError,
+                     base::Unretained(this), net::HTTP_INTERNAL_SERVER_ERROR));
+  respond_callbacks.push_back(
+      base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
+                     base::Unretained(this), kTestData));
+  EXPECT_EQ(
+      ExploreSitesRequestStatus::kSuccess,
+      RunFetcherWithBackoffs(false /*is_immediate_fetch*/, 2u, backoff_delays,
+                             std::move(respond_callbacks), &data));
+  EXPECT_EQ(kTestData, data);
+}
+
+TEST_F(ExploreSitesFetcherTest, ExceedMaxBackoffsForImmediateFetch) {
+  std::string data;
+  int delay_ms =
+      ExploreSitesFetcher::kImmediateFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays;
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  for (int i = 0; i < ExploreSitesFetcher::kMaxFailureCountForImmediateFetch;
+       ++i) {
+    backoff_delays.push_back(base::TimeDelta::FromMilliseconds(delay_ms));
+    delay_ms *= 2;
+    respond_callbacks.push_back(
+        base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                       base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  }
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
+            RunFetcherWithBackoffs(
+                true /*is_immediate_fetch*/,
+                ExploreSitesFetcher::kMaxFailureCountForImmediateFetch,
+                backoff_delays, std::move(respond_callbacks), &data));
+  EXPECT_TRUE(data.empty());
+}
+
+TEST_F(ExploreSitesFetcherTest, ExceedMaxBackoffsForBackgroundFetch) {
+  std::string data;
+  int delay_ms =
+      ExploreSitesFetcher::kBackgroundFetchBackoffPolicy.initial_delay_ms;
+  std::vector<base::TimeDelta> backoff_delays;
+  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
+  for (int i = 0; i < ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch;
+       ++i) {
+    backoff_delays.push_back(base::TimeDelta::FromMilliseconds(delay_ms));
+    delay_ms *= 2;
+    respond_callbacks.push_back(
+        base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
+                       base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
+  }
+  EXPECT_EQ(ExploreSitesRequestStatus::kFailure,
+            RunFetcherWithBackoffs(
+                false /*is_immediate_fetch*/,
+                ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch,
+                backoff_delays, std::move(respond_callbacks), &data));
+  EXPECT_TRUE(data.empty());
 }
 
 }  // namespace explore_sites
