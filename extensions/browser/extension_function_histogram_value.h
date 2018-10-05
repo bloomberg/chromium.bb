@@ -1345,6 +1345,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER = 1282,
   AUTOTESTPRIVATE_TAKESCREENSHOT = 1283,
   ACCESSIBILITY_PRIVATE_TOGGLEDICTATION = 1284,
+  ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS = 1285,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

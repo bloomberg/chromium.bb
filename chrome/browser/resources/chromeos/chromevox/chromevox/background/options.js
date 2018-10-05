@@ -138,6 +138,13 @@ cvox.OptionsPage.init = function() {
   document.addEventListener('click', cvox.OptionsPage.eventListener, false);
   document.addEventListener('keydown', cvox.OptionsPage.eventListener, false);
 
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'speakTextUnderMouse') {
+      chrome.accessibilityPrivate.enableChromeVoxMouseEvents(
+          event.newValue == String(true));
+    }
+  });
+
   cvox.ExtensionBridge.addMessageListener(function(message) {
     if (message['prefs']) {
       cvox.OptionsPage.update();

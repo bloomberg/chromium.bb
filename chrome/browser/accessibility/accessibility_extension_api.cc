@@ -285,6 +285,23 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+AccessibilityPrivateEnableChromeVoxMouseEventsFunction::Run() {
+#if defined(OS_CHROMEOS)
+  bool enabled = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
+  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                            &event_rewriter_controller_ptr);
+  event_rewriter_controller_ptr->SetSendMouseEventsToDelegate(enabled);
+  return RespondNow(NoArguments());
+#else
+  return RespondNow(Error(kErrorNotSupported));
+#endif
+}
+
+ExtensionFunction::ResponseAction
 AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
   std::unique_ptr<accessibility_private::OnSelectToSpeakStateChanged::Params>
       params =

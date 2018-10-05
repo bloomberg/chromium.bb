@@ -16934,6 +16934,7 @@ Called by update_net_error_codes.py.-->
   <int value="1282" label="AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER"/>
   <int value="1283" label="AUTOTESTPRIVATE_TAKESCREENSHOT"/>
   <int value="1284" label="ACCESSIBILITY_PRIVATE_TOGGLEDICTATION"/>
+  <int value="1285" label="ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS"/>
 </enum>
 
 <enum name="ExtensionIconState">
