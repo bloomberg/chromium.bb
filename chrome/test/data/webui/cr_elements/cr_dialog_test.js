@@ -274,7 +274,7 @@ suite('cr-dialog', function() {
 
   // Ensuring that intersectionObserver does not fire any callbacks before the
   // dialog has been opened.
-  test('body scrollable border not added before modal shown', function(done) {
+  test('body scrollable border not added before modal shown', function() {
     document.body.innerHTML = `
       <cr-dialog>
         <div slot="title">title</div>
@@ -286,13 +286,10 @@ suite('cr-dialog', function() {
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
 
-    // Waiting for 1ms because IntersectionObserver fires one message loop after
-    // dialog.attached.
-    setTimeout(function() {
+    return PolymerTest.flushTasks().then(() => {
       assertFalse(bodyContainer.classList.contains('top-scrollable'));
       assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
-      done();
-    }, 1);
+    });
   });
 
   test('dialog body scrollable border when appropriate', function(done) {
@@ -426,5 +423,52 @@ suite('cr-dialog', function() {
     assertEquals(
         'none',
         window.getComputedStyle(dialog.getCloseButton().parentElement).display);
+  });
+
+  test('keydown should be consumed when the property is true', function() {
+    document.body.innerHTML = `
+      <cr-dialog consume-keydown-event>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+    assertTrue(dialog.open);
+    assertTrue(dialog.consumeKeydownEvent);
+
+    function assertKeydownNotReached() {
+      assertNotReached('keydown event was propagated');
+    }
+    document.addEventListener('keydown', assertKeydownNotReached);
+
+    return PolymerTest.flushTasks().then(() => {
+      MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
+      MockInteractions.keyDownOn(document.body, 65, undefined, 'a');
+      document.removeEventListener('keydown', assertKeydownNotReached);
+    });
+  });
+
+  test('keydown should be propagated when the property is false', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+    assertTrue(dialog.open);
+    assertFalse(dialog.consumeKeydownEvent);
+
+    let keydownCounter = 0;
+    function assertKeydownCount() {
+      keydownCounter++;
+    }
+    document.addEventListener('keydown', assertKeydownCount);
+
+    return PolymerTest.flushTasks().then(() => {
+      MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
+      assertEquals(1, keydownCounter);
+      document.removeEventListener('keydown', assertKeydownCount);
+    });
   });
 });
