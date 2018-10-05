@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AccountId;
 class ScopedKeepAlive;
