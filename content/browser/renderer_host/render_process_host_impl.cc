@@ -2045,6 +2045,16 @@ void RenderProcessHostImpl::BindCacheStorage(
                      origin));
 }
 
+void RenderProcessHostImpl::BindFileSystemManager(
+    blink::mojom::FileSystemManagerRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                     base::Unretained(file_system_manager_impl_.get()),
+                     std::move(request)));
+}
+
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
   if (IsKeepAliveRefCountDisabled())
     return;
@@ -2160,8 +2170,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(push_messaging_manager_.get())));
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
-      GetID(), storage_partition_impl_->GetFileSystemContext(),
+      GetID(), MSG_ROUTING_NONE,
+      storage_partition_impl_->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetBrowserContext())));
+  // This interface is still exposed by the RenderProcessHost's registry so
+  // that it can be accessed by PepperFileSystemHost. Blink accesses this
+  // interface through RenderFrameHost/RendererInterfaceBinders.
+  // TODO(https://crbug.com/873661): Make PepperFileSystemHost access this with
+  // the RenderFrameHost's registry, and remove this registration.
   registry->AddInterface(
       base::BindRepeating(&FileSystemManagerImpl::BindRequest,
                           base::Unretained(file_system_manager_impl_.get())));

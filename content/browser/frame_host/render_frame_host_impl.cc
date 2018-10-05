@@ -40,6 +40,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -3751,6 +3752,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
                           GetProcess()->GetID(), routing_id_),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+
+  file_system_manager_.reset(new FileSystemManagerImpl(
+      GetProcess()->GetID(), routing_id_,
+      GetProcess()->GetStoragePartition()->GetFileSystemContext(),
+      ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
+  registry_->AddInterface(
+      base::BindRepeating(&FileSystemManagerImpl::BindRequest,
+                          base::Unretained(file_system_manager_.get())),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   if (Portal::IsEnabled()) {

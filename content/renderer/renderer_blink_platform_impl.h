@@ -126,7 +126,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool IsLockedToSite() const override;
 
   std::unique_ptr<blink::WebIDBFactory> CreateIdbFactory() override;
-  blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
 

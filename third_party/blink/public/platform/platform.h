@@ -106,7 +106,6 @@ class WebCanvasCaptureHandler;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
-class WebFileSystem;
 class WebGraphicsContext3DProvider;
 class WebImageCaptureFrameGrabber;
 class WebLocalFrame;
@@ -283,9 +282,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       base::StringPiece namespace_id);
 
   // FileSystem ----------------------------------------------------------
-
-  // Must return non-null.
-  virtual WebFileSystem* FileSystem() { return nullptr; }
 
   // Return a filename-friendly identifier for an origin.
   virtual WebString FileSystemCreateOriginIdentifier(

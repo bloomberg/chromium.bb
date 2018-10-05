@@ -1626,6 +1626,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Hosts blink::mojom::PresentationService for the RenderFrame.
   std::unique_ptr<PresentationServiceImpl> presentation_service_;
 
+  // Hosts blink::mojom::FileSystemManager for the RenderFrame.
+  std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
+      file_system_manager_;
+
 #if !defined(OS_ANDROID)
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 #endif

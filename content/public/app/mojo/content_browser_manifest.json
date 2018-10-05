@@ -164,6 +164,7 @@
           "blink.mojom.CredentialManager",
           "blink.mojom.DisplayCutoutHost",
           "blink.mojom.DedicatedWorkerFactory",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.GeolocationService",
           "blink.mojom.InsecureInputService",
@@ -229,6 +230,7 @@
         "renderer": [
           "blink.mojom.CacheStorage",
           "blink.mojom.DedicatedWorkerFactory",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
@@ -265,6 +267,7 @@
       "provides": {
         "renderer": [
           "blink.mojom.CacheStorage",
+          "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
