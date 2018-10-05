@@ -478,6 +478,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
           document.GetTaskRunner(TaskType::kInternalMedia),
           this,
           &HTMLMediaElement::CheckViewportIntersectionTimerFired),
+      removed_from_document_timer_(
+          document.GetTaskRunner(TaskType::kInternalMedia),
+          this,
+          &HTMLMediaElement::OnRemovedFromDocumentTimerFired),
       played_time_ranges_(),
       async_event_queue_(EventQueue::Create(GetExecutionContext(),
                                             TaskType::kMediaElementEvent)),
@@ -577,6 +581,8 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   check_viewport_intersection_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   deferred_load_timer_.MoveToNewTaskRunner(
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
+  removed_from_document_timer_.MoveToNewTaskRunner(
       GetDocument().GetTaskRunner(TaskType::kInternalMedia));
 
   autoplay_policy_->DidMoveToNewDocument(old_document);
@@ -729,11 +735,9 @@ void HTMLMediaElement::RemovedFrom(ContainerNode& insertion_point) {
   BLINK_MEDIA_LOG << "removedFrom(" << (void*)this << ", " << insertion_point
                   << ")";
 
+  removed_from_document_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+
   HTMLElement::RemovedFrom(insertion_point);
-  if (insertion_point.InActiveDocument()) {
-    if (network_state_ > kNetworkEmpty)
-      PauseInternal();
-  }
 }
 
 void HTMLMediaElement::AttachLayoutTree(AttachContext& context) {
@@ -1003,7 +1007,7 @@ void HTMLMediaElement::InvokeResourceSelectionAlgorithm() {
   // 3 - Set the media element's delaying-the-load-event flag to true (this
   // delays the load event)
   SetShouldDelayLoadEvent(true);
-  if (GetMediaControls())
+  if (GetMediaControls() && isConnected())
     GetMediaControls()->Reset();
 
   // 4 - Await a stable state, allowing the task that invoked this algorithm to
@@ -3614,6 +3618,7 @@ void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
     GetLayoutObject()->UpdateFromElement();
 
   StopPeriodicTimers();
+  removed_from_document_timer_.Stop();
 }
 
 bool HTMLMediaElement::HasPendingActivity() const {
@@ -4147,6 +4152,13 @@ EnumerationHistogram& HTMLMediaElement::ShowControlsHistogram() const {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("Media.Controls.Show.Audio", kMediaControlsShowMax));
   return histogram;
+}
+
+void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
+  if (InActiveDocument())
+    return;
+
+  PauseInternal();
 }
 
 void HTMLMediaElement::ClearWeakMembers(Visitor* visitor) {
