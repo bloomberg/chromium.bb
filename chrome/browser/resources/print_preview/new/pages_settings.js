@@ -289,7 +289,7 @@ Polymer({
       return;
 
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
-      this.setSettingValid('pages', false);
+      this.setSettingValid('pages', true);
       this.$.pageSettingsCustomInput.invalid = false;
       return;
     }
@@ -379,6 +379,12 @@ Polymer({
   onCustomInputFocus_: function() {
     if (this.optionSelected_ !== PagesValue.CUSTOM)
       this.optionSelected_ = PagesValue.CUSTOM;
+  },
+
+  /** @private */
+  onCustomRadioClick_: function() {
+    /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+        .inputElement.focus();
   },
 
   /** @private */

@@ -10,6 +10,7 @@ cr.define('pages_settings_test', function() {
     NupChangesPages: 'nup changes pages',
     ClearInput: 'clear input',
     TabOrder: 'tab order',
+    ClickingCustomFocusesInput: 'clicking custom focuses input',
   };
 
   const suiteName = 'PagesSettingsTest';
@@ -277,7 +278,7 @@ cr.define('pages_settings_test', function() {
           .then(function() {
             assertEquals(
                 pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
-            validateState([1, 2, 3], '', true);
+            validateState([1, 2, 3], '', false);
             const whenBlurred = test_util.eventToPromise('blur', input);
             input.blur();
             return whenBlurred;
@@ -381,6 +382,30 @@ cr.define('pages_settings_test', function() {
           })
           .then(function() {
             validateTabOrder(true);
+          });
+    });
+
+    test(assert(TestNames.ClickingCustomFocusesInput), function() {
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+      const radioGroup = pagesSection.$$('paper-radio-group');
+      assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
+
+      // Click the custom input and set a valid value.
+      return setupInput('1-2', 3)
+          .then(function() {
+            // Blur the custom input.
+            const whenCustomInputBlurred =
+                test_util.eventToPromise('blur', input);
+            input.blur();
+            Polymer.dom.flush();
+            return whenCustomInputBlurred;
+          })
+          .then(function() {
+            const whenCustomInputFocused =
+                test_util.eventToPromise('focus', input);
+            // Clicking the custom radio button should re-focus the input.
+            pagesSection.$.customRadioButton.click();
+            return whenCustomInputFocused;
           });
     });
   });
