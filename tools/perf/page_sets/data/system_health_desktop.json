@@ -45,6 +45,9 @@
         "browse:news:reddit": {
             "DEFAULT": "system_health_desktop_016.wprgo"
         },
+        "browse:news:reddit:2018": {
+            "DEFAULT": "system_health_desktop_907087980d.wprgo"
+        },
         "browse:search:google": {
             "DEFAULT": "system_health_desktop_037.wprgo"
         },
