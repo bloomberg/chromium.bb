@@ -20,12 +20,15 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
+#include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
@@ -172,8 +175,7 @@ DownloadManagerService::CreateServiceManagerServiceInstance() {
 
 void DownloadManagerService::NotifyServiceStarted(
     std::unique_ptr<service_manager::Connector> connector) {
-  // TODO: Additional initialization, e.g. connect to Network Service using
-  // |connector| if the minimal download manager path is enabled by flag.
+  connector_ = std::move(connector);
 }
 
 void DownloadManagerService::Init(
@@ -573,8 +575,12 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
       nullptr, data_dir.Append(chrome::kInitialProfile),
       download::InProgressDownloadManager::IsOriginSecureCallback());
-  // TODO(qinmin): construct the URLLoaderFactoryGetter and pass it to
-  // |in_progress_manager_|
+  content::GetNetworkServiceFromConnector(connector_.get());
+  scoped_refptr<network::SharedURLLoaderFactory> factory =
+      SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+  in_progress_manager_->set_url_loader_factory_getter(
+      base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
+          factory->Clone()));
   in_progress_manager_->NotifyWhenInitialized(
       base::BindOnce(&DownloadManagerService::OnInProgressManagerInitiailized,
                      base::Unretained(this)));

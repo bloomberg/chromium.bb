@@ -232,6 +232,9 @@ class DownloadManagerService
   // pass this object to DownloadManagerImpl once it is created.
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 
+  // Connector to the service manager to get the network service.
+  std::unique_ptr<service_manager::Connector> connector_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };
 
