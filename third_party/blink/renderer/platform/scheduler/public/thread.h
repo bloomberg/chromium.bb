@@ -22,16 +22,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_H_
 
+#include <stdint.h>
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
-
-#include <stdint.h>
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -50,14 +49,14 @@ class Platform;
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
 
-struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
-  explicit WebThreadCreationParams(WebThreadType);
+struct PLATFORM_EXPORT ThreadCreationParams {
+  explicit ThreadCreationParams(WebThreadType);
 
-  WebThreadCreationParams& SetThreadNameForTest(const char* name);
+  ThreadCreationParams& SetThreadNameForTest(const char* name);
 
   // Sets a scheduler for the context which was responsible for the creation
   // of this thread.
-  WebThreadCreationParams& SetFrameOrWorkerScheduler(FrameOrWorkerScheduler*);
+  ThreadCreationParams& SetFrameOrWorkerScheduler(FrameOrWorkerScheduler*);
 
   WebThreadType thread_type;
   const char* name;
@@ -65,18 +64,18 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
   base::Thread::Options thread_options;
 };
 
-// Provides an interface to an embedder-defined thread implementation.
+// The interface of a thread recognized by Blink.
 //
 // Deleting the thread blocks until all pending, non-delayed tasks have been
 // run.
-class BLINK_PLATFORM_EXPORT WebThread {
+class PLATFORM_EXPORT Thread {
  public:
   friend class Platform;  // For IsSimpleMainThread().
 
   // An IdleTask is expected to complete before the deadline it is passed.
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
-  class BLINK_PLATFORM_EXPORT TaskObserver {
+  class PLATFORM_EXPORT TaskObserver {
    public:
     virtual ~TaskObserver() = default;
     virtual void WillProcessTask() = 0;
@@ -116,14 +115,20 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // Returns the scheduler associated with the thread.
   virtual ThreadScheduler* Scheduler() = 0;
 
-  virtual ~WebThread() = default;
+  virtual ~Thread() = default;
 
  private:
-  // This is used to identify the actual WebThread instance. This should be
+  // This is used to identify the actual Thread instance. This should be
   // used only in Platform, and other users should ignore this.
   virtual bool IsSimpleMainThread() const { return false; }
 };
 
+// Temporary aliases while we rename those classes in Blink.
+//
+// TODO(yutak): Rename all the occurrences and remove the aliases.
+using WebThreadCreationParams = ThreadCreationParams;
+using WebThread = Thread;
+
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_H_

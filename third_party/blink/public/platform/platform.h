@@ -97,6 +97,8 @@ struct RtpCapabilities;
 namespace blink {
 
 class InterfaceProvider;
+class Thread;
+struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
@@ -128,12 +130,13 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
 class WebThemeEngine;
-class WebThread;
-struct WebThreadCreationParams;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
 struct WebSize;
+
+using WebThread = Thread;
+using WebThreadCreationParams = ThreadCreationParams;
 
 namespace scheduler {
 class WebThreadScheduler;

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "v8/include/v8.h"
@@ -16,7 +17,6 @@
 namespace blink {
 
 class ScriptStreamer;
-class WebThread;
 
 // A singleton thread for running background tasks for script streaming.
 class CORE_EXPORT ScriptStreamerThread {

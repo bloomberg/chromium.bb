@@ -34,13 +34,13 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
