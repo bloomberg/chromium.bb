@@ -28989,6 +28989,8 @@ from previous Chrome versions.
   <int value="-1285293181" label="SiteSettings:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
+  <int value="-1282992935"
+      label="AutofillLocalCardMigrationShowFeedback:disabled"/>
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
@@ -30453,6 +30455,8 @@ from previous Chrome versions.
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
+  <int value="1636721063"
+      label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>

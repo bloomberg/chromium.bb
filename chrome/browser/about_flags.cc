@@ -3104,6 +3104,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamUpdatePromptExplanation)},
+    {"enable-autofill-local-card-migration-show-feedback",
+     flag_descriptions::kEnableAutofillLocalCardMigrationShowFeedbackName,
+     flag_descriptions::
+         kEnableAutofillLocalCardMigrationShowFeedbackDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillLocalCardMigrationShowFeedback)},
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
