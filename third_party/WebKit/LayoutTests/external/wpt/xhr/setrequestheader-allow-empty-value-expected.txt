@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL XMLHttpRequest: setRequestHeader() - empty header () assert_equals: expected "X-Empty: \n" but got "Syntax error: no colon and space found: X-Empty:"
-PASS XMLHttpRequest: setRequestHeader() - empty header (null)
-PASS XMLHttpRequest: setRequestHeader() - empty header (undefined)
-Harness: the test ran to completion.
-
