@@ -33,6 +33,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/common/apps/platform_apps/api/easy_unlock_private.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -706,6 +707,18 @@ void EasyUnlockServiceRegular::OnFeatureStatesChanged(
   LoadRemoteDevices();
 }
 
+void EasyUnlockServiceRegular::ShowChromebookAddedNotification() {
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kEnableUnifiedMultiDeviceSetup));
+
+  // The user may have decided to disable Smart Lock or the whole multidevice
+  // suite immediately after completing setup, so ensure that Smart Lock is
+  // enabled.
+  if (feature_state_ == multidevice_setup::mojom::FeatureState::kEnabledByUser)
+    notification_controller_->ShowChromebookAddedNotification();
+}
+
 void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
     const std::set<std::string>& public_keys_before_sync,
     const std::set<std::string>& public_keys_after_sync) {
@@ -724,6 +737,21 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
 
   if (!public_keys_after_sync.empty() && !is_setup_fresh) {
     if (public_keys_before_sync.empty()) {
+      if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+          base::FeatureList::IsEnabled(
+              chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+        multidevice_setup::MultiDeviceSetupDialog* multidevice_setup_dialog =
+            multidevice_setup::MultiDeviceSetupDialog::Get();
+        if (multidevice_setup_dialog) {
+          // Delay showing the "Chromebook added" notification until the
+          // MultiDeviceSetupDialog is closed.
+          multidevice_setup_dialog->AddOnCloseCallback(base::BindOnce(
+              &EasyUnlockServiceRegular::ShowChromebookAddedNotification,
+              weak_ptr_factory_.GetWeakPtr()));
+          return;
+        }
+      }
+
       notification_controller_->ShowChromebookAddedNotification();
     } else {
       shown_pairing_changed_notification_ = true;

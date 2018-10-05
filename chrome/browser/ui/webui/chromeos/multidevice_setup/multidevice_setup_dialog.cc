@@ -58,11 +58,23 @@ void MultiDeviceSetupDialog::Show() {
       false /* is_minimal_style */);
 }
 
+// static
+MultiDeviceSetupDialog* MultiDeviceSetupDialog::Get() {
+  return current_instance_;
+}
+
+void MultiDeviceSetupDialog::AddOnCloseCallback(base::OnceClosure callback) {
+  on_close_callbacks_.push_back(std::move(callback));
+}
+
 MultiDeviceSetupDialog::MultiDeviceSetupDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIMultiDeviceSetupUrl),
                               base::string16()) {}
 
-MultiDeviceSetupDialog::~MultiDeviceSetupDialog() = default;
+MultiDeviceSetupDialog::~MultiDeviceSetupDialog() {
+  for (auto& callback : on_close_callbacks_)
+    std::move(callback).Run();
+}
 
 void MultiDeviceSetupDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
