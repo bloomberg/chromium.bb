@@ -311,16 +311,8 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
 
   syncer::SyncPrefs sync_prefs(pref_service_);
   if (IsUnifiedConsentGiven() != sync_prefs.HasKeepEverythingSynced()) {
-    // |OnStateChanged| is called after every update in the sync service,
-    // therefore only allow to update the sync settings when the transport
-    // state is ACTIVE.
-    // Note: This is a safety measure. Theoretically this can be done when
-    // the sync engine is initialized.
-    if (sync_service_->GetTransportState() ==
-        syncer::SyncService::TransportState::ACTIVE) {
-      // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
-      PostTaskToUpdateSyncSettings(/*sync_everything=*/IsUnifiedConsentGiven());
-    }
+    // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
+    PostTaskToUpdateSyncSettings(/*sync_everything=*/IsUnifiedConsentGiven());
   }
 }
 
@@ -452,8 +444,7 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
 }
 
 void UnifiedConsentService::UpdateSettingsForMigration() {
-  if (sync_service_->GetTransportState() !=
-      syncer::SyncService::TransportState::ACTIVE) {
+  if (!sync_service_->IsEngineInitialized()) {
     SetMigrationState(MigrationState::kInProgressWaitForSyncInit);
     return;
   }
