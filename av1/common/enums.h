@@ -66,8 +66,10 @@ extern "C" {
 #define REF_FRAMES_LOG2 3
 #define REF_FRAMES (1 << REF_FRAMES_LOG2)
 
-// 1 scratch frame for the new frame, 7 for scaled references on the encoder.
-#define FRAME_BUFFERS (REF_FRAMES + 1 + 7)
+// REF_FRAMES for the cm->ref_frame_map array, 1 scratch frame for the new
+// frame in cm->new_fb_idx, INTER_REFS_PER_FRAME for scaled references on the
+// encoder in the cpi->scaled_ref_idx array.
+#define FRAME_BUFFERS (REF_FRAMES + 1 + INTER_REFS_PER_FRAME)
 
 // 4 frame filter levels: y plane vertical, y plane horizontal,
 // u plane, and v plane

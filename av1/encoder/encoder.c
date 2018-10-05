@@ -3796,7 +3796,7 @@ static void release_scaled_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   int i;
   // TODO(isbs): only refresh the necessary frames, rather than all of them
-  for (i = 0; i < REF_FRAMES; ++i) {
+  for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     const int idx = cpi->scaled_ref_idx[i];
     if (idx != INVALID_IDX) {
       RefCntBuffer *const buf = &cm->buffer_pool->frame_bufs[idx];
@@ -6753,7 +6753,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (cpi->oxcf.pass != 0 || frame_is_intra_only(cm) == 1) {
-    for (i = 0; i < REF_FRAMES; ++i) cpi->scaled_ref_idx[i] = INVALID_IDX;
+    for (i = 0; i < INTER_REFS_PER_FRAME; ++i)
+      cpi->scaled_ref_idx[i] = INVALID_IDX;
   }
 
   cm->using_qmatrix = cpi->oxcf.using_qm;
