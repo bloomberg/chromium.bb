@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -30,7 +31,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -216,6 +221,47 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
   }
 
+  void ResetDataSavings() const {
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        browser()->profile())
+        ->data_reduction_proxy_service()
+        ->compression_stats()
+        ->ResetStatistics();
+  }
+
+  // Gets the data usage recorded against the host the origin server runs on.
+  uint64_t GetDataUsage() const {
+    const auto& data_usage_map =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            browser()->profile())
+            ->data_reduction_proxy_service()
+            ->compression_stats()
+            ->DataUsageMapForTesting();
+    const auto& it =
+        data_usage_map.find(https_server_->host_port_pair().host());
+    if (it != data_usage_map.end())
+      return it->second->data_used();
+    return 0;
+  }
+
+  // Gets the data usage recorded against all hosts.
+  uint64_t GetTotalDataUsage() const {
+    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+               browser()->profile())
+        ->data_reduction_proxy_service()
+        ->compression_stats()
+        ->GetHttpReceivedContentLength();
+  }
+
+  // Gets the original content length recorded against all hosts.
+  uint64_t GetTotalOriginalContentLength() const {
+    return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+               browser()->profile())
+        ->data_reduction_proxy_service()
+        ->compression_stats()
+        ->GetHttpOriginalContentLength();
+  }
+
   // Returns a HTTP URL that will respond with the given HTTP response code and
   // headers when used by the previews server. The response can be delayed a
   // number of milliseconds by passing a value > 0 for |delay_ms| or pass -1 to
@@ -354,6 +400,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     switch (return_code) {
       case 200:
         response->set_code(net::HTTP_OK);
+        response->set_content("porgporgporgporgporg" /* length = 20 */);
+        response->AddCustomHeader("chrome-proxy", "ofcl=60");
         break;
       case 307:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -656,6 +704,32 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
   VerifyPreviewLoaded();
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsReportSavings LitePagePreviewsReportSavings
+#else
+#define MAYBE_LitePagePreviewsReportSavings \
+  DISABLED_LitePagePreviewsReportSavings
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsReportSavings) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
+                    true);
+  // Give the setting notification a chance to propagate.
+  base::RunLoop().RunUntilIdle();
+
+  ResetDataSavings();
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+  VerifyPreviewLoaded();
+
+  EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
+  EXPECT_EQ(GetDataUsage(), 20U);
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest

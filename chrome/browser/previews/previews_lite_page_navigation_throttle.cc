@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 
+#include <stdint.h>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -430,8 +431,17 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
   const int response_code = response_headers->response_code();
 
   if (response_code == net::HTTP_OK) {
+    // Attempt to get the original content length and report it to Data Saver.
+    const int64_t ofcl =
+        data_reduction_proxy::GetDataReductionProxyOFCL(response_headers);
+    if (ofcl > 0) {
+      manager_->ReportDataSavings(response_headers->GetContentLength(), ofcl,
+                                  GURL(original_url).host());
+    }
+
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               ServerResponse::kOk);
+
     return content::NavigationThrottle::PROCEED;
   }
 

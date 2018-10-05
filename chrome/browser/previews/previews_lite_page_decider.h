@@ -75,6 +75,9 @@ class PreviewsLitePageDecider
   void AddSingleBypass(std::string url) override;
   bool CheckSingleBypass(std::string url) override;
   uint64_t GeneratePageID() override;
+  void ReportDataSavings(int64_t network_bytes,
+                         int64_t original_bytes,
+                         const std::string& host) override;
   bool NeedsToNotifyUser() override;
   void NotifyUser(content::WebContents* web_contents) override;
 
