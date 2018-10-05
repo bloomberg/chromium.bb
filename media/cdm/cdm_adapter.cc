@@ -22,19 +22,16 @@
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
-#include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/key_systems.h"
 #include "media/base/limits.h"
-#include "media/base/sample_format.h"
-#include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_helpers.h"
+#include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/cdm_wrapper.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -58,252 +55,26 @@ constexpr uint32_t kCurrentStorageIdVersion = 1;
 static_assert(kCurrentStorageIdVersion < 0x80000000,
               "Versions 0x80000000 and above are reserved.");
 
-cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
-  switch (hdcp_version) {
-    case HdcpVersion::kHdcpVersionNone:
-      return cdm::kHdcpVersionNone;
-    case HdcpVersion::kHdcpVersion1_0:
-      return cdm::kHdcpVersion1_0;
-    case HdcpVersion::kHdcpVersion1_1:
-      return cdm::kHdcpVersion1_1;
-    case HdcpVersion::kHdcpVersion1_2:
-      return cdm::kHdcpVersion1_2;
-    case HdcpVersion::kHdcpVersion1_3:
-      return cdm::kHdcpVersion1_3;
-    case HdcpVersion::kHdcpVersion1_4:
-      return cdm::kHdcpVersion1_4;
-    case HdcpVersion::kHdcpVersion2_0:
-      return cdm::kHdcpVersion2_0;
-    case HdcpVersion::kHdcpVersion2_1:
-      return cdm::kHdcpVersion2_1;
-    case HdcpVersion::kHdcpVersion2_2:
-      return cdm::kHdcpVersion2_2;
-    case HdcpVersion::kHdcpVersion2_3:
-      return cdm::kHdcpVersion2_3;
-  }
+// Verify that OutputProtection types matches those in CDM interface.
+// Cannot use conversion function because these are used in bit masks.
+// See CdmAdapter::EnableOutputProtection and
+// CdmAdapter::OnQueryOutputProtectionStatusDone() below.
+#define ASSERT_ENUM_EQ(media_enum, cdm_enum)                              \
+  static_assert(                                                          \
+      static_cast<int32_t>(media_enum) == static_cast<int32_t>(cdm_enum), \
+      "Mismatched enum: " #media_enum " != " #cdm_enum)
 
-  NOTREACHED();
-  return cdm::kHdcpVersion2_3;
-}
-
-cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {
-  switch (session_type) {
-    case CdmSessionType::kTemporary:
-      return cdm::kTemporary;
-    case CdmSessionType::kPersistentLicense:
-      return cdm::kPersistentLicense;
-    case CdmSessionType::kPersistentUsageRecord:
-      return cdm::kPersistentUsageRecord;
-  }
-
-  NOTREACHED() << "Unexpected session type: " << static_cast<int>(session_type);
-  return cdm::kTemporary;
-}
-
-cdm::InitDataType ToCdmInitDataType(EmeInitDataType init_data_type) {
-  switch (init_data_type) {
-    case EmeInitDataType::CENC:
-      return cdm::kCenc;
-    case EmeInitDataType::KEYIDS:
-      return cdm::kKeyIds;
-    case EmeInitDataType::WEBM:
-      return cdm::kWebM;
-    case EmeInitDataType::UNKNOWN:
-      break;
-  }
-
-  NOTREACHED();
-  return cdm::kKeyIds;
-}
-
-CdmPromise::Exception ToMediaExceptionType(cdm::Exception exception) {
-  switch (exception) {
-    case cdm::kExceptionTypeError:
-      return CdmPromise::Exception::TYPE_ERROR;
-    case cdm::kExceptionNotSupportedError:
-      return CdmPromise::Exception::NOT_SUPPORTED_ERROR;
-    case cdm::kExceptionInvalidStateError:
-      return CdmPromise::Exception::INVALID_STATE_ERROR;
-    case cdm::kExceptionQuotaExceededError:
-      return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
-  }
-
-  NOTREACHED() << "Unexpected cdm::Exception " << exception;
-  return CdmPromise::Exception::INVALID_STATE_ERROR;
-}
-
-CdmMessageType ToMediaMessageType(cdm::MessageType message_type) {
-  switch (message_type) {
-    case cdm::kLicenseRequest:
-      return CdmMessageType::LICENSE_REQUEST;
-    case cdm::kLicenseRenewal:
-      return CdmMessageType::LICENSE_RENEWAL;
-    case cdm::kLicenseRelease:
-      return CdmMessageType::LICENSE_RELEASE;
-    case cdm::kIndividualizationRequest:
-      return CdmMessageType::INDIVIDUALIZATION_REQUEST;
-  }
-
-  NOTREACHED() << "Unexpected cdm::MessageType " << message_type;
-  return CdmMessageType::LICENSE_REQUEST;
-}
-
-CdmKeyInformation::KeyStatus ToCdmKeyInformationKeyStatus(
-    cdm::KeyStatus status) {
-  switch (status) {
-    case cdm::kUsable:
-      return CdmKeyInformation::USABLE;
-    case cdm::kInternalError:
-      return CdmKeyInformation::INTERNAL_ERROR;
-    case cdm::kExpired:
-      return CdmKeyInformation::EXPIRED;
-    case cdm::kOutputRestricted:
-      return CdmKeyInformation::OUTPUT_RESTRICTED;
-    case cdm::kOutputDownscaled:
-      return CdmKeyInformation::OUTPUT_DOWNSCALED;
-    case cdm::kStatusPending:
-      return CdmKeyInformation::KEY_STATUS_PENDING;
-    case cdm::kReleased:
-      return CdmKeyInformation::RELEASED;
-  }
-
-  NOTREACHED() << "Unexpected cdm::KeyStatus " << status;
-  return CdmKeyInformation::INTERNAL_ERROR;
-}
-
-cdm::AudioCodec ToCdmAudioCodec(AudioCodec codec) {
-  switch (codec) {
-    case kCodecVorbis:
-      return cdm::kCodecVorbis;
-    case kCodecAAC:
-      return cdm::kCodecAac;
-    default:
-      DVLOG(1) << "Unsupported AudioCodec " << codec;
-      return cdm::kUnknownAudioCodec;
-  }
-}
-
-cdm::VideoCodec ToCdmVideoCodec(VideoCodec codec) {
-  switch (codec) {
-    case kCodecVP8:
-      return cdm::kCodecVp8;
-    case kCodecH264:
-      return cdm::kCodecH264;
-    case kCodecVP9:
-      return cdm::kCodecVp9;
-    case kCodecAV1:
-      return cdm::kCodecAv1;
-    default:
-      DVLOG(1) << "Unsupported VideoCodec " << codec;
-      return cdm::kUnknownVideoCodec;
-  }
-}
-
-cdm::VideoCodecProfile ToCdmVideoCodecProfile(VideoCodecProfile profile) {
-  switch (profile) {
-    case VP8PROFILE_ANY:
-      return cdm::kProfileNotNeeded;
-    case VP9PROFILE_PROFILE0:
-      return cdm::kVP9Profile0;
-    case VP9PROFILE_PROFILE1:
-      return cdm::kVP9Profile1;
-    case VP9PROFILE_PROFILE2:
-      return cdm::kVP9Profile2;
-    case VP9PROFILE_PROFILE3:
-      return cdm::kVP9Profile3;
-    case H264PROFILE_BASELINE:
-      return cdm::kH264ProfileBaseline;
-    case H264PROFILE_MAIN:
-      return cdm::kH264ProfileMain;
-    case H264PROFILE_EXTENDED:
-      return cdm::kH264ProfileExtended;
-    case H264PROFILE_HIGH:
-      return cdm::kH264ProfileHigh;
-    case H264PROFILE_HIGH10PROFILE:
-      return cdm::kH264ProfileHigh10;
-    case H264PROFILE_HIGH422PROFILE:
-      return cdm::kH264ProfileHigh422;
-    case H264PROFILE_HIGH444PREDICTIVEPROFILE:
-      return cdm::kH264ProfileHigh444Predictive;
-    case AV1PROFILE_PROFILE_MAIN:
-      return cdm::kAv1ProfileMain;
-    case AV1PROFILE_PROFILE_HIGH:
-      return cdm::kAv1ProfileHigh;
-    case AV1PROFILE_PROFILE_PRO:
-      return cdm::kAv1ProfilePro;
-    default:
-      DVLOG(1) << "Unsupported VideoCodecProfile " << profile;
-      return cdm::kUnknownVideoCodecProfile;
-  }
-}
-
-cdm::VideoFormat ToCdmVideoFormat(VideoPixelFormat format) {
-  switch (format) {
-    case PIXEL_FORMAT_YV12:
-      return cdm::kYv12;
-    case PIXEL_FORMAT_I420:
-      return cdm::kI420;
-    default:
-      DVLOG(1) << "Unsupported VideoPixelFormat " << format;
-      return cdm::kUnknownVideoFormat;
-  }
-}
-
-cdm::ColorRange ToCdmColorRange(gfx::ColorSpace::RangeID range) {
-  switch (range) {
-    case gfx::ColorSpace::RangeID::LIMITED:
-      return cdm::ColorRange::kLimited;
-    case gfx::ColorSpace::RangeID::FULL:
-      return cdm::ColorRange::kFull;
-    case gfx::ColorSpace::RangeID::DERIVED:
-      return cdm::ColorRange::kDerived;
-    default:
-      DVLOG(1) << "Invalid color range";
-      return cdm::ColorRange::kInvalid;
-  }
-}
-
-cdm::ColorSpace ToCdmColorSpace(const VideoColorSpace& color_space) {
-  // Cast is okay because both VideoColorSpace and cdm::ColorSpace follow the
-  // standard ISO 23001-8:2016.
-  return {base::checked_cast<uint8_t>(color_space.primaries),
-          base::checked_cast<uint8_t>(color_space.transfer),
-          base::checked_cast<uint8_t>(color_space.matrix),
-          ToCdmColorRange(color_space.range)};
-}
-
-cdm::StreamType ToCdmStreamType(Decryptor::StreamType stream_type) {
-  switch (stream_type) {
-    case Decryptor::kAudio:
-      return cdm::kStreamTypeAudio;
-    case Decryptor::kVideo:
-      return cdm::kStreamTypeVideo;
-  }
-
-  NOTREACHED() << "Unexpected Decryptor::StreamType " << stream_type;
-  return cdm::kStreamTypeVideo;
-}
-
-Decryptor::Status ToMediaDecryptorStatus(cdm::Status status) {
-  switch (status) {
-    case cdm::kSuccess:
-      return Decryptor::kSuccess;
-    case cdm::kNoKey:
-      return Decryptor::kNoKey;
-    case cdm::kNeedMoreData:
-      return Decryptor::kNeedMoreData;
-    case cdm::kDecryptError:
-      return Decryptor::kError;
-    case cdm::kDecodeError:
-      return Decryptor::kError;
-    case cdm::kInitializationError:
-    case cdm::kDeferredInitialization:
-      break;
-  }
-
-  NOTREACHED() << "Unexpected cdm::Status " << status;
-  return Decryptor::kError;
-}
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NONE, cdm::kLinkTypeNone);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::UNKNOWN, cdm::kLinkTypeUnknown);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::INTERNAL, cdm::kLinkTypeInternal);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::VGA, cdm::kLinkTypeVGA);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::HDMI, cdm::kLinkTypeHDMI);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DVI, cdm::kLinkTypeDVI);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DISPLAYPORT,
+               cdm::kLinkTypeDisplayPort);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NETWORK, cdm::kLinkTypeNetwork);
+ASSERT_ENUM_EQ(OutputProtection::ProtectionType::NONE, cdm::kProtectionNone);
+ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
 
 inline std::ostream& operator<<(std::ostream& out, cdm::Status status) {
   switch (status) {
@@ -324,162 +95,6 @@ inline std::ostream& operator<<(std::ostream& out, cdm::Status status) {
   }
   NOTREACHED();
   return out << "Invalid Status!";
-}
-
-SampleFormat ToMediaSampleFormat(cdm::AudioFormat format) {
-  switch (format) {
-    case cdm::kAudioFormatU8:
-      return kSampleFormatU8;
-    case cdm::kAudioFormatS16:
-      return kSampleFormatS16;
-    case cdm::kAudioFormatS32:
-      return kSampleFormatS32;
-    case cdm::kAudioFormatF32:
-      return kSampleFormatF32;
-    case cdm::kAudioFormatPlanarS16:
-      return kSampleFormatPlanarS16;
-    case cdm::kAudioFormatPlanarF32:
-      return kSampleFormatPlanarF32;
-    case cdm::kUnknownAudioFormat:
-      return kUnknownSampleFormat;
-  }
-
-  NOTREACHED() << "Unexpected cdm::AudioFormat " << format;
-  return kUnknownSampleFormat;
-}
-
-cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionScheme& scheme) {
-  switch (scheme.mode()) {
-    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return cdm::EncryptionScheme::kUnencrypted;
-    case EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return cdm::EncryptionScheme::kCenc;
-    case EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return cdm::EncryptionScheme::kCbcs;
-  }
-
-  NOTREACHED();
-  return cdm::EncryptionScheme::kUnencrypted;
-}
-
-cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionMode& mode) {
-  switch (mode) {
-    case EncryptionMode::kUnencrypted:
-      return cdm::EncryptionScheme::kUnencrypted;
-    case EncryptionMode::kCenc:
-      return cdm::EncryptionScheme::kCenc;
-    case EncryptionMode::kCbcs:
-      return cdm::EncryptionScheme::kCbcs;
-  }
-
-  NOTREACHED();
-  return cdm::EncryptionScheme::kUnencrypted;
-}
-
-// Warning: The returned config contains raw pointers to the extra data in the
-// input |config|. Hence, the caller must make sure the input |config| outlives
-// the returned config.
-cdm::AudioDecoderConfig_2 ToCdmAudioDecoderConfig(
-    const media::AudioDecoderConfig& config) {
-  cdm::AudioDecoderConfig_2 cdm_config = {};
-  cdm_config.codec = ToCdmAudioCodec(config.codec());
-  cdm_config.channel_count =
-      ChannelLayoutToChannelCount(config.channel_layout());
-  cdm_config.bits_per_channel = config.bits_per_channel();
-  cdm_config.samples_per_second = config.samples_per_second();
-  cdm_config.extra_data = const_cast<uint8_t*>(config.extra_data().data());
-  cdm_config.extra_data_size = config.extra_data().size();
-  cdm_config.encryption_scheme =
-      ToCdmEncryptionScheme(config.encryption_scheme());
-  return cdm_config;
-}
-
-// Warning: The returned config contains raw pointers to the extra data in the
-// input |config|. Hence, the caller must make sure the input |config| outlives
-// the returned config.
-cdm::VideoDecoderConfig_3 ToCdmVideoDecoderConfig(
-    const media::VideoDecoderConfig& config) {
-  cdm::VideoDecoderConfig_3 cdm_config = {};
-  cdm_config.codec = ToCdmVideoCodec(config.codec());
-  cdm_config.profile = ToCdmVideoCodecProfile(config.profile());
-  cdm_config.format = ToCdmVideoFormat(config.format());
-  cdm_config.color_space = ToCdmColorSpace(config.color_space_info());
-  cdm_config.coded_size.width = config.coded_size().width();
-  cdm_config.coded_size.height = config.coded_size().height();
-  cdm_config.extra_data = const_cast<uint8_t*>(config.extra_data().data());
-  cdm_config.extra_data_size = config.extra_data().size();
-  cdm_config.encryption_scheme =
-      ToCdmEncryptionScheme(config.encryption_scheme());
-  return cdm_config;
-}
-
-// Verify that OutputProtection types matches those in CDM interface.
-// Cannot use conversion function because these are used in bit masks.
-#define ASSERT_ENUM_EQ(media_enum, cdm_enum)                              \
-  static_assert(                                                          \
-      static_cast<int32_t>(media_enum) == static_cast<int32_t>(cdm_enum), \
-      "Mismatched enum: " #media_enum " != " #cdm_enum)
-
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NONE, cdm::kLinkTypeNone);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::UNKNOWN, cdm::kLinkTypeUnknown);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::INTERNAL, cdm::kLinkTypeInternal);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::VGA, cdm::kLinkTypeVGA);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::HDMI, cdm::kLinkTypeHDMI);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DVI, cdm::kLinkTypeDVI);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DISPLAYPORT,
-               cdm::kLinkTypeDisplayPort);
-ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NETWORK, cdm::kLinkTypeNetwork);
-ASSERT_ENUM_EQ(OutputProtection::ProtectionType::NONE, cdm::kProtectionNone);
-ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
-
-// Fill |input_buffer| based on the values in |encrypted|. |subsamples|
-// is used to hold some of the data. |input_buffer| will contain pointers
-// to data contained in |encrypted| and |subsamples|, so the lifetime of
-// |input_buffer| must be <= the lifetime of |encrypted| and |subsamples|.
-void ToCdmInputBuffer(const DecoderBuffer& encrypted_buffer,
-                      std::vector<cdm::SubsampleEntry>* subsamples,
-                      cdm::InputBuffer_2* input_buffer) {
-  // End of stream buffers are represented as empty resources.
-  DCHECK(!input_buffer->data);
-  if (encrypted_buffer.end_of_stream())
-    return;
-
-  input_buffer->data = encrypted_buffer.data();
-  input_buffer->data_size = encrypted_buffer.data_size();
-  input_buffer->timestamp = encrypted_buffer.timestamp().InMicroseconds();
-
-  const DecryptConfig* decrypt_config = encrypted_buffer.decrypt_config();
-  if (!decrypt_config) {
-    DVLOG(2) << __func__ << ": Clear buffer.";
-    return;
-  }
-
-  input_buffer->key_id =
-      reinterpret_cast<const uint8_t*>(decrypt_config->key_id().data());
-  input_buffer->key_id_size = decrypt_config->key_id().size();
-  input_buffer->iv =
-      reinterpret_cast<const uint8_t*>(decrypt_config->iv().data());
-  input_buffer->iv_size = decrypt_config->iv().size();
-
-  DCHECK(subsamples->empty());
-  size_t num_subsamples = decrypt_config->subsamples().size();
-  if (num_subsamples > 0) {
-    subsamples->reserve(num_subsamples);
-    for (const auto& sample : decrypt_config->subsamples()) {
-      subsamples->push_back({sample.clear_bytes, sample.cypher_bytes});
-    }
-  }
-
-  input_buffer->subsamples = subsamples->data();
-  input_buffer->num_subsamples = num_subsamples;
-
-  input_buffer->encryption_scheme =
-      ToCdmEncryptionScheme(decrypt_config->encryption_mode());
-  if (decrypt_config->HasPattern()) {
-    input_buffer->pattern = {
-        decrypt_config->encryption_pattern()->crypt_byte_block(),
-        decrypt_config->encryption_pattern()->skip_byte_block()};
-  }
 }
 
 void* GetCdmHost(int host_interface_version, void* user_data) {
@@ -1015,8 +630,7 @@ void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
   DVLOG(2) << __func__ << ": promise_id = " << promise_id
            << ", key_status = " << key_status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  cdm_promise_adapter_.ResolvePromise(promise_id,
-                                      ToCdmKeyInformationKeyStatus(key_status));
+  cdm_promise_adapter_.ResolvePromise(promise_id, ToMediaKeyStatus(key_status));
 }
 
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
@@ -1058,7 +672,7 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.RejectPromise(promise_id,
-                                     ToMediaExceptionType(exception),
+                                     ToMediaCdmPromiseException(exception),
                                      system_code, error_message_str);
 }
 
@@ -1091,8 +705,8 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
   for (uint32_t i = 0; i < keys_info_count; ++i) {
     const auto& info = keys_info[i];
     keys.push_back(std::make_unique<CdmKeyInformation>(
-        info.key_id, info.key_id_size,
-        ToCdmKeyInformationKeyStatus(info.status), info.system_code));
+        info.key_id, info.key_id_size, ToMediaKeyStatus(info.status),
+        info.system_code));
   }
 
   // TODO(jrummell): Handling resume playback should be done in the media

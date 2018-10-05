@@ -14,6 +14,7 @@
 #include "base/numerics/safe_math.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_helpers.h"
+#include "media/cdm/cdm_type_conversion.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -26,18 +27,6 @@ namespace {
 typedef base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
                             size_t capacity)>
     MojoSharedBufferDoneCB;
-
-VideoPixelFormat CdmVideoFormatToVideoPixelFormat(cdm::VideoFormat format) {
-  switch (format) {
-    case cdm::kYv12:
-      return PIXEL_FORMAT_YV12;
-    case cdm::kI420:
-      return PIXEL_FORMAT_I420;
-    default:
-      NOTREACHED();
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
 
 // cdm::Buffer implementation that provides access to mojo shared memory.
 // It owns the memory until Destroy() is called.
@@ -143,8 +132,8 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
 
     scoped_refptr<MojoSharedBufferVideoFrame> frame =
         media::MojoSharedBufferVideoFrame::Create(
-            CdmVideoFormatToVideoPixelFormat(Format()), frame_size,
-            gfx::Rect(frame_size), natural_size, std::move(handle), buffer_size,
+            ToMediaVideoFormat(Format()), frame_size, gfx::Rect(frame_size),
+            natural_size, std::move(handle), buffer_size,
             PlaneOffset(cdm::kYPlane), PlaneOffset(cdm::kUPlane),
             PlaneOffset(cdm::kVPlane), Stride(cdm::kYPlane),
             Stride(cdm::kUPlane), Stride(cdm::kVPlane),
