@@ -32,6 +32,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "url/url_constants.h"
 
 using extensions::ExtensionsAPIClient;
 using extensions::MimeHandlerViewGuest;
@@ -157,6 +158,11 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Embedded) {
   RunTest("test_embedded.html");
+  // Sanity check. Navigate the page and verify the guest goes away.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  auto* gv_manager = GetGuestViewManager();
+  gv_manager->WaitForAllGuestsDeleted();
+  EXPECT_EQ(1U, gv_manager->num_guests_created());
 }
 
 // The following tests will eventually converted into a parametric version which
