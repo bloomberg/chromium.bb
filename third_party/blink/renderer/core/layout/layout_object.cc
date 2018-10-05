@@ -1407,13 +1407,13 @@ const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
   return *layout_view;
 }
 
-bool LayoutObject::RecalcOverflowAfterStyleChange() {
-  if (!ChildNeedsOverflowRecalcAfterStyleChange())
+bool LayoutObject::RecalcOverflow() {
+  if (!ChildNeedsOverflowRecalc())
     return false;
   bool children_overflow_changed = false;
   for (LayoutObject* current = SlowFirstChild(); current;
        current = current->NextSibling()) {
-    if (current->RecalcOverflowAfterStyleChange())
+    if (current->RecalcOverflow())
       children_overflow_changed = true;
   }
   return children_overflow_changed;
@@ -1977,14 +1977,17 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
     object = object->IsTableCell() || object->IsTableRow()
                  ? object->Parent()
                  : object->Container();
-    if (object)
-      object->SetChildNeedsOverflowRecalcAfterStyleChange();
+    if (object) {
+      object->SetChildNeedsLayoutOverflowRecalc();
+      object->SetChildNeedsVisualOverflowRecalc();
+    }
   } while (object);
 }
 
-void LayoutObject::SetNeedsOverflowRecalcAfterStyleChange() {
-  bool needed_recalc = NeedsOverflowRecalcAfterStyleChange();
-  SetSelfNeedsOverflowRecalcAfterStyleChange();
+void LayoutObject::SetNeedsOverflowRecalc() {
+  bool needed_recalc = NeedsLayoutOverflowRecalc();
+  SetSelfNeedsLayoutOverflowRecalc();
+  SetSelfNeedsVisualOverflowRecalc();
   SetShouldCheckForPaintInvalidation();
   if (!needed_recalc)
     MarkContainerChainForOverflowRecalcIfNeeded();
@@ -2077,13 +2080,13 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
 
   if (diff.TransformChanged() && !NeedsLayout()) {
     if (LayoutBlock* container = ContainingBlock())
-      container->SetNeedsOverflowRecalcAfterStyleChange();
+      container->SetNeedsOverflowRecalc();
   }
 
   if (diff.NeedsRecomputeOverflow() && !NeedsLayout()) {
     // TODO(rhogan): Make inlines capable of recomputing overflow too.
     if (IsLayoutBlock())
-      SetNeedsOverflowRecalcAfterStyleChange();
+      SetNeedsOverflowRecalc();
     else
       SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
   }
@@ -2282,7 +2285,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
       MarkContainerChainForLayout();
 
     // Ditto.
-    if (NeedsOverflowRecalcAfterStyleChange() &&
+    if (NeedsOverflowRecalc() &&
         old_style->GetPosition() != style_->GetPosition())
       MarkContainerChainForOverflowRecalcIfNeeded();
 

@@ -576,12 +576,13 @@ void LayoutTable::SimplifiedNormalFlowLayout() {
   }
 }
 
-bool LayoutTable::RecalcOverflowAfterStyleChange() {
-  RecalcSelfOverflowAfterStyleChange();
+bool LayoutTable::RecalcOverflow() {
+  RecalcSelfOverflow();
 
-  if (!ChildNeedsOverflowRecalcAfterStyleChange())
+  if (!ChildNeedsOverflowRecalc())
     return false;
-  ClearChildNeedsOverflowRecalcAfterStyleChange();
+  ClearChildNeedsLayoutOverflowRecalc();
+  ClearChildNeedsVisualOverflowRecalc();
 
   // If the table sections we keep pointers to have gone away then the table
   // will be rebuilt and overflow will get recalculated anyway so return early.
@@ -592,10 +593,9 @@ bool LayoutTable::RecalcOverflowAfterStyleChange() {
   for (LayoutTableSection* section = TopSection(); section;
        section = SectionBelow(section)) {
     children_overflow_changed =
-        section->RecalcOverflowAfterStyleChange() || children_overflow_changed;
+        section->RecalcOverflow() || children_overflow_changed;
   }
-  return RecalcPositionedDescendantsOverflowAfterStyleChange() ||
-         children_overflow_changed;
+  return RecalcPositionedDescendantsOverflow() || children_overflow_changed;
 }
 
 void LayoutTable::UpdateLayout() {

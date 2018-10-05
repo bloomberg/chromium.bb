@@ -121,7 +121,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   int CalcRowLogicalHeight();
   void LayoutRows();
   void ComputeOverflowFromDescendants();
-  bool RecalcOverflowAfterStyleChange() override;
+  bool RecalcOverflow() override;
 
   void MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
 

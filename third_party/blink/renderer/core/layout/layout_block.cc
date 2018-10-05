@@ -2020,20 +2020,21 @@ bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(
     LayoutObject* layout_object) {
   if (layout_object->IsOutOfFlowPositioned())
     return false;
-  return layout_object->RecalcOverflowAfterStyleChange();
+  return layout_object->RecalcOverflow();
 }
 
-bool LayoutBlock::RecalcChildOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcChildOverflow() {
   DCHECK(!IsTable());
-  DCHECK(ChildNeedsOverflowRecalcAfterStyleChange());
-  ClearChildNeedsOverflowRecalcAfterStyleChange();
+  DCHECK(ChildNeedsOverflowRecalc());
+  ClearChildNeedsLayoutOverflowRecalc();
+  ClearChildNeedsVisualOverflowRecalc();
 
   bool children_overflow_changed = false;
 
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
     children_overflow_changed =
-        ToLayoutBlockFlow(this)->RecalcInlineChildrenOverflowAfterStyleChange();
+        ToLayoutBlockFlow(this)->RecalcInlineChildrenOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
       if (RecalcNormalFlowChildOverflowIfNeeded(box))
@@ -2041,11 +2042,10 @@ bool LayoutBlock::RecalcChildOverflowAfterStyleChange() {
     }
   }
 
-  return RecalcPositionedDescendantsOverflowAfterStyleChange() ||
-         children_overflow_changed;
+  return RecalcPositionedDescendantsOverflow() || children_overflow_changed;
 }
 
-bool LayoutBlock::RecalcPositionedDescendantsOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcPositionedDescendantsOverflow() {
   bool children_overflow_changed = false;
 
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
@@ -2053,27 +2053,28 @@ bool LayoutBlock::RecalcPositionedDescendantsOverflowAfterStyleChange() {
     return children_overflow_changed;
 
   for (auto* box : *positioned_descendants) {
-    if (box->RecalcOverflowAfterStyleChange())
+    if (box->RecalcOverflow())
       children_overflow_changed = true;
   }
   return children_overflow_changed;
 }
 
-bool LayoutBlock::RecalcOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcOverflow() {
   bool children_overflow_changed = false;
-  if (ChildNeedsOverflowRecalcAfterStyleChange())
-    children_overflow_changed = RecalcChildOverflowAfterStyleChange();
+  if (ChildNeedsOverflowRecalc())
+    children_overflow_changed = RecalcChildOverflow();
 
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalcAfterStyleChange();
+  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
   if (!self_needs_overflow_recalc && !children_overflow_changed)
     return false;
 
-  return RecalcSelfOverflowAfterStyleChange();
+  return RecalcSelfOverflow();
 }
 
-bool LayoutBlock::RecalcSelfOverflowAfterStyleChange() {
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalcAfterStyleChange();
-  ClearSelfNeedsOverflowRecalcAfterStyleChange();
+bool LayoutBlock::RecalcSelfOverflow() {
+  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
+  ClearSelfNeedsLayoutOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
   // If the current block needs layout, overflow will be recalculated during
   // layout time anyway. We can safely exit here.
   if (NeedsLayout())

@@ -4636,7 +4636,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   }
 }
 
-bool LayoutBlockFlow::RecalcInlineChildrenOverflowAfterStyleChange() {
+bool LayoutBlockFlow::RecalcInlineChildrenOverflow() {
   DCHECK(ChildrenInline());
   bool children_overflow_changed = false;
   ListHashSet<RootInlineBox*> line_boxes;

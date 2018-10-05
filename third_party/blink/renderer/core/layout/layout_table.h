@@ -426,7 +426,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SimplifiedNormalFlowLayout() override;
-  bool RecalcOverflowAfterStyleChange() override;
+  bool RecalcOverflow() override;
   void EnsureIsReadyForPaintInvalidation() override;
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;

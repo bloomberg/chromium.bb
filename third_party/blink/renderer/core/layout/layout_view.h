@@ -255,7 +255,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // (which is responsible for painting the tickmarks).
   void InvalidatePaintForTickmarks();
 
-  bool RecalcOverflowAfterStyleChange() override;
+  bool RecalcOverflow() override;
 
  private:
   void MapLocalToAncestor(
