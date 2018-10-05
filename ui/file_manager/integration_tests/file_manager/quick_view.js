@@ -612,3 +612,65 @@ testcase.openQuickViewImage = function() {
     },
   ]);
 };
+
+/**
+ * Tests opening Quick View containing a video.
+ */
+testcase.openQuickViewVideo = function() {
+  const caller = getCaller();
+  let appId;
+
+  /**
+   * The <webview> resides in the <files-safe-media type="video"> shadow DOM,
+   * which is a child of the #quick-view shadow DOM.
+   */
+  const webView = ['#quick-view', 'files-safe-media[type="video"]', 'webview'];
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.world video.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.world], []);
+    },
+    // Open the file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.world.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Wait for the Quick View <webview> to load and display its content.
+    function() {
+     function checkWebViewVideoLoaded(elements) {
+        let haveElements = Array.isArray(elements) && elements.length === 1;
+        if (haveElements)
+          haveElements = elements[0].styles.display.includes('block');
+        if (!haveElements || elements[0].attributes.loaded !== '')
+          return pending(caller, 'Waiting for <webview> to load.');
+        return;
+      }
+      repeatUntil(function() {
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepQueryAllElements', appId, [webView, ['display']])
+            .then(checkWebViewVideoLoaded);
+      }).then(this.next);
+    },
+    // Get the <webview> document.body backgroundColor style.
+    function() {
+      const getBackgroundStyle =
+          'window.getComputedStyle(document.body).backgroundColor';
+      remoteCall
+        .callRemoteTestUtil(
+            'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle])
+        .then(this.next);
+    },
+    // Check: the <webview> body backgroundColor should be transparent black.
+    function(backgroundColor) {
+      chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
