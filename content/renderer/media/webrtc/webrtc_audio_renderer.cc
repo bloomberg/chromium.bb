@@ -26,11 +26,6 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "media/audio/win/core_audio_util_win.h"
-#endif
-
 namespace content {
 
 namespace {
