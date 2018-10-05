@@ -13,6 +13,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -43,6 +44,8 @@
 
 namespace {
 
+const void* const kOptOutEventKey = 0;
+
 const char kMinStalenessParamName[] = "min_staleness_in_minutes";
 const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
 const int kMinStalenessParamDefaultValue = 5;
@@ -64,6 +67,17 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 void RecordStaleness(PreviewsUITabHelper::PreviewsStalePreviewTimestamp value) {
   UMA_HISTOGRAM_ENUMERATION("Previews.StalePreviewTimestampShown", value);
+}
+
+void InformPLMOfOptOut(content::WebContents* web_contents) {
+  page_load_metrics::MetricsWebContentsObserver* metrics_web_contents_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents);
+  if (!metrics_web_contents_observer)
+    return;
+
+  metrics_web_contents_observer->BroadcastEventToObservers(
+      PreviewsUITabHelper::OptOutEventKey());
 }
 
 }  // namespace
@@ -172,6 +186,7 @@ void PreviewsUITabHelper::ReloadWithoutPreviews() {
 
 void PreviewsUITabHelper::ReloadWithoutPreviews(
     previews::PreviewsType previews_type) {
+  InformPLMOfOptOut(web_contents());
 #if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
 #endif
@@ -304,4 +319,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
                                    main_frame_preview, page_id));
     }
   }
+}
+
+// static
+const void* PreviewsUITabHelper::OptOutEventKey() {
+  return &kOptOutEventKey;
 }

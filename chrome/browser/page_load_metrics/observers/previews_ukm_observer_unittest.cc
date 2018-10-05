@@ -15,7 +15,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/core/previews_features.h"
@@ -243,8 +243,7 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
   RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
           false /* noscript_on */, false /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   // Opt out should not be added since we don't track this type.
@@ -271,7 +270,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, LitePageOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -282,8 +281,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutInfobar) {
           false /* noscript_on */, false /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -304,8 +302,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
           false /* noscript_on */, false /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -331,7 +328,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, NoScriptOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -342,8 +339,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutInfobar) {
           true /* noscript_on */, false /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -364,8 +360,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
           true /* noscript_on */, false /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -391,7 +386,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -402,8 +397,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutInfobar) {
           false /* noscript_on */, true /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -424,8 +418,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
           false /* noscript_on */, true /* resource_loading_hints_on */,
           false /* origin_opt_out */, false /* save_data_enabled */);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -474,7 +467,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -508,8 +501,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutInfobar) {
 
   for (const auto& request : resources)
     SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
@@ -552,8 +544,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
 
   for (const auto& request : resources)
     SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
@@ -601,7 +592,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -636,8 +627,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutInfobar) {
   for (const auto& request : resources)
     SimulateLoadedResource(request);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
@@ -681,8 +671,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
   for (const auto& request : resources)
     SimulateLoadedResource(request);
 
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
@@ -735,7 +724,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
               false /* save_data_enabled_expected */);
 }
 
-TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutInfobar) {
+TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled features */,
@@ -775,8 +764,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutInfobar) {
 
   for (const auto& request : resources)
     SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
               false /* lite_page_expected */, false /* noscript_expected */,
@@ -824,8 +812,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
 
   for (const auto& request : resources)
     SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
               false /* lite_page_expected */, false /* noscript_expected */,

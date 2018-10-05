@@ -16,7 +16,7 @@
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
@@ -558,7 +558,7 @@ DataReductionProxyMetricsObserver::GetPingbackClient() const {
 void DataReductionProxyMetricsObserver::OnEventOccurred(
     const void* const event_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (event_key == PreviewsInfoBarDelegate::OptOutEventKey())
+  if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opted_out_ = true;
 }
 

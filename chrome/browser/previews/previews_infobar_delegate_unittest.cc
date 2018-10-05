@@ -120,7 +120,7 @@ class TestOptOutObserver : public page_load_metrics::PageLoadMetricsObserver {
   ~TestOptOutObserver() override {}
 
   void OnEventOccurred(const void* const event_key) override {
-    if (PreviewsInfoBarDelegate::OptOutEventKey() == event_key)
+    if (PreviewsUITabHelper::OptOutEventKey() == event_key)
       callback_.Run();
   }
 

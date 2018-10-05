@@ -12,7 +12,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -156,7 +156,7 @@ void PreviewsUKMObserver::OnLoadedResource(
 
 void PreviewsUKMObserver::OnEventOccurred(const void* const event_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (event_key == PreviewsInfoBarDelegate::OptOutEventKey())
+  if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opt_out_occurred_ = true;
 }
 

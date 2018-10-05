@@ -89,6 +89,9 @@ class PreviewsUITabHelper
     return previews_user_data_.get();
   }
 
+  // A key to identify opt out events.
+  static const void* OptOutEventKey();
+
  private:
   friend class content::WebContentsUserData<PreviewsUITabHelper>;
   friend class PreviewsUITabHelperUnitTest;
