@@ -5,7 +5,7 @@
 #include "components/previews/content/previews_content_util.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
 #include "net/url_request/url_request.h"
 
 namespace previews {

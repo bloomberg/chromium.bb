@@ -14,8 +14,8 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/previews_hints.h"
+#include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/host_filter.h"
-#include "components/previews/core/previews_user_data.h"
 #include "components/url_matcher/url_matcher.h"
 
 class GURL;

@@ -10,7 +10,7 @@
 #include "base/task_runner_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
