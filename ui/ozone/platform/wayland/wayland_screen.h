@@ -50,7 +50,7 @@ class WaylandScreen : public PlatformScreen {
  private:
   display::DisplayList display_list_;
 
-  base::ObserverList<display::DisplayObserver>::Unchecked observers_;
+  base::ObserverList<display::DisplayObserver> observers_;
 
   base::WeakPtrFactory<WaylandScreen> weak_factory_;
 
