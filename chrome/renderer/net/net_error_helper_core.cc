@@ -585,8 +585,13 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
 
   // If there's no pending error page information associated with the page load,
   // or the new page is not an error page, then reset pending error page state.
-  if (!pending_error_page_info_ || page_type != ERROR_PAGE)
+  if (!pending_error_page_info_ || page_type != ERROR_PAGE) {
     CancelPendingFetches();
+  } else {
+    // Halt auto-reload if it's currently scheduled. OnFinishLoad will trigger
+    // auto-reload if appropriate.
+    PauseAutoReloadTimer();
+  }
 }
 
 void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
