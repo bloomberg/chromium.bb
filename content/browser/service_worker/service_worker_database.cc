@@ -275,6 +275,7 @@ const char* ServiceWorkerDatabase::StatusToString(
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
     : registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
+      script_type(blink::mojom::ScriptType::kClassic),
       update_via_cache(blink::mojom::ServiceWorkerUpdateViaCache::kImports),
       version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       is_active(false),
@@ -1410,6 +1411,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   for (uint32_t feature : data.used_features())
     out->used_features.insert(feature);
 
+  if (data.has_script_type()) {
+    auto value = data.script_type();
+    if (!ServiceWorkerRegistrationData_ServiceWorkerScriptType_IsValid(value)) {
+      DLOG(ERROR) << "Worker script type '" << value << "' is not valid.";
+      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+    }
+    out->script_type = static_cast<blink::mojom::ScriptType>(value);
+  }
+
   if (data.has_update_via_cache()) {
     auto value = data.update_via_cache();
     if (!ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType_IsValid(
@@ -1461,6 +1471,9 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   for (uint32_t feature : registration.used_features)
     data.add_used_features(feature);
 
+  data.set_script_type(
+      static_cast<ServiceWorkerRegistrationData_ServiceWorkerScriptType>(
+          registration.script_type));
   data.set_update_via_cache(
       static_cast<
           ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
