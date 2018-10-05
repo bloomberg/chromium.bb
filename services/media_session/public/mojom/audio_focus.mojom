@@ -6,7 +6,7 @@ module media_session.mojom;
 
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 // These are the different types of audio focus that can be requested.
 [Extensible]
@@ -32,6 +32,7 @@ struct AudioFocusRequestState {
   MediaSessionInfo session_info;
   AudioFocusType audio_focus_type;
   uint64 request_id;
+  [MinVersion=2] string? source_name;
 };
 
 // The observer for audio focus events.
@@ -62,7 +63,7 @@ interface AudioFocusRequestClient {
 };
 
 // Controls audio focus across the entire system.
-// Next Method ID: 3
+// Next Method ID: 4
 interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
   // |session_info|. Media sessions should provide a |request| that will
@@ -79,6 +80,12 @@ interface AudioFocusManager {
 
   // Adds observers that receive audio focus events.
   AddObserver@2(AudioFocusObserver observer);
+
+  // Associates a name with this binding. This will be associated with all
+  // audio focus requests made with this binding. It will also be used for
+  // associating metrics to a source. If the source name is updated then
+  // the audio focus requests will retain the previous source name.
+  [MinVersion=2] SetSourceName@3(string name);
 };
 
 // Provides debug information about audio focus requests.

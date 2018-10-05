@@ -19,6 +19,8 @@
 namespace arc {
 namespace {
 
+constexpr char kAudioFocusSourceName[] = "arc";
+
 // Singleton factory for ArcAccessibilityHelperBridge.
 class ArcMediaSessionBridgeFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -86,6 +88,8 @@ void ArcMediaSessionBridge::SetupAudioFocus() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr);
+
+  audio_focus_ptr->SetSourceName(kAudioFocusSourceName);
 
   DVLOG(2) << "ArcMediaSessionBridge will enable audio focus";
   ms_instance->EnableAudioFocus(std::move(audio_focus_ptr));

@@ -34,8 +34,10 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
            mojom::MediaSessionPtr session,
            mojom::MediaSessionInfoPtr session_info,
            mojom::AudioFocusType audio_focus_type,
-           RequestId id)
+           RequestId id,
+           const std::string& source_name)
       : id_(id),
+        source_name_(source_name),
         session_(std::move(session)),
         session_info_(std::move(session_info)),
         audio_focus_type_(audio_focus_type),
@@ -98,6 +100,8 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   RequestId id() const { return id_; }
 
+  const std::string& source_name() const { return source_name_; }
+
   // Flush any pending mojo messages for testing.
   void FlushForTesting() {
     session_.FlushForTesting();
@@ -112,6 +116,8 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
   }
 
   const RequestId id_;
+  const std::string source_name_;
+
   mojom::MediaSessionPtr session_;
   mojom::MediaSessionInfoPtr session_info_;
   mojom::AudioFocusType audio_focus_type_;
@@ -137,7 +143,8 @@ void AudioFocusManager::RequestAudioFocus(
   RequestAudioFocusInternal(
       std::make_unique<StackRow>(
           this, std::move(request), std::move(media_session),
-          std::move(session_info), type, GenerateAudioFocusRequestId()),
+          std::move(session_info), type, GenerateAudioFocusRequestId(),
+          GetBindingSourceName()),
       type, std::move(callback));
 }
 
@@ -149,6 +156,7 @@ void AudioFocusManager::GetFocusRequests(GetFocusRequestsCallback callback) {
     request->session_info = row->info().Clone();
     request->audio_focus_type = row->audio_focus_type();
     request->request_id = row->id();
+    request->source_name = row->source_name();
     requests.push_back(std::move(request));
   }
 
@@ -203,10 +211,16 @@ void AudioFocusManager::AddObserver(mojom::AudioFocusObserverPtr observer) {
   observers_.AddPtr(std::move(observer));
 }
 
+void AudioFocusManager::SetSourceName(const std::string& name) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  bindings_.dispatch_context()->source_name = name;
+}
+
 void AudioFocusManager::BindToInterface(
     mojom::AudioFocusManagerRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request),
+                       std::make_unique<BindingContext>());
 }
 
 void AudioFocusManager::BindToDebugInterface(
@@ -355,6 +369,11 @@ AudioFocusManager::RemoveFocusEntryIfPresent(RequestId id) {
   }
 
   return row;
+}
+
+const std::string& AudioFocusManager::GetBindingSourceName() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return bindings_.dispatch_context()->source_name;
 }
 
 bool AudioFocusManager::IsSessionOnTopOfAudioFocusStack(

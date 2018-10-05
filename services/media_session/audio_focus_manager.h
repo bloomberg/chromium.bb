@@ -6,6 +6,7 @@
 #define SERVICES_MEDIA_SESSION_AUDIO_FOCUS_MANAGER_H_
 
 #include <list>
+#include <string>
 #include <unordered_map>
 
 #include "base/memory/singleton.h"
@@ -34,6 +35,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
                          RequestAudioFocusCallback callback) override;
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
   void AddObserver(mojom::AudioFocusObserverPtr observer) override;
+  void SetSourceName(const std::string& name) override;
 
   // mojom::AudioFocusManagerDebug.
   void GetDebugInfoForRequest(uint64_t request_id,
@@ -57,6 +59,15 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // control its audio focus.
   class StackRow;
 
+  // BindingContext stores associated metadata for mojo binding.
+  struct BindingContext {
+    // The source name is associated with a binding when a client calls
+    // |SetSourceName|. It is used to provide more granularity than a
+    // service_manager::Identity for metrics and for identifying where an audio
+    // focus request originated from.
+    std::string source_name;
+  };
+
   void RequestAudioFocusInternal(std::unique_ptr<StackRow>,
                                  mojom::AudioFocusType,
                                  base::OnceCallback<void()>);
@@ -76,11 +87,16 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
 
+  // Returns the source name of the binding currently accessing the Audio
+  // Focus Manager API over mojo.
+  const std::string& GetBindingSourceName() const;
+
   bool IsSessionOnTopOfAudioFocusStack(RequestId id,
                                        mojom::AudioFocusType type) const;
 
   // Holds mojo bindings for the Audio Focus Manager API.
-  mojo::BindingSet<mojom::AudioFocusManager> bindings_;
+  mojo::BindingSet<mojom::AudioFocusManager, std::unique_ptr<BindingContext>>
+      bindings_;
 
   // Holds mojo bindings for the Audio Focus Manager Debug API.
   mojo::BindingSet<mojom::AudioFocusManagerDebug> debug_bindings_;
