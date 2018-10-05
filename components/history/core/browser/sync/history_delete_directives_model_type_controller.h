@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_SYNC_HISTORY_DELETE_DIRECTIVES_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_SYNC_HISTORY_DELETE_DIRECTIVES_MODEL_TYPE_CONTROLLER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
@@ -22,7 +23,8 @@ class HistoryDeleteDirectivesModelTypeController
       public syncer::SyncServiceObserver {
  public:
   // |sync_client| must not be null and must outlive this object.
-  explicit HistoryDeleteDirectivesModelTypeController(
+  HistoryDeleteDirectivesModelTypeController(
+      const base::RepeatingClosure& dump_stack,
       syncer::SyncClient* sync_client);
   ~HistoryDeleteDirectivesModelTypeController() override;
 

@@ -28,7 +28,8 @@ class SyncableServiceBasedModelTypeController : public ModelTypeController {
   SyncableServiceBasedModelTypeController(
       ModelType type,
       OnceModelTypeStoreFactory store_factory,
-      SyncableServiceProvider syncable_service_provider);
+      SyncableServiceProvider syncable_service_provider,
+      const base::RepeatingClosure& dump_stack);
   ~SyncableServiceBasedModelTypeController() override;
 
  private:

@@ -12,13 +12,15 @@
 SupervisedUserSyncModelTypeController::SupervisedUserSyncModelTypeController(
     syncer::ModelType type,
     const Profile* profile,
+    const base::RepeatingClosure& dump_stack,
     syncer::SyncClient* sync_client)
     : SyncableServiceBasedModelTypeController(
           type,
           sync_client->GetModelTypeStoreService()->GetStoreFactory(),
           base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                          base::Unretained(sync_client),
-                         type)),
+                         type),
+          dump_stack),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USER_SETTINGS ||
          type == syncer::SUPERVISED_USER_WHITELISTS);

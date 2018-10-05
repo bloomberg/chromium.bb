@@ -138,7 +138,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     syncer::ModelTypeSet disabled_types,
     syncer::LocalDeviceInfoProvider* local_device_info_provider) {
   syncer::DataTypeController::TypeVector controllers;
-  base::Closure error_callback =
+  const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
@@ -166,7 +166,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
-                db_thread_, error_callback, sync_client_,
+                db_thread_, dump_stack, sync_client_,
                 web_data_service_on_disk_));
       }
     }
@@ -183,7 +183,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
-                syncer::AUTOFILL_WALLET_DATA, db_thread_, error_callback,
+                syncer::AUTOFILL_WALLET_DATA, db_thread_, dump_stack,
                 sync_client_, web_data_service_on_disk_));
       }
     }
@@ -201,7 +201,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
-                syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
+                syncer::AUTOFILL_WALLET_METADATA, db_thread_, dump_stack,
                 sync_client_, web_data_service_on_disk_));
       }
     }
@@ -221,7 +221,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                   sync_client_->GetFaviconService()))));
     } else {
       controllers.push_back(std::make_unique<BookmarkDataTypeController>(
-          error_callback, sync_client_));
+          dump_stack, sync_client_));
     }
   }
 
@@ -244,12 +244,12 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               switches::kSyncPseudoUSSHistoryDeleteDirectives)) {
         controllers.push_back(
             std::make_unique<HistoryDeleteDirectivesModelTypeController>(
-                sync_client_));
+                dump_stack, sync_client_));
 
       } else {
         controllers.push_back(
             std::make_unique<HistoryDeleteDirectivesDataTypeController>(
-                error_callback, sync_client_));
+                dump_stack, sync_client_));
       }
     }
 
@@ -270,7 +270,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 history_disabled_pref_));
       } else {
         controllers.push_back(std::make_unique<SessionDataTypeController>(
-            error_callback, sync_client_, local_device_info_provider,
+            dump_stack, sync_client_, local_device_info_provider,
             history_disabled_pref_));
       }
     }
@@ -285,14 +285,16 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
                 base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                                base::Unretained(sync_client_),
-                               syncer::FAVICON_IMAGES)));
+                               syncer::FAVICON_IMAGES),
+                dump_stack));
         controllers.push_back(
             std::make_unique<SyncableServiceBasedModelTypeController>(
                 syncer::FAVICON_TRACKING,
                 sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
                 base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                                base::Unretained(sync_client_),
-                               syncer::FAVICON_TRACKING)));
+                               syncer::FAVICON_TRACKING),
+                dump_stack));
       } else {
         controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
             syncer::FAVICON_IMAGES, base::RepeatingClosure(), sync_client_,
@@ -308,7 +310,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     controllers.push_back(std::make_unique<PasswordDataTypeController>(
-        error_callback, sync_client_,
+        dump_stack, sync_client_,
         sync_client_->GetPasswordStateChangedCallback(), password_store_));
   }
 
@@ -324,10 +326,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
               base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                              base::Unretained(sync_client_),
-                             syncer::PREFERENCES)));
+                             syncer::PREFERENCES),
+              dump_stack));
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::PREFERENCES, error_callback, sync_client_, syncer::GROUP_UI,
+          syncer::PREFERENCES, dump_stack, sync_client_, syncer::GROUP_UI,
           ui_thread_));
     }
   }
@@ -341,10 +344,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
               base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
                              base::Unretained(sync_client_),
-                             syncer::PRIORITY_PREFERENCES)));
+                             syncer::PRIORITY_PREFERENCES),
+              dump_stack));
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::PRIORITY_PREFERENCES, error_callback, sync_client_,
+          syncer::PRIORITY_PREFERENCES, dump_stack, sync_client_,
           syncer::GROUP_UI, ui_thread_));
     }
   }

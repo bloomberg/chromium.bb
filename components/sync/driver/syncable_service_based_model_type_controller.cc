@@ -22,10 +22,12 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
 
   ControllerDelegate(ModelType type,
                      OnceModelTypeStoreFactory store_factory,
-                     SyncableServiceProvider syncable_service_provider)
+                     SyncableServiceProvider syncable_service_provider,
+                     const base::RepeatingClosure& dump_stack)
       : type_(type),
         store_factory_(std::move(store_factory)),
-        syncable_service_provider_(std::move(syncable_service_provider)) {
+        syncable_service_provider_(std::move(syncable_service_provider)),
+        dump_stack_(dump_stack) {
     DCHECK(store_factory_);
     DCHECK(syncable_service_provider_);
   }
@@ -62,9 +64,8 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
       DCHECK(syncable_service);
       bridge_ = std::make_unique<SyncableServiceBasedBridge>(
           type_, std::move(store_factory_),
-          std::make_unique<ClientTagBasedModelTypeProcessor>(
-              type_,
-              /*dump_stack=*/base::RepeatingClosure()),
+          std::make_unique<ClientTagBasedModelTypeProcessor>(type_,
+                                                             dump_stack_),
           syncable_service.get());
     }
     return bridge_->change_processor()->GetControllerDelegate().get();
@@ -73,6 +74,7 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
   const ModelType type_;
   OnceModelTypeStoreFactory store_factory_;
   SyncableServiceProvider syncable_service_provider_;
+  const base::RepeatingClosure dump_stack_;
   std::unique_ptr<ModelTypeSyncBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerDelegate);
@@ -84,12 +86,14 @@ SyncableServiceBasedModelTypeController::
     SyncableServiceBasedModelTypeController(
         ModelType type,
         OnceModelTypeStoreFactory store_factory,
-        SyncableServiceProvider syncable_service_provider)
+        SyncableServiceProvider syncable_service_provider,
+        const base::RepeatingClosure& dump_stack)
     : ModelTypeController(type,
                           std::make_unique<ControllerDelegate>(
                               type,
                               std::move(store_factory),
-                              std::move(syncable_service_provider))) {}
+                              std::move(syncable_service_provider),
+                              dump_stack)) {}
 
 SyncableServiceBasedModelTypeController::
     ~SyncableServiceBasedModelTypeController() {}

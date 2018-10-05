@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SYNC_MODEL_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SYNC_MODEL_TYPE_CONTROLLER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 
@@ -20,9 +21,11 @@ class SupervisedUserSyncModelTypeController
     : public syncer::SyncableServiceBasedModelTypeController {
  public:
   // |sync_client| and |profile| must not be null and must outlive this object.
-  SupervisedUserSyncModelTypeController(syncer::ModelType type,
-                                        const Profile* profile,
-                                        syncer::SyncClient* sync_client);
+  SupervisedUserSyncModelTypeController(
+      syncer::ModelType type,
+      const Profile* profile,
+      const base::RepeatingClosure& dump_stack,
+      syncer::SyncClient* sync_client);
   ~SupervisedUserSyncModelTypeController() override;
 
   // DataTypeController override.
