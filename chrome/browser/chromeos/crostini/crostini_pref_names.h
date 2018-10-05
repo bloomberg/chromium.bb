@@ -19,6 +19,7 @@ extern const char kUserCrostiniAllowedByPolicy[];
 extern const char kReportCrostiniUsageEnabled[];
 extern const char kCrostiniLastLaunchVersion[];
 extern const char kCrostiniLastLaunchTimeWindowStart[];
+extern const char kCrostiniLastDiskSize[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
