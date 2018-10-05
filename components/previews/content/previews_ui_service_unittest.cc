@@ -16,6 +16,7 @@
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {
@@ -29,14 +30,16 @@ class TestPreviewsUIService : public PreviewsUIService {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
-      std::unique_ptr<PreviewsLogger> logger)
+      std::unique_ptr<PreviewsLogger> logger,
+      network::TestNetworkQualityTracker* test_network_quality_tracker)
       : PreviewsUIService(previews_decider_impl,
                           io_task_runner,
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
                           PreviewsIsEnabledCallback(),
                           std::move(logger),
-                          blacklist::BlacklistData::AllowedTypesAndVersions()),
+                          blacklist::BlacklistData::AllowedTypesAndVersions(),
+                          test_network_quality_tracker),
         previews_decider_impl_set_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -204,7 +207,7 @@ class PreviewsUIServiceTest : public testing::Test {
     ui_service_ = std::make_unique<TestPreviewsUIService>(
         previews_decider_impl(), loop_.task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
-        std::move(logger));
+        std::move(logger), &test_network_quality_tracker_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -217,6 +220,7 @@ class PreviewsUIServiceTest : public testing::Test {
   // Run this test on a single thread.
   base::MessageLoopForIO loop_;
   TestPreviewsLogger* logger_ptr_;
+  network::TestNetworkQualityTracker test_network_quality_tracker_;
 
  private:
   std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;

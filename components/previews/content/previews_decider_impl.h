@@ -36,10 +36,6 @@ namespace blacklist {
 class OptOutStore;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace previews {
 class PreviewsUIService;
 
@@ -111,15 +107,20 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
   // PreviewsDecider implementation:
-  bool ShouldAllowPreview(const net::URLRequest& request,
+  bool ShouldAllowPreview(PreviewsUserData* previews_data,
+                          const GURL& url,
+                          bool is_reload,
                           PreviewsType type) const override;
   bool ShouldAllowPreviewAtECT(
-      const net::URLRequest& request,
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
       const std::vector<std::string>& host_blacklist_from_finch,
       bool is_server_preview) const override;
-  bool IsURLAllowedForPreview(const net::URLRequest& request,
+  bool IsURLAllowedForPreview(PreviewsUserData* previews_data,
+                              const GURL& url,
                               PreviewsType type) const override;
 
   // Set whether ignoring the long term blacklist rules is allowed for calls to
@@ -128,11 +129,14 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
-  void LoadResourceHints(const net::URLRequest& request) override;
+  void LoadResourceHints(const GURL& url) override;
 
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();
+
+  void SetEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type);
 
  protected:
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
@@ -151,20 +155,22 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:
-  // Whether the preview |type| should be allowed to be considered for |request|
+  // Whether the preview |type| should be allowed to be considered for |url|
   // subject to any server provided optimization hints. This is meant for
   // checking the initial navigation URL. Returns ALLOWED if no reason found
   // to deny the preview for consideration.
   PreviewsEligibilityReason ShouldAllowPreviewPerOptimizationHints(
-      const net::URLRequest& request,
+      PreviewsUserData* previews_data,
+      const GURL& url,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
-  // Whether |request| is allowed for |type| according to server provided
+  // Whether |url| is allowed for |type| according to server provided
   // optimization hints, if available. This is meant for checking the committed
   // navigation URL against any specific hint details.
   PreviewsEligibilityReason IsURLAllowedForPreviewByOptimizationHints(
-      const net::URLRequest& request,
+      PreviewsUserData* previews_data,
+      const GURL& url,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
@@ -191,6 +197,11 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // ShouldAllowPreviewAtECT that have
   // |is_server_preview| true.
   bool ignore_long_term_blacklist_for_server_previews_ = false;
+
+  // The estimate of how slow a user's connection is. Used for triggering
+  // Previews.
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   base::Clock* clock_;
 

@@ -30,6 +30,7 @@ static_library("content") {
     "//components/variations",
     "//content/public/common",
     "//net",
+    "//services/network:network_service",
   ]
 }
 
@@ -55,6 +56,8 @@ source_set("unit_tests") {
     "//components/variations",
     "//content/public/common",
     "//net:test_support",
+    "//services/network:network_service",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }

@@ -30,27 +30,21 @@ ContentLoFiDecider::~ContentLoFiDecider() {}
 // Static
 content::PreviewsState
 ContentLoFiDecider::DetermineCommittedServerPreviewsState(
-    const net::URLRequest& request,
+    DataReductionProxyData* data,
     content::PreviewsState initial_state) {
-  DCHECK_EQ(
-      content::RESOURCE_TYPE_MAIN_FRAME,
-      content::ResourceRequestInfo::ForRequest(&request)->GetResourceType())
-      << "Request was not for main frame";
-  data_reduction_proxy::DataReductionProxyData* drp_data =
-      data_reduction_proxy::DataReductionProxyData::GetData(request);
-  if (!drp_data) {
+  if (!data) {
     return initial_state &=
            ~(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON);
   }
   content::PreviewsState updated_state = initial_state;
-  if (!drp_data->lite_page_received()) {
+  if (!data->lite_page_received()) {
     // Turn off LitePage bit.
     updated_state &= ~(content::SERVER_LITE_PAGE_ON);
   }
-  if (!drp_data->lofi_policy_received()) {
+  if (!data->lofi_policy_received()) {
     // Turn off LoFi bit(s).
     updated_state &= ~(content::SERVER_LOFI_ON);
-    if (drp_data->used_data_reduction_proxy()) {
+    if (data->used_data_reduction_proxy()) {
       // Turn off Client LoFi bit also if using proxy but proxy did not
       // request LoFi.
       updated_state &= ~(content::CLIENT_LOFI_ON);

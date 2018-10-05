@@ -11,10 +11,6 @@
 #include "base/supports_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace previews {
 
 // A representation of previews information related to a navigation.
@@ -26,12 +22,13 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   // Makes a deep copy.
   std::unique_ptr<PreviewsUserData> DeepCopy() const;
 
-  // Creates the data on |request| if it does not exist, and returns a pointer
+  // Creates the data on |owner| if it does not exist, and returns a pointer
   // to the data.
-  static PreviewsUserData* Create(net::URLRequest* request, uint64_t page_id);
+  static PreviewsUserData* Create(base::SupportsUserData* owner,
+                                  uint64_t page_id);
 
-  // Gets the data from the request if it exists.
-  static PreviewsUserData* GetData(const net::URLRequest& request);
+  // Gets the data from the owner if the data exists.
+  static PreviewsUserData* GetData(const base::SupportsUserData& owner);
 
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }

@@ -5,7 +5,6 @@
 #include "components/previews/content/previews_user_data.h"
 
 #include "base/memory/ptr_util.h"
-#include "net/url_request/url_request.h"
 
 namespace previews {
 
@@ -23,21 +22,22 @@ std::unique_ptr<PreviewsUserData> PreviewsUserData::DeepCopy() const {
   return base::WrapUnique(new PreviewsUserData(*this));
 }
 
-PreviewsUserData* PreviewsUserData::GetData(const net::URLRequest& request) {
+PreviewsUserData* PreviewsUserData::GetData(
+    const base::SupportsUserData& owner) {
   PreviewsUserData* data =
-      static_cast<PreviewsUserData*>(request.GetUserData(kPreviewsUserDataKey));
+      static_cast<PreviewsUserData*>(owner.GetUserData(kPreviewsUserDataKey));
   return data;
 }
 
-PreviewsUserData* PreviewsUserData::Create(net::URLRequest* request,
+PreviewsUserData* PreviewsUserData::Create(base::SupportsUserData* owner,
                                            uint64_t page_id) {
-  if (!request)
+  if (!owner)
     return nullptr;
-  PreviewsUserData* data = GetData(*request);
+  PreviewsUserData* data = GetData(*owner);
   if (data)
     return data;
   data = new PreviewsUserData(page_id);
-  request->SetUserData(kPreviewsUserDataKey, base::WrapUnique(data));
+  owner->SetUserData(kPreviewsUserDataKey, base::WrapUnique(data));
   return data;
 }
 
