@@ -1443,15 +1443,14 @@ bool LayoutObject::HasDistortingVisualEffects() const {
                                            .LocalBorderBoxProperties();
 
   // No filters, no blends, no opacity < 100%.
-  const EffectPaintPropertyNode* effects = paint_properties.Effect();
-  while (effects && !effects->IsRoot()) {
-    if (!effects->Filter().IsEmpty() ||
-        effects->GetColorFilter() != kColorFilterNone ||
-        effects->BlendMode() != SkBlendMode::kSrcOver ||
-        effects->Opacity() != 1.0) {
+  for (const auto* effect = SafeUnalias(paint_properties.Effect()); effect;
+       effect = SafeUnalias(effect->Parent())) {
+    if (!effect->Filter().IsEmpty() ||
+        effect->GetColorFilter() != kColorFilterNone ||
+        effect->BlendMode() != SkBlendMode::kSrcOver ||
+        effect->Opacity() != 1.0) {
       return true;
     }
-    effects = effects->Parent();
   }
 
   PropertyTreeState root_properties = GetDocument()
@@ -1477,11 +1476,10 @@ bool LayoutObject::HasNonZeroEffectiveOpacity() const {
                                            .FirstFragment()
                                            .LocalBorderBoxProperties();
 
-  const EffectPaintPropertyNode* effects = paint_properties.Effect();
-  while (effects && !effects->IsRoot()) {
-    if (effects->Opacity() == 0.0)
+  for (const auto* effect = SafeUnalias(paint_properties.Effect()); effect;
+       effect = SafeUnalias(effect->Parent())) {
+    if (effect->Opacity() == 0.0)
       return false;
-    effects = effects->Parent();
   }
   return true;
 }
