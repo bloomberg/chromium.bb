@@ -1772,8 +1772,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-// https://crbug.com/856169
+#if (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_CHROME) && defined(MEMORY_SANITIZER))
+// https://crbug.com/856169, https://crbug.com/892484
 #define MAYBE_MouseLeave DISABLED_MouseLeave
 #else
 #define MAYBE_MouseLeave MouseLeave
