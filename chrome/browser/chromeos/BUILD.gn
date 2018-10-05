@@ -103,6 +103,7 @@ source_set("chromeos") {
     "//chromeos/services/secure_channel/public/cpp/client",
     "//components/arc",
     "//components/arc/common:struct_traits",
+    "//components/arc/media_session",
     "//components/browser_sync",
     "//components/captive_portal",
     "//components/component_updater:crl_set_remover",
