@@ -341,8 +341,8 @@ void ScreenManager::UpdateControllerToWindowMapping() {
     if (it != window_to_controller_map.end())
       controller = it->second;
 
-    bool should_enable =
-        controller && pair.second->GetController() != controller;
+    bool should_enable = controller && pair.second->GetController() &&
+                         pair.second->GetController() != controller;
     pair.second->SetController(controller);
 
     // If we're moving windows between controllers modeset the controller
