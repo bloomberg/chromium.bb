@@ -28,13 +28,6 @@ using content::DevToolsAgentHost;
 
 namespace extensions {
 
-namespace {
-
-// For binding.
-void DoNothingWithExtensionHost(ExtensionHost* host) {}
-
-}  // namespace
-
 ExtensionRegistrar::ExtensionRegistrar(content::BrowserContext* browser_context,
                                        Delegate* delegate)
     : browser_context_(browser_context),
@@ -530,8 +523,7 @@ void ExtensionRegistrar::MaybeSpinUpLazyBackgroundPage(
   // Wake up the event page by posting a dummy task.
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context_);
-  queue->AddPendingTask(browser_context_, extension->id(),
-                        base::BindOnce(&DoNothingWithExtensionHost));
+  queue->AddPendingTask(browser_context_, extension->id(), base::DoNothing());
 }
 
 }  // namespace extensions
