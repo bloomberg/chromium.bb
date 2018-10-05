@@ -1144,14 +1144,9 @@ void CompositorImpl::OnGpuChannelEstablished(
                                          requires_alpha_channel_),
           ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
-  LOG_IF(FATAL, result == gpu::ContextResult::kFatalFailure)
-      << "Fatal error making Gpu context";
-  if (result == gpu::ContextResult::kSurfaceFailure) {
-    SetSurface(nullptr);
-    client_->RecreateSurface();
-  }
-
   if (result != gpu::ContextResult::kSuccess) {
+    if (gpu::IsFatalOrSurfaceFailure(result))
+      OnFatalOrSurfaceContextCreationFailure(result);
     HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
@@ -1431,8 +1426,14 @@ viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
 
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     gpu::ContextResult context_result) {
+  DCHECK(gpu::IsFatalOrSurfaceFailure(context_result));
   LOG_IF(FATAL, context_result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
+
+  if (context_result == gpu::ContextResult::kSurfaceFailure) {
+    SetSurface(nullptr);
+    client_->RecreateSurface();
+  }
 }
 
 }  // namespace content
