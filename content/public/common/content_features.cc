@@ -660,6 +660,11 @@ const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
 // Enable IOSurface based screen capturer.
 const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+// The V2 sandbox on MacOS removes the unsandboed warmup phase and sandboxes the
+// entire life of the process.
+const base::Feature kMacV2Sandbox{"MacV2Sandbox",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 enum class VideoCaptureServiceConfiguration {
