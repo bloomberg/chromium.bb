@@ -4,6 +4,7 @@
 
 #include "ash/components/quick_launch/quick_launch_application.h"
 
+#include "ash/public/cpp/ash_client.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -174,11 +175,15 @@ void QuickLaunchApplication::OnStart() {
   params.connector = context()->connector();
   params.identity = context()->identity();
   params.register_path_provider = running_standalone_;
+  params.use_accessibility_host = true;
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
     context()->QuitNow();
     return;
   }
+
+  // Register as a client of the window manager.
+  ash::ash_client::Init();
 
   catalog::mojom::CatalogPtr catalog;
   context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
