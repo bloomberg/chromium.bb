@@ -409,7 +409,8 @@ static jboolean JNI_PrefServiceBridge_GetSearchSuggestManaged(
 static jboolean JNI_PrefServiceBridge_IsScoutExtendedReportingActive(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return safe_browsing::IsScout(*GetPrefService());
+  // TODO(lpz/scout): Remove this method and refactor calling code.
+  return true;
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
