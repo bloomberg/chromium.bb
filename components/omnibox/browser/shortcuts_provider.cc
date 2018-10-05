@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -388,37 +389,54 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
                              base::UTF16ToUTF8(shortcut.text));
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
-  // If the match is a search query this is easy: simply check whether the
-  // user text is a prefix of the query.  If the match is a navigation, we
-  // assume the fill_into_edit looks something like a URL, so we use
-  // URLPrefix::GetInlineAutocompleteOffset() to try and strip off any prefixes
-  // that the user might not think would change the meaning, but would
-  // otherwise prevent inline autocompletion.  This allows, for example, the
-  // input of "foo.c" to autocomplete to "foo.com" for a fill_into_edit of
-  // "http://foo.com".
+  // If the input is in keyword mode, navigation matches cannot be the default
+  // match, and search query matches can only be the default match if their
+  // keywords matches the input's keyword, as otherwise, default,
+  // different-keyword matches may result in leaving keyword mode. Additionally,
+  // if the match is a search query, check whether the user text is a prefix of
+  // the query. If the match is a navigation, we assume the fill_into_edit looks
+  // something like a URL, so we use URLPrefix::GetInlineAutocompleteOffset() to
+  // try and strip off any prefixes that the user might not think would change
+  // the meaning, but would otherwise prevent inline autocompletion. This
+  // allows, for example, the input of "foo.c" to autocomplete to "foo.com" for
+  // a fill_into_edit of "http://foo.com".
   const bool is_search_type = AutocompleteMatch::IsSearchType(match.type);
-  if (is_search_type) {
-    if (match.fill_into_edit.size() >= input.text().size() &&
-        std::equal(match.fill_into_edit.begin(),
-                   match.fill_into_edit.begin() + input.text().size(),
-                   input.text().begin(),
-                   SimpleCaseInsensitiveCompareUCS2())) {
-      match.inline_autocompletion =
-          match.fill_into_edit.substr(input.text().length());
-      match.allowed_to_be_default_match =
-          !input.prevent_inline_autocomplete() ||
-          match.inline_autocompletion.empty();
-    }
-  } else {
-    const size_t inline_autocomplete_offset =
-        URLPrefix::GetInlineAutocompleteOffset(
-            input.text(), fixed_up_input_text, true, match.fill_into_edit);
-    if (inline_autocomplete_offset != base::string16::npos) {
-      match.inline_autocompletion =
-          match.fill_into_edit.substr(inline_autocomplete_offset);
-      match.allowed_to_be_default_match =
-          !HistoryProvider::PreventInlineAutocomplete(input) ||
-          match.inline_autocompletion.empty();
+
+  DCHECK(is_search_type != match.keyword.empty());
+
+  // True if input is in keyword mode and the match is a URL suggestion or the
+  // match has a different keyword.
+  bool would_cause_leaving_keyboard_mode =
+      input.prefer_keyword() &&
+      (!is_search_type ||
+       !base::StartsWith(base::UTF16ToUTF8(input.text()),
+                         base::StrCat({base::UTF16ToUTF8(match.keyword), " "}),
+                         base::CompareCase::INSENSITIVE_ASCII));
+
+  if (!would_cause_leaving_keyboard_mode) {
+    if (is_search_type) {
+      if (match.fill_into_edit.size() >= input.text().size() &&
+          std::equal(match.fill_into_edit.begin(),
+                     match.fill_into_edit.begin() + input.text().size(),
+                     input.text().begin(),
+                     SimpleCaseInsensitiveCompareUCS2())) {
+        match.inline_autocompletion =
+            match.fill_into_edit.substr(input.text().length());
+        match.allowed_to_be_default_match =
+            !input.prevent_inline_autocomplete() ||
+            match.inline_autocompletion.empty();
+      }
+    } else {
+      const size_t inline_autocomplete_offset =
+          URLPrefix::GetInlineAutocompleteOffset(
+              input.text(), fixed_up_input_text, true, match.fill_into_edit);
+      if (inline_autocomplete_offset != base::string16::npos) {
+        match.inline_autocompletion =
+            match.fill_into_edit.substr(inline_autocomplete_offset);
+        match.allowed_to_be_default_match =
+            !HistoryProvider::PreventInlineAutocomplete(input) ||
+            match.inline_autocompletion.empty();
+      }
     }
   }
 
