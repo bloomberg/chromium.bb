@@ -966,7 +966,9 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
 void ShelfView::LayoutAppListAndBackButtonHighlight() const {
   // Don't show anything if this is the overflow menu or if this is not the
   // new UI.
-  if (is_overflow_mode() || !chromeos::switches::ShouldUseShelfNewUi()) {
+  if (!chromeos::switches::ShouldUseShelfNewUi())
+    return;
+  if (is_overflow_mode()) {
     back_and_app_list_background_->SetVisible(false);
     return;
   }
