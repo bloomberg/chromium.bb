@@ -12,7 +12,7 @@ const testCase = async_test('Button is clicked');
 const btnClicked = testCase.step_func_done(() => {});
 
 testCase.step(() => {
-  assert_exists(window, 'eventSender');
+  assert_own_property(window, 'eventSender');
   var testEle = document.getElementById('testButton');
   eventSender.mouseMoveTo(testEle.offsetLeft + testEle.offsetWidth / 2, testEle.offsetTop + testEle.offsetHeight / 2);
   eventSender.mouseDown();

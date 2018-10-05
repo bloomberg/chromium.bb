@@ -19,7 +19,7 @@ function runTest(select, valid) {
         content.setAttribute('select', select);
 
     test(() => {
-      assert_exists(window, 'internals',
+      assert_own_property(window, 'internals',
                     'This test requires internals.isValidContentSelect');
       assert_equals(internals.isValidContentSelect(content), valid);
     }, `${select} ${valid}`);

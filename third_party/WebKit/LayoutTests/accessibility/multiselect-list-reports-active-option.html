@@ -17,7 +17,7 @@
     let notificationReceivedIndex = 0;
 
     function runTest() {
-        assert_exists(window, 'accessibilityController');
+        assert_own_property(window, 'accessibilityController');
 
         var menulist = document.getElementById("menulist");
         menulist.focus();

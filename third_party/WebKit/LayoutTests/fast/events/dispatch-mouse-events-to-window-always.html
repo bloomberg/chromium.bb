@@ -41,7 +41,7 @@ const purpose =
     'and window even if they do not hit any element in the page.';
 
 test(() => {
-    assert_exists(window, 'eventSender', 'window.eventSender is required for this test.');
+    assert_own_property(window, 'eventSender', 'window.eventSender is required for this test.');
 
     window.receivers = new Map();
     var eventTypes = ['wheel', 'click', 'mousedown', 'mouseup'];
