@@ -135,10 +135,7 @@ js_library("gallery_util") {
     "../../file_manager/common/js:file_type",
     "../../file_manager/common/js:util",
     "../../file_manager/common/js:volume_manager_common",
-  ]
-  externs_list = [
-    "../../externs/volume_manager.js",
-    "../../externs/volume_info_list.js",
+    "//ui/file_manager/externs:volume_manager",
   ]
 }
 

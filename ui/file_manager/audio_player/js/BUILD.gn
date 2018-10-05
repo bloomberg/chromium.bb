@@ -20,7 +20,6 @@ js_library("closure_compile_externs") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/metrics_private.js",
     "../../externs/audio_player_foreground.js",
-    "../../externs/entry_location.js",
     "../../externs/platform.js",
     "//third_party/analytics/externs.js",
   ]
