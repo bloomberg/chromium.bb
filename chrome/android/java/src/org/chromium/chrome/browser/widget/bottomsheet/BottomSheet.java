@@ -89,7 +89,7 @@ public class BottomSheet extends FrameLayout
     /** The different reasons that the sheet's state can change. */
     @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
             StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
-            StateChangeReason.COMPOSITED_UI})
+            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int NONE = 0;
@@ -98,6 +98,7 @@ public class BottomSheet extends FrameLayout
         int TAP_SCRIM = 3;
         int NAVIGATION = 4;
         int COMPOSITED_UI = 5;
+        int VR = 6;
     }
 
     /** The different priorities that the sheet's content can have. */
