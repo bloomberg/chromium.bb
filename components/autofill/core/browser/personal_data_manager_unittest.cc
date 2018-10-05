@@ -179,7 +179,9 @@ class PersonalDataManagerTestBase {
             ? scoped_refptr<AutofillWebDataService>(account_database_service_)
             : nullptr,
         prefs_.get(), identity_test_env_.identity_manager(),
-        TestAutofillProfileValidator::GetInstance(), is_incognito);
+        TestAutofillProfileValidator::GetInstance(),
+        /*history_service=*/nullptr, is_incognito);
+
     personal_data_->AddObserver(&personal_data_observer_);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
     personal_data_->OnSyncServiceInitialized(&sync_service_);

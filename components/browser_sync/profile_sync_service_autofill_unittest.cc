@@ -388,6 +388,7 @@ class ProfileSyncServiceAutofillTest
                                  profile_sync_service_bundle()->pref_service(),
                                  /*identity_manager=*/nullptr,
                                  /*client_profile_validator=*/nullptr,
+                                 /*history_service=*/nullptr,
                                  /*is_off_the_record=*/false);
 
     web_data_service_->StartSyncableService();

@@ -94,6 +94,11 @@ class AutofillDownloadManager {
   // Returns true if the autofill server communication is enabled.
   bool IsEnabled() const { return autofill_server_url_.is_valid(); }
 
+  // Reset the upload history. This reduced space history prevents the autofill
+  // download manager from uploading a multiple votes for a given form/event
+  // pair.
+  static void ClearUploadHistory(PrefService* pref_service);
+
  private:
   friend class AutofillDownloadManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);

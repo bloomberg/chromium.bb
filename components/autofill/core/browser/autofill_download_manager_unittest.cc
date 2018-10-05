@@ -1165,7 +1165,7 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
   }
 }
 
-TEST_P(AutofillUploadTest, Reset) {
+TEST_P(AutofillUploadTest, PeriodicReset) {
   ASSERT_NE(DISABLED, GetParam());
 
   FormData form;
@@ -1215,6 +1215,52 @@ TEST_P(AutofillUploadTest, Reset) {
   histogram_tester.ExpectBucketCount(
       AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
       0, 1);
+
+  // Two uploads were sent.
+  histogram_tester.ExpectBucketCount("Autofill.UploadEvent", 1, 2);
+  histogram_tester.ExpectBucketCount(
+      AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
+      1, 2);
+}
+
+TEST_P(AutofillUploadTest, ResetOnClearUploadHisotry) {
+  ASSERT_NE(DISABLED, GetParam());
+
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("First Name:");
+  field.name = ASCIIToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name:");
+  field.name = ASCIIToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email:");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  SubmissionSource submission_source = SubmissionSource::FORM_SUBMISSION;
+
+  FormStructure form_structure(form);
+  form_structure.set_submission_source(submission_source);
+
+  base::HistogramTester histogram_tester;
+
+  TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+
+  // The first attempt should succeed.
+  EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
+
+  // Clear the upload throttling history.
+  AutofillDownloadManager::ClearUploadHistory(pref_service_.get());
+  EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
 
   // Two uploads were sent.
   histogram_tester.ExpectBucketCount("Autofill.UploadEvent", 1, 2);

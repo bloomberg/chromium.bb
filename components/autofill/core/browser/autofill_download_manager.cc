@@ -32,6 +32,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -340,8 +341,8 @@ std::ostream& operator<<(std::ostream& out,
 // Check for and returns true if |upload_event| is allowed to trigger an upload
 // for |form|. If true, updates |prefs| to track that |upload_event| has been
 // recorded for |form|.
-bool IsUploadAllowed(const FormStructure& form, PrefService* prefs) {
-  if (!prefs ||
+bool IsUploadAllowed(const FormStructure& form, PrefService* pref_service) {
+  if (!pref_service ||
       !base::FeatureList::IsEnabled(features::kAutofillUploadThrottling)) {
     return true;
   }
@@ -350,17 +351,17 @@ bool IsUploadAllowed(const FormStructure& form, PrefService* prefs) {
   static constexpr base::TimeDelta kResetPeriod = base::TimeDelta::FromDays(28);
   base::Time now = AutofillClock::Now();
   base::Time last_reset =
-      prefs->GetTime(prefs::kAutofillUploadEventsLastResetTimestamp);
+      pref_service->GetTime(prefs::kAutofillUploadEventsLastResetTimestamp);
   if ((now - last_reset) > kResetPeriod) {
-    prefs->ClearPref(prefs::kAutofillUploadEvents);
-    prefs->SetTime(prefs::kAutofillUploadEventsLastResetTimestamp, now);
+    AutofillDownloadManager::ClearUploadHistory(pref_service);
   }
 
   // Get the key for the upload bucket and extract the current bitfield value.
   static constexpr size_t kNumUploadBuckets = 1021;
   std::string key = base::StringPrintf(
       "%03X", static_cast<int>(form.form_signature() % kNumUploadBuckets));
-  auto* upload_events = prefs->GetDictionary(prefs::kAutofillUploadEvents);
+  auto* upload_events =
+      pref_service->GetDictionary(prefs::kAutofillUploadEvents);
   auto* found = upload_events->FindKeyOfType(key, base::Value::Type::INTEGER);
   int value = found ? found->GetInt() : 0;
 
@@ -374,7 +375,7 @@ bool IsUploadAllowed(const FormStructure& form, PrefService* prefs) {
   // pref to set the appropriate bit.
   bool allow_upload = ((value & mask) == 0);
   if (allow_upload) {
-    DictionaryPrefUpdate update(prefs, prefs::kAutofillUploadEvents);
+    DictionaryPrefUpdate update(pref_service, prefs::kAutofillUploadEvents);
     update->SetKey(std::move(key), base::Value(value | mask));
   }
 
@@ -478,6 +479,14 @@ bool AutofillDownloadManager::StartUploadRequest(
   DVLOG(1) << "Sending Autofill Upload Request:\n" << upload;
 
   return StartRequest(std::move(request_data));
+}
+
+void AutofillDownloadManager::ClearUploadHistory(PrefService* pref_service) {
+  if (pref_service) {
+    pref_service->ClearPref(prefs::kAutofillUploadEvents);
+    pref_service->SetTime(prefs::kAutofillUploadEventsLastResetTimestamp,
+                          AutofillClock::Now());
+  }
 }
 
 std::tuple<GURL, std::string> AutofillDownloadManager::GetRequestURLAndMethod(

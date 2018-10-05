@@ -1,6 +1,7 @@
 include_rules = [
   "+components/data_use_measurement/core",
   "+components/grit/components_scaled_resources.h",
+  "+components/history/core/browser",
   "+components/infobars/core",
   "+components/keyed_service/core",
   "+components/leveldb_proto",
