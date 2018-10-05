@@ -86,6 +86,8 @@ source_set("cdm") {
       "cdm_helpers.h",
       "cdm_module.cc",
       "cdm_module.h",
+      "cdm_type_conversion.cc",
+      "cdm_type_conversion.h",
       "cdm_wrapper.h",
       "output_protection.h",
       "platform_verification.h",

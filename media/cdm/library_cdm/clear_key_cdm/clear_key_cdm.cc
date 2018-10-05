@@ -23,6 +23,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/encryption_pattern.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
+#include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/cdm/library_cdm/cdm_host_proxy_impl.h"
@@ -132,86 +133,6 @@ static std::string GetUnitTestResultMessage(bool success) {
   return message;
 }
 
-static cdm::Exception ConvertException(
-    media::CdmPromise::Exception exception_code) {
-  switch (exception_code) {
-    case media::CdmPromise::Exception::NOT_SUPPORTED_ERROR:
-      return cdm::kExceptionNotSupportedError;
-    case media::CdmPromise::Exception::INVALID_STATE_ERROR:
-      return cdm::kExceptionInvalidStateError;
-    case media::CdmPromise::Exception::TYPE_ERROR:
-      return cdm::kExceptionTypeError;
-    case media::CdmPromise::Exception::QUOTA_EXCEEDED_ERROR:
-      return cdm::kExceptionQuotaExceededError;
-  }
-  NOTREACHED();
-  return cdm::kExceptionInvalidStateError;
-}
-
-static media::CdmSessionType ConvertSessionType(cdm::SessionType session_type) {
-  switch (session_type) {
-    case cdm::kTemporary:
-      return media::CdmSessionType::kTemporary;
-    case cdm::kPersistentLicense:
-      return media::CdmSessionType::kPersistentLicense;
-    case cdm::kPersistentUsageRecord:
-      return media::CdmSessionType::kPersistentUsageRecord;
-  }
-  NOTREACHED();
-  return media::CdmSessionType::kTemporary;
-}
-
-static media::EmeInitDataType ConvertInitDataType(
-    cdm::InitDataType init_data_type) {
-  switch (init_data_type) {
-    case cdm::kCenc:
-      return media::EmeInitDataType::CENC;
-    case cdm::kKeyIds:
-      return media::EmeInitDataType::KEYIDS;
-    case cdm::kWebM:
-      return media::EmeInitDataType::WEBM;
-  }
-  NOTREACHED();
-  return media::EmeInitDataType::UNKNOWN;
-}
-
-cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
-  switch (status) {
-    case media::CdmKeyInformation::KeyStatus::USABLE:
-      return cdm::kUsable;
-    case media::CdmKeyInformation::KeyStatus::INTERNAL_ERROR:
-      return cdm::kInternalError;
-    case media::CdmKeyInformation::KeyStatus::EXPIRED:
-      return cdm::kExpired;
-    case media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED:
-      return cdm::kOutputRestricted;
-    case media::CdmKeyInformation::KeyStatus::OUTPUT_DOWNSCALED:
-      return cdm::kOutputDownscaled;
-    case media::CdmKeyInformation::KeyStatus::KEY_STATUS_PENDING:
-      return cdm::kStatusPending;
-    case media::CdmKeyInformation::KeyStatus::RELEASED:
-      return cdm::kReleased;
-  }
-  NOTREACHED();
-  return cdm::kInternalError;
-}
-
-cdm::MessageType ConvertMessageType(media::CdmMessageType message_type) {
-  switch (message_type) {
-    case media::CdmMessageType::LICENSE_REQUEST:
-      return cdm::kLicenseRequest;
-    case media::CdmMessageType::LICENSE_RENEWAL:
-      return cdm::kLicenseRenewal;
-    case media::CdmMessageType::LICENSE_RELEASE:
-      return cdm::kLicenseRelease;
-    case media::CdmMessageType::INDIVIDUALIZATION_REQUEST:
-      return cdm::kIndividualizationRequest;
-  }
-
-  NOTREACHED();
-  return cdm::kLicenseRequest;
-}
-
 // Shallow copy all the key information from |keys_info| into |keys_vector|.
 // |keys_vector| is only valid for the lifetime of |keys_info| because it
 // contains pointers into the latter.
@@ -222,7 +143,7 @@ void ConvertCdmKeysInfo(const media::CdmKeysInfo& keys_info,
     cdm::KeyInformation key = {};
     key.key_id = key_info->key_id.data();
     key.key_id_size = key_info->key_id.size();
-    key.status = ConvertKeyStatus(key_info->status);
+    key.status = ToCdmKeyStatus(key_info->status);
     key.system_code = key_info->system_code;
     keys_vector->push_back(key);
   }
@@ -520,7 +441,7 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
   cdm_->CreateSessionAndGenerateRequest(
-      ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
+      ToMediaSessionType(session_type), ToEmeInitDataType(init_data_type),
       std::vector<uint8_t>(init_data, init_data + init_data_size),
       std::move(promise));
 
@@ -555,7 +476,7 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
                      promise_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  cdm_->LoadSession(ConvertSessionType(session_type),
+  cdm_->LoadSession(ToMediaSessionType(session_type),
                     std::move(web_session_str), std::move(promise));
 }
 
@@ -1056,7 +977,7 @@ void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
   DVLOG(1) << __func__ << ": size = " << message.size();
 
   cdm_host_proxy_->OnSessionMessage(
-      session_id.data(), session_id.length(), ConvertMessageType(message_type),
+      session_id.data(), session_id.length(), ToCdmMessageType(message_type),
       reinterpret_cast<const char*>(message.data()), message.size());
 }
 
@@ -1108,7 +1029,7 @@ void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
                                   uint32_t system_code,
                                   const std::string& error_message) {
   DVLOG(1) << __func__ << ": error = " << error_message;
-  cdm_host_proxy_->OnRejectPromise(promise_id, ConvertException(exception_code),
+  cdm_host_proxy_->OnRejectPromise(promise_id, ToCdmException(exception_code),
                                    system_code, error_message.data(),
                                    error_message.length());
 }

@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "media/base/decode_status.h"
 #include "media/base/media_util.h"
+#include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/media_buildflags.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
@@ -36,93 +37,6 @@
 namespace media {
 
 namespace {
-
-VideoCodec ToMediaVideoCodec(cdm::VideoCodec codec) {
-  switch (codec) {
-    case cdm::kUnknownVideoCodec:
-      return kUnknownVideoCodec;
-    case cdm::kCodecVp8:
-      return kCodecVP8;
-    case cdm::kCodecH264:
-      return kCodecH264;
-    case cdm::kCodecVp9:
-      return kCodecVP9;
-    case cdm::kCodecAv1:
-      return kCodecAV1;
-  }
-}
-
-VideoCodecProfile ToMediaVideoCodecProfile(cdm::VideoCodecProfile profile) {
-  switch (profile) {
-    case cdm::kUnknownVideoCodecProfile:
-      return VIDEO_CODEC_PROFILE_UNKNOWN;
-    case cdm::kProfileNotNeeded:
-      // There's no corresponding value for "not needed". Given CdmAdapter only
-      // converts VP8PROFILE_ANY to cdm::kProfileNotNeeded, and this code is
-      // only used for testing, it's okay to convert it back to VP8PROFILE_ANY.
-      return VP8PROFILE_ANY;
-    case cdm::kVP9Profile0:
-      return VP9PROFILE_PROFILE0;
-    case cdm::kVP9Profile1:
-      return VP9PROFILE_PROFILE1;
-    case cdm::kVP9Profile2:
-      return VP9PROFILE_PROFILE2;
-    case cdm::kVP9Profile3:
-      return VP9PROFILE_PROFILE3;
-    case cdm::kH264ProfileBaseline:
-      return H264PROFILE_BASELINE;
-    case cdm::kH264ProfileMain:
-      return H264PROFILE_MAIN;
-    case cdm::kH264ProfileExtended:
-      return H264PROFILE_EXTENDED;
-    case cdm::kH264ProfileHigh:
-      return H264PROFILE_HIGH;
-    case cdm::kH264ProfileHigh10:
-      return H264PROFILE_HIGH10PROFILE;
-    case cdm::kH264ProfileHigh422:
-      return H264PROFILE_HIGH422PROFILE;
-    case cdm::kH264ProfileHigh444Predictive:
-      return H264PROFILE_HIGH444PREDICTIVEPROFILE;
-    case cdm::kAv1ProfileMain:
-      return AV1PROFILE_PROFILE_MAIN;
-    case cdm::kAv1ProfileHigh:
-      return AV1PROFILE_PROFILE_HIGH;
-    case cdm::kAv1ProfilePro:
-      return AV1PROFILE_PROFILE_PRO;
-  }
-}
-
-// TODO(xhwang): Support all media video formats.
-VideoPixelFormat ToMediaVideoFormat(cdm::VideoFormat format) {
-  switch (format) {
-    case cdm::kYv12:
-      return PIXEL_FORMAT_YV12;
-    case cdm::kI420:
-      return PIXEL_FORMAT_I420;
-    default:
-      DVLOG(1) << "Unsupported VideoFormat " << format;
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-gfx::ColorSpace::RangeID ToGfxColorRange(cdm::ColorRange range) {
-  switch (range) {
-    case cdm::ColorRange::kInvalid:
-      return gfx::ColorSpace::RangeID::INVALID;
-    case cdm::ColorRange::kLimited:
-      return gfx::ColorSpace::RangeID::LIMITED;
-    case cdm::ColorRange::kFull:
-      return gfx::ColorSpace::RangeID::FULL;
-    case cdm::ColorRange::kDerived:
-      return gfx::ColorSpace::RangeID::DERIVED;
-  }
-}
-
-VideoColorSpace ToMediaColorSpace(const cdm::ColorSpace& color_space) {
-  return VideoColorSpace(color_space.primary_id, color_space.transfer_id,
-                         color_space.matrix_id,
-                         ToGfxColorRange(color_space.range));
-}
 
 media::VideoDecoderConfig ToClearMediaVideoDecoderConfig(
     const cdm::VideoDecoderConfig_3& config) {
