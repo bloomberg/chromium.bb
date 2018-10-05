@@ -74,8 +74,7 @@ class TestTouchEvent : public ui::TouchEvent {
                                       /* radius_x */ 1.0f,
                                       /* radius_y */ 1.0f,
                                       /* force */ 0.0f),
-                   flags,
-                   0.0f) {}
+                   flags) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
