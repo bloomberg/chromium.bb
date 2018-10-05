@@ -367,6 +367,7 @@
       'ios-simulator-cronet': 'ios',
       'ios-simulator-full-configs': 'ios',
       'ios-simulator-xcode-clang': 'ios',
+      'WebKit Mac10.13 (retina)': 'release_bot',
     },
 
     'chromium.memory': {
@@ -452,6 +453,7 @@
       'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_minimal_symbols',
     },
 
+    # TODO(crbug.com/818301): This master is going away.
     'chromium.webkit': {
       'Android Builder': 'android_release_bot_minimal_symbols',
       'WebKit Linux Trusty ASAN': 'asan_lsan_release_bot',
