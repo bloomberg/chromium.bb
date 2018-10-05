@@ -101,11 +101,11 @@ function TestCallRecorder() {
   this.calls_ = [];
 
   /**
-   * The recording funciton. Bound in our constructor to ensure we always
+   * The recording function. Bound in our constructor to ensure we always
    * return the same object. This is necessary as some clients may make use
    * of object equality.
    *
-   * @type {function()}
+   * @type {function(*)}
    */
   this.callback = this.recordArguments_.bind(this);
 }

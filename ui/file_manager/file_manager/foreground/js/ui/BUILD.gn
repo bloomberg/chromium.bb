@@ -59,7 +59,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/css_rule.js",
     "../../../../externs/drag_target.js",
     "../../../../externs/entries_changed_event.js",
-    "../../../../externs/entry_location.js",
     "../../../../externs/gallery_foreground.js",
     "../../../../externs/menu_item_update_event.js",
     "../../../../externs/paper_elements.js",
@@ -308,8 +307,8 @@ js_library("location_line") {
     "../../../common/js:metrics",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
+    "//ui/file_manager/externs:volume_manager",
   ]
-  externs_list = [ "../../../../externs/volume_manager.js" ]
 }
 
 js_library("multi_profile_share_dialog") {
