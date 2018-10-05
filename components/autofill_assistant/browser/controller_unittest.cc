@@ -275,12 +275,14 @@ TEST_F(ControllerTest, ForwardParameters) {
 
 TEST_F(ControllerTest, Autostart) {
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable")
+  AddRunnableScript(&script_response, "runnable");
+  AddRunnableScript(&script_response, "autostart")
       ->mutable_presentation()
       ->set_autostart(true);
+  AddRunnableScript(&script_response, "alsorunnable");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _))
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
