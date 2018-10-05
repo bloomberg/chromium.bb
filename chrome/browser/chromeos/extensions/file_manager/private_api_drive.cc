@@ -1242,6 +1242,8 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
     auto query = drivefs::mojom::QueryParameters::New();
     if (!params->search_params.query.empty()) {
       query->title = params->search_params.query;
+      query->query_source =
+          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
     }
     query->page_size = params->search_params.max_results;
     bool filter_dirs = false;
