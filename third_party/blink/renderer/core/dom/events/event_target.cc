@@ -37,10 +37,8 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/add_event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_impl.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
@@ -124,11 +122,13 @@ base::TimeDelta BlockedEventsWarningThreshold(ExecutionContext* context,
                                        PerformanceMonitor::kBlockedEvent);
 }
 
-void ReportBlockedEvent(ExecutionContext* context,
+void ReportBlockedEvent(EventTarget& target,
                         const Event& event,
                         RegisteredEventListener* registered_listener,
                         base::TimeDelta delayed) {
-  if (registered_listener->Callback()->IsNativeBased())
+  JSBasedEventListener* listener =
+      JSBasedEventListener::Cast(registered_listener->Callback());
+  if (!listener)
     return;
 
   String message_text = String::Format(
@@ -138,9 +138,21 @@ void ReportBlockedEvent(ExecutionContext* context,
       "responsive.",
       event.type().GetString().Utf8().data(), delayed.InMilliseconds());
 
-  PerformanceMonitor::ReportGenericViolation(
-      context, PerformanceMonitor::kBlockedEvent, message_text, delayed,
-      GetFunctionLocation(context, registered_listener->Callback()));
+  {
+    v8::Isolate* isolate = ToIsolate(target.GetExecutionContext());
+    v8::HandleScope handle_scope(isolate);
+
+    v8::Local<v8::Value> handler = listener->GetListenerObject(target);
+    PerformanceMonitor::ReportGenericViolation(
+        target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
+        message_text, delayed,
+        (handler.IsEmpty() || !handler->IsObject())
+            ? nullptr
+            : SourceLocation::FromFunction(
+                  JSBasedEventListener::EventListenerEffectiveFunction(
+                      isolate, handler.As<v8::Object>())));
+  }
+
   registered_listener->SetBlockedEventWarningEmitted();
 }
 
@@ -289,13 +301,12 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
       event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
       event_listener && !options.hasPassive()) {
-    v8::Local<v8::Object> callback_object;
-    if (V8AbstractEventHandler* v8_listener =
-            V8AbstractEventHandler::Cast(event_listener))
-      callback_object = v8_listener->GetExistingListenerObject();
-    if (V8EventListenerImpl* v8_listener =
-            V8EventListenerImpl::Cast(event_listener))
-      callback_object = v8_listener->GetListenerObject();
+    JSBasedEventListener* v8_listener =
+        JSBasedEventListener::Cast(event_listener);
+    if (!v8_listener)
+      return;
+    v8::Local<v8::Value> callback_object =
+        v8_listener->GetListenerObject(*this);
     if (!callback_object.IsEmpty() && callback_object->IsFunction() &&
         strcmp(
             "ssc_wheel",
@@ -523,7 +534,7 @@ RegisteredEventListener* EventTarget::GetAttributeRegisteredEventListener(
 
   for (auto& event_listener : *listener_vector) {
     EventListener* listener = event_listener.Callback();
-    if (listener->IsAttribute() &&
+    if (listener->IsEventHandler() &&
         listener->BelongsToTheCurrentWorld(GetExecutionContext()))
       return &event_listener;
   }
@@ -849,7 +860,7 @@ bool EventTarget::FireEventListeners(Event& event,
         entry[i - 1].Callback() == listener && !entry[i - 1].Passive() &&
         !entry[i - 1].BlockedEventWarningEmitted() &&
         !event.defaultPrevented()) {
-      ReportBlockedEvent(context, event, &entry[i - 1],
+      ReportBlockedEvent(*this, event, &entry[i - 1],
                          now - event.PlatformTimeStamp());
     }
 

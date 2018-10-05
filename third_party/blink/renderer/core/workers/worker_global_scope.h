@@ -134,6 +134,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
+  bool IsWindowOrWorkerGlobalScope() const final { return true; }
 
   // The following methods implement PausbaleObject semantic
   // so that WorkerGlobalScope can be paused.

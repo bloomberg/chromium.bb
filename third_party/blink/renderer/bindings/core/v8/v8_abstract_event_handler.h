@@ -107,10 +107,12 @@ class CORE_EXPORT V8AbstractEventHandler : public EventListener {
 
   bool BelongsToTheCurrentWorld(ExecutionContext*) const final;
 
-  bool IsAttribute() const final { return is_attribute_; }
+  bool IsEventHandler() const final { return is_attribute_; }
 
   v8::Isolate* GetIsolate() const { return isolate_; }
-  DOMWrapperWorld* GetWorldForInspector() const final { return world_.get(); }
+  DOMWrapperWorld* GetWorldPtrForInspector() const final {
+    return world_.get();
+  }
 
   void Trace(blink::Visitor*) override;
 

@@ -180,6 +180,8 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   virtual bool KeepEventInNode(const Event&) const { return false; }
 
+  virtual bool IsWindowOrWorkerGlobalScope() const { return false; }
+
   // Returns true if the target is window, window.document, or
   // window.document.body.
   bool IsTopLevelNode();

@@ -166,9 +166,9 @@ if (info[{{argument.index}}]->IsNullOrUndefined()) {
   return;
 }
 {% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOnly);
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOnly);
 {% else %}{# method.name == 'AddEventListener' #}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {

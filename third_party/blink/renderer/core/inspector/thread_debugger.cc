@@ -375,7 +375,7 @@ void ThreadDebugger::SetMonitorEventsCallback(
   Vector<String> types = NormalizeEventTypes(info);
   EventListener* event_listener = V8EventListenerHelper::GetEventListener(
       ScriptState::Current(info.GetIsolate()),
-      v8::Local<v8::Function>::Cast(info.Data()), false,
+      v8::Local<v8::Function>::Cast(info.Data()),
       enabled ? kListenerFindOrCreate : kListenerFindOnly);
   if (!event_listener)
     return;

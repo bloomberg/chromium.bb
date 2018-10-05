@@ -82,7 +82,7 @@ class V8LazyEventListener final : public V8AbstractEventHandler {
 
   // Return true, so that event handlers from markup are not cloned twice when
   // building the shadow tree for SVGUseElements.
-  bool WasCreatedFromMarkup() const override { return true; }
+  bool IsEventHandlerForContentAttribute() const override { return true; }
 
   void CompileScript(ScriptState*, ExecutionContext*);
 
