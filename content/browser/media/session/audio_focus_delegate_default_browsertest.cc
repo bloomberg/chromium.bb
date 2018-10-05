@@ -19,6 +19,12 @@ namespace content {
 
 using media_session::test::TestAudioFocusObserver;
 
+namespace {
+
+const char kExpectedSourceName[] = "web";
+
+}  // namespace
+
 class MediaSessionStateObserver
     : public media_session::mojom::MediaSessionObserver {
  public:
@@ -76,6 +82,17 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(media_session::switches::kEnableAudioFocus);
   }
 
+  void CheckSessionSourceName() {
+    audio_focus_ptr_->GetFocusRequests(base::BindOnce(
+        [](std::vector<media_session::mojom::AudioFocusRequestStatePtr>
+               requests) {
+          for (auto& request : requests)
+            EXPECT_EQ(kExpectedSourceName, request->source_name.value());
+        }));
+
+    audio_focus_ptr_.FlushForTesting();
+  }
+
   void Run(WebContents* start_contents, WebContents* interrupt_contents) {
     std::unique_ptr<MockMediaSessionPlayerObserver>
         player_observer(new MockMediaSessionPlayerObserver);
@@ -108,6 +125,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
           media_session::mojom::MediaSessionInfo::SessionState::kInactive);
     }
 
+    CheckSessionSourceName();
+
     player_observer->StartNewPlayer();
 
     {
@@ -128,6 +147,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
       state_observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
+
+    CheckSessionSourceName();
 
     {
       std::unique_ptr<TestAudioFocusObserver> observer = CreateObserver();
