@@ -631,8 +631,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   ASSERT_TRUE(base::ContainsKey(urls, kFile));
   ASSERT_TRUE(base::ContainsKey(urls, kDir));
   ASSERT_TRUE(base::ContainsKey(urls, kChild));
-  for (FileSystemURLSet::iterator iter = urls.begin();
-       iter != urls.end(); ++iter) {
+  for (auto iter = urls.begin(); iter != urls.end(); ++iter) {
     file_system.ClearChangeForURLInTracker(*iter);
   }
 

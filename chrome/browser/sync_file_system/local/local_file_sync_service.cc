@@ -61,7 +61,7 @@ bool LocalFileSyncService::OriginChangeMap::NextOriginToProcess(GURL* origin) {
   DCHECK(origin);
   if (change_count_map_.empty())
     return false;
-  Map::iterator begin = next_;
+  auto begin = next_;
   do {
     if (next_ == change_count_map_.end())
       next_ = change_count_map_.begin();
@@ -75,8 +75,8 @@ bool LocalFileSyncService::OriginChangeMap::NextOriginToProcess(GURL* origin) {
 
 int64_t LocalFileSyncService::OriginChangeMap::GetTotalChangeCount() const {
   int64_t num_changes = 0;
-  for (Map::const_iterator iter = change_count_map_.begin();
-       iter != change_count_map_.end(); ++iter) {
+  for (auto iter = change_count_map_.begin(); iter != change_count_map_.end();
+       ++iter) {
     if (base::ContainsKey(disabled_origins_, iter->first))
       continue;
     num_changes += iter->second;
@@ -91,7 +91,7 @@ void LocalFileSyncService::OriginChangeMap::SetOriginChangeCount(
     change_count_map_[origin] = changes;
     return;
   }
-  Map::iterator found = change_count_map_.find(origin);
+  auto found = change_count_map_.find(origin);
   if (found != change_count_map_.end()) {
     if (next_ == found)
       ++next_;
@@ -207,7 +207,7 @@ void LocalFileSyncService::PromoteDemotedChanges(
       base::Bind(&InvokeCallbackOnNthInvocation,
                  base::Owned(new int(origin_to_contexts_.size() + 1)),
                  callback);
-  for (OriginToContext::iterator iter = origin_to_contexts_.begin();
+  for (auto iter = origin_to_contexts_.begin();
        iter != origin_to_contexts_.end(); ++iter)
     sync_context_->PromoteDemotedChanges(iter->first, iter->second,
                                          completion_callback);
@@ -308,8 +308,7 @@ void LocalFileSyncService::RecordFakeLocalChange(
 void LocalFileSyncService::OnChangesAvailableInOrigins(
     const std::set<GURL>& origins) {
   bool need_notification = false;
-  for (std::set<GURL>::const_iterator iter = origins.begin();
-       iter != origins.end(); ++iter) {
+  for (auto iter = origins.begin(); iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
     if (!base::ContainsKey(origin_to_contexts_, origin)) {
       // This could happen if this is called for apps/origins that haven't

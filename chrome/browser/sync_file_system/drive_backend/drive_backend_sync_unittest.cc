@@ -137,9 +137,7 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   void TearDown() override {
-    typedef std::map<std::string, CannedSyncableFileSystem*>::iterator iterator;
-    for (iterator itr = file_systems_.begin();
-         itr != file_systems_.end(); ++itr) {
+    for (auto itr = file_systems_.begin(); itr != file_systems_.end(); ++itr) {
       itr->second->TearDown();
       delete itr->second;
     }
