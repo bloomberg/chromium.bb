@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -371,10 +370,6 @@ public class VrShell extends GvrLayout
         if (mActivity.isInOverviewMode() || tab == null) {
             launchNTP();
             tab = mActivity.getActivityTab();
-        }
-        if (mActivity.getBottomSheet() != null) {
-            // Make sure the bottom sheet (Chrome Home) is hidden.
-            mActivity.getBottomSheet().setSheetState(BottomSheet.SheetState.PEEK, false);
         }
 
         // Start with content rendering paused if the renderer-drawn controls are visible, as this
