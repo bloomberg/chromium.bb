@@ -34,6 +34,9 @@ const char kExampleDebugInfoName[] = "name";
 const char kExampleDebugInfoOwner[] = "owner";
 const char kExampleDebugInfoState[] = "state";
 
+const char kExampleSourceName[] = "test";
+const char kExampleSourceName2[] = "test2";
+
 class MockMediaSession : public mojom::MediaSession {
  public:
   MockMediaSession() = default;
@@ -294,6 +297,23 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     if (GetParam())
       return state;
     return mojom::MediaSessionInfo::SessionState::kActive;
+  }
+
+  void SetSourceName(const std::string& name) {
+    GetService()->SetSourceName(name);
+    audio_focus_ptr_.FlushForTesting();
+  }
+
+  mojom::AudioFocusManagerPtr CreateAudioFocusManagerPtr() {
+    mojom::AudioFocusManagerPtr ptr;
+    connector_->BindInterface("test", mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+  const std::string GetSourceNameForLastRequest() {
+    std::vector<mojom::AudioFocusRequestStatePtr> requests = GetRequests();
+    EXPECT_TRUE(requests.back());
+    return requests.back()->source_name.value();
   }
 
  private:
@@ -928,6 +948,35 @@ TEST_P(AudioFocusManagerTest,
   EXPECT_EQ(1, GetTransientMaybeDuckCount());
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest, SourceName_AssociatedWithBinding) {
+  SetSourceName(kExampleSourceName);
+
+  mojom::AudioFocusManagerPtr new_ptr = CreateAudioFocusManagerPtr();
+  new_ptr->SetSourceName(kExampleSourceName2);
+  new_ptr.FlushForTesting();
+
+  MockMediaSession media_session;
+  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
+}
+
+TEST_P(AudioFocusManagerTest, SourceName_Empty) {
+  MockMediaSession media_session;
+  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
+  EXPECT_TRUE(GetSourceNameForLastRequest().empty());
+}
+
+TEST_P(AudioFocusManagerTest, SourceName_Updated) {
+  SetSourceName(kExampleSourceName);
+
+  MockMediaSession media_session;
+  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
+
+  SetSourceName(kExampleSourceName2);
+  EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
 }
 
 }  // namespace media_session
