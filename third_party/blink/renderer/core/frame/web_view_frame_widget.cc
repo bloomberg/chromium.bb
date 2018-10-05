@@ -156,6 +156,10 @@ void WebViewFrameWidget::UpdateBrowserControlsState(
   web_view_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
+WebURL WebViewFrameWidget::GetURLForDebugTrace() {
+  return web_view_->GetURLForDebugTrace();
+}
+
 void WebViewFrameWidget::SetVisibilityState(
     mojom::PageVisibilityState visibility_state) {
   web_view_->SetVisibilityState(visibility_state, false);

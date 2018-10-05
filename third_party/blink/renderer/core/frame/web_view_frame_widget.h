@@ -39,7 +39,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   explicit WebViewFrameWidget(WebWidgetClient&, WebViewImpl&);
   ~WebViewFrameWidget() override;
 
-  // WebFrameWidget overrides:
+  // WebWidget overrides:
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
@@ -77,6 +77,9 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,
                                   bool animate) override;
+  WebURL GetURLForDebugTrace() override;
+
+  // WebFrameWidget overrides:
   void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;

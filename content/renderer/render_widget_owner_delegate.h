@@ -83,9 +83,6 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   // Called after RenderWidget changes focus.
   virtual void DidChangeFocusForWidget() = 0;
 
-  // Called to get the current URL if it exists or a hardcoded fallback.
-  virtual GURL GetURLForGraphicsContext3DForWidget() = 0;
-
   // Called when the RenderWidget handles
   // LayerTreeViewDelegate::DidCommitCompositorFrame().
   virtual void DidCommitCompositorFrameForWidget() = 0;

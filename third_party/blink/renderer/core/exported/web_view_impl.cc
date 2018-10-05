@@ -2857,6 +2857,13 @@ void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
   MainFrameImpl()->FrameWidget()->ShowContextMenu(source_type);
 }
 
+WebURL WebViewImpl::GetURLForDebugTrace() {
+  WebFrame* main_frame = MainFrame();
+  if (main_frame->IsWebLocalFrame())
+    return main_frame->ToWebLocalFrame()->GetDocument().Url();
+  return {};
+}
+
 void WebViewImpl::DidCloseContextMenu() {
   LocalFrame* frame = page_->GetFocusController().FocusedFrame();
   if (frame)

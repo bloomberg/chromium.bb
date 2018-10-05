@@ -979,8 +979,12 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
                                                         std::move(client_info));
   layer_tree_view_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
+  GURL url = GetWebWidget()->GetURLForDebugTrace();
+  // The |url| is not always available, fallback to a fixed string.
+  if (url.is_empty())
+    url = GURL("chrome://gpu/RenderWidget::RequestNewLayerTreeFrameSink");
   RenderThreadImpl::current()->RequestNewLayerTreeFrameSink(
-      routing_id_, frame_swap_message_queue_, GetURLForGraphicsContext3D(),
+      routing_id_, frame_swap_message_queue_, std::move(url),
       std::move(callback), std::move(client_request), std::move(ptr));
 }
 
@@ -1435,8 +1439,6 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
         this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
         render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
   }
-
-  UpdateURLForCompositorUkm();
 
   return layer_tree_view_.get();
 }
@@ -2140,12 +2142,6 @@ void RenderWidget::OnOrientationChange() {
     if (frame_widget->LocalRoot())
       frame_widget->LocalRoot()->SendOrientationChangeEvent();
   }
-}
-
-GURL RenderWidget::GetURLForGraphicsContext3D() {
-  if (owner_delegate_)
-    return owner_delegate_->GetURLForGraphicsContext3DForWidget();
-  return GURL();
 }
 
 void RenderWidget::SetHidden(bool hidden) {
@@ -3141,20 +3137,6 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
   OnSynchronizeVisualProperties(visual_properties);
-}
-
-void RenderWidget::UpdateURLForCompositorUkm() {
-  DCHECK(layer_tree_view_);
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  auto* render_frame = RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-  if (!render_frame->IsMainFrame())
-    return;
-
-  layer_tree_view_->SetURLForUkm(
-      render_frame->GetWebFrame()->GetDocument().Url());
 }
 
 blink::WebLocalFrame* RenderWidget::GetFocusedWebLocalFrameInWidget() const {

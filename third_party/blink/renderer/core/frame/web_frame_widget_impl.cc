@@ -738,6 +738,13 @@ void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
       is_throttled, subtree_throttled);
 }
 
+WebURL WebFrameWidgetImpl::GetURLForDebugTrace() {
+  WebFrame* main_frame = View()->MainFrame();
+  if (main_frame->IsWebLocalFrame())
+    return main_frame->ToWebLocalFrame()->GetDocument().Url();
+  return {};
+}
+
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
                                           const WebMouseEvent& event) {
   // FIXME: WebWidget doesn't have the method below.

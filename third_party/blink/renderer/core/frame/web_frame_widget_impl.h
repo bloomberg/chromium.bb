@@ -110,6 +110,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
+  WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget implementation.
   void SetVisibilityState(mojom::PageVisibilityState) override;

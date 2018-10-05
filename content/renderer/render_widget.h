@@ -68,8 +68,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-class GURL;
-
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -546,10 +544,6 @@ class CONTENT_EXPORT RenderWidget
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
 
-  // Gets the current URL or a placeholder constant for creating 3d contexts and
-  // attributing them back to a URL.
-  virtual GURL GetURLForGraphicsContext3D();
-
   // RenderWidget IPC message handler that can be overridden by subclasses.
   virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
 
@@ -744,12 +738,6 @@ class CONTENT_EXPORT RenderWidget
   PepperPluginInstanceImpl* GetFocusedPepperPluginInsideWidget();
 #endif
   void RecordTimeToFirstActivePaint();
-
-  // Updates the URL used by the compositor for keying UKM metrics.
-  // Note that this uses the main frame's URL and only if its available in the
-  // current process. In the case where it is not available, no metrics will be
-  // recorded.
-  void UpdateURLForCompositorUkm();
 
   // This method returns the WebLocalFrame which is currently focused and
   // belongs to the frame tree associated with this RenderWidget.

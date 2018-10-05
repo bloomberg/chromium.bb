@@ -129,7 +129,12 @@ class MockHandledEventCallback {
   DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
 };
 
-class MockWebWidget : public blink::WebWidget {
+class StubWebWidget : public blink::WebWidget {
+ public:
+  blink::WebURL GetURLForDebugTrace() override { return {}; }
+};
+
+class MockWebWidget : public StubWebWidget {
  public:
   MOCK_METHOD0(DispatchBufferedTouchEvents, blink::WebInputEventResult());
   MOCK_METHOD1(
@@ -483,7 +488,6 @@ class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
   void ScrollFocusedNodeIntoViewForWidget() override {}
   void DidReceiveSetFocusEventForWidget() override {}
   void DidChangeFocusForWidget() override {}
-  GURL GetURLForGraphicsContext3DForWidget() override { return {}; }
   void DidCommitCompositorFrameForWidget() override {}
   void DidCompletePageScaleAnimationForWidget() override {}
   void ResizeWebWidgetForWidget(
