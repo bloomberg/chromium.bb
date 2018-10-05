@@ -645,8 +645,10 @@ void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     LayoutRect previous_visual_overflow_rect = box_object.VisualOverflowRect();
     box_object.UpdateLayout();
     if (box_object.VisualOverflowRect() != previous_visual_overflow_rect) {
-      box_object.SetNeedsOverflowRecalcAfterStyleChange();
-      GetLayoutView()->RecalcOverflowAfterStyleChange();
+      // TODO(chrishtr): this can probably just set the dirty bit for
+      // visual overflow, not layout overflow.
+      box_object.SetNeedsOverflowRecalc();
+      GetLayoutView()->RecalcOverflow();
     }
   }
 }

@@ -1432,25 +1432,25 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
 #endif
 }
 
-bool LayoutTableSection::RecalcOverflowAfterStyleChange() {
-  if (!ChildNeedsOverflowRecalcAfterStyleChange())
+bool LayoutTableSection::RecalcOverflow() {
+  if (!ChildNeedsOverflowRecalc())
     return false;
-  ClearChildNeedsOverflowRecalcAfterStyleChange();
+  ChildNeedsOverflowRecalc();
   unsigned total_rows = grid_.size();
   bool children_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
-    if (!row_layouter ||
-        !row_layouter->ChildNeedsOverflowRecalcAfterStyleChange())
+    if (!row_layouter || !row_layouter->ChildNeedsOverflowRecalc())
       continue;
-    row_layouter->ClearChildNeedsOverflowRecalcAfterStyleChange();
+    row_layouter->ClearChildNeedsLayoutOverflowRecalc();
+    row_layouter->ClearChildNeedsVisualOverflowRecalc();
     bool row_children_overflow_changed = false;
     unsigned n_cols = NumCols(r);
     for (unsigned c = 0; c < n_cols; c++) {
       auto* cell = OriginatingCellAt(r, c);
       if (!cell)
         continue;
-      row_children_overflow_changed |= cell->RecalcOverflowAfterStyleChange();
+      row_children_overflow_changed |= cell->RecalcOverflow();
     }
     if (row_children_overflow_changed)
       row_layouter->ComputeOverflow();

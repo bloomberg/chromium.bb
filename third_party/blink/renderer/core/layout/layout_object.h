@@ -896,15 +896,62 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.PreferredLogicalWidthsDirty();
   }
 
-  bool NeedsOverflowRecalcAfterStyleChange() const {
-    return bitfields_.SelfNeedsOverflowRecalcAfterStyleChange() ||
-           bitfields_.ChildNeedsOverflowRecalcAfterStyleChange();
+  bool NeedsOverflowRecalc() const {
+    return SelfNeedsOverflowRecalc() || ChildNeedsOverflowRecalc();
   }
-  bool SelfNeedsOverflowRecalcAfterStyleChange() const {
-    return bitfields_.SelfNeedsOverflowRecalcAfterStyleChange();
+  bool SelfNeedsOverflowRecalc() const {
+    return bitfields_.SelfNeedsLayoutOverflowRecalc() ||
+           bitfields_.SelfNeedsVisualOverflowRecalc();
   }
-  bool ChildNeedsOverflowRecalcAfterStyleChange() const {
-    return bitfields_.ChildNeedsOverflowRecalcAfterStyleChange();
+  bool ChildNeedsOverflowRecalc() const {
+    return bitfields_.ChildNeedsLayoutOverflowRecalc() ||
+           bitfields_.ChildNeedsVisualOverflowRecalc();
+  }
+
+  bool NeedsLayoutOverflowRecalc() const {
+    return bitfields_.SelfNeedsLayoutOverflowRecalc() ||
+           bitfields_.ChildNeedsLayoutOverflowRecalc();
+  }
+  bool SelfNeedsLayoutOverflowRecalc() const {
+    return bitfields_.SelfNeedsLayoutOverflowRecalc();
+  }
+  bool ChildNeedsLayoutOverflowRecalc() const {
+    return bitfields_.ChildNeedsLayoutOverflowRecalc();
+  }
+  void SetSelfNeedsLayoutOverflowRecalc() {
+    bitfields_.SetSelfNeedsLayoutOverflowRecalc(true);
+  }
+  void SetChildNeedsLayoutOverflowRecalc() {
+    bitfields_.SetChildNeedsLayoutOverflowRecalc(true);
+  }
+  void ClearSelfNeedsLayoutOverflowRecalc() {
+    bitfields_.SetSelfNeedsLayoutOverflowRecalc(false);
+  }
+  void ClearChildNeedsLayoutOverflowRecalc() {
+    bitfields_.SetChildNeedsLayoutOverflowRecalc(false);
+  }
+
+  bool NeedsVisualOverflowRecalc() const {
+    return bitfields_.SelfNeedsVisualOverflowRecalc() ||
+           bitfields_.ChildNeedsVisualOverflowRecalc();
+  }
+  bool SelfNeedsVisualOverflowRecalc() const {
+    return bitfields_.SelfNeedsVisualOverflowRecalc();
+  }
+  bool ChildNeedsVisualOverflowRecalc() const {
+    return bitfields_.ChildNeedsVisualOverflowRecalc();
+  }
+  void SetSelfNeedsVisualOverflowRecalc() {
+    bitfields_.SetSelfNeedsVisualOverflowRecalc(true);
+  }
+  void SetChildNeedsVisualOverflowRecalc() {
+    bitfields_.SetChildNeedsVisualOverflowRecalc(true);
+  }
+  void ClearSelfNeedsVisualOverflowRecalc() {
+    bitfields_.SetSelfNeedsVisualOverflowRecalc(false);
+  }
+  void ClearChildNeedsVisualOverflowRecalc() {
+    bitfields_.SetChildNeedsVisualOverflowRecalc(false);
   }
 
   // CSS clip only applies when position is absolute or fixed. Prefer this check
@@ -1187,7 +1234,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual void Paint(const PaintInfo&) const;
 
-  virtual bool RecalcOverflowAfterStyleChange();
+  virtual bool RecalcOverflow();
 
   // Subclasses must reimplement this method to compute the size and position
   // of this object and all its descendants.
@@ -1860,7 +1907,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns the bounding box of the visual rects of all fragments.
   LayoutRect FragmentsVisualRectBoundingBox() const;
 
-  void SetNeedsOverflowRecalcAfterStyleChange();
+  void SetNeedsOverflowRecalc();
 
   void InvalidateClipPathCache();
 
@@ -2053,9 +2100,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetScrollAnchorDisablingStyleChanged(changed);
   }
 
-  void ClearChildNeedsOverflowRecalcAfterStyleChange() {
-    bitfields_.SetChildNeedsOverflowRecalcAfterStyleChange(false);
-  }
 
   bool CompositedScrollsWithRespectTo(
       const LayoutBoxModelObject& paint_invalidation_container) const;
@@ -2259,9 +2303,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void SetIsBackgroundAttachmentFixedObject(bool);
 
-  void ClearSelfNeedsOverflowRecalcAfterStyleChange() {
-    bitfields_.SetSelfNeedsOverflowRecalcAfterStyleChange(false);
-  }
   void SetEverHadLayout() { bitfields_.SetEverHadLayout(true); }
 
   // Remove this object and all descendants from the containing
@@ -2433,8 +2474,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           normal_child_needs_layout_(false),
           pos_child_needs_layout_(false),
           needs_simplified_normal_flow_layout_(false),
-          self_needs_overflow_recalc_after_style_change_(false),
-          child_needs_overflow_recalc_after_style_change_(false),
+          self_needs_layout_overflow_recalc_(false),
+          child_needs_layout_overflow_recalc_(false),
+          self_needs_visual_overflow_recalc_(false),
+          child_needs_visual_overflow_recalc_(false),
           preferred_logical_widths_dirty_(false),
           needs_collect_inlines_(false),
           should_check_for_paint_invalidation_(true),
@@ -2526,19 +2569,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(needs_simplified_normal_flow_layout_,
                          NeedsSimplifiedNormalFlowLayout);
 
-    // Some properties only have a visual impact and don't impact the actual
-    // layout position and sizes of the object. An example of this is the
-    // 'transform' property, who doesn't modify the layout but gets applied at
-    // paint time. Setting this flag only recomputes the overflow information.
-    ADD_BOOLEAN_BITFIELD(self_needs_overflow_recalc_after_style_change_,
-                         SelfNeedsOverflowRecalcAfterStyleChange);
+    ADD_BOOLEAN_BITFIELD(self_needs_layout_overflow_recalc_,
+                         SelfNeedsLayoutOverflowRecalc);
 
-    // This flag is set on the ancestor of a LayoutObject needing
-    // selfNeedsOverflowRecalcAfterStyleChange. This is needed as a descendant
-    // overflow can bleed into its containing block's so we have to recompute it
-    // in some cases.
-    ADD_BOOLEAN_BITFIELD(child_needs_overflow_recalc_after_style_change_,
-                         ChildNeedsOverflowRecalcAfterStyleChange);
+    ADD_BOOLEAN_BITFIELD(child_needs_layout_overflow_recalc_,
+                         ChildNeedsLayoutOverflowRecalc);
+
+    ADD_BOOLEAN_BITFIELD(self_needs_visual_overflow_recalc_,
+                         SelfNeedsVisualOverflowRecalc);
+
+    ADD_BOOLEAN_BITFIELD(child_needs_visual_overflow_recalc_,
+                         ChildNeedsVisualOverflowRecalc);
 
     // This boolean marks preferred logical widths for lazy recomputation.
     //
@@ -2829,13 +2870,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetNeedsSimplifiedNormalFlowLayout(b);
   }
   void SetNeedsCollectInlines(bool b) { bitfields_.SetNeedsCollectInlines(b); }
-
-  void SetSelfNeedsOverflowRecalcAfterStyleChange() {
-    bitfields_.SetSelfNeedsOverflowRecalcAfterStyleChange(true);
-  }
-  void SetChildNeedsOverflowRecalcAfterStyleChange() {
-    bitfields_.SetChildNeedsOverflowRecalcAfterStyleChange(true);
-  }
 
  private:
   friend class LineLayoutItem;
