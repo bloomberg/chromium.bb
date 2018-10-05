@@ -449,6 +449,32 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   EXPECT_EQ(GURL(), new_web_contents->GetLastCommittedURL());
 }
 
+// Ensure that a failed navigation in a new tab will not leave an invalid
+// visible URL, which may be formatted in an unsafe way in the omnibox.
+// See https://crbug.com/850824.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       ClearInvalidPendingURLOnFail) {
+  GURL initial_url = embedded_test_server()->GetURL(
+      "/frame_tree/invalid_link_to_new_window.html");
+
+  // Navigate to a page with a link that opens an invalid URL in a new window.
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Simulate a click on the link and wait for the new window.
+  content::WebContentsAddedObserver new_tab_observer;
+  EXPECT_TRUE(ExecuteScript(main_contents, "simulateClick()"));
+  content::WebContents* new_contents = new_tab_observer.GetWebContents();
+
+  // The load in the new window should fail.
+  EXPECT_FALSE(WaitForLoadStop(new_contents));
+
+  // Ensure that there is no pending entry or visible URL.
+  EXPECT_EQ(nullptr, new_contents->GetController().GetPendingEntry());
+  EXPECT_EQ(GURL(), new_contents->GetVisibleURL());
+}
+
 // A test performing two simultaneous navigations, to ensure code in chrome/,
 // such as tab helpers, can handle those cases.
 // This test starts a browser-initiated cross-process navigation, which is
