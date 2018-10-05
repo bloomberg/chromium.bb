@@ -89,7 +89,7 @@
 {% for build_row in builds_list %}
   <tr class="build_item_{{ build_row.status }}">
     <td class="build_list"><a href="{% url 'build_annotations:edit_annotations' build_config build_row.id %}?{{ request.GET.urlencode }}">{{ build_row.id }}</a></td>
-    <td class="build_list">{{ build_row.build_number }}</td>
+    <td class="build_list">{{ build_row.buildbucket_id }}</td>
     <td class="build_list">{{ build_row.status|truncatechars:20 }}</td>
     <td class="build_list">{{ build_row.summary|truncatechars:50|cut:'\n\r' }}</td>
     <td class="build_list" name="date.datetz">{{ build_row.start_time|date:"D, d M Y H:i" }} UTC</td>
