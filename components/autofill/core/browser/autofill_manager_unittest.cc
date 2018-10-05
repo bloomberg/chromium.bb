@@ -2669,8 +2669,7 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   // Mark the address fields as autofilled.
-  for (std::vector<FormFieldData>::iterator iter = form.fields.begin();
-       iter != form.fields.end(); ++iter) {
+  for (auto iter = form.fields.begin(); iter != form.fields.end(); ++iter) {
     iter->is_autofilled = true;
   }
 
@@ -2707,8 +2706,7 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
 
   // Now set the credit card fields to also be auto-filled, and try again to
   // fill the credit card data
-  for (std::vector<FormFieldData>::iterator iter = form.fields.begin();
-       iter != form.fields.end(); ++iter) {
+  for (auto iter = form.fields.begin(); iter != form.fields.end(); ++iter) {
     iter->is_autofilled = true;
   }
 
@@ -3773,8 +3771,7 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
   test::CreateTestAddressFormData(&form);
 
   // Remove the phone field -- we'll add it back later.
-  std::vector<FormFieldData>::iterator pos =
-      form.fields.begin() + kPhoneFieldOffset;
+  auto pos = form.fields.begin() + kPhoneFieldOffset;
   FormFieldData field = *pos;
   pos = form.fields.erase(pos);
 

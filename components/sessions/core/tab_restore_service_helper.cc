@@ -259,7 +259,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
     LiveTabContext* context,
     SessionID id,
     WindowOpenDisposition disposition) {
-  Entries::iterator entry_iterator = GetEntryIteratorById(id);
+  auto entry_iterator = GetEntryIteratorById(id);
   if (entry_iterator == entries_.end()) {
     // Don't hoark here, we allow an invalid id.
     return std::vector<LiveTab*>();
@@ -423,7 +423,7 @@ void TabRestoreServiceHelper::PruneEntries() {
 
 TabRestoreService::Entries::iterator
 TabRestoreServiceHelper::GetEntryIteratorById(SessionID id) {
-  for (Entries::iterator i = entries_.begin(); i != entries_.end(); ++i) {
+  for (auto i = entries_.begin(); i != entries_.end(); ++i) {
     if ((*i)->id == id)
       return i;
 

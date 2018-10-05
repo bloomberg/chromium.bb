@@ -47,9 +47,7 @@ void FilterAttachedDevicesOnBackgroundSequence(
   base::AssertBlockingAllowed();
   MediaStorageUtil::DeviceIdSet missing_devices;
 
-  for (MediaStorageUtil::DeviceIdSet::const_iterator it = devices->begin();
-       it != devices->end();
-       ++it) {
+  for (auto it = devices->begin(); it != devices->end(); ++it) {
     StorageInfo::Type type;
     std::string unique_id;
     if (!StorageInfo::CrackDeviceId(*it, &type, &unique_id)) {
@@ -67,10 +65,7 @@ void FilterAttachedDevicesOnBackgroundSequence(
       missing_devices.insert(*it);
   }
 
-  for (MediaStorageUtil::DeviceIdSet::const_iterator it =
-           missing_devices.begin();
-       it != missing_devices.end();
-       ++it) {
+  for (auto it = missing_devices.begin(); it != missing_devices.end(); ++it) {
     devices->erase(*it);
   }
 }

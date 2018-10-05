@@ -398,8 +398,7 @@ SessionStore::SessionStore(
     // Metadata should be available if data is available. If not, it means
     // the local store is corrupt, because we delete all data and metadata
     // at the same time (e.g. sync is disabled).
-    syncer::EntityMetadataMap::const_iterator metadata_it =
-        initial_metadata.find(storage_key);
+    auto metadata_it = initial_metadata.find(storage_key);
     if (metadata_it == initial_metadata.end()) {
       continue;
     }

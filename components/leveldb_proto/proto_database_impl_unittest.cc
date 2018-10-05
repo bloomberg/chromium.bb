@@ -165,7 +165,7 @@ void ExpectEntryPointersEquals(EntryMap expected,
                                const std::vector<TestProto>& actual) {
   EXPECT_EQ(expected.size(), actual.size());
   for (size_t i = 0; i < actual.size(); i++) {
-    EntryMap::iterator expected_it = expected.find(actual[i].id());
+    auto expected_it = expected.find(actual[i].id());
     EXPECT_TRUE(expected_it != expected.end());
     std::string serialized_expected = expected_it->second.SerializeAsString();
     std::string serialized_actual = actual[i].SerializeAsString();

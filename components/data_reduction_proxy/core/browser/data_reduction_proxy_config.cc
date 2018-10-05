@@ -355,8 +355,7 @@ bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::ProxyRetryInfoMap::const_iterator found =
-      retry_map.find(proxy_server.ToURI());
+  auto found = retry_map.find(proxy_server.ToURI());
 
   if (found == retry_map.end() || found->second.bad_until < GetTicksNow()) {
     return false;

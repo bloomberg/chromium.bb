@@ -116,8 +116,7 @@ bool IsFromSync(const TemplateURL* turl, const SyncDataMap& sync_data) {
 void LogDuplicatesHistogram(
     const TemplateURLService::TemplateURLVector& template_urls) {
   std::map<base::string16, int> duplicates;
-  for (TemplateURLService::TemplateURLVector::const_iterator it =
-      template_urls.begin(); it != template_urls.end(); ++it) {
+  for (auto it = template_urls.begin(); it != template_urls.end(); ++it) {
     base::string16 keyword = (*it)->keyword();
     base::TrimString(keyword, base::ASCIIToUTF16("_"), &keyword);
     duplicates[keyword]++;
@@ -369,8 +368,7 @@ TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
 
 const TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
     const base::string16& keyword) const {
-  KeywordToTURLAndMeaningfulLength::const_iterator elem(
-      keyword_to_turl_and_length_.find(keyword));
+  auto elem(keyword_to_turl_and_length_.find(keyword));
   if (elem != keyword_to_turl_and_length_.end())
     return elem->second.first;
   return (!loaded_ && initial_default_search_provider_ &&
@@ -388,7 +386,7 @@ return const_cast<TemplateURL*>(
 
 const TemplateURL* TemplateURLService::GetTemplateURLForGUID(
     const std::string& sync_guid) const {
-  GUIDToTURL::const_iterator elem(guid_to_turl_.find(sync_guid));
+  auto elem(guid_to_turl_.find(sync_guid));
   if (elem != guid_to_turl_.end())
     return elem->second;
   return (!loaded_ && initial_default_search_provider_ &&
@@ -686,13 +684,13 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
       &prepopulated_urls, template_urls_, default_search_provider_));
 
   // Remove items.
-  for (std::vector<TemplateURL*>::iterator i = actions.removed_engines.begin();
+  for (auto i = actions.removed_engines.begin();
        i < actions.removed_engines.end(); ++i)
     Remove(*i);
 
   // Edit items.
-  for (EditedEngines::iterator i(actions.edited_engines.begin());
-       i < actions.edited_engines.end(); ++i) {
+  for (auto i(actions.edited_engines.begin()); i < actions.edited_engines.end();
+       ++i) {
     TemplateURL new_values(i->second);
     Update(i->first, new_values);
   }
@@ -911,8 +909,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
 
   syncer::SyncChangeList new_changes;
   syncer::SyncError error;
-  for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
-       iter != change_list.end(); ++iter) {
+  for (auto iter = change_list.begin(); iter != change_list.end(); ++iter) {
     DCHECK_EQ(syncer::SEARCH_ENGINES, iter->sync_data().GetDataType());
 
     std::string guid =
@@ -1333,9 +1330,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
 SyncDataMap TemplateURLService::CreateGUIDToSyncDataMap(
     const syncer::SyncDataList& sync_data) {
   SyncDataMap data_map;
-  for (syncer::SyncDataList::const_iterator i(sync_data.begin());
-       i != sync_data.end();
-       ++i)
+  for (auto i(sync_data.begin()); i != sync_data.end(); ++i)
     data_map[i->GetSpecifics().search_engine().sync_guid()] = *i;
   return data_map;
 }
@@ -1706,8 +1701,7 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
     return;
 
   TemplateURL* visited_url = nullptr;
-  for (TemplateURLSet::const_iterator i = urls_for_host->begin();
-       i != urls_for_host->end(); ++i) {
+  for (auto i = urls_for_host->begin(); i != urls_for_host->end(); ++i) {
     base::string16 search_terms;
     if ((*i)->ExtractSearchTermsFromURL(details.url, search_terms_data(),
                                         &search_terms) &&

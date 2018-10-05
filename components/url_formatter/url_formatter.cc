@@ -152,8 +152,7 @@ void AppendFormattedComponent(const std::string& spec,
 
     // Shift all the adjustments made for this component so the offsets are
     // valid for the original string and add them to |adjustments|.
-    for (base::OffsetAdjuster::Adjustments::iterator comp_iter =
-             component_transform_adjustments.begin();
+    for (auto comp_iter = component_transform_adjustments.begin();
          comp_iter != component_transform_adjustments.end(); ++comp_iter)
       comp_iter->original_offset += original_component_begin;
     if (adjustments) {
@@ -215,8 +214,7 @@ base::string16 FormatViewSourceUrl(
                                prefix_end, adjustments));
   // Revise |adjustments| by shifting to the offsets to prefix that the above
   // call to FormatUrl didn't get to see.
-  for (base::OffsetAdjuster::Adjustments::iterator it = adjustments->begin();
-       it != adjustments->end(); ++it)
+  for (auto it = adjustments->begin(); it != adjustments->end(); ++it)
     it->original_offset += kViewSourceLength;
 
   // Adjust positions of the parsed components.

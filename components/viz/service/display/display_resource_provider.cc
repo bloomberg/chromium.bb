@@ -289,8 +289,7 @@ void DisplayResourceProvider::ReceiveFromChild(
   CHECK(child_it != children_.end());
   Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
-  for (std::vector<TransferableResource>::const_iterator it = resources.begin();
-       it != resources.end(); ++it) {
+  for (auto it = resources.begin(); it != resources.end(); ++it) {
     auto resource_in_map_it = child_info.child_to_parent_map.find(it->id);
     if (resource_in_map_it != child_info.child_to_parent_map.end()) {
       ChildResource* resource = GetResource(resource_in_map_it->second);
@@ -349,7 +348,7 @@ void DisplayResourceProvider::DeclareUsedResourcesFromChild(
 const std::unordered_map<ResourceId, ResourceId>&
 DisplayResourceProvider::GetChildToParentMap(int child) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ChildMap::const_iterator it = children_.find(child);
+  auto it = children_.find(child);
   DCHECK(it != children_.end());
   DCHECK(!it->second.marked_for_deletion);
   return it->second.child_to_parent_map;

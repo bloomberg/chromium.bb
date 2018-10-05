@@ -117,7 +117,7 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   }
 
   // Initialize the tables.
-  for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
+  for (auto it = tables_.begin(); it != tables_.end(); ++it) {
     it->second->Init(&db_, &meta_table_);
   }
 
@@ -132,7 +132,7 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // It's important that this happen *after* the migration code runs.
   // Otherwise, the migration code would have to explicitly check for empty
   // tables created in the new format, and skip the migration in that case.
-  for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
+  for (auto it = tables_.begin(); it != tables_.end(); ++it) {
     if (!it->second->CreateTablesIfNecessary()) {
       LOG(WARNING) << "Unable to initialize the web database.";
       return sql::INIT_FAILURE;
@@ -163,7 +163,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
     ChangeVersion(&meta_table_, next_version, update_compatible_version);
 
     // Give each table a chance to migrate to this version.
-    for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
+    for (auto it = tables_.begin(); it != tables_.end(); ++it) {
       // Any of the tables may set this to true, but by default it is false.
       update_compatible_version = false;
       if (!it->second->MigrateToVersion(next_version,

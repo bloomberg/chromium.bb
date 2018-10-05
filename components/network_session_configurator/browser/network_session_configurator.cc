@@ -62,7 +62,7 @@ int GetSwitchValueAsInt(const base::CommandLine& command_line,
 const std::string& GetVariationParam(
     const std::map<std::string, std::string>& params,
     const std::string& key) {
-  std::map<std::string, std::string>::const_iterator it = params.find(key);
+  auto it = params.find(key);
   if (it == params.end())
     return base::EmptyString();
 
@@ -200,8 +200,7 @@ bool ShouldSupportIetfFormatQuicAltSvc(
 
 quic::QuicTagVector GetQuicConnectionOptions(
     const VariationParameters& quic_trial_params) {
-  VariationParameters::const_iterator it =
-      quic_trial_params.find("connection_options");
+  auto it = quic_trial_params.find("connection_options");
   if (it == quic_trial_params.end()) {
     return quic::QuicTagVector();
   }
@@ -211,8 +210,7 @@ quic::QuicTagVector GetQuicConnectionOptions(
 
 quic::QuicTagVector GetQuicClientConnectionOptions(
     const VariationParameters& quic_trial_params) {
-  VariationParameters::const_iterator it =
-      quic_trial_params.find("client_connection_options");
+  auto it = quic_trial_params.find("client_connection_options");
   if (it == quic_trial_params.end()) {
     return quic::QuicTagVector();
   }

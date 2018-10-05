@@ -280,7 +280,7 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
          current != current.DirName())
     current = current.DirName();
 
-  MountMap::const_iterator mount_info = mount_info_map_.find(current);
+  auto mount_info = mount_info_map_.find(current);
   if (mount_info == mount_info_map_.end())
     return false;
   *device_info = mount_info->second.storage_info;
@@ -308,7 +308,7 @@ void StorageMonitorLinux::EjectDevice(
   // Find the mount point for the given device ID.
   base::FilePath path;
   base::FilePath device;
-  for (MountMap::iterator mount_info = mount_info_map_.begin();
+  for (auto mount_info = mount_info_map_.begin();
        mount_info != mount_info_map_.end(); ++mount_info) {
     if (mount_info->second.storage_info.device_id() == device_id) {
       path = mount_info->first;
@@ -345,12 +345,11 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
        old_iter != mount_info_map_.end(); ++old_iter) {
     const base::FilePath& mount_point = old_iter->first;
     const base::FilePath& mount_device = old_iter->second.mount_device;
-    MountPointDeviceMap::const_iterator new_iter = new_mtab.find(mount_point);
+    auto new_iter = new_mtab.find(mount_point);
     // |mount_point| not in |new_mtab| or |mount_device| is no longer mounted at
     // |mount_point|.
     if (new_iter == new_mtab.end() || (new_iter->second != mount_device)) {
-      MountPriorityMap::iterator priority =
-          mount_priority_map_.find(mount_device);
+      auto priority = mount_priority_map_.find(mount_device);
       DCHECK(priority != mount_priority_map_.end());
       ReferencedMountPoint::const_iterator has_priority =
           priority->second.find(mount_point);
@@ -387,8 +386,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
            multiple_mounted_devices_needing_reattachment.begin();
        it != multiple_mounted_devices_needing_reattachment.end();
        ++it) {
-    ReferencedMountPoint::iterator first_mount_point_info =
-        mount_priority_map_.find(*it)->second.begin();
+    auto first_mount_point_info = mount_priority_map_.find(*it)->second.begin();
     const base::FilePath& mount_point = first_mount_point_info->first;
     first_mount_point_info->second = true;
 
@@ -402,11 +400,11 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
   scoped_refptr<base::SequencedTaskRunner> mounting_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-  for (MountPointDeviceMap::const_iterator new_iter = new_mtab.begin();
-       new_iter != new_mtab.end(); ++new_iter) {
+  for (auto new_iter = new_mtab.begin(); new_iter != new_mtab.end();
+       ++new_iter) {
     const base::FilePath& mount_point = new_iter->first;
     const base::FilePath& mount_device = new_iter->second;
-    MountMap::iterator old_iter = mount_info_map_.find(mount_point);
+    auto old_iter = mount_info_map_.find(mount_point);
     if (old_iter == mount_info_map_.end() ||
         old_iter->second.mount_device != mount_device) {
       // New mount point found or an existing mount point found with a new
@@ -447,7 +445,7 @@ void StorageMonitorLinux::HandleDeviceMountedMultipleTimes(
     const base::FilePath& mount_point) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  MountPriorityMap::iterator priority = mount_priority_map_.find(mount_device);
+  auto priority = mount_priority_map_.find(mount_device);
   DCHECK(priority != mount_priority_map_.end());
   const base::FilePath& other_mount_point = priority->second.begin()->first;
   priority->second[mount_point] = false;

@@ -488,15 +488,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
     }
 
     if (expected_num_bad_proxies >= 1u) {
-      ProxyRetryInfoMap::const_iterator i =
-          retry_info.find(GetProxyKey(bad_proxy));
+      auto i = retry_info.find(GetProxyKey(bad_proxy));
       ASSERT_TRUE(i != retry_info.end());
       EXPECT_TRUE(expected_min_duration <= (*i).second.current_delay);
       EXPECT_TRUE((*i).second.current_delay <= expected_max_duration);
     }
     if (expected_num_bad_proxies == 2u) {
-      ProxyRetryInfoMap::const_iterator i =
-          retry_info.find(GetProxyKey(bad_proxy2));
+      auto i = retry_info.find(GetProxyKey(bad_proxy2));
       ASSERT_TRUE(i != retry_info.end());
       EXPECT_TRUE(expected_min_duration <= (*i).second.current_delay);
       EXPECT_TRUE((*i).second.current_delay <= expected_max_duration);

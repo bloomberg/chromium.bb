@@ -789,7 +789,7 @@ void V4GetHashProtocolManager::OnURLLoaderCompleteInternal(
     int net_error,
     int response_code,
     const std::string& data) {
-  PendingHashRequests::iterator it = pending_hash_requests_.find(url_loader);
+  auto it = pending_hash_requests_.find(url_loader);
   DCHECK(it != pending_hash_requests_.end()) << "Request not found";
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       "SafeBrowsing.V4GetHash.Network.Result", net_error, response_code);

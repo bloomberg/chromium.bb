@@ -41,7 +41,7 @@ void TabNodePool::AssociateTabNode(int tab_node_id, SessionID tab_id) {
 
   // This is a new node association, the sync node should be free.
   // Remove node from free node pool and then associate it with the tab.
-  std::set<int>::iterator it = free_nodes_pool_.find(tab_node_id);
+  auto it = free_nodes_pool_.find(tab_node_id);
   DCHECK(it != free_nodes_pool_.end());
   free_nodes_pool_.erase(it);
 
@@ -53,7 +53,7 @@ void TabNodePool::AssociateTabNode(int tab_node_id, SessionID tab_id) {
 }
 
 int TabNodePool::GetTabNodeIdFromTabId(SessionID tab_id) const {
-  TabIDToTabNodeIDMap::const_iterator it = tabid_nodeid_map_.find(tab_id);
+  auto it = tabid_nodeid_map_.find(tab_id);
   if (it != tabid_nodeid_map_.end()) {
     return it->second;
   }
@@ -62,7 +62,7 @@ int TabNodePool::GetTabNodeIdFromTabId(SessionID tab_id) const {
 
 void TabNodePool::FreeTab(SessionID tab_id) {
   DCHECK(tab_id.is_valid());
-  TabIDToTabNodeIDMap::iterator it = tabid_nodeid_map_.find(tab_id);
+  auto it = tabid_nodeid_map_.find(tab_id);
   if (it == tabid_nodeid_map_.end()) {
     return;  // Already freed.
   }
@@ -134,7 +134,7 @@ void TabNodePool::ReassociateTabNode(int tab_node_id, SessionID tab_id) {
 }
 
 SessionID TabNodePool::GetTabIdFromTabNodeId(int tab_node_id) const {
-  TabNodeIDToTabIDMap::const_iterator it = nodeid_tabid_map_.find(tab_node_id);
+  auto it = nodeid_tabid_map_.find(tab_node_id);
   if (it != nodeid_tabid_map_.end()) {
     return it->second;
   }
@@ -160,7 +160,7 @@ void TabNodePool::CleanupTabNodes(std::set<int>* deleted_node_ids) {
 }
 
 void TabNodePool::DeleteTabNode(int tab_node_id) {
-  TabNodeIDToTabIDMap::iterator it = nodeid_tabid_map_.find(tab_node_id);
+  auto it = nodeid_tabid_map_.find(tab_node_id);
   if (it == nodeid_tabid_map_.end()) {
     free_nodes_pool_.erase(tab_node_id);
     return;

@@ -445,8 +445,7 @@ void ParseUsingBaseHeuristics(
 
   // Will point to the password included in |found_field| which is first in the
   // order of fields in |processed_fields|.
-  std::vector<ProcessedField>::const_iterator first_relevant_password =
-      processed_fields.end();
+  auto first_relevant_password = processed_fields.end();
 
   if (!found_fields->HasPasswords()) {
     // What is the best interactability among passwords?

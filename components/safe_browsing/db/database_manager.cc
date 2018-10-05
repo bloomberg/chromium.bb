@@ -32,7 +32,7 @@ SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
 
 bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ApiCheckSet::iterator it = FindClientApiCheck(client);
+  auto it = FindClientApiCheck(client);
   if (it != api_checks_.end()) {
     api_checks_.erase(it);
     return true;
@@ -74,8 +74,7 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
 SafeBrowsingDatabaseManager::ApiCheckSet::iterator
 SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (ApiCheckSet::iterator it = api_checks_.begin(); it != api_checks_.end();
-       ++it) {
+  for (auto it = api_checks_.begin(); it != api_checks_.end(); ++it) {
     if ((*it)->client() == client) {
       return it;
     }
@@ -107,7 +106,7 @@ void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
 
   // If the check is not in |api_checks_| then the request was cancelled by the
   // client.
-  ApiCheckSet::iterator it = api_checks_.find(check.get());
+  auto it = api_checks_.find(check.get());
   if (it == api_checks_.end())
     return;
 

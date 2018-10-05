@@ -1008,8 +1008,7 @@ void AutofillProfile::CreateInferredLabelsHelper(
 
     std::vector<ServerFieldType> label_fields;
     bool found_differentiating_field = false;
-    for (std::vector<ServerFieldType>::const_iterator field = fields.begin();
-         field != fields.end(); ++field) {
+    for (auto field = fields.begin(); field != fields.end(); ++field) {
       // Skip over empty fields.
       base::string16 field_text =
           profile->GetInfo(AutofillType(*field), app_locale);

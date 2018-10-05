@@ -395,9 +395,9 @@ void TranslatePrefs::RearrangeLanguage(
   b = std::min(length, b);
   if (r > a && r < b) {
     // All cases can be achieved with a single rotation.
-    std::vector<std::string>::iterator first = languages.begin() + a;
-    std::vector<std::string>::iterator it = languages.begin() + r;
-    std::vector<std::string>::iterator last = languages.begin() + b;
+    auto first = languages.begin() + a;
+    auto it = languages.begin() + r;
+    auto last = languages.begin() + b;
     std::rotate(first, it, last);
 
     UpdateLanguageList(languages);

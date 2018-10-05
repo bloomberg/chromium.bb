@@ -48,15 +48,13 @@ void BookmarkNodeData::Element::WriteToPickle(base::Pickle* pickle) const {
   pickle->WriteString16(title);
   pickle->WriteInt64(id_);
   pickle->WriteUInt32(static_cast<uint32_t>(meta_info_map.size()));
-  for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.begin();
-      it != meta_info_map.end(); ++it) {
+  for (auto it = meta_info_map.begin(); it != meta_info_map.end(); ++it) {
     pickle->WriteString(it->first);
     pickle->WriteString(it->second);
   }
   if (!is_url) {
     pickle->WriteUInt32(static_cast<uint32_t>(children.size()));
-    for (std::vector<Element>::const_iterator i = children.begin();
-         i != children.end(); ++i) {
+    for (auto i = children.begin(); i != children.end(); ++i) {
       i->WriteToPickle(pickle);
     }
   }

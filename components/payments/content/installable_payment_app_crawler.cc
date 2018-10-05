@@ -338,8 +338,7 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
         "app manifest " +
         web_app_manifest_url.spec() + ".");
   } else {
-    std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>::iterator it =
-        installable_apps_.find(method_manifest_url);
+    auto it = installable_apps_.find(method_manifest_url);
     DCHECK(it != installable_apps_.end());
     DCHECK(url::IsSameOriginWith(GURL(it->second->sw_scope),
                                  web_app_manifest_url));

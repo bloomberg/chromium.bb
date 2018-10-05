@@ -187,7 +187,7 @@ void UiDevToolsServer::OnWebSocketRequest(
 void UiDevToolsServer::OnWebSocketMessage(int connection_id,
                                           const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
-  ConnectionsMap::iterator it = connections_.find(connection_id);
+  auto it = connections_.find(connection_id);
   DCHECK(it != connections_.end());
   UiDevToolsClient* client = it->second;
   client->Dispatch(data);
@@ -195,7 +195,7 @@ void UiDevToolsServer::OnWebSocketMessage(int connection_id,
 
 void UiDevToolsServer::OnClose(int connection_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
-  ConnectionsMap::iterator it = connections_.find(connection_id);
+  auto it = connections_.find(connection_id);
   if (it == connections_.end())
     return;
   UiDevToolsClient* client = it->second;

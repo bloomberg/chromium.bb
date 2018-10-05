@@ -297,9 +297,7 @@ GCMClientImpl::CheckinInfo::~CheckinInfo() {
 
 void GCMClientImpl::CheckinInfo::SnapshotCheckinAccounts() {
   last_checkin_accounts.clear();
-  for (std::map<std::string, std::string>::iterator iter =
-           account_tokens.begin();
-       iter != account_tokens.end();
+  for (auto iter = account_tokens.begin(); iter != account_tokens.end();
        ++iter) {
     last_checkin_accounts.insert(iter->first);
   }
@@ -578,9 +576,7 @@ void GCMClientImpl::ResetStore() {
 void GCMClientImpl::SetAccountTokens(
     const std::vector<AccountTokenInfo>& account_tokens) {
   device_checkin_info_.account_tokens.clear();
-  for (std::vector<AccountTokenInfo>::const_iterator iter =
-           account_tokens.begin();
-       iter != account_tokens.end();
+  for (auto iter = account_tokens.begin(); iter != account_tokens.end();
        ++iter) {
     device_checkin_info_.account_tokens[iter->email] = iter->access_token;
   }
@@ -595,10 +591,8 @@ void GCMClientImpl::SetAccountTokens(
     return;
 
   bool account_removed = false;
-  for (std::set<std::string>::iterator iter =
-           device_checkin_info_.last_checkin_accounts.begin();
-       iter != device_checkin_info_.last_checkin_accounts.end();
-       ++iter) {
+  for (auto iter = device_checkin_info_.last_checkin_accounts.begin();
+       iter != device_checkin_info_.last_checkin_accounts.end(); ++iter) {
     if (device_checkin_info_.account_tokens.find(*iter) ==
             device_checkin_info_.account_tokens.end()) {
       account_removed = true;
@@ -1220,9 +1214,7 @@ void GCMClientImpl::Send(const std::string& app_id,
   stanza.set_to(receiver_id);
   stanza.set_category(app_id);
 
-  for (MessageData::const_iterator iter = message.data.begin();
-       iter != message.data.end();
-       ++iter) {
+  for (auto iter = message.data.begin(); iter != message.data.end(); ++iter) {
     mcs_proto::AppData* app_data = stanza.add_app_data();
     app_data->set_key(iter->first);
     app_data->set_value(iter->second);
@@ -1287,8 +1279,7 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
 
   recorder_.CollectActivities(&stats.recorded_activities);
 
-  for (RegistrationInfoMap::const_iterator it = registrations_.begin();
-       it != registrations_.end(); ++it) {
+  for (auto it = registrations_.begin(); it != registrations_.end(); ++it) {
     stats.registered_app_ids.push_back(it->first->app_id);
   }
   return stats;
@@ -1402,7 +1393,7 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
   std::string app_id = use_subtype ? subtype : data_message_stanza.category();
 
   MessageType message_type = DATA_MESSAGE;
-  MessageData::iterator type_iter = message_data.find(kMessageTypeKey);
+  auto type_iter = message_data.find(kMessageTypeKey);
   if (type_iter != message_data.end()) {
     message_type = DecodeMessageType(type_iter->second);
     message_data.erase(type_iter);
@@ -1457,7 +1448,7 @@ void GCMClientImpl::HandleIncomingDeletedMessages(
     const mcs_proto::DataMessageStanza& data_message_stanza,
     MessageData& message_data) {
   int deleted_count = 0;
-  MessageData::iterator count_iter = message_data.find(kDeletedCountKey);
+  auto count_iter = message_data.find(kDeletedCountKey);
   if (count_iter != message_data.end()) {
     if (!base::StringToInt(count_iter->second, &deleted_count))
       deleted_count = 0;
@@ -1478,8 +1469,7 @@ void GCMClientImpl::HandleIncomingSendError(
   send_error_details.additional_data = message_data;
   send_error_details.result = SERVER_ERROR;
 
-  MessageData::iterator iter =
-      send_error_details.additional_data.find(kSendErrorMessageIdKey);
+  auto iter = send_error_details.additional_data.find(kSendErrorMessageIdKey);
   if (iter != send_error_details.additional_data.end()) {
     send_error_details.message_id = iter->second;
     send_error_details.additional_data.erase(iter);

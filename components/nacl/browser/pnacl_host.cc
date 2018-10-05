@@ -238,7 +238,7 @@ void PnaclHost::GetNexeFd(int render_process_id,
   }
 
   TranslationID id(render_process_id, pp_instance);
-  PendingTranslationMap::iterator entry = pending_translations_.find(id);
+  auto entry = pending_translations_.find(id);
   if (entry != pending_translations_.end()) {
     // Existing translation must have been abandonded. Clean it up.
     LOG(ERROR) << "GetNexeFd for already-pending translation";
@@ -288,7 +288,7 @@ void PnaclHost::OnCacheQueryReturn(
     scoped_refptr<net::DrainableIOBuffer> buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_backend_operations_--;
-  PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  auto entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
     LOG(ERROR) << "OnCacheQueryReturn: id not found";
     DeInitIfSafe();
@@ -310,7 +310,7 @@ void PnaclHost::OnCacheQueryReturn(
 void PnaclHost::OnTempFileReturn(const TranslationID& id,
                                  base::File file) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  auto entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
     // The renderer may have signaled an error or closed while the temp
     // file was being created.
@@ -348,9 +348,8 @@ void PnaclHost::CheckCacheQueryReady(
   if (!pt->got_cache_hit) {
     // Check if there is already a pending translation for this file. If there
     // is, we will wait for it to come back, to avoid redundant translations.
-    for (PendingTranslationMap::iterator it = pending_translations_.begin();
-         it != pending_translations_.end();
-         ++it) {
+    for (auto it = pending_translations_.begin();
+         it != pending_translations_.end(); ++it) {
       // Another translation matches if it's a request for the same file,
       if (it->second.cache_key == entry->second.cache_key &&
           // and it's not this translation,
@@ -426,7 +425,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
   if (cache_state_ != CacheReady)
     return;
   TranslationID id(render_process_id, pp_instance);
-  PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  auto entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
     LOG(ERROR) << "TranslationFinished: TranslationID " << render_process_id
                << "," << pp_instance << " not found.";
@@ -474,7 +473,7 @@ void PnaclHost::StoreTranslatedNexe(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (cache_state_ != CacheReady)
     return;
-  PendingTranslationMap::iterator it(pending_translations_.find(id));
+  auto it(pending_translations_.find(id));
   if (it == pending_translations_.end()) {
     LOG(ERROR) << "StoreTranslatedNexe: TranslationID " << id.first << ","
                << id.second << " not found.";
@@ -496,7 +495,7 @@ void PnaclHost::StoreTranslatedNexe(
 // (Bound callbacks must re-lookup the TranslationID because the translation
 // could be cancelled before they get called).
 void PnaclHost::OnTranslatedNexeStored(const TranslationID& id, int net_error) {
-  PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  auto entry(pending_translations_.find(id));
   pending_backend_operations_--;
   if (entry == pending_translations_.end()) {
     // If the renderer closed while we were storing the nexe, we land here.
@@ -515,9 +514,8 @@ void PnaclHost::OnTranslatedNexeStored(const TranslationID& id, int net_error) {
 void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Check for outstanding misses to this same file
-  for (PendingTranslationMap::iterator it = pending_translations_.begin();
-       it != pending_translations_.end();
-       ++it) {
+  for (auto it = pending_translations_.begin();
+       it != pending_translations_.end(); ++it) {
     if (it->second.cache_key == key) {
       // Re-send the cache read request. This time we expect a hit, but if
       // something goes wrong, it will just handle it like a miss.
@@ -535,7 +533,7 @@ void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
                                          std::unique_ptr<base::File> file,
                                          int file_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PendingTranslationMap::iterator entry(pending_translations_.find(id));
+  auto entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
     CloseBaseFile(std::move(*file.get()));
     return;
@@ -558,9 +556,9 @@ void PnaclHost::RendererClosing(int render_process_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (cache_state_ != CacheReady)
     return;
-  for (PendingTranslationMap::iterator it = pending_translations_.begin();
+  for (auto it = pending_translations_.begin();
        it != pending_translations_.end();) {
-    PendingTranslationMap::iterator to_erase(it++);
+    auto to_erase(it++);
     if (to_erase->first.first == render_process_id) {
       // Clean up the open files.
       if (to_erase->second.nexe_fd) {

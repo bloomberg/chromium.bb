@@ -1020,8 +1020,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   // Construct a string of the URL chain.
   std::string url_list("<none>");
   if (!request_info_.url_chain.empty()) {
-    std::vector<GURL>::const_iterator iter = request_info_.url_chain.begin();
-    std::vector<GURL>::const_iterator last = request_info_.url_chain.end();
+    auto iter = request_info_.url_chain.begin();
+    auto last = request_info_.url_chain.end();
     url_list = (*iter).is_valid() ? (*iter).spec() : "<invalid>";
     ++iter;
     for (; verbose && (iter != last); ++iter) {
@@ -1185,8 +1185,7 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   //   will be used with the last server that sent them to us.
   // - The redirect chain contains all the servers that were involved in this
   //   download since the initial request, in order.
-  std::vector<GURL>::const_iterator chain_iter =
-      new_create_info.url_chain.begin();
+  auto chain_iter = new_create_info.url_chain.begin();
   if (*chain_iter == request_info_.url_chain.back())
     ++chain_iter;
 
