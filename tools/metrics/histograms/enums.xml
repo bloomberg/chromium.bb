@@ -4255,6 +4255,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Timed out"/>
 </enum>
 
+<enum name="BooleanColorSpaceSupported">
+  <int value="0" label="Color space not supported"/>
+  <int value="1" label="Color space supported"/>
+</enum>
+
 <enum name="BooleanCommonNameMatch">
   <int value="0" label="subjectAltName used"/>
   <int value="1" label="Common Name used"/>

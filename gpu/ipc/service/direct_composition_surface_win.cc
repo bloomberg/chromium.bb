@@ -172,6 +172,7 @@ void InitializeHardwareOverlaySupport() {
   dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
   DCHECK(dxgi_adapter);
 
+  bool supports_nv12_rec709 = false;
   unsigned int i = 0;
   while (true) {
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
@@ -188,6 +189,26 @@ void InitializeHardwareOverlaySupport() {
               info.dxgi_format, d3d11_device.Get(), &info.flags))) {
         continue;
       }
+      // Per Intel's request, use NV12 only when
+      // COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 is also supported. Rec 709 is
+      // commonly used for H.264 and HEVC. At least one Intel Gen9 SKU will not
+      // support NV12 overlays.
+      if (info.overlay_format == OverlayFormat::kNV12) {
+        UINT color_space_support_flags = 0;
+        Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
+        if (FAILED(output.CopyTo(output4.GetAddressOf())))
+          continue;
+
+        if (FAILED(output4->CheckOverlayColorSpaceSupport(
+                info.dxgi_format, DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+                d3d11_device.Get(), &color_space_support_flags))) {
+          continue;
+        }
+        supports_nv12_rec709 =
+            !!(color_space_support_flags &
+               DXGI_OVERLAY_COLOR_SPACE_SUPPORT_FLAG_PRESENT);
+      }
+
       // Formats are ordered by most preferred to least preferred. Don't choose
       // a less preferred format, but keep going so that we can record overlay
       // support for all formats in UMA.
@@ -200,12 +221,14 @@ void InitializeHardwareOverlaySupport() {
       // over YUY2 is enabled.
       bool prefer_nv12 = base::FeatureList::IsEnabled(
           features::kDirectCompositionPreferNV12Overlays);
-      if (info.overlay_format == OverlayFormat::kNV12 && !prefer_nv12)
+      if (info.overlay_format == OverlayFormat::kNV12 &&
+          (!prefer_nv12 || !supports_nv12_rec709))
         continue;
       // Some new Intel drivers only claim to support unscaled overlays, but
-      // scaled overlays still work. Even when scaled overlays aren't actually
-      // supported, presentation using the overlay path should be relatively
-      // efficient.
+      // scaled overlays still work. It's possible DWM works around it by
+      // performing an extra scaling Blt before calling the driver. Even when
+      // scaled overlays aren't actually supported, presentation using the
+      // overlay path should be relatively efficient.
       if (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
                         DXGI_OVERLAY_SUPPORT_FLAG_SCALING)) {
         g_overlay_format_used = info.overlay_format;
@@ -237,6 +260,13 @@ void InitializeHardwareOverlaySupport() {
     base::UmaHistogramSparse(kOverlaySupportFlagsUmaPrefix +
                                  OverlayFormatToString(info.overlay_format),
                              info.flags);
+    if ((info.overlay_format == OverlayFormat::kNV12) &&
+        (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
+                       DXGI_OVERLAY_SUPPORT_FLAG_SCALING))) {
+      // Recorded only when NV12 is supported
+      UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlayNV12Rec709Supported",
+                            supports_nv12_rec709);
+    }
   }
   if (g_supports_overlays) {
     UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFormatUsed2",
