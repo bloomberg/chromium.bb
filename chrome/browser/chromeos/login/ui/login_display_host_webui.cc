@@ -295,16 +295,16 @@ std::string GetManagedLoginScreenLocale() {
 void DisableKeyboardOverscroll() {
   auto* client = ChromeKeyboardControllerClient::Get();
   keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kDisabled;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
   client->SetKeyboardConfig(config);
 }
 
-void ResetKeyboardOverscrollOverride() {
+void ResetKeyboardOverscrollBehavior() {
   auto* client = ChromeKeyboardControllerClient::Get();
   keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
-  config.overscroll_override =
-      keyboard::mojom::KeyboardOverscrollOverride::kNone;
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
   client->SetKeyboardConfig(config);
 }
 
@@ -468,7 +468,7 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (window_manager)
     window_manager->RemoveObserver(this);
 
-  ResetKeyboardOverscrollOverride();
+  ResetKeyboardOverscrollBehavior();
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();

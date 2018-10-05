@@ -26,7 +26,7 @@
 #include "ui/keyboard/keyboard_layout_delegate.h"
 #include "ui/keyboard/keyboard_ukm_recorder.h"
 #include "ui/keyboard/notification_manager.h"
-#include "ui/keyboard/public/keyboard_config_util.h"
+#include "ui/keyboard/public/keyboard_config.mojom.h"
 #include "ui/keyboard/public/keyboard_controller.mojom.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
@@ -392,7 +392,7 @@ class KEYBOARD_EXPORT KeyboardController
   KeyboardControllerState state_ = KeyboardControllerState::UNKNOWN;
 
   // Keyboard configuration associated with the controller.
-  mojom::KeyboardConfig keyboard_config_ = keyboard::GetDefaultKeyboardConfig();
+  mojom::KeyboardConfig keyboard_config_;
 
   NotificationManager notification_manager_;
 

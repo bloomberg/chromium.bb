@@ -19,7 +19,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_config_util.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
@@ -76,7 +75,7 @@ ChromeKeyboardControllerClient::GetKeyboardConfig() {
   if (!cached_keyboard_config_) {
     // Unlikely edge case (called before the Ash mojo service replies to the
     // initial GetKeyboardConfig request). Return the default value.
-    return keyboard::GetDefaultKeyboardConfig();
+    return keyboard::mojom::KeyboardConfig();
   }
   return *cached_keyboard_config_.get();
 }
