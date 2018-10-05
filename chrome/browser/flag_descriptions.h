@@ -770,6 +770,9 @@ extern const char kNtpCustomLinksDescription[];
 extern const char kNtpIconsName[];
 extern const char kNtpIconsDescription[];
 
+extern const char kNtpUIMdName[];
+extern const char kNtpUIMdDescription[];
+
 extern const char kNumRasterThreadsName[];
 extern const char kNumRasterThreadsDescription[];
 extern const char kNumRasterThreadsOne[];

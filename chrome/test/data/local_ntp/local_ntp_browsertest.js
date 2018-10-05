@@ -73,6 +73,32 @@ test.localNtp.testMostVisitedContents = function() {
       window.chrome.embeddedSearch.newTabPage.mostVisited[0].rid));
 };
 
+/**
+ * Tests that the GM2 style is applied when the flag is enabled.
+ */
+test.localNtp.testMDApplied = function() {
+  // Turn off voice search to avoid reinitializing the speech object
+  configData.isVoiceSearchEnabled = false;
+
+  configData.isMDUIEnabled = true;
+  initLocalNTP(/*isGooglePage=*/true);
+  assertTrue(document.body.classList.contains('md'));
+}
+
+/**
+ * Tests that the GM2 style is not applied when the flag is disabled.
+ */
+test.localNtp.testMDNotApplied = function() {
+  // Turn off voice search to avoid reinitializing the speech object
+  configData.isVoiceSearchEnabled = false;
+
+  configData.isMDUIEnabled = false;
+  configData.isMDIconsEnabled = false;
+  configData.isCustomLinksEnabled = false;
+  initLocalNTP(/*isGooglePage=*/true);
+  assertFalse(document.body.classList.contains('md'));
+}
+
 
 // ****************************** ADVANCED TESTS ******************************
 // Advanced tests are controlled from the native side. The helpers here are

@@ -14,6 +14,7 @@ namespace features {
 
 extern const base::Feature kNtpBackgrounds;
 extern const base::Feature kNtpIcons;
+extern const base::Feature kNtpUIMd;
 
 // Returns whether New Tab Page custom links are enabled.
 bool IsCustomLinksEnabled();
@@ -23,6 +24,9 @@ bool IsCustomBackgroundsEnabled();
 
 // Returns whether the Material Design UI for Most Visited is enabled.
 bool IsMDIconsEnabled();
+
+// Returns whether the Material Design UI is enabled on the New Tab Page.
+bool IsMDUIEnabled();
 
 }  // namespace features
 

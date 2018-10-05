@@ -4101,6 +4101,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-icons", flag_descriptions::kNtpIconsName,
      flag_descriptions::kNtpIconsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpIcons)},
+
+    {"ntp-ui-md", flag_descriptions::kNtpUIMdName,
+     flag_descriptions::kNtpUIMdDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpUIMd)},
 #endif  // OS_WIN || OS_MACOSX || OS_LINUX
 
 #if defined(OS_ANDROID)
