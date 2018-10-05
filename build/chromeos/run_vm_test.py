@@ -317,9 +317,9 @@ class BrowserSanityTest(RemoteTest):
   def __init__(self, args, unknown_args):
     super(BrowserSanityTest, self).__init__(args, unknown_args)
 
-    # 5 min should be enough time for the sanity test to pass.
-    self._retries = 2
-    self._timeout = 300
+    # 10 min should be enough time for the sanity test to pass.
+    self._retries = 1
+    self._timeout = 600
 
   @property
   def suite_name(self):
