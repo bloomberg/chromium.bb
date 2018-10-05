@@ -145,7 +145,7 @@ class DeployChrome(object):
                    'verification, which requires that it reboot the device.')
       logging.info('Make sure the device is in developer mode!')
       logging.info('Skip this prompt by specifying --force.')
-      if not cros_build_lib.BooleanPrompt('Remove roots verification?', False):
+      if not cros_build_lib.BooleanPrompt('Remove rootfs verification?', False):
         return False
 
     logging.info('Removing rootfs verification from %s', self.options.to)
