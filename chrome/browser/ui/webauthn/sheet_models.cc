@@ -472,8 +472,13 @@ gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
-                                    GetRelyingPartyIdString());
+  base::string16 device_display_name;
+  const auto* const ble_authenticator =
+      dialog_model()->selected_authenticator();
+  DCHECK(ble_authenticator);
+  return l10n_util::GetStringFUTF16(
+      IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
+      ble_authenticator->authenticator_display_name);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {

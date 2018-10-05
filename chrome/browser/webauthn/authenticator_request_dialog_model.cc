@@ -341,3 +341,8 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
   if (it != saved_authenticators_.end())
     it->authenticator_id = std::move(new_authenticator_id);
 }
+
+void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
+    AuthenticatorReference* authenticator) {
+  selected_authenticator_ = authenticator;
+}
