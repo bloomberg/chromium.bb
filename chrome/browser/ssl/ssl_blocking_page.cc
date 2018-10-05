@@ -45,9 +45,6 @@ using security_interstitials::SSLErrorUI;
 
 namespace {
 
-const char kSymantecSupportUrl[] =
-    "https://support.google.com/chrome?p=symantec";
-
 std::unique_ptr<ChromeMetricsHelper> CreateSslProblemMetricsHelper(
     content::WebContents* web_contents,
     int cert_error,
