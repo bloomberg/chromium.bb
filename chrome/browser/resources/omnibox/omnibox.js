@@ -435,6 +435,7 @@
      * call handleNewAutocompleteResult as results come in.
      */
     makeRequest() {
+      clearOutput();
       this.progressiveAutocompleteResults = [];
       // Then, call chrome with a five-element list:
       // - first element: the value in the text box
