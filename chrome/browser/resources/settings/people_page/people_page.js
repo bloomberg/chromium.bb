@@ -168,7 +168,9 @@ Polymer({
         if (settings.routes.MANAGE_PROFILE) {
           map.set(
               settings.routes.MANAGE_PROFILE.path,
-              '#picture-subpage-trigger .subpage-arrow button');
+              loadTimeData.getBoolean('diceEnabled') ?
+                  '#edit-profile .subpage-arrow button' :
+                  '#picture-subpage-trigger .subpage-arrow button');
         }
         // </if>
         // <if expr="chromeos">
