@@ -23,7 +23,7 @@ TEST_F(FrameStatsTest, ToStatsMessageAndBack_RestoresFrameStats) {
   stats.rtt_estimate = base::TimeDelta::FromSeconds(17);
   stats.bandwidth_estimate_kbps = 18;
   stats.capturer_id = 19;
-  stats.frame_quantizer = 20;
+  stats.frame_quality = 20;
   FrameStatsMessage message;
 
   stats.ToFrameStatsMessage(&message);
@@ -39,7 +39,7 @@ TEST_F(FrameStatsTest, ToStatsMessageAndBack_RestoresFrameStats) {
   EXPECT_EQ(stats.rtt_estimate, newStats.rtt_estimate);
   EXPECT_EQ(stats.bandwidth_estimate_kbps, newStats.bandwidth_estimate_kbps);
   EXPECT_EQ(stats.capturer_id, newStats.capturer_id);
-  EXPECT_EQ(stats.frame_quantizer, newStats.frame_quantizer);
+  EXPECT_EQ(stats.frame_quality, newStats.frame_quality);
 }
 
 }  // namespace protocol

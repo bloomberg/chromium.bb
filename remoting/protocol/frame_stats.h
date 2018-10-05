@@ -43,7 +43,7 @@ struct HostFrameStats {
   base::TimeDelta rtt_estimate = base::TimeDelta::Max();
   int bandwidth_estimate_kbps = -1;
   uint32_t capturer_id = webrtc::DesktopCapturerId::kUnknown;
-  int frame_quantizer = -1;
+  int frame_quality = -1;
 };
 
 struct ClientFrameStats {
