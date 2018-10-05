@@ -71,4 +71,7 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorIdChanged(
     base::StringPiece old_authenticator_id,
     std::string new_authenticator_id) {}
 
+void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
+    base::StringPiece authenticator_id) {}
+
 }  // namespace content

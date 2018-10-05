@@ -80,7 +80,8 @@ class AuthenticatorRequestDialogModel {
   struct AuthenticatorReference {
     AuthenticatorReference(base::StringPiece device_id,
                            base::StringPiece16 authenticator_display_name,
-                           device::FidoTransportProtocol transport);
+                           device::FidoTransportProtocol transport,
+                           bool is_in_pairing_mode);
     AuthenticatorReference(AuthenticatorReference&& data);
     AuthenticatorReference& operator=(AuthenticatorReference&& other);
 
@@ -89,6 +90,7 @@ class AuthenticatorRequestDialogModel {
     std::string authenticator_id;
     base::string16 authenticator_display_name;
     device::FidoTransportProtocol transport;
+    bool is_in_pairing_mode = false;
     bool dispatched = false;
   };
 
@@ -265,6 +267,9 @@ class AuthenticatorRequestDialogModel {
 
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
+
+  void UpdateAuthenticatorReferencePairingMode(
+      base::StringPiece authenticator_id);
 
   void SetSelectedAuthenticatorForTesting(
       AuthenticatorReference* authenticator);

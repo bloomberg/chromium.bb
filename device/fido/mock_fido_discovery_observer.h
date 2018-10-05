@@ -29,6 +29,8 @@ class MockFidoDiscoveryObserver : public FidoDiscoveryBase::Observer {
                void(FidoDiscoveryBase*, FidoAuthenticator*));
   MOCK_METHOD3(AuthenticatorIdChanged,
                void(FidoDiscoveryBase*, const std::string&, std::string));
+  MOCK_METHOD2(AuthenticatorPairingModeChanged,
+               void(FidoDiscoveryBase*, const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFidoDiscoveryObserver);

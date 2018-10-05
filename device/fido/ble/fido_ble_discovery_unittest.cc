@@ -31,9 +31,18 @@
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
 
-using ::testing::_;
-
 namespace device {
+
+namespace {
+
+using ::testing::_;
+using TestMockDevice = ::testing::NiceMock<MockBluetoothDevice>;
+
+constexpr char kDeviceName[] = "device_name";
+constexpr char kDeviceAddress[] = "device_address";
+constexpr char kDeviceChangedAddress[] = "device_changed_address";
+constexpr char kAuthenticatorId[] = "ble:device_address";
+constexpr char kAuthenticatorChangedId[] = "ble:device_changed_address";
 
 ACTION_P(ReturnFromAsyncCall, closure) {
   closure.Run();
@@ -42,6 +51,8 @@ ACTION_P(ReturnFromAsyncCall, closure) {
 MATCHER_P(IdMatches, id, "") {
   return arg->GetId() == std::string("ble:") + id;
 }
+
+}  // namespace
 
 TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
   FidoBleDiscovery discovery;
@@ -241,12 +252,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
 
 TEST_F(BluetoothTest, DiscoveryDoesNotAddDuplicateDeviceOnAddressChanged) {
   using TestMockDevice = ::testing::NiceMock<MockBluetoothDevice>;
-  static constexpr char kDeviceName[] = "device_name";
-  static constexpr char kDeviceAddress[] = "device_address";
-  static constexpr char kAuthenticatorId[] = "ble:device_address";
-  static constexpr char kDeviceChangedAddress[] = "device_changed_address";
-  static constexpr char kAuthenticatorChangedId[] =
-      "ble:device_changed_address";
 
   MockFidoDiscoveryObserver observer;
   FidoBleDiscovery discovery;
@@ -285,6 +290,44 @@ TEST_F(BluetoothTest, DiscoveryDoesNotAddDuplicateDeviceOnAddressChanged) {
 
   EXPECT_EQ(1u, discovery.GetDevices().size());
   EXPECT_TRUE(discovery.GetDevice(kAuthenticatorChangedId));
+}
+
+TEST_F(BluetoothTest, DiscoveryNotifiesObserverWhenDeviceInPairingMode) {
+  FidoBleDiscovery discovery;
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
+
+  auto mock_device = std::make_unique<TestMockDevice>(
+      mock_adapter.get(), 0 /* bluetooth_class */, kDeviceName, kDeviceAddress,
+      false /* paired */, false /* connected */);
+  EXPECT_CALL(*mock_device.get(), GetUUIDs)
+      .WillRepeatedly(::testing::Return(
+          std::vector<BluetoothUUID>{BluetoothUUID(kFidoServiceUUID)}));
+  EXPECT_CALL(*mock_adapter, GetDevice(kDeviceAddress))
+      .WillRepeatedly(::testing::Return(mock_device.get()));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter.get());
+  const auto device_id = FidoBleDevice::GetId(kDeviceAddress);
+  discovery.Start();
+
+  ::testing::InSequence sequence;
+  EXPECT_CALL(observer,
+              AuthenticatorAdded(&discovery, IdMatches(kDeviceAddress)));
+  mock_adapter->NotifyDeviceChanged(mock_device.get());
+
+  EXPECT_CALL(observer, AuthenticatorPairingModeChanged(&discovery, _));
+  // Update device advertisement data so that it represents BLE device in
+  // pairing mode.
+  mock_device->UpdateAdvertisementData(
+      0 /* rssi */, 1 << kLeLimitedDiscoverableModeBit,
+      std::vector<BluetoothUUID>{BluetoothUUID(kFidoServiceUUID)},
+      base::nullopt /* tx_power */, BluetoothDevice::ServiceDataMap(),
+      BluetoothDevice::ManufacturerDataMap());
+  mock_adapter->NotifyDeviceChanged(mock_device.get());
 }
 
 }  // namespace device

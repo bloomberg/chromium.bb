@@ -40,6 +40,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryBase {
     virtual void AuthenticatorIdChanged(FidoDiscoveryBase* discovery,
                                         const std::string& previous_id,
                                         std::string new_id) = 0;
+
+    // Invoked when connected Bluetooth device advertises that it is in pairing
+    // mode.
+    virtual void AuthenticatorPairingModeChanged(
+        FidoDiscoveryBase* discovery,
+        const std::string& device_id) = 0;
   };
 
   // Start authenticator discovery. The Observer must have been set before this

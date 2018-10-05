@@ -68,13 +68,27 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
 
 void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
-  if (!CheckForExcludedDeviceAndCacheAddress(device) &&
-      base::ContainsKey(device->GetUUIDs(), FidoServiceUUID()) &&
-      !GetDevice(FidoBleDevice::GetId(device->GetAddress()))) {
+  if (CheckForExcludedDeviceAndCacheAddress(device) ||
+      !base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+    return;
+  }
+
+  const auto device_id = FidoBleDevice::GetId(device->GetAddress());
+  auto* fido_device = GetDevice(device_id);
+  if (!fido_device) {
     VLOG(2) << "Discovered U2F service on existing BLE device: "
             << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
+    return;
   }
+
+  // Our model of FIDO BLE security key assumes that if BLE device is in pairing
+  // mode long enough time without pairing attempt, the device stops advertising
+  // and BluetoothAdapter::DeviceRemoved() is invoked instead of returning back
+  // to regular "non-pairing" mode. As so, we only notify observer when
+  // |fido_device| goes into pairing mode.
+  if (observer() && fido_device->IsInPairingMode())
+    observer()->AuthenticatorPairingModeChanged(this, device_id);
 }
 
 void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
