@@ -382,6 +382,14 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
           contents, entry->GetVirtualURL(), security_info);
   bubble->SetHighlightedButton(location_icon_view());
   bubble->GetWidget()->Show();
+
+  // When the user opens the page info bubble, we also expose the full URL,
+  // temporarily disabling Steady State Elisions and Query in Omnibox.
+  // We are currently gating this behavior on the Query in Omnibox flag, since
+  // it's still under active experimentation.
+  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
+    omnibox_view()->model()->SetUserTextToURLForEditing();
+
   return true;
 }
 
