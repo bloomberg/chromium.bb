@@ -44,6 +44,7 @@ class URLRequestContextStorage;
 }
 
 namespace network {
+class SharedURLLoaderFactory;
 class TestNetworkQualityTracker;
 }
 
@@ -189,6 +190,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
       network::TestNetworkQualityTracker* test_network_quality_tracker,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~MockDataReductionProxyService() override;
 
@@ -474,6 +476,10 @@ class DataReductionProxyTestContext {
     return request_context_getter_.get();
   }
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() const {
+    return url_loader_factory_;
+  }
+
   DataReductionProxyBypassStats* bypass_stats() const {
     return io_data_->bypass_stats();
   }
@@ -527,6 +533,7 @@ class DataReductionProxyTestContext {
       std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
       std::unique_ptr<net::TestNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       net::MockClientSocketFactory* mock_socket_factory,
       std::unique_ptr<TestDataReductionProxyIOData> io_data,
       std::unique_ptr<DataReductionProxySettings> settings,
@@ -545,6 +552,7 @@ class DataReductionProxyTestContext {
   std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
   std::unique_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.
   net::MockClientSocketFactory* mock_socket_factory_;

@@ -107,11 +107,11 @@ class DataReductionProxyConfig
   // disables the use of alternative protocols and proxies.
   // |url_request_context_getter| is the default net::URLRequestContextGetter
   // used for making URL requests.
-  void InitializeOnIOThread(const scoped_refptr<net::URLRequestContextGetter>&
-                                basic_url_request_context_getter,
-                            const scoped_refptr<net::URLRequestContextGetter>&
-                                url_request_context_getter,
-                            NetworkPropertiesManager* manager);
+  void InitializeOnIOThread(
+      const scoped_refptr<net::URLRequestContextGetter>&
+          basic_url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      NetworkPropertiesManager* manager);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled|. If |restricted| is true, only enable the fallback

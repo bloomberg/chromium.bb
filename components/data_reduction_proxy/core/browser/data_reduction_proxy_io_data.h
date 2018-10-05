@@ -39,6 +39,7 @@ class URLRequestInterceptor;
 
 namespace network {
 class NetworkConnectionTracker;
+class SharedURLLoaderFactoryInfo;
 }
 
 namespace data_reduction_proxy {
@@ -317,6 +318,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // A net::URLRequestContextGetter used for making secure proxy checks. It
   // does not use alternate protocols.
   scoped_refptr<net::URLRequestContextGetter> basic_url_request_context_getter_;
+
+  // The network::SharedURLLoaderFactoryInfo used for making URL requests.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 
   // The production channel of this build.
   const std::string channel_;
