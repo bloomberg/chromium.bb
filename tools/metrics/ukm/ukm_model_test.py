@@ -5,7 +5,7 @@
 
 import unittest
 
-import model
+import ukm_model
 
 
 PRETTY_XML = """
@@ -34,7 +34,7 @@ PRETTY_XML = """
 class UkmXmlTest(unittest.TestCase):
 
   def testIsPretty(self):
-    result = model.UpdateXML(PRETTY_XML)
+    result = ukm_model.UpdateXML(PRETTY_XML)
     self.assertMultiLineEqual(PRETTY_XML, result.strip())
 
 
