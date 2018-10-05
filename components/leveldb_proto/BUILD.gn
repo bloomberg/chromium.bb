@@ -21,6 +21,7 @@ source_set("test_support") {
   testonly = true
   sources = [
     "testing/fake_db.h",
+    "testing/test_proto_database_impl.h",
   ]
 
   public_deps = [

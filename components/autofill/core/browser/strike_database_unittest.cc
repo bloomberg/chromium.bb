@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
 #include "components/autofill/core/browser/test_strike_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,12 +20,12 @@ namespace autofill {
 
 class StrikeDatabaseTest : public ::testing::Test {
  public:
-  StrikeDatabaseTest() : db_(InitFilePath()) {}
+  StrikeDatabaseTest() : strike_database_(InitFilePath()) {}
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
     base::RunLoop run_loop;
-    db_.AddEntries(
+    strike_database_.AddEntries(
         entries_to_add,
         base::BindRepeating(&StrikeDatabaseTest::OnAddEntries,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -42,9 +43,10 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   int GetStrikes(std::string key) {
     base::RunLoop run_loop;
-    db_.GetStrikes(key, base::BindRepeating(&StrikeDatabaseTest::OnGetStrikes,
-                                            base::Unretained(this),
-                                            run_loop.QuitClosure()));
+    strike_database_.GetStrikes(
+        key,
+        base::BindRepeating(&StrikeDatabaseTest::OnGetStrikes,
+                            base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return num_strikes_;
   }
@@ -56,9 +58,10 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   int AddStrike(std::string key) {
     base::RunLoop run_loop;
-    db_.AddStrike(key, base::BindRepeating(&StrikeDatabaseTest::OnAddStrike,
-                                           base::Unretained(this),
-                                           run_loop.QuitClosure()));
+    strike_database_.AddStrike(
+        key,
+        base::BindRepeating(&StrikeDatabaseTest::OnAddStrike,
+                            base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return num_strikes_;
   }
@@ -70,16 +73,22 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllStrikesForKey(const std::string key) {
     base::RunLoop run_loop;
-    db_.ClearAllStrikesForKey(
+    strike_database_.ClearAllStrikesForKey(
         key,
         base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
+  void ClearCache() { strike_database_.ClearCache(); }
+
+  int GetNumberOfDatabaseCalls() {
+    return strike_database_.GetNumberOfDatabaseCalls();
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  TestStrikeDatabase db_;
+  TestStrikeDatabase strike_database_;
 
  private:
   static const base::FilePath InitFilePath() {
@@ -94,18 +103,19 @@ class StrikeDatabaseTest : public ::testing::Test {
   std::unique_ptr<StrikeData> strike_data_;
 };
 
+#if !defined(OS_IOS)
+
 TEST_F(StrikeDatabaseTest, AddStrikeTest) {
   const std::string key = "12345";
-  int strikes = AddStrike(key);
-  EXPECT_EQ(1, strikes);
-  strikes = AddStrike(key);
-  EXPECT_EQ(2, strikes);
+  EXPECT_EQ(1, AddStrike(key));
+  EXPECT_EQ(2, AddStrike(key));
+  EXPECT_EQ(2, GetStrikes(key));
+  EXPECT_EQ(3, AddStrike(key));
 }
 
 TEST_F(StrikeDatabaseTest, GetStrikeForZeroStrikesTest) {
   const std::string key = "12345";
-  int strikes = GetStrikes(key);
-  EXPECT_EQ(0, strikes);
+  EXPECT_EQ(0, GetStrikes(key));
 }
 
 TEST_F(StrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
@@ -117,15 +127,13 @@ TEST_F(StrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
   entries.push_back(std::make_pair(key, data));
   AddEntries(entries);
 
-  int strikes = GetStrikes(key);
-  EXPECT_EQ(3, strikes);
+  EXPECT_EQ(3, GetStrikes(key));
 }
 
 TEST_F(StrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
   const std::string key = "12345";
   ClearAllStrikesForKey(key);
-  int strikes = GetStrikes(key);
-  EXPECT_EQ(0, strikes);
+  EXPECT_EQ(0, GetStrikes(key));
 }
 
 TEST_F(StrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
@@ -137,11 +145,9 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
   entries.push_back(std::make_pair(key, data));
   AddEntries(entries);
 
-  int strikes = GetStrikes(key);
-  EXPECT_EQ(3, strikes);
+  EXPECT_EQ(3, GetStrikes(key));
   ClearAllStrikesForKey(key);
-  strikes = GetStrikes(key);
-  EXPECT_EQ(0, strikes);
+  EXPECT_EQ(0, GetStrikes(key));
 }
 
 TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
@@ -158,20 +164,44 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   entries.push_back(std::make_pair(key2, data2));
   AddEntries(entries);
 
-  int strikes = GetStrikes(key1);
-  EXPECT_EQ(3, strikes);
-  strikes = GetStrikes(key2);
-  EXPECT_EQ(5, strikes);
+  EXPECT_EQ(3, GetStrikes(key1));
+  EXPECT_EQ(5, GetStrikes(key2));
   ClearAllStrikesForKey(key1);
-  strikes = GetStrikes(key1);
-  EXPECT_EQ(0, strikes);
-  strikes = GetStrikes(key2);
-  EXPECT_EQ(5, strikes);
+  EXPECT_EQ(0, GetStrikes(key1));
+  EXPECT_EQ(5, GetStrikes(key2));
+}
+
+TEST_F(StrikeDatabaseTest, NoDatabaseCallsWhenEntryIsCachedTest) {
+  ClearCache();
+  int database_calls = GetNumberOfDatabaseCalls();
+  EXPECT_EQ(0, database_calls);
+
+  // Set up database with 3 pre-existing strikes at |key|.
+  const std::string key = "12345";
+  std::vector<std::pair<std::string, StrikeData>> entries;
+  StrikeData data;
+  data.set_num_strikes(3);
+  entries.push_back(std::make_pair(key, data));
+  AddEntries(entries);
+  EXPECT_EQ(1, GetNumberOfDatabaseCalls());
+  // Calling GetStrikes(~) should add its returned value to the cache.
+  EXPECT_EQ(3, GetStrikes(key));
+  EXPECT_EQ(2, GetNumberOfDatabaseCalls());
+  // GetStrikes(~) should not hit the db because it's already cached.
+  GetStrikes(key);
+  EXPECT_EQ(2, GetNumberOfDatabaseCalls());
+  ClearCache();
+  // GetStrikes(~) will hit the db because the cache was cleared.
+  GetStrikes(key);
+  EXPECT_EQ(3, GetNumberOfDatabaseCalls());
 }
 
 TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
   const std::string last_four = "1234";
-  EXPECT_EQ("creditCardSave__1234", db_.GetKeyForCreditCardSave(last_four));
+  EXPECT_EQ("creditCardSave__1234",
+            strike_database_.GetKeyForCreditCardSave(last_four));
 }
+
+#endif
 
 }  // namespace autofill

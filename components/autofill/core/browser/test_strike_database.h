@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "components/autofill/core/browser/strike_database.h"
+#include "components/leveldb_proto/testing/test_proto_database_impl.h"
 
 namespace autofill {
+class StrikeData;
 
 class TestStrikeDatabase : public StrikeDatabase {
  public:
@@ -21,6 +23,8 @@ class TestStrikeDatabase : public StrikeDatabase {
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add,
       const SetValueCallback& callback);
+
+  int GetNumberOfDatabaseCalls();
 };
 
 }  // namespace autofill
