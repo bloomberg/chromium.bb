@@ -86,6 +86,12 @@ void ScriptExecutor::SelectOption(const std::vector<std::string>& selectors,
                                               std::move(callback));
 }
 
+void ScriptExecutor::HighlightElement(const std::vector<std::string>& selectors,
+                                      base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->HighlightElement(selectors,
+                                                  std::move(callback));
+}
+
 void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->FocusElement(selectors, std::move(callback));

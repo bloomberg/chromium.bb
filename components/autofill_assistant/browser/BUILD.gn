@@ -22,6 +22,8 @@ jumbo_static_library("browser") {
     "actions/click_action.h",
     "actions/focus_element_action.cc",
     "actions/focus_element_action.h",
+    "actions/highlight_element_action.cc",
+    "actions/highlight_element_action.h",
     "actions/navigate_action.cc",
     "actions/navigate_action.h",
     "actions/reset_action.cc",

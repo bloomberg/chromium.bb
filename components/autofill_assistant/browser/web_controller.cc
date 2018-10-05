@@ -56,6 +56,14 @@ const char* const kSelectOptionScript =
       return true;
     })";
 
+// Javascript to highlight an element.
+const char* const kHighlightElementScript =
+    R"(function() {
+      this.style.boxShadow = '0px 0px 0px 3px white, ' +
+          '0px 0px 0px 6px rgb(66, 133, 244)';
+      return true;
+    })";
+
 // Javascript code to retrieve the 'value' attribute of a node.
 const char* const kGetValueAttributeScript =
     "function () { return this.value; }";
@@ -609,6 +617,53 @@ void WebController::OnSelectOption(
     return;
   }
 
+  // Read the result returned from Javascript code.
+  DCHECK(result->GetResult()->GetValue()->is_bool());
+  OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
+}
+
+void WebController::HighlightElement(const std::vector<std::string>& selectors,
+                                     base::OnceCallback<void(bool)> callback) {
+  FindElement(
+      selectors,
+      base::BindOnce(&WebController::OnFindElementForHighlightElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnFindElementForHighlightElement(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<FindElementResult> element_result) {
+  const std::string object_id = element_result->object_id;
+  if (object_id.empty()) {
+    DLOG(ERROR) << "Failed to find the element to highlight.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kHighlightElementScript))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnHighlightElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnHighlightElement(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  if (!result || result->HasExceptionDetails()) {
+    DLOG(ERROR) << "Failed to highlight element.";
+    OnResult(false, std::move(callback));
+    return;
+  }
   // Read the result returned from Javascript code.
   DCHECK(result->GetResult()->GetValue()->is_bool());
   OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));

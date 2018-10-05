@@ -73,6 +73,9 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(FocusElement,
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback));
+  MOCK_METHOD2(HighlightElement,
+               void(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback));
 
   void GetFieldValue(
       const std::vector<std::string>& selectors,
