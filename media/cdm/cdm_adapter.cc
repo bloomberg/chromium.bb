@@ -463,8 +463,15 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!audio_init_cb_);
 
-  cdm::Status status =
-      cdm_->InitializeAudioDecoder(ToCdmAudioDecoderConfig(config));
+  auto cdm_config = ToCdmAudioDecoderConfig(config);
+  if (cdm_config.codec == cdm::kUnknownAudioCodec) {
+    DVLOG(1) << __func__
+             << ": Unsupported config: " << config.AsHumanReadableString();
+    init_cb.Run(false);
+    return;
+  }
+
+  cdm::Status status = cdm_->InitializeAudioDecoder(cdm_config);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;
@@ -490,8 +497,18 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!video_init_cb_);
 
-  cdm::Status status =
-      cdm_->InitializeVideoDecoder(ToCdmVideoDecoderConfig(config));
+  // cdm::kUnknownVideoCodecProfile and cdm::kUnknownVideoFormat are not checked
+  // because it's possible the container has wrong information or the demuxer
+  // doesn't parse them correctly.
+  auto cdm_config = ToCdmVideoDecoderConfig(config);
+  if (cdm_config.codec == cdm::kUnknownVideoCodec) {
+    DVLOG(1) << __func__
+             << ": Unsupported config: " << config.AsHumanReadableString();
+    init_cb.Run(false);
+    return;
+  }
+
+  cdm::Status status = cdm_->InitializeVideoDecoder(cdm_config);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;

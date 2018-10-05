@@ -61,63 +61,69 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
                      CdmVideoDecoder::CdmVideoFrame* cdm_video_frame) {
   DCHECK(cdm_video_frame);
 
-  // TODO(xhwang): Support more pixel formats.
-  if (!video_frame.IsMappable() ||
-      video_frame.format() != media::PIXEL_FORMAT_I420) {
-    DVLOG(1) << "VideoFrame is not mappable or has unsupported format";
+  if (!video_frame.IsMappable()) {
+    DVLOG(1) << "VideoFrame is not mappable";
     return false;
   }
 
-  const int width = video_frame.coded_size().width();
-  const int height = video_frame.coded_size().height();
-  DCHECK_EQ(width % 2, 0);
-  DCHECK_EQ(height % 2, 0);
-  const int width_uv = width / 2;
-  const int height_uv = height / 2;
-  const int dst_stride_y = width;
-  const int dst_stride_uv = width_uv;
-  const int y_size = dst_stride_y * height;
-  const int uv_size = dst_stride_uv * height_uv;
-  const int space_required = y_size + (uv_size * 2);
+  if (!IsYuvPlanar(video_frame.format())) {
+    DVLOG(1) << "Only YUV planar format supported";
+    return false;
+  }
 
+  if (VideoFrame::NumPlanes(video_frame.format()) != 3u) {
+    DVLOG(1) << "Only 3-plane format supported";
+    return false;
+  }
+
+  auto cdm_video_format = ToCdmVideoFormat(video_frame.format());
+  if (cdm_video_format == cdm::kUnknownVideoFormat) {
+    DVLOG(1) << "VideoFrame has unsupported format: " << video_frame.format();
+    return false;
+  }
+
+  // Get required allocation size for a tightly packed frame.
+  auto space_required = VideoFrame::AllocationSize(video_frame.format(),
+                                                   video_frame.coded_size());
   auto* buffer = cdm_host_proxy->Allocate(space_required);
   if (!buffer) {
     LOG(ERROR) << __func__ << ": Buffer allocation failed.";
     return false;
   }
 
-  // Values from the source |video_frame|.
-  const auto* src_y = video_frame.data(VideoFrame::kYPlane);
-  const auto* src_u = video_frame.data(VideoFrame::kUPlane);
-  const auto* src_v = video_frame.data(VideoFrame::kVPlane);
-  auto src_stride_y = video_frame.stride(VideoFrame::kYPlane);
-  auto src_stride_u = video_frame.stride(VideoFrame::kUPlane);
-  auto src_stride_v = video_frame.stride(VideoFrame::kVPlane);
-
-  // Values for the destinaton frame buffer.
-  uint8_t* dst_y = buffer->Data();
-  uint8_t* dst_u = dst_y + y_size;
-  uint8_t* dst_v = dst_u + uv_size;
-
-  // Actually copy video frame planes.
-  using libyuv::CopyPlane;
-  CopyPlane(src_y, src_stride_y, dst_y, dst_stride_y, width, height);
-  CopyPlane(src_u, src_stride_u, dst_u, dst_stride_uv, width_uv, height_uv);
-  CopyPlane(src_v, src_stride_v, dst_v, dst_stride_uv, width_uv, height_uv);
-
-  buffer->SetSize(space_required);
+  buffer->SetSize(base::checked_cast<uint32_t>(space_required));
   cdm_video_frame->SetFrameBuffer(buffer);
-
-  cdm_video_frame->SetFormat(cdm::kI420);
-  cdm_video_frame->SetSize({width, height});
-  cdm_video_frame->SetPlaneOffset(cdm::kYPlane, 0);
-  cdm_video_frame->SetPlaneOffset(cdm::kUPlane, y_size);
-  cdm_video_frame->SetPlaneOffset(cdm::kVPlane, y_size + uv_size);
-  cdm_video_frame->SetStride(cdm::kYPlane, dst_stride_y);
-  cdm_video_frame->SetStride(cdm::kUPlane, dst_stride_uv);
-  cdm_video_frame->SetStride(cdm::kVPlane, dst_stride_uv);
+  cdm_video_frame->SetFormat(cdm_video_format);
+  cdm_video_frame->SetSize(
+      {video_frame.coded_size().width(), video_frame.coded_size().height()});
   cdm_video_frame->SetTimestamp(video_frame.timestamp().InMicroseconds());
+  // TODO(crbug.com/707127): Set ColorSpace here. It's not trivial to convert
+  // a gfx::ColorSpace (from VideoFrame) to another other ColorSpace like
+  // cdm::ColorSpace.
 
+  static_assert(VideoFrame::kYPlane == cdm::kYPlane && cdm::kYPlane == 0, "");
+  static_assert(VideoFrame::kUPlane == cdm::kUPlane && cdm::kUPlane == 1, "");
+  static_assert(VideoFrame::kVPlane == cdm::kVPlane && cdm::kVPlane == 2, "");
+
+  uint8_t* dst = buffer->Data();
+  uint32_t offset = 0;
+  for (int plane = 0; plane < 3; ++plane) {
+    const uint8_t* src = video_frame.data(plane);
+    int src_stride = video_frame.stride(plane);
+    int row_bytes = video_frame.row_bytes(plane);
+    int rows = video_frame.rows(plane);
+
+    auto cdm_plane = static_cast<cdm::VideoPlane>(plane);
+    cdm_video_frame->SetPlaneOffset(cdm_plane, offset);
+    // Since it's tightly packed, the stride is the same as row bytes.
+    cdm_video_frame->SetStride(cdm_plane, row_bytes);
+
+    libyuv::CopyPlane(src, src_stride, dst, row_bytes, row_bytes, rows);
+    dst += row_bytes * rows;
+    offset += row_bytes * rows;
+  }
+
+  DCHECK_GE(space_required, offset) << ": Space mismatch";
   return true;
 }
 

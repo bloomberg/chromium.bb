@@ -6,6 +6,7 @@
 #define MEDIA_BASE_VIDEO_TYPES_H_
 
 #include <stdint.h>
+#include <iosfwd>
 #include <string>
 
 #include "build/build_config.h"
@@ -87,6 +88,10 @@ enum ColorSpace {
 
 // Returns the name of a Format as a string.
 MEDIA_EXPORT std::string VideoPixelFormatToString(VideoPixelFormat format);
+
+// Stream operator of Format for logging etc.
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
+                                      VideoPixelFormat format);
 
 // Returns human readable fourcc string.
 // If any of the four characters is non-printable, it outputs

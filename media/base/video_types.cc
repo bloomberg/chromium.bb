@@ -68,6 +68,11 @@ std::string VideoPixelFormatToString(VideoPixelFormat format) {
   return "";
 }
 
+std::ostream& operator<<(std::ostream& os, VideoPixelFormat format) {
+  os << VideoPixelFormatToString(format);
+  return os;
+}
+
 std::string FourccToString(uint32_t fourcc) {
   std::string result = "0000";
   for (size_t i = 0; i < 4; ++i, fourcc >>= 8) {
