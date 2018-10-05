@@ -44,6 +44,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -167,6 +168,8 @@ CastContentBrowserClient::CastContentBrowserClient()
       url_request_context_factory_(new URLRequestContextFactory()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
+  DCHECK(!media_resource_tracker_)
+      << "ResetMediaResourceTracker was not called";
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                      url_request_context_factory_.release());
 }
@@ -185,16 +188,31 @@ media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+CastContentBrowserClient::GetMediaTaskRunner() {
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  if (!media_thread_) {
+    media_thread_.reset(new base::Thread("CastMediaThread"));
+    base::Thread::Options options;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    CHECK(media_thread_->StartWithOptions(options));
+    // Start the media_resource_tracker as soon as the media thread is created.
+    // There are services that run on the media thread that depend on it,
+    // and we want to initialize it with the correct task runner before any
+    // tasks that might use it are posted to the media thread.
+    media_resource_tracker_ = new media::MediaResourceTracker(
+        base::ThreadTaskRunnerHandle::Get(), media_thread_->task_runner());
+  }
+  return media_thread_->task_runner();
+#else
+  return nullptr;
+#endif
+}
+
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::VideoResolutionPolicy*
 CastContentBrowserClient::GetVideoResolutionPolicy() {
   return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-CastContentBrowserClient::GetMediaTaskRunner() {
-  DCHECK(cast_browser_main_parts_);
-  return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
 media::CmaBackendFactory* CastContentBrowserClient::GetCmaBackendFactory() {
@@ -208,7 +226,13 @@ media::CmaBackendFactory* CastContentBrowserClient::GetCmaBackendFactory() {
 
 media::MediaResourceTracker*
 CastContentBrowserClient::media_resource_tracker() {
-  return cast_browser_main_parts_->media_resource_tracker();
+  DCHECK(media_thread_);
+  return media_resource_tracker_;
+}
+
+void CastContentBrowserClient::ResetMediaResourceTracker() {
+  media_resource_tracker_->FinalizeAndDestroy();
+  media_resource_tracker_ = nullptr;
 }
 
 media::MediaPipelineBackendManager*
@@ -296,7 +320,7 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
   auto main_parts = CastBrowserMainParts::Create(
-      parameters, url_request_context_factory_.get());
+      parameters, url_request_context_factory_.get(), this);
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
 

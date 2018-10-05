@@ -314,25 +314,25 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
 
 CastBrowserMainParts::CastBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    URLRequestContextFactory* url_request_context_factory)
+    URLRequestContextFactory* url_request_context_factory,
+    CastContentBrowserClient* cast_content_browser_client)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
       field_trial_list_(nullptr),
       parameters_(parameters),
+      cast_content_browser_client_(cast_content_browser_client),
       url_request_context_factory_(url_request_context_factory),
       net_log_(new CastNetLog()),
       media_caps_(new media::MediaCapsImpl()) {
+  DCHECK(cast_content_browser_client);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
-
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-  media_resource_tracker_ = nullptr;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 }
 
 CastBrowserMainParts::~CastBrowserMainParts() {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-  if (media_thread_ && media_pipeline_backend_manager_) {
+  if (cast_content_browser_client_->GetMediaTaskRunner() &&
+      media_pipeline_backend_manager_) {
     // Make sure that media_pipeline_backend_manager_ is destroyed after any
     // pending media thread tasks. The CastAudioOutputStream implementation
     // calls into media_pipeline_backend_manager_ when the stream is closed;
@@ -344,44 +344,19 @@ CastBrowserMainParts::~CastBrowserMainParts() {
     // the media_pipeline_backend_manager_ using DeleteSoon on the media thread,
     // it is guaranteed that the AudioManager and all AudioOutputStreams have
     // been destroyed before media_pipeline_backend_manager_ is destroyed.
-    media_thread_->task_runner()->DeleteSoon(
+    cast_content_browser_client_->GetMediaTaskRunner()->DeleteSoon(
         FROM_HERE, media_pipeline_backend_manager_.release());
   }
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-CastBrowserMainParts::GetMediaTaskRunner() {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-  if (!media_thread_) {
-    media_thread_.reset(new base::Thread("CastMediaThread"));
-    base::Thread::Options options;
-    options.priority = base::ThreadPriority::REALTIME_AUDIO;
-    CHECK(media_thread_->StartWithOptions(options));
-    // Start the media_resource_tracker as soon as the media thread is created.
-    // There are services that run on the media thread that depend on it,
-    // and we want to initialize it with the correct task runner before any
-    // tasks that might use it are posted to the media thread.
-    media_resource_tracker_ = new media::MediaResourceTracker(
-        base::ThreadTaskRunnerHandle::Get(), media_thread_->task_runner());
-  }
-  return media_thread_->task_runner();
-#else
-  return nullptr;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-}
-
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-media::MediaResourceTracker* CastBrowserMainParts::media_resource_tracker() {
-  DCHECK(media_thread_);
-  return media_resource_tracker_;
-}
-
 media::MediaPipelineBackendManager*
 CastBrowserMainParts::media_pipeline_backend_manager() {
   if (!media_pipeline_backend_manager_) {
-    media_pipeline_backend_manager_.reset(
-        new media::MediaPipelineBackendManager(GetMediaTaskRunner()));
+    media_pipeline_backend_manager_ =
+        std::make_unique<media::MediaPipelineBackendManager>(
+            cast_content_browser_client_->GetMediaTaskRunner());
   }
   return media_pipeline_backend_manager_.get();
 }
@@ -550,7 +525,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   video_plane_controller_.reset(new media::VideoPlaneController(
-      Size(display_size.width(), display_size.height()), GetMediaTaskRunner()));
+      Size(display_size.width(), display_size.height()),
+      cast_content_browser_client_->GetMediaTaskRunner()));
   viz::OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
       base::BindRepeating(&media::VideoPlaneController::SetGeometry,
                           base::Unretained(video_plane_controller_.get())));
@@ -580,7 +556,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Initialize();
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
-  media_resource_tracker()->InitializeMediaLib();
+  cast_content_browser_client_->media_resource_tracker()->InitializeMediaLib();
 #endif
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
@@ -711,9 +687,8 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 
 void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
-  media_resource_tracker_->FinalizeAndDestroy();
-  media_resource_tracker_ = nullptr;
-#endif
+  cast_content_browser_client_->ResetMediaResourceTracker();
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace shell
