@@ -43,7 +43,7 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
                   long duration,
                   long interToneGap) override;
 
-  void OnToneChange(const std::string& tone, const std::string& tone_buffer);
+  void OnToneChange(const std::string& tone);
 
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;
