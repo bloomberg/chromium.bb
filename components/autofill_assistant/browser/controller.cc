@@ -261,13 +261,22 @@ void Controller::OnRunnableScriptsChanged(
     return;
 
   // Under specific conditions, we can directly run a script without first
-  // displaying it. This is meant to work only at the very beginning, when
-  // no scripts have run, there has been no interaction with the webpage and
-  // only if there's exactly one runnable script, flagged for autostart.
-  if (allow_autostart_ && runnable_scripts.size() == 1 &&
-      runnable_scripts[0].autostart) {
-    OnScriptSelected(runnable_scripts[0].path);
-    return;
+  // displaying it. This is meant to work only at the very beginning, when no
+  // scripts have run, there has been no interaction with the webpage and only
+  // if there's exactly one runnable autostartable script.
+  if (allow_autostart_) {
+    int autostart_count = 0;
+    std::string autostart_path;
+    for (const auto& script : runnable_scripts) {
+      if (script.autostart) {
+        autostart_count++;
+        autostart_path = script.path;
+      }
+    }
+    if (autostart_count == 1) {
+      OnScriptSelected(autostart_path);
+      return;
+    }
   }
 
   GetUiController()->UpdateScripts(runnable_scripts);
