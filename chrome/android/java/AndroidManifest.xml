@@ -794,6 +794,16 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
+        <!-- Components for Trusted Web Activities -->
+        <receiver android:name="org.chromium.chrome.browser.browserservices.ClearDataBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <data android:scheme="package" />
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Service for decoding images in a sandboxed process. -->
         <service
             android:description="@string/decoder_description"
