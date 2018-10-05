@@ -264,18 +264,13 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
   if (raster_source_->IsSolidColor()) {
     // TODO(sunxd): Solid color non-mask layers are forced to have contents
-    // scale = 1. This is a workaround to temporary fix
+    // scale = 1. This is a workaround to temperarily fix
     // https://crbug.com/796558.
     // We need to investigate into the ca layers logic and remove this
     // workaround after fixing the bug.
-    // TODO(crbug.com/879379): Solid color non-mask layers scale divided by
-    // painted_device_scale_factor is a temporary fix for performance
-    // regression when enable --use-zoom-for-dsf. painted_device_scale_factor
-    // is dsf when --use-zoom-for-dsf is enabled, 1.0 otherwise, so it'll have
-    // no effect when the flag is disabled.
     float max_contents_scale =
         !(mask_type_ == Layer::LayerMaskType::MULTI_TEXTURE_MASK)
-            ? 1 / layer_tree_impl()->painted_device_scale_factor()
+            ? 1
             : CanHaveTilings() ? ideal_contents_scale_
                                : std::min(kMaxIdealContentsScale,
                                           std::max(GetIdealContentsScale(),
