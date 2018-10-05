@@ -13,7 +13,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -32,8 +31,6 @@
 
 namespace {
 
-const void* const kOptOutEventKey = 0;
-
 static const char kPreviewInfobarEventType[] = "InfoBar";
 
 void RecordPreviewsInfoBarAction(
@@ -47,17 +44,6 @@ void RecordPreviewsInfoBarAction(
       1, max_limit, max_limit + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(static_cast<int32_t>(action));
-}
-
-void InformPLMOfOptOut(content::WebContents* web_contents) {
-  page_load_metrics::MetricsWebContentsObserver* metrics_web_contents_observer =
-      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
-          web_contents);
-  if (!metrics_web_contents_observer)
-    return;
-
-  metrics_web_contents_observer->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
 }
 
 }  // namespace
@@ -183,11 +169,6 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   infobar_dismissed_action_ = INFOBAR_LOAD_ORIGINAL_CLICKED;
 
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-
-  InformPLMOfOptOut(web_contents);
-
   ui_tab_helper_->ReloadWithoutPreviews(previews_type_);
 
   return true;
@@ -201,9 +182,4 @@ base::string16 PreviewsInfoBarDelegate::GetStalePreviewTimestampText() const {
   if (text.length() > 0)
     ui_tab_helper_->set_displayed_preview_timestamp(true);
   return text;
-}
-
-// static
-const void* PreviewsInfoBarDelegate::OptOutEventKey() {
-  return &kOptOutEventKey;
 }

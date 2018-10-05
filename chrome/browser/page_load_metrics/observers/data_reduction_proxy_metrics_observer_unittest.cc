@@ -23,7 +23,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -515,8 +515,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   // Verify that when an opt out occurs, that it is reported in the pingback.
   timing_.document_timing->load_event_start = base::nullopt;
   RunTest(true, true, true, false);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateTimes();
   ValidateLoFiInPingback(false);

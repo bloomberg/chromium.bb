@@ -56,9 +56,6 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   base::string16 GetStalePreviewTimestampText() const;
 
-  // A key to identify opt out events.
-  static const void* OptOutEventKey();
-
  private:
   PreviewsInfoBarDelegate(PreviewsUITabHelper* ui_tab_helper,
                           previews::PreviewsType previews_type,
