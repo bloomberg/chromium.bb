@@ -15,6 +15,9 @@ namespace content {
 std::unique_ptr<base::FieldTrialList> CONTENT_EXPORT
 SetUpFieldTrialsAndFeatureList();
 
+// Starts the task scheduler.
+void CONTENT_EXPORT StartBrowserTaskScheduler();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_STARTUP_HELPER_H_
