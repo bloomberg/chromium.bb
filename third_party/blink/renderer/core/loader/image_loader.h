@@ -177,7 +177,9 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void ClearFailedLoadURL();
   void DispatchErrorEvent();
   void CrossSiteOrCSPViolationOccurred(AtomicString);
-  void EnqueueImageLoadingMicroTask(UpdateFromElementBehavior, ReferrerPolicy);
+  void EnqueueImageLoadingMicroTask(const KURL&,
+                                    UpdateFromElementBehavior,
+                                    ReferrerPolicy);
 
   KURL ImageSourceToKURL(AtomicString) const;
 
