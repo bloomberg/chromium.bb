@@ -178,6 +178,15 @@ class FlipboardDesktopStory(_ArticleBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class FlipboardDesktopStory2018(_ArticleBrowsingStory):
+  NAME = 'browse:news:flipboard:2018'
+  URL = 'https://flipboard.com/explore'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.cover-image'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+
 class HackerNewsDesktopStory(_ArticleBrowsingStory):
   NAME = 'browse:news:hackernews'
   URL = 'https://news.ycombinator.com'
