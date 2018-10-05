@@ -190,6 +190,8 @@ crbug.com/591099 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-004
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Pass ]
 crbug.com/591099 external/wpt/css/cssom/cssstyledeclaration-mutationrecord-001.html [ Pass ]
+crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-ltr.html [ Pass ]
+crbug.com/591099 external/wpt/css/cssom-view/elementsFromPoint-inline-vrl-rtl.html [ Pass ]
 crbug.com/591099 external/wpt/css/cssom-view/offsetTopLeftInline.html [ Pass ]
 crbug.com/591099 external/wpt/css/selectors/selector-placeholder-shown-type-change-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/selectors/selector-read-write-type-change-002.html [ Pass ]
