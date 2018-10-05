@@ -61,6 +61,14 @@ template("js_unit_tests") {
     args = [ "--output" ] + rebase_path(outputs, root_build_dir)
     args += [ "--input" ] + [ "{{source}}" ]
 
+    # js_unit_test.py needs to walk .js_library dependency files relative to the
+    # gen_dir, but we'd like to reference the corresponding .js source files
+    # in the source dir, not the gen dir. Pass a prefix to remap --input args.
+    args += [
+      "--include_prefix",
+      rebase_path("//", "{{root_gen_dir}}", "//"),
+    ]
+
     if (defined(mocks)) {
       args += [ "--mocks" ] + rebase_path(mocks, root_build_dir)
       data = mocks
