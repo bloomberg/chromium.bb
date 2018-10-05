@@ -69,8 +69,8 @@ using BitmapCallback = base::OnceCallback<void(std::unique_ptr<SkBitmap>)>;
 enum class ExploreSitesRequestStatus {
   // Request completed successfully.
   kSuccess = 0,
-  // Request failed due to to local network problem, caller should retry.
-  kShouldRetry = 1,
+  // Request failed even after all the retries.
+  kFailure = 1,
   // Request failed with error indicating that the request can not be serviced
   // by the server.
   kShouldSuspendBadRequest = 2,

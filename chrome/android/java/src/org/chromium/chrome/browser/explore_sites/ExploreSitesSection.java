@@ -121,8 +121,8 @@ public class ExploreSitesSection {
      */
     private void gotEspCatalog(List<ExploreSitesCategory> categoryList) {
         if (categoryList == null || categoryList.size() == 0) {
-            ExploreSitesBridge.updateCatalogFromNetwork(
-                    mProfile, (Boolean success) -> { updateCategoryIcons(); });
+            ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true /*isImmediateFetch*/,
+                    (Boolean success) -> { updateCategoryIcons(); });
         }
         // Initialize with defaults right away.
         initializeCategoryTiles(categoryList);

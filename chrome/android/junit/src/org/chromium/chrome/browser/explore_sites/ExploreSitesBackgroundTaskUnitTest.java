@@ -68,7 +68,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
 
         @Implementation
         public static void updateCatalogFromNetwork(
-                Profile profile, Callback<Void> finishedCallback) {
+                Profile profile, boolean isImmediateFetch, Callback<Void> finishedCallback) {
             mUpdateCatalogFinishedCallback = finishedCallback;
         }
     }

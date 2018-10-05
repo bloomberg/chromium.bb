@@ -158,7 +158,7 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
 
   service()->UpdateCatalogFromNetwork(
-      kAcceptLanguages,
+      true /*is_immediate_fetch*/, kAcceptLanguages,
       base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
                      base::Unretained(this)));
 

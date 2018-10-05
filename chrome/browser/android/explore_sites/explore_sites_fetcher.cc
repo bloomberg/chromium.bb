@@ -91,66 +91,101 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
 
 }  // namespace
 
+const net::BackoffEntry::Policy
+    ExploreSitesFetcher::kImmediateFetchBackoffPolicy = {
+        0,         // Number of initial errors to ignore without backoff.
+        1 * 1000,  // Initial delay for backoff in ms: 1 second.
+        2,         // Factor to multiply for exponential backoff.
+        0,         // Fuzzing percentage.
+        4 * 1000,  // Maximum time to delay requests in ms: 4 seconds.
+        -1,        // Don't discard entry even if unused.
+        false      // Don't use initial delay unless the last was an error.
+};
+const int ExploreSitesFetcher::kMaxFailureCountForImmediateFetch = 3;
+
+const net::BackoffEntry::Policy
+    ExploreSitesFetcher::kBackgroundFetchBackoffPolicy = {
+        0,           // Number of initial errors to ignore without backoff.
+        5 * 1000,    // Initial delay for backoff in ms: 5 seconds.
+        2,           // Factor to multiply for exponential backoff.
+        0,           // Fuzzing percentage.
+        320 * 1000,  // Maximum time to delay requests in ms: 320 seconds.
+        -1,          // Don't discard entry even if unused.
+        false        // Don't use initial delay unless the last was an error.
+};
+const int ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch = 7;
+
 std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
-    Callback callback,
-    const std::string catalog_version,
-    const std::string accept_languages,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+    bool is_immediate_fetch,
+    const std::string& catalog_version,
+    const std::string& accept_languages,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    Callback callback) {
   GURL url = GetCatalogURL();
-  return base::WrapUnique(
-      new ExploreSitesFetcher(std::move(callback), url, catalog_version,
-                              accept_languages, loader_factory));
+  return base::WrapUnique(new ExploreSitesFetcher(
+      is_immediate_fetch, url, catalog_version, accept_languages,
+      loader_factory, std::move(callback)));
 }
 
 std::unique_ptr<ExploreSitesFetcher>
 ExploreSitesFetcher::CreateForGetCategories(
-    Callback callback,
-    const std::string catalog_version,
-    const std::string accept_languages,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+    bool is_immediate_fetch,
+    const std::string& catalog_version,
+    const std::string& accept_languages,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    Callback callback) {
   GURL url = GetCategoriesURL();
-  return base::WrapUnique(
-      new ExploreSitesFetcher(std::move(callback), url, catalog_version,
-                              accept_languages, loader_factory));
+  return base::WrapUnique(new ExploreSitesFetcher(
+      is_immediate_fetch, url, catalog_version, accept_languages,
+      loader_factory, std::move(callback)));
 }
 
 ExploreSitesFetcher::ExploreSitesFetcher(
-    Callback callback,
+    bool is_immediate_fetch,
     const GURL& url,
-    const std::string catalog_version,
-    const std::string accept_languages,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
-    : callback_(std::move(callback)),
+    const std::string& catalog_version,
+    const std::string& accept_languages,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    Callback callback)
+    : accept_languages_(accept_languages),
+      backoff_entry_(is_immediate_fetch ? &kImmediateFetchBackoffPolicy
+                                        : &kBackgroundFetchBackoffPolicy),
+      max_failure_count_(is_immediate_fetch
+                             ? kMaxFailureCountForImmediateFetch
+                             : kMaxFailureCountForBackgroundFetch),
+      callback_(std::move(callback)),
       url_loader_factory_(loader_factory),
       weak_factory_(this) {
   base::Version version = version_info::GetVersion();
   std::string channel_name = chrome::GetChannelName();
-  std::string client_version =
-      base::StringPrintf("%d.%d.%d.%s.chrome",
-                         version.components()[0],  // Major
-                         version.components()[2],  // Build
-                         version.components()[3],  // Patch
-                         channel_name.c_str());
-  GURL final_url =
+  client_version_ = base::StringPrintf("%d.%d.%d.%s.chrome",
+                                       version.components()[0],  // Major
+                                       version.components()[2],  // Build
+                                       version.components()[3],  // Patch
+                                       channel_name.c_str());
+  request_url_ =
       net::AppendOrReplaceQueryParameter(url, "country_code", GetCountry());
-  final_url = net::AppendOrReplaceQueryParameter(final_url, "version_token",
-                                                 catalog_version);
-  DVLOG(1) << "Final URL: " << final_url.spec();
+  request_url_ = net::AppendOrReplaceQueryParameter(
+      request_url_, "version_token", catalog_version);
+}
 
+ExploreSitesFetcher::~ExploreSitesFetcher() {}
+
+void ExploreSitesFetcher::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = final_url;
+  resource_request->url = request_url_;
   resource_request->method = kRequestMethod;
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
   std::string api_key = is_stable_channel ? google_apis::GetAPIKey()
                                           : google_apis::GetNonStableAPIKey();
   resource_request->headers.SetHeader("x-goog-api-key", api_key);
-  resource_request->headers.SetHeader("X-Client-Version", client_version);
+  resource_request->headers.SetHeader("X-Client-Version", client_version_);
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                       kRequestContentType);
-  if (!accept_languages.empty()) {
+  if (!accept_languages_.empty()) {
     resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAcceptLanguage, accept_languages);
+        net::HttpRequestHeaders::kAcceptLanguage, accept_languages_);
   }
 
   // Get field trial value, if any.
@@ -169,15 +204,19 @@ ExploreSitesFetcher::ExploreSitesFetcher(
                      weak_factory_.GetWeakPtr()));
 }
 
-ExploreSitesFetcher::~ExploreSitesFetcher() {}
-
 void ExploreSitesFetcher::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   ExploreSitesRequestStatus status = HandleResponseCode();
 
   if (response_body && response_body->empty()) {
     DVLOG(1) << "Failed to get response or empty response";
-    status = ExploreSitesRequestStatus::kShouldRetry;
+    status = ExploreSitesRequestStatus::kFailure;
+  }
+
+  if (status == ExploreSitesRequestStatus::kFailure &&
+      !disable_retry_for_testing_) {
+    RetryWithBackoff();
+    return;
   }
 
   std::move(callback_).Run(status, std::move(response_body));
@@ -193,18 +232,33 @@ ExploreSitesRequestStatus ExploreSitesFetcher::HandleResponseCode() {
     DVLOG(1) << "Net error: " << net_error;
     return (net_error == net::ERR_BLOCKED_BY_ADMINISTRATOR)
                ? ExploreSitesRequestStatus::kShouldSuspendBlockedByAdministrator
-               : ExploreSitesRequestStatus::kShouldRetry;
+               : ExploreSitesRequestStatus::kFailure;
   } else if (response_code < 200 || response_code > 299) {
     DVLOG(1) << "HTTP status: " << response_code;
     switch (response_code) {
       case net::HTTP_BAD_REQUEST:
         return ExploreSitesRequestStatus::kShouldSuspendBadRequest;
       default:
-        return ExploreSitesRequestStatus::kShouldRetry;
+        return ExploreSitesRequestStatus::kFailure;
     }
   }
 
   return ExploreSitesRequestStatus::kSuccess;
+}
+
+void ExploreSitesFetcher::RetryWithBackoff() {
+  backoff_entry_.InformOfRequest(false);
+
+  if (backoff_entry_.failure_count() >= max_failure_count_) {
+    std::move(callback_).Run(ExploreSitesRequestStatus::kFailure,
+                             std::unique_ptr<std::string>());
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ExploreSitesFetcher::Start, weak_factory_.GetWeakPtr()),
+      backoff_entry_.GetTimeUntilRelease());
 }
 
 }  // namespace explore_sites

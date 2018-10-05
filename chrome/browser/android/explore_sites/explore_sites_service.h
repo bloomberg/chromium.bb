@@ -30,9 +30,12 @@ class ExploreSitesService : public KeyedService {
   virtual void GetSiteImage(int site_id, BitmapCallback callback) = 0;
 
   // Fetch the latest catalog from the network and stores it locally. Returns
-  // true in the callback for success.  If the accept_languages string is empty,
-  // no "Accept-Language" header is created for the network request.
-  virtual void UpdateCatalogFromNetwork(std::string accept_languages,
+  // true in the callback for success.  |is_immediate_fetch| denotes if the
+  // fetch should be done immediately or on background.  If the accept_languages
+  // string is empty, no "Accept-Language" header is created for the network
+  // request.
+  virtual void UpdateCatalogFromNetwork(bool is_immediate_fetch,
+                                        const std::string& accept_languages,
                                         BooleanCallback callback) = 0;
 };
 

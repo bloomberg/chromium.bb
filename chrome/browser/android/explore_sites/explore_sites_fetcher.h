@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
+#include "net/base/backoff_entry.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -29,38 +30,62 @@ class ExploreSitesFetcher {
       base::OnceCallback<void(ExploreSitesRequestStatus status,
                               const std::unique_ptr<std::string> data)>;
 
+  static const net::BackoffEntry::Policy kImmediateFetchBackoffPolicy;
+  static const int kMaxFailureCountForImmediateFetch;
+  static const net::BackoffEntry::Policy kBackgroundFetchBackoffPolicy;
+  static const int kMaxFailureCountForBackgroundFetch;
+
   // Creates a fetcher for the GetCatalog RPC.
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCatalog(
-      Callback callback,
-      const std::string catalog_version,
-      const std::string accept_languages,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      bool is_immediate_fetch,
+      const std::string& catalog_version,
+      const std::string& accept_languages,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      Callback callback);
 
   // Creates a fetcher for the GetCategories RPC.
   static std::unique_ptr<ExploreSitesFetcher> CreateForGetCategories(
-      Callback callback,
-      const std::string catalog_version,
-      const std::string accept_languages,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      bool is_immediate_fetch,
+      const std::string& catalog_version,
+      const std::string& accept_languages,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      Callback callback);
 
   ~ExploreSitesFetcher();
 
+  void Start();
+
+  void disable_retry_for_testing() { disable_retry_for_testing_ = true; }
+
  private:
   explicit ExploreSitesFetcher(
-      Callback callback,
+      bool is_immediate_fetch,
       const GURL& url,
-      const std::string catalog_version,
-      const std::string accept_languages,
-      scoped_refptr<network ::SharedURLLoaderFactory> loader_factory);
+      const std::string& catalog_version,
+      const std::string& accept_languages,
+      scoped_refptr<network ::SharedURLLoaderFactory> loader_factory,
+      Callback callback);
 
   // Invoked from SimpleURLLoader after download is complete.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   ExploreSitesRequestStatus HandleResponseCode();
 
+  void RetryWithBackoff();
+
+  std::string accept_languages_;
+  std::string client_version_;
+  GURL request_url_;
+
+  net::BackoffEntry backoff_entry_;
+  int max_failure_count_;
+  bool disable_retry_for_testing_ = false;
+
   Callback callback_;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
   base::WeakPtrFactory<ExploreSitesFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesFetcher);

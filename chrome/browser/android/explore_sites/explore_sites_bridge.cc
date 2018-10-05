@@ -142,6 +142,7 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
     JNIEnv* env,
     const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
+    jboolean is_immediate_fetch,
     const JavaParamRef<jobject>& j_callback_obj) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
@@ -163,7 +164,7 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
   }
 
   service->UpdateCatalogFromNetwork(
-      accept_languages,
+      static_cast<bool>(is_immediate_fetch), accept_languages,
       base::BindOnce(&UpdateCatalogDone,
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }

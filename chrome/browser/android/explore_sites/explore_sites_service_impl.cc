@@ -79,7 +79,8 @@ void ExploreSitesServiceImpl::GetSiteImage(int site_id,
 }
 
 void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
-    std::string accept_languages,
+    bool is_immediate_fetch,
+    const std::string& accept_languages,
     BooleanCallback callback) {
   if (!IsExploreSitesEnabled())
     return;
@@ -92,9 +93,11 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
 
   // Create a fetcher and start fetching the protobuf (async).
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
+      is_immediate_fetch, catalog_version, accept_languages,
+      url_loader_factory_,
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      catalog_version, accept_languages, url_loader_factory_);
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  explore_sites_fetcher_->Start();
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(

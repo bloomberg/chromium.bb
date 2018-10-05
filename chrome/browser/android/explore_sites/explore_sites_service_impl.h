@@ -36,7 +36,8 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void GetCatalog(CatalogCallback callback) override;
   void GetCategoryImage(int category_id, BitmapCallback callback) override;
   void GetSiteImage(int site_id, BitmapCallback callback) override;
-  void UpdateCatalogFromNetwork(std::string accept_languages,
+  void UpdateCatalogFromNetwork(bool is_immediate_fetch,
+                                const std::string& accept_languages,
                                 BooleanCallback callback) override;
 
  private:
