@@ -225,23 +225,25 @@ void FileWriter::DidFailImpl(base::File::Error error) {
 }
 
 void FileWriter::DoTruncate(const KURL& path, int64_t offset) {
-  FileSystemDispatcher::GetThreadSpecificInstance().Truncate(
-      path, offset, &request_id_,
-      WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
+  FileSystemDispatcher::From(GetExecutionContext())
+      .Truncate(path, offset, &request_id_,
+                WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
 }
 
 void FileWriter::DoWrite(const KURL& path,
                          const String& blob_id,
                          int64_t offset) {
-  FileSystemDispatcher::GetThreadSpecificInstance().Write(
-      path, blob_id, offset, &request_id_,
-      WTF::BindRepeating(&FileWriter::DidWrite, WrapWeakPersistent(this)),
-      WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
+  FileSystemDispatcher::From(GetExecutionContext())
+      .Write(
+          path, blob_id, offset, &request_id_,
+          WTF::BindRepeating(&FileWriter::DidWrite, WrapWeakPersistent(this)),
+          WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
 }
 
 void FileWriter::DoCancel() {
-  FileSystemDispatcher::GetThreadSpecificInstance().Cancel(
-      request_id_, WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
+  FileSystemDispatcher::From(GetExecutionContext())
+      .Cancel(request_id_,
+              WTF::Bind(&FileWriter::DidFinish, WrapWeakPersistent(this)));
 }
 
 void FileWriter::CompleteAbort() {
@@ -328,6 +330,8 @@ void FileWriter::Dispose() {
     DoOperation(kOperationAbort);
     ready_state_ = kDone;
   }
+  // Prevents any queued operations from running after abort completes.
+  queued_operation_ = kOperationNone;
 }
 
 void FileWriter::Trace(blink::Visitor* visitor) {

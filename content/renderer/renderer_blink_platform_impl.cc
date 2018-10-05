@@ -45,7 +45,6 @@
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -141,7 +140,6 @@ using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
-using blink::WebFileSystem;
 using blink::WebIDBFactory;
 using blink::WebImageCaptureFrameGrabber;
 using blink::WebMediaPlayer;
@@ -294,7 +292,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
-  WebFileSystemImpl::DeleteThreadSpecificInstance();
   main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
 }
 
@@ -576,10 +573,6 @@ RendererBlinkPlatformImpl::CreateIdbFactory() {
 }
 
 //------------------------------------------------------------------------------
-
-WebFileSystem* RendererBlinkPlatformImpl::FileSystem() {
-  return WebFileSystemImpl::ThreadSpecificInstance(default_task_runner_.get());
-}
 
 WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
     const blink::WebSecurityOrigin& origin) {

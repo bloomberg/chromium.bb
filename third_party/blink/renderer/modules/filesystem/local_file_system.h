@@ -49,7 +49,6 @@ class FileSystemClient;
 class ExecutionContext;
 class KURL;
 class ScriptPromiseResolver;
-class WebFileSystem;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                               public Supplement<LocalFrame>,
@@ -87,7 +86,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   const char* NameInHeapSnapshot() const override { return "LocalFileSystem"; }
 
  private:
-  WebFileSystem* GetFileSystem() const;
   void FileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
 
   void RequestFileSystemAccessInternal(ExecutionContext*,

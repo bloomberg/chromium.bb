@@ -87,8 +87,6 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/effective_connection_type_helper.h"
-#include "content/renderer/fileapi/file_system_dispatcher.h"
-#include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -1007,7 +1005,6 @@ RenderThreadImpl::~RenderThreadImpl() {
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
-  WebFileSystemImpl::DeleteThreadSpecificInstance();
   // In a multi-process mode, we immediately exit the renderer.
   // Historically we had a graceful shutdown sequence here but it was
   // 1) a waste of performance and 2) a source of lots of complicated

@@ -219,9 +219,7 @@ interface FileSystemManager {
   // success.
   // TODO(https://crbug.com/878581): Add more options to this method to support
   //     multiple files, directories, "open" vs "save" dialogs, etc.
-  // TODO(https://crbug.com/873661): Make interface per frame/worker and remove
-  //     |render_frame_id|.
-  ChooseEntry(int32 render_frame_id) =>
+  ChooseEntry() =>
       (mojo_base.mojom.FileError error_code,
        array<FileSystemEntry> entries);
 };
