@@ -48,6 +48,8 @@
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker_list_impl.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -387,6 +389,79 @@ void DocumentMarkerController::RemoveMarkersInternal(
     return;
 
   InvalidatePaintForNode(text);
+}
+
+DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
+    const PositionInFlatTree& position,
+    DocumentMarker::MarkerTypes types) {
+  if (position.IsNull())
+    return nullptr;
+
+  const PositionInFlatTree start_of_word_or_null =
+      StartOfWord(CreateVisiblePosition(position), kPreviousWordIfOnBoundary)
+          .DeepEquivalent();
+  const PositionInFlatTree start =
+      start_of_word_or_null.IsNotNull() ? start_of_word_or_null : position;
+  const PositionInFlatTree end_of_word_or_null =
+      EndOfWord(CreateVisiblePosition(position), kNextWordIfOnBoundary)
+          .DeepEquivalent();
+  const PositionInFlatTree end =
+      end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
+
+  DCHECK_LE(start, end) << "|start| should be before |end|.";
+
+  const Node* const start_node = start.ComputeContainerNode();
+  const unsigned start_offset = start.ComputeOffsetInContainerNode();
+  const Node* const end_node = end.ComputeContainerNode();
+  const unsigned end_offset = end.ComputeOffsetInContainerNode();
+
+  for (const Node& node : EphemeralRangeInFlatTree(start, end).Nodes()) {
+    if (!node.IsTextNode())
+      continue;
+
+    const unsigned start_range_offset = node == start_node ? start_offset : 0;
+    const unsigned end_range_offset =
+        node == end_node ? end_offset : ToText(node).length();
+
+    DocumentMarker* const found_marker = FirstMarkerIntersectingOffsetRange(
+        ToText(node), start_range_offset, end_range_offset, types);
+    if (found_marker)
+      return found_marker;
+  }
+
+  return nullptr;
+}
+
+DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingEphemeralRange(
+    const EphemeralRange& range,
+    DocumentMarker::MarkerTypes types) {
+  if (range.IsNull())
+    return nullptr;
+
+  if (range.IsCollapsed()) {
+    return FirstMarkerAroundPosition(
+        ToPositionInFlatTree(range.StartPosition()), types);
+  }
+
+  const Node* const start_container =
+      range.StartPosition().ComputeContainerNode();
+  const Node* const end_container = range.EndPosition().ComputeContainerNode();
+
+  // We don't currently support the case where a marker spans multiple nodes.
+  // See crbug.com/720065
+  if (start_container != end_container)
+    return nullptr;
+
+  if (!start_container->IsTextNode())
+    return nullptr;
+
+  const unsigned start_offset =
+      range.StartPosition().ComputeOffsetInContainerNode();
+  const unsigned end_offset =
+      range.EndPosition().ComputeOffsetInContainerNode();
+
+  return FirstMarkerIntersectingOffsetRange(ToText(*start_container),
+                                            start_offset, end_offset, types);
 }
 
 DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
