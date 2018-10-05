@@ -22,11 +22,11 @@ layer at (0,0) size 785x756 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutNGBlockFlow (anonymous) at (0,420) size 769x100
         LayoutBR {BR} at (0,40) size 0x20
       LayoutNGBlockFlow {DIV} at (0,520) size 200x120
-        LayoutText {#text} at (140,0) size 20x60
-          text run at (140,0) width 60: "foo"
+        LayoutText {#text} at (40,0) size 20x60
+          text run at (40,0) width 60: "foo"
         LayoutImage {IMG} at (30,60) size 40x30
         LayoutImage {IMG} at (30,90) size 40x30
-        LayoutBR {BR} at (140,120) size 20x0
+        LayoutBR {BR} at (40,120) size 20x0
         LayoutImage {IMG} at (130,0) size 40x30
       LayoutNGBlockFlow (anonymous) at (0,640) size 769x100
         LayoutBR {BR} at (0,40) size 0x20
