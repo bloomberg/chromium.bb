@@ -13,6 +13,7 @@
 # Stuck at the 'Local Auth Server' screen with email / password filed. Some
 # tests will pass after clicking 'Next' manually, while others may fail later
 # due to other issues such as empty |device_id_in_profile|.
+# https://crbug.com/891490
 -ChromeSessionManagerTest.OobeNewUser
 -DeviceIDTest.LegacyUsers
 -DeviceIDTest.Migration
@@ -36,6 +37,7 @@
 -WebviewLoginTest.Basic
 
 # The test went into the 'Local Auth Server' screen instead of the Kiosk screen.
+# https://crbug.com/892357
 -KioskUpdateTest.LaunchCachedOfflineEnabledAppNoNetwork
 
 # SAML doesn't work with Network Service.
