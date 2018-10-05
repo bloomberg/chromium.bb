@@ -3161,6 +3161,12 @@ const char kEnableAppsGridGapFeatureDescription[] =
     "Enables gaps at the end of each page and enables dragging an item to an "
     "empty page in launcher.";
 
+extern const char kEnableArcUnifiedAudioFocusName[] =
+    "Enable unified audio focus on ARC";
+extern const char kEnableArcUnifiedAudioFocusDescription[] =
+    "If audio focus is enabled in Chrome then this will delegate audio focus "
+    "control in Android apps to Chrome.";
+
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
