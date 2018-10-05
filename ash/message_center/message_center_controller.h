@@ -5,6 +5,10 @@
 #ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
 #define ASH_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/system/message_center/arc/arc_notification_manager.h"
@@ -54,6 +58,7 @@ class ASH_EXPORT MessageCenterController
   void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                               bool enabled) override;
   void GetActiveNotifications(GetActiveNotificationsCallback callback) override;
+  void SetQuietMode(bool enabled) override;
 
   // Handles get app id calls from ArcNotificationManager.
   using GetAppIdByPackageNameCallback =
