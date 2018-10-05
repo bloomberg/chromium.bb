@@ -89,6 +89,7 @@ Controller::Controller(
       allow_autostart_(true),
       periodic_script_check_scheduled_(false),
       periodic_script_check_count_(false),
+      clear_web_contents_delegate_(false),
       weak_ptr_factory_(this) {
   DCHECK(parameters_);
 
@@ -98,6 +99,7 @@ Controller::Controller(
   // of using the controller as a web_contents delegate. It may interfere with
   // an already existing delegate.
   if (web_contents->GetDelegate() == nullptr) {
+    clear_web_contents_delegate_ = true;
     web_contents->SetDelegate(this);
   }
 
@@ -109,7 +111,9 @@ Controller::Controller(
 }
 
 Controller::~Controller() {
-  web_contents()->SetDelegate(nullptr);
+  if (clear_web_contents_delegate_) {
+    web_contents()->SetDelegate(nullptr);
+  }
 }
 
 void Controller::GetOrCheckScripts(const GURL& url) {

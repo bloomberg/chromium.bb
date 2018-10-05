@@ -114,6 +114,10 @@ class Controller : public ScriptExecutorDelegate,
   // Number of remaining periodic checks.
   int periodic_script_check_count_;
 
+  // Whether to clear the web_contents delegate when the controller is
+  // destroyed.
+  bool clear_web_contents_delegate_;
+
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
