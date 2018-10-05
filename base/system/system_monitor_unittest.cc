@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor/system_monitor.h"
+#include "base/system/system_monitor.h"
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -17,9 +17,7 @@ namespace {
 
 class SystemMonitorTest : public testing::Test {
  protected:
-  SystemMonitorTest() {
-    system_monitor_.reset(new SystemMonitor);
-  }
+  SystemMonitorTest() { system_monitor_.reset(new SystemMonitor); }
 
   MessageLoop message_loop_;
   std::unique_ptr<SystemMonitor> system_monitor_;

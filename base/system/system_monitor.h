@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
-#define BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#ifndef BASE_SYSTEM_SYSTEM_MONITOR_H_
+#define BASE_SYSTEM_SYSTEM_MONITOR_H_
 
 #include "base/base_export.h"
 #include "base/macros.h"
@@ -64,7 +64,7 @@ class BASE_EXPORT SystemMonitor {
   // Functions to trigger notifications.
   void NotifyDevicesChanged(DeviceType device_type);
 
-  scoped_refptr<ObserverListThreadSafe<DevicesChangedObserver> >
+  scoped_refptr<ObserverListThreadSafe<DevicesChangedObserver>>
       devices_changed_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
@@ -72,4 +72,4 @@ class BASE_EXPORT SystemMonitor {
 
 }  // namespace base
 
-#endif  // BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#endif  // BASE_SYSTEM_SYSTEM_MONITOR_H_
