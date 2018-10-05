@@ -54,6 +54,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using AuthenticatorMap =
       std::map<std::string, FidoAuthenticator*, std::less<>>;
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
+  using BlePairingCallback =
+      base::RepeatingCallback<void(std::string authenticator_id,
+                                   std::string pin_code,
+                                   base::OnceClosure success_callback,
+                                   base::OnceClosure error_callback)>;
 
   enum class RequestType { kMakeCredential, kGetAssertion };
 
@@ -141,6 +146,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                     bool can_power_on);
   void OnBluetoothAdapterPowerChanged(bool is_powered_on);
   void PowerOnBluetoothAdapter();
+  void InitiatePairingWithDevice(std::string authenticator_id,
+                                 std::string pin_code,
+                                 base::OnceClosure success_callback,
+                                 base::OnceClosure error_callback);
 
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
@@ -157,6 +166,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // if no platform authenticator is available, in which case it passes nullptr.
   virtual void SetPlatformAuthenticatorOrMarkUnavailable(
       base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info);
+
+  // Returns whether FidoAuthenticator with id equal to |authenticator_id|
+  // exists. Fake FidoRequestHandler objects used in testing overrides this
+  // function to simulate scenarios where authenticator with |authenticator_id|
+  // is known to the system.
+  virtual bool HasAuthenticator(const std::string& authentiator_id) const;
 
   TransportAvailabilityInfo& transport_availability_info() {
     return transport_availability_info_;
