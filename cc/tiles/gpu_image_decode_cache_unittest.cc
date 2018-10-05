@@ -1590,66 +1590,6 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawMipUsageChange) {
   cache->DrawWithImageFinished(draw_image_mips, decoded_draw_image);
 }
 
-TEST_P(GpuImageDecodeCacheTest, MemoryStateSuspended) {
-  auto cache = CreateCache();
-
-  // First Insert an image into our cache.
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 1));
-  bool is_decomposable = true;
-  SkMatrix matrix = CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable);
-  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
-                       kLow_SkFilterQuality, matrix,
-                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache->UnrefImage(draw_image);
-
-  // The image should be cached.
-  EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 1u);
-
-  // Set us to the SUSPENDED state with purging.
-  cache->OnPurgeMemory();
-  cache->OnMemoryStateChange(base::MemoryState::SUSPENDED);
-
-  // Nothing should be cached.
-  EXPECT_EQ(cache->GetWorkingSetBytesForTesting(), 0u);
-  EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 0u);
-
-  // Attempts to get a task for the image will still succeed, as SUSPENDED
-  // doesn't impact working set size.
-  result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache->UnrefImage(draw_image);
-
-  // Nothing should be cached.
-  EXPECT_EQ(cache->GetWorkingSetBytesForTesting(), 0u);
-  EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 0u);
-
-  // Restore us to visible and NORMAL memory state.
-  cache->OnMemoryStateChange(base::MemoryState::NORMAL);
-  cache->SetShouldAggressivelyFreeResources(false);
-
-  // We should now be able to create a task again (space available).
-  result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache->UnrefImage(draw_image);
-}
-
 TEST_P(GpuImageDecodeCacheTest, OutOfRasterDecodeTask) {
   auto cache = CreateCache();
 
@@ -2058,46 +1998,6 @@ TEST_P(GpuImageDecodeCacheTest, OrphanedDataCancelledWhileReplaced) {
   EXPECT_EQ(0u, cache->GetInUseCacheEntriesForTesting());
 }
 
-TEST_P(GpuImageDecodeCacheTest, EvictDueToCachedItemsLimit) {
-  auto cache = CreateCache();
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  // Set the THROTTLED state, which limits our cache to 100 entries.
-  cache->OnMemoryStateChange(base::MemoryState::THROTTLED);
-
-  // Create and unlock 200 images. We should end up with 100 cached.
-  for (int i = 0; i < 200; ++i) {
-    PaintImage image = CreatePaintImageInternal(gfx::Size(10, 10));
-    DrawImage draw_image(
-        image, SkIRect::MakeWH(image.width(), image.height()), quality,
-        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
-        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-
-    ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
-        draw_image, ImageDecodeCache::TracingInfo());
-    EXPECT_TRUE(result.need_unref);
-    if (result.task) {
-      TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
-      TestTileTaskRunner::ProcessTask(result.task.get());
-    }
-
-    // Must hold context lock before calling GetDecodedImageForDraw /
-    // DrawWithImageFinished.
-    viz::ContextProvider::ScopedContextLock context_lock(context_provider());
-    DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
-    EXPECT_TRUE(decoded_draw_image.image());
-    EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-    EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
-
-    cache->DrawWithImageFinished(draw_image, decoded_draw_image);
-    cache->UnrefImage(draw_image);
-  }
-
-  EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 100u);
-}
-
 TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
   auto cache = CreateCache();
   bool is_decomposable = true;
@@ -2462,7 +2362,8 @@ TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {
 
   // We have a single tracked entry, that gets cleared once we purge the cache.
   EXPECT_EQ(cache->paint_image_entries_count_for_testing(), 1u);
-  cache->OnPurgeMemory();
+  cache->OnMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   EXPECT_EQ(cache->paint_image_entries_count_for_testing(), 0u);
 }
 
