@@ -912,11 +912,16 @@ scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
 
     --preemption_state_[priority_index].current_scheduled_sequences;
 
+    const bool can_schedule_sequence =
+        preemption_state_[priority_index].current_scheduled_sequences <
+        preemption_state_[priority_index].max_scheduled_sequences;
+
     if (just_ran_sequence) {
-      if (preemption_state_[priority_index].preempted_sequences.empty() ||
-          preemption_state_[priority_index]
-                  .preempted_sequences.top()
-                  .next_task_sequenced_time > next_task_sequenced_time) {
+      if (can_schedule_sequence &&
+          (preemption_state_[priority_index].preempted_sequences.empty() ||
+           preemption_state_[priority_index]
+                   .preempted_sequences.top()
+                   .next_task_sequenced_time > next_task_sequenced_time)) {
         ++preemption_state_[priority_index].current_scheduled_sequences;
         return just_ran_sequence;
       }
@@ -925,7 +930,8 @@ scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
           std::move(just_ran_sequence), next_task_sequenced_time, observer);
     }
 
-    if (!preemption_state_[priority_index].preempted_sequences.empty()) {
+    if (can_schedule_sequence &&
+        !preemption_state_[priority_index].preempted_sequences.empty()) {
       sequence_to_schedule =
           GetPreemptedSequenceToScheduleLockRequired(task_priority);
     }
