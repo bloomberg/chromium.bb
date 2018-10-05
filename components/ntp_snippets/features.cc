@@ -54,7 +54,7 @@ const base::Feature kCategoryRanker{"ContentSuggestionsCategoryRanker",
 
 const base::Feature kPublisherFaviconsFromNewServerFeature{
     "ContentSuggestionsFaviconsFromNewServer",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule{
     "RemoteSuggestionsEmulateM58FetchingSchedule",
