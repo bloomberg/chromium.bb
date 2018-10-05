@@ -215,6 +215,19 @@
         "platforms": ["chromeos"]
       },
       {
+	"name": "enableChromeVoxMouseEvents",
+	"type": "function",
+	"description": "Enables or disables mouse events in ChromeVox.",
+	"parameters": [
+	  {
+	    "name": "enabled",
+	    "type": "boolean",
+	    "description": "True if ChromeVox should receive mouse events."
+	  }
+	],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "onSelectToSpeakStateChanged",
         "type": "function",
         "description": "Called by the Select-to-Speak extension when Select-to-Speak has changed states, between selecting with the mouse, speaking, and inactive.",

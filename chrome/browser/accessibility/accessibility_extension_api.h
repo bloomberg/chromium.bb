@@ -89,6 +89,15 @@ class AccessibilityPrivateSendSyntheticKeyEventFunction
                              ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT)
 };
 
+// API function that enables or disables mouse events in ChromeVox.
+class AccessibilityPrivateEnableChromeVoxMouseEventsFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateEnableChromeVoxMouseEventsFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.enableChromeVoxMouseEvents",
+                             ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS)
+};
+
 // API function that is called when the Select-to-Speak extension state changes.
 class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
     : public UIThreadExtensionFunction {

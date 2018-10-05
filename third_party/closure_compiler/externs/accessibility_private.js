@@ -168,6 +168,12 @@ chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp = function
 chrome.accessibilityPrivate.sendSyntheticKeyEvent = function(keyEvent) {};
 
 /**
+ * Enables or disables mouse events in ChromeVox.
+ * @param {boolean} enabled True if ChromeVox should receive mouse events.
+ */
+chrome.accessibilityPrivate.enableChromeVoxMouseEvents = function(enabled) {};
+
+/**
  * Fired whenever ChromeVox should output introduction.
  * @type {!ChromeEvent}
  */

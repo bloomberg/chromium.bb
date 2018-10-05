@@ -143,6 +143,7 @@ chromevox_modules = [
   "cvox2/background/log_store.js",
   "cvox2/background/math_handler.js",
   "cvox2/background/media_automation_handler.js",
+  "cvox2/background/mouse_handler.js",
   "cvox2/background/next_earcons.js",
   "cvox2/background/notifications.js",
   "cvox2/background/output.js",
