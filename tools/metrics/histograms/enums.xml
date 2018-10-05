@@ -49397,6 +49397,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Sync was paused"/>
   <int value="7" label="User turned off sync data type"/>
   <int value="8" label="User turned off on-by-default privacy setting"/>
+  <int value="9" label="User has a custom passphrase for their sync account"/>
 </enum>
 
 <enum name="UnifiedConsentRevokeReason">
