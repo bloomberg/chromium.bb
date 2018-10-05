@@ -8,8 +8,12 @@ c9e06c4c7fb7d69fd635a1f606a5e478d60e99cf *invalid-oss-fuzz-10117-mc-buf-use-high
 88e18e61bd2b7457b4c71ebefbdff0029c41cc04 *invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf.res
 91a5bedeb4832c1c2900736cc0f644bb63971bbc *invalid-oss-fuzz-10227.ivf
 b055f06b9a95aaa5697fa26497b592a47843a7c8 *invalid-oss-fuzz-10227.ivf.res
+b2d0a29a65879436bf483d04865faca7d11cc2ee *invalid-oss-fuzz-10389.ivf
+9655e6275888547ecd1f14e20e08ce4891372e76 *invalid-oss-fuzz-10389.ivf.res
 11df8e9a068669c678097d460b63609d3da73828 *invalid-oss-fuzz-10555.ivf
 b055f06b9a95aaa5697fa26497b592a47843a7c8 *invalid-oss-fuzz-10555.ivf.res
+cf5945085fe85456a1f74bf4cc7998b88b3f4b62 *invalid-oss-fuzz-10705.ivf
+758671858368ffd2a2c0727898de5661f7cf7d68 *invalid-oss-fuzz-10705.ivf.res
 88e29851122cca3f336824f7fa4d9f757f91110c *invalid-oss-fuzz-10723.ivf
 1af486cd2cc83ebeddc76ca7a1c512cc0ec568d5 *invalid-oss-fuzz-10723.ivf.res
 c0960f032484579f967881cc025b71cfd7a79ee1 *invalid-oss-fuzz-9463.ivf
