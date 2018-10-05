@@ -357,7 +357,8 @@ CreateMakeCredentialResponse(
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
 
-  // The transport used for the registration is always first in the list.
+  // The transport list must not contain duplicates but the order doesn't matter
+  // because Blink will sort the resulting strings before returning them.
   std::vector<device::FidoTransportProtocol> transports = {
       response_data.transport_used()};
   // If the attestation certificate specifies that the token supports any other
