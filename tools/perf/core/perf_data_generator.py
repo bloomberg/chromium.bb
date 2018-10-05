@@ -571,8 +571,7 @@ def current_benchmarks():
   for b in discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values():
-    if not b.Name() in bot_platforms.UNSCHEDULED_TELEMETRY_BENCHMARKS:
-      all_benchmarks.append(b)
+    all_benchmarks.append(b)
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
