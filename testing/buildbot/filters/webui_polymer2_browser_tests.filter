@@ -36,8 +36,6 @@
 -CrSettingsBluetoothPageTest.All
 -CrSettingsCrostiniPageTest.All
 -CrSettingsFingerprintProgressArcTest.All
--CrSettingsInternetDetailPageTest.InternetDetailPage
--CrSettingsInternetPageTest.InternetPage
 -CrSettingsMultidevicePageTest.All
 -CrSettingsPeoplePageLockScreenTest.All
 -CrSettingsPeoplePageQuickUnlockAuthenticateTest.All
@@ -139,6 +137,8 @@ CrSettingsFocusRowBehavior.*
 CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
 CrSettingsIncompatibleApplicationsPageTest.*
+CrSettingsInternetDetailPageTest.*
+CrSettingsInternetPageTest.*
 CrSettingsLanguagesPageTest.*
 CrSettingsLanguagesTest.*
 CrSettingsMainPageTest.*
