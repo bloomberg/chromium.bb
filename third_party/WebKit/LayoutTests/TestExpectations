@@ -2846,6 +2846,7 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/speech-api/idlharness.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_wrapped.html [ Failure ]
