@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace autofill {
@@ -19,7 +20,7 @@ class StrikeData;
 // the user. Projects can earn strikes in a number of ways; for instance, if a
 // user ignores or declines a prompt, or if a user accepts a prompt but the task
 // fails.
-class StrikeDatabase {
+class StrikeDatabase : public KeyedService {
  public:
   using ClearStrikesCallback = base::RepeatingCallback<void(bool success)>;
 
@@ -34,7 +35,7 @@ class StrikeDatabase {
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
   explicit StrikeDatabase(const base::FilePath& database_dir);
-  ~StrikeDatabase();
+  ~StrikeDatabase() override;
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
   // that the database fails to retrieve the strike update or if no entry is

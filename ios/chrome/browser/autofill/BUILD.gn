@@ -26,6 +26,8 @@ source_set("autofill") {
     "form_suggestion_view_client.h",
     "personal_data_manager_factory.cc",
     "personal_data_manager_factory.h",
+    "strike_database_factory.cc",
+    "strike_database_factory.h",
     "validation_rules_storage_factory.cc",
     "validation_rules_storage_factory.h",
   ]
@@ -67,6 +69,7 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/image_util",
     "//ios/web",
+    "//third_party/leveldatabase",
     "//third_party/libaddressinput",
     "//ui/base",
     "//url",
@@ -116,6 +119,7 @@ source_set("autofill_internal") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/autofill",
     "//ios/web",
+    "//third_party/leveldatabase",
     "//ui/gfx/geometry",
     "//url",
   ]
@@ -162,6 +166,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//testing/gtest",
+    "//third_party/leveldatabase",
     "//third_party/ocmock",
     "//ui/base:test_support",
   ]

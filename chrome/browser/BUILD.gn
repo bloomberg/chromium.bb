@@ -116,6 +116,8 @@ jumbo_split_static_library("browser") {
     "autofill/personal_data_manager_factory.h",
     "autofill/risk_util.cc",
     "autofill/risk_util.h",
+    "autofill/strike_database_factory.cc",
+    "autofill/strike_database_factory.h",
     "autofill/validation_rules_storage_factory.cc",
     "autofill/validation_rules_storage_factory.h",
     "background_fetch/background_fetch_delegate_factory.cc",

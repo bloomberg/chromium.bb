@@ -36,6 +36,10 @@ identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
   return identity_test_env_.identity_manager();
 }
 
+StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
+  return nullptr;
+}
+
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
 }

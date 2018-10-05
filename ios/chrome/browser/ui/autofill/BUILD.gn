@@ -26,6 +26,7 @@ source_set("autofill") {
     "//components/browser_sync",
     "//components/infobars/core",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
     "//components/password_manager/core/browser",
     "//components/prefs",
     "//components/strings",
