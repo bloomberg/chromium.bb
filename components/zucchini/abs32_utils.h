@@ -127,9 +127,8 @@ class Abs32WriterWin32 : public ReferenceWriter {
 };
 
 // Given a sorted list of abs32 |locations|, removes all elements whose body
-// overlaps with the body of a previous element (|bitness| determines length).
-// Returns the number of elements removed.
-size_t RemoveOverlappingAbs32Locations(Bitness bitness,
+// (with |width| given) overlaps with the body of a previous element.
+size_t RemoveOverlappingAbs32Locations(uint32_t width,
                                        std::vector<offset_t>* locations);
 
 }  // namespace zucchini

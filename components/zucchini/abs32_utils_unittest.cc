@@ -433,20 +433,20 @@ TEST(Abs32UtilsTest, Win32Write64) {
 }
 
 TEST(Abs32UtilsTest, RemoveOverlappingAbs32Locations) {
-  // Make |bitness| a state to reduce repetition.
-  Bitness bitness = kBit32;
+  // Make |width| a state to reduce repetition.
+  uint32_t width = WidthOf(kBit32);
 
-  auto run_test = [&bitness](const std::vector<offset_t>& expected_locations,
-                             std::vector<offset_t>&& locations) {
+  auto run_test = [&width](const std::vector<offset_t>& expected_locations,
+                           std::vector<offset_t>&& locations) {
     ASSERT_TRUE(std::is_sorted(locations.begin(), locations.end()));
     size_t expected_removals = locations.size() - expected_locations.size();
-    size_t removals = RemoveOverlappingAbs32Locations(bitness, &locations);
+    size_t removals = RemoveOverlappingAbs32Locations(width, &locations);
     EXPECT_EQ(expected_removals, removals);
     EXPECT_EQ(expected_locations, locations);
   };
 
   // 32-bit tests.
-  bitness = kBit32;
+  width = WidthOf(kBit32);
   run_test(std::vector<offset_t>(), std::vector<offset_t>());
   run_test({4U}, {4U});
   run_test({4U, 10U}, {4U, 10U});
@@ -470,7 +470,7 @@ TEST(Abs32UtilsTest, RemoveOverlappingAbs32Locations) {
   run_test({1000000U}, {1000000U, 1000002U});
 
   // 64-bit tests.
-  bitness = kBit64;
+  width = WidthOf(kBit64);
   run_test(std::vector<offset_t>(), std::vector<offset_t>());
   run_test({4U}, {4U});
   run_test({4U, 20U}, {4U, 20U});
