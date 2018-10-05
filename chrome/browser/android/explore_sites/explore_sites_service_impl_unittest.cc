@@ -35,8 +35,11 @@ class ExploreSitesServiceImplTest : public testing::Test {
   void SetUp() override {
     std::unique_ptr<ExploreSitesStore> store =
         std::make_unique<ExploreSitesStore>(task_runner_);
+    auto history_stats_reporter =
+        std::make_unique<HistoryStatisticsReporter>(nullptr, nullptr, nullptr);
     service_ = std::make_unique<ExploreSitesServiceImpl>(
-        std::move(store), test_shared_url_loader_factory_);
+        std::move(store), test_shared_url_loader_factory_,
+        std::move(history_stats_reporter));
     success_ = false;
     test_data_ = CreateTestDataProto();
   }

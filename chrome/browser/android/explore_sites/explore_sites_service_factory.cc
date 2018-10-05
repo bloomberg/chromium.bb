@@ -11,14 +11,16 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 
-#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
-#include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
+#include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -46,8 +48,9 @@ ExploreSitesService* ExploreSitesServiceFactory::GetForBrowserContext(
 }
 
 bool ExploreSitesServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return chrome::android::explore_sites::GetExploreSitesVariation() ==
-         chrome::android::explore_sites::ExploreSitesVariation::ENABLED;
+  // Always create this service with BrowserContext. This service is lightweight
+  // but ensures various background activities are on if they are needed.
+  return true;
 }
 
 KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
@@ -61,11 +64,14 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       std::make_unique<ExploreSitesStore>(background_task_runner, store_path);
   scoped_refptr<network::SharedURLLoaderFactory> url_fetcher =
       profile->GetURLLoaderFactory();
-
-  ExploreSitesBridge::ScheduleDailyTask();
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  auto history_stats_reporter = std::make_unique<HistoryStatisticsReporter>(
+      history_service, profile->GetPrefs(), base::DefaultClock::GetInstance());
 
   return new ExploreSitesServiceImpl(std::move(explore_sites_store),
-                                     url_fetcher);
+                                     url_fetcher,
+                                     std::move(history_stats_reporter));
 }
-
 }  // namespace explore_sites

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
@@ -31,14 +32,23 @@ const int kFaviconsPerCategoryImage = 4;
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     std::unique_ptr<ExploreSitesStore> store,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter)
     : task_queue_(this),
       explore_sites_store_(std::move(store)),
       url_loader_factory_(url_loader_factory),
-      weak_ptr_factory_(this) {}
+      history_statistics_reporter_(std::move(history_statistics_reporter)),
+      weak_ptr_factory_(this) {
+  if (IsExploreSitesEnabled()) {
+    ExploreSitesBridge::ScheduleDailyTask();
+  }
+  // Collect history statistics unconditionally, to have baseline as well.
+  history_statistics_reporter_->ScheduleReportStatistics();
+}
 
 ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
+// static
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
   return GetExploreSitesVariation() == ExploreSitesVariation::ENABLED;
 }
@@ -162,5 +172,4 @@ void ExploreSitesServiceImpl::DecodeImageBytes(BitmapCallback callback,
                             data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
                             base::BindOnce(&OnDecodeDone, std::move(callback)));
 }
-
 }  // namespace explore_sites
