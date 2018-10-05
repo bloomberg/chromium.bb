@@ -409,8 +409,14 @@ void TrayBackgroundView::ProcessGestureEventForBubble(ui::GestureEvent* event) {
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
-  if (show_with_virtual_keyboard_)
+  if (show_with_virtual_keyboard_) {
+    // The view always shows up when virtual keyboard is visible if
+    // |show_with_virtual_keyboard| is true.
+    views::View::SetVisible(
+        Shell::Get()->system_tray_model()->virtual_keyboard()->visible() ||
+        visible_preferred_);
     return;
+  }
 
   // If virtual keyboard is hidden and current preferred visibility is true,
   // set the visibility to true. We call base class' SetVisible because we don't

@@ -202,7 +202,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // virtual keyboard is hidden.
   bool visible_preferred_;
 
-  // If true, ignores virtual keyboard visibility changes.
+  // If true, the view always shows up when virtual keyboard is visible.
   bool show_with_virtual_keyboard_;
 
   // Handles touch drag gestures on the tray area and its associated bubble.
