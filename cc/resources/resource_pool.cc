@@ -12,7 +12,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/format_macros.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -99,8 +98,6 @@ ResourcePool::ResourcePool(
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   memory_pressure_listener_.reset(
       new base::MemoryPressureListener(base::BindRepeating(
           &ResourcePool::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr())));
@@ -109,8 +106,6 @@ ResourcePool::ResourcePool(
 ResourcePool::~ResourcePool() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
   DCHECK_EQ(0u, in_use_resources_.size());
 
@@ -567,17 +562,6 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     }
   }
   return true;
-}
-
-void ResourcePool::OnPurgeMemory() {
-  // Release all resources, regardless of how recently they were used.
-  EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
-}
-
-void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
-  // While in a SUSPENDED state, we don't put resources back into the pool
-  // when they become available. Instead we free them immediately.
-  evict_busy_resources_when_unused_ = state == base::MemoryState::SUSPENDED;
 }
 
 void ResourcePool::OnMemoryPressure(

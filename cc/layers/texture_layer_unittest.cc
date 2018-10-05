@@ -1664,7 +1664,8 @@ class SoftwareTextureLayerPurgeMemoryTest : public SoftwareTextureLayerTest {
     // Call OnPurgeMemory() to ensure that the same SharedBitmapId doesn't get
     // registered again on the next draw.
     if (step_ == 1)
-      static_cast<base::MemoryCoordinatorClient*>(host_impl)->OnPurgeMemory();
+      base::MemoryPressureListener::SimulatePressureNotification(
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
 
   void DisplayReceivedCompositorFrameOnThread(

@@ -10,7 +10,6 @@
 #include "base/debug/alias.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +40,6 @@ namespace {
 // the system. This limit can be breached by in-use cache items, which cannot
 // be deleted.
 static const int kNormalMaxItemsInCacheForGpu = 2000;
-static const int kThrottledMaxItemsInCacheForGpu = 100;
 static const int kSuspendedMaxItemsInCacheForGpu = 0;
 
 // The maximum number of images that we can lock simultaneously in our working
@@ -685,8 +683,6 @@ GpuImageDecodeCache::GpuImageDecodeCache(
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "cc::GpuImageDecodeCache", base::ThreadTaskRunnerHandle::Get());
   }
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   memory_pressure_listener_.reset(
       new base::MemoryPressureListener(base::BindRepeating(
           &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
@@ -703,8 +699,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
   // TODO(vmpstr): If we don't have a client name, it may cause problems in
   // unittests, since most tests don't set the name but some do. The UMA system
@@ -1416,13 +1410,8 @@ bool GpuImageDecodeCache::ExceedsPreferredCount() const {
   size_t items_limit;
   if (aggressively_freeing_resources_) {
     items_limit = kSuspendedMaxItemsInCacheForGpu;
-  } else if (memory_state_ == base::MemoryState::NORMAL) {
-    items_limit = kNormalMaxItemsInCacheForGpu;
-  } else if (memory_state_ == base::MemoryState::THROTTLED) {
-    items_limit = kThrottledMaxItemsInCacheForGpu;
   } else {
-    DCHECK_EQ(base::MemoryState::SUSPENDED, memory_state_);
-    items_limit = kSuspendedMaxItemsInCacheForGpu;
+    items_limit = kNormalMaxItemsInCacheForGpu;
   }
 
   return persistent_cache_.size() > items_limit;
@@ -1949,26 +1938,16 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   return image_data->decode.ImageForTesting();
 }
 
-void GpuImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
-  memory_state_ = state;
-}
-
-void GpuImageDecodeCache::OnPurgeMemory() {
-  base::AutoLock lock(lock_);
-  // Temporary changes |memory_state_| to free up cache as much as possible.
-  base::AutoReset<base::MemoryState> reset(&memory_state_,
-                                           base::MemoryState::SUSPENDED);
-  EnsureCapacity(0);
-}
-
 void GpuImageDecodeCache::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
+  base::AutoLock lock(lock_);
   switch (level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      OnPurgeMemory();
+      base::AutoReset<bool> reset(&aggressively_freeing_resources_, true);
+      EnsureCapacity(0);
       break;
   }
 }
