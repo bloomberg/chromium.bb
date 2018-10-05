@@ -418,7 +418,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
     int fetch_event_id,
     std::unique_ptr<WebURLResponse> response,
-    std::unique_ptr<WebDataConsumerHandle> data_consume_handle) {
+    mojo::ScopedDataPipeConsumerHandle data_pipe) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   auto it = pending_preload_fetch_events_.find(fetch_event_id);
   DCHECK(it != pending_preload_fetch_events_.end());
@@ -426,7 +426,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
   DCHECK(fetch_event);
   fetch_event->OnNavigationPreloadResponse(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
-      std::move(response), std::move(data_consume_handle));
+      std::move(response), std::move(data_pipe));
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(

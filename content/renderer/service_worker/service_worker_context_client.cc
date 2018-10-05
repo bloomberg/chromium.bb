@@ -467,7 +467,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                                           false /* report_security_info */,
                                           -1 /* request_id */);
     client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
-                                        nullptr);
+                                        mojo::ScopedDataPipeConsumerHandle());
     // This will delete |this|.
     client->OnNavigationPreloadComplete(
         fetch_event_id_, response_head.response_start,
@@ -527,7 +527,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       // without OnStartLoadingResponseBody().
       DCHECK(!body_.is_valid());
       client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
-                                          nullptr);
+                                          mojo::ScopedDataPipeConsumerHandle());
     }
     // This will delete |this|.
     client->OnNavigationPreloadComplete(
@@ -544,9 +544,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     if (!client)
       return;
 
-    client->OnNavigationPreloadResponse(
-        fetch_event_id_, std::move(response_),
-        std::make_unique<WebDataConsumerHandleImpl>(std::move(body_)));
+    client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+                                        std::move(body_));
   }
 
   void ReportErrorToClient(const std::string& message,
@@ -1740,7 +1739,7 @@ void ServiceWorkerContextClient::SetIdleTimerDelayToZero() {
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(
     int fetch_event_id,
     std::unique_ptr<blink::WebURLResponse> response,
-    std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle) {
+    mojo::ScopedDataPipeConsumerHandle data_pipe) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::OnNavigationPreloadResponse",
@@ -1748,7 +1747,7 @@ void ServiceWorkerContextClient::OnNavigationPreloadResponse(
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   proxy_->OnNavigationPreloadResponse(fetch_event_id, std::move(response),
-                                      std::move(data_consumer_handle));
+                                      std::move(data_pipe));
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadError(

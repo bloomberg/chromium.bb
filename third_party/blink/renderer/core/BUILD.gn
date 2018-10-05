@@ -1850,6 +1850,7 @@ jumbo_source_set("unit_tests") {
     "fetch/bytes_consumer_test_util.h",
     "fetch/data_consumer_handle_test_util.cc",
     "fetch/data_consumer_handle_test_util.h",
+    "fetch/data_pipe_bytes_consumer_test.cc",
     "fetch/fetch_data_loader_test.cc",
     "fetch/fetch_header_list_test.cc",
     "fetch/fetch_response_data_test.cc",

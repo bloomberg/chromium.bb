@@ -48,7 +48,6 @@ namespace blink {
 class FetchEvent;
 class ParentExecutionContextTaskRunners;
 class ServiceWorkerGlobalScope;
-class WebDataConsumerHandle;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 struct WebServiceWorkerError;
@@ -134,7 +133,7 @@ class ServiceWorkerGlobalScopeProxy final
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,
-      std::unique_ptr<WebDataConsumerHandle>) override;
+      mojo::ScopedDataPipeConsumerHandle data_pipe) override;
   void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) override;

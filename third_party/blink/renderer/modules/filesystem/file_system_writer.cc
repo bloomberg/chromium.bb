@@ -64,6 +64,16 @@ class FileSystemWriter::StreamWriterClient
  public:
   explicit StreamWriterClient(FileSystemWriter* writer) : writer_(writer) {}
 
+  void DidFetchDataStartedDataPipe(
+      mojo::ScopedDataPipeConsumerHandle data_pipe) override {
+    data_pipe_ = std::move(data_pipe);
+  }
+
+  mojo::ScopedDataPipeConsumerHandle TakeDataPipe() {
+    DCHECK(data_pipe_);
+    return std::move(data_pipe_);
+  }
+
   void DidFetchDataLoadedDataPipe() override {
     // WriteComplete could have been called with an error before we reach this
     // point, in that case just return.
@@ -126,6 +136,7 @@ class FileSystemWriter::StreamWriterClient
   }
 
   Member<FileSystemWriter> writer_;
+  mojo::ScopedDataPipeConsumerHandle data_pipe_;
   bool did_finish_writing_to_pipe_ = false;
   bool did_complete_ = false;
 };
@@ -147,14 +158,7 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
     return ScriptPromise();
   auto* consumer = new ReadableStreamBytesConsumer(script_state, reader);
 
-  mojo::DataPipe pipe;
-  if (!pipe.consumer_handle.is_valid()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                           "Failed to create data pipe"));
-  }
   stream_loader_ = FetchDataLoader::CreateLoaderAsDataPipe(
-      std::move(pipe.producer_handle),
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kInternalDefault));
   pending_operation_ = ScriptPromiseResolver::Create(script_state);
@@ -162,7 +166,7 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
   auto* client = new StreamWriterClient(this);
   stream_loader_->Start(consumer, client);
   writer_->WriteStream(
-      position, std::move(pipe.consumer_handle),
+      position, client->TakeDataPipe(),
       WTF::Bind(&StreamWriterClient::WriteComplete, WrapPersistent(client)));
   return result;
 }

@@ -46,7 +46,6 @@ class TaskRunner;
 
 namespace blink {
 struct PlatformNotificationData;
-class WebDataConsumerHandle;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerResponse;
 class WebURLResponse;
@@ -338,7 +337,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<blink::WebURLResponse> response,
-      std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
+      mojo::ScopedDataPipeConsumerHandle data_pipe);
   // Called when the navigation preload request completed. Either
   // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be
   // called to release the preload related resources.

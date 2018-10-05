@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
@@ -128,18 +129,30 @@ class FetchLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(FetchLoaderClient);
 
  public:
-  explicit FetchLoaderClient(
-      std::unique_ptr<WebServiceWorkerStreamHandle> handle)
-      : handle_(std::move(handle)) {}
+  FetchLoaderClient() {}
 
-  void DidFetchDataLoadedDataPipe() override { handle_->Completed(); }
-  void DidFetchDataLoadFailed() override { handle_->Aborted(); }
+  void DidFetchDataStartedDataPipe(
+      mojo::ScopedDataPipeConsumerHandle pipe) override {
+    DCHECK(!handle_);
+    handle_ = std::make_unique<WebServiceWorkerStreamHandle>(std::move(pipe));
+  }
+  void DidFetchDataLoadedDataPipe() override {
+    DCHECK(handle_);
+    handle_->Completed();
+  }
+  void DidFetchDataLoadFailed() override {
+    if (handle_)
+      handle_->Aborted();
+  }
   void Abort() override {
     // A fetch() aborted via AbortSignal in the ServiceWorker will just look
     // like an ordinary failure to the page.
     // TODO(ricea): Should a fetch() on the page get an AbortError instead?
-    handle_->Aborted();
+    if (handle_)
+      handle_->Aborted();
   }
+
+  WebServiceWorkerStreamHandle* Handle() const { return handle_.get(); }
 
   void Trace(blink::Visitor* visitor) override {
     FetchDataLoader::Client::Trace(visitor);
@@ -289,33 +302,21 @@ void FetchRespondWithObserver::OnResponseFulfilled(
                                 base::TimeTicks::Now());
       return;
     }
-    // Handle the stream response body.
-    base::TimeTicks start_pipe_creation = base::TimeTicks::Now();
-    mojo::DataPipe pipe;
-    if (!pipe.consumer_handle.is_valid()) {
-      OnResponseRejected(ServiceWorkerResponseError::kDataPipeCreationFailed);
-      return;
-    }
-    DCHECK(pipe.producer_handle.is_valid());
-    UMA_HISTOGRAM_TIMES("ServiceWorker.FetchRespondWithDataPipeCreation.Time",
-                        base::TimeTicks::Now() - start_pipe_creation);
 
-    std::unique_ptr<WebServiceWorkerStreamHandle> body_stream_handle =
-        std::make_unique<WebServiceWorkerStreamHandle>(
-            std::move(pipe.consumer_handle));
-    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-        ->RespondToFetchEventWithResponseStream(
-            event_id_, web_response, body_stream_handle.get(),
-            event_dispatch_time_, base::TimeTicks::Now());
-
-    buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
-                             std::move(pipe.producer_handle), task_runner_),
-                         new FetchLoaderClient(std::move(body_stream_handle)),
-                         exception_state);
+    // Load the Response as a mojo::DataPipe.  The resulting pipe consumer
+    // handle will be passed to the FetchLoaderClient on start.
+    FetchLoaderClient* fetch_loader_client = new FetchLoaderClient();
+    buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(task_runner_),
+                         fetch_loader_client, exception_state);
     if (exception_state.HadException()) {
       OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
       return;
     }
+
+    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+        ->RespondToFetchEventWithResponseStream(
+            event_id_, web_response, fetch_loader_client->Handle(),
+            event_dispatch_time_, base::TimeTicks::Now());
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())

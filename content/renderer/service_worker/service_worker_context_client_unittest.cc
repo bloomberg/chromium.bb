@@ -158,7 +158,7 @@ class MockWebServiceWorkerContextProxy
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<blink::WebURLResponse>,
-      std::unique_ptr<blink::WebDataConsumerHandle>) override {
+      mojo::ScopedDataPipeConsumerHandle) override {
     NOTREACHED();
   }
   void OnNavigationPreloadError(
