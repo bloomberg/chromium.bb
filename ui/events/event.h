@@ -717,8 +717,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
              const gfx::Point& location,
              base::TimeTicks time_stamp,
              const PointerDetails& pointer_details,
-             int flags = 0,
-             float angle = 0.0f);
+             int flags = 0);
 
   TouchEvent(const TouchEvent& copy);
 

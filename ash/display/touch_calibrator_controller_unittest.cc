@@ -152,12 +152,12 @@ class TouchCalibratorControllerTest : public AshTestBase {
         ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 12, 1.0f,
                            1.0f, 0.0f),
-        0, 0.0f);
+        0);
     ui::TouchEvent release_touch_event(
         ui::ET_TOUCH_RELEASED, location, ui::EventTimeForNow(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 12, 1.0f,
                            1.0f, 0.0f),
-        0, 0.0f);
+        0);
 
     press_touch_event.set_source_device_id(touch_device_id);
     release_touch_event.set_source_device_id(touch_device_id);

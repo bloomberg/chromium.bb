@@ -826,8 +826,7 @@ TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        base::TimeTicks time_stamp,
                        const PointerDetails& pointer_details,
-                       int flags,
-                       float angle)
+                       int flags)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(location),
@@ -839,7 +838,6 @@ TouchEvent::TouchEvent(EventType type,
       hovering_(false),
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-  pointer_details_.twist = angle;
 }
 
 TouchEvent::TouchEvent(const TouchEvent& copy)
