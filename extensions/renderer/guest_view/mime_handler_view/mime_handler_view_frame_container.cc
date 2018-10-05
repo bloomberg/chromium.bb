@@ -35,6 +35,13 @@ bool MimeHandlerViewFrameContainer::Create(
     const std::string& mime_type,
     const content::WebPluginInfo& plugin_info,
     int32_t element_instance_id) {
+  if (plugin_info.type != content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+    // TODO(ekaramad): Rename this plugin type once https://crbug.com/659750 is
+    // fixed. We only create a MHVFC for the plugin types of BrowserPlugin
+    // (which used to create a MimeHandlerViewContainer).
+    return false;
+  }
+
   if (!IsSupportedMimeType(mime_type))
     return false;
   // Life time is managed by the class itself: when the MimeHandlerViewGuest
