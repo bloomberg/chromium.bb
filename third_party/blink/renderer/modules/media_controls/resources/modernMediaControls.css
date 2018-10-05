@@ -598,7 +598,7 @@ video::-webkit-media-controls-volume-slider {
   -webkit-appearance: -internal-media-control;
 
   height: 4px;
-  width: 100px;
+  width: 52px;
   transition: width 0.3s;
   margin: 0;
   padding: 22px 0; /* (48px button panel height - 4px slider height) / 2  */
