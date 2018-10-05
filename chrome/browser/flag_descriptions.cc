@@ -308,13 +308,6 @@ const char kDisableAudioForDesktopShareDescription[] =
     "With this flag on, desktop share picker window will not let the user "
     "choose whether to share audio.";
 
-const char kDisableIpcFloodingProtectionName[] =
-    "Disable IPC flooding protection";
-const char kDisableIpcFloodingProtectionDescription[] =
-    "Some javascript code can flood the inter process communication system. "
-    "This protection limits the rate (calls/seconds) at which theses function "
-    "can be used. This flag disables the protection.";
-
 const char kDisablePushStateThrottleName[] = "Disable pushState throttling";
 const char kDisablePushStateThrottleDescription[] =
     "Disables throttling of history.pushState and history.replaceState method "

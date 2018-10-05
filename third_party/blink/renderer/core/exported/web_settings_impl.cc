@@ -290,8 +290,8 @@ void WebSettingsImpl::SetPreferHiddenVolumeControls(bool enabled) {
   settings_->SetPreferHiddenVolumeControls(enabled);
 }
 
-void WebSettingsImpl::SetShouldProtectAgainstIpcFlooding(bool enabled) {
-  settings_->SetShouldProtectAgainstIpcFlooding(enabled);
+void WebSettingsImpl::SetShouldThrottlePushState(bool enabled) {
+  settings_->SetShouldThrottlePushState(enabled);
 }
 
 void WebSettingsImpl::SetDOMPasteAllowed(bool enabled) {

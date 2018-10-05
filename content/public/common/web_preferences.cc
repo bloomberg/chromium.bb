@@ -97,7 +97,7 @@ WebPreferences::WebPreferences()
       application_cache_enabled(false),
       tabs_to_links(true),
       history_entry_requires_user_gesture(false),
-      disable_ipc_flooding_protection(false),
+      disable_pushstate_throttle(false),
       hyperlink_auditing_enabled(true),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
