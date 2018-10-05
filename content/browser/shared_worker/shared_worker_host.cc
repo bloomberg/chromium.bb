@@ -292,7 +292,9 @@ void SharedWorkerHost::Start(
 }
 
 //  This is similar to
-//  RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve.
+//  RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve, but this
+//  host doesn't observe network service crashes. Instead, the renderer detects
+//  the connection error and terminates the worker.
 void SharedWorkerHost::CreateNetworkFactory(
     network::mojom::URLLoaderFactoryRequest request) {
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -303,9 +305,6 @@ void SharedWorkerHost::CreateNetworkFactory(
 
   service_->storage_partition()->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(request), std::move(params));
-
-  // TODO(crbug.com/848256): Detect connection error and send a IPC with a new
-  // network factory like UpdateSubresourceLoaderFactories does for frames.
 }
 
 void SharedWorkerHost::AllowFileSystem(
