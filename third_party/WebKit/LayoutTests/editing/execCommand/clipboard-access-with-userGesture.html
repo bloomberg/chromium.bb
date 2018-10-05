@@ -8,13 +8,13 @@ var cutEventSeen;
 function runTest()
 {
     test(() => {
-      assert_exists(window, 'testRunner');
+      assert_own_property(window, 'testRunner');
       testRunner.setJavaScriptCanAccessClipboard(false);
       clickButton("copy");
     }, 'Copy');
 
     test(() => {
-      assert_exists(window, 'testRunner');
+      assert_own_property(window, 'testRunner');
       testRunner.setJavaScriptCanAccessClipboard(false);
       clickButton("cut");
     }, 'Cut');

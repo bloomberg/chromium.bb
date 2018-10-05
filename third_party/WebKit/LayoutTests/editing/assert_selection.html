@@ -385,8 +385,8 @@ test(() => {
 }, 'removeSampleIfSucceeded');
 
 test(() => {
-    assert_exists(window, 'internals');
-    assert_exists(window, 'eventSender');
+    assert_own_property(window, 'internals');
+    assert_own_property(window, 'eventSender');
     assert_selection(
         'foo|bar',
         () => { assert_equals(internals.textAffinity, 'Downstream'); },
@@ -406,7 +406,7 @@ test(() => {
 }, 'Textaffinity');
 
 test(() => {
-  assert_exists(window, 'eventSender');
+  assert_own_property(window, 'eventSender');
   assert_selection(
     [
       '<div id="first">one <span id="start"></span>two three</div>',
