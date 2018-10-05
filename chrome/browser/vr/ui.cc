@@ -73,6 +73,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kExitPrompt;
     case UserFriendlyElementName::kSuggestionBox:
       return kOmniboxSuggestions;
+    case UserFriendlyElementName::kOmniboxTextField:
+      return kOmniboxTextField;
+    case UserFriendlyElementName::kOmniboxCloseButton:
+      return kOmniboxCloseButton;
     default:
       NOTREACHED();
       return kNone;

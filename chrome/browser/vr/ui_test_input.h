@@ -27,6 +27,9 @@ enum class UserFriendlyElementName : int {
                         // menu
   kExitPrompt,          // DOFF prompt/request to exit VR
   kSuggestionBox,       // Box containing the omnibox suggestions
+  kOmniboxTextField,    // The Omnibox's text input field that shows up when the
+                        // URL bar is clicked.
+  kOmniboxCloseButton,  // The button the exits the omnibox's text input mode.
 };
 
 // These are the types of actions that Java can request callbacks for once

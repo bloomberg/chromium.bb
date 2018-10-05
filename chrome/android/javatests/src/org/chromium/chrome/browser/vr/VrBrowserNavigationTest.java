@@ -664,6 +664,25 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void testUrlEntryTriggersNavigation() throws InterruptedException {
+        testUrlEntryTriggersNavigationImpl();
+    }
+
+    /**
+     * Tests that inputting a URL into the URL bar in Incognito Mode results in a successful
+     * navigation.
+     */
+    @Test
+    @MediumTest
+    public void testUrlEntryTriggersNavigationIncognito() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity()
+                    .getTabCreator(true /* incognito */)
+                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
+        });
+        testUrlEntryTriggersNavigationImpl();
+    }
+
+    private void testUrlEntryTriggersNavigationImpl() throws InterruptedException {
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // This is a roundabout solution for ensuring that the committing/pressing of enter actually
@@ -679,5 +698,48 @@ public class VrBrowserNavigationTest {
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), "chrome://version/");
+    }
+
+    /**
+     * Tests that clicking on a suggestion results in a successful navigation.
+     */
+    @Test
+    @MediumTest
+    public void testSuggestionClickTriggersNavigation() throws InterruptedException {
+        testSuggestionClickTriggersNavigationImpl();
+    }
+
+    /**
+     * Tests that clicking on a suggestion while in Incognito Mode results in a successful
+     * navigation.
+     */
+    @Test
+    @MediumTest
+    public void testSuggestionClickTriggersNavigationIncognito() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity()
+                    .getTabCreator(true /* incognito */)
+                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
+        });
+        testSuggestionClickTriggersNavigationImpl();
+    }
+
+    private void testSuggestionClickTriggersNavigationImpl() throws InterruptedException {
+        NativeUiUtils.enableMockedKeyboard();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
+        NativeUiUtils.performActionAndWaitForVisibilityChange(
+                UserFriendlyElementName.SUGGESTION_BOX,
+                () -> { NativeUiUtils.inputString("chrome://"); });
+        // Blindly clicking in the center of the suggestion box should end up clicking the middle
+        // suggestion, which for "chrome://" should be a valid chrome:// URL.
+        NativeUiUtils.clickElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF());
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), (String) null);
+        // We can't just wait for navigation to finish and then check because waitForTabPageLoaded
+        // only supports either exact URL matching or no URL matching, and no URL matching results
+        // in the URL still being about:blank when we check.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return mTestRule.getActivity().getActivityTab().getUrl().startsWith("chrome://");
+        });
     }
 }

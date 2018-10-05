@@ -33,9 +33,14 @@ import java.util.concurrent.CountDownLatch;
  * omnibox or back button.
  */
 public class NativeUiUtils {
+    // How many frames to wait after entering text in the omnibox before we can assume that
+    // suggestions are updated. This should only be used if the workaround of inputting text and
+    // waiting for the suggestion box to appear doesn't work, e.g. if you need to input text, wait
+    // for autocomplete, then input more text before committing. 20 is arbitrary, but stable.
+    public static final int NUM_FRAMES_FOR_SUGGESTION_UPDATE = 20;
     // Arbitrary but reasonable amount of time to expect the UI to stop updating after interacting
     // with an element.
-    private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 1000;
+    private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 2000;
 
     /**
      * Enables the use of both the mock head pose (locked forward) and Chrome-side mocked controller
