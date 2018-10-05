@@ -236,12 +236,56 @@ class SystemFonts {
     NONCLIENTMETRICS_XP metrics;
     base::win::GetNonClientMetrics(&metrics);
 
-    AddFont(gfx::PlatformFontWin::SystemFont::kCaption, &metrics.lfCaptionFont);
-    AddFont(gfx::PlatformFontWin::SystemFont::kSmallCaption,
+    // NOTE(dfried): When rendering Chrome, we do all of our own font scaling
+    // based on a number of factors, but what Windows reports to us has some
+    // (but not all) of these factors baked in, and not in a way that is
+    // display-consistent.
+    //
+    // For example, if your system DPI is 192 (200%) but you connect a monitor
+    // with a standard DPI (100%) then even if Chrome starts on the second
+    // monitor, we will be told the system font is 24pt instead of 12pt.
+    // Conversely, if the system DPI is set to 96 (100%) but all of our monitors
+    // are currently at 150%, Windows will still report 12pt fonts.
+    //
+    // The same is true with Text Zoom (a new accessibility feature). If zoom is
+    // set to 150%, then Windows will report a font size of 18pt. But again, we
+    // already take Text Zoom into account when rendering, so we want to account
+    // for that.
+    //
+    // Our system fonts are in DIPs, so we must always take what Windows gives
+    // us, figure out which adjustments it's making (and undo them), make our
+    // own adjustments for localization (for example, we always render Hindi 25%
+    // larger for readability), and only then can we store (and report) the
+    // system fonts.
+
+    // Factor in/out scale adjustment that fall outside what we can access here.
+    // This includes l10n adjustments and those we have to ask UWP or other COM
+    // interfaces for (since we don't have dependencies on that code from this
+    // module, and don't want to implicitly invoke COM for testing purposes if
+    // we don't have to).
+    gfx::PlatformFontWin::FontAdjustment font_adjustment;
+    if (PlatformFontWin::adjust_font_callback_) {
+      PlatformFontWin::adjust_font_callback_(&font_adjustment);
+    }
+
+    // Factor out system DPI scale that Windows will include in reported font
+    // sizes. Note that these are (sadly) system-wide and do not reflect
+    // specific displays' DPI.
+    double system_scale = GetSystemScale();
+    font_adjustment.font_scale /= system_scale;
+
+    // Grab each of the fonts from the NONCLIENTMETRICS block, adjust it
+    // appropriately, and store it in the font table.
+    AddFont(gfx::PlatformFontWin::SystemFont::kCaption, font_adjustment,
+            &metrics.lfCaptionFont);
+    AddFont(gfx::PlatformFontWin::SystemFont::kSmallCaption, font_adjustment,
             &metrics.lfSmCaptionFont);
-    AddFont(gfx::PlatformFontWin::SystemFont::kMenu, &metrics.lfMenuFont);
-    AddFont(gfx::PlatformFontWin::SystemFont::kMessage, &metrics.lfMessageFont);
-    AddFont(gfx::PlatformFontWin::SystemFont::kStatus, &metrics.lfStatusFont);
+    AddFont(gfx::PlatformFontWin::SystemFont::kMenu, font_adjustment,
+            &metrics.lfMenuFont);
+    AddFont(gfx::PlatformFontWin::SystemFont::kMessage, font_adjustment,
+            &metrics.lfMessageFont);
+    AddFont(gfx::PlatformFontWin::SystemFont::kStatus, font_adjustment,
+            &metrics.lfStatusFont);
 
     is_initialized_ = true;
   }
@@ -264,13 +308,11 @@ class SystemFonts {
   static bool IsInitialized() { return is_initialized_; }
 
  private:
-  void AddFont(gfx::PlatformFontWin::SystemFont system_font, LOGFONT* logfont) {
+  void AddFont(gfx::PlatformFontWin::SystemFont system_font,
+               const gfx::PlatformFontWin::FontAdjustment& font_adjustment,
+               LOGFONT* logfont) {
     // Make adjustments to the font as necessary.
-    if (PlatformFontWin::adjust_font_callback_) {
-      gfx::PlatformFontWin::FontAdjustment font_adjustment;
-      PlatformFontWin::adjust_font_callback_(&font_adjustment);
-      PlatformFontWin::AdjustLOGFONT(font_adjustment, logfont);
-    }
+    PlatformFontWin::AdjustLOGFONT(font_adjustment, logfont);
 
     // Cap at minimum font size.
     logfont->lfHeight = PlatformFontWin::AdjustFontSize(logfont->lfHeight, 0);
@@ -279,6 +321,16 @@ class SystemFonts {
     HFONT font = CreateFontIndirect(logfont);
     DLOG_ASSERT(font);
     system_fonts_.emplace(system_font, gfx::PlatformFontWin::HFontToFont(font));
+  }
+
+  // Returns the system DPI scale (standard DPI being 1.0).
+  // TODO(dfried): move dpi.[h|cc] somewhere in base/win so we can share this
+  // logic. However, note that the similar function in dpi.h is used many places
+  // it ought not to be.
+  static double GetSystemScale() {
+    constexpr double kDefaultDPI = 96.0;
+    base::win::ScopedGetDC screen_dc(nullptr);
+    return GetDeviceCaps(screen_dc, LOGPIXELSY) / kDefaultDPI;
   }
 
   // Use a flat map for faster lookups.
