@@ -297,12 +297,6 @@ void SharedWorkerServiceImpl::TerminateAllWorkersForTesting(
   }
 }
 
-void SharedWorkerServiceImpl::SetWorkerTerminationCallbackForTesting(
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  terminate_all_workers_callback_ = std::move(callback);
-}
-
 void SharedWorkerServiceImpl::ConnectToWorker(
     int process_id,
     int frame_id,
@@ -369,7 +363,7 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   worker_hosts_.erase(worker_hosts_.find(host));
 
-  // Run the termination callback if no more workers.
+  // Complete the call to TerminateAllWorkersForTesting if no more workers.
   if (worker_hosts_.empty() && terminate_all_workers_callback_)
     std::move(terminate_all_workers_callback_).Run();
 }
