@@ -414,8 +414,12 @@ void UiElementContainerView::OnAllUiElementsAdded() {
 
   // Let screen reader read the query result.
   // NOTE: this won't read webview result, which will be triggered with HTML
-  // ARIA.
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  // ARIA. Also we don't read when there is a TTS response already to avoid
+  // speaking over the server response.
+  const AssistantResponse* response =
+      assistant_controller_->interaction_controller()->model()->response();
+  if (!response->has_tts())
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(

@@ -4,6 +4,9 @@
 
 #include "ash/assistant/assistant_interaction_controller.h"
 
+#include <map>
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -85,7 +88,8 @@ void AssistantInteractionController::OnAssistantControllerDestroying() {
 void AssistantInteractionController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  using namespace assistant::util;
+  using assistant::util::DeepLinkType;
+  using assistant::util::DeepLinkParam;
 
   if (type == DeepLinkType::kWhatsOnMyScreen) {
     StartScreenContextInteraction();
@@ -426,6 +430,7 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
             l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
   }
 
+  model_.pending_response()->set_has_tts(true);
   // We have an agreement with the server that TTS will always be the last part
   // of an interaction to be processed. To be timely in updating UI, we use
   // this as an opportunity to finalize the Assistant response and update the
