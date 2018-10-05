@@ -356,6 +356,29 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 }  // namespace
 
+#pragma mark - ToolbarContainerView
+
+// TODO(crbug.com/880672): This is a temporary solution.  This logic should be
+// handled by ToolbarContainerViewController.
+@interface ToolbarContainerView : UIView
+@end
+
+@implementation ToolbarContainerView
+
+- (UIView*)hitTest:(CGPoint)point withEvent:(UIEvent*)event {
+  // Don't receive events that don't occur within a subview.  This is necessary
+  // because the container view overlaps with web content and the default
+  // behavior will intercept touches meant for the web page when the toolbars
+  // are collapsed.
+  for (UIView* subview in self.subviews) {
+    if (CGRectContainsPoint(subview.frame, point))
+      return [super hitTest:point withEvent:event];
+  }
+  return nil;
+}
+
+@end
+
 #pragma mark - HeaderDefinition helper
 
 // Class used to define a header, an object displayed at the top of the browser.
@@ -2431,7 +2454,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (self.secondaryToolbarCoordinator) {
       // Create the container view for the secondary toolbar and add it to the
       // hierarchy
-      UIView* container = [[UIView alloc] init];
+      UIView* container = [[ToolbarContainerView alloc] init];
       container.translatesAutoresizingMaskIntoConstraints = NO;
       [container
           addSubview:self.secondaryToolbarCoordinator.viewController.view];
