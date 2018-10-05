@@ -183,7 +183,7 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
     return QuicTime::Zero();
   }
   QuicReaderMutexLock lock(&config_mutex_);
-  DelayedPacketList::iterator iter = delayed_packets_.begin();
+  auto iter = delayed_packets_.begin();
   // Determine if we should re-order.
   if (delayed_packets_.size() > 1 && fake_packet_reorder_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <

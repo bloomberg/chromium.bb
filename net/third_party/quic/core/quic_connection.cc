@@ -369,8 +369,7 @@ QuicConnection::~QuicConnection() {
 }
 
 void QuicConnection::ClearQueuedPackets() {
-  for (QueuedPacketList::iterator it = queued_packets_.begin();
-       it != queued_packets_.end(); ++it) {
+  for (auto it = queued_packets_.begin(); it != queued_packets_.end(); ++it) {
     // Delete the buffer before calling ClearSerializedPacket, which sets
     // encrypted_buffer to nullptr.
     delete[] it->encrypted_buffer;
@@ -1582,7 +1581,7 @@ void QuicConnection::OnStreamReset(QuicStreamId id,
   sent_packet_manager_.CancelRetransmissionsForStream(id);
   // Remove all queued packets which only contain data for the reset stream.
   // TODO(fayang): consider removing this because it should be rarely executed.
-  QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
+  auto packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end()) {
     QuicFrames* retransmittable_frames =
         &packet_iterator->retransmittable_frames;

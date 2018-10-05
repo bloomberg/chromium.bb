@@ -408,9 +408,7 @@ bool BaseTestServer::GetFilePathWithReplacements(
   std::string new_file_path = original_file_path;
   bool first_query_parameter = true;
   const std::vector<StringPair>::const_iterator end = text_to_replace.end();
-  for (std::vector<StringPair>::const_iterator it = text_to_replace.begin();
-       it != end;
-       ++it) {
+  for (auto it = text_to_replace.begin(); it != end; ++it) {
     const std::string& old_text = it->first;
     const std::string& new_text = it->second;
     std::string base64_old;

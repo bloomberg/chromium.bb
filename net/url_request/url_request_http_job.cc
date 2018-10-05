@@ -1213,9 +1213,7 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
     }
   }
 
-  for (std::vector<SourceStream::SourceType>::reverse_iterator r_iter =
-           types.rbegin();
-       r_iter != types.rend(); ++r_iter) {
+  for (auto r_iter = types.rbegin(); r_iter != types.rend(); ++r_iter) {
     std::unique_ptr<FilterSourceStream> downstream;
     SourceStream::SourceType type = *r_iter;
     switch (type) {

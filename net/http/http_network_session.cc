@@ -77,8 +77,7 @@ namespace {
 spdy::SettingsMap AddDefaultHttp2Settings(spdy::SettingsMap http2_settings) {
   // Set default values only if |http2_settings| does not have
   // a value set for given setting.
-  spdy::SettingsMap::iterator it =
-      http2_settings.find(spdy::SETTINGS_HEADER_TABLE_SIZE);
+  auto it = http2_settings.find(spdy::SETTINGS_HEADER_TABLE_SIZE);
   if (it == http2_settings.end())
     http2_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
 

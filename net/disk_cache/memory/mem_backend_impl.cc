@@ -171,7 +171,7 @@ int MemBackendImpl::OpenEntry(const std::string& key,
                               net::RequestPriority request_priority,
                               Entry** entry,
                               CompletionOnceCallback callback) {
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it == entries_.end())
     return net::ERR_FAILED;
 
@@ -201,7 +201,7 @@ int MemBackendImpl::CreateEntry(const std::string& key,
 int MemBackendImpl::DoomEntry(const std::string& key,
                               net::RequestPriority priority,
                               CompletionOnceCallback callback) {
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it == entries_.end())
     return net::ERR_FAILED;
 
@@ -315,7 +315,7 @@ std::unique_ptr<Backend::Iterator> MemBackendImpl::CreateIterator() {
 }
 
 void MemBackendImpl::OnExternalCacheHit(const std::string& key) {
-  EntryMap::iterator it = entries_.find(key);
+  auto it = entries_.find(key);
   if (it != entries_.end())
     it->second->UpdateStateOnUse(MemEntryImpl::ENTRY_WAS_NOT_MODIFIED);
 }

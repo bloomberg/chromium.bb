@@ -575,7 +575,7 @@ std::pair<size_t, size_t> AdvanceHandshake(PacketSavingConnection* client_conn,
 }
 
 QuicString GetValueForTag(const CryptoHandshakeMessage& message, QuicTag tag) {
-  QuicTagValueMap::const_iterator it = message.tag_value_map().find(tag);
+  auto it = message.tag_value_map().find(tag);
   if (it == message.tag_value_map().end()) {
     return QuicString();
   }

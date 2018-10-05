@@ -141,8 +141,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
 
   auto received = std::make_unique<base::ListValue>();
   const quic::PacketTimeVector& received_times = frame->received_packet_times;
-  for (quic::PacketTimeVector::const_iterator it = received_times.begin();
-       it != received_times.end(); ++it) {
+  for (auto it = received_times.begin(); it != received_times.end(); ++it) {
     auto info = std::make_unique<base::DictionaryValue>();
     info->SetInteger("packet_number", static_cast<int>(it->first));
     info->SetString("received",
@@ -215,9 +214,7 @@ std::unique_ptr<base::Value> NetLogQuicVersionNegotiationPacketCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto versions = std::make_unique<base::ListValue>();
-  for (quic::ParsedQuicVersionVector::const_iterator it =
-           packet->versions.begin();
-       it != packet->versions.end(); ++it) {
+  for (auto it = packet->versions.begin(); it != packet->versions.end(); ++it) {
     versions->AppendString(ParsedQuicVersionToString(*it));
   }
   dict->Set("versions", std::move(versions));

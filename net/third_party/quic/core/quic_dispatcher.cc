@@ -335,7 +335,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   // Packets with connection IDs for active connections are processed
   // immediately.
   QuicConnectionId connection_id = header.destination_connection_id;
-  SessionMap::iterator it = session_map_.find(connection_id);
+  auto it = session_map_.find(connection_id);
   if (it != session_map_.end()) {
     DCHECK(!buffered_packets_.HasBufferedPackets(connection_id));
     it->second->ProcessUdpPacket(current_self_address_, current_peer_address_,
@@ -589,7 +589,7 @@ void QuicDispatcher::Shutdown() {
 void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         QuicErrorCode error,
                                         const QuicString& error_details) {
-  SessionMap::iterator it = session_map_.find(connection_id);
+  auto it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
     QUIC_BUG << "ConnectionId " << connection_id
              << " does not exist in the session map.  Error: "

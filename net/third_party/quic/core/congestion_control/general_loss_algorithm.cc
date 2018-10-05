@@ -67,7 +67,7 @@ void GeneralLossAlgorithm::DetectLosses(
       std::max(QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
                max_rtt + (max_rtt >> reordering_shift_));
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
-  QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
+  auto it = unacked_packets.begin();
   if (largest_lost_ >= packet_number) {
     if (largest_lost_ > unacked_packets.largest_sent_packet()) {
       QUIC_BUG << "largest_lost: " << largest_lost_

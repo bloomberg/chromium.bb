@@ -707,8 +707,7 @@ std::string SpdyTestUtil::ConstructSpdyReplyString(
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdySettings(
     const spdy::SettingsMap& settings) {
   spdy::SpdySettingsIR settings_ir;
-  for (spdy::SettingsMap::const_iterator it = settings.begin();
-       it != settings.end(); ++it) {
+  for (auto it = settings.begin(); it != settings.end(); ++it) {
     settings_ir.AddSetting(it->first, it->second);
   }
   return spdy::SpdySerializedFrame(

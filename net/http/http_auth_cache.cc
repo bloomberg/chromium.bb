@@ -84,7 +84,7 @@ HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
 
   int entries_examined = 0;
   // Linear scan through the realm entries.
-  for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     ++entries_examined;
     if (it->origin() == origin && it->realm() == realm &&
         it->scheme() == scheme) {
@@ -116,7 +116,7 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
 
   int entries_examined = 0;
   // Linear scan through the realm entries.
-  for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     ++entries_examined;
     size_t len = 0;
     if (it->origin() == origin && it->HasEnclosingPath(parent_dir, &len) &&
@@ -240,7 +240,7 @@ bool HttpAuthCache::Remove(const GURL& origin,
                            const std::string& realm,
                            HttpAuth::Scheme scheme,
                            const AuthCredentials& credentials) {
-  for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
+  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     if (it->origin() == origin && it->realm() == realm &&
         it->scheme() == scheme) {
       if (credentials.Equals(it->credentials())) {
@@ -280,16 +280,14 @@ bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
 }
 
 void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
-  for (EntryList::const_iterator it = other.entries_.begin();
-       it != other.entries_.end(); ++it) {
+  for (auto it = other.entries_.begin(); it != other.entries_.end(); ++it) {
     // Add an Entry with one of the original entry's paths.
     DCHECK(it->paths_.size() > 0);
     Entry* entry = Add(it->origin(), it->realm(), it->scheme(),
                        it->auth_challenge(), it->credentials(),
                        it->paths_.back());
     // Copy all other paths.
-    for (Entry::PathList::const_reverse_iterator it2 = ++it->paths_.rbegin();
-         it2 != it->paths_.rend(); ++it2)
+    for (auto it2 = ++it->paths_.rbegin(); it2 != it->paths_.rend(); ++it2)
       entry->AddPath(*it2);
     // Copy nonce count (for digest authentication).
     entry->nonce_count_ = it->nonce_count_;

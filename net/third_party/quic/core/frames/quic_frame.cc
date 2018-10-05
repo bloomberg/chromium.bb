@@ -142,7 +142,7 @@ void DeleteFrame(QuicFrame* frame) {
 }
 
 void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
-  QuicFrames::iterator it = frames->begin();
+  auto it = frames->begin();
   while (it != frames->end()) {
     if (it->type != STREAM_FRAME || it->stream_frame.stream_id != stream_id) {
       ++it;

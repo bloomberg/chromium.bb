@@ -168,8 +168,9 @@ SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   // Fail all callbacks waiting for the index to come up.
-  for (CallbackList::iterator it = to_run_when_initialized_.begin(),
-       end = to_run_when_initialized_.end(); it != end; ++it) {
+  for (auto it = to_run_when_initialized_.begin(),
+            end = to_run_when_initialized_.end();
+       it != end; ++it) {
     std::move(*it).Run(net::ERR_ABORTED);
   }
 }
@@ -282,7 +283,7 @@ size_t SimpleIndex::EstimateMemoryUsage() const {
 
 void SimpleIndex::SetLastUsedTimeForTest(uint64_t entry_hash,
                                          const base::Time last_used) {
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   DCHECK(it != entries_set_.end());
   it->second.SetLastUsedTime(last_used);
 }
@@ -301,7 +302,7 @@ void SimpleIndex::Insert(uint64_t entry_hash) {
 
 void SimpleIndex::Remove(uint64_t entry_hash) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   if (it != entries_set_.end()) {
     UpdateEntryIteratorSize(&it, 0u);
     entries_set_.erase(it);
@@ -320,7 +321,7 @@ bool SimpleIndex::Has(uint64_t hash) const {
 
 uint8_t SimpleIndex::GetEntryInMemoryData(uint64_t entry_hash) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::const_iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
     return 0;
   return it->second.GetInMemoryData();
@@ -328,7 +329,7 @@ uint8_t SimpleIndex::GetEntryInMemoryData(uint64_t entry_hash) const {
 
 void SimpleIndex::SetEntryInMemoryData(uint64_t entry_hash, uint8_t value) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
     return;
   return it->second.SetInMemoryData(value);
@@ -338,7 +339,7 @@ bool SimpleIndex::UseIfExists(uint64_t entry_hash) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Always update the last used time, even if it is during initialization.
   // It will be merged later.
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
     // If not initialized, always return true, forcing it to go to the disk.
     return !initialized_;
@@ -407,7 +408,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
 bool SimpleIndex::UpdateEntrySize(uint64_t entry_hash,
                                   base::StrictNumeric<uint32_t> entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  auto it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
     return false;
 
@@ -475,9 +476,7 @@ void SimpleIndex::MergeInitializingSet(
 
   EntrySet* index_file_entries = &load_result->entries;
 
-  for (std::unordered_set<uint64_t>::const_iterator it =
-           removed_entries_.begin();
-       it != removed_entries_.end(); ++it) {
+  for (auto it = removed_entries_.begin(); it != removed_entries_.end(); ++it) {
     index_file_entries->erase(*it);
   }
   removed_entries_.clear();
@@ -493,8 +492,8 @@ void SimpleIndex::MergeInitializingSet(
   }
 
   uint64_t merged_cache_size = 0;
-  for (EntrySet::iterator it = index_file_entries->begin();
-       it != index_file_entries->end(); ++it) {
+  for (auto it = index_file_entries->begin(); it != index_file_entries->end();
+       ++it) {
     merged_cache_size += it->second.GetEntrySize();
   }
 
@@ -526,8 +525,9 @@ void SimpleIndex::MergeInitializingSet(
   }
 
   // Run all callbacks waiting for the index to come up.
-  for (CallbackList::iterator it = to_run_when_initialized_.begin(),
-       end = to_run_when_initialized_.end(); it != end; ++it) {
+  for (auto it = to_run_when_initialized_.begin(),
+            end = to_run_when_initialized_.end();
+       it != end; ++it) {
     io_thread_->PostTask(FROM_HERE, base::BindOnce(std::move(*it), net::OK));
   }
   to_run_when_initialized_.clear();

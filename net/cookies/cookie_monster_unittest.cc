@@ -348,7 +348,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                            const std::string& domain,
                            const std::string& name) {
     CookieList cookies = this->GetAllCookies(cm);
-    for (CookieList::iterator it = cookies.begin(); it != cookies.end(); ++it)
+    for (auto it = cookies.begin(); it != cookies.end(); ++it)
       if (it->Domain() == domain && it->Name() == name)
         return this->DeleteCanonicalCookie(cm, *it);
     return false;
@@ -838,7 +838,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   }
 
   bool IsCookieInList(const CanonicalCookie& cookie, const CookieList& list) {
-    for (CookieList::const_iterator it = list.begin(); it != list.end(); ++it) {
+    for (auto it = list.begin(); it != list.end(); ++it) {
       if (it->Name() == cookie.Name() && it->Value() == cookie.Value() &&
           it->Domain() == cookie.Domain() && it->Path() == cookie.Path() &&
           it->CreationDate() == cookie.CreationDate() &&
@@ -1507,7 +1507,7 @@ TEST_F(CookieMonsterTest, TestLastAccess) {
 
   // Getting all cookies for a URL doesn't update the accessed time either.
   CookieList cookies = GetAllCookiesForURL(cm.get(), http_www_foo_.url());
-  CookieList::iterator it = cookies.begin();
+  auto it = cookies.begin();
   ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ(http_www_foo_.host(), it->Domain());
   EXPECT_EQ("A", it->Name());
@@ -1581,7 +1581,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
 
   // Check cookies for url.
   CookieList cookies = GetAllCookiesForURL(cm.get(), http_www_foo_.url());
-  CookieList::iterator it = cookies.begin();
+  auto it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ(http_www_foo_.host(), it->Domain());
@@ -1639,7 +1639,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
       SetCookieWithOptions(cm.get(), http_www_foo_.url(), "E=F;", options));
 
   CookieList cookies = GetAllCookiesForURL(cm.get(), www_foo_foo_.url());
-  CookieList::iterator it = cookies.begin();
+  auto it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ("A", it->Name());
@@ -1737,7 +1737,7 @@ TEST_F(CookieMonsterTest, DeleteCookieByName) {
   CookieList cookies = GetAllCookies(cm.get());
   size_t expected_size = 4;
   EXPECT_EQ(expected_size, cookies.size());
-  for (CookieList::iterator it = cookies.begin(); it != cookies.end(); ++it) {
+  for (auto it = cookies.begin(); it != cookies.end(); ++it) {
     EXPECT_NE("A1", it->Value());
     EXPECT_NE("A2", it->Value());
   }
@@ -2498,7 +2498,7 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
   CookieList cookies = GetAllCookies(cm.get());
   size_t expected_size = 3;  // "A", "W" and "Y". "U" is gone.
   EXPECT_EQ(expected_size, cookies.size());
-  CookieList::iterator it = cookies.begin();
+  auto it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ("W", it->Name());

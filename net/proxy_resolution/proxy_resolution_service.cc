@@ -332,8 +332,7 @@ std::unique_ptr<base::Value> NetLogBadProxyListCallback(
   auto dict = std::make_unique<base::DictionaryValue>();
   auto list = std::make_unique<base::ListValue>();
 
-  for (ProxyRetryInfoMap::const_iterator iter = retry_info->begin();
-       iter != retry_info->end(); ++iter) {
+  for (auto iter = retry_info->begin(); iter != retry_info->end(); ++iter) {
     list->AppendString(iter->first);
   }
   dict->Set("bad_proxy_list", std::move(list));
@@ -1212,8 +1211,7 @@ ProxyResolutionService::~ProxyResolutionService() {
 }
 
 void ProxyResolutionService::SuspendAllPendingRequests() {
-  for (PendingRequests::iterator it = pending_requests_.begin();
-       it != pending_requests_.end();
+  for (auto it = pending_requests_.begin(); it != pending_requests_.end();
        ++it) {
     RequestImpl* req = *it;
     if (req->is_started()) {
@@ -1340,9 +1338,9 @@ void ProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
   if (new_retry_info.empty())
     return;
 
-  for (ProxyRetryInfoMap::const_iterator iter = new_retry_info.begin();
-       iter != new_retry_info.end(); ++iter) {
-    ProxyRetryInfoMap::iterator existing = proxy_retry_info_.find(iter->first);
+  for (auto iter = new_retry_info.begin(); iter != new_retry_info.end();
+       ++iter) {
+    auto existing = proxy_retry_info_.find(iter->first);
     if (existing == proxy_retry_info_.end()) {
       proxy_retry_info_[iter->first] = iter->second;
       if (proxy_delegate_) {

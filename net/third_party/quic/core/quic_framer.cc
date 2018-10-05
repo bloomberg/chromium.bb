@@ -3946,7 +3946,7 @@ bool QuicFramer::AppendTimestampsToAckFrame(const QuicAckFrame& frame,
     return true;
   }
 
-  PacketTimeVector::const_iterator it = frame.received_packet_times.begin();
+  auto it = frame.received_packet_times.begin();
   QuicPacketNumber packet_number = it->first;
   QuicPacketNumber delta_from_largest_observed =
       LargestAcked(frame) - packet_number;

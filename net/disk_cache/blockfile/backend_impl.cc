@@ -907,7 +907,7 @@ void BackendImpl::RemoveEntry(EntryImpl* entry) {
 }
 
 void BackendImpl::OnEntryDestroyBegin(Addr address) {
-  EntriesMap::iterator it = open_entries_.find(address.value());
+  auto it = open_entries_.find(address.value());
   if (it != open_entries_.end())
     open_entries_.erase(it);
 }
@@ -928,8 +928,7 @@ void BackendImpl::OnSyncBackendOpComplete() {
 
 EntryImpl* BackendImpl::GetOpenEntry(CacheRankingsBlock* rankings) const {
   DCHECK(rankings->HasData());
-  EntriesMap::const_iterator it =
-      open_entries_.find(rankings->Data()->contents);
+  auto it = open_entries_.find(rankings->Data()->contents);
   if (it != open_entries_.end()) {
     // We have this entry in memory.
     return it->second;
@@ -1579,7 +1578,7 @@ void BackendImpl::PrepareForRestart() {
 }
 
 int BackendImpl::NewEntry(Addr address, scoped_refptr<EntryImpl>* entry) {
-  EntriesMap::iterator it = open_entries_.find(address.value());
+  auto it = open_entries_.find(address.value());
   if (it != open_entries_.end()) {
     // Easy job. This entry is already in memory.
     *entry = base::WrapRefCounted(it->second);

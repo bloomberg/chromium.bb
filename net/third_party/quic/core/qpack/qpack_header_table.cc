@@ -31,8 +31,7 @@ QpackHeaderTable::MatchType QpackHeaderTable::FindHeaderField(
     QuicStringPiece value,
     size_t* index) const {
   spdy::HpackEntry query(name, value);
-  UnorderedEntrySet::const_iterator static_index_it =
-      static_index_.find(&query);
+  auto static_index_it = static_index_.find(&query);
   if (static_index_it != static_index_.end()) {
     DCHECK((*static_index_it)->IsStatic());
     // Static table indexing starts with 1.
@@ -40,8 +39,7 @@ QpackHeaderTable::MatchType QpackHeaderTable::FindHeaderField(
     return MatchType::kNameAndValue;
   }
 
-  NameToEntryMap::const_iterator static_name_index_it =
-      static_name_index_.find(name);
+  auto static_name_index_it = static_name_index_.find(name);
   if (static_name_index_it != static_name_index_.end()) {
     DCHECK(static_name_index_it->second->IsStatic());
     // Static table indexing starts with 1.
