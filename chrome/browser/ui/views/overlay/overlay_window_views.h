@@ -73,6 +73,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
+  OverlayWindowViews::PlaybackState playback_state_for_testing() const;
 
  private:
   // Possible positions for the custom controls added to the window.

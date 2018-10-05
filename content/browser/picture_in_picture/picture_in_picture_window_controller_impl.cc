@@ -46,7 +46,8 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
     return;
 
   initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture(true /* should_pause_video */);
+  OnLeavingPictureInPicture(true /* should_pause_video */,
+                            true /* should_reset_pip_player */);
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
@@ -86,18 +87,20 @@ void PictureInPictureWindowControllerImpl::SetPictureInPictureCustomControls(
   window_->SetPictureInPictureCustomControls(controls);
 }
 
-void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
+void PictureInPictureWindowControllerImpl::Close(bool should_pause_video,
+                                                 bool should_reset_pip_player) {
   if (!window_ || !window_->IsVisible())
     return;
 
   window_->Hide();
-  CloseInternal(should_pause_video);
+  CloseInternal(should_pause_video, should_reset_pip_player);
 }
 
 void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   window_ = nullptr;
   embedder_ = nullptr;
-  CloseInternal(true /* should_pause_video */);
+  CloseInternal(true /* should_pause_video */,
+                true /* should_reset_pip_player */);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -187,7 +190,8 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
 }
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
-    bool should_pause_video) {
+    bool should_pause_video,
+    bool should_reset_pip_player) {
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
@@ -200,19 +204,21 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
         new MediaPlayerDelegateMsg_EndPictureInPictureMode(
             media_player_id_->render_frame_host->GetRoutingID(),
             media_player_id_->delegate_id));
-    media_web_contents_observer_->ResetPictureInPictureVideoMediaPlayerId();
+    if (should_reset_pip_player)
+      media_web_contents_observer_->ResetPictureInPictureVideoMediaPlayerId();
   }
 }
 
 void PictureInPictureWindowControllerImpl::CloseInternal(
-    bool should_pause_video) {
+    bool should_pause_video,
+    bool should_reset_pip_player) {
   if (initiator_->IsBeingDestroyed())
     return;
 
   surface_id_ = viz::SurfaceId();
 
   initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture(should_pause_video);
+  OnLeavingPictureInPicture(should_pause_video, should_reset_pip_player);
 }
 
 void PictureInPictureWindowControllerImpl::EnsureWindow() {

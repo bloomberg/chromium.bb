@@ -54,7 +54,7 @@ class MockPictureInPictureWindowController
 
   // PictureInPictureWindowController:
   MOCK_METHOD0(Show, gfx::Size());
-  MOCK_METHOD1(Close, void(bool));
+  MOCK_METHOD2(Close, void(bool, bool));
   MOCK_METHOD0(OnWindowDestroyed, void());
   MOCK_METHOD1(ClickCustomControl, void(const std::string&));
   MOCK_METHOD1(SetPictureInPictureCustomControls,
@@ -351,7 +351,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(active_web_contents->HasPictureInPictureVideo());
 
   // Stop video being played Picture-in-Picture and check if that's tracked.
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
   EXPECT_FALSE(active_web_contents->HasPictureInPictureVideo());
 
   // Reload page should not crash.
@@ -585,7 +586,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
 
   base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
@@ -624,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   ASSERT_TRUE(window_controller());
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
 
   base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
@@ -776,6 +779,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
                                           &is_paused));
   EXPECT_FALSE(is_paused);
+
+#if !defined(OS_ANDROID)
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_EQ(overlay_window->playback_state_for_testing(),
+            OverlayWindowViews::PlaybackState::kPaused);
+#endif
 }
 
 // Tests that resetting video src when video is in Picture-in-Picture session
@@ -882,7 +893,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
 
   // Wait for the window to close.
   base::string16 expected_title = base::ASCIIToUTF16("left");
@@ -904,7 +916,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(video_paused);
 
   // This should be a no-op because the window is not visible.
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       active_web_contents, "isPaused();", &video_paused));
@@ -1356,7 +1369,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   // Now show the WebContents based Picture-in-Picture window controller.
   // This should close the existing window and show the new one.
-  EXPECT_CALL(mock_controller(), Close(_));
+  EXPECT_CALL(mock_controller(), Close(_, _));
   LoadTabAndEnterPictureInPicture(browser());
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
@@ -1400,7 +1413,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "changeSrcAndLoad();", &result));
   ASSERT_TRUE(result);
 
-  window_controller()->Close(true /* should_pause_video */);
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
 
   result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
