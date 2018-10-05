@@ -100,7 +100,10 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector,
   if (running_in_ws_process) {
     // Spin message loop to wait for displays when WindowService runs in the
     // same process to avoid deadlock.
-    display_wait_loop_.Run();
+    display_wait_loop_ = std::make_unique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
+    display_wait_loop_->Run();
+    display_wait_loop_.reset();
 
     // Bind to test_ws so that it could be shutdown at the right time.
     connector->BindInterface(test_ws::mojom::kServiceName, &test_ws_);
@@ -142,7 +145,8 @@ void WMTestHelper::OnDisplaysChanged(
     int64_t primary_display_id,
     int64_t internal_display_id,
     int64_t display_id_for_new_windows) {
-  display_wait_loop_.Quit();
+  if (display_wait_loop_)
+    display_wait_loop_->Quit();
 }
 
 }  // namespace wm
