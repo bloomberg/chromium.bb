@@ -203,6 +203,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     profile_ = profile_builder.Build();
 
+    SeedAccountInfo(kFakeGaiaId, kFakeUserName);
     chromeos::AccountManagerFactory* factory =
         g_browser_process->platform_part()->GetAccountManagerFactory();
     chromeos::AccountManager* account_manager =
@@ -264,12 +265,12 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         account_info.gaia, account_info.email);
 
     ASSERT_TRUE(account_info.IsValid());
-    account_tracker_service->SeedAccountInfo(account_info);
 
     FakeProfileOAuth2TokenService* token_service =
         static_cast<FakeProfileOAuth2TokenService*>(
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
-    token_service->UpdateCredentials(account_info.account_id, kRefreshToken);
+    token_service->UpdateCredentials(
+        account_tracker_service->SeedAccountInfo(account_info), kRefreshToken);
   }
 
   Profile* profile() { return profile_.get(); }
