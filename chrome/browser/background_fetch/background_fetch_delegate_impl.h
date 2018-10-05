@@ -108,6 +108,10 @@ class BackgroundFetchDelegateImpl
   // Fetch.
   bool IsGuidOutstanding(const std::string& guid) const;
 
+  // Notifies the OfflineContentAggregator of an interrupted download that is
+  // in a paused state.
+  void RestartPausedDownload(const std::string& download_guid);
+
   // Returns the set of download GUIDs that have started but did not finish
   // according to Background Fetch. Clears out all references to outstanding
   // GUIDs.

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "components/download/public/background_service/download_metadata.h"
@@ -61,9 +62,18 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
     if (download.completion_info) {
       // The download finished but was not persisted.
       OnDownloadSucceeded(download.guid, *download.completion_info);
+      return;
     }
 
-    // The download is resuming, and will call the appropriate functions.
+    // The download is active, and will call the appropriate functions.
+
+    if (download.paused) {
+      // We need to resurface the notification in a paused state.
+      AfterStartupTaskUtils::PostTask(
+          FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
+          base::BindOnce(&BackgroundFetchDelegateImpl::RestartPausedDownload,
+                         GetDelegate()->GetWeakPtr(), download.guid));
+    }
   }
 
   // There is also the case that the Download Service is not aware of the GUID.
