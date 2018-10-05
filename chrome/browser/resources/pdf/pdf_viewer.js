@@ -818,7 +818,7 @@ PDFViewer.prototype = {
    */
   setUserInitiated_: function(userInitiated) {
     if (this.isUserInitiatedEvent_ == userInitiated) {
-      throw 'Trying to set user initiated to current value.';
+      throw new Error('Trying to set user initiated to current value.');
     }
     this.isUserInitiatedEvent_ = userInitiated;
   },
