@@ -1606,12 +1606,9 @@ CrSettingsLanguagesPageTest.prototype = {
   ]),
 };
 
-// Failing on multiple builders. crbug.com/891955.
-TEST_F(
-    'CrSettingsLanguagesPageTest', 'DISABLED_AddLanguagesDialog', function() {
-      mocha.grep(assert(languages_page_tests.TestNames.AddLanguagesDialog))
-          .run();
-    });
+TEST_F('CrSettingsLanguagesPageTest', 'AddLanguagesDialog', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.AddLanguagesDialog)).run();
+});
 
 TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
   mocha.grep(assert(languages_page_tests.TestNames.LanguageMenu)).run();
