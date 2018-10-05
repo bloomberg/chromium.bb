@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -141,7 +141,7 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
  private:
   // A MessageLoop is required for mojo bindings which are used to
   // connect to graphics services.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   viz::ServerSharedBitmapManager shared_bitmap_manager_;
   viz::FakeHostFrameSinkClient host_frame_sink_client_;
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;

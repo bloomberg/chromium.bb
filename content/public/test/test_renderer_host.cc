@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
@@ -147,7 +148,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // means tests must ensure any MessageLoop they make is created before
   // the RenderViewHostTestEnabler.
   if (!base::MessageLoopCurrent::Get())
-    message_loop_ = std::make_unique<base::MessageLoop>();
+    task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<TestImageTransportFactory>());

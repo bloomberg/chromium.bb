@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
@@ -525,8 +525,9 @@ class WebMediaPlayerMSTest
       public cc::VideoFrameProvider::Client {
  public:
   WebMediaPlayerMSTest()
-      : render_factory_(new MockRenderFactory(message_loop_.task_runner(),
-                                              &message_loop_controller_)),
+      : render_factory_(
+            new MockRenderFactory(base::ThreadTaskRunnerHandle::Get(),
+                                  &message_loop_controller_)),
         gpu_factories_(new media::MockGpuVideoAcceleratorFactories(nullptr)),
         surface_layer_bridge_(
             std::make_unique<NiceMock<MockSurfaceLayerBridge>>()),
@@ -648,7 +649,7 @@ class WebMediaPlayerMSTest
     return std::move(submitter_);
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockRenderFactory* render_factory_;
   std::unique_ptr<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
   FakeWebMediaPlayerDelegate delegate_;
@@ -679,8 +680,8 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::MediaLog>(),
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
-      message_loop_.task_runner(), message_loop_.task_runner(),
-      message_loop_.task_runner(), message_loop_.task_runner(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       gpu_factories_.get(), blink::WebString(),
       base::BindOnce(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
                      base::Unretained(this)),
@@ -759,7 +760,7 @@ void WebMediaPlayerMSTest::StopUsingProvider() {
 void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
-    message_loop_.task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
                                   base::Unretained(this)));
   }
@@ -794,7 +795,7 @@ void WebMediaPlayerMSTest::RenderFrame() {
     auto frame = compositor_->GetCurrentFrame();
     compositor_->PutCurrentFrame();
   }
-  message_loop_.task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
                      base::Unretained(this)),

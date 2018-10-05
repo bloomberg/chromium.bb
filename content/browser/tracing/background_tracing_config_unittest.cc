@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
@@ -18,10 +18,11 @@ namespace content {
 class BackgroundTracingConfigTest : public testing::Test {
  public:
   BackgroundTracingConfigTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI,
+                   task_environment_.GetMainThreadTaskRunner()) {}
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestBrowserThread ui_thread_;
 };
 

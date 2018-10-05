@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
@@ -66,7 +67,8 @@ class WebRtcAudioRendererTest : public testing::Test,
 
  protected:
   WebRtcAudioRendererTest()
-      : message_loop_(new base::MessageLoopForIO),
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
         source_(new MockAudioRendererSource()) {
     blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
     stream_.Initialize(blink::WebString::FromUTF8("new stream"), dummy_tracks,
@@ -76,8 +78,8 @@ class WebRtcAudioRendererTest : public testing::Test,
   }
 
   void SetupRenderer(const std::string& device_id) {
-    renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_,
-                                        1, 1, device_id);
+    renderer_ = new WebRtcAudioRenderer(base::ThreadTaskRunnerHandle::Get(),
+                                        stream_, 1, 1, device_id);
     EXPECT_CALL(
         *this, MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
                                            _, device_id, _));
@@ -142,7 +144,7 @@ class WebRtcAudioRendererTest : public testing::Test,
 
   const base::Optional<base::UnguessableToken> kAudioProcessingId =
       base::UnguessableToken::Create();
-  std::unique_ptr<base::MessageLoopForIO> message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
   std::unique_ptr<MockAudioRendererSource> source_;
   blink::WebMediaStream stream_;
@@ -292,8 +294,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
 }
 
 TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
-  renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_, 1,
-                                      1, kInvalidOutputDeviceId);
+  renderer_ = new WebRtcAudioRenderer(base::ThreadTaskRunnerHandle::Get(),
+                                      stream_, 1, 1, kInvalidOutputDeviceId);
 
   EXPECT_CALL(*this, MockCreateAudioRendererSink(
                          AudioDeviceFactory::kSourceWebRtc, _, _,

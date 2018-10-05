@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/unguessable_token.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"

@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/common/media/midi_messages.h"
 #include "content/public/test/test_browser_thread.h"
 #include "media/midi/midi_manager.h"
@@ -118,7 +118,8 @@ class MidiHostForTesting : public MidiHost {
 class MidiHostTest : public testing::Test {
  public:
   MidiHostTest()
-      : io_browser_thread_(BrowserThread::IO, &message_loop_),
+      : io_browser_thread_(BrowserThread::IO,
+                           task_environment_.GetMainThreadTaskRunner()),
         data_(kNoteOn, kNoteOn + arraysize(kNoteOn)),
         port_id_(0) {
     std::unique_ptr<FakeMidiManagerFactory> factory =
@@ -173,7 +174,7 @@ class MidiHostTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestBrowserThread io_browser_thread_;
 
   std::vector<uint8_t> data_;
