@@ -96,7 +96,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
     # We have at least 100 lines of output, and no error out.
     self.assertGreater(len(output.GetStdoutLines()), 100)
-    self.assertFalse(output.GetStderr())
+    self.assertEqual('', output.GetStderr())
 
   def testListProduction(self):
     """Test we can generate results for --production --list."""
@@ -106,7 +106,19 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
     # We have at least 100 lines of output, and no error out.
     self.assertGreater(len(output.GetStdoutLines()), 100)
-    self.assertFalse(output.GetStderr())
+    self.assertEqual('', output.GetStderr())
+
+  def testListTryjobsEmpty(self):
+    """Test we can generate ~empty results for failed --list search."""
+    with cros_build_lib.OutputCapturer() as output:
+      cros_tryjob.PrintKnownConfigs(
+          self.site_config, production=False,
+          build_config_fragments=['this-is-not-a-builder-name'])
+
+    # We have fewer than 6 lines of output, and no error out.
+    self.assertLess(len(output.GetStdoutLines()), 6)
+    self.assertEqual('', output.GetStderr())
+
 
 class TryjobTestParsing(TryjobTest):
   """Test cros try command line parsing."""
