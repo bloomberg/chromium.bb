@@ -133,6 +133,10 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     response->status_text = "OK";
     response->response_type = network::mojom::FetchResponseType::kDefault;
     response->blob = std::move(blob_body);
+    if (response->blob) {
+      response->headers.emplace("Content-Length",
+                                base::NumberToString(response->blob->size));
+    }
     return response;
   }
 
@@ -191,6 +195,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     response_mode_ = ResponseMode::kBlob;
     blob_body_ = blink::mojom::SerializedBlob::New();
     blob_body_->uuid = "dummy-blob-uuid";
+    blob_body_->size = body.size();
     mojo::MakeStrongBinding(
         std::make_unique<FakeBlob>(std::move(metadata), std::move(body)),
         mojo::MakeRequest(&blob_body_->blob));
@@ -885,6 +890,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
 
   const network::ResourceResponseHead& info = client->response_head();
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info.content_length);
 
   // Test the cached metadata.
   client->RunUntilCachedMetadataReceived();

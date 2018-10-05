@@ -4,7 +4,10 @@
 
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 
+#include <string>
+#include <utility>
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -51,6 +54,10 @@ blink::mojom::FetchAPIResponsePtr OkResponse(
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
   response->blob = std::move(blob_body);
+  if (response->blob) {
+    response->headers.emplace("Content-Length",
+                              base::NumberToString(response->blob->size));
+  }
   return response;
 }
 
@@ -678,6 +685,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info.content_length);
 
   // Test the body.
   std::string body;
