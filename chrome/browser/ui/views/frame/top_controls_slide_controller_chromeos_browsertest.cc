@@ -34,6 +34,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -835,6 +836,56 @@ class PageStateUpdateWaiter : content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PageStateUpdateWaiter);
 };
+
+// Verifies that we ignore the shown ratios sent from widgets other than that of
+// the main frame (such as widgets of the drop-down menus in web pages).
+// https://crbug.com/891471.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
+  browser_view()->frame()->Maximize();
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+
+  OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
+                 0);
+
+  // On mash, use nullptr root windows to route events over mojo to ash.
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(
+      features::IsUsingWindowService() ? nullptr
+                                       : browser_window->GetRootWindow());
+
+  // Send a mouse click event that should open the popup drop-down menu of the
+  // <select> html element on the page.
+  // Note that if a non-main-frame widget is created, its LayerTreeHostImpl's
+  // `top_controls_shown_ratio_` (which is initialized to 0.f) will be sent to
+  // the browser when a new compositor frame gets generated. If this shown ratio
+  // value is not ignored, top-chrome will immediately hide, which will result
+  // in a BrowserView's Layout() and the immediate closure of the drop-down
+  // menu.
+  // We verify below that this doesn't happen, the menu remains open, and it's
+  // possible to select another option in the drop-down menu.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  PageStateUpdateWaiter page_state_update_waiter(contents);
+  event_generator.MoveMouseTo(54, 173);
+  event_generator.ClickLeftButton();
+  page_state_update_waiter.Wait();
+
+  // Verify that the element has been focused.
+  EXPECT_EQ(true, content::EvalJs(contents, "selectFocused;"));
+
+  // Now send a mouse click event that should select the forth option in the
+  // drop-down menu.
+  event_generator.MoveMouseTo(54, 300);
+  event_generator.ClickLeftButton();
+
+  // Verify that the selected option has changed and the forth option is
+  // selected.
+  EXPECT_EQ(true, content::EvalJs(contents, "selectChanged;"));
+  EXPECT_EQ("4", content::EvalJs(contents, "getSelectedValue();"));
+}
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
                        TestScrollingMaximizedPageBeforeGoingToTabletMode) {

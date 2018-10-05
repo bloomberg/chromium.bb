@@ -691,7 +691,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderWidgetHostDelegate --------------------------------------------------
 
   ukm::SourceId GetUkmSourceIdForLastCommittedSource() const override;
-  void SetTopControlsShownRatio(float ratio) override;
+  void SetTopControlsShownRatio(RenderWidgetHostImpl* render_widget_host,
+                                float ratio) override;
   bool DoBrowserControlsShrinkRendererSize() const override;
   int GetTopControlsHeight() const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
