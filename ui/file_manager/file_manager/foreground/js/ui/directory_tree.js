@@ -116,17 +116,6 @@ var TREE_ITEM_INNER_HTML =
     '</div>' +
     '<div class="tree-children"></div>';
 
-var MENU_TREE_ITEM_INNER_HTML =
-    '<div class="tree-row">' +
-    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
-    ' <span class="expand-icon"></span>' +
-    ' <div class="button">' +
-    '  <span class="icon item-icon"></span>' +
-    '  <span class="label entry-name"></span>' +
-    ' </div>' +
-    '</div>' +
-    '<div class="tree-children"></div>';
-
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryItem
 
@@ -1339,95 +1328,6 @@ ShortcutItem.prototype.activate = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// MenuItem
-
-/**
- * A TreeItem which represents a command button.
- * Command items are displayed as top-level children of DirectoryTree.
- *
- * @param {!NavigationModelMenuItem} modelItem
- * @param {!DirectoryTree} tree Current tree, which contains this item.
- * @extends {cr.ui.TreeItem}
- * @constructor
- */
-function MenuItem(modelItem, tree) {
-  var item = new cr.ui.TreeItem();
-  // Get the original label id defined by TreeItem, before overwriting
-  // prototype.
-  var labelId = item.labelElement.id;
-  item.__proto__ = MenuItem.prototype;
-  if (window.IN_TEST) {
-    item.setAttribute('dir-type', 'MenuItem');
-    item.setAttribute('entry-label', modelItem.label);
-  }
-
-  item.parentTree_ = tree;
-  item.modelItem_ = modelItem;
-  item.innerHTML = MENU_TREE_ITEM_INNER_HTML;
-  item.labelElement.id = labelId;
-  item.label = modelItem.label;
-
-  item.menuButton_ = /** @type {!cr.ui.MenuButton} */(queryRequiredElement(
-        '.button', assert(item.firstElementChild)));
-  item.menuButton_.setAttribute('menu', item.modelItem_.menu);
-  cr.ui.MenuButton.decorate(item.menuButton_);
-
-  var icon = queryRequiredElement('.icon', item);
-  icon.setAttribute('menu-button-icon', item.modelItem_.icon);
-
-  return item;
-}
-
-MenuItem.prototype = {
-  __proto__: cr.ui.TreeItem.prototype,
-  get entry() {
-    return null;
-  },
-  get modelItem() {
-    return this.modelItem_;
-  },
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
-};
-
-/**
- * @param {!DirectoryEntry|!FakeEntry} entry
- * @return {boolean} True if the parent item is found.
- */
-MenuItem.prototype.searchAndSelectByEntry = function(entry) {
-  return false;
-};
-
-/**
- * @override
- */
-MenuItem.prototype.handleClick = function(e) {
-  this.activate();
-
-  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
-      this, e, VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU, true);
-};
-
-/**
- * @param {!DirectoryEntry} entry
- */
-MenuItem.prototype.selectByEntry = function(entry) {
-};
-
-/**
- * Executes the command.
- */
-MenuItem.prototype.activate = function() {
-  // Dispatch an event to update the menu (if updatable).
-  var updateEvent = /** @type {MenuItemUpdateEvent} */ (new Event('update'));
-  updateEvent.menuButton = this.menuButton_;
-  this.menuButton_.menu.dispatchEvent(updateEvent);
-
-  this.menuButton_.showMenu();
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // FakeItem
 
 /**
@@ -1644,10 +1544,6 @@ DirectoryTree.createDirectoryItem = function(modelItem, tree) {
     case NavigationModelItemType.SHORTCUT:
       return new ShortcutItem(
           /** @type {!NavigationModelShortcutItem} */ (modelItem), tree);
-      break;
-    case NavigationModelItemType.MENU:
-      return new MenuItem(
-          /** @type {!NavigationModelMenuItem} */ (modelItem), tree);
       break;
     case NavigationModelItemType.RECENT:
       return new FakeItem(

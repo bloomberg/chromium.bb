@@ -42,23 +42,18 @@ function testModel() {
   var recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT,
       {toURL: () => 'fake-entry://recent'});
-  var addNewServicesItem = new NavigationModelMenuItem(
-      'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
   model.linuxFilesItem = new NavigationModelFakeItem(
       'linux-files-label', NavigationModelItemType.CROSTINI,
       {toURL: () => 'fake-entry://linux-files'});
 
-  assertEquals(6, model.length);
+  assertEquals(5, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
   assertEquals('fake-entry://recent', model.item(2).entry.toURL());
   assertEquals('fake-entry://linux-files', model.item(3).entry.toURL());
   assertEquals('/root/shortcut', model.item(4).entry.fullPath);
-  assertEquals('menu-button-label', model.item(5).label);
-  assertEquals('#add-new-services', model.item(5).menu);
-  assertEquals('menu-button-icon', model.item(5).icon);
 }
 
 function testNoRecentOrLinuxFiles() {
@@ -66,18 +61,13 @@ function testNoRecentOrLinuxFiles() {
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = new NavigationModelMenuItem(
-      'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
-  assertEquals(4, model.length);
+  assertEquals(3, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
   assertEquals('/root/shortcut', model.item(2).entry.fullPath);
-  assertEquals('menu-button-label', model.item(3).label);
-  assertEquals('#add-new-services', model.item(3).menu);
-  assertEquals('menu-button-icon', model.item(3).icon);
 }
 
 function testAddAndRemoveShortcuts() {
@@ -85,9 +75,8 @@ function testAddAndRemoveShortcuts() {
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
   assertEquals(3, model.length);
 
@@ -120,9 +109,8 @@ function testAddAndRemoveVolumes() {
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
   assertEquals(3, model.length);
 
@@ -172,7 +160,6 @@ function testOrderAndNestItems() {
   const recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT,
       {toURL: () => 'fake-entry://recent'});
-  const addNewServicesItem = null;
   const zipVolumeId = 'provided:dmboannefpncccogfdikhmhpmdnddgoe:' +
       '~%2FDownloads%2Fazip_file%2Ezip:' +
       '096eaa592ea7e8ffb9a27435e50dabd6c809c125';
@@ -225,7 +212,7 @@ function testOrderAndNestItems() {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, false);
+      volumeManager, shortcutListModel, recentItem, false);
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
