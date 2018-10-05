@@ -13,8 +13,10 @@ namespace feed {
 using base::android::JavaRef;
 using base::android::JavaParamRef;
 
-static jlong JNI_FeedLoggingBridge_Init(JNIEnv* env,
-                                        const JavaParamRef<jobject>& j_this) {
+static jlong JNI_FeedLoggingBridge_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_this,
+    const JavaParamRef<jobject>& j_profile) {
   FeedLoggingBridge* native_logging_bridge = new FeedLoggingBridge();
   return reinterpret_cast<intptr_t>(native_logging_bridge);
 }
@@ -27,8 +29,57 @@ void FeedLoggingBridge::Destroy(JNIEnv* env, const JavaRef<jobject>& j_this) {
   delete this;
 }
 
+void FeedLoggingBridge::OnContentViewed(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint position,
+    const jlong publishedTimeSeconds,
+    const jlong timeContentBecameAvailable,
+    const jfloat score) {}
+
+void FeedLoggingBridge::OnContentDismissed(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jstring>& j_url) {}
+
+void FeedLoggingBridge::OnContentClicked(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint position,
+    const jlong publishedTimeSeconds,
+    const jfloat score) {}
+
+void FeedLoggingBridge::OnClientAction(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_action_type) {}
+
+void FeedLoggingBridge::OnContentContextMenuOpened(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint position,
+    const jlong publishedTimeSeconds,
+    const jfloat score) {}
+
+void FeedLoggingBridge::OnMoreButtonViewed(JNIEnv* j_env,
+                                           const JavaRef<jobject>& j_this,
+                                           const jint j_position) {}
+
+void FeedLoggingBridge::OnMoreButtonClicked(JNIEnv* j_env,
+                                            const JavaRef<jobject>& j_this,
+                                            const jint j_position) {}
+
 void FeedLoggingBridge::OnOpenedWithContent(JNIEnv* j_env,
                                             const JavaRef<jobject>& j_this,
+                                            const jint j_time_to_Populate,
                                             const jint j_content_count) {}
+
+void FeedLoggingBridge::OnOpenedWithNoImmediateContent(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this) {}
+
+void FeedLoggingBridge::OnOpenedWithNoContent(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this) {}
 
 }  // namespace feed
