@@ -26,9 +26,13 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
      * Creates TabGestureStateListener and lets the WebContentsUserData of the Tab manage it.
      * @param tab Tab instance that the active WebContents instance gets loaded in.
      */
-    public static void create(Tab tab, Supplier<FullscreenManager> fullscreen) {
-        tab.getUserDataHost().setUserData(
-                USER_DATA_KEY, new TabGestureStateListener(tab, fullscreen));
+    public static TabGestureStateListener from(Tab tab, Supplier<FullscreenManager> fullscreen) {
+        TabGestureStateListener listener = tab.getUserDataHost().getUserData(USER_DATA_KEY);
+        if (listener == null) {
+            tab.getUserDataHost().setUserData(
+                    USER_DATA_KEY, new TabGestureStateListener(tab, fullscreen));
+        }
+        return listener;
     }
 
     private TabGestureStateListener(Tab tab, Supplier<FullscreenManager> fullscreenManager) {
@@ -78,10 +82,5 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
         GestureListenerManager manager = GestureListenerManager.fromWebContents(webContents);
         if (manager != null) manager.removeListener(mGestureListener);
         mGestureListener = null;
-    }
-
-    @Override
-    public void destroy() {
-        cleanupWebContents(getWebContents());
     }
 }

@@ -201,9 +201,6 @@ public class Tab
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
     private NativePage mNativePage;
 
-    /** Controls overscroll pull-to-refresh behavior for this tab. */
-    private SwipeRefreshHandler mSwipeRefreshHandler;
-
     /** {@link WebContents} showing the current page, or {@code null} if the tab is frozen. */
     private WebContents mWebContents;
 
@@ -1781,7 +1778,7 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            TabGestureStateListener.create(this, this::getFullscreenManager);
+            TabGestureStateListener.from(this, this::getFullscreenManager);
 
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
@@ -1789,7 +1786,7 @@ public class Tab
             // valid infobar container, no need to recreate one.
             InfoBarContainer.from(this);
 
-            mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext, this);
+            SwipeRefreshHandler.from(this);
 
             updateThemeColorIfNeeded(false);
             notifyContentChanged();
@@ -2278,11 +2275,6 @@ public class Tab
 
         mContentView.setOnHierarchyChangeListener(null);
         mContentView.setOnSystemUiVisibilityChangeListener(null);
-
-        if (mSwipeRefreshHandler != null) {
-            mSwipeRefreshHandler.destroy();
-            mSwipeRefreshHandler = null;
-        }
         mContentView.removeOnAttachStateChangeListener(mAttachStateChangeListener);
         mContentView = null;
         updateInteractableState();
@@ -3074,27 +3066,6 @@ public class Tab
      */
     protected boolean isRendererUnresponsive() {
         return mIsRendererUnresponsive;
-    }
-
-    /**
-     * Reset swipe-to-refresh handler.
-     */
-    void resetSwipeRefreshHandler() {
-        // When the dialog is visible, keeping the refresh animation active
-        // in the background is distracting and unnecessary (and likely to
-        // jank when the dialog is shown).
-        if (mSwipeRefreshHandler != null) {
-            mSwipeRefreshHandler.reset();
-        }
-    }
-
-    /**
-     * Stop swipe-to-refresh animation.
-     */
-    void stopSwipeRefreshHandler() {
-        if (mSwipeRefreshHandler != null) {
-            mSwipeRefreshHandler.didStopRefreshing();
-        }
     }
 
     /**

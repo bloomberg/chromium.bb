@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.FullscreenActivity;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
+import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
@@ -207,7 +208,12 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void showRepostFormWarningDialog() {
-        mTab.resetSwipeRefreshHandler();
+        // When the dialog is visible, keeping the refresh animation active
+        // in the background is distracting and unnecessary (and likely to
+        // jank when the dialog is shown).
+        SwipeRefreshHandler handler = SwipeRefreshHandler.get(mTab);
+        if (handler != null) handler.reset();
+
         if (mTab.getActivity() == null) return;
         RepostFormWarningDialog warningDialog = new RepostFormWarningDialog(mTab);
         warningDialog.show(mTab.getActivity().getFragmentManager(), null);
