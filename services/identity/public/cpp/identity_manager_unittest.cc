@@ -750,7 +750,15 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
 TEST_F(IdentityManagerTest, HasPrimaryAccount) {
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
 
+  // Removing the account from the AccountTrackerService should not cause
+  // IdentityManager to think that there is no longer a primary account.
+  account_tracker()->RemoveAccount(
+      identity_manager()->GetPrimaryAccountInfo().account_id);
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+
 #if !defined(OS_CHROMEOS)
+  // Signing out should cause IdentityManager to recognize that there is no
+  // longer a primary account.
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_primary_account_cleared_callback(
       run_loop.QuitClosure());
