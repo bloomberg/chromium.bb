@@ -183,8 +183,7 @@ shift, and a calendar appointment.
             waterfall
         1.  <code>[mac_chromium_rel_ng]</code> on the [luci.chromium.try]
             waterfall
-            <!-- TODO(kainino): update link to luci.chromium.try -->
-        1.  <code>[win7_chromium_rel_ng]</code> on the [tryserver.chromium.win]
+        1.  <code>[win7_chromium_rel_ng]</code> on the [luci.chromium.try]
             waterfall
     1.  The best tool to use to quickly find flakiness on the tryservers is the
         new [Chromium Try Flakes] tool. Look for the names of GPU tests (like
@@ -262,13 +261,13 @@ shift, and a calendar appointment.
 [luci.chromium.try]: https://ci.chromium.org/p/chromium/g/luci.chromium.try/builders
 [mac_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_rel_ng
 [tryserver.chromium.mac]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.mac/builders
-[win7_chromium_rel_ng]: https://ci.chromium.org/buildbot/tryserver.chromium.win/win7_chromium_rel_ng/
+[win7_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng
 [tryserver.chromium.win]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.win/builders
 [Chromium Try Flakes]: http://chromium-try-flakes.appspot.com/
 <!-- TODO(kainino): link doesn't work, but is still included from chromium-swarm homepage so not removing it now -->
 [Swarming Server Stats]: https://chromium-swarm.appspot.com/stats
 [chromium-gpu-archive/reference-images]: https://console.developers.google.com/storage/chromium-gpu-archive/reference-images
-[instructions on the GPU testing page]: https://sites.google.com/a/chromium.org/dev/developers/testing/gpu-testing#TOC-Updating-and-Adding-New-Pixel-Tests-to-the-GPU-Bots
+[instructions on the GPU testing page]: https://chromium.googlesource.com/chromium/src/+/master/docs/gpu/gpu_testing.md
 [Chrome Internal GPU Pixel Wrangling Instructions]: https://sites.google.com/a/google.com/client3d/documents/chrome-internal-gpu-pixel-wrangling-instructions
 [src/content/test/gpu/gpu_tests/]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/
 [webgl_conformance_expectations.py]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/webgl_conformance_expectations.py
