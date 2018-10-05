@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_ROUTER_H_
-#define ASH_ACCELERATORS_ACCELERATOR_ROUTER_H_
+#ifndef ASH_ACCELERATORS_PRE_TARGET_ACCELERATOR_HANDLER_H_
+#define ASH_ACCELERATORS_PRE_TARGET_ACCELERATOR_HANDLER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ui/wm/core/accelerator_delegate.h"
 
 namespace aura {
 class Window;
@@ -16,23 +17,24 @@ class Window;
 namespace ui {
 class Accelerator;
 class KeyEvent;
-}
+}  // namespace ui
 
 namespace ash {
 
-// AcceleratorRouter does a minimal amount of processing before routing the
-// accelerator to the AcceleratorController. AcceleratorRouter may also decide
-// not to process certain accelerators.
-class ASH_EXPORT AcceleratorRouter {
+// PreTargetAcceleratorHandler is responsible for handling accelerators that
+// are processed before the target is given a chance to process the
+// accelerator. This typically includes system or reserved accelerators.
+// PreTargetAcceleratorHandler does not actually handle the accelerators, rather
+// it calls to AcceleratorController to actually process the accelerator.
+class ASH_EXPORT PreTargetAcceleratorHandler
+    : public ::wm::AcceleratorDelegate {
  public:
-  AcceleratorRouter();
-  ~AcceleratorRouter();
+  PreTargetAcceleratorHandler();
+  ~PreTargetAcceleratorHandler() override;
 
-  // Returns true if event should be consumed. |target| is the target of the
-  // event.
-  bool ProcessAccelerator(aura::Window* target,
-                          const ui::KeyEvent& event,
-                          const ui::Accelerator& accelerator);
+  // wm::AcceleratorDelegate:
+  bool ProcessAccelerator(const ui::KeyEvent& event,
+                          const ui::Accelerator& accelerator) override;
 
  private:
   // Returns true if the window should be allowed a chance to handle
@@ -52,9 +54,9 @@ class ASH_EXPORT AcceleratorRouter {
   SearchKeyState search_key_state_ = RELEASED;
   base::TimeTicks search_key_pressed_timestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorRouter);
+  DISALLOW_COPY_AND_ASSIGN(PreTargetAcceleratorHandler);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_ROUTER_H_
+#endif  // ASH_ACCELERATORS_PRE_TARGET_ACCELERATOR_HANDLER_H_

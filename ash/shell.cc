@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
+#include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
@@ -1142,7 +1142,7 @@ void Shell::Init(
   AddPreTargetHandler(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
-      std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
+      std::make_unique<PreTargetAcceleratorHandler>(),
       accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
