@@ -458,6 +458,17 @@ var ENTRIES = {
     typeText: 'JPEG image'
   }),
 
+  smallJpeg: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'small.jpg',
+    targetPath: 'small.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'small.jpg',
+    sizeText: '1 KB',
+    typeText: 'JPEG image'
+  }),
+
   // An ogg file without a mime type, to confirm that file type detection using
   // file extensions works fine.
   beautiful: new TestEntryInfo({
