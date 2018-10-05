@@ -211,6 +211,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
   url_request_context_getter_ = service_->url_request_context_getter();
+  url_loader_factory_info_ = service_->url_loader_factory_info();
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
@@ -226,8 +227,13 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(network_properties_manager_);
+
+  DCHECK(url_loader_factory_info_);
+  auto url_loader_factory = network::SharedURLLoaderFactory::Create(
+      std::move(url_loader_factory_info_));
+
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get(),
-                                url_request_context_getter_,
+                                url_loader_factory,
                                 network_properties_manager_.get());
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);

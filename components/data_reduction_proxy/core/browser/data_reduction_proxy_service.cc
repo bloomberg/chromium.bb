@@ -34,6 +34,7 @@ DataReductionProxyService::DataReductionProxyService(
     DataReductionProxySettings* settings,
     PrefService* prefs,
     net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DataStore> store,
     std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
     network::NetworkQualityTracker* network_quality_tracker,
@@ -42,6 +43,7 @@ DataReductionProxyService::DataReductionProxyService(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::TimeDelta& commit_delay)
     : url_request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       pingback_client_(std::move(pingback_client)),
       settings_(settings),
       prefs_(prefs),

@@ -43,8 +43,10 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_network_quality_tracker.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace {
@@ -241,10 +243,12 @@ MockDataReductionProxyService::MockDataReductionProxyService(
     network::TestNetworkQualityTracker* test_network_quality_tracker,
     PrefService* prefs,
     net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : DataReductionProxyService(settings,
                                 prefs,
                                 request_context,
+                                std::move(url_loader_factory),
                                 std::make_unique<TestDataStore>(),
                                 nullptr,
                                 test_network_quality_tracker,
@@ -429,6 +433,7 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
+  scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory;
   std::unique_ptr<TestingPrefServiceSimple> pref_service(
       new TestingPrefServiceSimple());
   std::unique_ptr<net::TestNetLog> net_log(new net::TestNetLog());
@@ -450,6 +455,14 @@ DataReductionProxyTestContext::Builder::Build() {
     request_context_getter = new net::TestURLRequestContextGetter(
         task_runner, std::move(test_request_context));
   }
+
+  // In theory, when the other related classes (namely SecureProxyChecker
+  // and DataReductionProxyConfigServiceClient) get migrated away from
+  // using URLFetcher in favor of SimpleURLLoader, there will be a
+  // Builder::WithURLLoaderFactory, and specific tests will pass in
+  // a URLLoaderFactory instance. For now, we can just create our own.
+  url_loader_factory =
+      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
 
   std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate(
       new TestDataReductionProxyEventStorageDelegate());
@@ -549,8 +562,8 @@ DataReductionProxyTestContext::Builder::Build() {
   std::unique_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
           task_runner, std::move(pref_service), std::move(net_log),
-          request_context_getter, mock_socket_factory_, std::move(io_data),
-          std::move(settings), std::move(storage_delegate),
+          request_context_getter, url_loader_factory, mock_socket_factory_,
+          std::move(io_data), std::move(settings), std::move(storage_delegate),
           std::move(config_storer), raw_params, test_context_flags));
 
   if (!skip_settings_initialization_)
@@ -564,6 +577,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
     std::unique_ptr<net::TestNetLog> net_log,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     net::MockClientSocketFactory* mock_socket_factory,
     std::unique_ptr<TestDataReductionProxyIOData> io_data,
     std::unique_ptr<DataReductionProxySettings> settings,
@@ -577,6 +591,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       simple_pref_service_(std::move(simple_pref_service)),
       net_log_(std::move(net_log)),
       request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       mock_socket_factory_(mock_socket_factory),
       io_data_(std::move(io_data)),
       settings_(std::move(settings)),
@@ -652,11 +667,11 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     return std::make_unique<MockDataReductionProxyService>(
         settings, test_network_quality_tracker_.get(),
         simple_pref_service_.get(), request_context_getter_.get(),
-        task_runner_);
+        url_loader_factory_, task_runner_);
   }
   return std::make_unique<DataReductionProxyService>(
       settings, simple_pref_service_.get(), request_context_getter_.get(),
-      base::WrapUnique(new TestDataStore()), nullptr,
+      url_loader_factory_, base::WrapUnique(new TestDataStore()), nullptr,
       test_network_quality_tracker_.get(), task_runner_, task_runner_,
       task_runner_, base::TimeDelta());
 }

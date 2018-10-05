@@ -23,6 +23,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PrefService;
 
@@ -64,6 +65,7 @@ class DataReductionProxyService
       DataReductionProxySettings* settings,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
@@ -166,6 +168,11 @@ class DataReductionProxyService
     return url_request_context_getter_;
   }
 
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
+      const {
+    return url_loader_factory_->Clone();
+  }
+
   DataReductionProxyPingbackClient* pingback_client() const {
     return pingback_client_.get();
   }
@@ -188,6 +195,7 @@ class DataReductionProxyService
   void ReadPersistedClientConfig();
 
   net::URLRequestContextGetter* url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Tracks compression statistics to be displayed to the user.
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;

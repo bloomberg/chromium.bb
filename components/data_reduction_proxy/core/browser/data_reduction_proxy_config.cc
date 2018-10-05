@@ -51,6 +51,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -216,8 +217,7 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 void DataReductionProxyConfig::InitializeOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>&
         basic_url_request_context_getter,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_properties_manager_ = manager;
@@ -226,7 +226,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   secure_proxy_checker_.reset(
       new SecureProxyChecker(basic_url_request_context_getter));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      url_request_context_getter,
+      std::move(url_loader_factory),
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),
