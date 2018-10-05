@@ -326,18 +326,6 @@
       ]
     },
     {
-      "name": "cheza",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "clapper",
       "configs": [
         {
@@ -1576,6 +1564,21 @@
   ],
   "release_branch": false,
   "reference_board_unified_builds": [
+    {
+      "name": "cheza",
+      "reference_board_name": "cheza",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "cheza",
+          "name": "cheza",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
     {
       "name": "coral",
       "reference_board_name": "coral",
