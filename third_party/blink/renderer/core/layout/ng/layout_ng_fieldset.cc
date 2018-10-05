@@ -32,8 +32,8 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                        EDisplay::kFlowRoot);
-    new_style->SetOverflowX(StyleRef().OverflowX());
-    new_style->SetOverflowY(StyleRef().OverflowY());
+    // TODO(crbug.com/875235): When the paint code is ready for anonymous
+    // scrollable containers, inherit overflow-x and overflow-y here.
 
     new_style->SetPaddingTop(StyleRef().PaddingTop());
     new_style->SetPaddingRight(StyleRef().PaddingRight());
