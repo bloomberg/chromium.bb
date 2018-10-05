@@ -1075,7 +1075,9 @@
                 "windows",
                 "mac",
                 "chromeos",
-                "linux"
+                "linux",
+                "android",
+                "ios"
             ],
             "experiments": [
                 {
