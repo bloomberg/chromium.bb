@@ -6,149 +6,13 @@
 
 #include <utility>
 
-#include "base/observer_list.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "device/bluetooth/dbus/bluetooth_adapter_client.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace device {
-
-// Exposes high-level methods to simulate Bluetooth events e.g. a new adapter
-// was added, adapter power state changed, etc.
-//
-// As opposed to FakeBluetoothAdapterClient, the other fake implementation of
-// BluetoothAdapterClient, this class does not have any built-in behavior
-// e.g. it won't start triggering device discovery events when StartDiscovery is
-// called. It's up to its users to call the relevant Simulate*() method to
-// trigger each event.
-class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
-    : public bluez::BluetoothAdapterClient {
- public:
-  struct Properties : public bluez::BluetoothAdapterClient::Properties {
-    explicit Properties(const PropertyChangedCallback& callback)
-        : BluetoothAdapterClient::Properties(
-              nullptr, /* object_proxy */
-              bluetooth_adapter::kBluetoothAdapterInterface,
-              callback) {}
-    ~Properties() override = default;
-
-    // dbus::PropertySet override
-    void Get(dbus::PropertyBase* property,
-             dbus::PropertySet::GetCallback callback) override {
-      DVLOG(1) << "Get " << property->name();
-      NOTIMPLEMENTED();
-    }
-
-    void GetAll() override {
-      DVLOG(1) << "GetAll";
-      NOTIMPLEMENTED();
-    }
-
-    void Set(dbus::PropertyBase* property,
-             dbus::PropertySet::SetCallback callback) override {
-      DVLOG(1) << "Set " << property->name();
-      NOTIMPLEMENTED();
-    }
-  };
-
-  TestBluetoothAdapterClient() = default;
-  ~TestBluetoothAdapterClient() override = default;
-
-  // Simulates a new adapter being added to the system.
-  void SimulateAdapterAdded() {
-    static int next_adapter_index = 0;
-    dbus::ObjectPath adapter_object_path(
-        base::StringPrintf("fake/hci%d", next_adapter_index++));
-
-    DCHECK(!base::ContainsValue(adapter_object_paths_, adapter_object_path));
-    adapter_object_paths_.push_back(adapter_object_path);
-  }
-
-  // BluetoothAdapterClient:
-  void Init(dbus::Bus* bus,
-            const std::string& bluetooth_service_name) override {}
-
-  void AddObserver(Observer* observer) override {
-    observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(Observer* observer) override {
-    observers_.RemoveObserver(observer);
-  }
-
-  std::vector<dbus::ObjectPath> GetAdapters() override {
-    return std::vector<dbus::ObjectPath>(adapter_object_paths_.begin(),
-                                         adapter_object_paths_.end());
-  }
-
-  Properties* GetProperties(const dbus::ObjectPath& object_path) override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  void StartDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
-                      ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void StopDiscovery(const dbus::ObjectPath& object_path,
-                     const base::Closure& callback,
-                     ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void PauseDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
-                      ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                        const base::Closure& callback,
-                        ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void RemoveDevice(const dbus::ObjectPath& object_path,
-                    const dbus::ObjectPath& device_path,
-                    const base::Closure& callback,
-                    ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
-                          const DiscoveryFilter& discovery_filter,
-                          const base::Closure& callback,
-                          ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void CreateServiceRecord(const dbus::ObjectPath& object_path,
-                           const bluez::BluetoothServiceRecordBlueZ& record,
-                           const ServiceRecordCallback& callback,
-                           ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void RemoveServiceRecord(const dbus::ObjectPath& object_path,
-                           uint32_t handle,
-                           const base::Closure& callback,
-                           ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
- private:
-  std::vector<dbus::ObjectPath> adapter_object_paths_;
-
-  base::ObserverList<Observer>::Unchecked observers_;
-};
 
 class BluetoothSystemTest : public DeviceServiceTestBase,
                             public mojom::BluetoothSystemClient {
@@ -159,42 +23,10 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
     connector()->BindInterface(mojom::kServiceName, &system_factory_);
-
-    auto test_bluetooth_adapter_client =
-        std::make_unique<TestBluetoothAdapterClient>();
-    test_bluetooth_adapter_client_ = test_bluetooth_adapter_client.get();
-
-    std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
-        bluez::BluezDBusManager::GetSetterForTesting();
-    dbus_setter->SetAlternateBluetoothAdapterClient(
-        std::move(test_bluetooth_adapter_client));
-  }
-
-  void StateCallback(base::OnceClosure quit_closure,
-                     mojom::BluetoothSystem::State state) {
-    last_state_ = state;
-    std::move(quit_closure).Run();
   }
 
  protected:
-  mojom::BluetoothSystemPtr CreateBluetoothSystem() {
-    mojom::BluetoothSystemClientPtr client_ptr;
-    system_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
-    mojom::BluetoothSystemPtr system_ptr;
-    system_factory_->Create(mojo::MakeRequest(&system_ptr),
-                            std::move(client_ptr));
-    return system_ptr;
-  }
-
-  // Saves the last state passed to StateCallback.
-  base::Optional<mojom::BluetoothSystem::State> last_state_;
-
   mojom::BluetoothSystemFactoryPtr system_factory_;
-
-  TestBluetoothAdapterClient* test_bluetooth_adapter_client_;
-
-  mojo::Binding<mojom::BluetoothSystemClient> system_client_binding_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystemTest);
@@ -216,32 +48,6 @@ TEST_F(BluetoothSystemTest, FactoryCreate) {
   run_loop.Run();
 
   EXPECT_TRUE(system_ptr.is_bound());
-}
-
-TEST_F(BluetoothSystemTest, GetState_NoAdapter) {
-  auto system = CreateBluetoothSystem();
-
-  base::RunLoop run_loop;
-  system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
-                                  base::Unretained(this),
-                                  run_loop.QuitClosure()));
-  run_loop.Run();
-
-  EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable, last_state_.value());
-}
-
-TEST_F(BluetoothSystemTest, GetState_PoweredOffAdapter) {
-  auto system = CreateBluetoothSystem();
-
-  test_bluetooth_adapter_client_->SimulateAdapterAdded();
-
-  base::RunLoop run_loop;
-  system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
-                                  base::Unretained(this),
-                                  run_loop.QuitClosure()));
-  run_loop.Run();
-
-  EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
 }
 
 }  // namespace device
