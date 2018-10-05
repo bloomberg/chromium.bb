@@ -765,9 +765,14 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   // allow the view to clear the pending entry and typed URL if the user
   // requests (e.g., hitting Escape with focus in the address bar).
   //
+  // Do not leave the pending entry visible if it has an invalid URL, since this
+  // might be formatted in an unexpected or unsafe way.
+  // TODO(creis): Block navigations to invalid URLs in https://crbug.com/850824.
+  //
   // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
-                               delegate_->ShouldPreserveAbortedURLs();
+  bool should_preserve_entry = pending_entry->GetURL().is_valid() &&
+                               (controller_->IsUnmodifiedBlankTab() ||
+                                delegate_->ShouldPreserveAbortedURLs());
   if (pending_entry != controller_->GetVisibleEntry() ||
       !should_preserve_entry) {
     controller_->DiscardPendingEntry(true);
