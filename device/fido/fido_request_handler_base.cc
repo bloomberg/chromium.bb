@@ -176,6 +176,19 @@ void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
   bluetooth_adapter_manager_->SetAdapterPower(true /* set_power_on */);
 }
 
+void FidoRequestHandlerBase::InitiatePairingWithDevice(
+    std::string authenticator_id,
+    std::string pin_code,
+    base::OnceClosure success_callback,
+    base::OnceClosure error_callback) {
+  if (!bluetooth_adapter_manager_)
+    return;
+
+  bluetooth_adapter_manager_->InitiatePairing(
+      std::move(authenticator_id), std::move(pin_code),
+      std::move(success_callback), std::move(error_callback));
+}
+
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -273,6 +286,11 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
 
   DCHECK(notify_observer_callback_);
   notify_observer_callback_.Run();
+}
+
+bool FidoRequestHandlerBase::HasAuthenticator(
+    const std::string& authenticator_id) const {
+  return base::ContainsKey(active_authenticators_, authenticator_id);
 }
 
 void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {

@@ -54,7 +54,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback);
+      base::RepeatingClosure bluetooth_adapter_power_on_callback,
+      device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);
 
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:

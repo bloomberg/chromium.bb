@@ -88,4 +88,25 @@ void FidoBlePairingDelegate::ChangeStoredDeviceAddress(
   }
 }
 
+void FidoBlePairingDelegate::CancelPairingOnAllKnownDevices(
+    BluetoothAdapter* adapter) {
+  DCHECK(adapter);
+  auto bluetooth_devices = adapter->GetDevices();
+  for (const auto& may_be_paired_device_info : bluetooth_device_pincode_map_) {
+    const auto& authenticator_id = may_be_paired_device_info.first;
+    auto it = std::find_if(
+        bluetooth_devices.begin(), bluetooth_devices.end(),
+        [&authenticator_id](const auto* device) {
+          return FidoBleDevice::GetId(device->GetAddress()) == authenticator_id;
+        });
+    if (it == bluetooth_devices.end())
+      continue;
+
+    // TODO(hongjunchoi): Change this so that this is only invoked when we know
+    // that WebAuthN request was in middle of pairing -- not unconditionally.
+    // See: https://crbug.com/892697
+    (*it)->CancelPairing();
+  }
+}
+
 }  // namespace device
