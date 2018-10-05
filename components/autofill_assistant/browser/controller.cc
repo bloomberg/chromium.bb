@@ -104,7 +104,6 @@ Controller::Controller(
   }
 
   GetUiController()->SetUiDelegate(this);
-  GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
     GetOrCheckScripts(web_contents->GetLastCommittedURL());
   }
