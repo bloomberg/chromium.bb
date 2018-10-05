@@ -13,6 +13,7 @@
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -398,13 +399,6 @@ void* BridgedNativeWidgetHostImpl::GetNativeWindowProperty(
 
 void BridgedNativeWidgetHostImpl::SetAssociationForView(const View* view,
                                                         NSView* native_view) {
-  // TODO(ccameron): For the case of out-of-process NSWindows, it will be
-  // necessary to:
-  // - migrate |native_view| to the new process (for web contents).
-  // - use a dummy parent window if |native_view| is perforce in this process.
-  if (bridge_impl_)
-    [bridge_impl_->ns_view() addSubview:native_view];
-
   DCHECK_EQ(0u, associated_views_.count(view));
   associated_views_[view] = native_view;
   native_widget_mac_->GetWidget()->ReorderNativeViews();
@@ -639,6 +633,16 @@ bool BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
     const gfx::Rect& new_window_bounds_in_screen,
     const gfx::Rect& new_content_bounds_in_screen) {
+  // If we are accessing the BridgedNativeWidget through mojo, then
+  // |local_window_| is not the true window that was just resized. Update
+  // the frame of |local_window_| to keep it in sync for any native calls
+  // that may use it (e.g, for context menu positioning).
+  if (bridge_ptr_) {
+    [local_window_ setFrame:gfx::ScreenRectToNSRect(new_window_bounds_in_screen)
+                    display:NO
+                    animate:NO];
+  }
+
   bool window_has_moved =
       new_window_bounds_in_screen.origin() != window_bounds_in_screen_.origin();
   bool content_has_resized =

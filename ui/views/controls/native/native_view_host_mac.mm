@@ -116,6 +116,7 @@ void NativeViewHostMac::AttachNativeView() {
 
   auto* bridge_host = GetBridgedNativeWidgetHost();
   DCHECK(bridge_host);
+  [bridge_host->native_widget_mac()->GetNativeView() addSubview:native_view_];
   bridge_host->SetAssociationForView(host_, native_view_);
 
   if ([native_view_ conformsToProtocol:@protocol(ViewsHostable)]) {
