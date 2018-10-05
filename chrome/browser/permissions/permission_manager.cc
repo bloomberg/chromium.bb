@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
+#include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_read_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_write_permission_context.h"
@@ -123,6 +124,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE;
     case PermissionType::PAYMENT_HANDLER:
       return CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER;
+    case PermissionType::BACKGROUND_FETCH:
+      return CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -307,6 +310,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
       std::make_unique<ClipboardWritePermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER] =
       std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
+  permission_contexts_[CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH] =
+      std::make_unique<BackgroundFetchPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {

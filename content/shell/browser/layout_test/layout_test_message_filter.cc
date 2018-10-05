@@ -220,6 +220,8 @@ void LayoutTestMessageFilter::OnSetPermission(
   } else if (name == "accelerometer" || name == "gyroscope" ||
              name == "magnetometer" || name == "ambient-light-sensor") {
     type = PermissionType::SENSORS;
+  } else if (name == "background-fetch") {
+    type = PermissionType::BACKGROUND_FETCH;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;
