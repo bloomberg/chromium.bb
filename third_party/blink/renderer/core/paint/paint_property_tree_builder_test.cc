@@ -6379,4 +6379,15 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectOutputClipWithFixedDescendant) {
             PaintPropertiesForElement("target5")->Effect()->OutputClip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, TableColOpacity) {
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <col id="col" style="opacity: 0.5">
+    </table>
+  )HTML");
+
+  // TODO(crbug.com/892734): For now table col doesn't support effects.
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("col"));
+}
+
 }  // namespace blink
