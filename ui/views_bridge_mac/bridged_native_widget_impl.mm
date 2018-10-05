@@ -263,19 +263,10 @@ BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
 }
 
 BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
-  // Ensure that |this| cannot be reached by its id while it is being destroyed.
-  auto found = GetIdToWidgetImplMap().find(id_);
-  DCHECK(found != GetIdToWidgetImplMap().end());
-  DCHECK_EQ(found->second, this);
-  GetIdToWidgetImplMap().erase(found);
-
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
   // destructor is called.
   DCHECK(![window_ delegate]);
-
-  ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
-  RemoveOrDestroyChildren();
   DCHECK(child_windows_.empty());
   DestroyContentView();
 }
@@ -696,6 +687,7 @@ void BridgedNativeWidgetImpl::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidgetImpl::OnWindowWillClose() {
+  ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   host_->OnWindowWillClose();
 
   // Ensure BridgedNativeWidgetImpl does not have capture, otherwise
@@ -716,6 +708,14 @@ void BridgedNativeWidgetImpl::OnWindowWillClose() {
   DCHECK(!show_animation_);
 
   [window_ setDelegate:nil];
+
+  // Ensure that |this| cannot be reached by its id while it is being destroyed.
+  size_t erased = GetIdToWidgetImplMap().erase(id_);
+  DCHECK_EQ(1u, erased);
+
+  RemoveOrDestroyChildren();
+  DCHECK(child_windows_.empty());
+
   host_->OnWindowHasClosed();
   // Note: |this| and its host will be deleted here.
 }

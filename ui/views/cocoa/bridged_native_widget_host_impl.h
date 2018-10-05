@@ -6,6 +6,7 @@
 #define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -62,13 +63,17 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       uint64_t bridged_native_widget_id);
   uint64_t bridged_native_widget_id() const { return widget_id_; }
 
-  // Creates one side of the bridge. |parent| must not be NULL.
-  explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* parent);
+  // Creates one side of the bridge. |owner| must not be NULL.
+  explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* owner);
   ~BridgedNativeWidgetHostImpl() override;
 
   // The NativeWidgetMac that owns |this|.
   views::NativeWidgetMac* native_widget_mac() const {
     return native_widget_mac_;
+  }
+  BridgedNativeWidgetHostImpl* parent() const { return parent_; }
+  std::vector<BridgedNativeWidgetHostImpl*> children() const {
+    return children_;
   }
 
   // The bridge factory that was used to create the true NSWindow for this
@@ -163,6 +168,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // The restored bounds will be derived from the current NSWindow frame unless
   // fullscreen or transitioning between fullscreen states.
   gfx::Rect GetRestoredBounds() const;
+
+  // Set |parent_| and update the old and new parents' |children_|. It is valid
+  // to set |new_parent| to nullptr.
+  void SetParent(BridgedNativeWidgetHostImpl* new_parent);
 
   // Properties set and queried by views. Not actually native.
   void SetNativeWindowProperty(const char* name, void* value);
@@ -300,7 +309,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   const uint64_t widget_id_;
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
-  // The factory that was used to create |bridge_ptr_|.
+  // Parent and child widgets.
+  BridgedNativeWidgetHostImpl* parent_ = nullptr;
+  std::vector<BridgedNativeWidgetHostImpl*> children_;
+
+  // The factory that was used to create |bridge_ptr_|. This must be the same
+  // as |parent_->bridge_factory_host_|.
   BridgeFactoryHost* bridge_factory_host_ = nullptr;
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
