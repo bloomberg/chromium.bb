@@ -384,7 +384,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION);
+      syncer::SyncService::TransportState::INITIALIZING);
   EXPECT_FALSE(sync_service_.IsSyncFeatureActive());
 
   CreateConsentService(true /* client_services_on_by_default */);
