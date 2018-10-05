@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 #include "url/url_constants.h"
-
 using testing::_;
 
 namespace content {
@@ -302,7 +302,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigatePortal) {
 
 // Tests that the WebContentsDelegate will receive a request to swap the
 // WebContents when a portal is activated.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortal) {
+// Disabled due to flakiness on Android.  See https://crbug.com/892669.
+#if defined(OS_ANDROID)
+#define MAYBE_ActivatePortal DISABLED_ActivatePortal
+#else
+#define MAYBE_ActivatePortal ActivatePortal
+#endif
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortal) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
