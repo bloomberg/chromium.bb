@@ -387,12 +387,6 @@ const char
         "If enabled, shows the Google Pay logo and a shorter header message "
         "when credit card upload to Google Payments is offered on Android.";
 
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
-    "Enable updated prompt explanation when offering credit card upload";
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
-    "If enabled, changes the server save card prompt's explanation to mention "
-    "the saving of the billing address.";
-
 const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
     "Show the upload results dialog after local card migration";
 const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =

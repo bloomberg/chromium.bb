@@ -73,7 +73,6 @@ extern const base::Feature kAutofillUpstreamBlankCardholderNameField;
 extern const base::Feature kAutofillUpstreamDisallowElo;
 extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
-extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
 extern const base::Feature kAutomaticPasswordGeneration;
@@ -133,11 +132,6 @@ bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled();
 // was not detected or was conflicting during the checkout flow and the user is
 // NOT a Google Payments customer.
 bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled();
-
-// Returns whether the experiment is enbabled where upstream sends updated
-// prompt explanation which changes 'save this card' to 'save your card and
-// billing address.'
-bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled();
 
 #if defined(OS_MACOSX)
 // Returns true if whether the views autofill popup feature is enabled or the

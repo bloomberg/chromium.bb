@@ -151,11 +151,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
   }
 
-  // Add active experiments to the request payload.
-  if (features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
-        features::kAutofillUpstreamUpdatePromptExplanation.name);
-  }
+  // Add active Chrome experiments to the request payload here (currently none).
 
   // We store the detected values in the upload request, because the addresses
   // are being possibly modified in the next code block, and we want the

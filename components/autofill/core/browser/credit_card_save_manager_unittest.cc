@@ -142,16 +142,6 @@ class CreditCardSaveManagerTest : public testing::Test {
     request_context_ = nullptr;
   }
 
-  void EnableAutofillUpstreamUpdatePromptExplanationExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillUpstreamUpdatePromptExplanation);
-  }
-
-  void DisableAutofillUpstreamUpdatePromptExplanationExperiment() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kAutofillUpstreamUpdatePromptExplanation);
-  }
-
   void FormsSeen(const std::vector<FormData>& forms) {
     autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
@@ -481,9 +471,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 
   // Verify that one profile was saved, and it was included in the upload
   // details request to payments.
@@ -550,9 +538,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 
   // Verify that even though the full address profile was saved, only the
   // country was included in the upload details request to payments.
@@ -623,9 +609,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FirstAndLastName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -705,9 +689,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LastAndFirstName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
+  EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -3468,44 +3450,8 @@ INSTANTIATE_TEST_CASE_P(,  // Empty instatiation name.
                         CreditCardSaveManagerFeatureParameterizedTest,
                         ::testing::Values(false, true));
 
-TEST_F(
-    CreditCardSaveManagerTest,
-    UploadCreditCard_AddUpdatePromptExplanationFlagStateToRequestIfExperimentOn) {
-  EnableAutofillUpstreamUpdatePromptExplanationExperiment();
-  // Create, fill and submit an address form in order to establish a recent
-  // profile which can be selected for the upload request.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen(std::vector<FormData>(1, address_form));
-  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16("4444333322221111");
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  // Confirm upload happened and that the enabled UpdatePromptExplanation
-  // experiment flag state was sent in the request.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_THAT(payments_client_->active_experiments_in_request(),
-              UnorderedElementsAre(
-                  features::kAutofillUpstreamUpdatePromptExplanation.name));
-}
-
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddAnyFlagStatesToRequestIfExperimentsOff) {
-  DisableAutofillUpstreamUpdatePromptExplanationExperiment();
-
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
   FormData address_form;

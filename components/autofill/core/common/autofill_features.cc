@@ -255,10 +255,6 @@ const base::Feature kAutofillUpstreamEditableCardholderName{
     "AutofillUpstreamEditableCardholderName",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillUpstreamUpdatePromptExplanation{
-    "AutofillUpstreamUpdatePromptExplanation",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the credit card upload bubble shows the Google Pay logo and
 // a shorter "Save card?" header message on mobile.
 const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
@@ -343,10 +339,6 @@ bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled() {
 
 bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
-}
-
-bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamUpdatePromptExplanation);
 }
 
 bool IsPasswordManualFallbackEnabled() {

@@ -28699,8 +28699,6 @@ from previous Chrome versions.
   <int value="-1863962664" label="LockScreenNotifications:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
-  <int value="-1859546384"
-      label="AutofillUpstreamUpdatePromptExplanation:enabled"/>
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
   <int value="-1854432127" label="ChromeHomePullToRefreshIphAtTop:disabled"/>
@@ -28870,8 +28868,6 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
-  <int value="-1517418368"
-      label="AutofillUpstreamUpdatePromptExplanation:disabled"/>
   <int value="-1515415104" label="top-document-isolation:disabled"/>
   <int value="-1514943439" label="ash-enable-swipe-to-close-in-overview-mode"/>
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>

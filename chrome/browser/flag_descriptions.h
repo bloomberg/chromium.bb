@@ -264,10 +264,6 @@ extern const char
 extern const char
     kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingDescription[];
 
-extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
-extern const char
-    kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
-
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
 
