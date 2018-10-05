@@ -41,6 +41,11 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
+  // Remove after http://crbug.com/882538 is fixed.
+  auto manifest_url_local = manifest_url;
+  base::debug::Alias(&manifest_url_local);
+  CHECK(loader_callback_);
+
   load_timing_info_.request_start_time = base::Time::Now();
   load_timing_info_.request_start = base::TimeTicks::Now();
 
