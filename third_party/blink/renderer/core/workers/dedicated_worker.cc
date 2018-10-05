@@ -203,7 +203,7 @@ void DedicatedWorker::Start() {
 }
 
 void DedicatedWorker::terminate() {
-  DCHECK(GetExecutionContext()->IsContextThread());
+  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
   context_proxy_->TerminateGlobalScope();
 }
 
