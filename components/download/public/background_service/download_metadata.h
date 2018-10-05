@@ -61,6 +61,9 @@ struct DownloadMetaData {
   // uncompleted download.
   uint64_t current_size;
 
+  // Whether the entry is currently paused by the client.
+  bool paused;
+
   // Info about successfully completed download, or null for in-progress
   // download. Failed download will not be persisted and exposed as meta data.
   base::Optional<CompletionInfo> completion_info;

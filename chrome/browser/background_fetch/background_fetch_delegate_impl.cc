@@ -628,6 +628,22 @@ bool BackgroundFetchDelegateImpl::IsGuidOutstanding(
          outstanding_guids.end();
 }
 
+void BackgroundFetchDelegateImpl::RestartPausedDownload(
+    const std::string& download_guid) {
+  auto job_it = download_job_unique_id_map_.find(download_guid);
+
+  if (job_it == download_job_unique_id_map_.end())
+    return;
+
+  const std::string& unique_id = job_it->second;
+
+  DCHECK(job_details_map_.find(unique_id) != job_details_map_.end());
+  JobDetails& job_details = job_details_map_.find(unique_id)->second;
+  job_details.paused = true;
+
+  UpdateOfflineItemAndUpdateObservers(&job_details);
+}
+
 std::set<std::string> BackgroundFetchDelegateImpl::TakeOutstandingGuids() {
   std::set<std::string> outstanding_guids;
   for (auto& job_id_details : job_details_map_) {

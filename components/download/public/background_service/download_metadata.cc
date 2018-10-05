@@ -45,13 +45,13 @@ bool CompletionInfo::operator==(const CompletionInfo& other) const {
                                  other.response_headers.get());
 }
 
-DownloadMetaData::DownloadMetaData() : current_size(0u) {}
+DownloadMetaData::DownloadMetaData() : current_size(0u), paused(false) {}
 
 DownloadMetaData::DownloadMetaData(const DownloadMetaData& other) = default;
 
 bool DownloadMetaData::operator==(const DownloadMetaData& other) const {
   return guid == other.guid && current_size == other.current_size &&
-         completion_info == other.completion_info;
+         completion_info == other.completion_info && paused == other.paused;
 }
 
 DownloadMetaData::~DownloadMetaData() = default;

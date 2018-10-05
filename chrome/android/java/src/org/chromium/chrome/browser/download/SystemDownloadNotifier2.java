@@ -240,7 +240,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),
                         info.getFileName(), true, false, info.isOffTheRecord(),
                         info.getIsTransient(), info.getIcon(), info.getOriginalUrl(),
-                        info.getShouldPromoteOrigin(), false, false, info.getPendingState());
+                        info.getShouldPromoteOrigin(), false, true, info.getPendingState());
                 break;
             case NotificationType.SUCCEEDED:
                 final int notificationId =
