@@ -96,18 +96,13 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
   if (!IsGooglePayBrandingEnabled())
     return base::string16();
 
-  if (OfferStoreUnmaskedCards() &&
-      !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled()) {
-    return l10n_util::GetStringUTF16(
-        features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
-            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
-            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2_WITH_DEVICE);
-  } else {
-    return l10n_util::GetStringUTF16(
-        features::IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
-            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3
-            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
-  }
+  bool offer_to_save_on_device_message =
+      OfferStoreUnmaskedCards() &&
+      !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
+  return l10n_util::GetStringUTF16(
+      offer_to_save_on_device_message
+          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
+          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
 }
 
 int AutofillSaveCardInfoBarDelegateMobile::GetIconId() const {
