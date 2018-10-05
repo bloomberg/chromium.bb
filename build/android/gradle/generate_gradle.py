@@ -59,7 +59,8 @@ _DEFAULT_TARGETS = [
     '//chrome/android:chrome_sync_shell_test_apk',
     '//content/public/android:content_junit_tests',
     '//content/shell/android:content_shell_apk',
-    # Needed even with --all since it's a library.
+    # Below must be included even with --all since they are libraries.
+    '//base/android/jni_generator:jni_processor',
     '//tools/android/errorprone_plugin:errorprone_plugin_java',
 ]
 
@@ -952,10 +953,10 @@ def main():
     data = _GenerateGradleFile(
         entry, generator, build_vars, source_properties, jinja_processor)
     if data and not args.all:
-        project_entries.append((entry.ProjectName(), entry.GradleSubdir()))
-        _WriteFile(
-            os.path.join(generator.EntryOutputDir(entry), _GRADLE_BUILD_FILE),
-            data)
+      project_entries.append((entry.ProjectName(), entry.GradleSubdir()))
+      _WriteFile(
+          os.path.join(generator.EntryOutputDir(entry), _GRADLE_BUILD_FILE),
+          data)
   if args.all:
     project_entries.append((_MODULE_ALL, _MODULE_ALL))
     _GenerateModuleAll(
