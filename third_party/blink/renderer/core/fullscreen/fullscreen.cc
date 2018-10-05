@@ -205,19 +205,19 @@ void Unfullscreen(Document& document) {
 }
 
 // https://html.spec.whatwg.org/multipage/embedded-content.html#allowed-to-use
-bool AllowedToUseFullscreen(const Frame* frame,
+bool AllowedToUseFullscreen(const Document& document,
                             ReportOptions report_on_failure) {
   // To determine whether a Document object |document| is allowed to use the
   // feature indicated by attribute name |allowattribute|, run these steps:
 
   // 1. If |document| has no browsing context, then return false.
-  if (!frame)
+  if (!document.GetFrame())
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "fullscreen"
   // feature.
-  return frame->DeprecatedIsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kFullscreen, report_on_failure);
+  return document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kFullscreen,
+                                   report_on_failure);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {
@@ -269,8 +269,7 @@ bool FullscreenElementReady(const Element& element,
 
   // |element|'s node document is allowed to use the feature indicated by
   // attribute name allowfullscreen.
-  if (!AllowedToUseFullscreen(element.GetDocument().GetFrame(),
-                              report_on_failure))
+  if (!AllowedToUseFullscreen(element.GetDocument(), report_on_failure))
     return false;
 
   return true;
@@ -958,8 +957,7 @@ bool Fullscreen::FullscreenEnabled(Document& document) {
   // The fullscreenEnabled attribute's getter must return true if the context
   // object is allowed to use the feature indicated by attribute name
   // allowfullscreen and fullscreen is supported, and false otherwise.
-  return AllowedToUseFullscreen(document.GetFrame(),
-                                ReportOptions::kDoNotReport) &&
+  return AllowedToUseFullscreen(document, ReportOptions::kDoNotReport) &&
          FullscreenIsSupported(document);
 }
 
