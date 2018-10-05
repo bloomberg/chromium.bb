@@ -665,6 +665,10 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 // entire life of the process.
 const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+//
+// Enables the suggested text touch bar for autocomplete in textfields.
+const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 enum class VideoCaptureServiceConfiguration {
