@@ -243,7 +243,7 @@ const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
 int indicators_count;
 
 // The unknown content type.
-const char* kUnknownContentType = "application/octet-stream";
+const char kUnknownContentType[] = "application/octet-stream";
 
 using GdkSetAllowedBackendsFn = void (*)(const gchar*);
 // Place this function pointer in read-only memory after being resolved to

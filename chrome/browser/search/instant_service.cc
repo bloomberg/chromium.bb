@@ -52,10 +52,11 @@
 
 namespace {
 
-const char* kNtpCustomBackgroundURL = "background_url";
-const char* kNtpCustomBackgroundAttributionLine1 = "attribution_line_1";
-const char* kNtpCustomBackgroundAttributionLine2 = "attribution_line_2";
-const char* kNtpCustomBackgroundAttributionActionURL = "attribution_action_url";
+const char kNtpCustomBackgroundURL[] = "background_url";
+const char kNtpCustomBackgroundAttributionLine1[] = "attribution_line_1";
+const char kNtpCustomBackgroundAttributionLine2[] = "attribution_line_2";
+const char kNtpCustomBackgroundAttributionActionURL[] =
+    "attribution_action_url";
 
 base::DictionaryValue GetBackgroundInfoAsDict(
     const GURL& background_url,
