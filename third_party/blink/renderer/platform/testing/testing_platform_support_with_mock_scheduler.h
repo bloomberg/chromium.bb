@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/test/test_mock_time_task_runner.h"
-#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 

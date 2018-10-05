@@ -7,9 +7,9 @@
 
 #include "third_party/blink/public/platform/web_memory_pressure_level.h"
 #include "third_party/blink/public/platform/web_memory_state.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -16,18 +16,18 @@
 
 namespace blink {
 
-WebThreadCreationParams::WebThreadCreationParams(WebThreadType thread_type)
+ThreadCreationParams::ThreadCreationParams(WebThreadType thread_type)
     : thread_type(thread_type),
       name(GetNameForThreadType(thread_type)),
       frame_or_worker_scheduler(nullptr) {}
 
-WebThreadCreationParams& WebThreadCreationParams::SetThreadNameForTest(
+ThreadCreationParams& ThreadCreationParams::SetThreadNameForTest(
     const char* thread_name) {
   name = thread_name;
   return *this;
 }
 
-WebThreadCreationParams& WebThreadCreationParams::SetFrameOrWorkerScheduler(
+ThreadCreationParams& ThreadCreationParams::SetFrameOrWorkerScheduler(
     FrameOrWorkerScheduler* scheduler) {
   frame_or_worker_scheduler = scheduler;
   return *this;

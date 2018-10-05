@@ -1371,7 +1371,6 @@ jumbo_component("platform") {
     "web_task_runner.cc",
     "web_task_runner.h",
     "web_text_input_info.cc",
-    "web_thread.cc",
     "web_thread_supporting_gc.cc",
     "web_thread_supporting_gc.h",
     "web_thread_type.cc",

@@ -36,13 +36,13 @@
 #include "third_party/blink/renderer/platform/audio/reverb_accumulation_buffer.h"
 #include "third_party/blink/renderer/platform/audio/reverb_convolver_stage.h"
 #include "third_party/blink/renderer/platform/audio/reverb_input_buffer.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class AudioChannel;
-class WebThread;
 
 class PLATFORM_EXPORT ReverbConvolver {
   USING_FAST_MALLOC(ReverbConvolver);

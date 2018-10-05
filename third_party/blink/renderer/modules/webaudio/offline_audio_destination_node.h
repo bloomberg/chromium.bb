@@ -28,10 +28,10 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 

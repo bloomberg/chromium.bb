@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/main_thread_mutator_client.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 

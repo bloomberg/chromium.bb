@@ -33,7 +33,6 @@
 #include <memory>
 #include "base/location.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/platform/fonts/mac/font_family_matcher_mac.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 

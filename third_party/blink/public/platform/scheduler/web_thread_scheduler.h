@@ -26,8 +26,10 @@ class BlameContext;
 }  // namespace base
 
 namespace blink {
-class WebThread;
+class Thread;
 class WebInputEvent;
+
+using WebThread = Thread;
 }  // namespace blink
 
 namespace viz {
