@@ -68,7 +68,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorRequestDialogModel::AuthenticatorReference>(
           "authenticator" /* authenticator_id */,
           base::string16() /* authenticator_display_name */,
-          AuthenticatorTransport::kInternal);
+          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */);
       model->SetSelectedAuthenticatorForTesting(test_authenticator_.get());
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePinEntry);

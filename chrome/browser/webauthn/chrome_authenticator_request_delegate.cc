@@ -299,7 +299,7 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
 
   weak_dialog_model_->saved_authenticators().emplace_back(
       authenticator.GetId(), authenticator.GetDisplayName(),
-      authenticator.AuthenticatorTransport());
+      authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode());
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
@@ -325,6 +325,14 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
 
   weak_dialog_model_->UpdateAuthenticatorReferenceId(
       old_authenticator_id, std::move(new_authenticator_id));
+}
+
+void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorPairingModeChanged(
+    base::StringPiece authenticator_id) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(authenticator_id);
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(

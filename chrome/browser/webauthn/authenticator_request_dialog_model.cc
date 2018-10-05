@@ -73,10 +73,12 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
     base::StringPiece authenticator_id,
     base::StringPiece16 authenticator_display_name,
-    device::FidoTransportProtocol transport)
+    device::FidoTransportProtocol transport,
+    bool is_in_pairing_mode)
     : authenticator_id(authenticator_id),
       authenticator_display_name(authenticator_display_name),
-      transport(transport) {}
+      transport(transport),
+      is_in_pairing_mode(is_in_pairing_mode) {}
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
     AuthenticatorReference&& data) = default;
 AuthenticatorRequestDialogModel::AuthenticatorReference&
@@ -340,6 +342,17 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
       });
   if (it != saved_authenticators_.end())
     it->authenticator_id = std::move(new_authenticator_id);
+}
+
+void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
+    base::StringPiece authenticator_id) {
+  auto it =
+      std::find_if(saved_authenticators_.begin(), saved_authenticators_.end(),
+                   [authenticator_id](const auto& authenticator) {
+                     return authenticator.authenticator_id == authenticator_id;
+                   });
+  if (it != saved_authenticators_.end())
+    it->is_in_pairing_mode = true;
 }
 
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(

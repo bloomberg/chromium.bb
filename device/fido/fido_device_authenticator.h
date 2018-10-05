@@ -43,6 +43,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   base::string16 GetDisplayName() const override;
   const AuthenticatorSupportedOptions& Options() const override;
   FidoTransportProtocol AuthenticatorTransport() const override;
+  bool IsInPairingMode() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
   FidoDevice* GetDeviceForTesting() { return device_; }

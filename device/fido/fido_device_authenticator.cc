@@ -83,6 +83,10 @@ FidoTransportProtocol FidoDeviceAuthenticator::AuthenticatorTransport() const {
   return device_->DeviceTransport();
 }
 
+bool FidoDeviceAuthenticator::IsInPairingMode() const {
+  return device_->IsInPairingMode();
+}
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);
