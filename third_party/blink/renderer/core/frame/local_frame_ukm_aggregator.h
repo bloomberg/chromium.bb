@@ -16,7 +16,7 @@ class UkmRecorder;
 namespace blink {
 class CustomCountHistogram;
 
-// This class aggregaties and records time based UKM and UMA metrics
+// This class aggregates and records time based UKM and UMA metrics
 // for LocalFrameView. The simplest way to use it is via the
 // SCOPED_UMA_AND_UKM_HIERARCHICAL_TIMER macro in LocalFrameView combined
 // with LocalFrameView::RecordEndOfFrameMetrics.
@@ -42,12 +42,14 @@ class CustomCountHistogram;
 //
 // When the primary timed execution completes, this aggregator stores the
 // primary time and computes metrics that depend on it. The results are
-// aggregated.  UMA metrics are updated at this time. A UKM event is
+// aggregated. A UKM event is
 // generated in one of two situations:
 //  - If a sample is added that lies in the next event frequency interval (this
 //    will generate an event for the previous interval)
 //  - If the aggregator is destroyed (this will generate an event for any
 //    remaining samples in the aggregator)
+// UMA ratio-related metrics are only reported when an event is generated to
+// reduce the overhead of metric gathering.
 //
 // Note that no event is generated if there were no primary samples in an
 // interval.

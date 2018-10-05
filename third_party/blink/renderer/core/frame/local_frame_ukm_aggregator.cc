@@ -166,15 +166,7 @@ void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
   primary_metric_.total_duration += duration;
   ++primary_metric_.sample_count;
 
-  // Compute all the dependent metrics, after finding which bucket we're in
-  // for UMA data.
-  size_t bucket_index = bucket_thresholds_.size();
-  for (size_t i = 0; i < bucket_index; ++i) {
-    if (duration < bucket_thresholds_[i]) {
-      bucket_index = i;
-    }
-  }
-
+  // Compute all the dependent metrics
   for (auto& record : ratio_metric_records_) {
     double ratio =
         record.interval_duration.InMicrosecondsF() / duration.InMicrosecondsF();
@@ -182,7 +174,6 @@ void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
       record.worst_case_ratio = ratio;
     record.total_ratio += ratio;
     ++record.sample_count;
-    record.uma_counters_per_bucket[bucket_index]->Count(floor(ratio * 100.0));
     record.interval_duration = TimeDelta();
   }
 
@@ -203,9 +194,11 @@ void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
   ukm::UkmEntryBuilder builder(source_id_, event_name_.Utf8().data());
   builder.SetMetric(primary_metric_.worst_case_metric_name.Utf8().data(),
                     primary_metric_.worst_case_duration.InMicroseconds());
+  double average_frame_duration =
+      primary_metric_.total_duration.InMicroseconds() /
+      static_cast<int64_t>(primary_metric_.sample_count);
   builder.SetMetric(primary_metric_.average_metric_name.Utf8().data(),
-                    primary_metric_.total_duration.InMicroseconds() /
-                        static_cast<int64_t>(primary_metric_.sample_count));
+                    average_frame_duration);
   for (auto& record : absolute_metric_records_) {
     if (record.sample_count == 0)
       continue;
@@ -215,15 +208,29 @@ void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
                       record.total_duration.InMicroseconds() /
                           static_cast<int64_t>(record.sample_count));
   }
+
   for (auto& record : ratio_metric_records_) {
     if (record.sample_count == 0)
       continue;
     builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
                       record.worst_case_ratio);
-    builder.SetMetric(
-        record.average_metric_name.Utf8().data(),
-        record.total_ratio / static_cast<float>(record.sample_count));
+    double average_ratio =
+        record.total_ratio / static_cast<float>(record.sample_count);
+    builder.SetMetric(record.average_metric_name.Utf8().data(), average_ratio);
     record.reset();
+
+    // Send ratio UMA data only when flushed to reduce overhead from metrics.
+    // Find which bucket we're in for UMA data. We need to do this separately
+    // for each metric because not every metric records on every frame.
+    size_t bucket_index = bucket_thresholds_.size();
+    for (size_t i = 0; i < bucket_index; ++i) {
+      if (average_frame_duration < bucket_thresholds_[i].InMicroseconds()) {
+        bucket_index = i;
+      }
+    }
+
+    record.uma_counters_per_bucket[bucket_index]->Count(
+        floor(average_ratio * 100.0));
   }
   builder.Record(recorder_);
   has_data_ = false;
