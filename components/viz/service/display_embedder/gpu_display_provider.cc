@@ -154,6 +154,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       context_result = context_provider->BindToCurrentThread();
 
       if (IsFatalOrSurfaceFailure(context_result)) {
+#if defined(OS_ANDROID)
+        display_client->OnFatalOrSurfaceContextCreationFailure(context_result);
+#endif
         gpu_service_impl_->DisableGpuCompositing();
         return nullptr;
       }
