@@ -619,6 +619,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("showGridViewDrive"),
                       TestCase("showGridViewDrive").EnableDriveFs()));
 
+// TODO(crbug.com/891119): Flaky on Chrome OS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Providers DISABLED_Providers
+#else
+#define MAYBE_Providers Providers
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers, /* providers.js */
     FilesAppBrowserTest,
