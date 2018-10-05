@@ -328,7 +328,7 @@ source_set("common") {
     "//sandbox:sandbox_buildflags",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/service_manager",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
