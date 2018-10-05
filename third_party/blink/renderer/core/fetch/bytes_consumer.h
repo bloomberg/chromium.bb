@@ -129,6 +129,16 @@ class CORE_EXPORT BytesConsumer
   // from an EncodedFormData-convertible value.
   virtual scoped_refptr<EncodedFormData> DrainAsFormData() { return nullptr; }
 
+  // Drains the data as a ScopedDataPipeConsumerHandle.
+  // When this function returns a valid handle, the returned pipe handle
+  // contains bytes that would be read through the BeginRead and
+  // EndRead functions without calling this function. In such a case, this
+  // object becomes closed.
+  // When this function returns an invalid handle, this function does nothing.
+  virtual mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe() {
+    return mojo::ScopedDataPipeConsumerHandle();
+  }
+
   // Sets a client. This can be called only when no client is set. When
   // this object is already closed or errored, this function does nothing.
   virtual void SetClient(Client*) = 0;

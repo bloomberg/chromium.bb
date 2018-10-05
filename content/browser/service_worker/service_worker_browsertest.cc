@@ -2262,6 +2262,43 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, GetResponseText) {
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
+                       GetLargeResponseText) {
+  const char kPageUrl[] = "/service_worker/navigation_preload.html";
+  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
+  std::string title = "<title>PASS</title>";
+  // A large body that exceeds the default size of a mojo::DataPipe.
+  constexpr size_t kBodySize = 128 * 1024;
+  // Randomly generate the body data
+  int index = 0;
+  std::string body;
+  for (size_t i = 0; i < kBodySize; ++i) {
+    body += static_cast<char>(index + 'a');
+    index = (37 * index + 11) % 26;
+  }
+  const std::string kScript =
+      kEnableNavigationPreloadScript +
+      "self.addEventListener('fetch', event => {\n"
+      "    event.respondWith(\n"
+      "        event.preloadResponse\n"
+      "          .then(response => response.text())\n"
+      "          .then(text =>\n"
+      "                  new Response(\n"
+      "                      text,\n"
+      "                      {headers: [['content-type', 'text/html']]})));\n"
+      "  });";
+  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
+  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
+  RegisterStaticFile(kPageUrl, title + body, "text/html");
+  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
+
+  EXPECT_EQ(body, LoadNavigationPreloadTestPage(page_url, worker_url, "PASS"));
+
+  // The page request must be sent only once, since the worker responded with
+  // "Hello world".
+  EXPECT_EQ(1, GetRequestCount(kPageUrl));
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";

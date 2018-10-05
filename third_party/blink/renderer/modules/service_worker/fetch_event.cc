@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
+#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -107,7 +107,7 @@ FetchEvent::~FetchEvent() = default;
 void FetchEvent::OnNavigationPreloadResponse(
     ScriptState* script_state,
     std::unique_ptr<WebURLResponse> response,
-    std::unique_ptr<WebDataConsumerHandle> data_consume_handle) {
+    mojo::ScopedDataPipeConsumerHandle data_pipe) {
   if (!script_state->ContextIsValid())
     return;
   DCHECK(preload_response_property_);
@@ -116,12 +116,11 @@ void FetchEvent::OnNavigationPreloadResponse(
   preload_response_ = std::move(response);
   // TODO(ricea): Verify that this response can't be aborted from JS.
   FetchResponseData* response_data =
-      data_consume_handle
+      data_pipe.is_valid()
           ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
                 script_state,
-                new BytesConsumerForDataConsumerHandle(
-                    ExecutionContext::From(script_state),
-                    std::move(data_consume_handle)),
+                new DataPipeBytesConsumer(ExecutionContext::From(script_state),
+                                          std::move(data_pipe)),
                 new AbortSignal(ExecutionContext::From(script_state))))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);

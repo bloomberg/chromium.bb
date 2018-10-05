@@ -45,7 +45,6 @@
 namespace blink {
 
 struct WebCanMakePaymentEventData;
-class WebDataConsumerHandle;
 class WebSecurityOrigin;
 class WebServiceWorkerRequest;
 class WebString;
@@ -133,7 +132,7 @@ class WebServiceWorkerContextProxy {
   virtual void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,
-      std::unique_ptr<WebDataConsumerHandle>) = 0;
+      mojo::ScopedDataPipeConsumerHandle) = 0;
   virtual void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) = 0;

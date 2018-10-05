@@ -485,11 +485,9 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsDataPipe);
 
  public:
-  FetchDataLoaderAsDataPipe(
-      mojo::ScopedDataPipeProducerHandle out_data_pipe,
+  explicit FetchDataLoaderAsDataPipe(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : out_data_pipe_(std::move(out_data_pipe)),
-        data_pipe_watcher_(FROM_HERE,
+      : data_pipe_watcher_(FROM_HERE,
                            mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                            std::move(task_runner)) {}
   ~FetchDataLoaderAsDataPipe() override {}
@@ -498,14 +496,57 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
              FetchDataLoader::Client* client) override {
     DCHECK(!client_);
     DCHECK(!consumer_);
-    data_pipe_watcher_.Watch(
-        out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnWritable,
-                           WrapWeakPersistent(this)));
-    data_pipe_watcher_.ArmOrNotify();
+
     client_ = client;
     consumer_ = consumer;
     consumer_->SetClient(this);
+
+    // First, try to drain the underlying mojo::DataPipe from the consumer
+    // directly.  If this succeeds, all we need to do here is watch for
+    // the pipe to be closed to signal completion.
+    mojo::ScopedDataPipeConsumerHandle pipe_consumer =
+        consumer->DrainAsDataPipe();
+    if (pipe_consumer.is_valid()) {
+      data_pipe_watcher_.Watch(
+          pipe_consumer.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+          WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnClosed,
+                             WrapWeakPersistent(this)));
+    } else {
+      // If we cannot drain the pipe from the consumer then we must copy
+      // data from the consumer into a new pipe.
+      MojoCreateDataPipeOptions options;
+      options.struct_size = sizeof(MojoCreateDataPipeOptions);
+      options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+      options.element_num_bytes = 1;
+      // Use the default pipe capacity since we don't know the total
+      // data size to target.
+      options.capacity_num_bytes = 0;
+
+      MojoResult rv =
+          mojo::CreateDataPipe(&options, &out_data_pipe_, &pipe_consumer);
+      if (rv != MOJO_RESULT_OK) {
+        StopInternal();
+        client_->DidFetchDataLoadFailed();
+        return;
+      }
+      DCHECK(out_data_pipe_.is_valid());
+
+      data_pipe_watcher_.Watch(
+          out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+          WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnWritable,
+                             WrapWeakPersistent(this)));
+    }
+
+    // Give the resulting pipe consumer handle to the client.
+    DCHECK(pipe_consumer.is_valid());
+    client_->DidFetchDataStartedDataPipe(std::move(pipe_consumer));
+
+    data_pipe_watcher_.ArmOrNotify();
+  }
+
+  void OnClosed(MojoResult) {
+    StopInternal();
+    client_->DidFetchDataLoadedDataPipe();
   }
 
   void OnWritable(MojoResult) { OnStateChange(); }
@@ -608,10 +649,8 @@ FetchDataLoader* FetchDataLoader::CreateLoaderAsString() {
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsDataPipe(
-    mojo::ScopedDataPipeProducerHandle out_data_pipe,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new FetchDataLoaderAsDataPipe(std::move(out_data_pipe),
-                                       std::move(task_runner));
+  return new FetchDataLoaderAsDataPipe(std::move(task_runner));
 }
 
 }  // namespace blink
