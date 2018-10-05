@@ -70,10 +70,12 @@ static void fdct4x4_sse4_1(__m128i *in, __m128i *out, int bit,
   __m128i u0, u1, u2, u3;
   __m128i v0, v1, v2, v3;
 
-  s0 = _mm_add_epi32(in[0 * num_col], in[3 * num_col]);
-  s1 = _mm_add_epi32(in[1 * num_col], in[2 * num_col]);
-  s2 = _mm_sub_epi32(in[1 * num_col], in[2 * num_col]);
-  s3 = _mm_sub_epi32(in[0 * num_col], in[3 * num_col]);
+  int endidx = 3 * num_col;
+  s0 = _mm_add_epi32(in[0], in[endidx]);
+  s3 = _mm_sub_epi32(in[0], in[endidx]);
+  endidx -= num_col;
+  s1 = _mm_add_epi32(in[num_col], in[endidx]);
+  s2 = _mm_sub_epi32(in[num_col], in[endidx]);
 
   // btf_32_sse4_1_type0(cospi32, cospi32, s[01], u[02], bit);
   u0 = _mm_mullo_epi32(s0, cospi32);
@@ -137,15 +139,19 @@ static void fadst4x4_sse4_1(__m128i *in, __m128i *out, int bit,
   __m128i u0, u1, u2, u3;
   __m128i v0, v1, v2, v3;
 
-  s0 = _mm_mullo_epi32(in[0 * num_col], sinpi1);
-  s1 = _mm_mullo_epi32(in[0 * num_col], sinpi4);
-  s2 = _mm_mullo_epi32(in[1 * num_col], sinpi2);
-  s3 = _mm_mullo_epi32(in[1 * num_col], sinpi1);
-  s4 = _mm_mullo_epi32(in[2 * num_col], sinpi3);
-  s5 = _mm_mullo_epi32(in[3 * num_col], sinpi4);
-  s6 = _mm_mullo_epi32(in[3 * num_col], sinpi2);
-  t = _mm_add_epi32(in[0 * num_col], in[1 * num_col]);
-  s7 = _mm_sub_epi32(t, in[3 * num_col]);
+  int idx = 0 * num_col;
+  s0 = _mm_mullo_epi32(in[idx], sinpi1);
+  s1 = _mm_mullo_epi32(in[idx], sinpi4);
+  t = _mm_add_epi32(in[idx], in[idx + num_col]);
+  idx += num_col;
+  s2 = _mm_mullo_epi32(in[idx], sinpi2);
+  s3 = _mm_mullo_epi32(in[idx], sinpi1);
+  idx += num_col;
+  s4 = _mm_mullo_epi32(in[idx], sinpi3);
+  idx += num_col;
+  s5 = _mm_mullo_epi32(in[idx], sinpi4);
+  s6 = _mm_mullo_epi32(in[idx], sinpi2);
+  s7 = _mm_sub_epi32(t, in[idx]);
 
   t = _mm_add_epi32(s0, s2);
   x0 = _mm_add_epi32(t, s5);
