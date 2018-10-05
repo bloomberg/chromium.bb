@@ -282,6 +282,14 @@ void OmniboxEditModel::SetUserText(const base::string16& text) {
   has_temporary_text_ = false;
 }
 
+void OmniboxEditModel::SetUserTextToURLForEditing() {
+  SetUserText(url_for_editing_);
+  view_->SetWindowTextAndCaretPos(url_for_editing_, 0, false, false);
+
+  // Select all in reverse to ensure the beginning of the URL is shown.
+  view_->SelectAll(true /* reversed */);
+}
+
 void OmniboxEditModel::OnChanged() {
   // Don't call CurrentMatch() when there's no editing, as in this case we'll
   // never actually use it.  This avoids running the autocomplete providers (and

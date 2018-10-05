@@ -264,8 +264,13 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_TRUE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
   EXPECT_FALSE(search_terms.empty());
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), search_terms);
-
   EXPECT_FALSE(model()->CurrentTextIsURL());
+
+  // Verify we can exit Query in Omnibox mode properly.
+  model()->SetUserTextToURLForEditing();
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
