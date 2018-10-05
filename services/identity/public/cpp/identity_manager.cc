@@ -69,7 +69,7 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
 }
 
 bool IdentityManager::HasPrimaryAccount() const {
-  return !GetPrimaryAccountInfo().account_id.empty();
+  return signin_manager_->IsAuthenticated();
 }
 
 #if !defined(OS_CHROMEOS)
