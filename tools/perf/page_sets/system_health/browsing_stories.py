@@ -247,6 +247,16 @@ class RedditDesktopStory(_ArticleBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class RedditDesktopStory2018(_ArticleBrowsingStory):
+  """The top website in http://www.alexa.com/topsites/category/News"""
+  NAME = 'browse:news:reddit:2018'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = 'article'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+
 class RedditMobileStory(_ArticleBrowsingStory):
   """The top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:reddit'
