@@ -2147,6 +2147,25 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="54" label="Sub mute"/>
 </enum>
 
+<enum name="AudioFocusAbandonSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="API"/>
+  <int value="2" label="Connection Error"/>
+</enum>
+
+<enum name="AudioFocusRequestSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Initial request"/>
+  <int value="2" label="Update existing request"/>
+</enum>
+
+<enum name="AudioFocusType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Gain"/>
+  <int value="2" label="Gain transient may duck"/>
+  <int value="3" label="Gain transient"/>
+</enum>
+
 <enum name="AudioFramesPerBuffer">
   <obsolete>
     Removed from code Sep 2014.

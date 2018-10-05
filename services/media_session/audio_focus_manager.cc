@@ -11,6 +11,7 @@
 #include "base/containers/adapters.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
@@ -38,6 +39,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
            const std::string& source_name)
       : id_(id),
         source_name_(source_name),
+        metrics_helper_(source_name),
         session_(std::move(session)),
         session_info_(std::move(session_info)),
         audio_focus_type_(audio_focus_type),
@@ -50,6 +52,10 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     session_.set_connection_error_handler(
         base::BindOnce(&AudioFocusManager::StackRow::OnConnectionError,
                        base::Unretained(this)));
+
+    metrics_helper_.OnRequestAudioFocus(
+        AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kInitial,
+        audio_focus_type);
   }
 
   ~StackRow() override = default;
@@ -73,9 +79,18 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
     owner_->RequestAudioFocusInternal(std::move(row), type,
                                       std::move(callback));
+
+    metrics_helper_.OnRequestAudioFocus(
+        AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kUpdate,
+        audio_focus_type_);
   }
 
-  void AbandonAudioFocus() override { owner_->AbandonAudioFocusInternal(id_); }
+  void AbandonAudioFocus() override {
+    metrics_helper_.OnAbandonAudioFocus(
+        AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::kAPI);
+
+    owner_->AbandonAudioFocusInternal(id_);
+  }
 
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) override {
     session_info_ = std::move(info);
@@ -110,6 +125,17 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
  private:
   void OnConnectionError() {
+    // Since we have multiple pathways that can call |OnConnectionError| we
+    // should use the |encountered_error_| bit to make sure we abandon focus
+    // just the first time.
+    if (encountered_error_)
+      return;
+    encountered_error_ = true;
+
+    metrics_helper_.OnAbandonAudioFocus(
+        AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::
+            kConnectionError);
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AudioFocusManager::AbandonAudioFocusInternal,
                                   base::Unretained(owner_), id_));
@@ -117,6 +143,9 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   const RequestId id_;
   const std::string source_name_;
+
+  AudioFocusManagerMetricsHelper metrics_helper_;
+  bool encountered_error_ = false;
 
   mojom::MediaSessionPtr session_;
   mojom::MediaSessionInfoPtr session_info_;
