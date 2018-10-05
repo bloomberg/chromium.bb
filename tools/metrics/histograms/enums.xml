@@ -20306,6 +20306,8 @@ Called by update_net_error_codes.py.-->
   <int value="2554" label="BackgroundFetchRegistrationMatchAll"/>
   <int value="2555" label="V8AtomicsNotify"/>
   <int value="2556" label="V8AtomicsWake"/>
+  <int value="2557" label="FormDisabledAttributePresent"/>
+  <int value="2558" label="FormDisabledAttributePresentAndSubmit"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
