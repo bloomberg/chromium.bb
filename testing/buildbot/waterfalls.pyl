@@ -3450,6 +3450,8 @@
           ],
         },
       },
+      # TODO(jchinlee): This builder is in chromium.win on LUCI, see
+      # crbug.com/790343.
       'WebKit Win10': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3656,6 +3658,11 @@
   {
     'name': 'chromium.win',
     'machines': {
+      'WebKit Win10': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'Win 7 Tests x64 (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
