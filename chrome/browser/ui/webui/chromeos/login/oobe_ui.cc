@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
@@ -90,11 +92,14 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -453,8 +458,29 @@ void OobeUI::ConfigureOobeDisplay() {
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 
+service_manager::Connector* OobeUI::GetLoggedInUserMojoConnector() {
+  // This function should only be called after the user has logged in.
+  DCHECK(
+      user_manager::UserManager::Get()->IsUserLoggedIn() &&
+      user_manager::UserManager::Get()->GetActiveUser()->is_profile_created());
+  return content::BrowserContext::GetConnectorFor(
+      ProfileManager::GetActiveUserProfile());
+}
+
+void OobeUI::BindMultiDeviceSetup(
+    multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+  GetLoggedInUserMojoConnector()->BindInterface(
+      multidevice_setup::mojom::kServiceName, std::move(request));
+}
+
+void OobeUI::BindPrivilegedHostDeviceSetter(
+    multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request) {
+  GetLoggedInUserMojoConnector()->BindInterface(
+      multidevice_setup::mojom::kServiceName, std::move(request));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
-    : WebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   display_type_ = GetDisplayType(url);
 
   js_calls_container = std::make_unique<JSCallsContainer>();
@@ -479,10 +505,14 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       CreateOobeUIDataSource(localized_strings, display_type_);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+
+  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindMultiDeviceSetup,
+                                           base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(
+      &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
 }
 
-OobeUI::~OobeUI() {
-}
+OobeUI::~OobeUI() {}
 
 CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;

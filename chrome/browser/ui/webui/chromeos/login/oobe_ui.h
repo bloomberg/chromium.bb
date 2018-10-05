@@ -18,11 +18,16 @@
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
-#include "content/public/browser/web_ui_controller.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace chromeos {
 class AppDownloadingScreenView;
@@ -76,7 +81,7 @@ class WrongHWIDScreenView;
 // - welcome screen (setup language/keyboard/network).
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
-class OobeUI : public content::WebUIController,
+class OobeUI : public ui::MojoWebUIController,
                public ShutdownPolicyHandler::Delegate {
  public:
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
@@ -227,6 +232,13 @@ class OobeUI : public content::WebUIController,
   // Configures all the relevant screen shandlers and resources for OOBE/Login
   // display type.
   void ConfigureOobeDisplay();
+
+  // Adds Mojo bindings for this WebUIController.
+  service_manager::Connector* GetLoggedInUserMojoConnector();
+  void BindMultiDeviceSetup(
+      multidevice_setup::mojom::MultiDeviceSetupRequest request);
+  void BindPrivilegedHostDeviceSetter(
+      multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request);
 
   // Type of UI.
   std::string display_type_;
