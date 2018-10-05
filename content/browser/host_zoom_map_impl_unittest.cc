@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -18,11 +18,12 @@ namespace content {
 
 class HostZoomMapTest : public testing::Test {
  public:
-  HostZoomMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
+  HostZoomMapTest()
+      : ui_thread_(BrowserThread::UI,
+                   task_environment_.GetMainThreadTaskRunner()) {}
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestBrowserThread ui_thread_;
 };
 

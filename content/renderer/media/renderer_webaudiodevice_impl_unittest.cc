@@ -5,8 +5,8 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/base/audio_capturer_source.h"
@@ -68,7 +68,8 @@ class RendererWebAudioDeviceImplTest
   void SetupDevice(blink::WebAudioLatencyHint latencyHint) {
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
         media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0));
-    webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
+    webaudio_device_->SetMediaTaskRunnerForTesting(
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   void SetupDevice(media::ChannelLayout layout, int channels) {
@@ -77,7 +78,8 @@ class RendererWebAudioDeviceImplTest
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
         this, 0));
-    webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
+    webaudio_device_->SetMediaTaskRunnerForTesting(
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   MOCK_METHOD2(CreateAudioCapturerSource,
@@ -114,7 +116,7 @@ class RendererWebAudioDeviceImplTest
   void TearDown() override { webaudio_device_.reset(); }
 
   std::unique_ptr<RendererWebAudioDeviceImpl> webaudio_device_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 
 TEST_F(RendererWebAudioDeviceImplTest, ChannelLayout) {
