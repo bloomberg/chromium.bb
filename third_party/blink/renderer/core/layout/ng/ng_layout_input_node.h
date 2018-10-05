@@ -56,8 +56,8 @@ class CORE_EXPORT NGLayoutInputNode {
 
   NGLayoutInputNode(std::nullptr_t) : box_(nullptr), type_(kBlock) {}
 
-  bool IsInline() const;
-  bool IsBlock() const;
+  bool IsInline() const { return type_ == kInline; }
+  bool IsBlock() const { return type_ == kBlock; }
 
   bool IsColumnSpanAll() const;
   bool IsFloating() const;
