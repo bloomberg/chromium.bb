@@ -684,10 +684,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  // Update the text to the full unelided URL. The caret is positioned at 0, as
-  // otherwise we will spuriously scroll the text to the end of the new string.
-  model()->SetUserText(full_url);
-  SetWindowTextAndCaretPos(full_url, 0, false, false);
+  model()->SetUserTextToURLForEditing();
   SelectRange(gfx::Range(start, end));
   return true;
 }

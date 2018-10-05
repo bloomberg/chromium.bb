@@ -170,8 +170,13 @@ class OmniboxEditModel {
   // Returns the permanent display text for the current page and Omnibox state.
   base::string16 GetPermanentDisplayText() const;
 
-  // Sets the user_text_ to |text|.  Only the View should call this.
+  // Sets the user_text_ to |text|.
   void SetUserText(const base::string16& text);
+
+  // Sets the user text to be url_for_editing_. This also selects all and
+  // enters user-input-in-progress mode. This method is used to exit both
+  // Steady State Elisions and Query in Omnibox mode.
+  void SetUserTextToURLForEditing();
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.
