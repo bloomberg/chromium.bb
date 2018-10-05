@@ -76,9 +76,8 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   void Dispose();
 
   // WebRTCDTMFSenderHandlerClient
-  void DidPlayTone(const WebString& tone,
-                   const WebString& tone_buffer) override;
   void PlayoutTask();
+  void DidPlayTone(const WebString&) override;
 
   std::unique_ptr<WebRTCDTMFSenderHandler> handler_;
 
