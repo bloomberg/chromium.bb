@@ -169,7 +169,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
 
     stub_install_attributes_.SetCloudManaged("google.com", "device_id");
 
-    settings_helper_.ReplaceProvider(chromeos::kDeviceAttestationEnabled);
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     settings_helper_.SetBoolean(chromeos::kDeviceAttestationEnabled, true);
   }
 

@@ -370,7 +370,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingDeviceStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
 
-    settings_helper_.ReplaceProvider(chromeos::kReportDeviceActivityTimes);
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     owner_settings_service_ =
         settings_helper_.CreateOwnerSettingsService(nullptr);
     owner_settings_service_->set_ignore_profile_creation_notification(true);
@@ -416,7 +416,9 @@ class DeviceStatusCollectorTest : public testing::Test {
                                 false);
   }
 
-  void TearDown() override { settings_helper_.RestoreProvider(); }
+  void TearDown() override {
+    settings_helper_.RestoreRealDeviceSettingsProvider();
+  }
 
  protected:
   // States tracked to calculate a child's active time.

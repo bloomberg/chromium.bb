@@ -131,7 +131,7 @@ class HeartbeatSchedulerTest : public testing::Test {
                    task_runner_) {}
 
   void SetUp() override {
-    settings_helper_.ReplaceProvider(chromeos::kHeartbeatEnabled);
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
   }
 
   void TearDown() override { content::RunAllTasksUntilIdle(); }
