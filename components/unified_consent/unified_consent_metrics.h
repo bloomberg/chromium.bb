@@ -51,8 +51,10 @@ enum class ConsentBumpSuppressReason {
   // The user was eligible for seeing the consent bump, but turned an
   // on-by-default privacy setting off.
   kUserTurnedPrivacySettingOff,
+  // The user has a custom passphrase tied to their sync account.
+  kCustomPassphrase,
 
-  kMaxValue = kUserTurnedPrivacySettingOff
+  kMaxValue = kCustomPassphrase
 };
 
 // Google services that can be toggled in user settings.

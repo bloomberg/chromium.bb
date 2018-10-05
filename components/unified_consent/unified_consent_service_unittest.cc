@@ -781,4 +781,35 @@ TEST_F(UnifiedConsentServiceTest,
       metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff, 1);
 }
 
+TEST_F(UnifiedConsentServiceTest, ConsentBump_SuppressedWithCustomPassphrase) {
+  base::HistogramTester histogram_tester;
+
+  // Setup sync account with custom passphrase, such that it would be eligible
+  // for the consent bump without custom passphrase.
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.SetIsUsingPassphrase(true);
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::INITIALIZING);
+  EXPECT_FALSE(sync_service_.IsEngineInitialized());
+
+  // Before sync is initialized, the user is eligible for seeing the consent
+  // bump.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+
+  // When sync is initialized, it fires the observer in the consent service.
+  // This will suppress the consent bump.
+  sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  EXPECT_TRUE(sync_service_.IsEngineInitialized());
+  sync_service_.FireStateChanged();
+  EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.ConsentBump.SuppressReason",
+      metrics::ConsentBumpSuppressReason::kCustomPassphrase, 1);
+}
+
 }  // namespace unified_consent

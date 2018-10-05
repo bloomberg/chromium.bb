@@ -228,6 +228,7 @@ void UnifiedConsentService::RecordConsentBumpSuppressReason(
     case metrics::ConsentBumpSuppressReason::kUserSignedOut:
     case metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff:
     case metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff:
+    case metrics::ConsentBumpSuppressReason::kCustomPassphrase:
       pref_service_->SetBoolean(prefs::kShouldShowUnifiedConsentBump, false);
       break;
     case metrics::ConsentBumpSuppressReason::kSyncPaused:
@@ -294,11 +295,18 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
   if (GetMigrationState() == MigrationState::kInProgressWaitForSyncInit)
     UpdateSettingsForMigration();
 
-  if (sync_service_->IsUsingSecondaryPassphrase() && IsUnifiedConsentGiven()) {
-    // Force off unified consent given when the user sets a custom passphrase.
-    SetUnifiedConsentGiven(false);
-    RecordUnifiedConsentRevoked(
-        metrics::UnifiedConsentRevokeReason::kCustomPassphrase);
+  if (sync_service_->IsUsingSecondaryPassphrase()) {
+    if (ShouldShowConsentBump()) {
+      // Do not show the consent bump when the user has a custom passphrase.
+      RecordConsentBumpSuppressReason(
+          metrics::ConsentBumpSuppressReason::kCustomPassphrase);
+    }
+    if (IsUnifiedConsentGiven()) {
+      // Force off unified consent given when the user sets a custom passphrase.
+      SetUnifiedConsentGiven(false);
+      RecordUnifiedConsentRevoked(
+          metrics::UnifiedConsentRevokeReason::kCustomPassphrase);
+    }
   }
 
   syncer::SyncPrefs sync_prefs(pref_service_);
