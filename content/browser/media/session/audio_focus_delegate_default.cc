@@ -18,6 +18,8 @@ using media_session::mojom::AudioFocusType;
 
 namespace {
 
+const char kAudioFocusSourceName[] = "web";
+
 // AudioFocusDelegateDefault is the default implementation of
 // AudioFocusDelegate which only handles audio focus between WebContents.
 class AudioFocusDelegateDefault : public AudioFocusDelegate {
@@ -152,6 +154,8 @@ void AudioFocusDelegateDefault::EnsureServiceConnection() {
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&audio_focus_ptr_));
+
+  audio_focus_ptr_->SetSourceName(kAudioFocusSourceName);
 }
 
 // static
