@@ -944,7 +944,7 @@ if (enable_java_templates) {
       # http://crbug.com/725224. Fix for bots running out of memory.
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
-      _output_jar_path = invoker.output_jar_path
+      _output_path = invoker.output_path
       _proguard_jar_path = _default_proguard_jar_path
       if (defined(invoker.proguard_jar_path)) {
         _proguard_jar_path = invoker.proguard_jar_path
@@ -957,10 +957,14 @@ if (enable_java_templates) {
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }
+      _mapping_path = "$_output_path.mapping"
+      if (defined(invoker.proguard_mapping_path)) {
+        _mapping_path = invoker.proguard_mapping_path
+      }
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
-        _output_jar_path,
-        "$_output_jar_path.mapping",
+        _output_path,
+        _mapping_path,
       ]
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
       args = [
@@ -969,7 +973,9 @@ if (enable_java_templates) {
         "--proguard-path",
         rebase_path(_proguard_jar_path, root_build_dir),
         "--output-path",
-        rebase_path(_output_jar_path, root_build_dir),
+        rebase_path(_output_path, root_build_dir),
+        "--mapping-output",
+        rebase_path(_mapping_path, root_build_dir),
         "--classpath",
         "@FileArg($_rebased_build_config:deps_info:proguard_classpath_jars)",
         "--classpath",
@@ -1058,72 +1064,198 @@ if (enable_java_templates) {
   }
 
   template("dex") {
-    _enable_multidex =
-        defined(invoker.enable_multidex) && invoker.enable_multidex
+    assert(defined(invoker.output))
 
-    if (_enable_multidex) {
-      _main_dex_list_path = invoker.output + ".main_dex_list"
-      _main_dex_list_target_name = "${target_name}__main_dex_list"
-      action_with_pydeps(_main_dex_list_target_name) {
+    _proguard_enabled =
+        defined(invoker.proguard_enabled) && invoker.proguard_enabled
+    _proguarding_with_r8 = _proguard_enabled && experimental_r8_path != ""
+
+    assert(!(defined(invoker.input_jars) && _proguard_enabled),
+           "input_jars can't be specified when proguarding a dex.")
+
+    if (!_proguarding_with_r8) {
+      _dexing_jars = []
+      if (defined(invoker.input_jars)) {
+        _dexing_jars += invoker.input_jars
+      }
+    }
+
+    if (_proguard_enabled) {
+      if (defined(invoker.enable_multidex)) {
+        assert(invoker.enable_multidex || !invoker.enable_multidex)
+        if (defined(invoker.extra_main_dex_proguard_config)) {
+          assert(invoker.extra_main_dex_proguard_config != [])
+        }
+        if (defined(invoker.negative_main_dex_globs)) {
+          assert(invoker.negative_main_dex_globs != [])
+        }
+      }
+      if (_proguarding_with_r8) {
+        _proguard_output_path = invoker.output
+        _proguard_target_name = target_name
+      } else {
+        _proguard_output_path = invoker.output + ".proguard.jar"
+        _proguard_target_name = "${target_name}__proguard"
+        _dexing_jars += [ _proguard_output_path ]
+      }
+
+      proguard(_proguard_target_name) {
+        forward_variables_from(invoker,
+                               [
+                                 "proguard_jar_path",
+                                 "deps",
+                                 "build_config",
+                                 "proguard_mapping_path",
+                                 "testonly",
+                               ])
+        inputs = []
+        if (defined(invoker.inputs)) {
+          inputs += invoker.inputs
+        }
+        if (defined(invoker.proguard_configs)) {
+          inputs += invoker.proguard_configs
+        }
+
+        _rebased_build_config = rebase_path(build_config, root_build_dir)
+        args = [
+          "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
+          "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
+        ]
+        if (defined(invoker.proguard_config_exclusions)) {
+          _rebased_proguard_config_exclusions =
+              rebase_path(invoker.proguard_config_exclusions, root_build_dir)
+          args += [
+            "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
+          ]
+        }
+        if (defined(invoker.proguard_args)) {
+          args += invoker.proguard_args
+        }
+
+        output_path = _proguard_output_path
+      }
+    }
+
+    if (!_proguarding_with_r8) {
+      _enable_multidex =
+          defined(invoker.enable_multidex) && invoker.enable_multidex
+      if (_enable_multidex) {
+        _main_dex_list_path = invoker.output + ".main_dex_list"
+        _main_dex_list_target_name = "${target_name}__main_dex_list"
+        action_with_pydeps(_main_dex_list_target_name) {
+          forward_variables_from(invoker,
+                                 [
+                                   "deps",
+                                   "testonly",
+                                 ])
+
+          script = "//build/android/gyp/main_dex_list.py"
+          depfile = "$target_gen_dir/$target_name.d"
+
+          # http://crbug.com/725224. Fix for bots running out of memory.
+          pool = "//build/toolchain:link_pool($default_toolchain)"
+
+          main_dex_rules = "//build/android/main_dex_classes.flags"
+
+          if (defined(invoker.proguard_jar_path)) {
+            _proguard_jar_path = invoker.proguard_jar_path
+          } else {
+            _proguard_jar_path = _default_proguard_jar_path
+          }
+
+          _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
+          _dx = "$android_sdk_build_tools/lib/dx.jar"
+          inputs = [
+            main_dex_rules,
+            _dx,
+            _proguard_jar_path,
+            _shrinked_android,
+          ]
+
+          outputs = [
+            _main_dex_list_path,
+          ]
+
+          args = [
+            "--depfile",
+            rebase_path(depfile, root_build_dir),
+            "--dx-path",
+            rebase_path(_dx, root_build_dir),
+            "--shrinked-android-path",
+            rebase_path(_shrinked_android, root_build_dir),
+            "--main-dex-list-path",
+            rebase_path(_main_dex_list_path, root_build_dir),
+            "--main-dex-rules-path",
+            rebase_path(main_dex_rules, root_build_dir),
+            "--proguard-path",
+            rebase_path(_proguard_jar_path, root_build_dir),
+          ]
+
+          if (defined(invoker.extra_main_dex_proguard_config)) {
+            inputs += [ invoker.extra_main_dex_proguard_config ]
+            args += [
+              "--main-dex-rules-path",
+              rebase_path(invoker.extra_main_dex_proguard_config,
+                          root_build_dir),
+            ]
+          }
+
+          if (_proguard_enabled) {
+            deps += [ ":${_proguard_target_name}" ]
+          }
+
+          if (defined(invoker.negative_main_dex_globs)) {
+            args += [
+              "--negative-main-dex-globs=${invoker.negative_main_dex_globs}",
+            ]
+          }
+
+          if (defined(invoker.input_jars_file_arg)) {
+            inputs += [ invoker.build_config ]
+            args += [ "--inputs=${invoker.input_jars_file_arg}" ]
+          }
+
+          inputs += _dexing_jars
+          if (_dexing_jars != []) {
+            args += rebase_path(_dexing_jars, root_build_dir)
+          }
+        }
+      }
+
+      action_with_pydeps(target_name) {
         forward_variables_from(invoker,
                                [
                                  "deps",
                                  "testonly",
                                ])
-
-        script = "//build/android/gyp/main_dex_list.py"
+        script = "//build/android/gyp/dex.py"
         depfile = "$target_gen_dir/$target_name.d"
-
-        # http://crbug.com/725224. Fix for bots running out of memory.
-        pool = "//build/toolchain:link_pool($default_toolchain)"
-
-        main_dex_rules = "//build/android/main_dex_classes.flags"
-
-        if (defined(invoker.proguard_jar_path)) {
-          _proguard_jar_path = invoker.proguard_jar_path
-        } else {
-          _proguard_jar_path = _default_proguard_jar_path
-        }
-
-        _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
-        _dx = "$android_sdk_build_tools/lib/dx.jar"
-        inputs = [
-          main_dex_rules,
-          _dx,
-          _proguard_jar_path,
-          _shrinked_android,
-        ]
-
+        inputs = []
         outputs = [
-          _main_dex_list_path,
+          invoker.output,
         ]
+
+        _rebased_output = rebase_path(invoker.output, root_build_dir)
 
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
-          "--dx-path",
-          rebase_path(_dx, root_build_dir),
-          "--shrinked-android-path",
-          rebase_path(_shrinked_android, root_build_dir),
-          "--main-dex-list-path",
-          rebase_path(_main_dex_list_path, root_build_dir),
-          "--main-dex-rules-path",
-          rebase_path(main_dex_rules, root_build_dir),
-          "--proguard-path",
-          rebase_path(_proguard_jar_path, root_build_dir),
+          "--dex-path",
+          _rebased_output,
         ]
 
-        if (defined(invoker.extra_main_dex_proguard_config)) {
-          inputs += [ invoker.extra_main_dex_proguard_config ]
-          args += [
-            "--main-dex-rules-path",
-            rebase_path(invoker.extra_main_dex_proguard_config, root_build_dir),
-          ]
+        if (_proguard_enabled) {
+          deps += [ ":${_proguard_target_name}" ]
         }
 
-        if (defined(invoker.negative_main_dex_globs)) {
-          args +=
-              [ "--negative-main-dex-globs=${invoker.negative_main_dex_globs}" ]
+        if (_enable_multidex) {
+          args += [
+            "--multi-dex",
+            "--main-dex-list-path",
+            rebase_path(_main_dex_list_path, root_build_dir),
+          ]
+          deps += [ ":${_main_dex_list_target_name}" ]
+          inputs += [ _main_dex_list_path ]
         }
 
         if (defined(invoker.input_jars_file_arg)) {
@@ -1131,83 +1263,35 @@ if (enable_java_templates) {
           args += [ "--inputs=${invoker.input_jars_file_arg}" ]
         }
 
-        if (defined(invoker.input_jars)) {
-          inputs += invoker.input_jars
-          args += rebase_path(invoker.input_jars, root_build_dir)
+        inputs += _dexing_jars
+        if (_dexing_jars != []) {
+          args += rebase_path(_dexing_jars, root_build_dir)
         }
-      }
-    }
 
-    assert(defined(invoker.output))
-    action_with_pydeps(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "testonly",
-                             ])
-      script = "//build/android/gyp/dex.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      inputs = []
-      outputs = [
-        invoker.output,
-      ]
+        if (defined(invoker.dexlayout_profile)) {
+          args += [
+            "--dexlayout-profile",
+            rebase_path(invoker.dexlayout_profile, root_build_dir),
+            "--dexlayout-path",
+            rebase_path(_dexlayout_path, root_build_dir),
+            "--profman-path",
+            rebase_path(_profman_path, root_build_dir),
+          ]
+          inputs += [
+            _dexlayout_path,
+            _profman_path,
+            invoker.dexlayout_profile,
+          ]
+          inputs += _default_art_libs
+        }
 
-      if (defined(invoker.use_pool) && invoker.use_pool) {
-        pool = "//build/toolchain:link_pool($default_toolchain)"
-      }
-
-      _rebased_output = rebase_path(invoker.output, root_build_dir)
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--dex-path",
-        _rebased_output,
-      ]
-
-      if (defined(invoker.dexlayout_profile)) {
+        _d8_path = "//third_party/r8/lib/d8.jar"
+        inputs += [ _d8_path ]
         args += [
-          "--dexlayout-profile",
-          rebase_path(invoker.dexlayout_profile, root_build_dir),
-          "--dexlayout-path",
-          rebase_path(_dexlayout_path, root_build_dir),
-          "--profman-path",
-          rebase_path(_profman_path, root_build_dir),
+          "--d8-jar-path",
+          rebase_path(_d8_path, root_build_dir),
         ]
-        inputs += [
-          _dexlayout_path,
-          _profman_path,
-          invoker.dexlayout_profile,
-        ]
-        inputs += _default_art_libs
       }
-
-      if (_enable_multidex) {
-        args += [
-          "--multi-dex",
-          "--main-dex-list-path",
-          rebase_path(_main_dex_list_path, root_build_dir),
-        ]
-        deps += [ ":${_main_dex_list_target_name}" ]
-        inputs += [ _main_dex_list_path ]
-      }
-
-      if (defined(invoker.input_jars_file_arg)) {
-        inputs += [ invoker.build_config ]
-        args += [ "--inputs=${invoker.input_jars_file_arg}" ]
-      }
-
-      if (defined(invoker.input_jars)) {
-        inputs += invoker.input_jars
-        args += rebase_path(invoker.input_jars, root_build_dir)
-      }
-
-      _d8_path = "//third_party/r8/lib/d8.jar"
-      inputs += [ _d8_path ]
-      args += [
-        "--d8-jar-path",
-        rebase_path(_d8_path, root_build_dir),
-      ]
     }
   }
 
