@@ -237,6 +237,8 @@ void ClientRoot::OnFirstSurfaceActivation(
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
   if (server_window->local_surface_id().has_value()) {
     DCHECK(!fallback_surface_info_);
+    if (!client_surface_embedder_->HasPrimarySurfaceId())
+      UpdatePrimarySurfaceId();
     client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
   } else {
     fallback_surface_info_ = std::make_unique<viz::SurfaceInfo>(surface_info);

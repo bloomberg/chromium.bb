@@ -14,6 +14,10 @@ namespace cc {
 class LayerTreeFrameSink;
 }
 
+namespace viz {
+class ParentLocalSurfaceIdAllocator;
+}
+
 namespace aura {
 
 class Window;
@@ -27,6 +31,8 @@ class WindowPortMusTestHelper {
   void SimulateEmbedding();
 
   base::WeakPtr<cc::LayerTreeFrameSink> GetFrameSink();
+
+  viz::ParentLocalSurfaceIdAllocator* GetParentLocalSurfaceIdAllocator();
 
  private:
   static uint32_t next_client_id_;

@@ -29,4 +29,9 @@ base::WeakPtr<cc::LayerTreeFrameSink> WindowPortMusTestHelper::GetFrameSink() {
   return window_port_mus_->local_layer_tree_frame_sink_;
 }
 
+viz::ParentLocalSurfaceIdAllocator*
+WindowPortMusTestHelper::GetParentLocalSurfaceIdAllocator() {
+  return &(window_port_mus_->parent_local_surface_id_allocator_);
+}
+
 }  // namespace aura

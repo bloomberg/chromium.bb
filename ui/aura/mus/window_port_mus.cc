@@ -464,6 +464,12 @@ void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
       embedded_client_local_surface_id);
   local_surface_id_ =
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  UpdatePrimarySurfaceId();
+
+  // OnWindowMusBoundsChanged() triggers notifying the server of the new
+  // LocalSurfaceId.
+  window_tree_client_->OnWindowMusBoundsChanged(this, window_->bounds(),
+                                                window_->bounds());
 }
 
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
@@ -660,12 +666,6 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
 
   primary_surface_id_ =
       viz::SurfaceId(window_->GetFrameSinkId(), local_surface_id_);
-  UpdateClientSurfaceEmbedder();
-}
-
-void WindowPortMus::UpdateClientSurfaceEmbedder() {
-  if (!window_->IsEmbeddingClient())
-    return;
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(

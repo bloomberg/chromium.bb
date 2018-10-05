@@ -43,6 +43,10 @@ void ClientSurfaceEmbedder::SetPrimarySurfaceId(
       false /* stretch_content_to_fill_bounds */);
 }
 
+bool ClientSurfaceEmbedder::HasPrimarySurfaceId() const {
+  return surface_layer_owner_->layer()->GetPrimarySurfaceId() != nullptr;
+}
+
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   fallback_surface_info_ = surface_info;
