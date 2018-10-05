@@ -1210,7 +1210,6 @@ FileManager.prototype = /** @struct */ {
                     VolumeManagerCommon.RootType.RECENT, true,
                     this.getSourceRestriction_())) :
             null,
-        null,  // TODO(crbug.com/869252) remove this null.
         this.commandLineFlags_['disable-my-files-navigation']);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);

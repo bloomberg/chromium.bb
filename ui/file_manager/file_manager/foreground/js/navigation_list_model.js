@@ -8,7 +8,6 @@
 var NavigationModelItemType = {
   SHORTCUT: 'shortcut',
   VOLUME: 'volume',
-  MENU: 'menu',
   RECENT: 'recent',
   CROSTINI: 'crostini',
   ENTRY_LIST: 'entry-list',
@@ -120,45 +119,6 @@ NavigationModelVolumeItem.prototype = /** @struct */ {
 };
 
 /**
- * Item of NavigationListModel for a menu button.
- *
- * @param {string} label Label on the menu button.
- * @param {string} menu Selector for the menu element.
- * @param {string} icon Name of an icon on the menu button.
- * @constructor
- * @extends {NavigationModelItem}
- * @struct
- */
-function NavigationModelMenuItem(label, menu, icon) {
-  NavigationModelItem.call(this, label, NavigationModelItemType.MENU);
-
-  /**
-   * @private {string}
-   * @const
-   */
-  this.menu_ = menu;
-
-  /**
-   * @private {string}
-   * @const
-   */
-  this.icon_ = icon;
-}
-
-NavigationModelMenuItem.prototype = /** @struct */ {
-  __proto__: NavigationModelItem.prototype,
-  /**
-   * @return {string}
-   */
-  get menu() { return this.menu_; },
-
-  /**
-   * @return {string}
-   */
-  get icon() { return this.icon_; }
-};
-
-/**
  * Item of NavigationListModel for a fake item such as Recent or Linux files.
  *
  * @param {string} label Label on the menu button.
@@ -186,7 +146,6 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
- * @param {NavigationModelMenuItem} addNewServicesItem Add new services item.
  * @param {boolean=} opt_disableMyFilesNavigation true if should use the new
  *     navigation style, value should come from flag
  *     disable-my-files-navigation.
@@ -194,7 +153,7 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
-    volumeManager, shortcutListModel, recentModelItem, addNewServicesItem,
+    volumeManager, shortcutListModel, recentModelItem,
     opt_disableMyFilesNavigation) {
   cr.EventTarget.call(this);
 
@@ -223,12 +182,6 @@ function NavigationListModel(
    * @private {NavigationModelFakeItem}
    */
   this.linuxFilesItem_ = null;
-
-  /**
-   * @private {NavigationModelMenuItem}
-   * @const
-   */
-  this.addNewServicesItem_ = addNewServicesItem;
 
   /**
    * NavigationModel for MyFiles, since DirectoryTree expect it to be always the
