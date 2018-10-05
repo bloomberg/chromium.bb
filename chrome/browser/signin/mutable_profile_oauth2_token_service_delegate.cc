@@ -492,6 +492,16 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
 
   load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
 
+#if defined(OS_CHROMEOS)
+  // ChromeOS OOBE loads credentials without a primary account and expects this
+  // to be a no-op. See htttp://crbug.com/891818
+  if (primary_account_id.empty()) {
+    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+    FinishLoadingCredentials();
+    return;
+  }
+#endif
+
   if (!primary_account_id.empty())
     ValidateAccountId(primary_account_id);
   DCHECK(loading_primary_account_id_.empty());

@@ -259,32 +259,6 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   bool revoke_all_tokens_on_load_;
 };
 
-TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
-       LoadCredentialsClearsTokenDBWhenNoPrimaryAccount_DiceDisabled) {
-  // Populate DB with 2 valid tokens.
-  AddAuthTokenManually("AccountId-12345", "refresh_token");
-  AddAuthTokenManually("AccountId-67890", "refresh_token");
-
-  CreateOAuth2ServiceDelegate(
-      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
-  oauth2_service_delegate_->LoadCredentials(/*primary_account_id=*/"");
-  base::RunLoop().RunUntilIdle();
-
-  // No tokens were loaded.
-  EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(1, start_batch_changes_);
-  EXPECT_EQ(0, token_available_count_);
-  EXPECT_EQ(2, token_revoked_count_);
-  EXPECT_EQ(1, end_batch_changes_);
-  EXPECT_EQ(0U, oauth2_service_delegate_->refresh_tokens_.size());
-
-  // Handle to the request reading tokens from database.
-  token_web_data_->GetAllTokens(this);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(token_web_data_result_.get());
-  ASSERT_EQ(0u, token_web_data_result_->GetValue().tokens.size());
-}
-
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceDBUpgrade) {
   CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
   std::string main_account_id("account_id");
@@ -725,6 +699,34 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if !defined(OS_CHROMEOS)
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadCredentialsClearsTokenDBWhenNoPrimaryAccount_DiceDisabled) {
+  // Populate DB with 2 valid tokens.
+  AddAuthTokenManually("AccountId-12345", "refresh_token");
+  AddAuthTokenManually("AccountId-67890", "refresh_token");
+
+  CreateOAuth2ServiceDelegate(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
+  oauth2_service_delegate_->LoadCredentials(/*primary_account_id=*/"");
+  base::RunLoop().RunUntilIdle();
+
+  // No tokens were loaded.
+  EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(0, token_available_count_);
+  EXPECT_EQ(2, token_revoked_count_);
+  EXPECT_EQ(1, end_batch_changes_);
+  EXPECT_EQ(0U, oauth2_service_delegate_->refresh_tokens_.size());
+
+  // Handle to the request reading tokens from database.
+  token_web_data_->GetAllTokens(this);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(token_web_data_result_.get());
+  ASSERT_EQ(0u, token_web_data_result_->GetValue().tokens.size());
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // Tests that calling UpdateCredentials revokes the old token, without sending
 // the notification.
