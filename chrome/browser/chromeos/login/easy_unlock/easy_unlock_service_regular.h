@@ -129,6 +129,8 @@ class EasyUnlockServiceRegular
       const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
           feature_states_map) override;
 
+  void ShowChromebookAddedNotification();
+
   void ShowNotificationIfNewDevicePresent(
       const std::set<std::string>& public_keys_before_sync,
       const std::set<std::string>& public_keys_after_sync);
