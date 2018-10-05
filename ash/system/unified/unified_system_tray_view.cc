@@ -245,14 +245,14 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SessionController* session_controller = Shell::Get()->session_controller();
 
   views::View* message_center_view;
-  if (features::IsNewMessageListViewEnabled())
+  if (features::IsNewMessageListViewEnabled()) {
     message_center_view = new_message_center_view_;
-  else
+  } else {
     message_center_view = message_center_view_;
-
-  message_center_view->SetVisible(
-      session_controller->ShouldShowNotificationTray() &&
-      !session_controller->IsScreenLocked());
+    message_center_view->SetVisible(
+        session_controller->ShouldShowNotificationTray() &&
+        !session_controller->IsScreenLocked());
+  }
   AddChildView(message_center_view);
   layout->SetFlexForView(message_center_view, 1);
 
