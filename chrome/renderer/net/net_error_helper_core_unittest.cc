@@ -2114,6 +2114,27 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, StopsOnOtherLoadStart) {
   EXPECT_EQ(0, core()->auto_reload_count());
 }
 
+// This is a regression test for http://crbug.com/881208.
+TEST_F(NetErrorHelperCoreAutoReloadTest, StopsOnErrorLoadCommit) {
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_TRUE(timer()->IsRunning());
+
+  // Simulate manually reloading the error page while the timer is still
+  // running.
+  std::string html;
+  core()->PrepareErrorPage(
+      NetErrorHelperCore::MAIN_FRAME,
+      NetErrorForURL(net::ERR_CONNECTION_RESET, GURL(kFailedUrl)),
+      false /* is_failed_post */, false /* is_ignoring_cache */, &html);
+
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  EXPECT_TRUE(timer()->IsRunning());
+}
+
 TEST_F(NetErrorHelperCoreAutoReloadTest, ResetsCountOnSuccess) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   base::TimeDelta delay = timer()->GetCurrentDelay();
