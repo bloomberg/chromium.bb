@@ -2541,33 +2541,6 @@
             ]
         }
     ],
-    "NTPFaviconsFromNewServer": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ContentSuggestionsFaviconsFromNewServer"
-                    ]
-                },
-                {
-                    "name": "Enabled_10",
-                    "enable_features": [
-                        "ContentSuggestionsFaviconsFromNewServer"
-                    ]
-                },
-                {
-                    "name": "Enabled_50",
-                    "enable_features": [
-                        "ContentSuggestionsFaviconsFromNewServer"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPLaunchAfterInactivity": [
         {
             "platforms": [
