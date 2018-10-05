@@ -104,7 +104,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
                         web_contents.GetBrowserContext()->IsOffTheRecord(),
                         /*is_unified_consent_enabled=*/false,
                         IsExtendedReportingEnabled(pref_service),
-                        IsScout(pref_service),
+                        /*is_scout_reporting_enabled=*/true,
                         IsExtendedReportingPolicyManaged(pref_service),
                         /*is_proceed_anyway_disabled=*/false,
                         /*should_open_links_in_new_tab=*/false,

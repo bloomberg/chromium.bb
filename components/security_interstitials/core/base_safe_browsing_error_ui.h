@@ -64,6 +64,7 @@ class BaseSafeBrowsingErrorUI {
     // setting. This does NOT indicate whether the user is opted-in to extended
     // reporting, just the level of reporting that's available to the user. Use
     // |is_extended_reporting_enabled| to see if the user is opted-in.
+    // TODO(lpz/scout): Remove this field, scout is the only setting now.
     bool is_scout_reporting_enabled;
 
     // Whether the SBER pref is being managed by enterprise policy, meaning the

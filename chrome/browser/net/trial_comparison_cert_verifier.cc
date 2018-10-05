@@ -54,10 +54,10 @@ bool CheckTrialEligibility(void* profile_id) {
   const Profile* profile = reinterpret_cast<const Profile*>(profile_id);
   const PrefService& prefs = *profile->GetPrefs();
 
-  // Only allow on non-incognito profiles which have SBER2 (Scout) opt-in set.
+  // Only allow on non-incognito profiles which have SBER opt-in set.
   // See design doc for more details:
   // https://docs.google.com/document/d/1AM1CD42bC6LHWjKg-Hkid_RLr2DH6OMzstH9-pGSi-g
-  return !profile->IsOffTheRecord() && safe_browsing::IsScout(prefs) &&
+  return !profile->IsOffTheRecord() &&
          safe_browsing::IsExtendedReportingEnabled(prefs);
 }
 
