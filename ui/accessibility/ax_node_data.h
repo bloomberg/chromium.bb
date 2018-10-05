@@ -127,13 +127,15 @@ struct AX_EXPORT AXNodeData {
   void SetValue(const base::string16& value);
 
   // Returns true if the given enum bit is 1.
-  bool HasState(ax::mojom::State state) const;
-  bool HasAction(ax::mojom::Action action) const;
+  bool HasState(ax::mojom::State state_enum) const;
+  bool HasAction(ax::mojom::Action state_enum) const;
 
-  // Set or remove bits in the given enum's corresponding bitfield.
-  ax::mojom::State AddState(ax::mojom::State state);
-  ax::mojom::State RemoveState(ax::mojom::State state);
-  ax::mojom::Action AddAction(ax::mojom::Action action);
+  // Set bits in the given enum's corresponding bitfield.
+  void AddState(ax::mojom::State state_enum);
+  void AddAction(ax::mojom::Action action_enum);
+
+  // Remove bits in the given enum's corresponding bitfield.
+  void RemoveState(ax::mojom::State state_enum);
 
   // Helper functions to get some common int attributes with some specific
   // enum types:
@@ -151,22 +153,18 @@ struct AX_EXPORT AXNodeData {
     return static_cast<ax::mojom::DefaultActionVerb>(
         GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb));
   }
-
   ax::mojom::InvalidState GetInvalidState() const {
     return static_cast<ax::mojom::InvalidState>(
         GetIntAttribute(ax::mojom::IntAttribute::kInvalidState));
   }
-
   ax::mojom::NameFrom GetNameFrom() const {
     return static_cast<ax::mojom::NameFrom>(
         GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
   }
-
   ax::mojom::Restriction GetRestriction() const {
     return static_cast<ax::mojom::Restriction>(
         GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
   }
-
   ax::mojom::TextDirection GetTextDirection() const {
     return static_cast<ax::mojom::TextDirection>(
         GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
