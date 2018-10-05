@@ -77,6 +77,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/test_clipboard.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
@@ -398,15 +399,10 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load) {
   LoadAllPdfsTest("pdf", GetParam());
 }
 
-class DisablePluginHelper : public content::DownloadManager::Observer {
+class DownloadAwaiter : public content::DownloadManager::Observer {
  public:
-  DisablePluginHelper() {}
-  ~DisablePluginHelper() override {}
-
-  void DisablePlugin(Profile* profile) {
-    profile->GetPrefs()->SetBoolean(
-        prefs::kPluginsAlwaysOpenPdfExternally, true);
-  }
+  DownloadAwaiter() {}
+  ~DownloadAwaiter() override {}
 
   const GURL& GetLastUrl() {
     // Wait until the download has been created.
@@ -427,33 +423,126 @@ class DisablePluginHelper : public content::DownloadManager::Observer {
   GURL last_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DisablePlugin) {
-  // Disable the PDF plugin.
-  WebContents* web_contents = GetActiveWebContents();
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DisablePluginHelper helper;
-  helper.DisablePlugin(profile);
+// Tests behavior when the PDF plugin is disabled in preferences.
+class PDFPluginDisabledTest : public PDFExtensionTest {
+ public:
+  PDFPluginDisabledTest() {}
 
-  // Register a download observer.
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser_context);
-  download_manager->AddObserver(&helper);
+ protected:
+  void SetUpOnMainThread() override {
+    PDFExtensionTest::SetUpOnMainThread();
 
+    content::BrowserContext* browser_context =
+        GetActiveWebContents()->GetBrowserContext();
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    profile->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally,
+                                    true);
+
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser_context);
+    download_awaiter_ = std::make_unique<DownloadAwaiter>();
+    download_manager->AddObserver(download_awaiter_.get());
+  }
+
+  void TearDownOnMainThread() override {
+    content::BrowserContext* browser_context =
+        GetActiveWebContents()->GetBrowserContext();
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser_context);
+    download_manager->RemoveObserver(download_awaiter_.get());
+
+    // Cancel all downloads to shut down cleanly.
+    std::vector<download::DownloadItem*> downloads;
+    download_manager->GetAllDownloads(&downloads);
+    for (auto* item : downloads) {
+      item->Cancel(false);
+    }
+
+    PDFExtensionTest::TearDownOnMainThread();
+  }
+
+  size_t GetNumberOfDownloads() {
+    content::BrowserContext* browser_context =
+        GetActiveWebContents()->GetBrowserContext();
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser_context);
+
+    std::vector<download::DownloadItem*> downloads;
+    download_manager->GetAllDownloads(&downloads);
+    return downloads.size();
+  }
+
+  const GURL& AwaitAndGetLastDownloadedUrl() {
+    return download_awaiter_->GetLastUrl();
+  }
+
+ private:
+  std::unique_ptr<DownloadAwaiter> download_awaiter_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, DirectNavigationToPDF) {
   // Navigate to a PDF and test that it is downloaded.
-  GURL url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_EQ(url, helper.GetLastUrl());
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), pdf_url);
 
-  // Didn't launch a PPAPI process.
+  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
+  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
+  EXPECT_EQ(1u, GetNumberOfDownloads());
   EXPECT_EQ(0, CountPDFProcesses());
+}
 
-  // Cancel the download to shutdown cleanly.
-  download_manager->RemoveObserver(&helper);
-  std::vector<download::DownloadItem*> downloads;
-  download_manager->GetAllDownloads(&downloads);
-  ASSERT_EQ(1u, downloads.size());
-  downloads[0]->Cancel(false);
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, EmbedPdfPlaceholderWithCSP) {
+  // Navigate to a page with CSP that uses <embed> to embed a PDF as a plugin.
+  GURL embed_page_url =
+      embedded_test_server()->GetURL("/pdf/pdf_embed_csp.html");
+  ui_test_utils::NavigateToURL(browser(), embed_page_url);
+
+  // Fake a click on the <embed>, then press Enter to trigger the download.
+  gfx::Point point_in_pdf(100, 100);
+  content::SimulateRoutedMouseClickAt(
+      GetActiveWebContents(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, point_in_pdf);
+  content::SimulateKeyPress(GetActiveWebContents(), ui::DomKey::ENTER,
+                            ui::DomCode::ENTER, ui::VKEY_RETURN, false, false,
+                            false, false);
+
+  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
+  EXPECT_EQ(1u, GetNumberOfDownloads());
+  EXPECT_EQ(0, CountPDFProcesses());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
+  // Navigate to a page that uses <iframe> to embed a PDF as a plugin.
+  GURL iframe_page_url =
+      embedded_test_server()->GetURL("/pdf/pdf_iframe_csp.html");
+  ui_test_utils::NavigateToURL(browser(), iframe_page_url);
+
+  // Pass an Enter keystroke to the child <iframe>.
+  int keys_passed = 0;
+  for (auto* host : GetActiveWebContents()->GetAllFrames()) {
+    if (host != GetActiveWebContents()->GetMainFrame()) {
+      content::NativeWebKeyboardEvent key_event(
+          blink::WebKeyboardEvent::kRawKeyDown,
+          blink::WebInputEvent::kNoModifiers,
+          blink::WebInputEvent::GetStaticTimeStampForTests());
+      key_event.windows_key_code = ui::VKEY_RETURN;
+      key_event.native_key_code =
+          ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ENTER);
+      key_event.dom_code = static_cast<int>(ui::DomCode::ENTER);
+      key_event.dom_key = ui::DomKey::ENTER;
+      host->GetView()->GetRenderWidgetHost()->ForwardKeyboardEvent(key_event);
+      keys_passed++;
+    }
+  }
+  ASSERT_EQ(1, keys_passed);
+
+  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
+  EXPECT_EQ(1u, GetNumberOfDownloads());
+  EXPECT_EQ(0, CountPDFProcesses());
 }
 
 // We break PDFExtensionLoadTest up into kNumberLoadTestParts.

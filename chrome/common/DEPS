@@ -37,6 +37,7 @@ include_rules = [
   "+components/printing/common",
   "+components/safe_browsing/proto/csd.pb.h",
   "+components/safe_browsing/web_ui/constants.h",
+  "+components/strings/grit/components_strings.h",
   "+components/translate/core/common",
   "+components/url_formatter",
   "+components/variations/net",
