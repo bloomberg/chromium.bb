@@ -11,6 +11,7 @@ import os
 import posixpath
 import subprocess
 import tempfile
+from time import sleep
 
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
