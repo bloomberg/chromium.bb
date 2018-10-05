@@ -724,6 +724,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/misc/' +
         'tex-video-using-tex-unit-non-zero.html',
         ['android', 'nvidia'], bug=830901)
+    self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['android', 'nvidia'], bug=891456)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', ['android', 'nvidia'],
+        bug=891456)
 
     # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
     self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
