@@ -98,7 +98,7 @@ class WMTestHelper : public aura::client::WindowParentingClient,
   std::unique_ptr<aura::client::FocusClient> focus_client_;
 
   // Loop to wait for |host_| gets embedded under mus.
-  base::RunLoop display_wait_loop_;
+  std::unique_ptr<base::RunLoop> display_wait_loop_;
 
   test_ws::mojom::TestWsPtr test_ws_;
 
