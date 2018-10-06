@@ -119,7 +119,7 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     // response was an HTTP error, e.g. 404.
     offline_item.state = OfflineItemState::COMPLETE;
     offline_item.is_openable = true;
-  } else if (paused) {
+  } else if (started && paused) {
     offline_item.state = OfflineItemState::PAUSED;
   } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
@@ -273,6 +273,8 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   } else {
     StartDownload(job_unique_id, params);
   }
+
+  UpdateOfflineItemAndUpdateObservers(&job_details);
 }
 
 void BackgroundFetchDelegateImpl::StartDownload(
