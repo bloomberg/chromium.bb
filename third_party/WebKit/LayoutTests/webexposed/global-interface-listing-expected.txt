@@ -7254,6 +7254,11 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface Task
+    attribute @@toStringTag
+    getter result
+    method cancel
+    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -10081,6 +10086,7 @@ interface Worker : EventTarget
 interface WorkerTaskQueue
     attribute @@toStringTag
     method constructor
+    method postFunction
     method postTask
 interface Worklet
     attribute @@toStringTag

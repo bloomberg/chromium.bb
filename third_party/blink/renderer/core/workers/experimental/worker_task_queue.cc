@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/workers/experimental/task.h"
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
 
 namespace blink {
@@ -36,10 +37,11 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
 WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)
     : document_(document), task_type_(task_type) {}
 
-ScriptPromise WorkerTaskQueue::postTask(ScriptState* script_state,
-                                        const ScriptValue& task,
-                                        AbortSignal* signal,
-                                        const Vector<ScriptValue>& arguments) {
+ScriptPromise WorkerTaskQueue::postFunction(
+    ScriptState* script_state,
+    const ScriptValue& task,
+    AbortSignal* signal,
+    const Vector<ScriptValue>& arguments) {
   DCHECK(document_->IsContextThread());
   DCHECK(task.IsFunction());
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -69,6 +71,18 @@ ScriptPromise WorkerTaskQueue::postTask(ScriptState* script_state,
       ->PostTask(std::move(serialized_task), resolver, signal,
                  std::move(serialized_arguments), task_type_);
   return resolver->Promise();
+}
+
+Task* WorkerTaskQueue::postTask(ScriptState* script_state,
+                                const ScriptValue& function,
+                                const Vector<ScriptValue>& arguments) {
+  DCHECK(document_->IsContextThread());
+  DCHECK(function.IsFunction());
+
+  ThreadPoolTask* thread_pool_task =
+      new ThreadPoolTask(ThreadPool::From(*document_),
+                         script_state->GetIsolate(), function, arguments);
+  return new Task(thread_pool_task);
 }
 
 void WorkerTaskQueue::Trace(blink::Visitor* visitor) {
