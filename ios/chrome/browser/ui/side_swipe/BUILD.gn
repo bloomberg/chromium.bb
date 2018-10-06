@@ -40,9 +40,6 @@ source_set("side_swipe") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    "//ios/chrome/browser/infobars",
-  ]
   libs = [ "UIKit.framework" ]
 }
 
