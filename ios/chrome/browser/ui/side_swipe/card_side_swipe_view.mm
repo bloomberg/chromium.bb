@@ -211,9 +211,15 @@ const CGFloat kResizeFactor = 4;
     [self addSubview:background];
 
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
+    CGFloat topInset = 0;
+    if (@available(iOS 11, *)) {
+      topInset = self.safeAreaInsets.top;
+    } else {
+      topInset = StatusBarHeight();
+    }
     self.backgroundTopConstraint =
         [[background topAnchor] constraintEqualToAnchor:self.topAnchor
-                                               constant:-StatusBarHeight()];
+                                               constant:-topInset];
     [NSLayoutConstraint activateConstraints:@[
       [[background rightAnchor] constraintEqualToAnchor:self.rightAnchor],
       [[background leftAnchor] constraintEqualToAnchor:self.leftAnchor],
@@ -245,7 +251,13 @@ const CGFloat kResizeFactor = 4;
 
 - (void)updateConstraints {
   [super updateConstraints];
-  self.backgroundTopConstraint.constant = -StatusBarHeight();
+  CGFloat topInset = 0;
+  if (@available(iOS 11, *)) {
+    topInset = self.safeAreaInsets.top;
+  } else {
+    topInset = StatusBarHeight();
+  }
+  self.backgroundTopConstraint.constant = -topInset;
 }
 
 - (CGFloat)cardWidth {

@@ -380,7 +380,12 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   CGFloat topMargin = 0;
   if (!_webViewProxy && base::FeatureList::IsEnabled(
                             web::features::kBrowserContainerFullscreen)) {
-    topMargin = StatusBarHeight();
+    CGFloat topMargin = 0.0;
+    if (@available(iOS 11, *)) {
+      topMargin = self.scrollView.safeAreaInsets.top;
+    } else {
+      topMargin = StatusBarHeight();
+    }
   }
   if (contentOffsetFromExpandedHeader >= 0) {
     // Record initial content offset and dispatch delegate on state change.
