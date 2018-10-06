@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using ::testing::_;
@@ -117,9 +118,12 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
 
   // Call here DidDraw() to simulate having drawn something before PushFrame()/
   // Commit(); DidDraw() will in turn cause a CanvasResourceDispatcher to be
-  // created and a CreateCompositorFrameSink() to be issued.
+  // created and a CreateCompositorFrameSink() to be issued; this sink will get
+  // a SetNeedsBeginFrame() message sent upon construction.
+  mock_embedded_frame_sink_provider
+      .set_num_expected_set_needs_begin_frame_on_sink_construction(1);
   EXPECT_CALL(mock_embedded_frame_sink_provider,
-              CreateCompositorFrameSink(viz::FrameSinkId(kClientId, kSinkId)));
+              CreateCompositorFrameSink_(viz::FrameSinkId(kClientId, kSinkId)));
   offscreen_canvas().DidDraw();
   platform->RunUntilIdle();
 
@@ -130,8 +134,8 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
       kLow_SkFilterQuality);
   EXPECT_TRUE(!!canvas_resource);
 
-  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              DoSubmitCompositorFrame(_))
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
+              SubmitCompositorFrame_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
             ASSERT_EQ(frame->render_pass_list.size(), 1u);
@@ -149,8 +153,8 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
   offscreen_canvas().PushFrame(canvas_resource, SkIRect::MakeWH(10, 10));
   platform->RunUntilIdle();
 
-  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              DoSubmitCompositorFrameSync(_))
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
+              SubmitCompositorFrameSync_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
             ASSERT_EQ(frame->render_pass_list.size(), 1u);
