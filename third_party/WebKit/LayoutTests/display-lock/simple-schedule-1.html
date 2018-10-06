@@ -1,7 +1,8 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, which appends a child.
+Runs an acquireDisplayLock, which appends the first child and schedules a
+continuation, which in turn appends the second child.
 -->
 
 <style>
@@ -11,10 +12,15 @@ Runs an acquireDisplayLock, which appends a child.
   height: 150px;
   background: lightblue;
 }
-#child {
+#child1 {
   width: 50px;
   height: 50px;
   background: lightgreen;
+}
+#child2 {
+  width: 50px;
+  height: 50px;
+  background: lightyellow;
 }
 </style>
 
@@ -25,10 +31,19 @@ Runs an acquireDisplayLock, which appends a child.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
-function modifyDom(context) {
+function createChild(id) {
   let child = document.createElement("div");
-  child.id = "child";
-  document.getElementById("parent").appendChild(child);
+  child.id = id;
+  return child;
+}
+
+function addChild2(context) {
+  document.getElementById("parent").appendChild(createChild("child2"));
+}
+
+function addChild1(context) {
+  document.getElementById("parent").appendChild(createChild("child1"));
+  context.schedule(addChild2);
 }
 
 function finishTest(status_string) {
@@ -38,10 +53,12 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(modifyDom).then(
+  document.getElementById("parent").acquireDisplayLock(addChild1).then(
     () => { finishTest("PASS"); },
     () => { finishTest("FAIL"); });
 }
 
 window.onload = acquire;
+
 </script>
+

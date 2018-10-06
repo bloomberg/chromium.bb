@@ -168,6 +168,9 @@ crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch
 
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 display-lock [ Skip ]
+crbug.com/882663 virtual/display-lock/display-lock/acquire-callback-throws.html [ Failure ]
+crbug.com/882663 virtual/display-lock/display-lock/multiple-schedules-recursive.html [ Failure ]
+crbug.com/882663 virtual/display-lock/display-lock/simple-schedule-2.html [ Failure ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
