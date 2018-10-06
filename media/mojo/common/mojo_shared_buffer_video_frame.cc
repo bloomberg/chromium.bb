@@ -19,8 +19,9 @@ namespace media {
 
 // static
 scoped_refptr<MojoSharedBufferVideoFrame>
-MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
-                                              base::TimeDelta timestamp) {
+MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(
+    const gfx::Size& dimensions,
+    base::TimeDelta timestamp) {
   const VideoPixelFormat format = PIXEL_FORMAT_I420;
   const gfx::Rect visible_rect(dimensions);
 

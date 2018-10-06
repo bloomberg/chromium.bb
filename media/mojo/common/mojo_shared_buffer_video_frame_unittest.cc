@@ -45,7 +45,7 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemory) {
   // to hold a 16x9 video frame.
   gfx::Size size(kWidth, kHeight);
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::CreateDefaultI420(size, kTimestamp);
+      MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
   // Verify that the correct frame was allocated.
@@ -126,7 +126,7 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameOddWidth) {
   // to hold the video frame. Size should be adjusted.
   gfx::Size size(kWidth, kHeight);
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::CreateDefaultI420(size, kTimestamp);
+      MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
   // Verify that the correct frame was allocated.

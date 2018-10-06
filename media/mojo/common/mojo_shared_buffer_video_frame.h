@@ -35,7 +35,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Buffers for the frame are allocated but not initialized. The caller must
   // not make assumptions about the actual underlying sizes, but check the
   // returned VideoFrame instead.
-  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultI420(
+  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultI420ForTesting(
       const gfx::Size& dimensions,
       base::TimeDelta timestamp);
 
