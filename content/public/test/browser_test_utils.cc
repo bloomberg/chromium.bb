@@ -574,6 +574,33 @@ class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
 
 }  // namespace
 
+bool NavigateToURL(WebContents* web_contents, const GURL& url) {
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, url, 1);
+  if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL)) {
+    // TODO(crbug.com/882545) remove the following debug information:
+    {
+      NavigationEntry* last_entry =
+          web_contents->GetController().GetLastCommittedEntry();
+      if (!last_entry) {
+        DLOG(WARNING) << "No last committed entry";
+      } else {
+        DLOG(WARNING) << "Last committed entry is of type "
+                      << last_entry->GetPageType();
+      }
+    }
+    return false;
+  }
+
+  // TODO(crbug.com/882545) revert this to the return statement below.
+  bool same_url = web_contents->GetLastCommittedURL() == url;
+  if (!same_url) {
+    DLOG(WARNING) << "Expected URL " << url << " but observed "
+                  << web_contents->GetLastCommittedURL();
+  }
+  return same_url;
+  // return web_contents->GetLastCommittedURL() == url;
+}
+
 bool NavigateIframeToURL(WebContents* web_contents,
                          std::string iframe_id,
                          const GURL& url) {
@@ -586,6 +613,30 @@ bool NavigateIframeToURL(WebContents* web_contents,
   bool result = ExecuteScript(web_contents, script);
   load_observer.Wait();
   return result;
+}
+
+void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,
+                                                const GURL& url,
+                                                int number_of_navigations) {
+  // Prepare for the navigation.
+  WaitForLoadStop(web_contents);
+  TestNavigationObserver same_tab_observer(web_contents, number_of_navigations);
+
+  // This mimics behavior of Shell::LoadURL...
+  NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents->GetController().LoadURLWithParams(params);
+  web_contents->Focus();
+
+  // Wait until the expected number of navigations finish.
+  same_tab_observer.Wait();
+  // TODO(crbug.com/882545) Delete this if statement once the problem has been
+  // identified.
+  if (!same_tab_observer.last_navigation_succeeded()) {
+    DLOG(WARNING) << "Last navigation to " << url << " failed with net error "
+                  << same_tab_observer.last_net_error_code();
+  }
 }
 
 GURL GetFileUrlWithQuery(const base::FilePath& path,
@@ -1341,7 +1392,7 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
       // position.
       std::vector<base::StringPiece> error_line_parts = base::SplitStringPiece(
           error_line, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-      CHECK(error_line_parts.size() >= 2);
+      CHECK_GE(error_line_parts.size(), 2u);
 
       int column_number = 0;
       base::StringToInt(error_line_parts.back(), &column_number);

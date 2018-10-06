@@ -86,6 +86,23 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
   return factory_info;
 }
 
+void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+    content::RenderFrameHost* frame,
+    std::vector<url::Origin> request_initiators,
+    bool push_to_renderer_now) {
+  DCHECK(!request_initiators.empty());
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+        std::move(request_initiators), push_to_renderer_now);
+  } else {
+    // TODO(lukasza): In non-NetworkService implementation of CORB, make an
+    // exception only for specific extensions (e.g. based on process id,
+    // similarly to how r585124 does it for plugins).  Doing so will likely
+    // interfere with Extensions.CrossOriginFetchFromContentScript2 Rappor
+    // metric, so this needs to wait until this metric is not needed anymore.
+  }
+}
+
 // If |match_about_blank| is true, then traverses parent/opener chain until the
 // first non-about-scheme document and returns its url.  Otherwise, simply
 // returns |document_url|.
@@ -94,7 +111,7 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
 // renderer side.  Unlike the renderer version of this code (in
 // ScriptContext::GetEffectiveDocumentURL) the code below doesn't consider
 // whether security origin of |frame| can access |next_candidate|.  This is
-// okay, because our only caller (DoesContentScriptMatchNavigation) expects
+// okay, because our only caller (DoesContentScriptMatchNavigatingFrame) expects
 // false positives.
 GURL GetEffectiveDocumentURL(content::RenderFrameHost* frame,
                              const GURL& document_url,
@@ -143,9 +160,9 @@ GURL GetEffectiveDocumentURL(content::RenderFrameHost* frame,
 }
 
 // If |user_script| will inject JavaScript content script into the target of
-// |navigation|, then DoesContentScriptMatchNavigation returns true.  Otherwise
-// it may return either true or false.  Note that this function ignores CSS
-// content scripts.
+// |navigation|, then DoesContentScriptMatchNavigatingFrame returns true.
+// Otherwise it may return either true or false.  Note that this function
+// ignores CSS content scripts.
 //
 // This function approximates a subset of checks from
 // UserScriptSet::GetInjectionForScript (which runs in the renderer process).
@@ -155,58 +172,43 @@ GURL GetEffectiveDocumentURL(content::RenderFrameHost* frame,
 // This is okay, because we may return either true even if no content scripts
 // would be injected (i.e. it is okay to create a special URLLoaderFactory when
 // in reality the content script won't be injected and won't need the factory).
-bool DoesContentScriptMatchNavigation(const UserScript& user_script,
-                                      content::NavigationHandle* navigation) {
+bool DoesContentScriptMatchNavigatingFrame(
+    const UserScript& user_script,
+    content::RenderFrameHost* navigating_frame,
+    const GURL& navigation_target) {
   // A special URLLoaderFactory is only needed for Javascript content scripts
   // (and is never needed for CSS-only injections).
   if (user_script.js_scripts().empty())
     return false;
 
-  content::RenderFrameHost* frame = navigation->GetRenderFrameHost();
-  GURL effective_url = GetEffectiveDocumentURL(frame, navigation->GetURL(),
-                                               user_script.match_about_blank());
-  bool is_subframe = frame->GetParent();
+  GURL effective_url = GetEffectiveDocumentURL(
+      navigating_frame, navigation_target, user_script.match_about_blank());
+  bool is_subframe = navigating_frame->GetParent();
   return user_script.MatchesDocument(effective_url, is_subframe);
-}
-
-// If |extension|'s manifest declares that it may inject JavaScript content
-// script into the target of |navigation|, then DoContentScriptsMatchNavigation
-// returns true.  Otherwise it may return either true or false.  Note that this
-// function ignores CSS content scripts.
-bool DoContentScriptsMatchNavigation(const Extension& extension,
-                                     content::NavigationHandle* navigation) {
-  const UserScriptList& list =
-      ContentScriptsInfo::GetContentScripts(&extension);
-  return std::any_of(list.begin(), list.end(),
-                     [navigation](const std::unique_ptr<UserScript>& script) {
-                       return DoesContentScriptMatchNavigation(*script,
-                                                               navigation);
-                     });
-}
-
-void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-    content::RenderFrameHost* frame,
-    std::vector<url::Origin> request_initiators,
-    bool push_to_renderer_now) {
-  DCHECK(!request_initiators.empty());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-        std::move(request_initiators), push_to_renderer_now);
-  } else {
-    // TODO(lukasza): In non-NetworkService implementation of CORB, make an
-    // exception only for specific extensions (e.g. based on process id,
-    // similarly to how r585124 does it for plugins).  Doing so will likely
-    // interfere with Extensions.CrossOriginFetchFromContentScript2 Rappor
-    // metric, so this needs to wait until this metric is not needed anymore.
-  }
 }
 
 }  // namespace
 
 // static
+bool URLLoaderFactoryManager::DoContentScriptsMatchNavigatingFrame(
+    const Extension& extension,
+    content::RenderFrameHost* navigating_frame,
+    const GURL& navigation_target) {
+  const UserScriptList& list =
+      ContentScriptsInfo::GetContentScripts(&extension);
+  return std::any_of(list.begin(), list.end(),
+                     [navigating_frame, navigation_target](
+                         const std::unique_ptr<UserScript>& script) {
+                       return DoesContentScriptMatchNavigatingFrame(
+                           *script, navigating_frame, navigation_target);
+                     });
+}
+
+// static
 void URLLoaderFactoryManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation) {
   content::RenderFrameHost* frame = navigation->GetRenderFrameHost();
+  const GURL& url = navigation->GetURL();
 
   std::vector<url::Origin> initiators_requiring_separate_factory;
   const ExtensionRegistry* registry =
@@ -214,7 +216,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
   DCHECK(registry);  // ReadyToCommitNavigation shouldn't run during shutdown.
   for (const auto& it : registry->enabled_extensions()) {
     const Extension& extension = *it;
-    if (!DoContentScriptsMatchNavigation(extension, navigation))
+    if (!DoContentScriptsMatchNavigatingFrame(extension, frame, url))
       continue;
 
     if (!IsSpecialURLLoaderFactoryRequired(extension,

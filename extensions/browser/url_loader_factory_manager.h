@@ -7,9 +7,11 @@
 
 #include "base/macros.h"
 #include "content/public/browser/navigation_handle.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/host_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 class RenderFrameHost;
@@ -21,6 +23,8 @@ class Origin;
 }  // namespace url
 
 namespace extensions {
+
+class URLLoaderFactoryManagerBrowserTest;
 
 // This class manages URLLoaderFactory objects that handle network requests that
 // require extension-specific permissions (related to relaxed CORB and CORS).
@@ -64,6 +68,16 @@ class URLLoaderFactoryManager {
       const url::Origin& initiator_origin);
 
  private:
+  // If |extension|'s manifest declares that it may inject JavaScript content
+  // script into the |navigating_frame| / |navigation_target|, then
+  // DoContentScriptsMatchNavigation returns true.  Otherwise it may return
+  // either true or false.  Note that this method ignores CSS content scripts.
+  static bool DoContentScriptsMatchNavigatingFrame(
+      const Extension& extension,
+      content::RenderFrameHost* navigating_frame,
+      const GURL& navigation_target);
+  friend class URLLoaderFactoryManagerBrowserTest;
+
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryManager);
 };
 

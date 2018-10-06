@@ -462,6 +462,7 @@ source_set("browser_tests") {
     "guest_view/web_view/web_view_apitest.cc",
     "guest_view/web_view/web_view_apitest.h",
     "guest_view/web_view/web_view_media_access_apitest.cc",
+    "url_loader_factory_manager_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
