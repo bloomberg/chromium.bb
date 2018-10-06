@@ -330,7 +330,6 @@
 <translation id="320323717674993345">Zrušit platbu</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="3209375525920864198">Zadejte prosím platný název relace.</translation>
-<translation id="3211223744486044430">Abyste příště mohli zaplatit rychleji, uložte si tuto kartu do účtu Google nebo na toto zařízení.</translation>
 <translation id="3225919329040284222">Server se prokázal certifikátem, který neodpovídá integrovaným očekáváním. Tato očekávaní jsou zahrnuta u určitých webových stránek s vysokou úrovní zabezpečení kvůli vaší ochraně.</translation>
 <translation id="3226128629678568754">Klikněte na tlačítko Načíst znovu. Tím znovu odešlete údaje potřebné k načtení stránky.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -977,7 +976,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Přidat</translation>
-<translation id="7793553086574152071">Abyste příště mohli zaplatit rychleji, uložte si tuto kartu do účtu Google.</translation>
 <translation id="7793809570500803535">Webové stránky na adrese <ph name="SITE" /> jsou možná dočasně nedostupné nebo mohly být přemístěny na novou webovou adresu.</translation>
 <translation id="7800304661137206267">Připojení je šifrováno pomocí standardu <ph name="CIPHER" /> s algoritmem <ph name="MAC" /> pro ověřování zpráv a mechanizmem výměny klíčů <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Web je důvěryhodný</translation>

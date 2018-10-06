@@ -530,9 +530,6 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
       Když tato zásada není nakonfigurována nebo je nastavena na možnost „Nefiltrovat weby s obsahem pouze pro dospělé“, weby se nefiltrují.
 
       Když je tato zásada nastavená na možnost „Filtrovat weby nejvyšší úrovně s obsahem pouze pro dospělé“, weby klasifikované jako pornografické budou odfiltrovány.</translation>
-<translation id="2485721741875148980">Pokud je tato zásada nastavena na hodnotu True, uživatel se do prohlížeče <ph name="PRODUCT_NAME" /> před použitím musí přihlásit pomocí svého profilu. V tomto případě bude výchozí hodnota zásady BrowserGuestModeEnabled nastavena na False. Existující nepodepsané profily budou po aktivaci této zásady uzamknuty a nebudou již přístupné. Další informace najdete v článku centra nápovědy.
-
-      Pokud je tato zásada nastavena na hodnotu False nebo není nakonfigurována, může uživatel prohlížeč <ph name="PRODUCT_NAME" /> používat bez přihlášení.</translation>
 <translation id="2486371469462493753">Deaktivuje vynucování požadavků zásad Certificate Transparency pro uvedené adresy URL.
 
       Tato zásada povolí použití certifikátů pro názvy hostitelů v uvedených adresách URL bez zveřejnění prostřednictvím Certificate Transparency. Bude tak možné používat certifikáty, které by jinak byly považovány za nedůvěryhodné, protože nebyly zveřejněny. Bude však obtížnější odhalit zneužití certifikátů těchto hostitelů.
@@ -1558,11 +1555,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
       Pokud tato zásada není nastavena nebo je nastavena na prázdný řetězec nebo neplatný rozsah portů, má rozhraní WebRTC povoleno používat libovolný dostupný místní port UDP.</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
-<translation id="5302612588919538756">Podpora této zásady byla ukončena, použijte prosím namísto ní zásadu SyncDisabled.
-
-Umožňuje přihlášení uživatele do prohlížeče <ph name="PRODUCT_NAME" />.
-
-Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávnění k přihlášení do prohlížeče <ph name="PRODUCT_NAME" />, či nikoliv. Pokud zásadu nastavíte na hodnotu False, aplikace a rozšíření, které používají rozhraní chrome.identity API, nebudou fungovat. Doporučujeme namísto toho použít zásadu SyncDisabled.</translation>
 <translation id="5304269353650269372">Určuje dobu bez zásahu uživatele, po které se při napájení zařízení z baterie zobrazí okno s upozorněním.
 
           Pokud je tato zásada nastavena, určuje dobu nečinnosti uživatele, po jejímž uplynutí systém <ph name="PRODUCT_OS_NAME" /> zobrazí okno s upozorněním, že bude provedena akce z důvodu nečinnosti.

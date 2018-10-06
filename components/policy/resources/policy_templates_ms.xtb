@@ -569,9 +569,6 @@
       Apabila dasar ini tidak dikonfigurasikan atau ditetapkan kepada "Jangan tapis tapak untuk kandungan dewasa", tapak tidak akan ditapis.
 
       Apabila dasar ini ditetapkan kepada "Tapis tapak peringkat atas untuk kandungan dewasa", tapak yang diklasifikasikan sebagai pornografi akan ditapis.</translation>
-<translation id="2485721741875148980">Jika dasar ini ditetapkan kepada benar, pengguna perlu mengelog masuk ke <ph name="PRODUCT_NAME" /> menggunakan profil mereka sebelum menggunakan penyemak imbas. Selain itu, nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Harap maklum bahawa profil sedia ada yang tidak dilog masuk akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan.
-
-      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, pengguna boleh menggunakan penyemak imbas tanpa perlu mengelog masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Melumpuhkan penguatkuasaan keperluan Ketelusan Sijil kepada URL yang disenaraikan.
 
       Dasar ini membenarkan sijil bagi nama hos dalam URL yang dinyatakan, tidak didedahkan melalui Ketelusan Sijil. Pada umumnya, sijil yang tidak didedahkan kepada umum dengan betul, dikendalikan sebagai sijil yang tidak dipercayai. Namun, dasar ini membenarkan sijil yang tidak dipercayai itu untuk terus digunakan, tetapi hal ini akan menyukarkan lagi kami mengesan sijil yang tersilap dikeluarkan oleh hos tersebut.
@@ -1603,11 +1600,6 @@
 
       Jika dasar ini tidak ditetapkan, atau ditetapkan pada rentetan kosong atau julat port yang tidak sah, WebRTC dibenarkan untuk menggunakan mana-mana port UDP setempat yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
-<translation id="5302612588919538756">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan SyncDisabled.
-
-      Membenarkan pengguna log masuk ke <ph name="PRODUCT_NAME" />.
-
-      Jika anda menetapkan dasar ini, anda boleh mengkonfigurasi sama ada pengguna dibenarkan log masuk ke <ph name="PRODUCT_NAME" />. Jika dasar ini ditetapkan kepada 'False', apl dan sambungan yang menggunakan API chrome.identity akan dihalang daripada berfungsi, jadi anda mungkin mahu menggunakan SyncDisabled.</translation>
 <translation id="5304269353650269372">Menetapkan penjang masa tanpa input pengguna selepas dialog amaran dipaparkan apabila dijalankan dengan kuasa bateri.
 
           Apabila dasar ini ditetapkan, panjang masa yang pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> memaparkan dialog amaran ditentukan yang memberitahu pengguna bahawa tindakan melahu akan diambil.

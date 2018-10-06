@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Anulează plata</translation>
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3209375525920864198">Introdu un nume de sesiune valid.</translation>
-<translation id="3211223744486044430">Pentru a plăti mai rapid data viitoare, salvează cardul în Contul Google și pe acest dispozitiv.</translation>
 <translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3226128629678568754">Apăsați butonul de reîncărcare pentru a retrimite datele necesare pentru încărcarea paginii.</translation>
 <translation id="3227137524299004712">Microfon</translation>
@@ -983,7 +982,6 @@ Detalii suplimentare:
 <translation id="7764225426217299476">Adaugă o adresă</translation>
 <translation id="777702478322588152">Prefectură</translation>
 <translation id="7791543448312431591">Adaugă</translation>
-<translation id="7793553086574152071">Pentru a plăti mai rapid data viitoare, salvează acest card în Contul Google.</translation>
 <translation id="7793809570500803535">Pagina web de la <ph name="SITE" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="7800304661137206267">Conexiunea este criptată utilizând <ph name="CIPHER" />, cu <ph name="MAC" /> pentru autentificarea mesajelor și <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="7802523362929240268">Site-ul este legitim</translation>

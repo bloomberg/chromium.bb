@@ -563,9 +563,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si esta política no se habilita o se le asigna el valor "No filtrar contenido para adultos de los sitios web", no se filtrarán los sitios web.
 
       Si se le asigna el valor "Filtrar contenido para adultos de sitios web de nivel superior", se filtrarán los sitios web clasificados como pornográficos.</translation>
-<translation id="2485721741875148980">Si se asigna el valor "True" a esta política, el usuario deberá iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de utilizar el navegador. El valor predeterminado que se asigna a BrowserGuestModeEnabled es "False". Ten en cuenta que los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos tras habilitar esta política. Para obtener más información, consulta el artículo del Centro de Ayuda.
-
-      Si se asigna el valor "False" a esta política o no se configura, el usuario podrá utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">No permite que se apliquen los requisitos de la Transparencia en los Certificados a las URL incluidas.
 
       Esta política permite que los certificados relativos a los nombres de host de las URL especificadas no se revelen mediante la Transparencia en los Certificados. Esto permite que se sigan utilizando certificados que de lo contrario no se habrían considerado de confianza porque no se han hecho públicos correctamente. Sin embargo, resultará más difícil detectar los certificados que se hayan publicado indebidamente para esos hosts.
@@ -1609,11 +1606,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta política no se configura o si se le asigna una cadena vacía o un intervalo de puertos no válido, WebRTC podrá utilizar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que los usuarios puedan habilitar o inhabilitar</translation>
-<translation id="5302612588919538756">Esta política está obsoleta, pero puedes utilizar SyncDisabled en su lugar.
-
-      Permite que el usuario inicie sesión en <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política, podrás configurar si un usuario puede o no iniciar sesión en <ph name="PRODUCT_NAME" />. Además, si se establece el valor False, la política evitará que funcionen las aplicaciones y las extensiones que utilicen la API chrome.identity, de modo que es posible que prefieras utilizar SyncDisabled en su lugar.</translation>
 <translation id="5304269353650269372">Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción para que aparezca un cuadro de diálogo de advertencia cuando el dispositivo esté funcionando con batería.
 
           Cuando se establece esta política, especifica el tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia para indicarle que se va a llevar a cabo una acción por inactividad.

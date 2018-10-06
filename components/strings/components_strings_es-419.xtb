@@ -334,7 +334,6 @@
 <translation id="320323717674993345">Cancelar pago</translation>
 <translation id="3207960819495026254">Agregada a favoritos</translation>
 <translation id="3209375525920864198">Ingresa un nombre de sesión válido.</translation>
-<translation id="3211223744486044430">Para realizar pagos más rápido la próxima vez, guarda esta tarjeta en tu cuenta de Google y en este dispositivo.</translation>
 <translation id="3225919329040284222">El servidor mostró un certificado que no coincide con lo esperado. Estas expectativas se incluyen en determinados sitios web con un alto nivel de seguridad para garantizar tu protección.</translation>
 <translation id="3226128629678568754">Presiona el botón para volver a cargar y, de ese modo, enviar nuevamente los datos necesarios para cargar la página.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
@@ -984,7 +983,6 @@ Detalles adicionales:
 <translation id="7764225426217299476">Agregar dirección</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791543448312431591">Agregar</translation>
-<translation id="7793553086574152071">Para realizar pagos más rápido la próxima vez, guarda esta tarjeta en tu cuenta de Google.</translation>
 <translation id="7793809570500803535">Es posible que la página web en <ph name="SITE" /> no funcione temporalmente o se haya trasladado de manera permanente a una nueva dirección web.</translation>
 <translation id="7800304661137206267">La conexión está encriptada mediante <ph name="CIPHER" />, con <ph name="MAC" /> para la autenticación de mensajes y <ph name="KX" /> como mecanismo de intercambio clave.</translation>
 <translation id="7802523362929240268">El sitio es legítimo</translation>

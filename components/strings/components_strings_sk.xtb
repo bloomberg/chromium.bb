@@ -330,7 +330,6 @@
 <translation id="320323717674993345">Zrušiť platbu</translation>
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
 <translation id="3209375525920864198">Zadajte platný názov relácie.</translation>
-<translation id="3211223744486044430">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si túto kartu do účtu Google a tohto zariadenia.</translation>
 <translation id="3225919329040284222">Server sa preukázal certifikátom, ktorý nezodpovedá integrovaným očakávaniam. Tieto očakávania sú kvôli vašej ochrane zahrnuté pri určitých webových stránkach s vysokou úrovňou zabezpečenia.</translation>
 <translation id="3226128629678568754">Stlačením tlačidla opakovaného spustenia znova odošlete údaje potrebné na načítanie stránky.</translation>
 <translation id="3227137524299004712">Mikrofón</translation>
@@ -978,7 +977,6 @@
 <translation id="7764225426217299476">Pridať adresu</translation>
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="7791543448312431591">Pridať</translation>
-<translation id="7793553086574152071">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si túto kartu do účtu Google.</translation>
 <translation id="7793809570500803535">Webové stránky na adrese <ph name="SITE" /> môžu byť dočasne nedostupné alebo sa mohli natrvalo premiestniť na novú webovú adresu.</translation>
 <translation id="7800304661137206267">Pripojenie je šifrované pomocou štandardu <ph name="CIPHER" /> s algoritmom <ph name="MAC" /> pre overovanie správ a mechanizmom výmeny kľúčov <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Web je legitímny</translation>

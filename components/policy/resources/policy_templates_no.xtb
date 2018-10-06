@@ -548,9 +548,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Når denne regelen ikke er konfigurert eller er satt til «Ikke filtrer nettsteder for seksuelt innhold», filtreres ikke nettsteder.
 
       Når denne regelen er satt til «Filtrer toppnivånettsteder for seksuelt innhold», filtreres nettsteder som er klassifisert som pornografiske.</translation>
-<translation id="2485721741875148980">Hvis denne regelen er angitt som «sann», må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled er «usann». Vær oppmerksom på at eksisterende usignerte profiler blir låst og utilgjengelige etter at denne regelen aktiveres. Hvis du vil ha mer informasjon, kan du gå til artikkelen i brukerstøtten.
-
-      Hvis denne regelen er satt til «usann» eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Slår av bruk av krav om sertifikatåpenhet for de angitte nettadressene.
 
       Denne regelen tillater at sertifikater for vertsnavnene i de angitte nettadressene ikke vises i henhold til regelen om sertifikatåpenhet. Dermed kan sertifikater som ellers hadde blitt vurdert som upålitelige (fordi de ikke er tilstrekkelig vist offentlig), fortsatt brukes. Dette gjør det vanskeligere for verter å oppdage sertifikater som ikke er korrekt utstedt.
@@ -1575,11 +1572,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
-<translation id="5302612588919538756">Denne regelen er avviklet. Vurder å bruke SyncDisabled i stedet.
-
-      Tillater at brukeren logger på <ph name="PRODUCT_NAME" />.
-
-      Hvis du spesifiserer denne regelen, kan du konfigurere om en bruker har lov til å logge på <ph name="PRODUCT_NAME" />. Hvis denne regelen settes til false (usann), fungerer ikke apper og utvidelser som bruker chrome.identity API, så du bør vurdere å bruke SyncDisabled i stedet.</translation>
 <translation id="5304269353650269372">Angir tidsperioden uten brukeraktivitet før det vises en advarsel om at enheten går på batteristrøm.
 
           Når denne innstillingen angis, bestemmes lengden på tiden en bruker må være inaktiv før <ph name="PRODUCT_OS_NAME" /> viser en advarsel om at inaktivitetshandlingen snart brukes.

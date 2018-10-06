@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Cancel·la el pagament</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="3209375525920864198">Introdueix un nom de sessió vàlid.</translation>
-<translation id="3211223744486044430">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta al compte de Google i en aquest dispositiu.</translation>
 <translation id="3225919329040284222">El servidor ha presentat un certificat que no coincideix amb les expectatives integrades. Les expectatives s'inclouen perquè determinats llocs web d'alta seguretat us protegeixin.</translation>
 <translation id="3226128629678568754">Premeu el botó de tornar a carregar per tornar a enviar les dades necessàries per carregar la pàgina.</translation>
 <translation id="3227137524299004712">Micròfon</translation>
@@ -983,7 +982,6 @@ Detalls addicionals:
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791543448312431591">Afegeix</translation>
-<translation id="7793553086574152071">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta al compte de Google.</translation>
 <translation id="7793809570500803535">És possible que la pàgina web de <ph name="SITE" /> estigui temporalment inactiva o que s'hagi desplaçat permanentment a una adreça web nova.</translation>
 <translation id="7800304661137206267">La connexió està encriptada mitjançant <ph name="CIPHER" />, amb <ph name="MAC" /> per a l'autenticació de missatges i amb <ph name="KX" /> com a mecanisme d'intercanvi clau.</translation>
 <translation id="7802523362929240268">El lloc web és legítim</translation>

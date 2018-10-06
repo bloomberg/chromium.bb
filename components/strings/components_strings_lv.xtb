@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Atcelt maksājumu</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3209375525920864198">Lūdzu, ievadiet derīgu sesijas nosaukumu.</translation>
-<translation id="3211223744486044430">Lai nākamreiz veiktu maksājumu ērtāk, saglabājiet šīs kartes datus savā Google kontā un šajā ierīcē.</translation>
 <translation id="3225919329040284222">Serveris uzrādīja sertifikātu, kas neatbilst iebūvētajām cerībām. Šīs cerības ir ietvertas konkrētām, augstas drošības vietnēm, lai aizsargātu jūs.</translation>
 <translation id="3226128629678568754">Nospiediet atkārtotas ielādes pogu, lai atkārtoti iesniegtu datus, kas nepieciešami lapas ielādei.</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
@@ -982,7 +981,6 @@ Papildu informācija:
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="7791543448312431591">Pievienot</translation>
-<translation id="7793553086574152071">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet šīs kartes datus savā Google kontā.</translation>
 <translation id="7793809570500803535">Tīmekļa lapa vietnē <ph name="SITE" /> var īslaicīgi nebūt pieejama, vai tā var būt pārvietota uz jaunu tīmekļa adresi.</translation>
 <translation id="7800304661137206267">Savienojums ir šifrēts, izmantojot <ph name="CIPHER" />, ar <ph name="MAC" /> ziņojumu autentifikācijai un <ph name="KX" /> kā atslēgu apmaiņas mehānismu.</translation>
 <translation id="7802523362929240268">Vietne ir uzticama</translation>

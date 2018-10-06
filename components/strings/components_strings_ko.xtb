@@ -333,7 +333,6 @@
 <translation id="320323717674993345">결제 취소</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3209375525920864198">올바른 세션 이름을 입력하세요.</translation>
-<translation id="3211223744486044430">이후에 더 빠르게 결제할 수 있도록 Google 계정과 이 기기에 카드를 저장하세요.</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
 <translation id="3227137524299004712">마이크</translation>
@@ -982,7 +981,6 @@
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="777702478322588152">도</translation>
 <translation id="7791543448312431591">추가</translation>
-<translation id="7793553086574152071">이후에 더 빠르게 결제할 수 있도록 Google 계정에 카드를 저장하세요.</translation>
 <translation id="7793809570500803535"><ph name="SITE" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="7800304661137206267">메시지 인증(<ph name="MAC" />)과 키 교환 메커니즘(<ph name="KX" />)을 설정하고 <ph name="CIPHER" />을(를) 사용하여 연결이 암호화되어 있습니다.</translation>
 <translation id="7802523362929240268">정상적인 사이트</translation>

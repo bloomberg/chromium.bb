@@ -567,9 +567,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če ta pravilnik ni konfiguriran ali nastavljen na »Ne filtriraj spletnih mest za vsebino za odrasle«, spletna mesta ne bodo filtrirana.
 
       Če je ta pravilnik nastavljen na »Filtriraj vrhnja spletna mesta za vsebino za odrasle«, bodo spletna mesta, klasificirana kot pornografska, filtrirana.</translation>
-<translation id="2485721741875148980">Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi nedodeljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
-
-      Če je ta pravilnik onemogočen ali ni konfiguriran, lahko uporabnik uporablja brskalnik brez prijave v brskalnik <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Onemogoča uveljavljanje zahtev pravilnika o preglednosti potrdila za navedene URL-je.
 
       Ta pravilnik omogoča, da potrdila za imena gostiteljev v navedenih URL-jih niso razkrita na podlagi pravilnika o preglednosti potrdila. To omogoča nadaljnjo uporabo potrdil, ki bi bila sicer obravnavana, kot da niso zaupanja vredna, ker niso bila ustrezno javno razkrita, vendar otežuje odkrivanje neustrezno izdanih potrdil za te gostitelje.
@@ -1611,11 +1608,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni nastavljen ali je nastavljen na prazen niz oziroma neveljaven obseg vrat, je tehnologiji WebRTC dovoljeno uporabljati katera koli lokalna vrata UDP, ki so na voljo.</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
-<translation id="5302612588919538756">Ta pravilnik je zastarel, namesto njega lahko uporabite SyncDisabled.
-
-      Dovoljuje uporabniku prijavo v <ph name="PRODUCT_NAME" />.
-
-      Če nastavite ta pravilnik, lahko določite, ali je uporabniku dovoljena prijava v brskalnik <ph name="PRODUCT_NAME" />. Če ta pravilnik onemogočite, ne bodo delovale aplikacije in razširitve, ki uporabljajo API chrome.identity, zato uporabite SyncDisabled.</translation>
 <translation id="5304269353650269372">Določa trajanje uporabnikove nedejavnosti, po preteku katere se pokaže pogovorno okno z opozorilom, če se napaja iz akumulatorja.
 
           Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME" /> prikaže pogovorno okno z opozorilom, da bo izveden ukrep zaradi nedejavnosti.

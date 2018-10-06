@@ -549,9 +549,6 @@
       Bu politika yapılandırılmadığında veya "Yetişkinlere uygun içerik için siteleri filtreleme" seçeneğine ayarlandığında siteler filtrelenmez.
 
       Bu politika "Üst düzey siteleri yetişkinlere uygun içerik için filtrele" seçeneğine ayarlandığında, pornografik olarak sınıflandırılan siteler filtrelenir.</translation>
-<translation id="2485721741875148980">Bu politika doğru (true) değerine ayarlanırsa kullanıcının tarayıcıyı kullanmadan önce <ph name="PRODUCT_NAME" /> ürününde kendi profiliyle oturum açması gerekir. BrowserGuestModeEnabled varsayılan değeri yanlış (false) olarak ayarlanır. Bu politika etkinleştirildikten sonra mevcut imzasız profillerin kilitleneceğini ve erişilemez hale geleceğini unutmayın. Daha fazla bilgi edinmek için yardım merkezi makalesine bakabilirsiniz.
-
-      Bu politika yanlış (false) değerine ayarlanır veya yapılandırılmazsa kullanıcı <ph name="PRODUCT_NAME" /> ürününde oturum açmadan tarayıcıyı kullanabilir.</translation>
 <translation id="2486371469462493753">Listelenen URL'lere Sertifika Şeffaflığı gereksinimlerinin uygulanmasını devre dışı bırakır.
 
       Bu politika, belirtilen URL'lerdeki ana makine adlarına ilişkin sertifikaların Sertifika Şeffaflığı aracılığıyla açıklanmamasına izin verir. Bu izin, herkese açık olarak gerektiği gibi açıklanmadıkları için normalde güvenilmez olacak sertifikaların kullanılmaya devam edilmesine olanak tanır. Ancak bu durum, ana makinelere ilişkin sertifikalardan yanlış yayınlananların algılanmasını zorlaştırır.
@@ -1582,11 +1579,6 @@ politikayı geçersiz kılamaz.
 
       Politika ayarlanmazsa veya boş dize değerine ya da geçersiz bir bağlantı noktası aralığına ayarlanırsa, WebRTC'nin kullanılabilir herhangi bir yerel UDP bağlantı noktasını kullanmasına izin verilir.</translation>
 <translation id="5290940294294002042">Kullanıcının etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirt</translation>
-<translation id="5302612588919538756">Bu politika kullanımdan kaldırılmıştır. Bunun yerine SyncDisabled'i kullanmayı düşünün.
-
-      Kullanıcının <ph name="PRODUCT_NAME" /> ürününde oturum açmasına olanak verir.
-
-      Bu politikayı ayarlarsanız, bir kullanıcının <ph name="PRODUCT_NAME" /> ürününde oturum açmasına izin verilip verilmeyeceğini yapılandırabilirsiniz. Bu politika "Yanlış" seçeneğine ayarlanırsa, chrome.identity API'sını kullanan uygulamaların ve uzantıların çalışması engelleneceğinden, onun yerine SyncDisabled'ı kullanmak isteyebilirsiniz.</translation>
 <translation id="5304269353650269372">Pil gücüyle çalışırken, kullanıcı girişi olmadan ne kadar zaman sonra bir uyarı iletişim kutusunun görüntüleneceğini belirler.
 
           Bu politika ayarlandığında, <ph name="PRODUCT_OS_NAME" /> kullanıcıya boşta kalma durumundaki işlemin gerçekleştirileceğini bildiren bir uyarı iletişim kutusu görüntülemeden önce kullanıcının boşta kalması gereken süreyi belirtir.

@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Prekliči plačilo</translation>
 <translation id="3207960819495026254">Zaznamovano</translation>
 <translation id="3209375525920864198">Vnesite veljavno ime seje.</translation>
-<translation id="3211223744486044430">Če želite naslednjič hitreje plačati, shranite to kartico v Google Računu in v tej napravi.</translation>
 <translation id="3225919329040284222">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za vnovično nalaganje, da znova pošljete podatke za nalaganje strani.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -983,7 +982,6 @@ Dodatne podrobnosti:
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7793553086574152071">Če želite naslednjič hitreje plačati, shranite to kartico v Google Računu.</translation>
 <translation id="7793809570500803535">Spletna stran na <ph name="SITE" /> morda začasno ne deluje ali pa je trajno premaknjena na nov spletni naslov.</translation>
 <translation id="7800304661137206267">Povezava je šifrirana s <ph name="CIPHER" /> in uporablja <ph name="MAC" /> za preverjanje pristnosti sporočil ter <ph name="KX" /> kot mehanizem za izmenjavo ključev.</translation>
 <translation id="7802523362929240268">Spletno mesto je legitimno</translation>

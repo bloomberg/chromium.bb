@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Ödemeyi iptal et</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3209375525920864198">Lütfen geçerli bir oturum adı girin.</translation>
-<translation id="3211223744486044430">Bir dahaki sefere daha hızlı ödeme yapmak için bu kartı Google Hesabınıza ve bu cihaza kaydedin.</translation>
 <translation id="3225919329040284222">Sunucu, yerleşik beklentilerle eşleşmeyen bir sertifika sundu. Bu beklentiler sizi korumak amacıyla bazı yüksek güvenlikli web sitelerinde bulunur.</translation>
 <translation id="3226128629678568754">Sayfayı yüklemek üzere gereken verileri tekrar göndermek için yeniden yükle düğmesine basın.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -983,7 +982,6 @@ Ek ayrıntılar:
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="777702478322588152">İdari bölge</translation>
 <translation id="7791543448312431591">Ekle</translation>
-<translation id="7793553086574152071">Bir dahaki sefere daha hızlı ödeme yapmak için bu kartı Google Hesabınıza kaydedin.</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> adresindeki Web sayfası geçici olarak kullanılamıyor veya kalıcı olarak yeni bir Web adresine taşınmış olabilir.</translation>
 <translation id="7800304661137206267">Bağlantı, ileti kimlik doğrulaması için <ph name="MAC" /> ve anahtar değişim mekanizması olarak <ph name="KX" /> kullanılan <ph name="CIPHER" /> ile şifrelenmiştir.</translation>
 <translation id="7802523362929240268">Site meşrudur</translation>

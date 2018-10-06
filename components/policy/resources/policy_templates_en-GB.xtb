@@ -567,9 +567,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is not configured or set to 'Do not filter sites for adult content', sites will not be filtered.
 
       When this policy is set to 'Filter top-level sites for adult content', sites classified as pornographic will be filtered.</translation>
-<translation id="2485721741875148980">If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see Help Centre article.
-
-      If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Disables enforcing Certificate Transparency requirements to the listed URLs.
 
       This policy allows certificates for the hostnames in the specified URLs to not be disclosed via Certificate Transparency. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used, but makes it harder to detect miss-isued certificates for those hosts.
@@ -1609,11 +1606,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
-<translation id="5302612588919538756">This policy is deprecated, consider using SyncDisabled instead.
-
-      Allows the user to sign in to <ph name="PRODUCT_NAME" />.
-
-      If you set this policy, you can configure whether a user is allowed to sign in to <ph name="PRODUCT_NAME" />. Setting this policy to 'False' will prevent apps and extensions that use the chrome.identity API from functioning, so you may want to use SyncDisabled instead.</translation>
 <translation id="5304269353650269372">Specifies the length of time without user input after which a warning dialogue is shown when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.

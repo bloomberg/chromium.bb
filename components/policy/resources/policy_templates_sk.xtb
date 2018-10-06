@@ -543,9 +543,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Keď toto pravidlo nenakonfigurujete alebo nastavíte na možnosť Nefiltrovať weby podľa obsahu pre dospelých, weby nebudú filtrované.
 
       Ak ho nastavíte na možnosť Filtrovať weby najvyššej úrovne podľa obsahu pre dospelých, budú sa filtrovať weby klasifikované ako pornografické.</translation>
-<translation id="2485721741875148980">Ak toto pravidlo nastavíte na možnosť True, používateľ sa musí prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho profilu ešte predtým, ako ho začne používať. Predvolená hodnota parametra BrowserGuestModeEnabled bude nastavená na možnosť False. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a zneprístupnia. Ďalšie informácie nájdete v článku centra pomoci.
-
-      Ak toto pravidlo nastavíte na možnosť False alebo ho nenakonfigurujete, používateľ môže používať prehliadač <ph name="PRODUCT_NAME" /> bez prihlásenia.</translation>
 <translation id="2486371469462493753">Zakáže vynucovanie požiadaviek pravidla transparentnosti certifikátov pre uvedené webové adresy.
 
       Toto pravidlo umožňuje, aby certifikáty názvov hostiteľov na uvedených webových adresách neboli zverejňované prostredníctvom pravidla transparentnosti certifikátov. Umožňuje to ďalšie používanie certifikátov, ktoré by boli inak nedôveryhodné, pretože neboli správne zverejnené. Sťažuje to však zistenie zneužitých certifikátov takýchto hostiteľov.
@@ -1581,11 +1578,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo nenastavíte, použijete prázdny reťazec alebo neplatný rozsah portov, rozhranie WebRTC bude môcť použiť ľubovoľný dostupný miestny port UDP.</translation>
 <translation id="5290940294294002042">Určiť zoznam doplnkov, ktoré môže používateľ povoliť alebo zakázať</translation>
-<translation id="5302612588919538756">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo SyncDisabled.
-
-      Umožňuje prihlásenie používateľa do prehliadača <ph name="PRODUCT_NAME" />.
-
-      Ak toto pravidlo nastavíte, môžete nakonfigurovať, či má používateľ povolenie na prihlásenie do prehliadača <ph name="PRODUCT_NAME" />. Ak toto pravidlo nastavíte na možnosť False, zabránite tým fungovaniu aplikácií a rozšírení, ktoré používajú rozhranie chrome.identity API. Zvážte radšej použitie pravidla SyncDisabled.</translation>
 <translation id="5304269353650269372">Určuje časové obdobie bez zásahu používateľa, po ktorom sa pri napájaní zariadenia z batérie zobrazí okno s upozornením.
 
           Ak je pravidlo nastavené, určuje časové obdobie nečinnosti používateľa, po uplynutí ktorého aplikácia <ph name="PRODUCT_OS_NAME" /> zobrazí okno s upozornením, že sa vykoná akcia z dôvodu nečinnosti.
