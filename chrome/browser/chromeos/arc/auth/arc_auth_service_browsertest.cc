@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
@@ -77,12 +78,19 @@ constexpr char kFakeUserName[] = "test@example.com";
 constexpr char kFakeGaiaId[] = "1234567890";
 constexpr char kFakeAuthCode[] = "fake-auth-code";
 
+std::string GetFakeAuthTokenResponse() {
+  return base::StringPrintf(R"({ "token" : "%s"})", kFakeAuthCode);
+}
+
 }  // namespace
 
 namespace arc {
 
 class FakeAuthInstance : public mojom::AuthInstance {
  public:
+  FakeAuthInstance() : weak_ptr_factory_(this) {}
+  ~FakeAuthInstance() override = default;
+
   // mojom::AuthInstance:
   void InitDeprecated(mojom::AuthHostPtr host) override {
     Init(std::move(host), base::DoNothing());
@@ -93,23 +101,39 @@ class FakeAuthInstance : public mojom::AuthInstance {
     std::move(callback).Run();
   }
 
-  void OnAccountInfoReady(mojom::AccountInfoPtr account_info,
-                          mojom::ArcSignInStatus status) override {
+  void OnAccountInfoReadyDeprecated(mojom::AccountInfoPtr account_info,
+                                    mojom::ArcSignInStatus status) override {
     account_info_ = std::move(account_info);
     std::move(done_closure_).Run();
   }
 
-  void RequestAccountInfo(base::OnceClosure done_closure) {
+  void RequestAccountInfoDeprecated(base::OnceClosure done_closure) {
     done_closure_ = std::move(done_closure);
-    host_->RequestAccountInfo(true /* initial_signin */);
+    host_->RequestAccountInfoDeprecated(true /* initial_signin */);
+  }
+
+  void RequestPrimaryAccountInfo(base::OnceClosure done_closure) {
+    host_->RequestPrimaryAccountInfo(base::BindOnce(
+        &FakeAuthInstance::OnAccountInfoResponse,
+        weak_ptr_factory_.GetWeakPtr(), std::move(done_closure)));
   }
 
   mojom::AccountInfo* account_info() { return account_info_.get(); }
 
  private:
+  void OnAccountInfoResponse(base::OnceClosure done_closure,
+                             mojom::ArcSignInStatus status,
+                             mojom::AccountInfoPtr account_info) {
+    account_info_ = std::move(account_info);
+    std::move(done_closure).Run();
+  }
+
   mojom::AuthHostPtr host_;
   mojom::AccountInfoPtr account_info_;
   base::OnceClosure done_closure_;
+
+  base::WeakPtrFactory<FakeAuthInstance> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(FakeAuthInstance);
 };
 
 class ArcAuthServiceTest : public InProcessBrowserTest {
@@ -299,16 +323,38 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
 
+// Tests that when ARC requests account info for a non-managed account, via
+// |RequestAccountInfoDeprecated| API, Chrome supplies the info configured in
+// SetAccountAndProfile() method.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       SuccessfulBackgroundFetchViaDeprecatedApi) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
 // Tests that when ARC requests account info for a non-managed account,
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  test_url_loader_factory().AddResponse(
-      arc::kAuthTokenExchangeEndPoint,
-      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
-  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
@@ -390,6 +436,34 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
   DISALLOW_COPY_AND_ASSIGN(ArcRobotAccountAuthServiceTest);
 };
 
+// Tests that when ARC requests account info for a demo session account, via
+// |RequestAccountInfoDeprecated| API, Chrome supplies the info configured in
+// SetAccountAndProfile() above.
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
+                       GetDemoAccountViaDeprecatedApi) {
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  chromeos::DemoSession::StartIfInDemoMode();
+
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
+  interceptor()->PushJobCallback(
+      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
 // Tests that when ARC requests account info for a demo session account,
 // Chrome supplies the info configured in SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
@@ -403,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
       base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
 
   base::RunLoop run_loop;
-  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
@@ -416,6 +490,27 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
+                       GetOfflineDemoAccountViaDeprecatedApi) {
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOffline);
+  chromeos::DemoSession::StartIfInDemoMode();
+
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
+  EXPECT_TRUE(auth_instance().account_info()->auth_code.value().empty());
+  EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_TRUE(auth_instance().account_info()->is_managed);
+}
+
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOffline);
@@ -424,7 +519,31 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
   base::RunLoop run_loop;
-  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
+  EXPECT_TRUE(auth_instance().account_info()->auth_code.value().empty());
+  EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_TRUE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
+                       GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi) {
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  chromeos::DemoSession::StartIfInDemoMode();
+
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
+  interceptor()->PushJobCallback(
+      policy::TestRequestInterceptor::HttpErrorJob("404 Not Found"));
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
@@ -448,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
       policy::TestRequestInterceptor::HttpErrorJob("404 Not Found"));
 
   base::RunLoop run_loop;
-  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
@@ -477,17 +596,40 @@ class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceChildAccountTest);
 };
 
+// Tests that when ARC requests account info for a child account, via
+// |RequestAccountInfoDeprecated| and Chrome supplies the info configured in
+// SetAccountAndProfile() above.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
+                       ChildAccountFetchViaDeprecatedApi) {
+  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
+  EXPECT_TRUE(profile()->IsChild());
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::CHILD_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
 // Tests that when ARC requests account info for a child account and
 // Chrome supplies the info configured in SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
-  test_url_loader_factory().AddResponse(
-      arc::kAuthTokenExchangeEndPoint,
-      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
 
   base::RunLoop run_loop;
-  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());

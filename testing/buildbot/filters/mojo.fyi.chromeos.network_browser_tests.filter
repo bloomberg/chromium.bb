@@ -99,7 +99,9 @@
 -ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoError
 -ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoSuccess
 -ArcRobotAccountAuthServiceTest.GetDemoAccount
+-ArcRobotAccountAuthServiceTest.GetDemoAccountViaDeprecatedApi
 -ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailure
+-ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi
 
 # Relies on net::URLRequestInterceptor.
 # https://crbug.com/884782
