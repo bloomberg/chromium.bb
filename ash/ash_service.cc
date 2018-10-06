@@ -227,17 +227,8 @@ void AshService::CreateFrameSinkManager() {
   viz::mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
       mojo::MakeRequest(&frame_sink_manager_client);
 
-  viz::mojom::FrameSinkManagerParamsPtr params =
-      viz::mojom::FrameSinkManagerParams::New();
-  params->restart_id = viz::BeginFrameSource::kNotRestartableId + 1;
-  base::Optional<uint32_t> activation_deadline_in_frames =
-      switches::GetDeadlineToSynchronizeSurfaces();
-  params->use_activation_deadline = activation_deadline_in_frames.has_value();
-  params->activation_deadline_in_frames =
-      activation_deadline_in_frames.value_or(0u);
-  params->frame_sink_manager = std::move(frame_sink_manager_request);
-  params->frame_sink_manager_client = frame_sink_manager_client.PassInterface();
-  gpu_host_->CreateFrameSinkManager(std::move(params));
+  gpu_host_->CreateFrameSinkManager(std::move(frame_sink_manager_request),
+                                    frame_sink_manager_client.PassInterface());
 
   host_frame_sink_manager_->BindAndSetManager(
       std::move(frame_sink_manager_client_request), nullptr /* task_runner */,

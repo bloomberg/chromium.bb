@@ -818,6 +818,10 @@ bool GpuProcessHost::Init() {
     return false;
   }
 
+  viz::mojom::VizMainAssociatedPtr viz_main_ptr;
+  process_->child_channel()
+      ->GetAssociatedInterfaceSupport()
+      ->GetRemoteAssociatedInterface(&viz_main_ptr);
   viz::GpuHostImpl::InitParams params;
   params.restart_id = host_id_;
   params.in_process = in_process_;
@@ -830,7 +834,8 @@ bool GpuProcessHost::Init() {
   params.main_thread_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
-      this, process_->child_channel(), std::move(params));
+      this, std::make_unique<viz::VizMainWrapper>(std::move(viz_main_ptr)),
+      std::move(params));
 
 #if defined(OS_MACOSX)
   ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);
@@ -920,7 +925,7 @@ gpu::GpuFeatureInfo GpuProcessHost::GetGpuFeatureInfo() const {
   return GpuDataManagerImpl::GetInstance()->GetGpuFeatureInfo();
 }
 
-void GpuProcessHost::UpdateGpuInfo(
+void GpuProcessHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,

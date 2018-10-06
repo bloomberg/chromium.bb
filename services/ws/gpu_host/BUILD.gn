@@ -14,6 +14,7 @@ source_set("gpu_host") {
   deps = [
     "//base",
     "//components/discardable_memory/service",
+    "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service/main",  # TODO(sad): Temporary until GPU process split.
     "//gpu/command_buffer/client",
@@ -50,21 +51,6 @@ source_set("gpu_host") {
   ]
 }
 
-static_library("test_support") {
-  testonly = true
-
-  sources = [
-    "test_gpu_host.cc",
-    "test_gpu_host.h",
-  ]
-
-  deps = [
-    ":gpu_host",
-    "//base",
-    "//components/viz/test:test_support",
-  ]
-}
-
 source_set("tests") {
   testonly = true
 
@@ -78,6 +64,7 @@ source_set("tests") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//components/discardable_memory/service",
+    "//components/viz/host",
     "//components/viz/service",
     "//components/viz/service/main",
     "//components/viz/test:test_support",
