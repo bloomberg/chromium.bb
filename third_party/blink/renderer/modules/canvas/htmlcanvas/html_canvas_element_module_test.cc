@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
 
 using ::testing::_;
 using ::testing::Values;
@@ -90,9 +91,12 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   CanvasContextCreationAttributesCore attrs;
   attrs.alpha = context_alpha;
   attrs.low_latency = true;
-  // |context_| creation triggers a SurfaceLayerBridge creation which in turn
-  // connects to our MockEmbeddedFrameSinkProvider.
-  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink(_));
+  // |context_| creation triggers a SurfaceLayerBridge creation which connects
+  // to a MockEmbeddedFrameSinkProvider to create a new CompositorFrameSink,
+  // that will receive a SetNeedsBeginFrame() upon construction.
+  mock_embedded_frame_sink_provider
+      .set_num_expected_set_needs_begin_frame_on_sink_construction(1);
+  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_));
   context_ = canvas_element().GetCanvasRenderingContext(String("2d"), attrs);
   EXPECT_EQ(context_->CreationAttributes().alpha, attrs.alpha);
   EXPECT_TRUE(context_->CreationAttributes().low_latency);
@@ -100,12 +104,12 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   EXPECT_TRUE(canvas_element().SurfaceLayerBridge());
   platform->RunUntilIdle();
 
-  // This call simulates having drawn something before FinalizeFrame()
+  // This call simulates having drawn something before FinalizeFrame().
   canvas_element().DidDraw();
 
   ::testing::InSequence s;
-  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              DoSubmitCompositorFrameSync(_))
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
+              SubmitCompositorFrameSync_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
             ASSERT_EQ(frame->render_pass_list.size(), 1u);
@@ -120,7 +124,7 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
             EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
                       context_alpha);
           })));
-  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
               DidAllocateSharedBitmap(_, _));
   canvas_element().FinalizeFrame();
   platform->RunUntilIdle();

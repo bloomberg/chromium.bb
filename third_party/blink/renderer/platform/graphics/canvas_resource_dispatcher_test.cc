@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -213,7 +214,7 @@ TEST_P(CanvasResourceDispatcherTest, DispatchFrame) {
   // CanvasResourceDispatcher ctor will cause a CreateCompositorFrameSink() to
   // be issued.
   EXPECT_CALL(mock_embedded_frame_sink_provider,
-              CreateCompositorFrameSink(viz::FrameSinkId(kClientId, kSinkId)));
+              CreateCompositorFrameSink_(viz::FrameSinkId(kClientId, kSinkId)));
   platform->RunUntilIdle();
 
   auto canvas_resource = CanvasResourceSharedBitmap::Create(
@@ -231,8 +232,8 @@ TEST_P(CanvasResourceDispatcherTest, DispatchFrame) {
   ASSERT_LE(kDamageHeight, kHeight);
 
   EXPECT_CALL(*(Dispatcher()), PostImageToPlaceholder(_, _));
-  EXPECT_CALL(*mock_embedded_frame_sink_provider.mock_compositor_frame_sink_,
-              DoSubmitCompositorFrame(_))
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
+              SubmitCompositorFrame_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
             const viz::RenderPass* render_pass =
