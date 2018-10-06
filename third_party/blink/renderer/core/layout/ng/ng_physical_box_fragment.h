@@ -25,7 +25,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         Vector<NGLink>& children,
                         const NGPhysicalBoxStrut& border,
                         const NGPhysicalBoxStrut& padding,
-                        const NGPhysicalOffsetRect& contents_ink_overflow,
                         Vector<NGBaseline>& baselines,
                         NGBoxType box_type,
                         bool is_fieldset_container,
@@ -70,6 +69,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   // Ink overflow including contents, in the local coordinates.
   NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
+
+  // Ink overflow of children in local coordinates.
+  NGPhysicalOffsetRect ContentsInkOverflow() const;
+
+  NGPhysicalOffsetRect ComputeContentsInkOverflow() const;
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.

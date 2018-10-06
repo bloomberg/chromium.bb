@@ -288,13 +288,11 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
 
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
-  NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
   DCHECK_EQ(children_.size(), offsets_.size());
   for (size_t i = 0; i < children_.size(); i++) {
     auto& child = children_[i];
     child.offset_ = offsets_[i].ConvertToPhysical(
         block_or_line_writing_mode, Direction(), physical_size, child->Size());
-    child->PropagateContentsInkOverflow(&contents_ink_overflow, child.Offset());
   }
 
   scoped_refptr<NGBreakToken> break_token;
@@ -324,10 +322,10 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), style_variant_, physical_size, children_,
           borders_.ConvertToPhysical(GetWritingMode(), Direction()),
-          padding_.ConvertToPhysical(GetWritingMode(), Direction()),
-          contents_ink_overflow, baselines_, BoxType(), is_fieldset_container_,
-          is_rendered_legend, is_old_layout_root_,
-          border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
+          padding_.ConvertToPhysical(GetWritingMode(), Direction()), baselines_,
+          BoxType(), is_fieldset_container_, is_rendered_legend,
+          is_old_layout_root_, border_edges_.ToPhysical(GetWritingMode()),
+          std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;
 

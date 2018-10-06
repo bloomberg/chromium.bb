@@ -20,7 +20,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
                             NGStyleVariant style_variant,
                             NGPhysicalSize size,
                             Vector<NGLink>& children,
-                            const NGPhysicalOffsetRect& contents_ink_overflow,
                             const NGLineHeightMetrics&,
                             TextDirection base_direction,
                             scoped_refptr<NGBreakToken> break_token = nullptr);
@@ -39,6 +38,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   // Ink overflow of itself including contents, in the local coordinate.
   NGPhysicalOffsetRect InkOverflow() const;
+
+  // Ink overflow of children in local coordinates.
+  NGPhysicalOffsetRect ContentsInkOverflow() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   // ScrollableOverflow is not precomputed/cached because it cannot be computed
