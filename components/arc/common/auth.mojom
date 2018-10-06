@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 15
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -191,7 +191,7 @@ struct AccountInfo {
   bool is_managed@2;
 };
 
-// Next Method ID: 12.
+// Next Method ID: 14.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
@@ -209,7 +209,8 @@ interface AuthHost {
   // Asynchronously requests an authorization code, as well as the account
   // information. If |initial_signin| is true then that means request is for
   // initial signin flow. Otherwise it is used for reauthorization flow.
-  [MinVersion=5] RequestAccountInfo@7([MinVersion=11] bool initial_signin);
+  [MinVersion=5] RequestAccountInfoDeprecated@7(
+      [MinVersion=11] bool initial_signin);
 
   // Reports metrics to Chrome to be recorded in UMA.
   [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);
@@ -223,6 +224,26 @@ interface AuthHost {
   // a transition was necessary.
   [MinVersion=13] ReportSupervisionChangeStatus@11(
       SupervisionChangeStatus status);
+
+  // Requests an authorization code, as well as the account information for the
+  // Primary/Device Account in Chrome OS Account Manager.
+  // This is called for ARC's initial provisioning flow.
+  // If the request completes successfully, |status| must be SUCCESS and
+  // |account_info| is not null.
+  // In case of an error, |status| must contain the reason of failure, other
+  // than SUCCESS, and |account_info| is null.
+  [MinVersion=15] RequestPrimaryAccountInfo@12()
+      => (ArcSignInStatus status, AccountInfo? account_info);
+
+  // Requests an authorization code, as well as the account information for an
+  // account in Chrome OS Account Manager.
+  // This must be called after ARC's initial provisioning flow is complete.
+  // If the request completes successfully, |status| must be SUCCESS and
+  // |account_info| is not null.
+  // In case of an error, |status| must contain the reason of failure, other
+  // than SUCCESS, and |account_info| is null.
+  [MinVersion=15] RequestAccountInfo@13(string account_name)
+      => (ArcSignInStatus status, AccountInfo? account_info);
 };
 
 // Next Method ID: 3
@@ -236,11 +257,11 @@ interface AuthInstance {
   // Callback from RequestAccountInfo. This cannot be a normal callback since
   // the result can sometimes take a few minutes in some cases (Kiosk mode),
   // and in other cases there is a UI that the user is shown and they can take
-  // an arbitrarily long amount of time to interact with. If request completes
-  // successfully, |account_info| is not null and |status| must be SUCCESS.
-  // In case of error |account_info| is null, |status| must contain the reason
-  // of failure, other than SUCCESS.
-  [MinVersion=5] OnAccountInfoReady@1(
+  // an arbitrarily long amount of time to interact with.
+  // If the request completes successfully, |status| must be SUCCESS and
+  // |account_info| is not null.
+  // In case of an error, |status| must contain the reason of failure, other
+  // than SUCCESS, and |account_info| is null.
+  [MinVersion=5] OnAccountInfoReadyDeprecated@1(
       AccountInfo? account_info, [MinVersion=10] ArcSignInStatus status);
-
 };
