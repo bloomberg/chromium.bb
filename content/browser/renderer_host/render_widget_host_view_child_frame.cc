@@ -348,9 +348,12 @@ gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   // OOPIF-webview, we need to return the native view to be used by
   // RenderWidgetHostViewGuest. Remove this once https://crbug.com/642826 is
   // fixed.
-  if (frame_connector_)
-    return frame_connector_->GetParentRenderWidgetHostView()->GetNativeView();
-  return nullptr;
+  if (!frame_connector_)
+    return nullptr;
+
+  RenderWidgetHostView* parent_view =
+      frame_connector_->GetParentRenderWidgetHostView();
+  return parent_view ? parent_view->GetNativeView() : nullptr;
 }
 
 gfx::NativeViewAccessible
