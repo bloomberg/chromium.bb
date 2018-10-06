@@ -570,10 +570,6 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary() {
   return !encrypted_types.Has(type_) || trans.GetCryptographer()->is_ready();
 }
 
-void GenericChangeProcessor::Disconnect() {
-  local_service_.reset();
-}
-
 void GenericChangeProcessor::StartImpl() {}
 
 UserShare* GenericChangeProcessor::share_handle() const {
