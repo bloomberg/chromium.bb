@@ -33,7 +33,10 @@ KeyedService* HatsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  return new HatsService(profile);
+  return (profile->IsOffTheRecord() || profile->IsGuestSession() ||
+          profile->IsSystemProfile())
+             ? nullptr
+             : new HatsService(profile);
 }
 
 HatsServiceFactory::~HatsServiceFactory() {}

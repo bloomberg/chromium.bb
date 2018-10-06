@@ -10,6 +10,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
