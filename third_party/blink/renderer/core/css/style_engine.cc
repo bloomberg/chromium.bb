@@ -318,11 +318,13 @@ void StyleEngine::AdoptedStyleSheetsWillChange(TreeScope& tree_scope,
   SetNeedsActiveStyleUpdate(tree_scope);
 }
 
-void StyleEngine::AddedCustomElementDefaultStyle(CSSStyleSheet* default_style) {
+void StyleEngine::AddedCustomElementDefaultStyles(
+    const HeapVector<Member<CSSStyleSheet>>& default_styles) {
   if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() ||
       GetDocument().IsDetached())
     return;
-  custom_element_default_style_sheets_.insert(default_style);
+  for (CSSStyleSheet* sheet : default_styles)
+    custom_element_default_style_sheets_.insert(sheet);
   global_rule_set_->MarkDirty();
 }
 

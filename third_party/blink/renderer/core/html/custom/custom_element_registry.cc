@@ -212,8 +212,9 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
   if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
-      options.hasStyle())
-    definition->SetDefaultStyleSheet(*options.style());
+      options.hasStyles())
+    definition->SetDefaultStyleSheets(options.styles());
+
   definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
