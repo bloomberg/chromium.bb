@@ -221,13 +221,6 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     if (!local_rect_.IsEmpty()) {
       new_visual_rect = local_rect_;
       context.MapLocalRectToVisualRect(*layout_block_, new_visual_rect);
-
-      if (layout_block_->UsesCompositedScrolling()) {
-        // The caret should use scrolling coordinate space.
-        DCHECK(layout_block_ == context.paint_invalidation_container);
-        new_visual_rect.Move(
-            LayoutSize(layout_block_->ScrolledContentOffset()));
-      }
     }
   } else {
     new_visual_rect = visual_rect_;
