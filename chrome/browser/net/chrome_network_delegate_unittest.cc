@@ -239,6 +239,18 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   EXPECT_TRUE(IsAccessAllowed("/profile/Downloads", "/profile"));
   EXPECT_TRUE(IsAccessAllowed("/profile/WebRTC Logs", "/profile"));
 
+  // GCache/v2/<opaque ID>/Logs is allowed.
+  EXPECT_TRUE(IsAccessAllowed("/profile/GCache/v2/id/Logs", "/profile"));
+  EXPECT_TRUE(
+      IsAccessAllowed("/profile/GCache/v2/id/Logs/drivefs.txt", "/profile"));
+  EXPECT_FALSE(
+      IsAccessAllowed("/profile/GCache/v2/id/logs/drivefs.txt", "/profile"));
+  EXPECT_FALSE(
+      IsAccessAllowed("/profile/GCache/v2/id/something_else", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/profile/GCache/v2/id", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/profile/GCache/v2", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/home/chronos/user/GCache/v2/id/Logs", ""));
+
 #elif defined(OS_ANDROID)
   // Android allows the following directories.
   EXPECT_TRUE(IsAccessAllowed("/sdcard", ""));
