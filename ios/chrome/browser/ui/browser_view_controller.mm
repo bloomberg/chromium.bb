@@ -1328,7 +1328,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerOffset {
-  return [self canShowTabStrip] ? StatusBarHeight() : 0.0;
+  CGFloat headerOffset = 0;
+  if (@available(iOS 11, *)) {
+    headerOffset = self.view.safeAreaInsets.top;
+  } else {
+    headerOffset = StatusBarHeight();
+  }
+  return [self canShowTabStrip] ? headerOffset : 0.0;
 }
 
 - (CGFloat)headerHeight {
@@ -2098,9 +2104,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)installFakeStatusBar {
-  CGFloat statusBarHeight = StatusBarHeight();
-  CGRect statusBarFrame =
-      CGRectMake(0, 0, [[self view] frame].size.width, statusBarHeight);
+  CGRect statusBarFrame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 0);
   _fakeStatusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
   [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   if (IsIPadIdiom()) {
@@ -2421,9 +2425,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)setUpViewLayout:(BOOL)initialLayout {
   DCHECK([self isViewLoaded]);
 
+  CGFloat topInset = 0.0;
+  if (@available(iOS 11, *)) {
+    topInset = self.view.safeAreaInsets.top;
+  } else {
+    topInset = StatusBarHeight();
+  }
+
   // Update the fake toolbar background height.
   CGRect fakeStatusBarFrame = _fakeStatusBarView.frame;
-  fakeStatusBarFrame.size.height = StatusBarHeight();
+  fakeStatusBarFrame.size.height = topInset;
   _fakeStatusBarView.frame = fakeStatusBarFrame;
 
 
@@ -3899,8 +3910,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // |minHeight| describes the distance past the top safe area.  If the browser
   // container view is laid out using the full screen, it extends past the
   // status bar, so that additional overlap is added here.
-  if (self.usesFullscreenContainer)
-    minHeight += StatusBarHeight();
+  if (self.usesFullscreenContainer) {
+    if (@available(iOS 11, *)) {
+      minHeight += self.view.safeAreaInsets.top;
+    } else {
+      minHeight += StatusBarHeight();
+    }
+  }
   return minHeight;
 }
 

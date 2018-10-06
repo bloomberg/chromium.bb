@@ -474,7 +474,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // TODO(crbug.com/826369) This should use collectionView.safeAreaInsets.top
   // instead of -StatusBarHeight once iOS10 is dropped and the NTP is out of
   // native content.
-  CGFloat top = StatusBarHeight();
+  CGFloat top = 0;
+  if (@available(iOS 11, *)) {
+    top = ntp_home::CollectionView().safeAreaInsets.top;
+  } else {
+    top = StatusBarHeight();
+  }
+
   GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 

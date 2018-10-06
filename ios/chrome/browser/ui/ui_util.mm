@@ -8,11 +8,13 @@
 #include <limits>
 
 #include "base/feature_list.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/web/public/features.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
 
@@ -72,6 +74,12 @@ bool IsWKWebViewSnapshotsEnabled() {
 }
 
 CGFloat StatusBarHeight() {
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen) &&
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    DCHECK(!base::ios::IsRunningOnIOS11OrLater());
+  }
+
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
 
