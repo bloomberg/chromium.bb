@@ -9938,10 +9938,6 @@ interface WebGLSync
     method constructor
 interface WebGLTexture
     attribute @@toStringTag
-    getter lastUploadedVideoFrameWasSkipped
-    getter lastUploadedVideoHeight
-    getter lastUploadedVideoTimestamp
-    getter lastUploadedVideoWidth
     method constructor
 interface WebGLTransformFeedback
     attribute @@toStringTag

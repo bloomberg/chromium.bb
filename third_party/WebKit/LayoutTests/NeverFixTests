@@ -1930,3 +1930,6 @@ crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whi
 crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
+
+# Not expected to pass in default configuration, only virtual test suite.
+crbug.com/830901 fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ WontFix ]

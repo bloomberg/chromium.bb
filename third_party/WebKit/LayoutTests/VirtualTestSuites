@@ -768,5 +768,10 @@
     "prefix": "display-lock",
     "base": "display-lock",
     "args": ["--enable-blink-features=DisplayLocking"]
+  },
+  {
+    "prefix": "webgl-extra-video-texture-metadata",
+    "base": "fast/webgl/video-metadata",
+    "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   }
 ]
