@@ -663,12 +663,8 @@ void SVGImage::ServiceAnimations(
     // rect invalidation during paint invalidation of the SVGImage's frame view.
     auto* layer = frame_view->GetLayoutView()->Layer();
     if (layer->NeedsRepaint()) {
-      if (auto* observer = GetImageObserver()) {
-        // TODO(pdr): This should use |frame_view->Size()| instead of the
-        // image's |Rect()|. See the matching non-BGPT call to InvalidateRect in
-        // InvalidateChromeClient in paint_invalidator.cc.
-        observer->ChangedInRect(this, Rect());
-      }
+      if (auto* observer = GetImageObserver())
+        observer->Changed(this);
     }
   }
 }

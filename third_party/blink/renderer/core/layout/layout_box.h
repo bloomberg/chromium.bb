@@ -1152,9 +1152,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutPoint& paint_offset) const;
   virtual void PaintMask(const PaintInfo&,
                          const LayoutPoint& paint_offset) const;
-  void ImageChanged(WrappedImagePtr,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
   ResourcePriority ComputeResourcePriority() const final;
 
   void LogicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logical_top,

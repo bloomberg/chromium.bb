@@ -255,7 +255,6 @@ scoped_refptr<Image> CSSCrossfadeValue::GetImage(
 }
 
 void CSSCrossfadeValue::CrossfadeChanged(
-    const IntRect&,
     ImageResourceObserver::CanDeferInvalidation defer) {
   for (const auto& curr : Clients()) {
     ImageResourceObserver* client =
@@ -274,10 +273,9 @@ bool CSSCrossfadeValue::WillRenderImage() const {
 
 void CSSCrossfadeValue::CrossfadeSubimageObserverProxy::ImageChanged(
     ImageResourceContent*,
-    CanDeferInvalidation defer,
-    const IntRect* rect) {
+    CanDeferInvalidation defer) {
   if (ready_)
-    owner_value_->CrossfadeChanged(*rect, defer);
+    owner_value_->CrossfadeChanged(defer);
 }
 
 bool CSSCrossfadeValue::CrossfadeSubimageObserverProxy::WillRenderImage() {

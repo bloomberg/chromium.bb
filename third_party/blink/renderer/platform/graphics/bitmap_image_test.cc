@@ -112,7 +112,7 @@ class BitmapImageTest : public testing::Test {
     }
     void AsyncLoadCompleted(const Image*) override { NOTREACHED(); }
 
-    void ChangedInRect(const Image*, const IntRect&) override {}
+    void Changed(const Image*) override {}
 
     size_t last_decoded_size_;
     int last_decoded_size_changed_delta_;

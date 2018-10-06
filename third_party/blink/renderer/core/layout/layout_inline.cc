@@ -1580,9 +1580,7 @@ LayoutSize LayoutInline::OffsetForInFlowPositionedInline(
                                               : logical_offset.TransposedSize();
 }
 
-void LayoutInline::ImageChanged(WrappedImagePtr,
-                                CanDeferInvalidation,
-                                const IntRect*) {
+void LayoutInline::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
   if (!Parent())
     return;
 

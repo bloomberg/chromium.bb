@@ -153,8 +153,7 @@ void LayoutImage::SetImageResource(LayoutImageResource* image_resource) {
 }
 
 void LayoutImage::ImageChanged(WrappedImagePtr new_image,
-                               CanDeferInvalidation defer,
-                               const IntRect* rect) {
+                               CanDeferInvalidation defer) {
   DCHECK(View());
   DCHECK(View()->GetFrameView());
   if (DocumentBeingDestroyed())
@@ -162,7 +161,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
 
   if (HasBoxDecorationBackground() || HasMask() || HasShapeOutside() ||
       HasReflection())
-    LayoutReplaced::ImageChanged(new_image, defer, rect);
+    LayoutReplaced::ImageChanged(new_image, defer);
 
   if (!image_resource_)
     return;

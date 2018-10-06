@@ -64,7 +64,7 @@ class SVGImageTest : public testing::Test {
     bool ShouldPauseAnimation(const Image*) override { return should_pause_; }
     void AnimationAdvanced(const Image*) override {}
 
-    void ChangedInRect(const Image*, const IntRect&) override {}
+    void Changed(const Image*) override {}
 
     void AsyncLoadCompleted(const blink::Image*) override {}
 

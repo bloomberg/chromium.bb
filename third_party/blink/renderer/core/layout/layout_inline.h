@@ -358,9 +358,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const final;
 
-  void ImageChanged(WrappedImagePtr,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) final;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) final;
 
   void AddAnnotatedRegions(Vector<AnnotatedRegionValue>&) final;
 
