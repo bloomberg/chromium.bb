@@ -79,11 +79,13 @@
       #recentList,
       #printList {
         min-height:
-            calc(3 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
+            calc(2 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
       }
 
       #recentList {
-        flex: 0;
+        flex: 1;
+        max-height:
+            calc(3 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
         padding-bottom: 18px;
       }
 
