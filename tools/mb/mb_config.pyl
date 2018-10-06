@@ -684,7 +684,6 @@
       'Android arm64 Compile Perf': 'official_goma_minimal_symbols_android_arm64',
       'Linux Builder Perf': 'official_goma_perf',
       'Mac Builder Perf': 'official_goma',
-      'obbs_fyi': 'official_goma_perf',
       'Win Builder Perf': 'official_goma_x86',
       'Win x64 Builder Perf': 'official_goma',
     },
