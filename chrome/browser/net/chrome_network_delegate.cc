@@ -146,6 +146,20 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
     }
   }
 
+#if defined(OS_CHROMEOS)
+  // Allow access to DriveFS logs. These reside in
+  // $PROFILE_PATH/GCache/v2/<opaque id>/Logs.
+  base::FilePath path_within_gcache_v2;
+  if (profile_path.Append("GCache/v2")
+          .AppendRelativePath(path, &path_within_gcache_v2)) {
+    std::vector<std::string> components;
+    path_within_gcache_v2.GetComponents(&components);
+    if (components.size() > 1 && components[1] == "Logs") {
+      return true;
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
   DVLOG(1) << "File access denied - " << path.value().c_str();
   return false;
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
