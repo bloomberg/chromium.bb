@@ -4,6 +4,8 @@
 
 #include "content/public/test/content_browser_test_utils.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -47,18 +49,8 @@ GURL GetTestUrl(const char* dir, const char* file) {
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
                                                 const GURL& url,
                                                 int number_of_navigations) {
-  WaitForLoadStop(window->web_contents());
-  TestNavigationObserver same_tab_observer(window->web_contents(),
-                                           number_of_navigations);
-
-  window->LoadURL(url);
-  same_tab_observer.Wait();
-  // TODO(crbug.com/882545) Delete this if statement once the problem has been
-  // identified.
-  if (!same_tab_observer.last_navigation_succeeded()) {
-    DLOG(WARNING) << "Last navigation to " << url << " failed with net error "
-                  << same_tab_observer.last_net_error_code();
-  }
+  NavigateToURLBlockUntilNavigationsComplete(window->web_contents(), url,
+                                             number_of_navigations);
 }
 
 void ReloadBlockUntilNavigationsComplete(Shell* window,
@@ -94,31 +86,7 @@ void LoadDataWithBaseURL(Shell* window,
 }
 
 bool NavigateToURL(Shell* window, const GURL& url) {
-  NavigateToURLBlockUntilNavigationsComplete(window, url, 1);
-  if (!IsLastCommittedEntryOfPageType(window->web_contents(),
-                                      PAGE_TYPE_NORMAL)) {
-    // TODO(crbug.com/882545) remove the following debug information:
-    {
-      NavigationEntry* last_entry =
-          window->web_contents()->GetController().GetLastCommittedEntry();
-      if (!last_entry) {
-        DLOG(WARNING) << "No last committed entry";
-      } else {
-        DLOG(WARNING) << "Last committed entry is of type "
-                      << last_entry->GetPageType();
-      }
-    }
-    return false;
-  }
-
-  // TODO(crbug.com/882545) revert this to the return statement below.
-  bool same_url = window->web_contents()->GetLastCommittedURL() == url;
-  if (!same_url) {
-    DLOG(WARNING) << "Expected URL " << url << " but observed "
-                  << window->web_contents()->GetLastCommittedURL();
-  }
-  return same_url;
-  // return window->web_contents()->GetLastCommittedURL() == url;
+  return NavigateToURL(window->web_contents(), url);
 }
 
 bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,

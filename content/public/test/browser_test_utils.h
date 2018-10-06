@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -85,6 +86,19 @@ class NavigationHandle;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContents;
+
+// Navigates |web_contents| to |url|, blocking until the navigation finishes.
+// Returns true if the page was loaded successfully and the last committed URL
+// matches |url|.  This is a browser-initiated navigation that simulates a user
+// typing |url| into the address bar.
+WARN_UNUSED_RESULT bool NavigateToURL(WebContents* web_contents,
+                                      const GURL& url);
+
+// Navigates |web_contents| to |url|, blocking until the given number of
+// navigations finishes.
+void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,
+                                                const GURL& url,
+                                                int number_of_navigations);
 
 // Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
 // finishes.  Uses a renderer-initiated navigation from script code in the
