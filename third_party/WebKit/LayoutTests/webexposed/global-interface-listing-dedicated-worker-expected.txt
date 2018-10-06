@@ -3396,10 +3396,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface WebGLTexture
 [Worker]     attribute @@toStringTag
-[Worker]     getter lastUploadedVideoFrameWasSkipped
-[Worker]     getter lastUploadedVideoHeight
-[Worker]     getter lastUploadedVideoTimestamp
-[Worker]     getter lastUploadedVideoWidth
 [Worker]     method constructor
 [Worker] interface WebGLTransformFeedback
 [Worker]     attribute @@toStringTag

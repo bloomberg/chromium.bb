@@ -466,7 +466,6 @@
     },
     {
       name: "ExtraWebGLVideoTextureMetadata",
-      status: "experimental",
     },
     {
       name: "FastMobileScrolling",
