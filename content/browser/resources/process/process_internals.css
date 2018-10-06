@@ -43,12 +43,12 @@ body {
 }
 
 .tab-header {
-  -webkit-border-start: 6px solid transparent;
+  border-inline-start: 6px solid transparent;
   padding-left: 15px;
 }
 
 .tab-header.selected {
-  -webkit-border-start-color: rgb(78, 87, 100);
+  border-inline-start-color: rgb(78, 87, 100);
 }
 
 .tab-header > button {
@@ -79,4 +79,8 @@ body {
   font-size: 150%;
   padding: 20px 0 10px 0;
   z-index: 1;
+}
+
+.tree-label {
+  user-select: text;
 }
