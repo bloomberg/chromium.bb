@@ -62,84 +62,6 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-bool NGLayoutInputNode::IsColumnSpanAll() const {
-  return IsBlock() && box_->IsColumnSpanAll();
-}
-
-bool NGLayoutInputNode::IsFloating() const {
-  return IsBlock() && Style().IsFloating();
-}
-
-bool NGLayoutInputNode::IsOutOfFlowPositioned() const {
-  return IsBlock() && Style().HasOutOfFlowPosition();
-}
-
-bool NGLayoutInputNode::IsReplaced() const {
-  return box_->IsLayoutReplaced();
-}
-
-bool NGLayoutInputNode::ShouldBeConsideredAsReplaced() const {
-  return box_->ShouldBeConsideredAsReplaced();
-}
-
-bool NGLayoutInputNode::IsListItem() const {
-  return IsBlock() && box_->IsLayoutNGListItem();
-}
-
-bool NGLayoutInputNode::IsListMarker() const {
-  return IsBlock() && box_->IsLayoutNGListMarker();
-}
-
-bool NGLayoutInputNode::ListMarkerOccupiesWholeLine() const {
-  DCHECK(IsListMarker());
-  return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
-}
-
-bool NGLayoutInputNode::IsTableCell() const {
-  return IsBlock() && box_->IsTableCell();
-}
-
-bool NGLayoutInputNode::IsFieldsetContainer() const {
-  return IsBlock() && box_->IsLayoutNGFieldset();
-}
-
-bool NGLayoutInputNode::IsRenderedLegend() const {
-  return IsBlock() && box_->IsRenderedLegend();
-}
-
-bool NGLayoutInputNode::IsAnonymousBlock() const {
-  return box_->IsAnonymousBlock();
-}
-
-bool NGLayoutInputNode::IsQuirkyContainer() const {
-  return box_->GetDocument().InQuirksMode() &&
-         (box_->IsBody() || box_->IsTableCell());
-}
-
-bool NGLayoutInputNode::IsAbsoluteContainer() const {
-  return box_->CanContainAbsolutePositionObjects();
-}
-
-bool NGLayoutInputNode::IsFixedContainer() const {
-  return box_->CanContainFixedPositionObjects();
-}
-
-bool NGLayoutInputNode::IsBody() const {
-  return IsBlock() && box_->IsBody();
-}
-
-bool NGLayoutInputNode::IsDocumentElement() const {
-  return box_->IsDocumentElement();
-}
-
-bool NGLayoutInputNode::IsFlexItem() const {
-  return IsBlock() && box_->IsFlexItem();
-}
-
-bool NGLayoutInputNode::CreatesNewFormattingContext() const {
-  return IsBlock() && box_->AvoidsFloats();
-}
-
 scoped_refptr<NGLayoutResult> NGLayoutInputNode::Layout(
     const NGConstraintSpace& space,
     NGBreakToken* break_token) {
@@ -197,23 +119,11 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
                     : ToNGBlockNode(*this).NextSibling();
 }
 
-Document& NGLayoutInputNode::GetDocument() const {
-  return box_->GetDocument();
-}
-
 NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
   IntSize icb_size =
       GetDocument().GetLayoutView()->GetLayoutSize(kExcludeScrollbars);
   return NGPhysicalSize{LayoutUnit(icb_size.Width()),
                         LayoutUnit(icb_size.Height())};
-}
-
-const ComputedStyle& NGLayoutInputNode::Style() const {
-  return box_->StyleRef();
-}
-
-bool NGLayoutInputNode::ShouldApplySizeContainment() const {
-  return box_->ShouldApplySizeContainment();
 }
 
 String NGLayoutInputNode::ToString() const {
