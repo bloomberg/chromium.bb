@@ -608,6 +608,33 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  disableConfigure_: function(networkProperties) {
+    return this.isPolicySource(networkProperties.Source) &&
+        !this.hasRecommendedFields_(networkProperties);
+  },
+
+
+  /**
+   * @param {!Object} networkProperties
+   * @return {boolean}
+   */
+  hasRecommendedFields_: function(networkProperties) {
+    for (let property in networkProperties) {
+      let propertyValue = networkProperties[property];
+      if (this.isNetworkPolicyRecommended(propertyValue) ||
+          (typeof propertyValue == 'object' &&
+           this.hasRecommendedFields_(propertyValue))) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
   showViewAccount_: function(networkProperties) {
     if (this.isSecondaryUser_)
       return false;
