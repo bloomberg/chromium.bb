@@ -878,7 +878,7 @@ void MenuItemView::GetLabelStyle(MenuDelegate::LabelStyle* style) const {
 
 void MenuItemView::AddEmptyMenus() {
   DCHECK(HasSubmenu());
-  if (!submenu_->HasVisibleChildren()) {
+  if (!submenu_->HasVisibleChildren() && !submenu_->HasEmptyMenuItemView()) {
     submenu_->AddChildViewAt(new EmptyMenuMenuItem(this), 0);
   } else {
     for (int i = 0, item_count = submenu_->GetMenuItemCount(); i < item_count;
