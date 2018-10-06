@@ -478,7 +478,10 @@ void* PartitionBucket::SlowPathAlloc(PartitionRootBase* root,
       PartitionExcessiveAllocationSize();
     }
     new_page = PartitionDirectMap(root, flags, size);
+#if !defined(OS_MACOSX)
+    // Turn off the optimization to see if it helps https://crbug.com/892550.
     *is_already_zeroed = true;
+#endif
   } else if (LIKELY(this->SetNewActivePage())) {
     // First, did we find an active page in the active pages list?
     new_page = this->active_pages_head;
