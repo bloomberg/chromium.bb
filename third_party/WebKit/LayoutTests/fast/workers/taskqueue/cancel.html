@@ -33,7 +33,7 @@ const controller = new AbortController();
 const signal = controller.signal;
 
 for (var i = 0; i < stop; i++) {
-  queue.postTask(fib, i < stop - 1 ? signal : undefined, i)
+  queue.postFunction(fib, i < stop - 1 ? signal : undefined, i)
      .then(print, fail);
 }
 

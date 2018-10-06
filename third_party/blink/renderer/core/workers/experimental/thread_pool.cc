@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
-#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -99,38 +98,6 @@ class ThreadPoolObjectProxy final : public ThreadedObjectProxyBase {
   HashSet<size_t> cancelled_tasks_;
 };
 
-class ThreadPoolThread final : public WorkerThread {
- public:
-  ThreadPoolThread(ExecutionContext* parent_execution_context,
-                   ThreadPoolObjectProxy& object_proxy)
-      : WorkerThread(object_proxy) {
-    FrameOrWorkerScheduler* scheduler =
-        parent_execution_context ? parent_execution_context->GetScheduler()
-                                 : nullptr;
-    worker_backing_thread_ =
-        WorkerBackingThread::Create(WebThreadCreationParams(GetThreadType())
-                                        .SetFrameOrWorkerScheduler(scheduler));
-  }
-  ~ThreadPoolThread() override = default;
-
- private:
-  WorkerBackingThread& GetWorkerBackingThread() override {
-    return *worker_backing_thread_;
-  }
-  void ClearWorkerBackingThread() override { worker_backing_thread_ = nullptr; }
-
-  WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
-  }
-
-  WebThreadType GetThreadType() const override {
-    // TODO(japhet): Replace with WebThreadType::kThreadPoolWorkerThread.
-    return WebThreadType::kDedicatedWorkerThread;
-  }
-  std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
-};
-
 class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
  public:
   ThreadPoolMessagingProxy(ExecutionContext* context, ThreadPool* thread_pool)
@@ -185,10 +152,31 @@ class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
     ThreadedMessagingProxyBase::Trace(visitor);
   }
 
+  ThreadPoolThread* GetWorkerThread() const {
+    return static_cast<ThreadPoolThread*>(
+        ThreadedMessagingProxyBase::GetWorkerThread());
+  }
+
  private:
   std::unique_ptr<ThreadPoolObjectProxy> object_proxy_;
-  Member<ThreadPool> thread_pool_;
+  WeakMember<ThreadPool> thread_pool_;
 };
+
+ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
+                                   ThreadPoolObjectProxy& object_proxy)
+    : WorkerThread(object_proxy) {
+  FrameOrWorkerScheduler* scheduler =
+      parent_execution_context ? parent_execution_context->GetScheduler()
+                               : nullptr;
+  worker_backing_thread_ =
+      WorkerBackingThread::Create(WebThreadCreationParams(GetThreadType())
+                                      .SetFrameOrWorkerScheduler(scheduler));
+}
+
+WorkerOrWorkletGlobalScope* ThreadPoolThread::CreateWorkerGlobalScope(
+    std::unique_ptr<GlobalScopeCreationParams> creation_params) {
+  return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
+}
 
 void ThreadPoolObjectProxy::ProcessTask(
     scoped_refptr<SerializedScriptValue> task,
@@ -282,11 +270,43 @@ static const size_t kProxyCount = 2;
 
 ThreadPool::ThreadPool(Document& document)
     : Supplement<Document>(document),
-      document_(document),
+      ContextLifecycleObserver(&document),
       context_proxies_(kProxyCount) {}
 
+ThreadPool::~ThreadPool() {
+  for (size_t i = 0; i < kProxyCount; i++) {
+    if (context_proxies_[i])
+      context_proxies_[i]->ParentObjectDestroyed();
+  }
+}
+
+void ThreadPool::CreateProxyAtId(size_t proxy_id) {
+  DCHECK(!context_proxies_[proxy_id]);
+  base::UnguessableToken devtools_worker_token =
+      GetFrame() ? GetFrame()->GetDevToolsFrameToken()
+                 : base::UnguessableToken::Create();
+  ExecutionContext* context = GetExecutionContext();
+
+  context_proxies_[proxy_id] = new ThreadPoolMessagingProxy(context, this);
+  std::unique_ptr<WorkerSettings> settings =
+      std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
+
+  context_proxies_[proxy_id]->StartWorker(
+      std::make_unique<GlobalScopeCreationParams>(
+          context->Url(), ScriptType::kClassic, context->UserAgent(),
+          context->GetContentSecurityPolicy()->Headers(),
+          kReferrerPolicyDefault, context->GetSecurityOrigin(),
+          context->IsSecureContext(), context->GetHttpsState(),
+          WorkerClients::Create(), context->GetSecurityContext().AddressSpace(),
+          OriginTrialContext::GetTokens(context).get(), devtools_worker_token,
+          std::move(settings), kV8CacheOptionsDefault,
+          nullptr /* worklet_module_responses_map */,
+          ConnectToWorkerInterfaceProviderForThreadPool(
+              context, context->GetSecurityOrigin())));
+}
+
 ThreadPoolMessagingProxy* ThreadPool::GetProxyForTaskType(TaskType task_type) {
-  DCHECK(document_->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   size_t proxy_id = kProxyCount;
   if (task_type == TaskType::kUserInteraction)
     proxy_id = 0u;
@@ -294,30 +314,8 @@ ThreadPoolMessagingProxy* ThreadPool::GetProxyForTaskType(TaskType task_type) {
     proxy_id = 1u;
   DCHECK_LT(proxy_id, kProxyCount);
 
-  if (!context_proxies_[proxy_id]) {
-    base::UnguessableToken devtools_worker_token =
-        document_->GetFrame() ? document_->GetFrame()->GetDevToolsFrameToken()
-                              : base::UnguessableToken::Create();
-    ExecutionContext* context = document_.Get();
-
-    context_proxies_[proxy_id] = new ThreadPoolMessagingProxy(context, this);
-    std::unique_ptr<WorkerSettings> settings =
-        std::make_unique<WorkerSettings>(document_->GetSettings());
-
-    context_proxies_[proxy_id]->StartWorker(
-        std::make_unique<GlobalScopeCreationParams>(
-            context->Url(), ScriptType::kClassic, context->UserAgent(),
-            context->GetContentSecurityPolicy()->Headers(),
-            kReferrerPolicyDefault, context->GetSecurityOrigin(),
-            context->IsSecureContext(), context->GetHttpsState(),
-            WorkerClients::Create(),
-            context->GetSecurityContext().AddressSpace(),
-            OriginTrialContext::GetTokens(context).get(), devtools_worker_token,
-            std::move(settings), kV8CacheOptionsDefault,
-            nullptr /* worklet_module_responses_map */,
-            ConnectToWorkerInterfaceProviderForThreadPool(
-                context, context->GetSecurityOrigin())));
-  }
+  if (!context_proxies_[proxy_id])
+    CreateProxyAtId(proxy_id);
   return context_proxies_[proxy_id];
 }
 
@@ -327,10 +325,11 @@ void ThreadPool::PostTask(
     AbortSignal* signal,
     const Vector<scoped_refptr<SerializedScriptValue>>& arguments,
     TaskType task_type) {
-  DCHECK(document_->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
 
   GetProxyForTaskType(task_type)->PostTaskToWorkerGlobalScope(
-      document_.Get(), std::move(task), arguments, next_task_id_, task_type);
+      GetExecutionContext(), std::move(task), arguments, next_task_id_,
+      task_type);
   resolvers_.insert(next_task_id_, resolver);
   if (signal) {
     signal->AddAlgorithm(WTF::Bind(&ThreadPool::AbortTask, WrapPersistent(this),
@@ -339,15 +338,47 @@ void ThreadPool::PostTask(
   next_task_id_++;
 }
 
+ThreadPoolThread* ThreadPool::GetLeastBusyThread() {
+  size_t i = 0;
+  ThreadPoolThread* least_busy_thread = nullptr;
+  for (; i < kProxyCount && context_proxies_[i]; i++) {
+    ThreadPoolThread* current_thread = context_proxies_[i]->GetWorkerThread();
+    if (!least_busy_thread ||
+        current_thread->GetTasksInProgressCount() <
+            least_busy_thread->GetTasksInProgressCount()) {
+      least_busy_thread = current_thread;
+    }
+  }
+
+  // If there's an idle proxy or we're already at max proxies,
+  // use the least busy proxy.
+  if ((least_busy_thread &&
+       least_busy_thread->GetTasksInProgressCount() == 0) ||
+      i == kProxyCount) {
+    return least_busy_thread;
+  }
+  // Otherwise, create a new one.
+  CreateProxyAtId(i);
+  return context_proxies_[i]->GetWorkerThread();
+}
+
+void ThreadPool::ContextDestroyed(ExecutionContext*) {
+  DCHECK(GetExecutionContext()->IsContextThread());
+  for (size_t i = 0; i < kProxyCount; i++) {
+    if (context_proxies_[i])
+      context_proxies_[i]->TerminateGlobalScope();
+  }
+}
+
 void ThreadPool::AbortTask(size_t task_id, TaskType task_type) {
-  DCHECK(document_->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   GetProxyForTaskType(task_type)->PostAbortToWorkerGlobalScope(task_id);
 }
 
 void ThreadPool::TaskCompleted(size_t task_id,
                                bool was_rejected,
                                scoped_refptr<SerializedScriptValue> result) {
-  DCHECK(document_->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
   DCHECK(resolvers_.Contains(task_id));
   DCHECK(result);
   ScriptPromiseResolver* resolver = resolvers_.Take(task_id);
@@ -363,7 +394,7 @@ void ThreadPool::TaskCompleted(size_t task_id,
 
 void ThreadPool::Trace(blink::Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
-  visitor->Trace(document_);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(context_proxies_);
   visitor->Trace(resolvers_);
 }

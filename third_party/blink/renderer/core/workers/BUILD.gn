@@ -20,6 +20,8 @@ blink_core_sources("workers") {
     "dedicated_worker_thread.h",
     "execution_context_worker_registry.cc",
     "execution_context_worker_registry.h",
+    "experimental/task.cc",
+    "experimental/task.h",
     "experimental/thread_pool.cc",
     "experimental/thread_pool.h",
     "experimental/worker_task_queue.cc",
