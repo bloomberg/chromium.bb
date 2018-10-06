@@ -98,6 +98,8 @@ blink_core_sources("paint") {
     "html_canvas_painter.h",
     "image_element_timing.cc",
     "image_element_timing.h",
+    "image_paint_timing_detector.cc",
+    "image_paint_timing_detector.h",
     "image_painter.cc",
     "image_painter.h",
     "inline_box_painter_base.cc",
