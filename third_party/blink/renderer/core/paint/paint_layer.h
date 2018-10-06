@@ -261,7 +261,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool IsSelfPaintingLayer() const { return is_self_painting_layer_; }
 
   bool IsTransparent() const {
-    return GetLayoutObject().IsTransparent() ||
+    return GetLayoutObject().StyleRef().HasOpacity() ||
            GetLayoutObject().StyleRef().HasBlendMode() ||
            GetLayoutObject().HasMask();
   }

@@ -1620,9 +1620,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return (IsFloating() || IsOutOfFlowPositioned());
   }
 
-  bool IsTransparent() const { return StyleRef().HasOpacity(); }
-  float Opacity() const { return StyleRef().Opacity(); }
-
   bool HasReflection() const { return bitfields_.HasReflection(); }
 
   // The current selection state for an object.  For blocks, the state refers to
@@ -1754,7 +1751,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  TransformationMatrix&) const;
 
   bool CreatesGroup() const {
-    return IsTransparent() || HasMask() || HasClipPath() ||
+    return StyleRef().HasOpacity() || HasMask() || HasClipPath() ||
            HasFilterInducingProperty() || StyleRef().HasBlendMode();
   }
 

@@ -2745,7 +2745,7 @@ float CompositedLayerMapping::CompositingOpacity(
     if (curr->GetCompositingState() == kPaintsIntoOwnBacking)
       break;
 
-    final_opacity *= curr->GetLayoutObject().Opacity();
+    final_opacity *= curr->GetLayoutObject().StyleRef().Opacity();
   }
 
   return final_opacity;
