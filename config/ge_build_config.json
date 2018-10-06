@@ -554,18 +554,6 @@
       ]
     },
     {
-      "name": "fizz-accelerator",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "fizz",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "fizz-moblab",
       "configs": [
         {
@@ -1887,6 +1875,21 @@
         {
           "board_name": "fizz",
           "name": "wukong",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "fizz-accelerator",
+      "reference_board_name": "fizz-accelerator",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "fizz-accelerator",
+          "name": "jax",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
