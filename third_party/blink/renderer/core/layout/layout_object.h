@@ -1699,13 +1699,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual int CaretMinOffset() const;
   virtual int CaretMaxOffset() const;
 
-  // ImageResourceClient override.
-  void ImageChanged(ImageResourceContent*,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) final;
-  void ImageChanged(WrappedImagePtr,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) override {}
+  // ImageResourceObserver override.
+  void ImageChanged(ImageResourceContent*, CanDeferInvalidation) final;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override {}
   bool WillRenderImage() final;
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
 

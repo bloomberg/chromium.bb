@@ -124,9 +124,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void LoadDeferredImage(ReferrerPolicy);
 
  protected:
-  void ImageChanged(ImageResourceContent*,
-                    CanDeferInvalidation,
-                    const IntRect*) override;
+  void ImageChanged(ImageResourceContent*, CanDeferInvalidation) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
 
  private:

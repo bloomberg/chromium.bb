@@ -668,8 +668,7 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
 }
 
 void ImageLoader::ImageChanged(ImageResourceContent* content,
-                               CanDeferInvalidation,
-                               const IntRect*) {
+                               CanDeferInvalidation) {
   DCHECK_EQ(content, image_content_.Get());
   if (image_complete_ || !content->IsLoading() ||
       delay_until_image_notify_finished_)

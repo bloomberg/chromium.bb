@@ -1809,8 +1809,7 @@ void LayoutBox::PaintMask(const PaintInfo& paint_info,
 }
 
 void LayoutBox::ImageChanged(WrappedImagePtr image,
-                             CanDeferInvalidation defer,
-                             const IntRect*) {
+                             CanDeferInvalidation defer) {
   bool is_box_reflect_image =
       (StyleRef().BoxReflect() && StyleRef().BoxReflect()->Mask().GetImage() &&
        StyleRef().BoxReflect()->Mask().GetImage()->Data() == image);

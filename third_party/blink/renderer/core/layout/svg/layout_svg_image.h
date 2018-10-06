@@ -58,9 +58,7 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
  private:
   FloatRect StrokeBoundingBox() const override { return object_bounding_box_; }
 
-  void ImageChanged(WrappedImagePtr,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;

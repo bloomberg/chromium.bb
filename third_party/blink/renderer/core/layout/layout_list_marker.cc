@@ -159,9 +159,7 @@ void LayoutListMarker::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutListMarker::ImageChanged(WrappedImagePtr o,
-                                    CanDeferInvalidation,
-                                    const IntRect*) {
+void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
   // A list marker can't have a background or border image, so no need to call
   // the base class method.
   if (!image_ || o != image_->Data())

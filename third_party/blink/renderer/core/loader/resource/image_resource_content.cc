@@ -254,8 +254,7 @@ IntSize ImageResourceContent::IntrinsicSize(
 
 void ImageResourceContent::NotifyObservers(
     NotifyFinishOption notifying_finish_option,
-    CanDeferInvalidation defer,
-    const IntRect* change_rect) {
+    CanDeferInvalidation defer) {
   {
     Vector<ImageResourceObserver*> finished_observers_as_vector;
     {
@@ -266,7 +265,7 @@ void ImageResourceContent::NotifyObservers(
 
     for (auto* observer : finished_observers_as_vector) {
       if (finished_observers_.Contains(observer))
-        observer->ImageChanged(this, defer, change_rect);
+        observer->ImageChanged(this, defer);
     }
   }
   {
@@ -279,7 +278,7 @@ void ImageResourceContent::NotifyObservers(
 
     for (auto* observer : observers_as_vector) {
       if (observers_.Contains(observer)) {
-        observer->ImageChanged(this, defer, change_rect);
+        observer->ImageChanged(this, defer);
         if (notifying_finish_option == kShouldNotifyFinish &&
             observers_.Contains(observer) &&
             !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
@@ -558,11 +557,10 @@ void ImageResourceContent::UpdateImageAnimationPolicy() {
   image_->SetAnimationPolicy(new_policy);
 }
 
-void ImageResourceContent::ChangedInRect(const blink::Image* image,
-                                         const IntRect& rect) {
+void ImageResourceContent::Changed(const blink::Image* image) {
   if (!image || image != image_)
     return;
-  NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes, &rect);
+  NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes);
 }
 
 bool ImageResourceContent::IsAccessAllowed(

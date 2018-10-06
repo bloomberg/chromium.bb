@@ -3640,8 +3640,7 @@ bool LayoutObject::IsInert() const {
 }
 
 void LayoutObject::ImageChanged(ImageResourceContent* image,
-                                CanDeferInvalidation defer,
-                                const IntRect* rect) {
+                                CanDeferInvalidation defer) {
   DCHECK(node_);
 
   // Image change notifications should not be received during paint because
@@ -3650,7 +3649,7 @@ void LayoutObject::ImageChanged(ImageResourceContent* image,
   DCHECK_NE(GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::LifecycleState::kInPaint);
 
-  ImageChanged(static_cast<WrappedImagePtr>(image), defer, rect);
+  ImageChanged(static_cast<WrappedImagePtr>(image), defer);
 }
 
 Element* LayoutObject::OffsetParent(const Element* base) const {
