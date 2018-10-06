@@ -510,7 +510,7 @@ bool SVGLayoutSupport::WillIsolateBlendingDescendantsForStyle(
     const ComputedStyle& style) {
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  return style.HasIsolation() || style.Opacity() < 1 || style.HasBlendMode() ||
+  return style.HasIsolation() || style.HasOpacity() || style.HasBlendMode() ||
          style.HasFilter() || svg_style.HasMasker() || style.ClipPath();
 }
 
