@@ -136,13 +136,18 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   EXPECT_EQ(2, submenu->child_count());
 
   // Adds any empty menu items to the menu, if needed.
+  EXPECT_FALSE(submenu->HasEmptyMenuItemView());
   root_menu.AddEmptyMenus();
-
+  EXPECT_TRUE(submenu->HasEmptyMenuItemView());
   // Because all of the submenu's children are hidden, an empty menu item should
   // have been added.
   ASSERT_EQ(3, submenu->child_count());
   MenuItemView* empty_item = static_cast<MenuItemView*>(submenu->child_at(0));
   ASSERT_TRUE(empty_item);
+  // Not allowed to add an duplicated empty menu item
+  // if it already has an empty menu item.
+  root_menu.AddEmptyMenus();
+  ASSERT_EQ(3, submenu->child_count());
   ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());

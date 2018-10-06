@@ -61,6 +61,14 @@ SubmenuView::~SubmenuView() {
   delete scroll_view_container_;
 }
 
+bool SubmenuView::HasEmptyMenuItemView() {
+  for (int i = 0; i < child_count(); i++) {
+    if (child_at(i)->id() == MenuItemView::kEmptyMenuItemViewID)
+      return true;
+  }
+  return false;
+}
+
 bool SubmenuView::HasVisibleChildren() {
   for (int i = 0, item_count = GetMenuItemCount(); i < item_count; i++) {
     if (GetMenuItemAt(i)->visible())
