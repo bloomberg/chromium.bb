@@ -9,6 +9,8 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
@@ -17,6 +19,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/gpu_host/gpu_client.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
@@ -52,37 +55,48 @@ DefaultGpuHost::DefaultGpuHost(
     discardable_memory::DiscardableSharedMemoryManager*
         discardable_shared_memory_manager)
     : delegate_(delegate),
+      discardable_shared_memory_manager_(discardable_shared_memory_manager),
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      gpu_host_binding_(this),
       gpu_thread_("GpuThread") {
-  DCHECK(discardable_shared_memory_manager);
+  DCHECK(discardable_shared_memory_manager_);
 
-  auto request = MakeRequest(&viz_main_);
-  if (connector && HasSplitVizProcess()) {
-    connector->BindInterface(viz::mojom::kVizServiceName, std::move(request));
-  } else {
+  viz::GpuHostImpl::InitFontRenderParams(
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
+
+  bool in_process = !connector || !HasSplitVizProcess();
+
+  viz::mojom::VizMainPtr viz_main_ptr;
+  if (in_process) {
     // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
     gpu_thread_.Start();
     gpu_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&DefaultGpuHost::InitializeVizMain,
                                   base::Unretained(this),
-                                  base::Passed(MakeRequest(&viz_main_))));
+                                  base::Passed(MakeRequest(&viz_main_ptr))));
+  } else {
+    // Currently, GPU is only run in process in OOP-Ash.
+    NOTREACHED();
   }
 
-  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-      discardable_manager_ptr;
-  service_manager::BindSourceInfo source_info;
-  discardable_shared_memory_manager->Bind(
-      mojo::MakeRequest(&discardable_manager_ptr), source_info);
+  viz::GpuHostImpl::InitParams params;
+  params.restart_id = viz::BeginFrameSource::kNotRestartableId + 1;
+  params.in_process = in_process;
+  params.disable_gpu_shader_disk_cache = true;
+  params.deadline_to_synchronize_surfaces =
+      switches::GetDeadlineToSynchronizeSurfaces();
+  params.main_thread_task_runner = main_thread_task_runner_;
+  gpu_host_impl_ = std::make_unique<viz::GpuHostImpl>(
+      this, std::make_unique<viz::VizMainWrapper>(std::move(viz_main_ptr)),
+      std::move(params));
 
-  viz::mojom::GpuHostPtr gpu_host_proxy;
-  gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
-  viz_main_->CreateGpuService(
-      MakeRequest(&gpu_service_), std::move(gpu_host_proxy),
-      std::move(discardable_manager_ptr), mojo::ScopedSharedBufferHandle(),
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)
-          .subpixel_rendering);
+#if defined(OS_WIN)
+  // For OS_WIN the process id for GPU is needed. Using GetCurrentProcessId()
+  // only works with in-process GPU, which is fine because DefaultGpuHost isn't
+  // used outside of tests.
+  gpu_host_impl_->OnProcessLaunched(::GetCurrentProcessId());
+#endif
+
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::HostGpuMemoryBufferManager>(
           base::BindRepeating(
@@ -90,7 +104,7 @@ DefaultGpuHost::DefaultGpuHost(
                  base::OnceClosure connection_error_handler) {
                 return gpu_service;
               },
-              gpu_service_.get()),
+              gpu_host_impl_->gpu_service()),
           next_client_id_++, std::make_unique<gpu::GpuMemoryBufferSupport>(),
           main_thread_task_runner_);
 }
@@ -104,10 +118,20 @@ DefaultGpuHost::~DefaultGpuHost() {
                                   base::Unretained(this)));
     gpu_thread_.Stop();
   }
+
+  viz::GpuHostImpl::ResetFontRenderParams();
+}
+
+void DefaultGpuHost::CreateFrameSinkManager(
+    viz::mojom::FrameSinkManagerRequest request,
+    viz::mojom::FrameSinkManagerClientPtrInfo client) {
+  gpu_host_impl_->ConnectFrameSinkManager(std::move(request),
+                                          std::move(client));
 }
 
 void DefaultGpuHost::Shutdown() {
-  gpu_service_.reset();
+  gpu_host_impl_.reset();
+
   gpu_bindings_.CloseAllBindings();
 }
 
@@ -129,22 +153,18 @@ void DefaultGpuHost::OnAcceleratedWidgetDestroyed(
 #endif
 }
 
-void DefaultGpuHost::CreateFrameSinkManager(
-    viz::mojom::FrameSinkManagerParamsPtr params) {
-  viz_main_->CreateFrameSinkManager(std::move(params));
-}
-
 #if defined(OS_CHROMEOS)
 void DefaultGpuHost::AddArc(mojom::ArcRequest request) {
-  arc_bindings_.AddBinding(std::make_unique<ArcClient>(gpu_service_.get()),
-                           std::move(request));
+  arc_bindings_.AddBinding(
+      std::make_unique<ArcClient>(gpu_host_impl_->gpu_service()),
+      std::move(request));
 }
 #endif  // defined(OS_CHROMEOS)
 
 GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
   auto client(std::make_unique<GpuClient>(
       next_client_id_++, &gpu_info_, &gpu_feature_info_,
-      gpu_memory_buffer_manager_.get(), gpu_service_.get()));
+      gpu_memory_buffer_manager_.get(), gpu_host_impl_->gpu_service()));
   GpuClient* client_ref = client.get();
   gpu_bindings_.AddBinding(std::move(client), std::move(request));
   return client_ref;
@@ -168,10 +188,20 @@ void DefaultGpuHost::DestroyVizMain() {
   viz_main_impl_.reset();
 }
 
-void DefaultGpuHost::DidInitialize(const gpu::GPUInfo& gpu_info,
-                                   const gpu::GpuFeatureInfo& gpu_feature_info,
-                                   const base::Optional<gpu::GPUInfo>&,
-                                   const base::Optional<gpu::GpuFeatureInfo>&) {
+gpu::GPUInfo DefaultGpuHost::GetGPUInfo() const {
+  return gpu_info_;
+}
+
+gpu::GpuFeatureInfo DefaultGpuHost::GetGpuFeatureInfo() const {
+  return gpu_feature_info_;
+}
+
+void DefaultGpuHost::DidInitialize(
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
+    const base::Optional<gpu::GpuFeatureInfo>&
+        gpu_feature_info_for_hardware_gpu) {
   gpu_info_ = gpu_info;
   gpu_feature_info_ = gpu_feature_info;
   delegate_->OnGpuServiceInitialized();
@@ -181,35 +211,42 @@ void DefaultGpuHost::DidFailInitialize() {}
 
 void DefaultGpuHost::DidCreateContextSuccessfully() {}
 
-void DefaultGpuHost::DidCreateOffscreenContext(const GURL& url) {}
-
-void DefaultGpuHost::DidDestroyOffscreenContext(const GURL& url) {}
-
-void DefaultGpuHost::DidDestroyChannel(int32_t client_id) {}
-
-void DefaultGpuHost::DidLoseContext(bool offscreen,
-                                    gpu::error::ContextLostReason reason,
-                                    const GURL& active_url) {}
+void DefaultGpuHost::BlockDomainFrom3DAPIs(const GURL& url,
+                                           gpu::DomainGuilt guilt) {}
 
 void DefaultGpuHost::DisableGpuCompositing() {}
 
-#if defined(OS_WIN)
-void DefaultGpuHost::SetChildSurface(gpu::SurfaceHandle parent,
-                                     gpu::SurfaceHandle child) {
-  // Using GetCurrentProcessId() only works with in-process GPU, which is fine
-  // because DefaultGpuHost isn't used outside of tests.
-  gfx::RenderingWindowManager::GetInstance()->RegisterChild(
-      parent, child, /*expected_child_process_id=*/::GetCurrentProcessId());
+bool DefaultGpuHost::GpuAccessAllowed() const {
+  NOTREACHED();
+  return true;
 }
-#endif  // defined(OS_WIN)
 
-void DefaultGpuHost::StoreShaderToDisk(int32_t client_id,
-                                       const std::string& key,
-                                       const std::string& shader) {}
+gpu::ShaderCacheFactory* DefaultGpuHost::GetShaderCacheFactory() {
+  NOTREACHED();
+  return nullptr;
+}
 
 void DefaultGpuHost::RecordLogMessage(int32_t severity,
                                       const std::string& header,
                                       const std::string& message) {}
+
+void DefaultGpuHost::BindDiscardableMemoryRequest(
+    discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
+  service_manager::BindSourceInfo source_info;
+  discardable_shared_memory_manager_->Bind(std::move(request), source_info);
+}
+
+void DefaultGpuHost::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  NOTREACHED();
+}
+
+#if defined(USE_OZONE)
+void DefaultGpuHost::TerminateGpuProcess(const std::string& message) {}
+
+void DefaultGpuHost::SendGpuProcessMessage(IPC::Message* message) {}
+#endif
 
 }  // namespace gpu_host
 }  // namespace ws

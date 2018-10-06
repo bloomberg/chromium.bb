@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "components/viz/test/gpu_host_impl_test_api.h"
 #include "gpu/config/gpu_info.h"
 #include "services/ws/gpu_host/gpu_client.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
@@ -72,8 +73,6 @@ class GpuHostTest : public testing::Test {
     io_thread_.Stop();
   }
 
-  GpuHost* gpu_host() { return gpu_host_.get(); }
-
   base::WeakPtr<GpuClient> AddGpuClient();
   void DestroyHost();
 
@@ -110,8 +109,10 @@ void GpuHostTest::SetUp() {
   testing::Test::SetUp();
   gpu_host_ = std::make_unique<DefaultGpuHost>(&gpu_host_delegate_, nullptr,
                                                &discardable_memory_manager_);
+  viz::GpuHostImplTestApi test_api(gpu_host_->gpu_host_impl_.get());
+
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
-  gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
+  test_api.SetGpuService(std::move(gpu_service_ptr_));
 }
 
 void GpuHostTest::TearDown() {

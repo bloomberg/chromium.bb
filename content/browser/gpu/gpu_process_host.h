@@ -136,7 +136,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // viz::GpuHostImpl::Delegate:
   gpu::GPUInfo GetGPUInfo() const override;
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const override;
-  void UpdateGpuInfo(
+  void DidInitialize(
       const gpu::GPUInfo& gpu_info,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
