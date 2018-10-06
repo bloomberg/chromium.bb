@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -18,7 +19,6 @@
 
 namespace blink {
 
-class CSSStyleSheet;
 class Document;
 class Element;
 class ExceptionState;
@@ -91,11 +91,18 @@ class CORE_EXPORT CustomElementDefinition
                                        const AtomicString& old_value,
                                        const AtomicString& new_value);
 
-  void SetDefaultStyleSheet(CSSStyleSheet& default_style_sheet) {
-    default_style_sheet_ = default_style_sheet;
+  void SetDefaultStyleSheets(
+      const HeapVector<Member<CSSStyleSheet>>& default_style_sheets) {
+    default_style_sheets_ = default_style_sheets;
   }
 
-  CSSStyleSheet* DefaultStyleSheet() const { return default_style_sheet_; }
+  const HeapVector<Member<CSSStyleSheet>>& DefaultStyleSheets() const {
+    return default_style_sheets_;
+  }
+
+  bool HasDefaultStyleSheets() const {
+    return !default_style_sheets_.IsEmpty();
+  }
 
   class CORE_EXPORT ConstructionStackScope final {
     STACK_ALLOCATED();
@@ -117,7 +124,7 @@ class CORE_EXPORT CustomElementDefinition
   CustomElementDefinition(const CustomElementDescriptor&,
                           const HashSet<AtomicString>& observed_attributes);
 
-  void AddDefaultStyle(Element*);
+  void AddDefaultStylesTo(Element&);
 
   virtual bool RunConstructor(Element*) = 0;
 
@@ -133,7 +140,7 @@ class CORE_EXPORT CustomElementDefinition
   bool has_style_attribute_changed_callback_;
   bool added_default_style_sheet_ = false;
 
-  Member<CSSStyleSheet> default_style_sheet_;
+  HeapVector<Member<CSSStyleSheet>> default_style_sheets_;
 
   void EnqueueAttributeChangedCallbackForAllAttributes(Element*);
 

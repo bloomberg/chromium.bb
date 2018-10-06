@@ -213,10 +213,11 @@ static void MatchCustomElementRules(const Element& element,
     return;
   if (CustomElementDefinition* definition =
           element.GetCustomElementDefinition()) {
-    if (CSSStyleSheet* default_style = definition->DefaultStyleSheet()) {
-      collector.CollectMatchingRules(
-          MatchRequest(element.GetDocument().GetStyleEngine().RuleSetForSheet(
-              *default_style)));
+    if (definition->HasDefaultStyleSheets()) {
+      for (CSSStyleSheet* style : definition->DefaultStyleSheets()) {
+        collector.CollectMatchingRules(MatchRequest(
+            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style)));
+      }
     }
   }
 }

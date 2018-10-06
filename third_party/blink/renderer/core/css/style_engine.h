@@ -133,7 +133,8 @@ class CORE_EXPORT StyleEngine final
   void AdoptedStyleSheetsWillChange(TreeScope&,
                                     StyleSheetList* old_sheets,
                                     StyleSheetList* new_sheets);
-  void AddedCustomElementDefaultStyle(CSSStyleSheet* default_style);
+  void AddedCustomElementDefaultStyles(
+      const HeapVector<Member<CSSStyleSheet>>& default_styles);
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
   void InitialStyleChanged();

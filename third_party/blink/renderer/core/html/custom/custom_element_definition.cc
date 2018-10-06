@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -39,7 +38,7 @@ CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
   visitor->Trace(construction_stack_);
-  visitor->Trace(default_style_sheet_);
+  visitor->Trace(default_style_sheets_);
 }
 
 static String ErrorMessageForConstructorResult(Element* element,
@@ -207,31 +206,33 @@ void CustomElementDefinition::Upgrade(Element* element) {
   }
 
   element->SetCustomElementDefinition(this);
-  AddDefaultStyle(element);
+  AddDefaultStylesTo(*element);
 }
 
-void CustomElementDefinition::AddDefaultStyle(Element* element) {
-  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
+void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
+  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() ||
+      !HasDefaultStyleSheets())
     return;
-  CSSStyleSheet* default_style = DefaultStyleSheet();
-  if (!default_style)
-    return;
-  Document* associated_document = default_style->AssociatedDocument();
-  if (associated_document && associated_document != &element->GetDocument()) {
-    // Throw exception here?
-    return;
+  const auto& default_styles = DefaultStyleSheets();
+  for (CSSStyleSheet* style : default_styles) {
+    Document* associated_document = style->AssociatedDocument();
+    if (associated_document && associated_document != &element.GetDocument()) {
+      // No spec yet, but for now we forbid usage of other document's
+      // constructed stylesheet.
+      return;
+    }
   }
   if (!added_default_style_sheet_) {
-    element->GetDocument().GetStyleEngine().AddedCustomElementDefaultStyle(
-        default_style);
+    element.GetDocument().GetStyleEngine().AddedCustomElementDefaultStyles(
+        default_styles);
     added_default_style_sheet_ = true;
-    const AtomicString& local_tag_name =
-        element->LocalNameForSelectorMatching();
-    default_style->AddToCustomElementTagNames(local_tag_name);
+    const AtomicString& local_tag_name = element.LocalNameForSelectorMatching();
+    for (CSSStyleSheet* sheet : default_styles)
+      sheet->AddToCustomElementTagNames(local_tag_name);
   }
-  element->SetNeedsStyleRecalc(
-      kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                             StyleChangeReason::kActiveStylesheetsUpdate));
+  element.SetNeedsStyleRecalc(kLocalStyleChange,
+                              StyleChangeReasonForTracing::Create(
+                                  StyleChangeReason::kActiveStylesheetsUpdate));
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(
