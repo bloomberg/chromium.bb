@@ -33,8 +33,6 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
--CrSettingsBluetoothPageTest.All
--CrSettingsCrostiniPageTest.All
 -CrSettingsFingerprintProgressArcTest.All
 -CrSettingsMultidevicePageTest.All
 -CrSettingsPeoplePageLockScreenTest.All
@@ -117,12 +115,14 @@ CrSettingsAnimatedPagesTest.*
 CrSettingsAppearanceFontsPageTest.*
 CrSettingsAppearancePageTest.*
 CrSettingsAutofillSectionTest.*
+CrSettingsBluetoothPageTest.*
 CrSettingsCategoryDefaultSettingTest.*
 CrSettingsCategorySettingExceptionsTest.*
 CrSettingsCertificateManagerTest.*
 CrSettingsChangePasswordPageTest.*
 CrSettingsCheckboxTest.*
 CrSettingsChromeCleanupPageTest.*
+CrSettingsCrostiniPageTest.*
 CrSettingsDateTimePageTest.*
 CrSettingsDefaultBrowserTest.*
 CrSettingsDevicePageTest.*
