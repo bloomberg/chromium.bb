@@ -220,20 +220,23 @@ void SearchTabHelper::TitleWasSet(content::NavigationEntry* entry) {
 void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                     const GURL& /* validated_url */) {
   if (!render_frame_host->GetParent()) {
-    if (search::IsInstantNTP(web_contents_))
+    if (search::IsInstantNTP(web_contents_)) {
       RecordNewTabLoadTime(web_contents_);
-  }
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop)) {
-    HatsService* hats_service =
-        HatsServiceFactory::GetForProfile(profile(), true);
-    if (hats_service->ShouldShowSurvey()) {
-      // TODO launch bubble;
+      if (base::FeatureList::IsEnabled(
+              features::kHappinessTrackingSurveysForDesktop)) {
+        HatsService* hats_service =
+            HatsServiceFactory::GetForProfile(profile(), true);
+
+        // In icognito mode, hats_service will be null.
+        if (hats_service && hats_service->ShouldShowSurvey()) {
+          // TODO launch bubble;
+        }
+      }
+#endif  // !defined(OS_ANDROID)
     }
   }
-#endif  // !defined(OS_ANDROID)
 }
 
 void SearchTabHelper::NavigationEntryCommitted(
