@@ -62,6 +62,7 @@ Polymer({
       computed: 'computeRecentDestinationList_(' +
           'destinationStore, recentDestinations, recentDestinations.*, ' +
           'userInfo, destinations_.*)',
+      observer: 'onRecentDestinationListChange_',
     },
 
     /** @private {?RegExp} */
@@ -197,6 +198,13 @@ Polymer({
       }
     });
     return recentDestinations;
+  },
+
+  /** @private */
+  onRecentDestinationListChange_: function() {
+    const numRecent = Math.max(2, this.recentDestinationList_.length);
+    this.$.recentList.style.maxHeight = `calc(${numRecent} *
+            var(--destination-item-height) + 10px + 20 / 13 * 1rem)`;
   },
 
   /** @private */

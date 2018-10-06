@@ -65,7 +65,7 @@ Polymer({
 
       const entry = assert(entries[0]);
       // Don't set maxHeight below the minimum height.
-      const fullHeight = Math.max(entry.contentRect.height, 96);
+      const fullHeight = Math.max(entry.contentRect.height, 64);
       this.$.list.style.maxHeight = `${fullHeight}px`;
       this.forceIronResize();
     });
