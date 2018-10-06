@@ -533,9 +533,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si aquesta política no es configura o s'estableix en "No filtris els llocs web amb contingut per a adults", els llocs web no es filtraran.
 
       Si aquesta política s'estableix en "Filtra els llocs web de nivell superior amb contingut per a adults", es filtraran els llocs web classificats com a pornogràfics.</translation>
-<translation id="2485721741875148980">Si aquesta política es defineix com a "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled es definirà com a "false". Tingues en compte que, després d'activar aquesta política, els perfils existents en què no s'hagi iniciat la sessió es bloquejaran i no s'hi podrà accedir. Per obtenir més informació, consulta l'article del centre d'ajuda.
-
-      Si aquesta política es defineix com a "false" o no es configura, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Desactiva l'aplicació dels requisits de Transparència de certificats als URL esmentats.
 
       Aquesta política permet que els certificats dels noms d'amfitrió dels URL que especifiquis no es divulguin mitjançant Transparència de certificats. Això permet que es puguin continuar utilitzant certificats que, en cas contrari, podrien no ser de confiança perquè no s'han divulgat públicament de la manera adequada, però fa que sigui més difícil detectar l'emissió inadequada de certificats per a aquests amfitrions.
@@ -1523,11 +1520,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política no es defineix o es defineix a la cadena buida o en un interval de ports no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
 <translation id="5290940294294002042">Especifica una llista dels connectors que l'usuari pot activar o desactivar</translation>
-<translation id="5302612588919538756">Aquesta política està obsoleta; substituïu-la per SyncDisabled.
-
-      Permet a l'usuari iniciar la sessió a <ph name="PRODUCT_NAME" />.
-
-      Si establiu aquesta política, podeu configurar si es permet a un usuari iniciar la sessió a <ph name="PRODUCT_NAME" />. Si l'establiu en "False", les aplicacions i les extensions que utilitzen l'API chrome.identity no funcionaran. Per això és recomanable utilitzar SyncDisabled.</translation>
 <translation id="5304269353650269372">Especifica el període de temps sense intervenció de l'usuari que ha de passar abans de mostrar un quadre de diàleg d'advertiment quan l'ordinador funciona amb bateria.
 
           Si aquesta política es defineix, especifica el període de temps durant el qual l'usuari ha d'estar inactiu abans que <ph name="PRODUCT_OS_NAME" /> mostri un quadre de diàleg d'advertiment que indiqui a l'usuari que s'està a punt de dur a terme l'acció d'inactivitat.

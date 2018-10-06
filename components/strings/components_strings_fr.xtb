@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Annuler le paiement</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3209375525920864198">Veuillez saisir un nom de session valide.</translation>
-<translation id="3211223744486044430">Pour régler plus rapidement vos achats la prochaine fois, enregistrez cette carte dans votre compte Google et sur cet appareil.</translation>
 <translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3226128629678568754">Veuillez appuyer sur le bouton d'actualisation pour renvoyer les données nécessaires au chargement de la page.</translation>
 <translation id="3227137524299004712">Micro</translation>
@@ -983,7 +982,6 @@ Informations supplémentaires :
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="777702478322588152">Préfecture</translation>
 <translation id="7791543448312431591">Ajouter</translation>
-<translation id="7793553086574152071">Pour régler vos achats plus rapidement la prochaine fois, enregistrez cette carte dans votre compte Google.</translation>
 <translation id="7793809570500803535">Il est possible que la page Web située à l'adresse <ph name="SITE" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une nouvelle adresse Web.</translation>
 <translation id="7800304661137206267">La connexion est chiffrée au moyen de <ph name="CIPHER" />, avec <ph name="MAC" /> pour l'authentification des messages et <ph name="KX" /> pour la méthode d'échange de clés.</translation>
 <translation id="7802523362929240268">Ce site est légitime</translation>

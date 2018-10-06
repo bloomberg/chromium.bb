@@ -331,7 +331,6 @@
 <translation id="320323717674993345">Fizetés visszavonása</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
 <translation id="3209375525920864198">Érvényes munkamenetnevet adjon meg.</translation>
-<translation id="3211223744486044430">A következő alkalommal gyorsabban fizethet, ha kártyáját Google-fiókjába és az eszközre menti.</translation>
 <translation id="3225919329040284222">A szerver tanúsítványa nem felel meg a beépített elvárásoknak. Ezek a beépített elvárások bizonyos nagy biztonságú webhelyekre vonatkoznak az Ön védelme érdekében.</translation>
 <translation id="3226128629678568754">Nyomja meg a frissítés gombot az oldal betöltéséhez szükséges adatok újraküldéséhez.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -981,7 +980,6 @@ További részletek:
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
-<translation id="7793553086574152071">A következő alkalommal gyorsabban fizethet, ha Google-fiókjába menti kártyáját.</translation>
 <translation id="7793809570500803535">Lehetséges, hogy a(z) <ph name="SITE" /> webhelyen található oldal ideiglenesen nem érhető el, vagy véglegesen új címre költözött.</translation>
 <translation id="7800304661137206267">A kapcsolat a(z) <ph name="CIPHER" /> használatával lett kódolva, <ph name="MAC" /> algoritmussal az üzenethitelesítéshez és <ph name="KX" /> algoritmussal a kulcscserélő folyamathoz.</translation>
 <translation id="7802523362929240268">A webhely valódi</translation>

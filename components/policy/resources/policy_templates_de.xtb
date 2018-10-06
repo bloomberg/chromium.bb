@@ -546,9 +546,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Richtlinie nicht konfiguriert oder auf "Websites mit Inhalten nur für Erwachsene nicht filtern" festgelegt ist, werden Websites nicht gefiltert.
 
       Falls die Richtlinie auf "Websites auf oberster Ebene mit Inhalten nur für Erwachsene filtern" gesetzt ist, werden als pornografisch eingestufte Websites gefiltert.</translation>
-<translation id="2485721741875148980">Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Außerdem wird der Standardwert von BrowserGuestModeEnabled auf "false" gesetzt. Beachten Sie, dass vorhandene, nicht signierte Profile gesperrt werden und nach Aktivieren dieser Richtlinie nicht mehr zugänglich sind. Weitere Informationen erhalten Sie im Hilfeartikel.
-
-      Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer den Browser verwenden, ohne sich in <ph name="PRODUCT_NAME" /> anzumelden.</translation>
 <translation id="2486371469462493753">Deaktiviert das Erzwingen von Zertifikatstransparenz-Anforderungen für die aufgeführten URLs.
 
       Diese Richtlinie erlaubt, dass Zertifikate für die Hostnamen in den angegebenen URLs nicht über die Zertifikatstransparenz offengelegt werden. Dadurch sind Zertifikate weiterhin zulässig, die anderenfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Es wird jedoch schwieriger, fehlerhaft ausgestellte Zertifikate für diese Hosts zu erkennen.
@@ -1538,11 +1535,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
-<translation id="5302612588919538756">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "SyncDisabled" verwenden.
-
-      Die Richtlinie erlaubt dem Nutzer die Anmeldung in <ph name="PRODUCT_NAME" />.
-
-      Durch Festlegen dieser Richtlinie bestimmen Sie, ob ein Nutzer sich in <ph name="PRODUCT_NAME" /> anmelden darf oder nicht. Wenn Sie für diese Richtlinie "False" festlegen, funktionieren Apps und Erweiterungen nicht mehr, die die chrome.identity API verwenden. Aus diesem Grund ist es empfehlenswert, stattdessen "SyncDisabled" zu verwenden.</translation>
 <translation id="5304269353650269372">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Akkubetrieb eine Warnmeldung angezeigt wird.
 
           Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.

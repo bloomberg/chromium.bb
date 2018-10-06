@@ -334,7 +334,6 @@
 <translation id="320323717674993345">Peruuta maksu</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
 <translation id="3209375525920864198">Anna kelvollinen istunnon nimi.</translation>
-<translation id="3211223744486044430">Jos haluat maksaa nopeammin seuraavalla kerralla, tallenna tämä kortti Google-tilillesi ja tälle laitteelle.</translation>
 <translation id="3225919329040284222">Palvelin esitti varmenteen, joka ei vastaa sisäänrakennettuja odotuksia. Tietyillä tehokkaasti suojatuilla sivustoilla on odotuksia, joilla suojataan käyttäjiä.</translation>
 <translation id="3226128629678568754">Paina päivityspainiketta, niin sivun lataukseen tarvittavat tiedot lähetetään uudelleen.</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
@@ -984,7 +983,6 @@ Lisätietoja:
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="777702478322588152">Prefektuuri</translation>
 <translation id="7791543448312431591">Lisää</translation>
-<translation id="7793553086574152071">Jos haluat maksaa nopeammin seuraavalla kerralla, tallenna tämä kortti Google-tilillesi.</translation>
 <translation id="7793809570500803535">Osoitteessa <ph name="SITE" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä, tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="7800304661137206267">Tämä yhteys on salattu käyttäen algoritmia <ph name="CIPHER" />, viestit todennetaan menetelmällä <ph name="MAC" /> ja avainvaihtomekanismi on toteutettu menetelmällä <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Sivusto on luotettava</translation>

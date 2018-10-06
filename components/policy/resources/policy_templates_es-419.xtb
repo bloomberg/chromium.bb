@@ -545,9 +545,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando no se configura esta política o se establece como "No aplicar filtros de contenido para adultos a los sitios", no se filtrarán los sitios.
 
       Cuando se configura como "Aplicar filtros de contenido para adultos a los sitios principales", se filtrarán los sitios clasificados como pornográficos.</translation>
-<translation id="2485721741875148980">Si se establece esta política como verdadera, el usuario deberá acceder a <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado de BrowserGuestModeEnabled se establecerá como falso. Debes tener en cuenta que, una vez habilitada esta política, se bloquearán los perfiles a los que no se haya accedido y no podrás ingresar a ellos. Para obtener más información, consulta el artículo del centro de ayuda.
-
-      Si se establece esta política como falsa o no se configura, el usuario podrá usar el navegador sin acceder a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Inhabilita la aplicación de los requisitos del Certificado de transparencia para las URL de la lista.
 
       Esta política permite que los certificados para los nombres de host en las URL especificadas no se divulgen mediante el Certificado de transparencia. Esta acción permite seguir usando certificados que, de lo contrario, no serían de confianza porque no se divulgaron de forma pública correctamente. Sin embargo, esta acción dificulta la detección de los certificados que se usan de forma incorrecta para esos hosts.
@@ -1541,11 +1538,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
-<translation id="5302612588919538756">Esta política dejó de estar disponible; se debe considerar el uso de SyncDisabled en su lugar.
-
-      Permite que el usuario acceda a <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política, se puede configurar si un usuario puede acceder a <ph name="PRODUCT_NAME" />. Si esta política se establece en "False", se impedirá que funcionen las apps y extensiones que usan la API chrome.identity, por lo que se puede usar SyncDisabled en su lugar.</translation>
 <translation id="5304269353650269372">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con batería.
 
           Cuando se establece esta política, se especifica la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.

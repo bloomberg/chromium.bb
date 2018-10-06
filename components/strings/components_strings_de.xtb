@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Zahlung abbrechen</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3209375525920864198">Bitte geben Sie einen gültigen Sitzungsnamen ein.</translation>
-<translation id="3211223744486044430">Um die Zahlung das nächste Mal schneller abzuwickeln, speichern Sie diese Karte in Ihrem Google-Konto und auf diesem Gerät.</translation>
 <translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten noch einmal zu senden.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -982,7 +981,6 @@ Weitere Details:
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
-<translation id="7793553086574152071">Um die Zahlung das nächste Mal schneller abzuwickeln, speichern Sie diese Karte in Ihrem Google-Konto.</translation>
 <translation id="7793809570500803535">Die Webseite unter <ph name="SITE" /> ist möglicherweise vorübergehend nicht verfügbar oder dauerhaft unter einer neuen URL zu erreichen.</translation>
 <translation id="7800304661137206267">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt; für die Nachrichtenauthentifizierung wird <ph name="MAC" /> verwendet und als Mechanismus für den Schlüsselaustausch <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Website ist vertrauenswürdig</translation>

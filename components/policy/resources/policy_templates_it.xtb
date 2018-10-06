@@ -524,9 +524,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma non viene configurata o viene impostata su "Non filtrare i siti di contenuti per adulti", i siti non verranno filtrati.
 
       Se questa norma viene impostata su "Filtra i siti di contenuti per adulti di primo livello", i siti classificati come pornografici verranno filtrati.</translation>
-<translation id="2485721741875148980">Se la norma viene impostata su true, l'utente deve accedere a <ph name="PRODUCT_NAME" /> con il proprio profilo prima di utilizzare il browser e il valore predefinito di BrowserGuestModeEnabled viene impostato su false. Tieni presente che i profili non firmati esistenti saranno bloccati e inaccessibili dopo l'attivazione di questa norma. Per ulteriori informazioni, consulta l'articolo del Centro assistenza.
-
-      Se la norma viene impostata su false o non viene configurata, l'utente può utilizzare il browser senza accedere a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Disattiva l'imposizione dei requisiti di Certificate Transparency per gli URL elencati.
 
       Questa norma consente ai certificati per i nomi host negli URL specificati di non essere resi pubblici tramite Certificate Transparency. Consente ai certificati che altimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati. Tuttavia, la norma rende più difficile il rilevamento di certificati emessi in modo scorretto per questi host.
@@ -1504,11 +1501,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
       Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
-<translation id="5302612588919538756">Questa norma è stata ritirata; utilizzare la norma SyncDisabled.
-
-      Consente all'utente di accedere a <ph name="PRODUCT_NAME" />.
-
-      Se questa norma viene impostata, è possibile stabilire se un utente può accedere o meno a <ph name="PRODUCT_NAME" />. Se la norma viene impostata su "False", le app e le estensioni che utilizzano l'API chrome.identity non funzioneranno, pertanto è consigliabile utilizzare la norma SyncDisabled.</translation>
 <translation id="5304269353650269372">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è alimentato a batteria.
 
           Quando è impostata, questa norma specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> mostri una finestra di dialogo di avviso in cui comunica all'utente che sta per essere intrapresa l'azione richiesta in caso di inattività.

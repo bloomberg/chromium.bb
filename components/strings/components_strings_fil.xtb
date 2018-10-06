@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Kanselahin ang Pagbabayad</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="3209375525920864198">Maglagay ng valid na pangalan ng session.</translation>
-<translation id="3211223744486044430">Upang mas mabilis na makapagbayad sa susunod, i-save ang card na ito sa iyong Google Account at sa device na ito.</translation>
 <translation id="3225919329040284222">Nagpakita ang server ng certificate na hindi tumutugma sa mga built-in na inaasahan. Ang mga inaasahang ito ay isinama para sa ilang partikular na website na may mataas na antas ng seguridad upang maprotektahan ka.</translation>
 <translation id="3226128629678568754">Pindutin ang button na i-reload upang isumiteng muli ang data na kailangan upang ma-load ang pahina.</translation>
 <translation id="3227137524299004712">Mikropono</translation>
@@ -983,7 +982,6 @@ Mga karagdagang detalye:
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7791543448312431591">Magdagdag</translation>
-<translation id="7793553086574152071">Upang mas mabilis na makapagbayad sa susunod, i-save ang card na ito sa iyong Google Account.</translation>
 <translation id="7793809570500803535">Maaaring pansamantalang sira ang webpage sa <ph name="SITE" /> o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="7800304661137206267">Na-encrypt ang koneksyon gamit ang <ph name="CIPHER" />, kasama ang <ph name="MAC" /> para sa pagpapatunay ng mensahe at <ph name="KX" /> bilang mekanismo ng pangunahing pagpapalit.</translation>
 <translation id="7802523362929240268">Lehitimo ang site</translation>

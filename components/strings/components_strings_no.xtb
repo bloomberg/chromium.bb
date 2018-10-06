@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Avbryt betalingen</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3209375525920864198">Skriv inn et gyldig øktnavn.</translation>
-<translation id="3211223744486044430">For å betale raskere neste gang, lagre dette kortet i Google-kontoen din og på denne enheten.</translation>
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -982,7 +981,6 @@
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7791543448312431591">Legg til</translation>
-<translation id="7793553086574152071">For å betale raskere neste gang, lagre dette kortet i Google-kontoen din.</translation>
 <translation id="7793809570500803535">Det kan hende at nettsiden på <ph name="SITE" /> er midlertidig nede eller flyttet permanent til en ny nettadresse.</translation>
 <translation id="7800304661137206267">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER" />, med <ph name="MAC" /> for autentisering av meldinger og <ph name="KX" /> som nøkkelutvekslingsmekanisme.</translation>
 <translation id="7802523362929240268">Nettstedet er legitimt</translation>

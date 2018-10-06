@@ -331,7 +331,6 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209375525920864198">请输入一个有效的会话名称。</translation>
-<translation id="3211223744486044430">若想在下次购物时更快捷地付款，请将此卡片的信息保存到您的 Google 帐号和此设备中。</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
 <translation id="3227137524299004712">麦克风</translation>
@@ -979,7 +978,6 @@
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="7791543448312431591">添加</translation>
-<translation id="7793553086574152071">若想在下次购物时更快捷地付款，请将此卡片的信息保存到您的 Google 帐号中。</translation>
 <translation id="7793809570500803535">网址为 <ph name="SITE" /> 的网页可能暂时无法连接或已永久性地移动到了新网址。</translation>
 <translation id="7800304661137206267">该连接是使用 <ph name="CIPHER" /> 进行加密的，同时使用 <ph name="MAC" /> 进行讯息身份验证并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="7802523362929240268">网站是合规的</translation>

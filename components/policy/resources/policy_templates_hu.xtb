@@ -553,9 +553,6 @@
       Ha a házirend nincs beállítva, vagy értéke „Do not filter sites for adult content” (Ne szűrje a webhelyeket felnőtteknek szóló tartalmak szerint), akkor a rendszer nem szűri a webhelyeket.
 
       Ha a házirend értéke „Filter top level sites for adult content” (Szűrje a legfelső szintű webhelyeket felnőtteknek szóló tartalmak szerint), akkor a pornográf besorolású webhelyeket kiszűri a rendszer.</translation>
-<translation id="2485721741875148980">Ha a házirend értéke igaz, akkor a felhasználónak be kell jelentkeznie a <ph name="PRODUCT_NAME" /> böngészőbe a profiljával, hogy használhassa. A BrowserGuestModeEnabled házirend alapértelmezett értéke hamisra lesz állítva. Fontos megjegyezni, hogy a meglévő, hitelesítés nélküli profilok kizárásra kerülnek, és hozzáférhetetlenné válnak a házirend engedélyezése után. További információt a súgócikkben talál.
-
-      Ha a házirend értéke hamis, vagy ha nincs konfigurálva, a felhasználó bejelentkezés nélkül is használhatja a <ph name="PRODUCT_NAME" /> böngészőt.</translation>
 <translation id="2486371469462493753">Kikapcsolja A tanúsítványok átláthatósága keretrendszer követelményeinek betartását a listában szereplő URL-eknél.
 
       A házirend lehetővé teszi a tanúsítványok számára, hogy a megadott URL-ekben található gazdagépneveket ne osszák meg A tanúsítványok átláthatósága keretrendszeren keresztül. Ez lehetővé teszi a tanúsítványok számára, amelyek egyébként a nem megfelelő nyilvánosságra hozatal miatt nem megbízhatónak minősülnének, hogy továbbra is használják őket, de az adott gazdagépek számára megnehezíti a hibásan kiadott tanúsítványok felismerését.
@@ -1544,11 +1541,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet nem állítja be, vagy üres karakterláncot, illetve érvénytelen porttartományt ad meg, akkor a WebRTC bármelyik rendelkezésre álló helyi UDP-portot használhatja.</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
-<translation id="5302612588919538756">Ez a házirend elavult, használja helyette a SyncDisabled házirendet.
-
-      Lehetővé teszi, hogy a felhasználó bejelentkezzen a <ph name="PRODUCT_NAME" /> termékbe.
-
-      Ha beállítja ezt a házirendet, meghatározhatja, hogy az egyes felhasználók bejelentkezhetnek-e a <ph name="PRODUCT_NAME" /> alkalmazásba. Amennyiben „Hamis” értékre állítja a házirendet, a chrome.identity API-t használó alkalmazások és bővítmények nem fognak működni, ezért érdemes helyette a SyncDisabled házirendet használni.</translation>
 <translation id="5304269353650269372">Megadja azt az időtartamot, amely után felhasználói bevitel hiányában megjelenik egy figyelmeztető párbeszédablak, amennyiben a rendszer akkumulátorról üzemel.
 
           Ha a házirend be van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a <ph name="PRODUCT_OS_NAME" /> figyelmeztető párbeszédablakot jelenít meg, amely felhívja a felhasználó figyelmét, hogy a rendszer nemsokára elvégzi a tétlenségi műveletet.

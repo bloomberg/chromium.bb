@@ -565,9 +565,6 @@
       Khi chưa định cấu hình hoặc đặt chính sách này thành "Không lọc trang web có nội dung người lớn", chúng tôi sẽ không lọc các trang web này.
 
       Khi đặt chính sách này thành "Lọc các trang web cấp cao nhất có nội dung người lớn", chúng tôi sẽ lọc các trang web được phân loại là có chứa nội dung khiêu dâm.</translation>
-<translation id="2485721741875148980">Nếu bạn đặt chính sách này là true, người dùng sẽ phải đăng nhập vào <ph name="PRODUCT_NAME" /> bằng hồ sơ của mình trước khi sử dụng trình duyệt. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt là false. Hãy lưu ý rằng sau khi bật chính sách này, các hồ sơ chưa ký hiện tại sẽ bị khóa và bạn không thể truy cập vào các hồ sơ đó. Để biết thêm thông tin, hãy xem bài viết trên trung tâm trợ giúp.
-
-      Nếu bạn đặt chính sách này là false hoặc chưa đặt chính sách thì người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Tắt buộc thực thi yêu cầu Tính minh bạch của chứng chỉ cho các URL được liệt kê.
 
       Chính sách này cho phép chứng chỉ cho tên máy chủ trong URL được chỉ định không bị tiết lộ qua Tính minh bạch của chứng chỉ. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng. Tuy nhiên, điều này cũng khiến việc phát hiện các chứng chỉ bị sử dụng sai cho các máy chủ này trở nên khó khăn hơn.
@@ -1601,11 +1598,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chưa đặt chính sách hoặc nếu chính sách được đặt thành chuỗi trống hoặc phạm vi cổng không hợp lệ thì WebRTC được phép sử dụng bất kỳ cổng UDP cục bộ khả dụng nào.</translation>
 <translation id="5290940294294002042">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt</translation>
-<translation id="5302612588919538756">Chính sách này không được dùng nữa, thay vào đó hãy cân nhắc sử dụng SyncDisabled.
-
-      Cho phép người dùng đăng nhập vào <ph name="PRODUCT_NAME" />.
-
-      Nếu đặt chính sách này, bạn có thể định cấu hình để cho phép hoặc không cho phép người dùng đăng nhập vào <ph name="PRODUCT_NAME" />. Đặt chính sách này thành 'False' sẽ ngăn các ứng dụng và tiện ích sử dụng API chrome.identity hoạt động, do đó có thể bạn muốn sử dụng SyncDisabled.</translation>
 <translation id="5304269353650269372">Chỉ định thời lượng không có thao tác nhập của người dùng mà sau thời lượng đó, hộp thoại cảnh báo sẽ hiển thị khi chạy trên nguồn pin.
 
           Khi được đặt, chính sách này sẽ chỉ định thời lượng mà người dùng phải duy trì trạng thái không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo thông báo cho người dùng rằng hành động dành cho việc không sử dụng sắp được thực hiện.

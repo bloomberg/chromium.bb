@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Avbryt betalningen</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="3209375525920864198">Ange ett giltigt sessionsnamn.</translation>
-<translation id="3211223744486044430">Spara det här kortet i Google-kontot och på enheten så går det snabbare att betala nästa gång.</translation>
 <translation id="3225919329040284222">Ett certifikat som inte överensstämmer med inbyggda förväntningar presenterades på servern. Förväntningarna gäller för webbplatser med hög säkerhet för att skydda dig.</translation>
 <translation id="3226128629678568754">Om du på nytt vill skicka datan som behövs för att läsa in sidan trycker du på knappen Läs in igen.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -983,7 +982,6 @@ Mer information.
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7791543448312431591">Lägg till</translation>
-<translation id="7793553086574152071">Spara det här kortet i Google-kontot så går det snabbare att betala nästa gång.</translation>
 <translation id="7793809570500803535">Webbsidan på <ph name="SITE" /> kan ligga nere för tillfället eller så kan den ha flyttats permanent till en ny webbadress.</translation>
 <translation id="7800304661137206267">Anslutningen är krypterad med <ph name="CIPHER" />, med <ph name="MAC" /> för meddelandeautentisering och <ph name="KX" /> som mekanism för nyckelutbyte.</translation>
 <translation id="7802523362929240268">Legitim webbplats</translation>

@@ -536,9 +536,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Iwapo mipangilio ya sera hii haijawekwa au umeweka "Isichuje tovuti zilizo na maudhui ya watu wazima", tovuti hazitafutwa.
 
       Iwapo sera hii imewekwa kuwa "Ichuje tovuti maarufu zinazoonyesha maudhui ya watu wazima", tovuti zinazoainishwa kuwa za ponografia zitachujwa.</translation>
-<translation id="2485721741875148980">Kama sera hii imewekwa kuwa ndivyo, mtumiaji anahitaji kuingia katika akaunti ya <ph name="PRODUCT_NAME" /> kwa kutumia wasifu wake kabla ya kutumia kivinjari. Na thamani chaguomsingi ya BrowserGuestModeEnabled itawekwa kuwa sivyo. Kumbuka kwamba wasifu zilizopo ambazo hazijatumiwa kuingia katika akaunti zitafungwa na hazitaweza kufikiwa baada ya kuwasha sera hii. Kwa maelezo zaidi, angalia makala ya kituo cha usaidizi.
-
-      Kama sera hii itawekwa kuwa sivyo au haitasanidiwa, mtumiaji anaweza kutumia kivinjari bila kuingia katika akaunti ya <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Huzima utekelezaji wa mahitaji ya Uwazi wa Cheti kwenye URL zilizoorodheshwa.
 
       Sera hii huruhusu vyeti vya majina ya wapangishaji katika URL zilizobainishwa visifichuliwe kupitia Uwazi wa Cheti. Hii huruhusu vyeti visivyoaminika, kwa sababu havikufichuliwa hadharani ipasavyo, viendelee kutumiwa, lakini hufanya ugunduzi wa vyeti vilivyotumiwa vibaya kuwa mgumu kwa wapangishaji hao.
@@ -1572,11 +1569,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
       Sera hii isipowekwa, au ikiwekwa kwenye mfuatano wazi au masafa ya mlango yasiyo sahihi, WebRTC itaruhusiwa kutumia mlango wowote wa ndani wa UDP.</translation>
 <translation id="5290940294294002042">Bainisha orodha ya programu jalizi ambayo mtumiaji anaweza kuwezesha au kulemaza</translation>
-<translation id="5302612588919538756">Sera hii imeacha kuendesha huduma, badala yake jaribu kutumia kipengee cha SyncDisabled.
-
-      Humruhusu mtumiaji kuingia katika <ph name="PRODUCT_NAME" />.
-
-     Ukiweka sera hii, unaweza kusanidi iwapo mtumiaji anaruhusiwa kuingia katika <ph name="PRODUCT_NAME" />. Kuweka sera hii kuwa 'Sivyo' kutazuia programu na viendelezi ambavyo hutumia API ya chrome.identity visifanye kazi, kwa hivyo unaweza kutumia kipengee cha SyncDisabled.</translation>
 <translation id="5304269353650269372">Hubainisha urefu wa muda ambao mtumiaji anaweza kukaa bila kufanya kitu baada ya upi mazungumzo ya onyo yataonyeshwa wakati ikiendeshwa kwenye nishati ya betri.
 
           Sera hii inapowekwa, inabainisha urefu wa muda ambao mtumiaji anaweza kukaa bila kufanya kitu kabla <ph name="PRODUCT_OS_NAME" /> haijaonyesha mazungumzo ya onyo yanayomwambia mtumiaji kuwa kitendo cha kukaa bila kufanya kitu kiko karibu kutekelezwa.

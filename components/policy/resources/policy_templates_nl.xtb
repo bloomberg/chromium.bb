@@ -563,9 +563,6 @@
       Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'Sites niet filteren op content voor volwassenen', worden de sites niet gefilterd.
 
       Wanneer dit beleid is ingesteld op 'Sites op hoofdniveau filteren op inhoud voor volwassenen', worden de sites gefilterd die zijn geclassificeerd als pornografisch.</translation>
-<translation id="2485721741875148980">Als dit beleid is ingesteld op 'True', moet de gebruiker inloggen op <ph name="PRODUCT_NAME" /> met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'False'. Houd er rekening mee dat bestaande, niet-ingelogde profielen worden vergrendeld en niet toegankelijk zijn na inschakeling van dit beleid. Raadpleeg het Helpcentrum-artikel voor meer informatie.
-
-      Als dit beleid is ingesteld op 'False' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen op <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Hiermee schakel je de handhaving van de Certificaattransparantie voor de vermelde URL's uit.
 
       Dit beleid staat toe dat de certificaten voor de hostnamen in de opgegeven URL's niet bekend worden gemaakt via Certificaattransparantie. Zodoende kun je certificaten blijven gebruiken die anders niet zouden worden vertrouwd omdat ze niet goed openbaar zijn gemaakt. Hierdoor is het echter wel moeilijker om verkeerd uitgegeven certificaten voor deze hosts te detecteren.
@@ -1596,11 +1593,6 @@
 
       Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
 <translation id="5290940294294002042">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen</translation>
-<translation id="5302612588919538756">Dit beleid is verouderd. Je kunt in plaats hiervan SyncDisabled gebruiken.
-
-      Hiermee wordt toegestaan dat de gebruiker inlogt bij <ph name="PRODUCT_NAME" />.
-
-      Als je dit beleid instelt, kun je bepalen of een gebruiker mag inloggen bij <ph name="PRODUCT_NAME" />. Als dit beleid is ingesteld op 'onwaar', werken de apps en extensies die de API chrome.identity gebruiken niet meer. Daarom kun je in plaats hiervan ook SyncDisabled gebruiken.</translation>
 <translation id="5304269353650269372">Hiermee wordt de tijdsduur zonder gebruikersinvoer gespecificeerd waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster aan de gebruiker laat zien om aan te geven dat de actie voor inactiviteit bijna wordt ondernomen.

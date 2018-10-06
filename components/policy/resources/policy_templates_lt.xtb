@@ -567,9 +567,6 @@
       Kai ši politika nesukonfigūruota arba nustatyta kaip „Nefiltruoti turinio suaugusiesiems svetainėje“, svetainės nefiltruojamos.
 
       Kai ši politika nustatyta kaip „Filtruoti turinį suaugusiesiems aukščiausio lygio svetainėse“, filtruojamos svetainės, kurios priskiriamos pornografinių svetainių kategorijai.</translation>
-<translation id="2485721741875148980">Jei ši politika nustatyta į „true“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta į „false“. Atminkite, kad įgalinus šią politiką esami profiliai, prie kurių neprisijungta, bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį.
-
-      Jei ši politika nustatyta į „false“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="2486371469462493753">Išjungiamas sertifikato skaidrumo reikalavimų taikymas nurodytiems URL.
 
       Taikant šią politiką leidžiama neatskleisti prieglobos serverių pavadinimų nurodytuose URL sertifikatų taikant sertifikato skaidrumą. Todėl bus leidžiama toliau naudoti sertifikatus, kurie priešingu atveju būtų nepatikimi, nes nebuvo tinkamai viešai atskleisti, bet bus sudėtingiau aptikti netinkamai naudojamus šių prieglobų sertifikatus.
@@ -1606,11 +1603,6 @@
 
       Jei politika nenustatyta arba nustatyta į tuščią eilutę arba negaliojantį prievado diapazoną, „WebRTC“ leidžiama naudoti bet kokį pasiekiamą vietinį UDP prievadą.</translation>
 <translation id="5290940294294002042">Nurodyti papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti, sąrašą</translation>
-<translation id="5302612588919538756">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „SyncDisabled“.
-
-      Naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“.
-
-      Jei nustatysite šią politiką, galėsite konfigūruoti, ar naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“. Šią politiką nustačius į „false“ nebus leidžiama veikti programoms ir plėtiniams, kuriuose naudojama „chrome.identity“ API, todėl vietoje jos turėtumėte naudoti „SyncDisabled“.</translation>
 <translation id="5304269353650269372">Nurodoma, kiek turi praeiti laiko nuo to, kai naudotojas nieko neįveda, kad būtų rodomas įspėjamasis dialogo langas, kai naudojama akumuliatoriaus energija.
 
           Kai ši politika nustatyta, ji nurodo, kiek laiko naudotojas turi neatlikti jokių veiksmų, kol „<ph name="PRODUCT_OS_NAME" />“ parodys įspėjamąjį dialogo langą, pranešantį, kad bus atliekamas neveikos atveju numatytas veiksmas.

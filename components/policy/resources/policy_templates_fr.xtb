@@ -575,9 +575,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Lorsque cette règle n'est pas configurée, ou si elle est définie sur "Ne pas filtrer les sites de contenus réservés aux adultes", les sites ne sont pas filtrés.
 
       Lorsque cette règle est définie sur "Filtrer les sites de premier niveau présentant des contenus réservés aux adultes", les sites identifiés comme étant pornographiques sont filtrés.</translation>
-<translation id="2485721741875148980">Si cette règle est définie sur "True", l'utilisateur doit se connecter à <ph name="PRODUCT_NAME" /> avec son propre profil pour pouvoir utiliser le navigateur. La valeur par défaut de BrowserGuestModeEnabled sera définie sur "False". Sachez que les profils existants non signés seront verrouillés et inaccessibles une fois cette règle activée. Pour plus d'informations, consultez l'article du centre d'aide.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, l'utilisateur peut utiliser le navigateur sans se connecter à <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Désactive l'application des règles de transparence des certificats pour les URL répertoriées.
 
       Cette règle autorise à ne pas communiquer les certificats associés aux noms d'hôte dans la liste d'URL répertoriées, contrairement à ce que prévoient les règles de transparence des certificats. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés, même si cela rend plus difficile la détection des certificats ayant été indiqués ou non concernant ces hôtes.
@@ -1617,11 +1614,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie, ou si elle est définie sur la chaîne vide ou sur une portée de port non valide, WebRTC peut utiliser n'importe quel port UDP local disponible.</translation>
 <translation id="5290940294294002042">Répertorier les plug-ins pouvant être activés ou désactivés par l'utilisateur</translation>
-<translation id="5302612588919538756">Cette règle est abandonnée. Veuillez utiliser SyncDisabled à la place.
-
-      Permet à l'utilisateur de se connecter à <ph name="PRODUCT_NAME" />.
-
-      Si vous configurez cette règle, vous pouvez déterminer si un utilisateur est autorisé à se connecter à <ph name="PRODUCT_NAME" />. La définition de cette règle sur "False" empêche les applications et les extensions qui utilisent l'API chrome.identity de fonctionner. Vous préférerez peut-être alors utiliser la règle SyncDisabled.</translation>
 <translation id="5304269353650269372">Durée pendant laquelle l'utilisateur doit rester inactif avant qu'une boîte de dialogue d'avertissement ne s'affiche (en cas d'utilisation de la batterie).
 
           Lorsque cette règle est définie, elle spécifie la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> n'affiche une boîte de dialogue l'avertissant que le délai d'inactivité va bientôt être dépassé.

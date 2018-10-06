@@ -567,9 +567,6 @@
       När principen är inställd på Filtrera inte bort webbplatser med barnförbjudet innehåll, eller inte har konfigurerats, filtreras inga webbplatser bort.
 
       När principen är inställd på Filtrera bort webbplatser på toppnivå med barnförbjudet innehåll filtreras webbplatser som klassats som porr bort.</translation>
-<translation id="2485721741875148980">Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
-
-      Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Inaktiverar kraven för certifikattransparens på webbadresserna i listan.
 
       Principen gör så att certifikaten för värdnamnen i de angivna webbadresserna inte lämnas ut via Certifikattransparens. Detta gör det möjligt att fortsätta använda certifikat som annars skulle vara opålitliga eftersom de inte lämnades ut ordentligt. Men det blir svårare att upptäcka felaktigt utfärdade certifikat för dessa värdar.
@@ -1609,11 +1606,6 @@
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
-<translation id="5302612588919538756">Den här principen har fasats ut. Använd SyncDisabled i stället.
-
-      Tillåter att användaren loggar in i <ph name="PRODUCT_NAME" />.
-
-      Om du ställer in den här principen kan du konfigurera om en användare ska ha tillåtelse att logga in i <ph name="PRODUCT_NAME" />. Om principen är inställd på falskt hindras appar och tillägg som använder API:et chrome.identity från att fungera. Du kan därför använda SyncDisabled i stället.</translation>
 <translation id="5304269353650269372">Anger hur lång tid det tar innan ett varningsmeddelande visas när användaren inte gjort någon åtgärd vid batteridrift.
 
           När policyn har angetts anges hur lång tid användaren måste vara inaktiv innan ett varningsmeddelande visas i <ph name="PRODUCT_OS_NAME" /> där användaren får reda på att enheten snart inaktiveras.

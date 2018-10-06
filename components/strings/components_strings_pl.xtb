@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Anuluj płatność</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3209375525920864198">Wpisz prawidłową nazwę sesji.</translation>
-<translation id="3211223744486044430">Aby następnym razem zapłacić szybciej, zapisz tę kartę na swoim koncie Google i na tym urządzeniu.</translation>
 <translation id="3225919329040284222">Serwer przedstawił certyfikat, który nie pasuje do zaprogramowanych oczekiwań. Oczekiwania mają chronić Cię w określonych witrynach o wysokim poziomie zabezpieczeń.</translation>
 <translation id="3226128629678568754">Naciśnij przycisk ponownego załadowania, by przesłać dane wymagane do wczytania strony.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -983,7 +982,6 @@ Dodatkowe informacje:
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7793553086574152071">Aby następnym razem zapłacić szybciej, zapisz tę kartę na swoim koncie Google.</translation>
 <translation id="7793809570500803535">Strona <ph name="SITE" /> może być tymczasowo niedostępna lub została na stałe przeniesiona pod nowy adres internetowy.</translation>
 <translation id="7800304661137206267">Przesyłane dane są szyfrowane za pomocą algorytmu <ph name="CIPHER" />. Metoda uwierzytelniania komunikatów to <ph name="MAC" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Strona spełnia wymagania prawne</translation>

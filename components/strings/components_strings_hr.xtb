@@ -333,7 +333,6 @@
 <translation id="320323717674993345">Otkaži plaćanje</translation>
 <translation id="3207960819495026254">Označeno</translation>
 <translation id="3209375525920864198">Unesite važeći naziv sesije.</translation>
-<translation id="3211223744486044430">Da biste sljedeći put platili brže, spremite ovu karticu na svoj Google račun i na ovaj uređaj.</translation>
 <translation id="3225919329040284222">Poslužitelj je pokazao certifikat koji ne odgovara ugrađenim očekivanjima. Ta su očekivanja uključena za određene web-lokacije s visokim stupnjem sigurnosti radi vaše zaštite.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za ponovno učitavanje da biste ponovo poslali podatke koji su potrebni za učitavanje stranice.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -982,7 +981,6 @@ Dodatne pojedinosti:
 <translation id="7764225426217299476">Dodaj adresu</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7793553086574152071">Da biste sljedeći put platili brže, spremite ovu karticu na svoj Google račun.</translation>
 <translation id="7793809570500803535">Web-stranica na web-lokaciji <ph name="SITE" /> možda privremeno nije dostupna ili je trajno preseljena na novu web-adresu.</translation>
 <translation id="7800304661137206267">Veza je šifrirana pomoću <ph name="CIPHER" />, za provjeru autentičnosti poruke koristi se <ph name="MAC" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>
 <translation id="7802523362929240268">Web-lokacija je legitimna</translation>

@@ -553,9 +553,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Gdy ta zasada nie jest skonfigurowana lub ma ustawienie „Nie filtruj witryn pod kątem treści dla dorosłych”, witryny nie będą filtrowane.
 
       Gdy ta zasada ma ustawienie „Filtruj witryny najwyższego poziomu pod kątem treści dla dorosłych”, witryny sklasyfikowane jako pornograficzne będą filtrowane.</translation>
-<translation id="2485721741875148980">Jeśli włączysz tę zasadę, użytkownik będzie musiał logować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego profilu, by skorzystać z przeglądarki. Domyślnie wartość zasady BrowserGuestModeEnabled zostanie przy tym ustawiona na fałsz. Pamiętaj, że po włączeniu tej zasady istniejące niepodpisane profile zostaną zablokowane i staną się niedostępne. Więcej informacji znajdziesz w artykule w Centrum pomocy.
-
-      Jeśli nie włączysz tej zasady lub jej nie skonfigurujesz, użytkownik będzie mógł używać przeglądarki bez logowania się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych adresów URL.
 
       Ta zasada umożliwia pominięcie ujawniania przez protokół Certificate Transparency certyfikatów nazw hosta w określonych adresach URL. Dzięki temu certyfikaty, które zostałyby uznane za niezaufane z powodu nieujawnienia publicznego, mogą być nadal używane. Trudniej jest jednak wykryć certyfikaty, które zostały wydane nieprawidłowo.
@@ -1551,11 +1548,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli zasada nie jest ustawiona lub jest ustawiona na pusty ciąg lub nieprawidłowy zakres portów, WebRTC może skorzystać z dowolnego lokalnego portu UDP, jaki jest dostępny.</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
-<translation id="5302612588919538756">Ta zasada została wycofana. Zamiast niej możesz użyć SyncDisabled.
-
-      Pozwala użytkownikowi na zalogowanie się w <ph name="PRODUCT_NAME" />.
-
-      Jeśli ustawisz tę zasadę, możesz określić, czy zezwalasz użytkownikowi na logowanie się w <ph name="PRODUCT_NAME" />. Po wyłączeniu tej zasady aplikacje i rozszerzenia, które używają interfejsu API chrome.identity, nie będą działać. Dlatego zamiast niej możesz użyć SyncDisabled.</translation>
 <translation id="5304269353650269372">Określa czas bez wprowadzenia danych przez użytkownika, po którym wyświetlane jest okno dialogowe ostrzeżenia przy zasilaniu z baterii.
 
           Gdy ta zasada jest ustawiona, określa wymagany czas nieaktywności użytkownika przed wyświetleniem w <ph name="PRODUCT_OS_NAME" /> okna dialogowego z ostrzeżeniem informującym, że zostanie wykonana odpowiednia czynność.

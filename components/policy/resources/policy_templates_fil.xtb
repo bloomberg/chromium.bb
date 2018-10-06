@@ -563,9 +563,6 @@
       Kapag hindi naka-configure o nakatakda sa "Huwag mag-filter ng mga site para sa pang-adult na content" ang patakarang ito, hindi mafi-filter ang mga site.
 
       Kapag nakatakda ang patakarang ito sa "Mag-filter ng mga nangungunang site para sa pang-adult na content," ifi-filter ang mga site na itinuturing na pornographic.</translation>
-<translation id="2485721741875148980">Kung nakatakda sa true ang patakarang ito, kailangang mag-sign in ng user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago magamit ang browser. Itatakda rin sa false ang default na value ng BrowserGuestModeEnabled. Tandaan na ila-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang pakatarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center.
-
-      Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring gamitin ng user ang browser nang hindi nagsa-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate sa mga nakalistang URL.
 
       Pinapayagan ng patakarang ito na hindi ihayag ang mga certificate para sa mga hostname sa mga natukoy na URL sa pamamagitan ng Transparency ng Certificate. Nagbibigay-daan ito sa mga certificate, na maaaring maituring na hindi mapagkakatiwalaan dahil hindi maayos na naihayag sa publiko, upang patuloy na magamit, ngunit mas nagiging mahirap na matukoy ang mga certificate na hindi nagamit nang maayos para sa mga host na iyon.
@@ -1600,11 +1597,6 @@
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
-<translation id="5302612588919538756">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang SyncDisabled.
-
-      Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.
-
-      Kung itatakda mo ang patakarang ito, magagawa mong i-configure kung maaari bang mag-sign in ang isang user sa <ph name="PRODUCT_NAME" />. Kapag itinakda ang patakarang ito sa 'False,' hindi gagana ang mga app at extension na gumagamit ng chrome.identity API, kaya mainam kung SyncDisabled na lang ang gagamitin mo.</translation>
 <translation id="5304269353650269372">Tinutukoy ang haba ng panahon nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng baterya.
 
           Kapag naitakda ang patakarang ito, tinutukoy nito ang haba ng panahon na dapat manatiling idle ang user bago magpakita ang <ph name="PRODUCT_OS_NAME" /> ng dialog ng babala na nagsasabi sa user na gagawin na ang pagkilos kapag idle.

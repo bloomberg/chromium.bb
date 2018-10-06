@@ -333,7 +333,6 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3209375525920864198">請輸入有效的工作階段名稱。</translation>
-<translation id="3211223744486044430">只要將這張卡片的資訊儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
 <translation id="3225919329040284222">伺服器呈現的憑證與內建的預期條件不符。我們在系統中針對特定高安全性的網站內建了這些預期條件，目的在於保護你的資料安全無虞。</translation>
 <translation id="3226128629678568754">按下重新載入按鈕，重新提交載入網頁所需的資料。</translation>
 <translation id="3227137524299004712">麥克風</translation>
@@ -983,7 +982,6 @@
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="777702478322588152">縣</translation>
 <translation id="7791543448312431591">新增</translation>
-<translation id="7793553086574152071">只要將這張卡片的資訊儲存到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> 的網頁可能暫時無法使用或已永久移至新網址。</translation>
 <translation id="7800304661137206267">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="MAC" /> 訊息驗證及 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="7802523362929240268">網站合法</translation>

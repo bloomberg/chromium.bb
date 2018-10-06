@@ -544,9 +544,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică nu este configurată sau dacă este setată la „Nu filtra conținutul pentru adulți de pe site-uri”, site-urile nu vor fi filtrate.
 
       Dacă această politică este setată la „Filtrează conținutul pentru adulți de pe site-urile de nivel superior”, site-urile clasificate ca având conținut pornografic vor fi filtrate.</translation>
-<translation id="2485721741875148980">Dacă această politică este activată, utilizatorul trebuie să se conecteze la <ph name="PRODUCT_NAME" /> cu profilul său înainte de a folosi browserul. Iar politica BrowserGuestModeEnabled va fi în mod prestabilit dezactivată. Reține că profilurile nesemnate existente vor fi blocate și inaccesibile după activarea acestei politici. Pentru mai multe informații, consultă articolul din centrul de ajutor.
-
-      Dacă această politică este dezactivată sau nu este configurată, utilizatorul poate folosi browserul fără să se conecteze la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Dezactivează aplicarea cerințelor privind Transparența certificatului pentru adresele URL menționate.
 
       Această politică permite ca certificatele pentru numele de gazdă din adresele URL specificate să nu fie dezvăluite folosind Transparența certificatului. Astfel, certificatele care altfel nu ar fi de încredere, deoarece nu au fost dezvăluite public corespunzător, pot fi folosite în continuare, dar detectarea certificatelor emise greșit pentru gazdele respective este mai dificilă.
@@ -1544,11 +1541,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica nu este configurată sau dacă este setată la un șir gol ori la un interval de porturi nevalid, WebRTC poate să folosească orice port UDP local disponibil.</translation>
 <translation id="5290940294294002042">Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva</translation>
-<translation id="5302612588919538756">Această politică este învechită. Îți recomandăm să folosești SyncDisabled.
-
-      Permite utilizatorului să se conecteze la <ph name="PRODUCT_NAME" />.
-
-      Dacă configurezi această politică, poți stabili dacă utilizatorul are permisiunea de a se conecta la <ph name="PRODUCT_NAME" />. Dacă dezactivezi această politică, aplicațiile și extensiile care folosesc API-ul chrome.identity vor fi împiedicate să mai funcționeze. Prin urmare, îți recomandăm să folosești SyncDisabled.</translation>
 <translation id="5304269353650269372">Indică perioada de timp fără intrări de la utilizator după care este afișată o casetă de dialog de avertizare la funcționarea pe baterie.
 
           Când politica este setată, aceasta indică perioada de timp în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să afișeze o casetă de dialog prin care utilizatorul este avertizat că sistemul va trece în modul inactiv.

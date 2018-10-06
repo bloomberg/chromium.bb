@@ -549,9 +549,6 @@
       Quando esta política não está configurada ou é configurada como "Não filtrar sites com conteúdo adulto", os sites não são filtrados.
 
       Quando esta política é configurada como "Filtrar sites de nível superior com conteúdo adulto", os sites classificados como pornográficos são filtrados.</translation>
-<translation id="2485721741875148980">Se esta política for definida como verdadeira, o usuário precisará fazer login no <ph name="PRODUCT_NAME" /> com o próprio perfil antes de usar o navegador. O valor padrão de BrowserGuestModeEnabled será definido como falso. Os perfis já existentes não atribuídos serão bloqueados e ficarão inacessíveis depois da ativação desta política. Para ver mais informações, consulte o artigo da Central de Ajuda.
-
-      Se esta política for definida como falsa ou não for configurada, o usuário poderá usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Desativa a aplicação dos requisitos de Transparência dos certificados para os URLs listados.
 
       Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas a detecção de certificados usados erroneamente por esses hosts é dificultada.
@@ -1539,11 +1536,6 @@
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
-<translation id="5302612588919538756">O uso desta política está suspenso. Use SyncDisabled em vez dela.
-
-      Permite que o usuário faça login no <ph name="PRODUCT_NAME" />.
-
-      Se você define esta política, pode configurar se um usuário tem permissão para fazer login no <ph name="PRODUCT_NAME" />. A configuração desta política como "False" impede que os aplicativos e extensões que usam a API chrome.identity funcionem. Assim, você pode usar SyncDisabled em vez dela.</translation>
 <translation id="5304269353650269372">Especifica depois de quanto tempo sem atividade do usuário uma caixa de diálogo de advertência é mostrada quando estiver sendo usada a energia da bateria.
 
           Quando esta política está definida, ela especifica quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> mostre uma caixa de diálogo de advertência informando que a ação de inatividade está prestes a entrar em vigor.
