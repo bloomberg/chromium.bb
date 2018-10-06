@@ -24,7 +24,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     Vector<NGLink>& children,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
-    const NGPhysicalOffsetRect& contents_ink_overflow,
     Vector<NGBaseline>& baselines,
     NGBoxType box_type,
     bool is_fieldset_container,
@@ -40,7 +39,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
           is_rendered_legend ? kFragmentRenderedLegend : kFragmentBox,
           box_type,
           children,
-          contents_ink_overflow,
           std::move(break_token)),
       baselines_(std::move(baselines)),
       borders_(borders),
@@ -219,6 +217,21 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::InkOverflow(bool apply_clip) const {
   NGPhysicalOffsetRect ink_overflow = SelfInkOverflow();
   ink_overflow.Unite(ContentsInkOverflow());
   return ink_overflow;
+}
+
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ContentsInkOverflow() const {
+  if (LayoutBox* layout_box = ToLayoutBoxOrNull(GetLayoutObject())) {
+    return NGPhysicalOffsetRect(layout_box->ContentsVisualOverflowRect());
+  }
+  return ComputeContentsInkOverflow();
+}
+
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeContentsInkOverflow() const {
+  NGPhysicalOffsetRect overflow({}, Size());
+  for (const auto& child : Children()) {
+    child->PropagateContentsInkOverflow(&overflow, child.Offset());
+  }
+  return overflow;
 }
 
 UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {

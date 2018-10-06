@@ -80,7 +80,7 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
       // re-compute glyph bounding box. How to detect it and how to re-compute
       // is TBD.
       Base::AddContentsVisualOverflow(
-          physical_fragment->ContentsInkOverflow().ToLayoutFlippedRect(
+          physical_fragment->ComputeContentsInkOverflow().ToLayoutFlippedRect(
               physical_fragment->Style(), physical_fragment->Size()));
       // TODO(kojii): The above code computes visual overflow only, we fallback
       // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute

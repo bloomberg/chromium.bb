@@ -54,6 +54,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
       end_effect_(static_cast<unsigned>(end_effect)),
       is_anonymous_text_(IsPhysicalTextFragmentAnonymousText(layout_object)) {
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  self_ink_overflow_ = ComputeSelfInkOverflow();
 }
 
 // Convert logical cooridnate to local physical coordinate.
@@ -140,7 +141,7 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
   return {};
 }
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::SelfInkOverflow() const {
+NGPhysicalOffsetRect NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   if (UNLIKELY(!shape_result_))
     return LocalRect();
 
