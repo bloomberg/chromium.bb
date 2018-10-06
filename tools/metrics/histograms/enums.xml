@@ -14656,6 +14656,7 @@ Called by update_net_error_codes.py.-->
   <int value="484" label="ReportCrostiniUsageEnabled"/>
   <int value="485" label="VpnConfigAllowed"/>
   <int value="486" label="WebUsbAllowDevicesForUrls"/>
+  <int value="487" label="BrowserSignin"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
