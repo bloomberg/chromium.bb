@@ -140,6 +140,29 @@ struct ScrollData {
   ScrollEventPhase scroll_event_phase;
 };
 
+// This mirrors the C++ class of the same name, see it for details.
+struct PointerDetails {
+  PointerKind pointer_type;
+  float radius_x;
+  float radius_y;
+  float force;
+  float tilt_x;
+  float tilt_y;
+  float tangential_pressure;
+  float twist;
+  int32 id;
+  int32 offset_x;
+  int32 offset_y;
+};
+
+// This is used for TouchEvents.
+struct TouchData {
+  bool may_cause_scrolling;
+  bool hovering;
+  LocationData location;
+  PointerDetails pointer_details;
+};
+
 struct Event {
   // TODO(sky): rename to type.
   EventType action;
@@ -157,5 +180,6 @@ struct Event {
   PointerData? pointer_data;
   GestureData? gesture_data;
   ScrollData? scroll_data;
+  TouchData? touch_data;
   map<string, array<uint8>>? properties;
 };

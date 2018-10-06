@@ -737,6 +737,9 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
     should_remove_native_touch_id_mapping_ =
         should_remove_native_touch_id_mapping;
   }
+  bool should_remove_native_touch_id_mapping() const {
+    return should_remove_native_touch_id_mapping_;
+  }
 
   // Overridden from LocatedEvent.
   void UpdateForRootTransform(
@@ -756,6 +759,9 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
  private:
   // A unique identifier for the touch event.
+  // NOTE: this is *not* serialized over mojom, as the number is unique to
+  // a particular process, and as mojom may go cross process, to serialize could
+  // lead to conflicts.
   uint32_t unique_event_id_;
 
   // Whether the (unhandled) touch event will produce a scroll event (e.g., a
@@ -767,6 +773,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // event id and the touch_id_. This should only be the case for
   // release and cancel events where the associated touch press event
   // created a mapping between the native id and the touch_id_.
+  // NOTE: this is not serialized, as it's generally unique to the source.
   bool should_remove_native_touch_id_mapping_;
 
   // True for devices like some pens when they support hovering over

@@ -5,8 +5,10 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -43,10 +45,48 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
+void ExpectTouchEventsEqual(const TouchEvent& expected,
+                            const TouchEvent& actual) {
+  EXPECT_EQ(expected.may_cause_scrolling(), actual.may_cause_scrolling());
+  EXPECT_EQ(expected.hovering(), actual.hovering());
+  EXPECT_EQ(expected.pointer_details(), actual.pointer_details());
+}
+
+void ExpectLocatedEventsEqual(const LocatedEvent& expected,
+                              const LocatedEvent& actual) {
+  EXPECT_EQ(expected.location_f(), actual.location_f());
+  EXPECT_EQ(expected.root_location_f(), actual.root_location_f());
+}
+
+void ExpectMouseEventsEqual(const MouseEvent& expected,
+                            const MouseEvent& actual) {
+  EXPECT_EQ(expected.pointer_details(), actual.pointer_details());
+  EXPECT_EQ(expected.changed_button_flags(), actual.changed_button_flags());
+}
+
+void ExpectEventsEqual(const Event& expected, const Event& actual) {
+  EXPECT_EQ(expected.type(), actual.type());
+  EXPECT_EQ(expected.time_stamp(), actual.time_stamp());
+  EXPECT_EQ(expected.flags(), actual.flags());
+  if (expected.IsLocatedEvent()) {
+    ASSERT_TRUE(actual.IsLocatedEvent());
+    ExpectLocatedEventsEqual(*expected.AsLocatedEvent(),
+                             *actual.AsLocatedEvent());
+  }
+  if (expected.IsMouseEvent()) {
+    ASSERT_TRUE(actual.IsMouseEvent());
+    ExpectMouseEventsEqual(*expected.AsMouseEvent(), *actual.AsMouseEvent());
+  }
+  if (expected.IsTouchEvent()) {
+    ASSERT_TRUE(actual.IsTouchEvent());
+    ExpectTouchEventsEqual(*expected.AsTouchEvent(), *actual.AsTouchEvent());
+  }
+}
+
 }  // namespace
 
 TEST_F(StructTraitsTest, KeyEvent) {
-  KeyEvent kTestData[] = {
+  const KeyEvent kTestData[] = {
       {ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN},
       {ET_KEY_PRESSED, VKEY_MENU, EF_ALT_DOWN},
       {ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN},
@@ -64,14 +104,13 @@ TEST_F(StructTraitsTest, KeyEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
     EXPECT_TRUE(output->IsKeyEvent());
 
     const KeyEvent* output_key_event = output->AsKeyEvent();
-    EXPECT_EQ(kTestData[i].type(), output_key_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_key_event->flags());
+    ExpectEventsEqual(kTestData[i], *output_key_event);
     EXPECT_EQ(kTestData[i].GetCharacter(), output_key_event->GetCharacter());
     EXPECT_EQ(kTestData[i].GetUnmodifiedText(),
               output_key_event->GetUnmodifiedText());
@@ -81,12 +120,11 @@ TEST_F(StructTraitsTest, KeyEvent) {
     EXPECT_EQ(kTestData[i].GetConflatedWindowsKeyCode(),
               output_key_event->GetConflatedWindowsKeyCode());
     EXPECT_EQ(kTestData[i].code(), output_key_event->code());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_key_event->time_stamp());
   }
 }
 
 TEST_F(StructTraitsTest, PointerEvent) {
-  PointerEvent kTestData[] = {
+  const PointerEvent kTestData[] = {
       // Mouse pointer events:
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
@@ -169,7 +207,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
     EXPECT_TRUE(output->IsPointerEvent());
@@ -190,7 +228,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
 }
 
 TEST_F(StructTraitsTest, MouseEvent) {
-  MouseEvent kTestData[] = {
+  const MouseEvent kTestData[] = {
       {ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
        PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
@@ -227,27 +265,17 @@ TEST_F(StructTraitsTest, MouseEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
     ASSERT_TRUE(output->IsMouseEvent());
 
-    const MouseEvent* output_event = output->AsMouseEvent();
-    EXPECT_EQ(kTestData[i].type(), output_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_event->location());
-    EXPECT_EQ(kTestData[i].root_location(), output_event->root_location());
-    EXPECT_EQ(kTestData[i].pointer_details().id,
-              output_event->pointer_details().id);
-    EXPECT_EQ(kTestData[i].changed_button_flags(),
-              output_event->changed_button_flags());
-    EXPECT_EQ(kTestData[i].pointer_details(), output_event->pointer_details());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_event->time_stamp());
+    ExpectEventsEqual(kTestData[i], *output);
   }
 }
 
 TEST_F(StructTraitsTest, PointerWheelEvent) {
-  MouseWheelEvent kTestData[] = {
+  const MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
        EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
@@ -261,7 +289,7 @@ TEST_F(StructTraitsTest, PointerWheelEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(ui::PointerEvent(kTestData[i])), &output);
     EXPECT_EQ(ET_POINTER_WHEEL_CHANGED, output->type());
@@ -279,7 +307,7 @@ TEST_F(StructTraitsTest, PointerWheelEvent) {
 }
 
 TEST_F(StructTraitsTest, MouseWheelEvent) {
-  MouseWheelEvent kTestData[] = {
+  const MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
        EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
@@ -293,7 +321,7 @@ TEST_F(StructTraitsTest, MouseWheelEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(
         Event::Clone(ui::MouseWheelEvent(ui::PointerEvent(kTestData[i]))),
@@ -301,6 +329,7 @@ TEST_F(StructTraitsTest, MouseWheelEvent) {
     ASSERT_EQ(ET_MOUSEWHEEL, output->type());
 
     const MouseWheelEvent* output_event = output->AsMouseWheelEvent();
+    // TODO(sky): make this use ExpectEventsEqual().
     EXPECT_EQ(ET_MOUSEWHEEL, output_event->type());
     EXPECT_EQ(kTestData[i].flags(), output_event->flags());
     EXPECT_EQ(kTestData[i].location(), output_event->location());
@@ -325,13 +354,7 @@ TEST_F(StructTraitsTest, FloatingPointLocations) {
   proxy->EchoEvent(Event::Clone(input_event), &output);
   ASSERT_TRUE(output->IsMouseEvent());
 
-  const MouseEvent* output_event = output->AsMouseEvent();
-  EXPECT_EQ(input_event.type(), output_event->type());
-  EXPECT_EQ(input_event.flags(), output_event->flags());
-  EXPECT_EQ(input_event.location(), output_event->location());
-  EXPECT_EQ(input_event.root_location(), output_event->root_location());
-  EXPECT_EQ(input_event.location_f(), output_event->location_f());
-  EXPECT_EQ(input_event.root_location_f(), output_event->root_location_f());
+  ExpectEventsEqual(input_event, *output->AsMouseEvent());
 }
 
 TEST_F(StructTraitsTest, KeyEventPropertiesSerialized) {
@@ -352,7 +375,7 @@ TEST_F(StructTraitsTest, KeyEventPropertiesSerialized) {
 }
 
 TEST_F(StructTraitsTest, GestureEvent) {
-  GestureEvent kTestData[] = {
+  const GestureEvent kTestData[] = {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
        GestureEventDetails(ET_SCROLL_FLING_START)},
@@ -362,25 +385,21 @@ TEST_F(StructTraitsTest, GestureEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
     EXPECT_TRUE(output->IsGestureEvent());
 
     const GestureEvent* output_ptr_event = output->AsGestureEvent();
-    EXPECT_EQ(kTestData[i].type(), output_ptr_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
-    EXPECT_EQ(kTestData[i].root_location(), output_ptr_event->root_location());
+    ExpectEventsEqual(kTestData[i], *output);
     EXPECT_EQ(kTestData[i].details(), output_ptr_event->details());
     EXPECT_EQ(kTestData[i].unique_touch_event_id(),
               output_ptr_event->unique_touch_event_id());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
   }
 }
 
 TEST_F(StructTraitsTest, ScrollEvent) {
-  ScrollEvent kTestData[] = {
+  const ScrollEvent kTestData[] = {
       {ET_SCROLL, gfx::Point(10, 20),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(501), EF_NONE, 1,
        2, 3, 4, 5, EventMomentumPhase::NONE, ScrollEventPhase::kNone},
@@ -412,16 +431,13 @@ TEST_F(StructTraitsTest, ScrollEvent) {
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < arraysize(kTestData); i++) {
+  for (size_t i = 0; i < base::size(kTestData); i++) {
     std::unique_ptr<Event> output;
     proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
     EXPECT_TRUE(output->IsScrollEvent());
 
     const ScrollEvent* output_ptr_event = output->AsScrollEvent();
-    EXPECT_EQ(kTestData[i].type(), output_ptr_event->type());
-    EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
-    EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
+    ExpectEventsEqual(kTestData[i], *output_ptr_event);
     EXPECT_EQ(kTestData[i].x_offset(), output_ptr_event->x_offset());
     EXPECT_EQ(kTestData[i].y_offset(), output_ptr_event->y_offset());
     EXPECT_EQ(kTestData[i].x_offset_ordinal(),
@@ -432,6 +448,81 @@ TEST_F(StructTraitsTest, ScrollEvent) {
     EXPECT_EQ(kTestData[i].momentum_phase(),
               output_ptr_event->momentum_phase());
   }
+}
+
+TEST_F(StructTraitsTest, PointerDetails) {
+  const PointerDetails kTestData[] = {
+      {EventPointerType::POINTER_TYPE_UNKNOWN, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::POINTER_TYPE_MOUSE, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::POINTER_TYPE_PEN, 11, 12.f, 13.f, 14.f, 15.f, 16.f,
+       17.f},
+      {EventPointerType::POINTER_TYPE_TOUCH, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::POINTER_TYPE_ERASER, 21, 22.f, 23.f, 24.f, 25.f, 26.f,
+       27.f},
+  };
+  for (size_t i = 0; i < base::size(kTestData); i++) {
+    // Set |offset| as the constructor used above does not modify it.
+    PointerDetails input(kTestData[i]);
+    input.offset.set_x(i);
+    input.offset.set_y(i + 1);
+
+    PointerDetails output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<ui::mojom::PointerDetails>(
+        &input, &output));
+    EXPECT_EQ(input, output);
+  }
+}
+
+TEST_F(StructTraitsTest, TouchEvent) {
+  const TouchEvent kTestData[] = {
+      {ET_TOUCH_RELEASED,
+       {1, 2},
+       base::TimeTicks::Now(),
+       {EventPointerType::POINTER_TYPE_UNKNOWN, 1, 2.f, 3.f, 4.f, 5.f, 6.f,
+        7.f},
+       EF_SHIFT_DOWN},
+      {ET_TOUCH_PRESSED, {1, 2}, base::TimeTicks::Now(), {}, EF_CONTROL_DOWN},
+      {ET_TOUCH_MOVED, {1, 2}, base::TimeTicks::Now(), {}, EF_NONE},
+      {ET_TOUCH_CANCELLED, {1, 2}, base::TimeTicks::Now(), {}, EF_NONE},
+  };
+  for (size_t i = 0; i < base::size(kTestData); i++) {
+    std::unique_ptr<Event> expected_copy = Event::Clone(kTestData[i]);
+    std::unique_ptr<Event> output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<ui::mojom::Event>(
+        &expected_copy, &output));
+    ExpectEventsEqual(*expected_copy, *output);
+  }
+
+  // Serialize/Deserialize with fields that can not be set from constructor.
+  std::unique_ptr<TouchEvent> touch_event =
+      std::make_unique<TouchEvent>(ET_TOUCH_CANCELLED, gfx::Point(),
+                                   base::TimeTicks::Now(), PointerDetails());
+  touch_event->set_may_cause_scrolling(true);
+  touch_event->set_hovering(true);
+  std::unique_ptr<Event> expected = std::move(touch_event);
+  std::unique_ptr<Event> output;
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<ui::mojom::Event>(&expected,
+                                                                    &output));
+  ExpectEventsEqual(*expected, *output);
+}
+
+TEST_F(StructTraitsTest, UnserializedTouchEventFields) {
+  std::unique_ptr<TouchEvent> touch_event =
+      std::make_unique<TouchEvent>(ET_TOUCH_CANCELLED, gfx::Point(),
+                                   base::TimeTicks::Now(), PointerDetails());
+  touch_event->set_should_remove_native_touch_id_mapping(true);
+  std::unique_ptr<Event> expected = std::move(touch_event);
+  std::unique_ptr<Event> output;
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<ui::mojom::Event>(&expected,
+                                                                    &output));
+  ExpectEventsEqual(*expected, *output);
+  // Have to set this back to false, else the destructor tries to access
+  // state not setup in tests.
+  expected->AsTouchEvent()->set_should_remove_native_touch_id_mapping(false);
+  // See comments in TouchEvent for why these two fields are not persisted.
+  EXPECT_FALSE(output->AsTouchEvent()->should_remove_native_touch_id_mapping());
+  EXPECT_NE(expected->AsTouchEvent()->unique_event_id(),
+            output->AsTouchEvent()->unique_event_id());
 }
 
 }  // namespace ui

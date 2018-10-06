@@ -521,6 +521,7 @@ if (!is_ios) {
       "//ipc:test_support",
       "//mojo/core/test:run_all_unittests",
       "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/test_support:test_utils",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",

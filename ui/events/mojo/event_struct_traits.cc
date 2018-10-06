@@ -26,21 +26,6 @@ ui::mojom::LocationDataPtr GetLocationData(const ui::LocatedEvent* event) {
   return location_data;
 }
 
-ui::EventPointerType PointerTypeFromPointerKind(ui::mojom::PointerKind kind) {
-  switch (kind) {
-    case ui::mojom::PointerKind::MOUSE:
-      return ui::EventPointerType::POINTER_TYPE_MOUSE;
-    case ui::mojom::PointerKind::TOUCH:
-      return ui::EventPointerType::POINTER_TYPE_TOUCH;
-    case ui::mojom::PointerKind::PEN:
-      return ui::EventPointerType::POINTER_TYPE_PEN;
-    case ui::mojom::PointerKind::ERASER:
-      return ui::EventPointerType::POINTER_TYPE_ERASER;
-  }
-  NOTREACHED();
-  return ui::EventPointerType::POINTER_TYPE_UNKNOWN;
-}
-
 void UpdateEventLocation(const ui::mojom::PointerData& pointer_data,
                          EventUniquePtr* out) {
   // TODO(katie): Update LocationData to have two PointF instead of storing this
@@ -56,9 +41,9 @@ void UpdateEventLocation(const ui::mojom::PointerData& pointer_data,
   out->get()->AsLocatedEvent()->set_root_location_f(screen_location);
 }
 
-bool ReadPointerDetails(ui::mojom::EventType event_type,
-                        const ui::mojom::PointerData& pointer_data,
-                        ui::PointerDetails* out) {
+bool ReadPointerDetailsDeprecated(ui::mojom::EventType event_type,
+                                  const ui::mojom::PointerData& pointer_data,
+                                  ui::PointerDetails* out) {
   switch (pointer_data.kind) {
     case ui::mojom::PointerKind::MOUSE: {
       if (event_type == ui::mojom::EventType::POINTER_WHEEL_CHANGED ||
@@ -76,17 +61,22 @@ bool ReadPointerDetails(ui::mojom::EventType event_type,
     }
     case ui::mojom::PointerKind::TOUCH:
     case ui::mojom::PointerKind::PEN: {
+      ui::EventPointerType pointer_type;
+      if (!EnumTraits<ui::mojom::PointerKind, ui::EventPointerType>::FromMojom(
+              pointer_data.kind, &pointer_type))
+        return false;
       const ui::mojom::BrushData& brush_data = *pointer_data.brush_data;
       *out = ui::PointerDetails(
-          PointerTypeFromPointerKind(pointer_data.kind),
-          pointer_data.pointer_id, brush_data.width, brush_data.height,
-          brush_data.pressure, brush_data.twist, brush_data.tilt_x,
-          brush_data.tilt_y, brush_data.tangential_pressure);
+          pointer_type, pointer_data.pointer_id, brush_data.width,
+          brush_data.height, brush_data.pressure, brush_data.twist,
+          brush_data.tilt_x, brush_data.tilt_y, brush_data.tangential_pressure);
       return true;
     }
     case ui::mojom::PointerKind::ERASER:
       // TODO(jamescook): Eraser support.
       NOTIMPLEMENTED();
+      return false;
+    case ui::mojom::PointerKind::UNKNOWN:
       return false;
   }
   NOTREACHED();
@@ -225,6 +215,14 @@ ui::mojom::EventType TypeConverter<ui::mojom::EventType,
       return ui::mojom::EventType::MOUSE_WHEEL_EVENT;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
       return ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT;
+    case ui::ET_TOUCH_RELEASED:
+      return ui::mojom::EventType::TOUCH_RELEASED;
+    case ui::ET_TOUCH_PRESSED:
+      return ui::mojom::EventType::TOUCH_PRESSED;
+    case ui::ET_TOUCH_MOVED:
+      return ui::mojom::EventType::TOUCH_MOVED;
+    case ui::ET_TOUCH_CANCELLED:
+      return ui::mojom::EventType::TOUCH_CANCELLED;
     default:
       NOTREACHED() << "Using unknown event types closes connections:"
                    << ui::EventTypeName(type);
@@ -283,6 +281,14 @@ ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
       return ui::ET_MOUSEWHEEL;
     case ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT:
       return ui::ET_MOUSE_CAPTURE_CHANGED;
+    case ui::mojom::EventType::TOUCH_RELEASED:
+      return ui::ET_TOUCH_RELEASED;
+    case ui::mojom::EventType::TOUCH_PRESSED:
+      return ui::ET_TOUCH_PRESSED;
+    case ui::mojom::EventType::TOUCH_MOVED:
+      return ui::ET_TOUCH_MOVED;
+    case ui::mojom::EventType::TOUCH_CANCELLED:
+      return ui::ET_TOUCH_CANCELLED;
     default:
       NOTREACHED();
   }
@@ -455,6 +461,26 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::scroll_data(
 }
 
 // static
+ui::mojom::TouchDataPtr
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::touch_data(
+    const EventUniquePtr& event) {
+  if (!event->IsTouchEvent())
+    return nullptr;
+
+  const ui::TouchEvent* touch_event = event->AsTouchEvent();
+  ui::mojom::TouchDataPtr touch_data(ui::mojom::TouchData::New());
+  touch_data->may_cause_scrolling = touch_event->may_cause_scrolling();
+  touch_data->hovering = touch_event->hovering();
+  touch_data->location = ui::mojom::LocationData::New();
+  touch_data->location->x = touch_event->location_f().x();
+  touch_data->location->y = touch_event->location_f().y();
+  touch_data->location->screen_x = touch_event->root_location_f().x();
+  touch_data->location->screen_y = touch_event->root_location_f().y();
+  touch_data->pointer_details = touch_event->pointer_details();
+  return touch_data;
+}
+
+// static
 base::flat_map<std::string, std::vector<uint8_t>>
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::properties(
     const EventUniquePtr& event) {
@@ -506,7 +532,8 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
         return false;
 
       ui::PointerDetails pointer_details;
-      if (!ReadPointerDetails(event.action(), *pointer_data, &pointer_details))
+      if (!ReadPointerDetailsDeprecated(event.action(), *pointer_data,
+                                        &pointer_details))
         return false;
 
       *out = std::make_unique<ui::PointerEvent>(
@@ -552,7 +579,8 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
         return false;
 
       ui::PointerDetails pointer_details;
-      if (!ReadPointerDetails(event.action(), *pointer_data, &pointer_details))
+      if (!ReadPointerDetailsDeprecated(event.action(), *pointer_data,
+                                        &pointer_details))
         return false;
 
       if (event.action() == ui::mojom::EventType::MOUSE_WHEEL_EVENT) {
@@ -575,6 +603,27 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       UpdateEventLocation(*pointer_data, out);
       break;
     }
+    case ui::mojom::EventType::TOUCH_RELEASED:
+    case ui::mojom::EventType::TOUCH_PRESSED:
+    case ui::mojom::EventType::TOUCH_MOVED:
+    case ui::mojom::EventType::TOUCH_CANCELLED: {
+      ui::mojom::TouchDataPtr touch_data;
+      if (!event.ReadTouchData(&touch_data))
+        return false;
+      std::unique_ptr<ui::TouchEvent> touch_event =
+          std::make_unique<ui::TouchEvent>(
+              mojo::ConvertTo<ui::EventType>(event.action()),
+              gfx::Point(),  // Real location set below.
+              time_stamp, touch_data->pointer_details, event.flags());
+      touch_event->set_location_f(
+          gfx::PointF(touch_data->location->x, touch_data->location->y));
+      touch_event->set_root_location_f(gfx::PointF(
+          touch_data->location->screen_x, touch_data->location->screen_y));
+      touch_event->set_may_cause_scrolling(touch_data->may_cause_scrolling);
+      touch_event->set_hovering(touch_data->hovering);
+      *out = std::move(touch_event);
+      return true;
+    }
     case ui::mojom::EventType::UNKNOWN:
       NOTREACHED() << "Using unknown event types closes connections";
       return false;
@@ -592,6 +641,25 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
   if (!properties.empty())
     (*out)->SetProperties(properties);
 
+  return true;
+}
+
+// static
+bool StructTraits<ui::mojom::PointerDetailsDataView, ui::PointerDetails>::Read(
+    ui::mojom::PointerDetailsDataView data,
+    ui::PointerDetails* out) {
+  if (!data.ReadPointerType(&out->pointer_type))
+    return false;
+  out->radius_x = data.radius_x();
+  out->radius_y = data.radius_y();
+  out->force = data.force();
+  out->tilt_x = data.tilt_x();
+  out->tilt_y = data.tilt_y();
+  out->tangential_pressure = data.tangential_pressure();
+  out->twist = data.twist();
+  out->id = data.id();
+  out->offset.set_x(data.offset_x());
+  out->offset.set_y(data.offset_y());
   return true;
 }
 
