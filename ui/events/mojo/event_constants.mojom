@@ -40,6 +40,10 @@ enum EventType {
   MOUSE_EXITED_EVENT,
   MOUSE_WHEEL_EVENT,
   MOUSE_CAPTURE_CHANGED_EVENT,
+  TOUCH_RELEASED,
+  TOUCH_PRESSED,
+  TOUCH_MOVED,
+  TOUCH_CANCELLED,
 };
 
 // This mirrors ui::EventFlags
@@ -67,7 +71,9 @@ const int32 kMouseEventFlagIsNonClient   = 0x20000;
 
 // TODO(erg): Move accessibility flags and maybe synthetic touch events here.
 
+// TODO(sky): rename EventPointerType.
 enum PointerKind {
+  UNKNOWN,
   MOUSE,
   PEN,
   TOUCH,

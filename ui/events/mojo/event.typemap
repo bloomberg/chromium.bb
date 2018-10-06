@@ -22,5 +22,6 @@ sources = [
 type_mappings = [
   "ui.mojom.Event=std::unique_ptr<ui::Event>[move_only]",
   "ui.mojom.EventMomentumPhase=ui::EventMomentumPhase",
+  "ui.mojom.PointerDetails=ui::PointerDetails",
   "ui.mojom.ScrollEventPhase=ui::ScrollEventPhase",
 ]
