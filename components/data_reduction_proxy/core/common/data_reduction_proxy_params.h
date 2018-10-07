@@ -81,9 +81,6 @@ const char* GetQuicFieldTrialName();
 // Returns true if Brotli should be added to the accept-encoding header.
 bool IsBrotliAcceptEncodingEnabled();
 
-// Returns true if the Data Reduction Proxy config client should be used.
-bool IsConfigClientEnabled();
-
 // If the Data Reduction Proxy is used for a page load, the URL for the
 // Data Reduction Proxy Pageload Metrics service.
 GURL GetPingbackURL();
@@ -159,6 +156,12 @@ const char* GetDiscardCanaryCheckResultParam();
 // network changes.
 bool ShouldDiscardCanaryCheckResult();
 
+// Helper function to locate |proxy_server| in |proxies| if it exists. This
+// function is exposed publicly so that DataReductionProxyParams can use it.
+base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
+    const std::vector<DataReductionProxyServer>& proxies,
+    const net::ProxyServer& proxy_server);
+
 }  // namespace params
 
 // Provides initialization parameters. Proxy origins, and the secure proxy
@@ -185,12 +188,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // if any exist.
   base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
       const net::ProxyServer& proxy_server) const override;
-
-  // Helper function to locate |proxy_server| in |proxies| if it exists. This
-  // function is exposed publicly so that DataReductionProxyParams can use it.
-  static base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
-      const std::vector<DataReductionProxyServer>& proxies,
-      const net::ProxyServer& proxy_server);
 
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;

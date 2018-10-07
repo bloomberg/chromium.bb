@@ -143,7 +143,6 @@ const net::BackoffEntry::Policy& GetBackoffPolicy() {
 }
 
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
-    std::unique_ptr<DataReductionProxyParams> params,
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
     DataReductionProxyMutableConfigValues* config_values,
@@ -153,8 +152,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     net::NetLog* net_log,
     network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
-    : params_(std::move(params)),
-      request_options_(request_options),
+    : request_options_(request_options),
       config_values_(config_values),
       config_(config),
       event_creator_(event_creator),

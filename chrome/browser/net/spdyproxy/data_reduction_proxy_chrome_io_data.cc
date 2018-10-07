@@ -38,8 +38,6 @@ namespace content {
 class BrowserContext;
 }
 
-using data_reduction_proxy::DataReductionProxyParams;
-
 namespace {
 
 // Adds the preview navigation to the black list.

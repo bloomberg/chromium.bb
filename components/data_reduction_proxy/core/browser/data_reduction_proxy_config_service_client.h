@@ -44,7 +44,6 @@ class DataReductionProxyConfig;
 class DataReductionProxyEventCreator;
 class DataReductionProxyIOData;
 class DataReductionProxyMutableConfigValues;
-class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
 
 typedef base::Callback<void(const std::string&)> ConfigStorer;
@@ -87,10 +86,8 @@ class DataReductionProxyConfigServiceClient
       public net::URLFetcherDelegate {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime of
-  // the |DataReductionProxyConfigClient|, with the exception of |params|
-  // which this instance will own.
+  // the |DataReductionProxyConfigClient|.
   DataReductionProxyConfigServiceClient(
-      std::unique_ptr<DataReductionProxyParams> params,
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
@@ -201,8 +198,6 @@ class DataReductionProxyConfigServiceClient
   // if the config fetch is pending.
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif
-
-  std::unique_ptr<DataReductionProxyParams> params_;
 
   // The caller must ensure that the |request_options_| outlives this instance.
   DataReductionProxyRequestOptions* request_options_;

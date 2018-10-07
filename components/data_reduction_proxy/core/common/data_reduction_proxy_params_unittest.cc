@@ -112,45 +112,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   EXPECT_EQ(1U, second_info->proxy_index);
 }
 
-TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
-  const struct {
-    std::string test_case;
-    std::string trial_group_value;
-    bool expected;
-  } tests[] = {
-      {
-          "Nothing set", "", true,
-      },
-      {
-          "Enabled in experiment", "Enabled", true,
-      },
-      {
-          "Alternate enabled in experiment", "Enabled_Other", true,
-      },
-      {
-          "Control in experiment", "Control", true,
-      },
-      {
-          "Disabled in experiment", "Disabled", false,
-      },
-      {
-          "Disabled in experiment", "Disabled_Other", false,
-      },
-      {
-          "disabled in experiment lower case", "disabled", true,
-      },
-  };
-
-  for (const auto& test : tests) {
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-          "DataReductionProxyConfigService", test.trial_group_value));
-    }
-    EXPECT_EQ(test.expected, params::IsConfigClientEnabled()) << test.test_case;
-  }
-}
-
 TEST_F(DataReductionProxyParamsTest, IsBrotliAcceptEncodingEnabled) {
   const struct {
     std::string test_case;
