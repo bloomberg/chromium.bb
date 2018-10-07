@@ -112,11 +112,15 @@ struct CORE_EXPORT NGLineBoxStrut {
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return line_over + line_under; }
 
+  bool operator==(const NGLineBoxStrut& other) const;
+
   LayoutUnit inline_start;
   LayoutUnit inline_end;
   LayoutUnit line_over;
   LayoutUnit line_under;
 };
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLineBoxStrut&);
 
 struct NGPixelSnappedPhysicalBoxStrut;
 

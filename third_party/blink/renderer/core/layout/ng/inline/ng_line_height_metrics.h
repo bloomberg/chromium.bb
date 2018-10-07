@@ -66,6 +66,8 @@ struct NGLineHeightMetrics {
   void Initialize(const FontMetrics&, FontBaseline);
 };
 
+std::ostream& operator<<(std::ostream&, const NGLineHeightMetrics&);
+
 }  // namespace blink
 
 #endif  // NGLineHeightMetrics_h

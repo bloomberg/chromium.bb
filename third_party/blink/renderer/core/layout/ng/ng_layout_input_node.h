@@ -21,6 +21,7 @@ class LayoutObject;
 class LayoutBox;
 class NGBreakToken;
 class NGConstraintSpace;
+class NGInlineChildLayoutContext;
 class NGLayoutResult;
 struct MinMaxSize;
 struct NGLogicalSize;
@@ -113,7 +114,9 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   // Performs layout on this input node, will return the layout result.
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&, NGBreakToken*);
+  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
+                                       NGBreakToken*,
+                                       NGInlineChildLayoutContext*);
 
   // Returns border box.
   MinMaxSize ComputeMinMaxSize(WritingMode,

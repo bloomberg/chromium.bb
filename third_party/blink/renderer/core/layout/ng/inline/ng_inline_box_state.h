@@ -105,6 +105,10 @@ struct NGInlineBoxState {
   // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
   // |pending_descendants|.
   NGLineHeightMetrics MetricsForTopAndBottomAlign() const;
+
+#if DCHECK_IS_ON()
+  void CheckSame(const NGInlineBoxState&);
+#endif
 };
 
 // Represents the inline tree structure. This class provides:
@@ -112,7 +116,7 @@ struct NGInlineBoxState {
 // 2) Performs layout when the positin/size of a box was computed.
 // 3) Cache common values for a box.
 class CORE_EXPORT NGInlineLayoutStateStack {
-  USING_FAST_MALLOC(NGInlineLayoutStateStack);
+  STACK_ALLOCATED();
 
  public:
   // The box state for the line box.
@@ -158,6 +162,10 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // Create box fragments. This function turns a flat list of children into
   // a box tree.
   void CreateBoxFragments(NGLineBoxFragmentBuilder::ChildList*);
+
+#if DCHECK_IS_ON()
+  void CheckSame(const NGInlineLayoutStateStack&);
+#endif
 
  private:
   // End of a box state, either explicitly by close tag, or implicitly at the

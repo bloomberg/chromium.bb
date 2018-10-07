@@ -64,8 +64,9 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 scoped_refptr<NGLayoutResult> NGLayoutInputNode::Layout(
     const NGConstraintSpace& space,
-    NGBreakToken* break_token) {
-  return IsInline() ? ToNGInlineNode(*this).Layout(space, break_token)
+    NGBreakToken* break_token,
+    NGInlineChildLayoutContext* context) {
+  return IsInline() ? ToNGInlineNode(*this).Layout(space, break_token, context)
                     : ToNGBlockNode(*this).Layout(space, break_token);
 }
 

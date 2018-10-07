@@ -176,6 +176,8 @@ class CORE_EXPORT NGLineInfo {
   // Start text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
   void SetStartOffset(unsigned offset) { start_offset_ = offset; }
+  unsigned EndItemIndex() const { return end_item_index_; }
+  void SetEndItemIndex(unsigned index) { end_item_index_ = index; }
 
   // The base direction of this line for the bidi algorithm.
   TextDirection BaseDirection() const { return base_direction_; }
@@ -202,6 +204,7 @@ class CORE_EXPORT NGLineInfo {
   LayoutUnit text_indent_;
 
   unsigned start_offset_;
+  unsigned end_item_index_;
 
   TextDirection base_direction_ = TextDirection::kLtr;
 

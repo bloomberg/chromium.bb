@@ -696,4 +696,43 @@ NGLineHeightMetrics NGInlineBoxState::MetricsForTopAndBottomAlign() const {
   return max;
 }
 
+#if DCHECK_IS_ON()
+void NGInlineLayoutStateStack::CheckSame(
+    const NGInlineLayoutStateStack& other) {
+  // At the beginning of each line, box_data_list_ should be empty.
+  DCHECK_EQ(box_data_list_.size(), 0u);
+  DCHECK_EQ(other.box_data_list_.size(), 0u);
+
+  DCHECK_EQ(stack_.size(), other.stack_.size());
+  for (unsigned i = 0; i < stack_.size(); i++) {
+    stack_[i].CheckSame(other.stack_[i]);
+  }
+}
+
+void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) {
+  // TODO(kojii): Some checks are disabled because they fail today. Fix the
+  // failure and re-enable them.
+
+  // DCHECK_EQ(fragment_start, other.fragment_start);
+  DCHECK_EQ(item, other.item);
+  DCHECK_EQ(style, other.style);
+  DCHECK_EQ(inline_container, other.inline_container);
+  // DCHECK_EQ(metrics, other.metrics);
+  // DCHECK_EQ(text_metrics, other.text_metrics);
+  // DCHECK_EQ(text_top, other.text_top);
+  // DCHECK_EQ(has_start_edge, other.has_start_edge);
+  // DCHECK_EQ(has_end_edge, other.has_end_edge);
+  DCHECK_EQ(margin_inline_end, other.margin_inline_end);
+  DCHECK_EQ(borders, other.borders);
+  DCHECK_EQ(padding, other.padding);
+  // At the beginning of each line, box_data_list_pending_descendants should be
+  // empty.
+  DCHECK_EQ(pending_descendants.size(), 0u);
+  DCHECK_EQ(other.pending_descendants.size(), 0u);
+  // DCHECK_EQ(include_used_fonts, other.include_used_fonts);
+  // DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
+  DCHECK_EQ(needs_box_fragment_when_empty, other.needs_box_fragment_when_empty);
+}
+#endif
+
 }  // namespace blink

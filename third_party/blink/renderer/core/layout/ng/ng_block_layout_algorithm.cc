@@ -1057,7 +1057,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     DCHECK(child_space.ExclusionSpace().IsEmpty());
 
     scoped_refptr<NGLayoutResult> layout_result =
-        child.Layout(child_space, child_break_token);
+        ToNGBlockNode(child).Layout(child_space, child_break_token);
 
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
@@ -1111,8 +1111,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
                        has_clearance_past_adjoining_floats);
   NGConstraintSpace child_space =
       CreateConstraintSpaceForChild(child, child_data, child_available_size_);
-  scoped_refptr<NGLayoutResult> layout_result =
-      child.Layout(child_space, child_break_token);
+  scoped_refptr<NGLayoutResult> layout_result = child.Layout(
+      child_space, child_break_token, &inline_child_layout_context_);
 
   base::Optional<LayoutUnit> child_bfc_block_offset =
       layout_result->BfcBlockOffset();
@@ -1236,7 +1236,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       child_bfc_block_offset) {
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, child_data, child_available_size_, child_bfc_block_offset);
-    layout_result = child.Layout(new_child_space, child_break_token);
+    layout_result = child.Layout(new_child_space, child_break_token,
+                                 &inline_child_layout_context_);
 
     if (layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved) {
       // Even a second layout pass may abort, if the BFC block offset initially
@@ -1248,7 +1249,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       DCHECK(child_bfc_block_offset);
       new_child_space = CreateConstraintSpaceForChild(
           child, child_data, child_available_size_, child_bfc_block_offset);
-      layout_result = child.Layout(new_child_space, child_break_token);
+      layout_result = child.Layout(new_child_space, child_break_token,
+                                   &inline_child_layout_context_);
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);

@@ -201,6 +201,7 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
 
   if (!should_create_line_box)
     line_info_->SetIsEmptyLine();
+  line_info_->SetEndItemIndex(item_index_);
 
   ComputeLineLocation();
 
@@ -1217,8 +1218,7 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 }
 
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
-    const NGLineInfo& line_info,
-    std::unique_ptr<const NGInlineLayoutStateStack> state_stack) const {
+    const NGLineInfo& line_info) const {
   const Vector<NGInlineItem>& items = Items();
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
@@ -1226,8 +1226,7 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
       node_, current_style_.get(), item_index_, offset_,
       ((is_after_forced_break_ ? NGInlineBreakToken::kIsForcedBreak : 0) |
        (line_info.UseFirstLineStyle() ? NGInlineBreakToken::kUseFirstLineStyle
-                                      : 0)),
-      std::move(state_stack));
+                                      : 0)));
 }
 
 }  // namespace blink
