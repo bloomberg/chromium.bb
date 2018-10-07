@@ -119,26 +119,16 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(net_log);
   DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
-  std::unique_ptr<DataReductionProxyParams> params(
-      new DataReductionProxyParams());
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));
-  bool use_config_client =
-      params::IsConfigClientEnabled() && client_ != Client::CRONET_ANDROID;
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
-  if (use_config_client) {
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         std::make_unique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner, net_log, network_connection_tracker_,
         std::move(mutable_config), configurator_.get(), event_creator_.get()));
-  } else {
-    config_.reset(new DataReductionProxyConfig(
-        io_task_runner, net_log, network_connection_tracker_, std::move(params),
-        configurator_.get(), event_creator_.get()));
-  }
 
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the IO thread, and |this| outlives the caller (since the
@@ -158,17 +148,15 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       base::BindRepeating(&DataReductionProxyIOData::UpdateProxyRequestHeaders,
                           base::Unretained(this)));
 
-  if (use_config_client) {
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives the caller (since the
     // caller is owned by |this|.
-    config_client_.reset(new DataReductionProxyConfigServiceClient(
-        std::move(params), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get(), event_creator_.get(), this, net_log_,
-        network_connection_tracker_,
-        base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
-                   base::Unretained(this))));
-  }
+  config_client_.reset(new DataReductionProxyConfigServiceClient(
+      GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
+      config_.get(), event_creator_.get(), this, net_log_,
+      network_connection_tracker_,
+      base::BindRepeating(&DataReductionProxyIOData::StoreSerializedConfig,
+                          base::Unretained(this))));
 
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),

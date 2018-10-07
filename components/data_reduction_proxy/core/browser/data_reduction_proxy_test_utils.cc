@@ -135,8 +135,7 @@ TestDataReductionProxyConfigServiceClient::
         net::NetLog* net_log,
         network::NetworkConnectionTracker* network_connection_tracker,
         ConfigStorer config_storer)
-    : DataReductionProxyConfigServiceClient(std::move(params),
-                                            kTestBackoffPolicy,
+    : DataReductionProxyConfigServiceClient(kTestBackoffPolicy,
                                             request_options,
                                             config_values,
                                             config,
@@ -547,9 +546,9 @@ DataReductionProxyTestContext::Builder::Build() {
                             base::Unretained(config_storer.get()))));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
-        std::move(params), GetBackoffPolicy(), io_data->request_options(),
-        raw_mutable_config, io_data->config(), io_data->event_creator(),
-        io_data.get(), net_log.get(), test_network_connection_tracker,
+        GetBackoffPolicy(), io_data->request_options(), raw_mutable_config,
+        io_data->config(), io_data->event_creator(), io_data.get(),
+        net_log.get(), test_network_connection_tracker,
         base::Bind(&TestConfigStorer::StoreSerializedConfig,
                    base::Unretained(config_storer.get()))));
   }

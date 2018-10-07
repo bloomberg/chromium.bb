@@ -249,14 +249,6 @@ bool IsBrotliAcceptEncodingEnabled() {
                            kDisabled, base::CompareCase::SENSITIVE);
 }
 
-bool IsConfigClientEnabled() {
-  // Config client is enabled by default. It can be disabled only if Chromium
-  // belongs to a field trial group whose name starts with "Disabled".
-  return !base::StartsWith(
-      base::FieldTrialList::FindFullName("DataReductionProxyConfigService"),
-      kDisabled, base::CompareCase::SENSITIVE);
-}
-
 GURL GetConfigServiceURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string url;
@@ -413,6 +405,32 @@ bool IsDataSaverSiteBreakdownUsingPLMEnabled() {
           kDataSaverSiteBreakdownUsingPageLoadMetrics);
 }
 
+base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(
+    const std::vector<DataReductionProxyServer>& proxies,
+    const net::ProxyServer& proxy_server) {
+  if (!proxy_server.is_valid() || proxy_server.is_direct())
+    return base::nullopt;
+
+  // Only compare the host port pair of the |proxy_server| since the proxy
+  // scheme of the stored data reduction proxy may be different than the proxy
+  // scheme of |proxy_server|. This may happen even when the |proxy_server| is a
+  // valid data reduction proxy. As an example, the stored data reduction proxy
+  // may have a proxy scheme of HTTPS while |proxy_server| may have QUIC as the
+  // proxy scheme.
+  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
+  auto it = std::find_if(
+      proxies.begin(), proxies.end(),
+      [&host_port_pair](const DataReductionProxyServer& proxy) {
+        return proxy.proxy_server().host_port_pair().Equals(host_port_pair);
+      });
+
+  if (it == proxies.end())
+    return base::nullopt;
+
+  return DataReductionProxyTypeInfo(proxies,
+                                    static_cast<size_t>(it - proxies.begin()));
+}
+
 }  // namespace params
 
 DataReductionProxyParams::DataReductionProxyParams() {
@@ -459,35 +477,9 @@ DataReductionProxyParams::proxies_for_http() const {
 base::Optional<DataReductionProxyTypeInfo>
 DataReductionProxyParams::FindConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) const {
-  return FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
+  return params::FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
 }
 
-// static
-base::Optional<DataReductionProxyTypeInfo>
-DataReductionProxyParams::FindConfiguredProxyInVector(
-    const std::vector<DataReductionProxyServer>& proxies,
-    const net::ProxyServer& proxy_server) {
-  if (!proxy_server.is_valid() || proxy_server.is_direct())
-    return base::nullopt;
 
-  // Only compare the host port pair of the |proxy_server| since the proxy
-  // scheme of the stored data reduction proxy may be different than the proxy
-  // scheme of |proxy_server|. This may happen even when the |proxy_server| is a
-  // valid data reduction proxy. As an example, the stored data reduction proxy
-  // may have a proxy scheme of HTTPS while |proxy_server| may have QUIC as the
-  // proxy scheme.
-  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
-  auto it = std::find_if(
-      proxies.begin(), proxies.end(),
-      [&host_port_pair](const DataReductionProxyServer& proxy) {
-        return proxy.proxy_server().host_port_pair().Equals(host_port_pair);
-      });
-
-  if (it == proxies.end())
-    return base::nullopt;
-
-  return DataReductionProxyTypeInfo(proxies,
-                                    static_cast<size_t>(it - proxies.begin()));
-}
 
 }  // namespace data_reduction_proxy
