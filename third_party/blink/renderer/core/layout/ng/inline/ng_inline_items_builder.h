@@ -157,6 +157,14 @@ class NGInlineItemsBuilderTemplate {
   void RestoreTrailingCollapsibleSpaceIfRemoved();
   void RestoreTrailingCollapsibleSpace(NGInlineItem*);
 
+  void AppendTextItem(const String&,
+                      unsigned start,
+                      unsigned end,
+                      const ComputedStyle* style,
+                      LayoutText* layout_object);
+
+  void AppendGeneratedBreakOpportunity(const ComputedStyle*, LayoutObject*);
+
   void Exit(LayoutObject*);
 };
 
