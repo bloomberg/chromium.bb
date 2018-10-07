@@ -52,10 +52,8 @@ void LanguageState::DidNavigate(bool is_same_document_navigation,
   SetTranslateEnabled(false);
 }
 
-void LanguageState::LanguageDetermined(const LanguageDetectionDetails& details,
+void LanguageState::LanguageDetermined(const std::string& page_language,
                                        bool page_needs_translation) {
-  std::string page_language = details.adopted_language;
-
   if (is_same_document_navigation_ && !original_lang_.empty()) {
     // Same-document navigation, we don't expect our states to change.
     // Note that we'll set the languages if original_lang_ is empty.  This might
@@ -64,7 +62,6 @@ void LanguageState::LanguageDetermined(const LanguageDetectionDetails& details,
   }
   page_needs_translation_ = page_needs_translation;
   original_lang_ = page_language;
-  language_detection_details_ = details;
   current_lang_ = page_language;
   SetIsPageTranslated(false);
 }

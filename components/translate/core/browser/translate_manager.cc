@@ -205,25 +205,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
           translate_prefs->GetForceTriggerOnEnglishPagesCount()) ||
       translate_ranker_->ShouldOfferTranslation(translate_event_.get());
 
-  // Do not offer translation if language matches CLD language but not content
-  // or html languages, that is when the CLD language may be wrong.
-  // (crbug.com/875035)
-  const LanguageDetectionDetails details =
-      language_state_.language_detection_details();
-  if (details.cld_language == page_lang) {
-    // content language and html root language can be missing, in which case
-    // we do not require the page language to match.
-    if ((!details.canonical_content_language.empty() &&
-         details.canonical_content_language != page_lang) ||
-        (!details.canonical_html_root_language.empty() &&
-         details.html_root_language != page_lang)) {
-      TranslateBrowserMetrics::ReportInitiationStatus(
-          TranslateBrowserMetrics::
-              INITIATION_STATUS_CLD_CONTENT_OR_HTML_LANGUAGE_MISMATCH);
-      return;
-    }
-  }
-
   // Nothing to do if either the language Chrome is in or the language of
   // the page is not supported by the translation server.
   if (target_lang.empty() ||

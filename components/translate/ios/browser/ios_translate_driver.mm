@@ -93,7 +93,8 @@ void IOSTranslateDriver::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
   if (!translate_manager_)
     return;
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined(
+      details.adopted_language, true);
 
   translate_manager_->translate_client()->RecordLanguageDetectionEvent(details);
 

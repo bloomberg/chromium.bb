@@ -39,11 +39,6 @@ struct StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
     return r.content_language;
   }
 
-  static const std::string& canonical_content_language(
-      const translate::LanguageDetectionDetails& r) {
-    return r.canonical_content_language;
-  }
-
   static const std::string& cld_language(
       const translate::LanguageDetectionDetails& r) {
     return r.cld_language;
@@ -60,11 +55,6 @@ struct StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
   static const std::string& html_root_language(
       const translate::LanguageDetectionDetails& r) {
     return r.html_root_language;
-  }
-
-  static const std::string& canonical_html_root_language(
-      const translate::LanguageDetectionDetails& r) {
-    return r.canonical_html_root_language;
   }
 
   static const std::string& adopted_language(

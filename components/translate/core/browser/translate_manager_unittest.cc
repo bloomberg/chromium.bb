@@ -42,7 +42,6 @@ namespace translate {
 namespace {
 
 const char kInitiationStatusName[] = "Translate.InitiationStatus.v2";
-const LanguageDetectionDetails empty_language_detection_details;
 
 // Overrides NetworkChangeNotifier, simulating connection type changes
 // for tests.
@@ -161,14 +160,10 @@ class TranslateManagerTest : public ::testing::Test {
   }
 
   void SetHasLanguageChanged(bool has_language_changed) {
-    LanguageDetectionDetails details_de;
-    details_de.adopted_language = "de";
-    translate_manager_->GetLanguageState().LanguageDetermined(details_de, true);
+    translate_manager_->GetLanguageState().LanguageDetermined("de", true);
     translate_manager_->GetLanguageState().DidNavigate(false, true, false);
-    LanguageDetectionDetails details_changed;
-    details_changed.adopted_language = has_language_changed ? "en" : "de";
-    translate_manager_->GetLanguageState().LanguageDetermined(details_changed,
-                                                              true);
+    translate_manager_->GetLanguageState().LanguageDetermined(
+        has_language_changed ? "en" : "de", true);
     EXPECT_EQ(has_language_changed,
               translate_manager_->GetLanguageState().HasLanguageChanged());
   }
@@ -365,9 +360,7 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
                       &translate_prefs_, &mock_language_model_, {"en"}));
@@ -403,9 +396,7 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
 
   translate_manager_->InitiateTranslation("en");
@@ -441,9 +432,7 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
 
   translate_manager_->InitiateTranslation("en");
@@ -486,9 +475,7 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
 
   translate_manager_->InitiateTranslation("en");
@@ -539,9 +526,7 @@ TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
                       &translate_prefs_, &mock_language_model_, {"en"}));
@@ -579,126 +564,7 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
-  network_notifier_.SimulateOnline();
-  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
-                      &translate_prefs_, &mock_language_model_, {"en"}));
-  translate_manager_->InitiateTranslation("en");
-  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
-              ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1),
-                          Bucket(INITIATION_STATUS_SHOW_ICON, 1)));
-}
-
-TEST_F(TranslateManagerTest, ShouldSuppressPrompt_CLDContentLanguagesDiffer) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kOverrideTranslateTriggerInIndia,
-      {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
-  TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  mock_language_model_.details = {
-      MockLanguageModel::LanguageDetails("en", 1.0),
-      MockLanguageModel::LanguageDetails("hi", 0.5),
-  };
-  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
-      .WillByDefault(Return(true));
-  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
-  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
-      .WillByDefault(Return(&accept_langugages));
-  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
-      .WillByDefault(Return(true));
-
-  mock_translate_ranker_.set_should_offer_translation(true);
-
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
-
-  base::HistogramTester histogram_tester;
-  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-
-  LanguageDetectionDetails details = LanguageDetectionDetails();
-  details.adopted_language = "en";
-  details.cld_language = "en";
-  details.canonical_content_language = "hi";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
-  network_notifier_.SimulateOnline();
-  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
-                      &translate_prefs_, &mock_language_model_, {"en"}));
-  translate_manager_->InitiateTranslation("en");
-  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
-              ElementsAre(Bucket(
-                  INITIATION_STATUS_CLD_CONTENT_OR_HTML_LANGUAGE_MISMATCH, 1)));
-}
-
-TEST_F(TranslateManagerTest, ShouldSuppressPrompt_CLDHTMLLanguagesDiffer) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kOverrideTranslateTriggerInIndia,
-      {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
-  TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  mock_language_model_.details = {
-      MockLanguageModel::LanguageDetails("en", 1.0),
-      MockLanguageModel::LanguageDetails("hi", 0.5),
-  };
-  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
-      .WillByDefault(Return(true));
-  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
-  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
-      .WillByDefault(Return(&accept_langugages));
-  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
-      .WillByDefault(Return(true));
-
-  mock_translate_ranker_.set_should_offer_translation(true);
-
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
-
-  base::HistogramTester histogram_tester;
-  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-
-  LanguageDetectionDetails details = LanguageDetectionDetails();
-  details.adopted_language = "en";
-  details.cld_language = "en";
-  details.canonical_html_root_language = "hi";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
-  network_notifier_.SimulateOnline();
-  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
-                      &translate_prefs_, &mock_language_model_, {"en"}));
-  translate_manager_->InitiateTranslation("en");
-  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
-              ElementsAre(Bucket(
-                  INITIATION_STATUS_CLD_CONTENT_OR_HTML_LANGUAGE_MISMATCH, 1)));
-}
-
-TEST_F(TranslateManagerTest, ShouldShowPrompt_LanguageNotCLD) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kOverrideTranslateTriggerInIndia,
-      {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
-  TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  mock_language_model_.details = {
-      MockLanguageModel::LanguageDetails("en", 1.0),
-      MockLanguageModel::LanguageDetails("hi", 0.5),
-  };
-  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
-      .WillByDefault(Return(true));
-  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
-  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
-      .WillByDefault(Return(&accept_langugages));
-  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
-      .WillByDefault(Return(true));
-
-  mock_translate_ranker_.set_should_offer_translation(true);
-
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
-
-  base::HistogramTester histogram_tester;
-  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-
-  LanguageDetectionDetails details = LanguageDetectionDetails();
-  details.adopted_language = "en";
-  details.cld_language = "hi";
-  details.canonical_html_root_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
                       &translate_prefs_, &mock_language_model_, {"en"}));
@@ -732,9 +598,7 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
 
   translate_manager_->InitiateTranslation("en");
@@ -778,9 +642,7 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  LanguageDetectionDetails details;
-  details.adopted_language = "en";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
   network_notifier_.SimulateOnline();
 
   translate_manager_->InitiateTranslation("fr");
@@ -809,9 +671,7 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
 
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, false);
 
-  LanguageDetectionDetails details;
-  details.adopted_language = "de";
-  translate_manager_->GetLanguageState().LanguageDetermined(details, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("de", true);
 
   // In the offline case, Initiate will early-out before even hitting the API
   // key test.

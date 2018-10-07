@@ -134,12 +134,9 @@ ContextualSearchContext::DetectLanguage(
   std::string html_lang;
   std::string cld_language;
   bool is_cld_reliable;
-  std::string canonical_html_root_language;
-  std::string canonical_content_language;
   std::string language = translate::DeterminePageLanguage(
       content_language, html_lang, this->surrounding_text, &cld_language,
-      &is_cld_reliable, &canonical_html_root_language,
-      &canonical_content_language);
+      &is_cld_reliable);
   // Make sure we return an empty string when unreliable or an unknown result.
   if (!is_cld_reliable || language == translate::kUnknownLanguageCode)
     language = "";

@@ -27,10 +27,6 @@ struct LanguageDetectionDetails {
   // The language detected by the content (Content-Language).
   std::string content_language;
 
-  // A canonical representation of content language (obtained from
-  // |content_language| during language detection).
-  std::string canonical_content_language;
-
   // The language detected by CLD.
   std::string cld_language;
 
@@ -44,10 +40,6 @@ struct LanguageDetectionDetails {
 
   // The language written in the lang attribute of the html element.
   std::string html_root_language;
-
-  // A canonical representation of html root language (obtained from
-  // |html_root_language| during language detection).
-  std::string canonical_html_root_language;
 
   // The adopted language.
   std::string adopted_language;

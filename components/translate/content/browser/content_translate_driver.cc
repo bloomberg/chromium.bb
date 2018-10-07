@@ -238,7 +238,7 @@ void ContentTranslateDriver::OnPageReady(
   translate_manager_->set_current_seq_no(next_page_seq_no_);
 
   translate_manager_->GetLanguageState().LanguageDetermined(
-      details, page_needs_translation);
+      details.adopted_language, page_needs_translation);
 
   if (web_contents())
     translate_manager_->InitiateTranslation(details.adopted_language);
