@@ -116,6 +116,17 @@ NGLineBoxStrut::NGLineBoxStrut(const NGBoxStrut& flow_relative,
   }
 }
 
+bool NGLineBoxStrut::operator==(const NGLineBoxStrut& other) const {
+  return inline_start == other.inline_start && inline_end == other.inline_end &&
+         line_over == other.line_over && line_under == other.line_under;
+}
+
+std::ostream& operator<<(std::ostream& stream, const NGLineBoxStrut& value) {
+  return stream << "Inline: (" << value.inline_start << " " << value.inline_end
+                << ") Line: (" << value.line_over << " " << value.line_under
+                << ") ";
+}
+
 NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxStrut::SnapToDevicePixels() const {
   return NGPixelSnappedPhysicalBoxStrut(top.Round(), right.Round(),
                                         bottom.Round(), left.Round());

@@ -700,7 +700,8 @@ void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
 
 scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
-    NGBreakToken* break_token) {
+    NGBreakToken* break_token,
+    NGInlineChildLayoutContext* context) {
   bool needs_clear_fragments = IsPrepareLayoutFinished();
   PrepareLayoutIfNeeded();
 
@@ -709,8 +710,8 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     ClearAssociatedFragments(inline_break_token);
   }
 
-  NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
-                                    inline_break_token);
+  NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
+                                    context);
   return algorithm.Layout();
 }
 

@@ -21,6 +21,7 @@ namespace blink {
 class NGConstraintSpace;
 class NGExclusionSpace;
 class NGInlineBreakToken;
+class NGInlineChildLayoutContext;
 class NGInlineNode;
 class NGInlineItem;
 class NGInlineLayoutStateStack;
@@ -42,7 +43,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
  public:
   NGInlineLayoutAlgorithm(NGInlineNode,
                           const NGConstraintSpace&,
-                          NGInlineBreakToken* = nullptr);
+                          NGInlineBreakToken*,
+                          NGInlineChildLayoutContext* context);
   ~NGInlineLayoutAlgorithm() override;
 
   void CreateLine(NGLineInfo*, NGExclusionSpace*);
@@ -57,9 +59,16 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
   void PrepareBoxStates(const NGLineInfo&, const NGInlineBreakToken*);
+  void RebuildBoxStates(const NGLineInfo&,
+                        const NGInlineBreakToken*,
+                        NGInlineLayoutStateStack*) const;
+#if DCHECK_IS_ON()
+  void CheckBoxStates(const NGLineInfo&, const NGInlineBreakToken*) const;
+#endif
 
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
-                                  const NGInlineItemResult&);
+                                  const NGInlineItemResult&,
+                                  NGInlineLayoutStateStack*) const;
 
   void BidiReorder();
 
@@ -91,7 +100,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 LayoutUnit line_height);
 
   NGLineBoxFragmentBuilder::ChildList line_box_;
-  std::unique_ptr<NGInlineLayoutStateStack> box_states_;
+  NGInlineLayoutStateStack* box_states_;
+  NGInlineChildLayoutContext* context_;
 
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 

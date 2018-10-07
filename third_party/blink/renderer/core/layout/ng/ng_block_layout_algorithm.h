@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
@@ -278,6 +279,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBoxStrut border_padding_;
   NGBoxStrut border_scrollbar_padding_;
   LayoutUnit intrinsic_block_size_;
+
+  NGInlineChildLayoutContext inline_child_layout_context_;
 
   // The line box index at which we ran out of space. This where we'll actually
   // end up breaking, unless we determine that we should break earlier in order

@@ -129,7 +129,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       NGConstraintSpace child_space = space_builder.ToConstraintSpace(
           flex_item.box->Style()->GetWritingMode());
       flex_item.layout_result =
-          flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
+          ToNGBlockNode(flex_item.ng_input_node)
+              .Layout(child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
           flex_item.layout_result->PhysicalFragment()->Size().height;
       // TODO(dgrogan): Port logic from
