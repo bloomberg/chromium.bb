@@ -23,18 +23,14 @@ enum TranslateError {
   TRANSLATE_ERROR_MAX,
 };
 
-// Mirrors LanguageDetectionDetails in
-// components/translate/core/common/language_detection_details.h
 struct LanguageDetectionDetails {
   mojo_base.mojom.Time time;
   url.mojom.Url url;
   string content_language;
-  string canonical_content_language;
   string cld_language;
   bool is_cld_reliable;
   bool has_notranslate;
   string html_root_language;
-  string canonical_html_root_language;
   string adopted_language;
   mojo_base.mojom.String16 contents;
 };

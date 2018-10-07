@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/translate/core/common/language_detection_details.h"
 
 namespace translate {
 
@@ -36,7 +35,7 @@ class LanguageState {
   // Should be called when the language of the page has been determined.
   // |page_needs_translation| when false indicates that the browser should not
   // offer to translate the page.
-  void LanguageDetermined(const LanguageDetectionDetails& details,
+  void LanguageDetermined(const std::string& page_language,
                           bool page_needs_translation);
 
   // Returns the language the current page should be translated to, based on the
@@ -52,10 +51,6 @@ class LanguageState {
   bool IsPageTranslated() const { return original_lang_ != current_lang_; }
 
   const std::string& original_language() const { return original_lang_; }
-
-  const LanguageDetectionDetails& language_detection_details() const {
-    return language_detection_details_;
-  }
 
   void SetCurrentLanguage(const std::string& language);
   const std::string& current_language() const { return current_lang_; }
@@ -98,9 +93,6 @@ class LanguageState {
   // Same as above but for the previous page.
   std::string prev_original_lang_;
   std::string prev_current_lang_;
-
-  // The signals used and obtained during language detection.
-  LanguageDetectionDetails language_detection_details_;
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.

@@ -31,10 +31,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       text_len / 2);
   std::string cld_lang;
   bool is_cld_reliable;
-  std::string canonical_html_root_lang;
-  std::string canonical_content_lang;
   translate::DeterminePageLanguage(lang, html_lang, text, &cld_lang,
-                                   &is_cld_reliable, &canonical_html_root_lang,
-                                   &canonical_content_lang);
+                                   &is_cld_reliable);
   return 0;
 }

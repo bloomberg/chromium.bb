@@ -150,9 +150,7 @@ std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,
                                   const base::string16& contents,
                                   std::string* cld_language_p,
-                                  bool* is_cld_reliable_p,
-                                  std::string* canonical_html_root_lang_p,
-                                  std::string* canonical_content_lang_p) {
+                                  bool* is_cld_reliable_p) {
   bool is_cld_reliable;
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
@@ -178,11 +176,6 @@ std::string DeterminePageLanguage(const std::string& code,
   if (is_cld_reliable_p != nullptr)
     *is_cld_reliable_p = is_cld_reliable;
   translate::ToTranslateLanguageSynonym(&cld_language);
-
-  if (canonical_html_root_lang_p != nullptr)
-    *canonical_html_root_lang_p = modified_html_lang;
-  if (canonical_content_lang_p != nullptr)
-    *canonical_content_lang_p = modified_code;
 
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
   // |modified_code|.

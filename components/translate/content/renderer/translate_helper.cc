@@ -104,12 +104,9 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   std::string content_language = web_detection_details.content_language.Utf8();
   std::string html_lang = web_detection_details.html_language.Utf8();
   std::string cld_language;
-  std::string canonical_content_language;
-  std::string canonical_html_root_language;
   bool is_cld_reliable;
   std::string language = DeterminePageLanguage(
-      content_language, html_lang, contents, &cld_language, &is_cld_reliable,
-      &canonical_html_root_language, &canonical_content_language);
+      content_language, html_lang, contents, &cld_language, &is_cld_reliable);
 
   if (language.empty())
     return;
@@ -120,12 +117,10 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   details.time = base::Time::Now();
   details.url = web_detection_details.url;
   details.content_language = content_language;
-  details.canonical_content_language = canonical_content_language;
   details.cld_language = cld_language;
   details.is_cld_reliable = is_cld_reliable;
   details.has_notranslate = web_detection_details.has_no_translate_meta;
   details.html_root_language = html_lang;
-  details.canonical_html_root_language = canonical_html_root_language;
   details.adopted_language = language;
 
   // TODO(hajimehoshi): If this affects performance, it should be set only if

@@ -102,8 +102,6 @@ bool StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
     return false;
   if (!data.ReadContentLanguage(&out->content_language))
     return false;
-  if (!data.ReadCanonicalContentLanguage(&out->canonical_content_language))
-    return false;
   if (!data.ReadCldLanguage(&out->cld_language))
     return false;
 
@@ -111,8 +109,6 @@ bool StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
   out->has_notranslate = data.has_notranslate();
 
   if (!data.ReadHtmlRootLanguage(&out->html_root_language))
-    return false;
-  if (!data.ReadCanonicalHtmlRootLanguage(&out->canonical_html_root_language))
     return false;
   if (!data.ReadAdoptedLanguage(&out->adopted_language))
     return false;
