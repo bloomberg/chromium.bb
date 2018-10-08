@@ -433,14 +433,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {
-    test_hooks_->ApplyViewportDeltas(inner_delta, outer_delta,
-                                     elastic_overscroll_delta, page_scale,
-                                     top_controls_delta);
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
+    test_hooks_->ApplyViewportChanges(args);
   }
 
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,

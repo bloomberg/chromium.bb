@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -129,11 +130,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
-  void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
-                           const WebFloatSize& layout_viewport_delta,
-                           const WebFloatSize& elastic_overscroll_delta,
-                           float page_scale_delta,
-                           float browser_controls_shown_ratio_delta) override;
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;

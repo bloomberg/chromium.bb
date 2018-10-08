@@ -612,15 +612,9 @@ void LayerTreeView::UpdateLayerTreeHost() {
   delegate_->UpdateVisualState();
 }
 
-void LayerTreeView::ApplyViewportDeltas(
-    const gfx::Vector2dF& inner_delta,
-    const gfx::Vector2dF& outer_delta,
-    const gfx::Vector2dF& elastic_overscroll_delta,
-    float page_scale,
-    float top_controls_delta) {
-  delegate_->ApplyViewportDeltas(inner_delta, outer_delta,
-                                 elastic_overscroll_delta, page_scale,
-                                 top_controls_delta);
+void LayerTreeView::ApplyViewportChanges(
+    const cc::ApplyViewportChangesArgs& args) {
+  delegate_->ApplyViewportChanges(args);
 }
 
 void LayerTreeView::RecordWheelAndTouchScrollingCount(

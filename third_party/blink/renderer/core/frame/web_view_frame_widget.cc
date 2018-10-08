@@ -102,15 +102,9 @@ void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
   web_view_->SetCursorVisibilityState(is_visible);
 }
 
-void WebViewFrameWidget::ApplyViewportDeltas(
-    const WebFloatSize& visual_viewport_delta,
-    const WebFloatSize& layout_viewport_delta,
-    const WebFloatSize& elastic_overscroll_delta,
-    float scale_factor,
-    float browser_controls_shown_ratio_delta) {
-  web_view_->ApplyViewportDeltas(visual_viewport_delta, layout_viewport_delta,
-                                 elastic_overscroll_delta, scale_factor,
-                                 browser_controls_shown_ratio_delta);
+void WebViewFrameWidget::ApplyViewportChanges(
+    const ApplyViewportChangesArgs& args) {
+  web_view_->ApplyViewportChanges(args);
 }
 
 void WebViewFrameWidget::RecordWheelAndTouchScrollingCount(

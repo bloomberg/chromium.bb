@@ -3234,14 +3234,12 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& scroll_delta,
-                           const gfx::Vector2dF&,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float) override {
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     gfx::ScrollOffset offset = scroll_layer_->CurrentScrollOffset();
-    scroll_layer_->SetScrollOffset(ScrollOffsetWithDelta(offset, scroll_delta));
-    layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
+    scroll_layer_->SetScrollOffset(
+        ScrollOffsetWithDelta(offset, args.inner_delta));
+    layer_tree_host()->SetPageScaleFactorAndLimits(args.page_scale_delta, 0.5f,
+                                                   2.f);
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
@@ -3323,14 +3321,10 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner,
-                           const gfx::Vector2dF& outer,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale_delta,
-                           float top_controls_delta) override {
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_TRUE(sent_gesture_);
-    EXPECT_EQ(gfx::Vector2dF(50, 50), inner);
-    EXPECT_EQ(2, scale_delta);
+    EXPECT_EQ(gfx::Vector2dF(50, 50), args.inner_delta);
+    EXPECT_EQ(2, args.page_scale_delta);
 
     auto* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();
     EXPECT_EQ(gfx::ScrollOffset(50, 50), scroll_layer->CurrentScrollOffset());
@@ -7022,13 +7016,9 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
     EndTest();
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner,
-                           const gfx::Vector2dF& outer,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale_delta,
-                           float top_controls_delta) override {
-    EXPECT_EQ(info_.page_scale_delta, scale_delta);
-    EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
+    EXPECT_EQ(info_.page_scale_delta, args.page_scale_delta);
+    EXPECT_EQ(info_.top_controls_delta, args.browser_controls_delta);
     deltas_sent_to_client_ = true;
   }
 
