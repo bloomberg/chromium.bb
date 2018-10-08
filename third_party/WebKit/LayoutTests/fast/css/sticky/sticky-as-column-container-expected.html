@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<style>
+  body {
+    margin: 0;
+    height: 4000px;
+  }
+  .sticky {
+    position: absolute;
+    top: 200px;
+  }
+  .columncontainer {
+    width: 100px;
+    height: 100px;
+    background: green;
+    columns: 1;
+  }
+  .contents {
+    margin-left: 10%;
+    margin-top: 10%;
+    width: 80%;
+    height: 80%;
+    background: lightgreen;
+  }
+</style>
+<script>
+  function doTest() {
+    window.scrollTo(0, 100);
+  }
+  window.addEventListener('load', doTest, false);
+</script>
+This test passes if there is a light green square with a dark green border.
+<div class="sticky">
+  <div class="columncontainer">
+    <div class="contents"></div>
+  </div>
+</div>

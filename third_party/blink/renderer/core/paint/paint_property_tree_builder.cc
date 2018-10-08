@@ -316,6 +316,13 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
   return object.HasLayer() && object.ShouldApplyPaintContainment();
 }
 
+static bool NeedsStickyTranslation(const LayoutObject& object) {
+  if (!object.IsBoxModelObject())
+    return false;
+
+  return object.StyleRef().HasStickyConstrainedPosition();
+}
+
 static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
@@ -348,6 +355,8 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
     return true;
   }
   if (NeedsScrollOrScrollTranslation(object))
+    return true;
+  if (NeedsStickyTranslation(object))
     return true;
   if (NeedsPaintOffsetTranslationForScrollbars(box_model))
     return true;
@@ -433,13 +442,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
   } else {
     OnClear(properties_->ClearPaintOffsetTranslation());
   }
-}
-
-static bool NeedsStickyTranslation(const LayoutObject& object) {
-  if (!object.IsBoxModelObject())
-    return false;
-
-  return object.StyleRef().HasStickyConstrainedPosition();
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
