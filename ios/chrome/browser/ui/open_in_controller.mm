@@ -463,10 +463,7 @@ class OpenInControllerBridge
 }
 
 - (void)showDownloadOverlayView {
-  UIViewController* topViewController =
-      [[[UIApplication sharedApplication] keyWindow] rootViewController];
-  UIView* topView = topViewController.view;
-  overlayedView_ = [[UIView alloc] initWithFrame:[topView bounds]];
+  overlayedView_ = [[UIView alloc] initWithFrame:[self.baseView bounds]];
   [overlayedView_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleHeight)];
   UIView* grayBackgroundView =
@@ -515,9 +512,8 @@ class OpenInControllerBridge
               action:@selector(handleTapOnOverlayedView:)];
   [tapRecognizer setDelegate:self];
   [overlayedView_ addGestureRecognizer:tapRecognizer];
-
   [overlayedView_ setAlpha:0.0];
-  [topView addSubview:overlayedView_];
+  [self.baseView addSubview:overlayedView_];
   UIView* overlayedView = overlayedView_;
   [UIView animateWithDuration:kOverlayViewAnimationDuration
                    animations:^{
