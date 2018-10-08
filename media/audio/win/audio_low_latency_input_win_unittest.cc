@@ -319,7 +319,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamEffects) {
     EXPECT_EQ(params.effects(), AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
   }
 
-  // The two loopback devices is not included in the device description list
+  // The two loopback devices are not included in the device description list
   // above. They should have no effects.
   AudioParameters params = device_info_accessor.GetInputStreamParameters(
       AudioDeviceDescription::kLoopbackInputDeviceId);
