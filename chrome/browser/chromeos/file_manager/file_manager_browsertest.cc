@@ -388,6 +388,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickView").TabletMode(),
                       TestCase("openQuickViewImage"),
                       TestCase("openQuickViewVideo"),
+                      TestCase("openQuickViewPdf"),
                       TestCase("openQuickViewScrollText"),
                       TestCase("openQuickViewScrollHtml"),
                       TestCase("openQuickViewBackgroundColorText"),
