@@ -11,6 +11,7 @@ import android.support.graphics.drawable.VectorDrawableCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory.CategoryType;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -32,6 +33,10 @@ import java.util.Map;
  */
 public class ExploreSitesSection {
     private static final int MAX_CATEGORIES = 3;
+    // This is a number of UMA histogram buckets that should be an upper bound
+    // of MAX_CATEGORIES over time. If MAX_CATEGORIES changes, this value should
+    // be updated only upwards.
+    private static final int MAX_CATEGORIES_HISTOGRAM_BUCKETS = 3;
 
     @TileStyle
     private int mStyle;
@@ -98,7 +103,7 @@ public class ExploreSitesSection {
         return category;
     }
 
-    private void createTileView(ExploreSitesCategory category) {
+    private void createTileView(int tileIndex, ExploreSitesCategory category) {
         ExploreSitesCategoryTileView tileView;
         if (mStyle == TileStyle.MODERN_CONDENSED) {
             tileView = (ExploreSitesCategoryTileView) LayoutInflater.from(getContext())
@@ -111,7 +116,7 @@ public class ExploreSitesSection {
         }
         tileView.initialize(category);
         mExploreSection.addView(tileView);
-        tileView.setOnClickListener((View v) -> onClicked(category, v));
+        tileView.setOnClickListener((View v) -> onClicked(tileIndex, category, v));
     }
 
     /**
@@ -167,17 +172,19 @@ public class ExploreSitesSection {
 
         int tileCount = 0;
         for (final ExploreSitesCategory category : categoryList) {
+            if (tileCount >= MAX_CATEGORIES) break;
+            createTileView(tileCount, category);
             tileCount++;
-            if (tileCount > MAX_CATEGORIES) break;
-            createTileView(category);
         }
-        createTileView(createMoreTileCategory());
+        createTileView(tileCount, createMoreTileCategory());
         if (needIcons) {
             updateCategoryIcons();
         }
     }
 
-    private void onClicked(ExploreSitesCategory category, View v) {
+    private void onClicked(int tileIndex, ExploreSitesCategory category, View v) {
+        RecordHistogram.recordLinearCountHistogram("ExploreSites.ClickedNTPCategoryIndex",
+                tileIndex, 0, MAX_CATEGORIES_HISTOGRAM_BUCKETS, MAX_CATEGORIES_HISTOGRAM_BUCKETS);
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(category.getUrl(), PageTransition.AUTO_BOOKMARK));
     }

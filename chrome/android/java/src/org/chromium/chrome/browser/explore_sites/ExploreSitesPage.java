@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
@@ -116,6 +117,7 @@ public class ExploreSitesPage extends BasicNativePage {
         recyclerView.setAdapter(adapter);
 
         ExploreSitesBridge.getEspCatalog(profile, this::translateToModel);
+        RecordUserAction.record("Android.ExploreSitesPage.Open");
 
         // TODO(chili): Set layout to be an observer of list model
     }
