@@ -26,6 +26,7 @@ extern "C" {
 // Set maximum decode threads to be 8 due to the limit of frame buffers
 // and not enough semaphores in the emulation layer on windows.
 #define MAX_DECODE_THREADS 8
+#define MAX_NUM_THREADS 64
 
 #if CONFIG_MULTITHREAD
 
