@@ -79,7 +79,8 @@ class MockSyncableService : public SyncableService {
 
 class SyncableServiceBasedBridgeTest : public ::testing::Test {
  protected:
-  SyncableServiceBasedBridgeTest() {
+  SyncableServiceBasedBridgeTest()
+      : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     ON_CALL(syncable_service_, MergeDataAndStartSyncing(_, _, _, _))
         .WillByDefault(
             [&](ModelType type, const SyncDataList& initial_sync_data,
@@ -99,7 +100,8 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
             /*commit_only=*/false);
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     bridge_ = std::make_unique<SyncableServiceBasedBridge>(
-        kModelType, ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
+        kModelType,
+        ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_processor_.CreateForwardingProcessor(), &syncable_service_);
   }
 
@@ -154,6 +156,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   testing::NiceMock<MockSyncableService> syncable_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   base::MockCallback<ModelErrorHandler> mock_error_handler_;
+  const std::unique_ptr<ModelTypeStore> store_;
   std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
   std::unique_ptr<SyncableServiceBasedBridge> bridge_;
   std::unique_ptr<MockModelTypeWorker> worker_;
@@ -259,12 +262,31 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateErrorDuringStart) {
 }
 
 TEST_F(SyncableServiceBasedBridgeTest,
-       ShouldStartSyncingWithPreviousDirectoryData) {
+       ShouldStartSyncingWithPreviousDirectoryDataWithoutRestart) {
   InitializeBridge();
   StartSyncing();
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   real_processor_->OnSyncStopping(KEEP_METADATA);
   EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, _)));
+
+  EXPECT_CALL(syncable_service_,
+              MergeDataAndStartSyncing(
+                  kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
+                  NotNull(), NotNull()));
+  StartSyncing();
+}
+
+TEST_F(SyncableServiceBasedBridgeTest,
+       ShouldStartSyncingWithPreviousDirectoryDataAfterRestart) {
+  InitializeBridge();
+  StartSyncing();
+  worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
+
+  // Mimic restart, which shouldn't start syncing until OnSyncStarting() is
+  // received (exercised in StartSyncing()).
+  EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_, _, _, _)).Times(0);
+  ShutdownBridge();
+  InitializeBridge();
 
   EXPECT_CALL(syncable_service_,
               MergeDataAndStartSyncing(
