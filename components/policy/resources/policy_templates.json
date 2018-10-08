@@ -10473,13 +10473,13 @@
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in G Suite and prevents users from changing this setting.
 
       If you define this setting, the user will only be able to access Google
-      Apps using accounts from the specified domains (note that this does not
-      work for gmail.com/googlemail.com).
+      Apps using accounts from the specified domains (note that to allow
+      gmail.com/googlemail.com accounts, you should add "consumer_accounts"
+      (without quotes) to the list of domains).
 
-      This setting will NOT prevent the user from loging in on a managed device
-      that requires Google authentication. The user will still be allowed to
-      sign in to accounts from other domains, but they will receive an error
-      when trying to use G Suite with those accounts.
+      This setting will prevent the user from logging in, and adding a Secondary
+      Account, on a managed device that requires Google authentication, if that
+      account does not belong to the aforementioned list of allowed domains.
 
       If you leave this setting empty/not-configured, the user will be able to
       access G Suite with any account.
