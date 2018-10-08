@@ -473,6 +473,8 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
   std::unique_ptr<WebRtcLogBuffer> log_buffer;
   std::unique_ptr<MetaDataMap> meta_data;
   text_log_handler_->ReleaseLog(&log_buffer, &meta_data);
+  CHECK(log_buffer.get()) << "State=" << text_log_handler_->GetState()
+                          << ", uorc=" << upload_log_on_render_close_;
 
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoStore,
@@ -504,6 +506,8 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
   std::unique_ptr<WebRtcLogBuffer> log_buffer;
   std::unique_ptr<MetaDataMap> meta_data;
   text_log_handler_->ReleaseLog(&log_buffer, &meta_data);
+  CHECK(log_buffer.get()) << "State=" << text_log_handler_->GetState()
+                          << ", uorc=" << upload_log_on_render_close_;
 
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE,
