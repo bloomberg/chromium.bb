@@ -548,7 +548,7 @@ void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
-  return window_mapped_in_client_;
+  return window_mapped_in_client_ && !IsMinimized();
 }
 
 void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
@@ -832,16 +832,18 @@ void DesktopWindowTreeHostX11::Maximize() {
 
 void DesktopWindowTreeHostX11::Minimize() {
   ReleaseCapture();
-  XIconifyWindow(xdisplay_, xwindow_, 0);
-  window_mapped_in_client_ = false;
+  if (window_mapped_in_client_)
+    XIconifyWindow(xdisplay_, xwindow_, 0);
+  else
+    SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::None);
 }
 
 void DesktopWindowTreeHostX11::Restore() {
   should_maximize_after_map_ = false;
   SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
-  if (IsMinimized())
-    Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
+  SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::None);
 }
 
 bool DesktopWindowTreeHostX11::IsMaximized() const {
@@ -1196,7 +1198,7 @@ void DesktopWindowTreeHostX11::ShowImpl() {
 }
 
 void DesktopWindowTreeHostX11::HideImpl() {
-  if (IsVisible()) {
+  if (window_mapped_in_client_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_in_client_ = false;
     native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
@@ -1643,7 +1645,7 @@ gfx::Size DesktopWindowTreeHostX11::AdjustSize(
 void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
                                               XAtom state1,
                                               XAtom state2) {
-  if (IsVisible()) {
+  if (window_mapped_in_client_) {
     ui::SetWMSpecState(xwindow_, enabled, state1, state2);
   } else {
     // The updated state will be set when the window is (re)mapped.
