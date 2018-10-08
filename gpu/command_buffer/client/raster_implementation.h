@@ -164,6 +164,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                  GLuint64* params);
 
   void* MapRasterCHROMIUM(GLsizeiptr size);
+  void FinalizeRasterCHROMIUM(GLsizeiptr written_size);
   void UnmapRasterCHROMIUM(GLsizeiptr written_size);
 
   // ClientFontManager::Client implementation.
@@ -294,6 +295,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   mutable base::Lock lost_lock_;
   bool lost_;
+
+  bool inside_raster_ = false;
 
   struct RasterProperties {
     RasterProperties(SkColor background_color,

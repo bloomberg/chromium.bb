@@ -56,8 +56,6 @@ void RingBuffer::FreeOldestBlock() {
 
 void* RingBuffer::Alloc(unsigned int size) {
   DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
-  DCHECK(blocks_.empty() || blocks_.back().state != IN_USE)
-      << "Attempt to alloc another block before freeing the previous.";
   // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
   // return different pointers every time.
   if (size == 0) size = 1;
