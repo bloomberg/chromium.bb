@@ -123,8 +123,7 @@ void GetCandidateIndicesWithBestScores(
     return;
   }
 
-  auto zero_size_it = std::find(desired_sizes.begin(), desired_sizes.end(), 0);
-  if (zero_size_it != desired_sizes.end()) {
+  if (base::ContainsValue(desired_sizes, 0)) {
     // Just return the biggest image available.
     SelectionResult result;
     result.index = BiggestCandidate(candidate_sizes);

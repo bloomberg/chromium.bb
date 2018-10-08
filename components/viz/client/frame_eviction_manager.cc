@@ -11,6 +11,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/shared_memory.h"
+#include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 
@@ -46,9 +47,7 @@ void FrameEvictionManager::RemoveFrame(FrameEvictionManagerClient* frame) {
 }
 
 void FrameEvictionManager::LockFrame(FrameEvictionManagerClient* frame) {
-  auto unlocked_iter =
-      std::find(unlocked_frames_.begin(), unlocked_frames_.end(), frame);
-  if (unlocked_iter != unlocked_frames_.end()) {
+  if (base::ContainsValue(unlocked_frames_, frame)) {
     DCHECK(locked_frames_.find(frame) == locked_frames_.end());
     unlocked_frames_.remove(frame);
     locked_frames_[frame] = 1;
