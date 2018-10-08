@@ -40,7 +40,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/ipc/media_param_traits.h"
-#include "media/capture/ipc/capture_param_traits.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"

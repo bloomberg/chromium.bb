@@ -1172,19 +1172,6 @@ struct FuzzTraits<media::cast::RtpTimeTicks> {
 };
 
 template <>
-struct FuzzTraits<media::VideoCaptureFormat> {
-  static bool Fuzz(media::VideoCaptureFormat* p, Fuzzer* fuzzer) {
-    if (!FuzzParam(&p->frame_size, fuzzer))
-      return false;
-    if (!FuzzParam(&p->frame_rate, fuzzer))
-      return false;
-    if (!FuzzParam(reinterpret_cast<int*>(&p->pixel_format), fuzzer))
-      return false;
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<net::LoadTimingInfo> {
   static bool Fuzz(net::LoadTimingInfo* p, Fuzzer* fuzzer) {
     return FuzzParam(&p->socket_log_id, fuzzer) &&

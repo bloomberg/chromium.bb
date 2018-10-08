@@ -315,7 +315,6 @@ source_set("common") {
     "//media:shared_memory_support",
     "//media/base/ipc",
     "//media/capture",
-    "//media/capture/ipc",
     "//media/gpu:buildflags",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
