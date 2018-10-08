@@ -6390,4 +6390,78 @@ TEST_P(PaintPropertyTreeBuilderTest, TableColOpacity) {
   EXPECT_EQ(nullptr, PaintPropertiesForElement("col"));
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' style='clip-path: circle(); will-change: transform'></svg>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("svg");
+
+  ASSERT_NE(nullptr, properties->PaintOffsetTranslation());
+  const auto* transform = properties->Transform();
+  ASSERT_NE(nullptr, transform);
+  EXPECT_EQ(properties->PaintOffsetTranslation(), transform->Parent());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(nullptr, properties->MaskClip());
+
+    const auto* clip_path_clip = properties->ClipPathClip();
+    ASSERT_NE(nullptr, clip_path_clip);
+    EXPECT_EQ(DocContentClip(), clip_path_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), clip_path_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, clip_path_clip->LocalTransformSpace());
+    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
+
+    const auto* overflow_clip = properties->OverflowClip();
+    ASSERT_NE(nullptr, overflow_clip);
+    EXPECT_EQ(clip_path_clip, overflow_clip->Parent());
+    EXPECT_EQ(FloatRect(0, 0, 300, 150), overflow_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, overflow_clip->LocalTransformSpace());
+
+    // TODO(wangxianzhu): Are the following correct?
+    EXPECT_EQ(nullptr, properties->Effect());
+    EXPECT_EQ(nullptr, properties->Mask());
+    EXPECT_EQ(nullptr, properties->ClipPath());
+  } else {
+    const auto* mask_clip = properties->MaskClip();
+    ASSERT_NE(nullptr, mask_clip);
+    EXPECT_EQ(DocContentClip(), mask_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), mask_clip->ClipRect().Rect());
+    EXPECT_EQ(nullptr, mask_clip->ClipPath());
+    EXPECT_EQ(transform, mask_clip->LocalTransformSpace());
+
+    const auto* clip_path_clip = properties->ClipPathClip();
+    ASSERT_NE(nullptr, clip_path_clip);
+    EXPECT_EQ(mask_clip, clip_path_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), clip_path_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, clip_path_clip->LocalTransformSpace());
+    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
+
+    const auto* overflow_clip = properties->OverflowClip();
+    ASSERT_NE(nullptr, overflow_clip);
+    EXPECT_EQ(mask_clip, overflow_clip->Parent());
+    EXPECT_EQ(FloatRect(0, 0, 300, 150), overflow_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, overflow_clip->LocalTransformSpace());
+
+    const auto* effect = properties->Effect();
+    ASSERT_NE(nullptr, effect);
+    EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
+    EXPECT_EQ(transform, effect->LocalTransformSpace());
+    EXPECT_EQ(mask_clip, effect->OutputClip());
+    EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
+
+    const auto* mask = properties->Mask();
+    ASSERT_NE(nullptr, mask);
+    EXPECT_EQ(effect, mask->Parent());
+    EXPECT_EQ(transform, mask->LocalTransformSpace());
+    EXPECT_EQ(mask_clip, mask->OutputClip());
+    EXPECT_EQ(SkBlendMode::kDstIn, mask->BlendMode());
+
+    EXPECT_EQ(nullptr, properties->ClipPath());
+  }
+}
+
 }  // namespace blink
