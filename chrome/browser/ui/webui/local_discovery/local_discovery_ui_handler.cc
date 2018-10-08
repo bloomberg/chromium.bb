@@ -116,9 +116,8 @@ LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting::
 }
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler()
-    : is_visible_(false),
-      failed_list_count_(0),
-      succeded_list_count_(0) {
+    : failed_list_count_(0), succeded_list_count_(0) {
+  g_num_visible++;
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
@@ -128,7 +127,7 @@ LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
   if (identity_manager)
     identity_manager->RemoveObserver(this);
   ResetCurrentRegistration();
-  SetIsVisible(false);
+  g_num_visible--;
 }
 
 // static
@@ -140,10 +139,6 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "start", base::BindRepeating(&LocalDiscoveryUIHandler::HandleStart,
                                    base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "isVisible",
-      base::BindRepeating(&LocalDiscoveryUIHandler::HandleIsVisible,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "registerDevice",
       base::BindRepeating(&LocalDiscoveryUIHandler::HandleRegisterDevice,
@@ -213,13 +208,6 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 #endif
 
   CheckUserLoggedIn();
-}
-
-void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
-  bool is_visible = false;
-  bool rv = args->GetBoolean(0, &is_visible);
-  DCHECK(rv);
-  SetIsVisible(is_visible);
 }
 
 void LocalDiscoveryUIHandler::HandleRegisterDevice(
@@ -469,14 +457,6 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onRegistrationSuccess", device_value);
-}
-
-void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
-  if (visible == is_visible_)
-    return;
-
-  g_num_visible += visible ? 1 : -1;
-  is_visible_ = visible;
 }
 
 std::string LocalDiscoveryUIHandler::GetSyncAccount() const {
