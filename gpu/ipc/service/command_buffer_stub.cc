@@ -707,8 +707,8 @@ bool CommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
 
 void CommandBufferStub::OnWaitSyncTokenCompleted(const SyncToken& sync_token) {
   DCHECK(waiting_for_sync_point_);
-  TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncTokenCompleted", this,
-                         "CommandBufferStub", this);
+  TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncToken", this, "CommandBufferStub",
+                         this);
   // Don't call PullTextureUpdates here because we can't MakeCurrent if we're
   // executing commands on another context. The WaitSyncToken command will run
   // again and call PullTextureUpdates once this command buffer gets scheduled.
