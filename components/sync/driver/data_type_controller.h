@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/engine/cycle/status_counters.h"
+#include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
@@ -142,10 +142,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // logic shuts down gracefully by flushing remaining changes and calling
   // StopSyncing on the SyncableService. This assumes no changes will ever
   // propagate from sync again from point where Stop() is called.
-  // KEEP_METADATA is used when the engine just stops sync, and CLEAR_METADATA
-  // is used when the user disables sync for data type.
-  virtual void Stop(SyncStopMetadataFate metadata_fate,
-                    StopCallback callback) = 0;
+  virtual void Stop(ShutdownReason shutdown_reason, StopCallback callback) = 0;
 
   // Name of this data type.  For logging purposes only.
   std::string name() const { return ModelTypeToString(type()); }

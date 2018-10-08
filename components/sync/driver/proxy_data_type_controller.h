@@ -29,7 +29,7 @@ class ProxyDataTypeController : public DataTypeController {
   void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
                            ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
-  void Stop(SyncStopMetadataFate metadata_fate, StopCallback callback) override;
+  void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
   State state() const override;
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;

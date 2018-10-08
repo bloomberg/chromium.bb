@@ -60,10 +60,10 @@ void DirectoryDataTypeController::DeactivateDataType(
   configurer->UnregisterDirectoryDataType(type());
 }
 
-void DirectoryDataTypeController::Stop(SyncStopMetadataFate metadata_fate,
+void DirectoryDataTypeController::Stop(ShutdownReason shutdown_reason,
                                        StopCallback callback) {
   DCHECK(CalledOnValidThread());
-  Stop(metadata_fate);
+  Stop(shutdown_reason);
   std::move(callback).Run();
 }
 
