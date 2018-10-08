@@ -24,27 +24,48 @@ void BluetoothSystem::Create(mojom::BluetoothSystemRequest request,
 BluetoothSystem::BluetoothSystem(mojom::BluetoothSystemClientPtr client) {
   client_ptr_ = std::move(client);
   GetBluetoothAdapterClient()->AddObserver(this);
-  UpdateActiveAdapter();
+
+  std::vector<dbus::ObjectPath> object_paths =
+      GetBluetoothAdapterClient()->GetAdapters();
+  if (!object_paths.empty())
+    active_adapter_ = object_paths[0];
 }
 
 BluetoothSystem::~BluetoothSystem() = default;
 
 void BluetoothSystem::AdapterAdded(const dbus::ObjectPath& object_path) {
-  UpdateActiveAdapter();
+  if (!active_adapter_)
+    active_adapter_ = object_path;
 }
 
 void BluetoothSystem::AdapterRemoved(const dbus::ObjectPath& object_path) {
-  UpdateActiveAdapter();
+  DCHECK(active_adapter_);
+
+  if (active_adapter_.value() != object_path)
+    return;
+
+  active_adapter_ = base::nullopt;
+
+  std::vector<dbus::ObjectPath> object_paths =
+      GetBluetoothAdapterClient()->GetAdapters();
+  for (const auto& new_object_path : object_paths) {
+    // The removed adapter is still included in GetAdapters().
+    if (new_object_path == object_path)
+      continue;
+
+    active_adapter_ = new_object_path;
+    break;
+  }
 }
 
 void BluetoothSystem::GetState(GetStateCallback callback) {
-  if (active_adapter_.value().empty()) {
+  if (!active_adapter_) {
     std::move(callback).Run(State::kUnavailable);
     return;
   }
 
   auto* properties =
-      GetBluetoothAdapterClient()->GetProperties(active_adapter_);
+      GetBluetoothAdapterClient()->GetProperties(active_adapter_.value());
   std::move(callback).Run(properties->powered.value() ? State::kPoweredOn
                                                       : State::kPoweredOff);
 }
@@ -53,20 +74,6 @@ bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
   // Use AlternateBluetoothAdapterClient to avoid interfering with users of the
   // regular BluetoothAdapterClient.
   return bluez::BluezDBusManager::Get()->GetAlternateBluetoothAdapterClient();
-}
-
-void BluetoothSystem::UpdateActiveAdapter() {
-  std::vector<dbus::ObjectPath> object_paths =
-      GetBluetoothAdapterClient()->GetAdapters();
-  if (object_paths.empty()) {
-    active_adapter_ = dbus::ObjectPath("");
-    return;
-  }
-
-  if (base::ContainsValue(object_paths, active_adapter_))
-    return;
-
-  active_adapter_ = object_paths[0];
 }
 
 }  // namespace device
