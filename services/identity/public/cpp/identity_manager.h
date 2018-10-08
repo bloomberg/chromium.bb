@@ -94,6 +94,12 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnRefreshTokenRemovedForAccount(
         const std::string& account_id) {}
 
+    // Called after refresh tokens are loaded.
+    // CAVEAT: On ChromeOS, this callback is not invoked during
+    // startup in all cases. See https://crbug.com/749535, which
+    // details the cases where it's not invoked.
+    virtual void OnRefreshTokensLoaded() {}
+
     // Called whenever the list of Gaia accounts in the cookie jar has changed.
     // |accounts| is ordered by the order of the accounts in the cookie.
     virtual void OnAccountsInCookieUpdated(
@@ -252,6 +258,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
 
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(
