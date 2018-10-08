@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -159,7 +160,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     std::unique_ptr<AnswerCardContents> contents0(contents0_);
     std::unique_ptr<AnswerCardContents> contents1(contents1_);
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), CreateTemplateURLService);
+        profile_.get(), base::BindRepeating(&CreateTemplateURLService));
     // Provider will own the MockAnswerCardContents instance.
     provider_ = std::make_unique<AnswerCardSearchProvider>(
         profile_.get(), model_updater_.get(), nullptr, std::move(contents0),
