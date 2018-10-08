@@ -456,7 +456,6 @@
 
     # TODO(crbug.com/818301): This master is going away.
     'chromium.webkit': {
-      'Android Builder': 'android_release_bot_minimal_symbols',
       'WebKit Linux Trusty ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Trusty Leak': 'release_bot',
       'WebKit Linux Trusty MSAN': 'msan_release_bot',
