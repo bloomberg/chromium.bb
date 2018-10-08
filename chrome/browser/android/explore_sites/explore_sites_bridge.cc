@@ -175,4 +175,10 @@ void ExploreSitesBridge::ScheduleDailyTask() {
   Java_ExploreSitesBridge_scheduleDailyTask(env);
 }
 
+float ExploreSitesBridge::GetScaleFactorFromDevice() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // Get scale factor from Java as a float.
+  return Java_ExploreSitesBridge_getScaleFactorFromDevice(env);
+}
+
 }  // namespace explore_sites

@@ -14,6 +14,9 @@ class ExploreSitesBridge {
   // The catalog update task checks that the feature is enabled and if not,
   // unschedules itself.
   static void ScheduleDailyTask();
+
+  // Gets the device screen scale factor from Android.
+  static float GetScaleFactorFromDevice();
 };
 
 }  // namespace explore_sites

@@ -57,6 +57,18 @@ class ExploreSitesFetcher {
 
   void disable_retry_for_testing() { disable_retry_for_testing_ = true; }
 
+  // Delegate that knows how to get data from the device.  Can be overridden for
+  // testing.
+  class DeviceDelegate {
+   public:
+    DeviceDelegate() = default;
+    virtual ~DeviceDelegate() = default;
+    virtual float GetScaleFactorFromDevice();
+  };
+
+  // Allow overriding device specific functionality for testing
+  void SetDeviceDelegateForTest(std::unique_ptr<DeviceDelegate> delegate);
+
  private:
   explicit ExploreSitesFetcher(
       bool is_immediate_fetch,
@@ -81,6 +93,7 @@ class ExploreSitesFetcher {
   int max_failure_count_;
   bool disable_retry_for_testing_ = false;
 
+  std::unique_ptr<DeviceDelegate> device_delegate_;
   Callback callback_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
