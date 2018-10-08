@@ -591,8 +591,6 @@ target(link_target_type, "renderer") {
     "skia_benchmarking_extension.h",
     "stats_collection_controller.cc",
     "stats_collection_controller.h",
-    "stats_collection_observer.cc",
-    "stats_collection_observer.h",
     "storage_util.cc",
     "storage_util.h",
     "text_input_client_observer.cc",
