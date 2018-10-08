@@ -12,15 +12,10 @@
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
 #include "chrome/browser/android/explore_sites/get_images_task.h"
+#include "chrome/browser/android/explore_sites/image_helper.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
 #include "components/offline_pages/task/task.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/data_decoder/public/cpp/decode_image.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/size.h"
 
 using chrome::android::explore_sites::ExploreSitesVariation;
 using chrome::android::explore_sites::GetExploreSitesVariation;
@@ -63,19 +58,21 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
 }
 
 void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
+                                               int pixel_size,
                                                BitmapCallback callback) {
   task_queue_.AddTask(std::make_unique<GetImagesTask>(
       explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
-      base::BindOnce(&ExploreSitesServiceImpl::DecodeImageBytes,
-                     std::move(callback))));
+      base::BindOnce(&ExploreSitesServiceImpl::ComposeCategoryImage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     pixel_size)));
 }
 
 void ExploreSitesServiceImpl::GetSiteImage(int site_id,
                                            BitmapCallback callback) {
   task_queue_.AddTask(std::make_unique<GetImagesTask>(
       explore_sites_store_.get(), site_id,
-      base::BindOnce(&ExploreSitesServiceImpl::DecodeImageBytes,
-                     std::move(callback))));
+      base::BindOnce(&ExploreSitesServiceImpl::ComposeSiteImage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
@@ -127,6 +124,18 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
   AddUpdatedCatalog(catalog_version, std::move(catalog), std::move(callback));
 }
 
+void ExploreSitesServiceImpl::ComposeSiteImage(BitmapCallback callback,
+                                               EncodedImageList images) {
+  image_helper_.ComposeSiteImage(std::move(callback), std::move(images));
+}
+
+void ExploreSitesServiceImpl::ComposeCategoryImage(BitmapCallback callback,
+                                                   int pixel_size,
+                                                   EncodedImageList images) {
+  image_helper_.ComposeCategoryImage(std::move(callback), pixel_size,
+                                     std::move(images));
+}
+
 void ExploreSitesServiceImpl::Shutdown() {}
 
 void ExploreSitesServiceImpl::OnTaskQueueIsIdle() {}
@@ -141,38 +150,5 @@ void ExploreSitesServiceImpl::AddUpdatedCatalog(
   task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
       explore_sites_store_.get(), version_token, std::move(catalog_proto),
       std::move(callback)));
-}
-
-// static
-void ExploreSitesServiceImpl::OnDecodeDone(BitmapCallback callback,
-                                           const SkBitmap& decoded_image) {
-  DVLOG(1) << "Decoded images, result "
-           << (decoded_image.isNull() ? "null" : "non-null");
-  std::unique_ptr<SkBitmap> bitmap = std::make_unique<SkBitmap>(decoded_image);
-  std::move(callback).Run(std::move(bitmap));
-}
-
-// static
-void ExploreSitesServiceImpl::DecodeImageBytes(BitmapCallback callback,
-                                               EncodedImageList images) {
-  // TODO(freedjm) Fix to handle multiple images when support is added for
-  // creating composite images for the NTP tiles.
-  DVLOG(1) << "Requested decoding for " << images.size() << " images";
-  if (images.size() == 0) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  service_manager::mojom::ConnectorRequest connector_request;
-  std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&connector_request);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
-
-  data_decoder::DecodeImage(connector.get(), *images[0],
-                            data_decoder::mojom::ImageCodec::DEFAULT, false,
-                            data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-                            base::BindOnce(&OnDecodeDone, std::move(callback)));
 }
 }  // namespace explore_sites

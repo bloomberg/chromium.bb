@@ -13,6 +13,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
+#include "chrome/browser/android/explore_sites/image_helper.h"
 #include "components/offline_pages/task/task_queue.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -34,8 +35,15 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
 
   // ExploreSitesService implementation.
   void GetCatalog(CatalogCallback callback) override;
-  void GetCategoryImage(int category_id, BitmapCallback callback) override;
+  void GetCategoryImage(int category_id,
+                        int pixel_size,
+                        BitmapCallback callback) override;
+
+  // Compose a single site icon and return via |callback|.
   void GetSiteImage(int site_id, BitmapCallback callback) override;
+
+  // Compose a category icon containing [1 - 4] site icons and return via
+  // |callback|.
   void UpdateCatalogFromNetwork(bool is_immediate_fetch,
                                 const std::string& accept_languages,
                                 BooleanCallback callback) override;
@@ -51,21 +59,24 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
                          std::unique_ptr<Catalog> catalog_proto,
                          BooleanCallback callback);
 
-  static void OnDecodeDone(BitmapCallback callback,
-                           const SkBitmap& decoded_image);
-  static void DecodeImageBytes(BitmapCallback callback,
-                               EncodedImageList images);
-
   // Callback returning from the UpdateCatalogFromNetwork operation.  It
   // passes along the call back to the bridge and eventually back to Java land.
   void OnCatalogFetched(BooleanCallback callback,
                         ExploreSitesRequestStatus status,
                         std::unique_ptr<std::string> serialized_protobuf);
 
+  // Wrappers to call ImageHelper::Compose[Site|Category]Image.
+  void ComposeSiteImage(BitmapCallback callback, EncodedImageList images);
+  void ComposeCategoryImage(BitmapCallback callback,
+                            int pixel_size,
+                            EncodedImageList images);
+
   // True when Chrome starts up, this is reset after the catalog is requested
   // the first time in Chrome. This prevents the ESP from changing out from
   // under a viewer.
   bool check_for_new_catalog_ = true;
+
+  ImageHelper image_helper_;
 
   // Used to control access to the ExploreSitesStore.
   TaskQueue task_queue_;
