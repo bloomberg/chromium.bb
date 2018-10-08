@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/autocomplete/autocomplete_provider_client_impl.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -101,6 +102,11 @@ AutocompleteProviderClientImpl::GetContextualSuggestionsService(
 DocumentSuggestionsService*
 AutocompleteProviderClientImpl::GetDocumentSuggestionsService(
     bool create_if_necessary) const {
+  return nullptr;
+}
+
+OmniboxPedalProvider* AutocompleteProviderClientImpl::GetPedalProvider() const {
+  NOTREACHED();
   return nullptr;
 }
 

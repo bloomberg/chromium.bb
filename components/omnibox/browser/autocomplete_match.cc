@@ -23,6 +23,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -143,6 +144,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                              ? new AutocompleteMatch(*match.associated_keyword)
                              : nullptr),
       keyword(match.keyword),
+      pedal(match.pedal),
       from_previous(match.from_previous),
       search_terms_args(
           match.search_terms_args
@@ -188,6 +190,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
           ? new AutocompleteMatch(*match.associated_keyword)
           : nullptr);
   keyword = match.keyword;
+  pedal = match.pedal;
   from_previous = match.from_previous;
   search_terms_args.reset(
       match.search_terms_args
@@ -277,6 +280,9 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
 
     case Type::SEARCH_SUGGEST_TAIL:
       return omnibox::kBlankIcon;
+
+    case Type::PEDAL:
+      return omnibox::kPedalIcon;
 
     case Type::NUM_TYPES:
       NOTREACHED();
@@ -683,6 +689,19 @@ GURL AutocompleteMatch::ImageUrl() const {
   return answer ? answer->image_url() : GURL(image_url);
 }
 
+void AutocompleteMatch::ApplyPedal() {
+  type = Type::PEDAL;
+  contents = pedal->GetLabelStrings().suggestion_contents;
+  destination_url = pedal->GetNavigationUrl();
+
+  // Normally this is computed by the match using a TemplateURLService
+  // but Pedal URLs are not typical and unknown, and we don't want them to
+  // be deduped, e.g. after stripping a query parameter that may do something
+  // meaningful like indicate the viewable scope of a settings page.  So here
+  // we keep the URL exactly as the Pedal specifies it.
+  stripped_destination_url = destination_url;
+}
+
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const std::string& value) {
   DCHECK(!property.empty());
@@ -789,7 +808,11 @@ bool AutocompleteMatch::IsExceptedFromLineReversal() const {
 }
 
 bool AutocompleteMatch::ShouldShowTabMatch() const {
-  return has_tab_match && !associated_keyword;
+  // TODO(orinj): If side button Pedal presentation mode is not kept,
+  // the simpler logic (with no pedal checks) can be restored, and if it is
+  // kept then some minor refactoring (or at least renaming) is in order.
+  return (has_tab_match && !associated_keyword) ||
+         (pedal && pedal->ShouldPresentButton());
 }
 
 #if DCHECK_IS_ON()

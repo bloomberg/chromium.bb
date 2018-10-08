@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
@@ -88,12 +89,18 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up 'switch to tab' button.
   if (match.ShouldShowTabMatch()) {
-    const base::string16 hint =
-        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
-    const base::string16 hint_short =
-        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT);
-    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-        model_, this, hint, hint_short, omnibox::kSwitchIcon);
+    if (match.pedal) {
+      const OmniboxPedal::LabelStrings& strings =
+          match.pedal->GetLabelStrings();
+      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+          model_, this, strings.hint, strings.hint_short, omnibox::kPedalIcon);
+    } else {
+      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+          model_, this, l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+          omnibox::kSwitchIcon);
+    }
+
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
