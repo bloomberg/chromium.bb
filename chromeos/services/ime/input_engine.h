@@ -12,7 +12,7 @@ namespace chromeos {
 namespace ime {
 
 namespace rulebased {
-class Controller;
+class Engine;
 }
 
 class InputEngineContext {
@@ -21,7 +21,7 @@ class InputEngineContext {
   ~InputEngineContext();
 
   std::string ime_spec;
-  std::unique_ptr<rulebased::Controller> controller;
+  std::unique_ptr<rulebased::Engine> engine;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputEngineContext);

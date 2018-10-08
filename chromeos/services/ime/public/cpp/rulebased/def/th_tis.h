@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_TIS_H_
-#define CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_TIS_H_
+#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_TIS_H_
+#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_TIS_H_
 
 const wchar_t* key_map_th_tis[] = {
     // Row #1
@@ -32,4 +32,4 @@ const uint8_t key_map_index_th_tis[8]{0, 1, 0, 1, 1, 0, 1, 0};
 const char* id_th_tis = "th_tis";
 const bool is_102_th_tis = false;
 
-#endif  // CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_TIS_H_
+#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_TIS_H_

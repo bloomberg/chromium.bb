@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_IME_RULEBASED_CONTROLLER_H_
-#define CHROMEOS_SERVICES_IME_RULEBASED_CONTROLLER_H_
+#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_ENGINE_H_
+#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_ENGINE_H_
 
 #include <memory>
 #include <string>
@@ -28,10 +28,10 @@ struct ProcessKeyResult {
   std::string commit_text;
 };
 
-class Controller {
+class Engine {
  public:
-  Controller();
-  ~Controller();
+  Engine();
+  ~Engine();
 
   static bool IsImeSupported(const std::string& id);
 
@@ -46,11 +46,11 @@ class Controller {
   std::string current_id_;
   uint32_t process_key_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(Controller);
+  DISALLOW_COPY_AND_ASSIGN(Engine);
 };
 
 }  // namespace rulebased
 }  // namespace ime
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_IME_RULEBASED_CONTROLLER_H_
+#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_ENGINE_H_

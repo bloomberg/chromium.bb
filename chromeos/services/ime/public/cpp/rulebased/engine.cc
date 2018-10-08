@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/ime/rulebased/controller.h"
+#include "chromeos/services/ime/public/cpp/rulebased/engine.h"
 
-#include "chromeos/services/ime/rulebased/rules_data.h"
+#include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
 
 namespace chromeos {
 namespace ime {
 namespace rulebased {
 
-Controller::Controller() : process_key_count_(0) {}
-Controller::~Controller() {}
+Engine::Engine() : process_key_count_(0) {}
+Engine::~Engine() {}
 
 // static
-bool Controller::IsImeSupported(const std::string& id) {
+bool Engine::IsImeSupported(const std::string& id) {
   return RulesData::IsIdSupported(id);
 }
 
-void Controller::Activate(const std::string& id) {
+void Engine::Activate(const std::string& id) {
   if (current_id_ != id) {
     Reset();
     current_id_ = id;
@@ -26,13 +26,13 @@ void Controller::Activate(const std::string& id) {
   }
 }
 
-void Controller::Reset() {
+void Engine::Reset() {
   // TODO(shuchen): Implement this for the ones with transform rules.
   process_key_count_ = 0;
 }
 
-ProcessKeyResult Controller::ProcessKey(const std::string& code,
-                                        uint8_t modifier_state) {
+ProcessKeyResult Engine::ProcessKey(const std::string& code,
+                                    uint8_t modifier_state) {
   process_key_count_++;
 
   ProcessKeyResult res;

@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/services/ime/rulebased/controller.h"
+#include "chromeos/services/ime/public/cpp/rulebased/engine.h"
 
 namespace chromeos {
 namespace ime {
@@ -28,9 +28,9 @@ std::string GetIdFromImeSpec(const std::string& ime_spec) {
 InputEngineContext::InputEngineContext(const std::string& ime) : ime_spec(ime) {
   // The |ime_spec|'s format for rule based imes is: "m17n:<id>".
   std::string id = GetIdFromImeSpec(ime_spec);
-  if (rulebased::Controller::IsImeSupported(id)) {
-    controller = std::make_unique<rulebased::Controller>();
-    controller->Activate(id);
+  if (rulebased::Engine::IsImeSupported(id)) {
+    engine = std::make_unique<rulebased::Engine>();
+    engine->Activate(id);
   }
 }
 
@@ -55,7 +55,7 @@ bool InputEngine::BindRequest(const std::string& ime_spec,
 }
 
 bool InputEngine::IsImeSupported(const std::string& ime_spec) {
-  return rulebased::Controller::IsImeSupported(GetIdFromImeSpec(ime_spec));
+  return rulebased::Engine::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
 void InputEngine::ProcessText(const std::string& message,
@@ -67,14 +67,14 @@ void InputEngine::ProcessText(const std::string& message,
 
 void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                  ProcessMessageCallback callback) {
-  NOTIMPLEMENTED();  // Protobuf message is not used in the basic engine.
+  NOTIMPLEMENTED();  // Protobuf message is not used in the rulebased engine.
 }
 
 const std::string InputEngine::Process(const std::string& message,
                                        const InputEngineContext* context) {
   std::string ime_spec = context->ime_spec;
-  auto& controller = context->controller;
-  if (!controller)
+  auto& engine = context->engine;
+  if (!engine)
     return base::EmptyString();
 
   const char* false_response = "{\"result\":false}";
@@ -106,11 +106,11 @@ const std::string InputEngine::Process(const std::string& message,
 
   const std::string& method_str = method->GetString();
   if (method_str == "countKey") {
-    return std::to_string(controller->process_key_count());
+    return std::to_string(engine->process_key_count());
   }
 
   if (method_str == "reset") {
-    controller->Reset();
+    engine->Reset();
     return "{\"result\":true}";
   }
 
@@ -136,7 +136,7 @@ const std::string InputEngine::Process(const std::string& message,
     modifiers |= rulebased::MODIFIER_CAPSLOCK;
 
   rulebased::ProcessKeyResult res =
-      controller->ProcessKey(code->GetString(), modifiers);
+      engine->ProcessKey(code->GetString(), modifiers);
 
   // The response message is in JSON format as:
   // {
