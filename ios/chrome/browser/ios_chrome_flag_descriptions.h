@@ -110,6 +110,11 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kCaptivePortalMetricsName[];
 extern const char kCaptivePortalMetricsDescription[];
 
+// Title and description for the flag to enable automatically switching to the
+// regular tabs after closing the last incognito tab.
+extern const char kClosingLastIncognitoTabName[];
+extern const char kClosingLastIncognitoTabDescription[];
+
 // Title and description for the flag to enable Contextual Search.
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];

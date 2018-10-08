@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -24,9 +26,12 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -1173,6 +1178,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return 12;
 }
 
+// Sets both the current page and page control's selected page to |page|.
+// Animation is used if |animated| is YES.
+- (void)setCurrentPageAndPageControlSelectedPage:(TabGridPage)page
+                                        animated:(BOOL)animated {
+  if (self.topToolbar.pageControl.selectedPage != page)
+    [self.topToolbar.pageControl setSelectedPage:page animated:animated];
+  if (self.currentPage != page)
+    [self setCurrentPage:page animated:animated];
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -1232,11 +1247,31 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
-  } else if (gridViewController == self.incognitoTabsViewController) {
-    if (count == 0) {
-      [self.topToolbar.pageControl setSelectedPage:TabGridPageRegularTabs
-                                          animated:YES];
-      [self setCurrentPage:TabGridPageRegularTabs animated:YES];
+  } else if (IsClosingLastIncognitoTabEnabled() &&
+             gridViewController == self.incognitoTabsViewController) {
+    // No assumption is made as to the state of the UI. This method can be
+    // called with an incognito view controller and a current page that is not
+    // the incognito tabs.
+    if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
+      // Show the regular tabs to the user if the last incognito tab is closed.
+      if (self.viewLoaded && self.view.window) {
+        // Visibly scroll to the regular tabs panel after a slight delay when
+        // the user is already in the tab switcher.
+        __weak TabGridViewController* weakSelf = self;
+        base::PostDelayedTaskWithTraits(
+            FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+              [weakSelf setCurrentPageAndPageControlSelectedPage:
+                            TabGridPageRegularTabs
+                                                        animated:YES];
+            }),
+            base::TimeDelta::FromMilliseconds(
+                kTabGridScrollAnimationDelayInMilliseconds));
+      } else {
+        // Directly show the regular tabs in tab switcher without animation if
+        // the user was not already in tab switcher.
+        [self setCurrentPageAndPageControlSelectedPage:TabGridPageRegularTabs
+                                              animated:NO];
+      }
     }
   }
 

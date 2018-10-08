@@ -139,6 +139,12 @@ const char kCaptivePortalMetricsDescription[] =
     "When enabled, some network issues will trigger a test to check if a "
     "Captive Portal network is the cause of the issue.";
 
+// TODO(crbug.com/893314) : Remove this flag.
+const char kClosingLastIncognitoTabName[] = "Closing Last Incognito Tab";
+const char kClosingLastIncognitoTabDescription[] =
+    "Automatically switches to the regular tabs panel in the tab grid after "
+    "closing the last incognito tab";
+
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";

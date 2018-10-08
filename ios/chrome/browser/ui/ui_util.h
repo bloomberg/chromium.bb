@@ -39,6 +39,10 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
+// Returns whether the flag is enabled for switching to the regular tabs panel
+// in tab switcher when the last incognito tab is closed.
+bool IsClosingLastIncognitoTabEnabled();
+
 // Returns whether the UI Refresh Location Bar will be used.
 // TODO (crbug.com/884723): Remove all use of this flag.
 bool IsRefreshLocationBarEnabled();

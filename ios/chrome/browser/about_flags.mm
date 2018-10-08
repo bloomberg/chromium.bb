@@ -377,6 +377,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+    {"closing-last-incognito-tab",
+     flag_descriptions::kClosingLastIncognitoTabName,
+     flag_descriptions::kClosingLastIncognitoTabDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kClosingLastIncognitoTab)},
 };
 
 // Add all switches from experimental flags to |command_line|.

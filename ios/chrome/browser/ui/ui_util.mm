@@ -60,6 +60,11 @@ bool IsIPhoneX() {
           (height == 2436 || height == 2688 || height == 1792));
 }
 
+// TODO(crbug.com/893314) : Remove this flag.
+bool IsClosingLastIncognitoTabEnabled() {
+  return base::FeatureList::IsEnabled(kClosingLastIncognitoTab);
+}
+
 bool IsRefreshLocationBarEnabled() {
   return true;
 }
