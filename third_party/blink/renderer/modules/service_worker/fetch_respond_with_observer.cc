@@ -313,6 +313,13 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
 
+    // If we failed to create the WebServiceWorkerStreamHandle then we must
+    // have failed to allocate the mojo::DataPipe.
+    if (!fetch_loader_client->Handle()) {
+      OnResponseRejected(ServiceWorkerResponseError::kDataPipeCreationFailed);
+      return;
+    }
+
     ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
         ->RespondToFetchEventWithResponseStream(
             event_id_, web_response, fetch_loader_client->Handle(),
