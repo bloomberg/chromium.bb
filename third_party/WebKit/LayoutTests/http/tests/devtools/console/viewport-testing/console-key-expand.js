@@ -13,6 +13,14 @@
   const viewport = consoleView._viewport;
   const prompt = consoleView._prompt;
 
+  await TestRunner.evaluateInPagePromise(`
+    var obj1 = Object.create(null);
+    obj1.x = 1;
+
+    var obj2 = Object.create(null);
+    obj2.y = 2;
+  `);
+
   TestRunner.runTestSuite([
     async function testExpandingTraces(next) {
       await clearAndLog(`console.warn("warning")`);
@@ -42,6 +50,101 @@
 
       next();
     },
+
+    async function testNavigateBetweenObjectsAndLogs(next) {
+      await clearAndLog(`console.log("before");console.log("text", obj1, obj2);console.log("after");`, 3);
+      forceSelect(1);
+
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowRight');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowDown');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowDown');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowUp');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowLeft');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      next();
+    },
+
+    async function testExpandingObjects(next) {
+      await clearAndLog(`console.log("before");console.log("text", obj1, obj2);console.log("after");`, 3);
+      forceSelect(1);
+
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowRight');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      // Expand object.
+      press('ArrowRight');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      press('ArrowDown');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      press('ArrowDown');
+      press('ArrowDown');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      // Expand array.
+      press('ArrowRight');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      press('ArrowDown');
+      press('ArrowDown');
+      press('ArrowDown');
+      press('ArrowDown');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      press('ArrowUp');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      // Collapse object.
+      press('ArrowLeft');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      // Select message.
+      press('ArrowLeft');
+      dumpFocus(true, 1, true /* skipObjectCheck */);
+
+      next();
+    },
+
+    async function testExpandingObjectInTrace(next) {
+      await clearAndLog(`console.log("before");console.warn("warning", obj1);console.log("after");`, 3);
+      forceSelect(1);
+
+      dumpFocus(true, 1);
+      press('ArrowRight');
+      dumpFocus(true, 1);
+
+      // Expand object.
+      press('ArrowRight');
+      dumpFocus(true, 1);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      press('ArrowDown');
+      dumpFocus(true, 1);
+      press('ArrowDown');
+      press('ArrowDown');
+      dumpFocus(true, 1);
+
+      press('ArrowUp');
+      dumpFocus(true, 1);
+      press('ArrowUp');
+      dumpFocus(true, 1);
+
+      // Collapse trace.
+      press('ArrowLeft');
+      dumpFocus(true, 1);
+
+      // ArrowLeft on message does not collapse object.
+      press('ArrowLeft');
+      dumpFocus(true, 1);
+
+      next();
+    },
   ]);
 
 
@@ -66,19 +169,21 @@
     eventSender.keyDown(key);
   }
 
-  function dumpFocus() {
-    const firstMessage = consoleView._visibleViewMessages[0];
+  function dumpFocus(activeElement, messageIndex = 0, skipObjectCheck) {
+    const firstMessage = consoleView._visibleViewMessages[messageIndex];
     const hasTrace = !!firstMessage.element().querySelector('.console-message-stack-trace-toggle');
     const hasHiddenStackTrace = firstMessage.element().querySelector('.console-message-stack-trace-wrapper > div.hidden');
-    const hasCollapsedObject = firstMessage.element().querySelector('.console-view-object-properties-section.hidden');
-    const hasExpandedObject = firstMessage.element().querySelector('.console-view-object-properties-section:not(.hidden)');
+    const hasCollapsedObject = firstMessage.element().querySelector('.console-view-object-properties-section:not(.expanded)');
+    const hasExpandedObject = firstMessage.element().querySelector('.console-view-object-properties-section.expanded');
 
     TestRunner.addResult(`Viewport virtual selection: ${viewport._virtualSelectedIndex}`);
 
-    if (hasCollapsedObject) {
-      TestRunner.addResult(`Has object: collapsed`);
-    } else if (hasExpandedObject) {
-      TestRunner.addResult(`Has object: expanded`);
+    if (!skipObjectCheck) {
+      if (hasCollapsedObject) {
+        TestRunner.addResult(`Has object: collapsed`);
+      } else if (hasExpandedObject) {
+        TestRunner.addResult(`Has object: expanded`);
+      }
     }
 
     if (hasTrace) {
@@ -88,5 +193,21 @@
       const expanded = !firstMessage.collapsed();
       TestRunner.addResult(`Is group expanded: ${expanded ? 'YES' : 'NO'}`);
     }
+
+    if (!activeElement)
+      return;
+    var element = document.deepActiveElement();
+    if (!element) {
+      TestRunner.addResult('null');
+      return;
+    }
+    var name = `activeElement: ${element.tagName}`;
+    if (element.id)
+      name += '#' + element.id;
+    else if (element.className)
+      name += '.' + element.className.split(' ').join('.');
+    if (element.deepTextContent())
+      name += '\nactive text: ' + element.deepTextContent();
+    TestRunner.addResult(name);
   }
 })();
