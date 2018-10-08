@@ -41,11 +41,6 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  // Remove after http://crbug.com/882538 is fixed.
-  auto manifest_url_local = manifest_url;
-  base::debug::Alias(&manifest_url_local);
-  CHECK(loader_callback_);
-
   load_timing_info_.request_start_time = base::Time::Now();
   load_timing_info_.request_start = base::TimeTicks::Now();
 
@@ -84,6 +79,17 @@ void AppCacheURLLoaderJob::DeliverErrorResponse() {
 
   if (loader_callback_)
     CallLoaderCallback();
+
+  if (!client_) {
+    // Although all callsites that lead to construction of AppCacheURLLoaderJob
+    // provide a NavigationLoaderInterceptor::LoaderCallback, some use weak
+    // pointers to bind it. So it's possible that in between the time that
+    // AppCacheURLLoaderJob grabs the response info from storage that the
+    // callback is now empty, which leads to client_ not being initialized.
+    DeleteSoon();
+    return;
+  }
+
   NotifyCompleted(net::ERR_FAILED);
 }
 
@@ -177,6 +183,12 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     if (loader_callback_)
       CallLoaderCallback();
 
+    if (!client_) {
+      // See comment in DeliverErrorResponse.
+      DeleteSoon();
+      return;
+    }
+
     info_ = response_info;
     reader_ =
         storage_->CreateResponseReader(manifest_url_, entry_.response_id());
@@ -256,7 +268,6 @@ void AppCacheURLLoaderJob::DeleteSoon() {
 }
 
 void AppCacheURLLoaderJob::SendResponseInfo() {
-  DCHECK(client_);
   // If this is null it means the response information was sent to the client.
   if (!data_pipe_.consumer_handle.is_valid())
     return;
