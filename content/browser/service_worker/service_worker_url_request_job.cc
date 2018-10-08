@@ -586,7 +586,7 @@ blink::mojom::BlobPtr ServiceWorkerURLRequestJob::CreateRequestBodyBlob(
   auto blob_builder =
       std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
   for (const network::DataElement& element : (*body_->elements())) {
-    blob_builder->AppendIPCDataElement(element, nullptr,
+    blob_builder->AppendIPCDataElement(element,
                                        blob_storage_context_->registry());
   }
 

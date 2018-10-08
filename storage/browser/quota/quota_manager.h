@@ -23,7 +23,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
@@ -36,7 +35,6 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 class TaskRunner;
@@ -126,12 +124,11 @@ class STORAGE_EXPORT QuotaManager
 
   static const int64_t kNoLimit;
 
-  QuotaManager(
-      bool is_incognito,
-      const base::FilePath& profile_path,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-      const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
-      const GetQuotaSettingsFunc& get_settings_function);
+  QuotaManager(bool is_incognito,
+               const base::FilePath& profile_path,
+               scoped_refptr<base::SingleThreadTaskRunner> io_thread,
+               scoped_refptr<SpecialStoragePolicy> special_storage_policy,
+               const GetQuotaSettingsFunc& get_settings_function);
 
   const QuotaSettings& settings() const { return settings_; }
   void SetQuotaSettings(const QuotaSettings& settings);

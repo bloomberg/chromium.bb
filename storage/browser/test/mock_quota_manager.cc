@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -33,12 +34,12 @@ MockQuotaManager::StorageInfo::~StorageInfo() = default;
 MockQuotaManager::MockQuotaManager(
     bool is_incognito,
     const base::FilePath& profile_path,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-    const scoped_refptr<SpecialStoragePolicy>& special_storage_policy)
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread,
+    scoped_refptr<SpecialStoragePolicy> special_storage_policy)
     : QuotaManager(is_incognito,
                    profile_path,
-                   io_thread,
-                   special_storage_policy,
+                   std::move(io_thread),
+                   std::move(special_storage_policy),
                    storage::GetQuotaSettingsFunc()),
       weak_factory_(this) {}
 

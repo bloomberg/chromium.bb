@@ -316,7 +316,7 @@ class FileTransportStrategy : public BlobTransportStrategy {
 
  private:
   void OnReply(BlobDataBuilder::FutureFile future_file,
-               const scoped_refptr<ShareableFileReference>& file_reference,
+               scoped_refptr<ShareableFileReference> file_reference,
                base::Optional<base::Time> time_file_modified) {
     if (!time_file_modified) {
       // Writing to the file failed in the renderer.
@@ -325,7 +325,7 @@ class FileTransportStrategy : public BlobTransportStrategy {
     }
 
     bool populate_result =
-        future_file.Populate(file_reference, *time_file_modified);
+        future_file.Populate(std::move(file_reference), *time_file_modified);
     DCHECK(populate_result);
 
     if (--num_unresolved_requests_ == 0)
