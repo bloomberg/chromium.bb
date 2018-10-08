@@ -34,7 +34,6 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -CrSettingsFingerprintProgressArcTest.All
--CrSettingsMultidevicePageTest.All
 -CrSettingsPeoplePageLockScreenTest.All
 -CrSettingsPeoplePageQuickUnlockAuthenticateTest.All
 -CrSettingsPeoplePageSetupPinDialogTest.All
@@ -148,6 +147,7 @@ CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
 CrSettingsMultidevicePageContainerTest.*
 CrSettingsMultidevicePageTest.*
+CrSettingsMultideviceSubpageTest.*
 CrSettingsNonExistentRouteTest.*
 CrSettingsOnStartupPageTest.*
 CrSettingsPaymentsSectionTest.*
