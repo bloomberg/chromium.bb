@@ -65,4 +65,10 @@ public abstract class ListItemViewHolder extends ViewHolder {
      * @param item       The {@link ListItem} to visually represent in this {@link ViewHolder}.
      */
     public abstract void bind(PropertyModel properties, ListItem item);
+
+    /**
+     * Gives subclasses a chance to free up expensive resources when this {@link ViewHolder} is no
+     * longer attached to the parent {@link RecyclerView}.
+     */
+    public void recycle() {}
 }

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.Delegate;
 
 /**
  * The View component of a DateOrderedList.  This takes the DateOrderedListModel and creates the
@@ -59,6 +60,11 @@ class DateOrderedListView {
         public void onBindViewHolder(
                 ListItemViewHolder viewHolder, int position, @Nullable Void payload) {
             viewHolder.bind(mModel.getProperties(), mModel.get(position));
+        }
+
+        @Override
+        public void onViewRecycled(ListItemViewHolder viewHolder) {
+            viewHolder.recycle();
         }
     }
 

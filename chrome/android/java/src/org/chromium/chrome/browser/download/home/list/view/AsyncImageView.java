@@ -85,12 +85,12 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
      */
     public void setAsyncImageDrawable(Factory factory, @Nullable Object identifier) {
         if (mIdentifier != null && identifier != null && mIdentifier.equals(identifier)) return;
-        mIdentifier = identifier;
 
         // This will clear out any outstanding request.
         setImageDrawable(null);
         setForegroundDrawableCompat(mWaitingDrawable);
 
+        mIdentifier = identifier;
         mFactory = factory;
         retrieveDrawableIfNeeded();
     }
@@ -138,7 +138,7 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         // If we ended up swapping out the identifier and somehow this request didn't cancel ignore
         // the response.  This does a direct == comparison instead of .equals() because any new
         // request should have canceled this one (we'll leave null alone though).
-        if (mIdentifier != identifier) return;
+        if (mIdentifier != identifier || !mWaitingForResponse) return;
 
         mCancelable = null;
         mWaitingForResponse = false;
@@ -149,9 +149,10 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
     private void cancelPreviousDrawableRequest() {
         mFactory = null;
 
-        if (mCancelable != null) {
-            mCancelable.run();
+        if (mWaitingForResponse) {
+            if (mCancelable != null) mCancelable.run();
             mCancelable = null;
+            mIdentifier = null;
             mWaitingForResponse = false;
         }
     }
@@ -160,20 +161,19 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         // If width or height are not valid, don't start to retrieve the drawable since the
         // thumbnail may be scaled down to 0.
         if (getWidth() <= 0 || getHeight() <= 0) return;
+        if (mFactory == null) return;
 
-        if (mFactory != null) {
-            // Start to retrieve the drawable.
-            mWaitingForResponse = true;
+        // Start to retrieve the drawable.
+        mWaitingForResponse = true;
 
-            Object localIdentifier = mIdentifier;
-            mCancelable = mFactory.get(d
-                    -> setAsyncImageDrawableResponse(d, localIdentifier),
-                    getWidth(), getHeight());
+        Object localIdentifier = mIdentifier;
+        mCancelable = mFactory.get(drawable
+                -> setAsyncImageDrawableResponse(drawable, localIdentifier),
+                getWidth(), getHeight());
 
-            // If setAsyncImageDrawableResponse is called synchronously, clear mCancelable.
-            if (!mWaitingForResponse) mCancelable = null;
+        // If setAsyncImageDrawableResponse is called synchronously, clear mCancelable.
+        if (!mWaitingForResponse) mCancelable = null;
 
-            mFactory = null;
-        }
+        mFactory = null;
     }
 }

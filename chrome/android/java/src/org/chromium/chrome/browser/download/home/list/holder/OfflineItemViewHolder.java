@@ -95,6 +95,13 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
         }
     }
 
+    @Override
+    public void recycle() {
+        // This should cancel any outstanding async request as well as drop any currently visible
+        // bitmap.
+        mThumbnail.setImageDrawable(null);
+    }
+
     /**
      * Called when a {@link OfflineItemVisuals} are retrieved and are used to build the
      * {@link Drawable} to use for the thumbnail {@link View}.  Can be overridden by subclasses who
