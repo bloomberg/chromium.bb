@@ -21,8 +21,14 @@ void WrapperTypeInfo::WrapperCreated() {
 }
 
 void WrapperTypeInfo::WrapperDestroyed() {
+  ThreadState* const thread_state = ThreadState::Current();
+  // WrapperDestroyed may be called during thread teardown as part of invoking
+  // V8 callbacks in which case ThreadState has already been destroyed.
+  if (!thread_state)
+    return;
+
   ThreadHeapStatsCollector* stats_collector =
-      ThreadState::Current()->Heap().stats_collector();
+      thread_state->Heap().stats_collector();
   stats_collector->DecreaseWrapperCount(1);
   stats_collector->IncreaseCollectedWrapperCount(1);
 }
