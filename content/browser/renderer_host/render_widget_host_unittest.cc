@@ -1561,7 +1561,16 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 // Test that the rendering timeout for newly loaded content fires when enough
 // time passes without receiving a new compositor frame. This test assumes
 // Surface Synchronization is off.
-TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
+// Disabled due to flakiness on Android.  See https://crbug.com/892700.
+#if defined(OS_ANDROID)
+#define MAYBE_NewContentRenderingTimeoutWithoutSurfaceSync \
+  DISABLED_NewContentRenderingTimeoutWithoutSurfaceSync
+#else
+#define MAYBE_NewContentRenderingTimeoutWithoutSurfaceSync \
+  NewContentRenderingTimeoutWithoutSurfaceSync
+#endif
+TEST_F(RenderWidgetHostTest,
+       NewContentRenderingTimeoutWithoutSurfaceSync_MAYBE) {
   // If Surface Synchronization is on, we have a separate code path for
   // cancelling new content rendering timeout that is tested separately.
   if (features::IsSurfaceSynchronizationEnabled())
