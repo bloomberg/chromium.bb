@@ -77,6 +77,7 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
     printer.AddNode(properties.PaintOffsetTranslation());
+    printer.AddNode(properties.StickyTranslation());
     printer.AddNode(properties.Transform());
     printer.AddNode(properties.Perspective());
     printer.AddNode(properties.ReplacedContentTransform());
@@ -118,8 +119,11 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
       PropertyTreePrinter<EffectPaintPropertyNode>& printer) {
     printer.AddNode(properties.Effect());
     printer.AddNode(properties.Filter());
+    printer.AddNode(properties.VerticalScrollbarEffect());
+    printer.AddNode(properties.HorizontalScrollbarEffect());
     printer.AddNode(properties.Mask());
     printer.AddNode(properties.ClipPath());
+    printer.AddNode(properties.LinkHighlightEffect());
   }
 };
 
@@ -169,6 +173,7 @@ void UpdateDebugNames(const LayoutObject& object,
                       ObjectPaintProperties& properties) {
   SetDebugName(properties.PaintOffsetTranslation(), "PaintOffsetTranslation",
                object);
+  SetDebugName(properties.StickyTranslation(), "StickyTranslation", object);
   SetDebugName(properties.Transform(), "Transform", object);
   SetDebugName(properties.Perspective(), "Perspective", object);
   SetDebugName(properties.ReplacedContentTransform(),
@@ -189,8 +194,13 @@ void UpdateDebugNames(const LayoutObject& object,
 
   SetDebugName(properties.Effect(), "Effect", object);
   SetDebugName(properties.Filter(), "Filter", object);
+  SetDebugName(properties.VerticalScrollbarEffect(), "VerticalScrollbarEffect",
+               object);
+  SetDebugName(properties.HorizontalScrollbarEffect(),
+               "HorizontalScrollbarEffect", object);
   SetDebugName(properties.Mask(), "Mask", object);
   SetDebugName(properties.ClipPath(), "ClipPath", object);
+  SetDebugName(properties.LinkHighlightEffect(), "LinkHighlightEffect", object);
   SetDebugName(properties.Scroll(), "Scroll", object);
 }
 
