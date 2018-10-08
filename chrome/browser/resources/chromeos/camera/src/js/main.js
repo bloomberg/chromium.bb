@@ -11,9 +11,10 @@ var camera = camera || {};
 
 /**
  * Creates the Camera App main object.
+ * @param {number} aspectRatio Aspect ratio of app window when launched.
  * @constructor
  */
-camera.Camera = function() {
+camera.Camera = function(aspectRatio) {
   /**
    * @type {camera.Camera.Context}
    * @private
@@ -60,6 +61,12 @@ camera.Camera = function() {
    * @private
    */
   this.resizeWindowTimeout_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.aspectRatio_ = aspectRatio;
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -266,7 +273,7 @@ camera.Camera.prototype.updateWindowSize_ = function() {
   var appWindow = chrome.app.window.current();
   var inner = appWindow.innerBounds;
   var innerW = inner.minWidth;
-  var innerH = Math.round(innerW / appWindow.aspectRatio);
+  var innerH = Math.round(innerW / this.aspectRatio_);
 
   // Limit window resizing capability by setting min-height. Don't limit
   // max-height here as it may disable maximize/fullscreen capabilities.
@@ -324,7 +331,7 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
  */
 camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
   if (aspectRatio) {
-    chrome.app.window.current().aspectRatio = aspectRatio;
+    this.aspectRatio_ = aspectRatio;
     this.updateWindowSize_();
   }
 };
@@ -363,20 +370,14 @@ camera.Camera.prototype.onErrorRecovered_ = function(identifier) {
 camera.Camera.instance_ = null;
 
 /**
- * Returns the singleton instance of the Camera class.
- * @return {camera.Camera} Camera object.
- */
-camera.Camera.getInstance = function() {
-  if (!camera.Camera.instance_)
-    camera.Camera.instance_ = new camera.Camera();
-  return camera.Camera.instance_;
-};
-
-/**
  * Creates the Camera object and starts screen capturing.
  */
-document.addEventListener('DOMContentLoaded', function() {
-  camera.Camera.getInstance().start();
-  chrome.app.window.current().show();
+document.addEventListener('DOMContentLoaded', () => {
+  var appWindow = chrome.app.window.current();
+  if (!camera.Camera.instance_) {
+    var inner = appWindow.innerBounds;
+    camera.Camera.instance_ = new camera.Camera(inner.width / inner.height);
+  }
+  camera.Camera.instance_.start();
+  appWindow.show();
 });
-
