@@ -11,6 +11,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
@@ -190,6 +191,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     redirect_location_header_ = redirect_location_header;
   }
 
+  // Tells this controller to respond to fetch events with a blob response body.
   void RespondWithBlob(base::Optional<std::vector<uint8_t>> metadata,
                        std::string body) {
     response_mode_ = ResponseMode::kBlob;
@@ -199,6 +201,14 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     mojo::MakeStrongBinding(
         std::make_unique<FakeBlob>(std::move(metadata), std::move(body)),
         mojo::MakeRequest(&blob_body_->blob));
+  }
+
+  // Tells this controller to respond to fetch events with a 206 partial
+  // response, returning a blob composed of the requested bytes of |body|
+  // according to the request headers.
+  void RespondWithBlobRange(std::string body) {
+    response_mode_ = ResponseMode::kBlobRange;
+    blob_range_body_ = body;
   }
 
   void ReadRequestBody(std::string* out_string) {
@@ -270,6 +280,44 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
             blink::mojom::ServiceWorkerEventStatus::COMPLETED,
             base::TimeTicks());
         break;
+
+      case ResponseMode::kBlobRange: {
+        // Parse the Range header.
+        std::string range_header;
+        std::vector<net::HttpByteRange> ranges;
+        ASSERT_TRUE(params->request.headers.GetHeader(
+            net::HttpRequestHeaders::kRange, &range_header));
+        ASSERT_TRUE(net::HttpUtil::ParseRangeHeader(range_header, &ranges));
+        ASSERT_EQ(1u, ranges.size());
+        ASSERT_TRUE(ranges[0].ComputeBounds(blob_range_body_.size()));
+        const net::HttpByteRange& range = ranges[0];
+
+        // Build a Blob composed of the requested bytes from |blob_range_body_|.
+        size_t start = static_cast<size_t>(range.first_byte_position());
+        size_t end = static_cast<size_t>(range.last_byte_position());
+        size_t size = end - start + 1;
+        std::string body = blob_range_body_.substr(start, size);
+        auto blob = blink::mojom::SerializedBlob::New();
+        blob->uuid = "dummy-blob-uuid";
+        blob->size = size;
+        mojo::MakeStrongBinding(std::make_unique<FakeBlob>(base::nullopt, body),
+                                mojo::MakeRequest(&blob->blob));
+
+        // Respond with a 206 response.
+        auto response = OkResponse(std::move(blob));
+        response->status_code = 206;
+        response->headers.emplace(
+            "Content-Range", base::StringPrintf("bytes %zu-%zu/%zu", start, end,
+                                                blob_range_body_.size()));
+        response_callback->OnResponse(
+            std::move(response),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+            base::TimeTicks::Now());
+        break;
+      }
+
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(
             blink::mojom::ServiceWorkerFetchEventTiming::New());
@@ -320,6 +368,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     kAbort,
     kStream,
     kBlob,
+    kBlobRange,
     kFallbackResponse,
     kErrorResponse,
     kRedirectResponse
@@ -338,6 +387,9 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   // For ResponseMode::kBlob.
   blink::mojom::SerializedBlobPtr blob_body_;
+
+  // For ResponseMode::kBlobRange.
+  std::string blob_range_body_;
 
   // For ResponseMode::kRedirectResponse
   std::string redirect_location_header_;
@@ -537,6 +589,30 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     // getting EmbeddedTestServer working with these tests (probably
     // CORSFallbackResponse is too heavy). We also have Web Platform Tests that
     // cover this case in fetch-event.https.html.
+  }
+
+  // Performs a range request using |range_header| and returns the resulting
+  // client after completion.
+  std::unique_ptr<network::TestURLLoaderClient> DoRangeRequest(
+      const std::string& range_header) {
+    network::mojom::URLLoaderFactoryPtr factory =
+        CreateSubresourceLoaderFactory();
+    network::ResourceRequest request =
+        CreateRequest(GURL("https://www.example.com/big-file"));
+    request.headers.SetHeader("Range", range_header);
+    network::mojom::URLLoaderPtr loader;
+    std::unique_ptr<network::TestURLLoaderClient> client;
+    StartRequest(factory, request, &loader, &client);
+    client->RunUntilComplete();
+    return client;
+  }
+
+  std::string TakeResponseBody(network::TestURLLoaderClient* client) {
+    std::string body;
+    EXPECT_TRUE(client->response_body().is_valid());
+    EXPECT_TRUE(
+        mojo::BlockingCopyToString(client->response_body_release(), &body));
+    return body;
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -1210,6 +1286,74 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackWithRequestBody_DataPipe) {
   request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
 
   RunFallbackWithRequestBodyTest(std::move(request_body), kData);
+}
+
+// Test a range request that the service worker responds to with a 200
+// (non-ranged) response. The client should get the entire response as-is from
+// the service worker.
+TEST_F(ServiceWorkerSubresourceLoaderTest, RangeRequest_200Response) {
+  // Construct the Blob to respond with.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  fake_controller_.RespondWithBlob(base::nullopt, kResponseBody);
+
+  // Perform the request.
+  std::unique_ptr<network::TestURLLoaderClient> client =
+      DoRangeRequest("bytes=5-13");
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the response.
+  const network::ResourceResponseHead& info = client->response_head();
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info.content_length);
+  EXPECT_FALSE(info.headers->HasHeader("Content-Range"));
+  EXPECT_EQ(kResponseBody, TakeResponseBody(client.get()));
+}
+
+// Test a range request that the service worker responds to with a 206 ranged
+// response. The client should get the partial response as-is from the service
+// worker.
+TEST_F(ServiceWorkerSubresourceLoaderTest, RangeRequest_206Response) {
+  // Tell the controller to respond with a 206 response.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  fake_controller_.RespondWithBlobRange(kResponseBody);
+
+  // Perform the request.
+  std::unique_ptr<network::TestURLLoaderClient> client =
+      DoRangeRequest("bytes=5-13");
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the response.
+  const network::ResourceResponseHead& info = client->response_head();
+  EXPECT_EQ(206, info.headers->response_code());
+  std::string range;
+  ASSERT_TRUE(info.headers->GetNormalizedHeader("Content-Range", &range));
+  EXPECT_EQ("bytes 5-13/33", range);
+  EXPECT_EQ(9, info.content_length);
+  EXPECT_EQ("is sample", TakeResponseBody(client.get()));
+}
+
+// Test a range request that the service worker responds to with a 206 ranged
+// response. The requested range has an unbounded end. The client should get the
+// partial response as-is from the service worker.
+TEST_F(ServiceWorkerSubresourceLoaderTest,
+       RangeRequest_UnboundedRight_206Response) {
+  // Tell the controller to respond with a 206 response.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  fake_controller_.RespondWithBlobRange(kResponseBody);
+
+  // Perform the request.
+  std::unique_ptr<network::TestURLLoaderClient> client =
+      DoRangeRequest("bytes=5-");
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the response.
+  const network::ResourceResponseHead& info = client->response_head();
+  EXPECT_EQ(206, info.headers->response_code());
+  std::string range;
+  ASSERT_TRUE(info.headers->GetNormalizedHeader("Content-Range", &range));
+  EXPECT_EQ("bytes 5-32/33", range);
+  EXPECT_EQ(28, info.content_length);
+  EXPECT_EQ("is sample text for the Blob.", TakeResponseBody(client.get()));
 }
 
 }  // namespace service_worker_subresource_loader_unittest
