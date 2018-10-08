@@ -3406,6 +3406,7 @@ jumbo_split_static_library("ui") {
       "//apps",
       "//chrome/browser/apps",
       "//chrome/browser/apps/platform_apps",  # TODO(loyso): Remove this dep.
+      "//chrome/browser/apps/platform_apps/api",
       "//chrome/browser/extensions",
       "//chrome/common/extensions/api",
       "//components/drive",
@@ -3417,6 +3418,7 @@ jumbo_split_static_library("ui") {
     ]
     allow_circular_includes_from += [
       "//chrome/browser/apps/platform_apps",
+      "//chrome/browser/apps/platform_apps/api",
       "//chrome/browser/extensions",
     ]
     sources += [

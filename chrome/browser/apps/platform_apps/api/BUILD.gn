@@ -17,6 +17,7 @@ function_registration("api_registration") {
   root_namespace = apps_api_root_namespace
 
   deps = [
+    "//chrome/browser/apps/platform_apps/api",
     "//extensions/browser",
   ]
 }
@@ -43,7 +44,6 @@ source_set("api") {
     # remove), but any that depend on //chrome/browser:browser can't.
     "//chrome/browser/apps/platform_apps/api/music_manager_private",
     "//chrome/browser/extensions",
-    "//chrome/browser/ui",
     "//chrome/common",
     "//chrome/common/apps/platform_apps/api",
     "//chrome/services/media_gallery_util/public/cpp",
@@ -64,7 +64,6 @@ source_set("api") {
 
     deps += [
       "//chrome:strings",
-      "//chrome/browser/chromeos",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
       "//components/account_id",
@@ -76,5 +75,10 @@ source_set("api") {
     ]
   }
 
-  visibility = [ "//chrome/browser" ]
+  visibility = [
+    "//chrome/browser",
+    "//chrome/browser/chromeos",
+    "//chrome/browser/ui",
+    ":api_registration",
+  ]
 }
