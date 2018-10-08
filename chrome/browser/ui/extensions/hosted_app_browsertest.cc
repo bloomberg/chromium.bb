@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -701,47 +702,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForHTTPSAppHTTPUrl) {
                                  app_url.ReplaceComponents(scheme_http), true);
 }
 
-// Check that location bar is not shown for apps hosted within extensions pages.
-// This simulates a case where the user has manually navigated to a page hosted
-// within an extension, then added it as a bookmark app.
-// Regression test for https://crbug.com/828233.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForExtensionPage) {
-  // Test only applies for bookmark apps.
-  if (app_type() != AppType::BOOKMARK_APP)
-    return;
-
-  // Note: This involves the creation of *two* extensions: The first is a
-  // regular (non-app) extension with a popup page. The second is a bookmark app
-  // created from the popup page URL (allowing the extension's popup page to be
-  // loaded in a window).
-
-  // Install the extension that has the popup page.
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
-  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
-
-  // Install the bookmark app that links to the extension's popup page.
-  GURL popup_url("chrome-extension://" + last_loaded_extension_id() +
-                 "/popup.html");
-  // TODO(mgiuca): Abstract this logic to share code with InstallPWA (which does
-  // almost the same thing, but also sets a scope).
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = popup_url;
-  app_ = InstallBookmarkApp(web_app_info);
-
-  ui_test_utils::UrlLoadObserver url_observer(
-      popup_url, content::NotificationService::AllSources());
-  app_browser_ = LaunchAppBrowser(app_);
-  url_observer.Wait();
-
-  CHECK(app_browser_);
-  CHECK(app_browser_ != browser());
-
-  // Navigate to the app's launch page; the location bar should not be visible,
-  // because extensions pages are secure.
-  NavigateAndCheckForLocationBar(app_browser_, popup_url, false);
-}
-
 // Check that the location bar is shown correctly for apps that specify start
 // URLs without the 'www.' prefix.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarForAppWithoutWWW) {
@@ -851,38 +811,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
   EXPECT_EQ("This page has no title.", result);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
-  if (app_type() != AppType::BOOKMARK_APP)
-    return;
-
-  {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL(kExampleURL);
-    web_app_info.scope = GURL(kExampleURL);
-    web_app_info.theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-    Browser* app_browser = LaunchAppBrowser(app);
-
-    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
-              app->id());
-    EXPECT_EQ(SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE),
-              app_browser->hosted_app_controller()->GetThemeColor().value());
-  }
-  {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL("http://example.org/2");
-    web_app_info.scope = GURL("http://example.org/");
-    web_app_info.theme_color = base::Optional<SkColor>();
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-    Browser* app_browser = LaunchAppBrowser(app);
-
-    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
-              app->id());
-    EXPECT_FALSE(
-        app_browser->hosted_app_controller()->GetThemeColor().has_value());
-  }
-}
-
 // Check that no assertions are hit when showing a permission request bubble.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, PermissionBubble) {
   ASSERT_TRUE(https_server()->Start());
@@ -902,29 +830,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, PermissionBubble) {
   EXPECT_TRUE(content::ExecuteScript(
       render_frame_host,
       "navigator.geolocation.getCurrentPosition(function(){});"));
-}
-
-// Ensure that hosted app windows with blank titles don't display the URL as a
-// default window title.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, Title) {
-  if (app_type() != AppType::BOOKMARK_APP)
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("app.site.com", "/empty.html");
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  Browser* app_browser = LaunchAppBrowser(app);
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
-  NavigateToURLAndWait(app_browser, embedded_test_server()->GetURL(
-                                        "app.site.com", "/simple.html"));
-  EXPECT_EQ(base::ASCIIToUTF16("OK"),
-            app_browser->GetWindowTitleForCurrentTab(false));
 }
 
 // Tests that regular Hosted Apps and Bookmark Apps can still load mixed
@@ -1414,6 +1319,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfoOpensPageInfo) {
   GetPageInfoDialogCreatedCallbackForTesting().Reset();
 }
 #endif
+
+// Check that the location bar is shown correctly with a System App.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       ShouldShowLocationBarForSystemApp) {
+  const GURL app_url(chrome::kChromeUISettingsURL);
+
+  SetupAppWithURL(app_url);
+
+  // Navigate to the app's launch page; the location bar should be hidden.
+  NavigateAndCheckForLocationBar(app_browser_, app_url, false);
+}
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
   base::HistogramTester histograms;
@@ -2524,6 +2440,95 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
                             "window.open('', 'bg2').document.body.innerText"));
 }
 
+using BookmarkAppOnlyTest = HostedAppTest;
+
+IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ThemeColor) {
+  {
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = GURL(kExampleURL);
+    web_app_info.scope = GURL(kExampleURL);
+    web_app_info.theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
+    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    Browser* app_browser = LaunchAppBrowser(app);
+
+    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
+              app->id());
+    EXPECT_EQ(SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE),
+              app_browser->hosted_app_controller()->GetThemeColor().value());
+  }
+  {
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = GURL("http://example.org/2");
+    web_app_info.scope = GURL("http://example.org/");
+    web_app_info.theme_color = base::Optional<SkColor>();
+    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    Browser* app_browser = LaunchAppBrowser(app);
+
+    EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
+              app->id());
+    EXPECT_FALSE(
+        app_browser->hosted_app_controller()->GetThemeColor().has_value());
+  }
+}
+
+// Check that location bar is not shown for apps hosted within extensions pages.
+// This simulates a case where the user has manually navigated to a page hosted
+// within an extension, then added it as a bookmark app.
+// Regression test for https://crbug.com/828233.
+IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest,
+                       ShouldShowLocationBarForExtensionPage) {
+  // Note: This involves the creation of *two* extensions: The first is a
+  // regular (non-app) extension with a popup page. The second is a bookmark app
+  // created from the popup page URL (allowing the extension's popup page to be
+  // loaded in a window).
+
+  // Install the extension that has the popup page.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
+  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  // Install the bookmark app that links to the extension's popup page.
+  GURL popup_url("chrome-extension://" + last_loaded_extension_id() +
+                 "/popup.html");
+  // TODO(mgiuca): Abstract this logic to share code with InstallPWA (which does
+  // almost the same thing, but also sets a scope).
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = popup_url;
+  app_ = InstallBookmarkApp(web_app_info);
+
+  ui_test_utils::UrlLoadObserver url_observer(
+      popup_url, content::NotificationService::AllSources());
+  app_browser_ = LaunchAppBrowser(app_);
+  url_observer.Wait();
+
+  CHECK(app_browser_);
+  CHECK(app_browser_ != browser());
+
+  // Navigate to the app's launch page; the location bar should not be visible,
+  // because extensions pages are secure.
+  NavigateAndCheckForLocationBar(app_browser_, popup_url, false);
+}
+
+// Ensure that hosted app windows with blank titles don't display the URL as a
+// default window title.
+IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, Title) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("app.site.com", "/empty.html");
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  Browser* app_browser = LaunchAppBrowser(app);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
+  NavigateToURLAndWait(app_browser, embedded_test_server()->GetURL(
+                                        "app.site.com", "/simple.html"));
+  EXPECT_EQ(base::ASCIIToUTF16("OK"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+}
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppTest,
                         ::testing::Combine(kAppTypeValues, ::testing::Bool()));
@@ -2531,6 +2536,12 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppPWAOnlyTest,
                         ::testing::Values(std::tuple<AppType, bool>{
                             AppType::BOOKMARK_APP, true}));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    BookmarkAppOnlyTest,
+    ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
+                       ::testing::Bool()));
+
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     HostedAppProcessModelTest,
