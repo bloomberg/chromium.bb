@@ -39,6 +39,7 @@
 #include <memory>
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
@@ -46,6 +47,8 @@
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_mixed_content.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -110,6 +113,35 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::WebURLRequest;
+
+namespace {
+
+bool ShouldAutoupgrade(blink::WebMixedContentContextType type) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kMixedContentAutoupgrade) ||
+      type == blink::WebMixedContentContextType::kNotMixedContent) {
+    return false;
+  }
+
+  std::string autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
+      blink::features::kMixedContentAutoupgrade,
+      blink::features::kMixedContentAutoupgradeModeParamName);
+
+  if (autoupgrade_mode ==
+      blink::features::kMixedContentAutoupgradeModeBlockable) {
+    return type == blink::WebMixedContentContextType::kBlockable ||
+           type == blink::WebMixedContentContextType::kShouldBeBlockable;
+  }
+  if (autoupgrade_mode ==
+      blink::features::kMixedContentAutoupgradeModeOptionallyBlockable) {
+    return type == blink::WebMixedContentContextType::kOptionallyBlockable;
+  }
+
+  // Otherwise we default to autoupgrading all mixed content.
+  return true;
+}
+
+}  // namespace
 
 namespace blink {
 
@@ -1673,9 +1705,16 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     return;
 
   if (!(origin_context->GetSecurityContext().GetInsecureRequestPolicy() &
-        kUpgradeInsecureRequests) &&
-      !base::FeatureList::IsEnabled(features::kMixedContentAutoupgrade)) {
-    return;
+        kUpgradeInsecureRequests)) {
+    mojom::RequestContextType context = resource_request.GetRequestContext();
+    // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
+    // correctly.
+    if (context == mojom::RequestContextType::UNSPECIFIED ||
+        !origin_context->Url().ProtocolIs("https") ||
+        !ShouldAutoupgrade(
+            WebMixedContent::ContextTypeFromRequestContext(context, false))) {
+      return;
+    }
   }
 
   // Nested frames are always upgraded on the browser process.

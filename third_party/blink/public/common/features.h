@@ -38,6 +38,11 @@ BLINK_COMMON_EXPORT extern const char
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentColorParameterName[];
 
+BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeParamName[];
+BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];
+BLINK_COMMON_EXPORT extern const char
+    kMixedContentAutoupgradeModeOptionallyBlockable[];
+
 }  // namespace features
 }  // namespace blink
 
