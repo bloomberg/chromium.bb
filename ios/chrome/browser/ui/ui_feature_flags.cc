@@ -7,6 +7,10 @@
 const base::Feature kFirstResponderKeyWindow{"FirstResponderKeyWindow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(crbug.com/893314) : Remove this flag.
+const base::Feature kClosingLastIncognitoTab{"ClosingLastIncognitoTab",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kCopyImage{"CopyImage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
