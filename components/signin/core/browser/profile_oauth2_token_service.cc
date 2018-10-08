@@ -91,42 +91,45 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
+  DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+            GetDelegate()->load_credentials_state());
+  DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+            GetDelegate()->load_credentials_state());
+
+  all_credentials_loaded_ = true;
+
   // Ensure the device ID is not empty, and recreate it if all tokens were
   // cleared during the loading process.
   RecreateDeviceIdIfNeeded();
+}
 
-  all_credentials_loaded_ = true;
+bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
+  switch (GetDelegate()->load_credentials_state()) {
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
+      // LoadCredentials has not finished.
+      return false;
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
+      // LoadCredentials finished, but with errors
+      return false;
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
+      // Load credentials finished with success.
+      return true;
+  }
 }
 
 void ProfileOAuth2TokenService::RecreateDeviceIdIfNeeded() {
 // On ChromeOS the device ID is not managed by the token service.
 #if !defined(OS_CHROMEOS)
-  // Re-create a new device ID if needed.
-  switch (GetDelegate()->GetLoadCredentialsState()) {
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN:
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
-      // TODO(droger): Add a DCHECK here, because this would mean that the token
-      // service is being used before tokens are loaded. This currently would
-      // fire in tests though.
-      return;
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
-    case OAuth2TokenServiceDelegate::
-        LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
-      // Do not recreate a new device ID if Chrome fails to decrypt tokens as it
-      // may successfully load them on the next restart.
-      return;
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
-    case OAuth2TokenServiceDelegate::
-        LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
-    case OAuth2TokenServiceDelegate::
-        LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
-      // this is the only case when we recreate the device ID.
-      if (GetAccounts().empty())
-        signin::RecreateSigninScopedDeviceId(user_prefs_);
-      return;
+  if (AreAllCredentialsLoaded() && HasLoadCredentialsFinishedWithNoErrors() &&
+      GetAccounts().empty()) {
+    signin::RecreateSigninScopedDeviceId(user_prefs_);
   }
-
-  NOTREACHED();
 #endif
 }

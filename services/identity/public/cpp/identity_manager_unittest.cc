@@ -369,6 +369,7 @@ class IdentityManagerTest : public testing::Test {
                                      "identity_manager_unittest",
                                      &signin_client_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
@@ -416,6 +417,11 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_observer_.reset();
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
+
+    if (signin_manager_) {
+      signin_manager_->Shutdown();
+      signin_manager_.reset();
+    }
 
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)

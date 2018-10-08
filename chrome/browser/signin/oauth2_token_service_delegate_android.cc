@@ -463,6 +463,10 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded";
+
+  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
+  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+
   JNIEnv* env = AttachCurrentThread();
   Java_OAuth2TokenService_notifyRefreshTokensLoaded(env, java_ref_);
   OAuth2TokenServiceDelegate::FireRefreshTokensLoaded();
@@ -486,6 +490,8 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 
 void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
     const std::string& primary_account_id) {
+  DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
+  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
   if (primary_account_id.empty()) {
     FireRefreshTokensLoaded();
     return;

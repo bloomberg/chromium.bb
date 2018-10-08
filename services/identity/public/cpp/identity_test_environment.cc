@@ -80,6 +80,7 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal(
           &signin_client_,
           use_fake_url_loader_for_gaia_cookie_manager) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
 

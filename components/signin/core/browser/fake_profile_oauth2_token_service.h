@@ -47,8 +47,8 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
     base::WeakPtr<RequestImpl> request;
   };
 
-  FakeProfileOAuth2TokenService(PrefService* user_prefs);
-  explicit FakeProfileOAuth2TokenService(
+  explicit FakeProfileOAuth2TokenService(PrefService* user_prefs);
+  FakeProfileOAuth2TokenService(
       PrefService* user_prefs,
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~FakeProfileOAuth2TokenService() override;

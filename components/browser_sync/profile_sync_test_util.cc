@@ -175,6 +175,7 @@ void RegisterPrefsForProfileSyncService(
     user_prefs::PrefRegistrySyncable* registry) {
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
+  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
   SigninManagerBase::RegisterProfilePrefs(registry);
   SigninManagerBase::RegisterPrefs(registry);
 }

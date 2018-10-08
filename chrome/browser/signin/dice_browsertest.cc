@@ -1057,9 +1057,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
   EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
   EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
   EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  // TODO(msarda): We still load the old primary account from prefs, so the
-  // AccountTrackerService is non-empty.
-  // EXPECT_TRUE(GetAccountTrackerService()->GetAccounts().empty());
+  EXPECT_TRUE(GetAccountTrackerService()->GetAccounts().empty());
 }
 
 // Checks that Dice is disabled in incognito mode.

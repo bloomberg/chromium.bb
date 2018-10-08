@@ -343,6 +343,7 @@ AccountReconcilorTest::AccountReconcilorTest()
                       &cookie_manager_service_) {
 #endif
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
   pref_service_.registry()->RegisterBooleanPref(

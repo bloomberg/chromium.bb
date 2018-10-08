@@ -227,7 +227,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
 TEST_F(CrOSOAuthDelegateTest, RefreshTokenIsAvailableForGaiaAccounts) {
   EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
                 LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            delegate_->GetLoadCredentialsState());
+            delegate_->load_credentials_state());
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
 

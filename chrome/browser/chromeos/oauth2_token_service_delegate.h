@@ -57,7 +57,6 @@ class ChromeOSOAuth2TokenServiceDelegate
                          const std::string& refresh_token) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  LoadCredentialsState GetLoadCredentialsState() const override;
   void RevokeCredentials(const std::string& account_id) override;
   void RevokeAllCredentials() override;
   const net::BackoffEntry* BackoffEntry() const override;
@@ -84,9 +83,6 @@ class ChromeOSOAuth2TokenServiceDelegate
   // Callback handler for |AccountManager::GetAccounts|.
   void GetAccountsCallback(
       std::vector<AccountManager::AccountKey> account_keys);
-
-  LoadCredentialsState load_credentials_state_ =
-      LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED;
 
   std::unique_ptr<AccountMapperUtil> account_mapper_util_;
 

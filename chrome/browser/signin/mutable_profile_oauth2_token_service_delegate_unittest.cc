@@ -374,11 +374,11 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   oauth2_service_delegate_->RevokeAllCredentials();
 
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
@@ -391,14 +391,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   // Perform a load from an empty DB.
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("account_id");
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                     CREDENTIALS_MISSING),
@@ -438,10 +438,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   oauth2_service_delegate_->LoadCredentials("account_id");
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             signin_error_controller_.auth_error());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
@@ -478,13 +478,13 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
   // Perform a load from an empty DB.
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("");
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   EXPECT_EQ(0, auth_error_changed_count_);
@@ -505,10 +505,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   oauth2_service_delegate_->LoadCredentials("");
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
@@ -565,7 +565,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       secondary_account.account_id));
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -606,7 +606,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       secondary_account.account_id));
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -645,7 +645,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -692,7 +692,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
           .GetInvalidGaiaCredentialsReason());
   EXPECT_EQ(OAuth2TokenServiceDelegate::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
-            oauth2_service_delegate_->GetLoadCredentialsState());
+            oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
