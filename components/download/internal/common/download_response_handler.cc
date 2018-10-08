@@ -220,9 +220,10 @@ void DownloadResponseHandler::OnComplete(
     return;
   }
 
-  // OnComplete() called without OnReceiveResponse(). This should only
+  // OnComplete() called without OnResponseStarted(). This should only
   // happen when the request was aborted.
-  create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
+  if (!create_info_)
+    create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
   create_info_->result = reason;
 
   OnResponseStarted(mojom::DownloadStreamHandlePtr());
