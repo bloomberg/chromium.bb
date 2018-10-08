@@ -476,6 +476,10 @@
     },
   },
   'content_unittests': {
+    'remove_from': [
+      # chromium.fyi
+      'fuchsia-fyi-arm64-rel',  # https://crbug.com/881334
+    ],
     'modifications': {
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
