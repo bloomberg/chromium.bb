@@ -41,6 +41,12 @@ const char kTestData[] = "Any data.";
 
 namespace explore_sites {
 
+class TestingDeviceDelegate : public ExploreSitesFetcher::DeviceDelegate {
+ public:
+  TestingDeviceDelegate() = default;
+  float GetScaleFactorFromDevice() override { return 1.5; }
+};
+
 // TODO(freedjm): Add tests for the headers.
 class ExploreSitesFetcherTest : public testing::Test {
  public:
@@ -249,6 +255,7 @@ std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcherTest::CreateFetcher(
           test_shared_url_loader_factory_, StoreResult());
   if (disable_retry)
     fetcher->disable_retry_for_testing();
+  fetcher->SetDeviceDelegateForTest(std::make_unique<TestingDeviceDelegate>());
   fetcher->Start();
   return fetcher;
 }
@@ -328,6 +335,7 @@ TEST_F(ExploreSitesFetcherTest, TestHeaders) {
   net::HttpRequestHeaders headers = last_resource_request.headers;
   std::string content_type;
   std::string languages;
+  std::string scale_factor;
   bool success;
 
   success = headers.HasHeader("x-goog-api-key");
@@ -336,15 +344,19 @@ TEST_F(ExploreSitesFetcherTest, TestHeaders) {
   success = headers.HasHeader("X-Client-Version");
   EXPECT_TRUE(success);
 
+  success = headers.GetHeader("X-Device-Scale-Factor", &scale_factor);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(1.5, std::stof(scale_factor));
+
   success =
       headers.GetHeader(net::HttpRequestHeaders::kContentType, &content_type);
   EXPECT_TRUE(success);
-  EXPECT_EQ(content_type, "application/x-protobuf");
+  EXPECT_EQ("application/x-protobuf", content_type);
 
   success =
       headers.GetHeader(net::HttpRequestHeaders::kAcceptLanguage, &languages);
   EXPECT_TRUE(success);
-  EXPECT_EQ(languages, kAcceptLanguages);
+  EXPECT_EQ(kAcceptLanguages, languages);
 
   // The finch header should not be set since the experiment is not on.
   success = headers.HasHeader("X-Google-Chrome-Experiment-Tag");

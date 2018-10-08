@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
@@ -153,6 +154,7 @@ ExploreSitesFetcher::ExploreSitesFetcher(
       max_failure_count_(is_immediate_fetch
                              ? kMaxFailureCountForImmediateFetch
                              : kMaxFailureCountForBackgroundFetch),
+      device_delegate_(std::make_unique<DeviceDelegate>()),
       callback_(std::move(callback)),
       url_loader_factory_(loader_factory),
       weak_factory_(this) {
@@ -183,6 +185,10 @@ void ExploreSitesFetcher::Start() {
   resource_request->headers.SetHeader("X-Client-Version", client_version_);
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                       kRequestContentType);
+  std::string scale_factor =
+      std::to_string(device_delegate_->GetScaleFactorFromDevice());
+  resource_request->headers.SetHeader("X-Device-Scale-Factor", scale_factor);
+
   if (!accept_languages_.empty()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAcceptLanguage, accept_languages_);
@@ -202,6 +208,15 @@ void ExploreSitesFetcher::Start() {
       url_loader_factory_.get(),
       base::BindOnce(&ExploreSitesFetcher::OnSimpleLoaderComplete,
                      weak_factory_.GetWeakPtr()));
+}
+
+float ExploreSitesFetcher::DeviceDelegate::GetScaleFactorFromDevice() {
+  return ExploreSitesBridge::GetScaleFactorFromDevice();
+}
+
+void ExploreSitesFetcher::SetDeviceDelegateForTest(
+    std::unique_ptr<ExploreSitesFetcher::DeviceDelegate> device_delegate) {
+  device_delegate_ = std::move(device_delegate);
 }
 
 void ExploreSitesFetcher::OnSimpleLoaderComplete(

@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -63,6 +67,21 @@ public class ExploreSitesBridge {
     @CalledByNative
     static void scheduleDailyTask() {
         ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
+    }
+
+    /**
+     * Returns the scale factor on this device.
+     */
+    @CalledByNative
+    static float getScaleFactorFromDevice() {
+        // Get DeviceMetrics from context.
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((WindowManager) ContextUtils.getApplicationContext().getSystemService(
+                 Context.WINDOW_SERVICE))
+                .getDefaultDisplay()
+                .getMetrics(metrics);
+        // Get density and return it.
+        return metrics.density;
     }
 
     static native int nativeGetVariation();
