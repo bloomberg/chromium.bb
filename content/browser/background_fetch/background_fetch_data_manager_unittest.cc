@@ -1316,7 +1316,7 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           2 /* completed_requests */}));
 }
 
-TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
+TEST_F(BackgroundFetchDataManagerTest, DownloadedUpdated) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1336,7 +1336,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
   auto registration =
       GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, 0u);
+  EXPECT_EQ(registration.downloaded, 0u);
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
   PopNextRequest(registration_id, &error, &request_info);
@@ -1348,7 +1348,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, kResponseFileSize);
+  EXPECT_EQ(registration.downloaded, kResponseFileSize);
 
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1359,7 +1359,7 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
+  EXPECT_EQ(registration.downloaded, 2 * kResponseFileSize);
 
   PopNextRequest(registration_id, &error, &request_info);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1370,8 +1370,8 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  // |download_total| is unchanged.
-  EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
+  // |registration.downloaded| is unchanged.
+  EXPECT_EQ(registration.downloaded, 2 * kResponseFileSize);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
