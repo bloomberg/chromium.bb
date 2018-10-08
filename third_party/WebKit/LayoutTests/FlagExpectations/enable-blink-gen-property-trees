@@ -137,9 +137,6 @@ crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 
-# Single pixel snapping difference on scrolling content size.
-Bug(none) compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
-
 # One line of pixels different when clipping the scrollbar.
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
