@@ -4,6 +4,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
+<script src="overlay-play-button.js"></script>
 <body></body>
 <script>
 const testCases = [
@@ -23,6 +24,9 @@ testCases.forEach(test => {
 });
 
 function runTestCase(t) {
+  // This test is only valid when the overlay play button is enabled.
+  enableOverlayPlayButtonForTest(t);
+
   let test = t.properties;
   test.video = createVideo(test);
   setTimeout(t.step_func_done(() => {

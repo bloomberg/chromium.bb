@@ -13,16 +13,13 @@ layer at (8,8) size 300x150
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 300x150
 layer at (8,8) size 300x150
   LayoutFlexibleBox {DIV} at (0,0) size 300x150
-layer at (114,27) size 88x88
-  LayoutButton (positioned) {INPUT} at (106,19) size 88x88
-    LayoutBlockFlow (anonymous) at (20,20) size 48x48
-      LayoutBlockFlow {DIV} at (0,0) size 48x48 [bgcolor=#FFFFFFE6]
 layer at (8,86) size 300x48
   LayoutFlexibleBox (relative positioned) {DIV} at (0,78) size 300x48
-    LayoutBlockFlow {DIV} at (16,4) size 28x44 [color=#FFFFFF]
-      LayoutText {#text} at (0,14) size 28x16
-        text run at (0,14) width 28: "0:00"
-    LayoutBlockFlow {DIV} at (44,48) size 160x0
+    LayoutButton {INPUT} at (0,0) size 48x48
+    LayoutBlockFlow {DIV} at (48,0) size 28x48 [color=#FFFFFF]
+      LayoutText {#text} at (0,16) size 28x16
+        text run at (0,16) width 28: "0:00"
+    LayoutBlockFlow {DIV} at (76,48) size 128x0
 layer at (212,86) size 48x48 transparent
   LayoutButton {INPUT} at (204,0) size 48x48 [color=#808080]
 layer at (260,86) size 48x48 transparent
