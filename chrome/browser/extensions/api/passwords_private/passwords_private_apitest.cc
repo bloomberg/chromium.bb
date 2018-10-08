@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -215,7 +216,8 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     PasswordsPrivateDelegateFactory::GetInstance()->SetTestingFactory(
-        profile(), &PasswordsPrivateApiTest::GetPasswordsPrivateDelegate);
+        profile(), base::BindRepeating(
+                       &PasswordsPrivateApiTest::GetPasswordsPrivateDelegate));
     s_test_delegate_->SetProfile(profile());
     content::RunAllPendingInMessageLoop();
   }
