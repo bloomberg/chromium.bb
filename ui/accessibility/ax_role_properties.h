@@ -32,6 +32,12 @@ AX_EXPORT bool IsCellOrTableHeaderRole(ax::mojom::Role role);
 // Returns true if this node is a table, a grid or a treegrid.
 AX_EXPORT bool IsTableLikeRole(ax::mojom::Role role);
 
+// Returns true if this node is a table header.
+AX_EXPORT bool IsTableHeaderRole(ax::mojom::Role role);
+
+// Returns true if this node is a row.
+AX_EXPORT bool IsTableRowRole(ax::mojom::Role role);
+
 // Returns true if the provided role is selectable from the standpoint of UI
 // automation.
 AX_EXPORT bool IsUIASelectable(ax::mojom::Role role);

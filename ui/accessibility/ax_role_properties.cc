@@ -8,7 +8,7 @@
 namespace ui {
 
 namespace {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 static bool kExposeLayoutTableAsDataTable = true;
 #else
 static bool kExposeLayoutTableAsDataTable = false;
@@ -114,6 +114,27 @@ bool IsTableLikeRole(ax::mojom::Role role) {
     case ax::mojom::Role::kTreeGrid:
       return true;
     case ax::mojom::Role::kLayoutTable:
+      return kExposeLayoutTableAsDataTable;
+    default:
+      return false;
+  }
+}
+
+bool IsTableHeaderRole(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRowHeader:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsTableRowRole(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kRow:
+      return true;
+    case ax::mojom::Role::kLayoutTableRow:
       return kExposeLayoutTableAsDataTable;
     default:
       return false;
