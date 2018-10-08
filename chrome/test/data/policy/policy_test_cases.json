@@ -3287,12 +3287,12 @@
     ]
   },
 
-  "AllowedUILocales": {
+  "AllowedLanguages": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "AllowedUILocales": ["en-US", "de"] },
+    "test_policy": { "AllowedLanguages": ["en-US", "de"] },
     "pref_mappings": [
-      { "pref": "intl.allowed_ui_locales" }
+      { "pref": "intl.allowed_languages" }
     ]
   },
 

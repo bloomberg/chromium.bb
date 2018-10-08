@@ -19,7 +19,7 @@
 -DeviceIDTest.Migration
 -DeviceIDTest.NewUsers
 -LoginPolicyTestBase.AllowedInputMethods
--LoginPolicyTestBase.AllowedUILocales
+-LoginPolicyTestBase.AllowedLanguages
 -MergeSessionTest.PageThrottle
 -MergeSessionTest.XHRThrottle
 -OAuth2Test.SetInvalidTokenStatus

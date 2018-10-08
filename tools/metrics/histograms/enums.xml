@@ -14613,7 +14613,7 @@ Called by update_net_error_codes.py.-->
   <int value="441" label="ChromeCleanupEnabled"/>
   <int value="442" label="ChromeCleanupReportingEnabled"/>
   <int value="443" label="DeveloperToolsAvailability"/>
-  <int value="444" label="AllowedUILocales"/>
+  <int value="444" label="AllowedLanguages"/>
   <int value="445" label="IsolateOriginsAndroid"/>
   <int value="446" label="SitePerProcessAndroid"/>
   <int value="447" label="ArcAppInstallEventLoggingEnabled"/>

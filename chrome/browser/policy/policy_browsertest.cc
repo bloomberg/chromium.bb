@@ -1233,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
 #endif
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
@@ -1250,13 +1250,13 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
   // Set policy to only allow "fr" as locale.
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>();
-  base::ListValue allowed_ui_locales;
-  allowed_ui_locales.AppendString("fr");
-  policy->SetKey(key::kAllowedUILocales, std::move(allowed_ui_locales));
+  base::ListValue allowed_languages;
+  allowed_languages.AppendString("fr");
+  policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
   user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   const user_manager::User* const user =
@@ -1285,7 +1285,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
 
   // Verifiy that the enforced locale is added into the list of
   // preferred languages.
-  EXPECT_EQ("en-US,fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
+  EXPECT_EQ("fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
