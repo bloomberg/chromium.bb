@@ -5266,9 +5266,27 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
   return outsets;
 }
 
+void LayoutBox::AddVisualOverflowFromChild(const LayoutBox& child,
+                                           const LayoutSize& delta) {
+  // Never allow flow threads to propagate overflow up to a parent.
+  if (child.IsLayoutFlowThread())
+    return;
+
+  // Add in visual overflow from the child.  Even if the child clips its
+  // overflow, it may still have visual overflow of its own set from box shadows
+  // or reflections. It is unnecessary to propagate this overflow if we are
+  // clipping our own overflow.
+  if (child.HasSelfPaintingLayer())
+    return;
+  LayoutRect child_visual_overflow_rect =
+      child.VisualOverflowRectForPropagation();
+  child_visual_overflow_rect.Move(delta);
+  AddContentsVisualOverflow(child_visual_overflow_rect);
+}
+
 DISABLE_CFI_PERF
-void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
-                                     const LayoutSize& delta) {
+void LayoutBox::AddLayoutOverflowFromChild(const LayoutBox& child,
+                                           const LayoutSize& delta) {
   // Never allow flow threads to propagate overflow up to a parent.
   if (child.IsLayoutFlowThread())
     return;
@@ -5281,17 +5299,6 @@ void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
       child.LayoutOverflowRectForPropagation(this);
   child_layout_overflow_rect.Move(delta);
   AddLayoutOverflow(child_layout_overflow_rect);
-
-  // Add in visual overflow from the child.  Even if the child clips its
-  // overflow, it may still have visual overflow of its own set from box shadows
-  // or reflections. It is unnecessary to propagate this overflow if we are
-  // clipping our own overflow.
-  if (child.HasSelfPaintingLayer())
-    return;
-  LayoutRect child_visual_overflow_rect =
-      child.VisualOverflowRectForPropagation();
-  child_visual_overflow_rect.Move(delta);
-  AddContentsVisualOverflow(child_visual_overflow_rect);
 }
 
 bool LayoutBox::HasTopOverflow() const {

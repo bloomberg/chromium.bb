@@ -474,7 +474,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
 
-  void AddOverflowFromChildren() override;
+  void AddVisualOverflowFromChildren() override;
+  void AddLayoutOverflowFromChildren() override;
 
   void RecalcSections() const;
 

@@ -910,7 +910,38 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
   }
 }
 
-void LayoutTable::AddOverflowFromChildren() {
+void LayoutTable::AddVisualOverflowFromChildren() {
+  // Add overflow from borders.
+  // Technically it's odd that we are incorporating the borders into layout
+  // overflow, which is only supposed to be about overflow from our
+  // descendant objects, but since tables don't support overflow:auto, this
+  // works out fine.
+  UpdateCollapsedOuterBorders();
+  if (ShouldCollapseBorders() && (collapsed_outer_border_start_overflow_ ||
+                                  collapsed_outer_border_end_overflow_)) {
+    LogicalToPhysical<LayoutUnit> physical_border_overflow(
+        StyleRef().GetWritingMode(), StyleRef().Direction(),
+        LayoutUnit(collapsed_outer_border_start_overflow_),
+        LayoutUnit(collapsed_outer_border_end_overflow_), LayoutUnit(),
+        LayoutUnit());
+    LayoutRect border_overflow(PixelSnappedBorderBoxRect());
+    border_overflow.Expand(LayoutRectOutsets(
+        physical_border_overflow.Top(), physical_border_overflow.Right(),
+        physical_border_overflow.Bottom(), physical_border_overflow.Left()));
+    AddSelfVisualOverflow(border_overflow);
+  }
+
+  // Add overflow from our caption.
+  for (auto* caption : captions_)
+    AddVisualOverflowFromChild(*caption);
+
+  // Add overflow from our sections.
+  for (LayoutTableSection* section = TopSection(); section;
+       section = SectionBelow(section))
+    AddVisualOverflowFromChild(*section);
+}
+
+void LayoutTable::AddLayoutOverflowFromChildren() {
   // Add overflow from borders.
   // Technically it's odd that we are incorporating the borders into layout
   // overflow, which is only supposed to be about overflow from our
@@ -929,17 +960,16 @@ void LayoutTable::AddOverflowFromChildren() {
         physical_border_overflow.Top(), physical_border_overflow.Right(),
         physical_border_overflow.Bottom(), physical_border_overflow.Left()));
     AddLayoutOverflow(border_overflow);
-    AddSelfVisualOverflow(border_overflow);
   }
 
   // Add overflow from our caption.
   for (unsigned i = 0; i < captions_.size(); i++)
-    AddOverflowFromChild(*captions_[i]);
+    AddLayoutOverflowFromChild(*captions_[i]);
 
   // Add overflow from our sections.
   for (LayoutTableSection* section = TopSection(); section;
        section = SectionBelow(section))
-    AddOverflowFromChild(*section);
+    AddLayoutOverflowFromChild(*section);
 }
 
 void LayoutTable::PaintObject(const PaintInfo& paint_info,

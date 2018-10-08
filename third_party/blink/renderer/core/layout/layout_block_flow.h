@@ -111,8 +111,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockLayout(bool relayout_children) override;
 
-  void ComputeOverflow(LayoutUnit old_client_after_edge,
-                       bool recompute_floats = false) override;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) override;
+  void ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                             bool recompute_floats) override;
 
   void DeleteLineBoxTree();
 
@@ -318,7 +319,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       rare_data_->multi_column_flow_thread_ = nullptr;
   }
 
-  void AddOverflowFromInlineChildren();
+  void AddVisualOverflowFromInlineChildren();
+
+  void AddLayoutOverflowFromInlineChildren();
 
   // FIXME: This should be const to avoid a const_cast, but can modify child
   // dirty bits and LayoutTextCombine.
@@ -443,9 +446,10 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
   }
 
-  // This function is only public so we can call it from NGBlockNode while we're
-  // still working on LayoutNG.
-  void AddOverflowFromFloats();
+  // These functions are only public so we can call it from NGBlockNode while
+  // we're still working on LayoutNG.
+  void AddVisualOverflowFromFloats();
+  void AddLayoutOverflowFromFloats();
 
   virtual NGInlineNodeData* TakeNGInlineNodeData() { return nullptr; }
   virtual NGInlineNodeData* GetNGInlineNodeData() const { return nullptr; }

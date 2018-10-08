@@ -1361,6 +1361,22 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
 }
 
 void LayoutTableSection::ComputeOverflowFromDescendants() {
+  auto old_self_visual_overflow_rect = SelfVisualOverflowRect();
+  overflow_.reset();
+  overflowing_cells_.clear();
+  force_full_paint_ = false;
+
+  ComputeVisualOverflowFromDescendants();
+
+  // Overflow rect contributes to the visual rect, so if it has changed then we
+  // need to signal a possible paint invalidation.
+  if (old_self_visual_overflow_rect != SelfVisualOverflowRect())
+    SetShouldCheckForPaintInvalidation();
+
+  ComputeLayoutOverflowFromDescendants();
+}
+
+void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
   // These 2 variables are used to balance the memory consumption vs the paint
   // time on big sections with overflowing cells:
   // 1. For small sections, don't track overflowing cells because for them the
@@ -1379,17 +1395,13 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
       total_cell_count < kMinCellCountToUsePartialPaint
           ? 0
           : kMaxOverflowingCellRatioForPartialPaint * total_cell_count;
-  auto old_overflow_rect = SelfVisualOverflowRect();
 
-  overflow_.reset();
-  overflowing_cells_.clear();
-  force_full_paint_ = false;
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
 #endif
 
   for (auto* row = FirstRow(); row; row = row->NextRow()) {
-    AddOverflowFromChild(*row);
+    AddVisualOverflowFromChild(*row);
 
     for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
       // Let the section's self visual overflow cover the cell's whole collapsed
@@ -1422,14 +1434,15 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
       overflowing_cells_.insert(cell);
     }
   }
-  // Overflow rect contributes to the visual rect, so if it has changed then we
-  // need to signal a possible paint invalidation.
-  if (old_overflow_rect != SelfVisualOverflowRect())
-    SetShouldCheckForPaintInvalidation();
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(has_overflowing_cell, HasOverflowingCell());
 #endif
+}
+
+void LayoutTableSection::ComputeLayoutOverflowFromDescendants() {
+  for (auto* row = FirstRow(); row; row = row->NextRow())
+    AddLayoutOverflowFromChild(*row);
 }
 
 bool LayoutTableSection::RecalcOverflow() {

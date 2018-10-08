@@ -537,10 +537,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void AddVisualEffectOverflow();
   LayoutRectOutsets ComputeVisualEffectOverflowOutsets();
-  void AddOverflowFromChild(const LayoutBox& child) {
-    AddOverflowFromChild(child, child.LocationOffset());
+  void AddVisualOverflowFromChild(const LayoutBox& child) {
+    AddVisualOverflowFromChild(child, child.LocationOffset());
   }
-  void AddOverflowFromChild(const LayoutBox& child, const LayoutSize& delta);
+  void AddLayoutOverflowFromChild(const LayoutBox& child) {
+    AddLayoutOverflowFromChild(child, child.LocationOffset());
+  }
+  void AddVisualOverflowFromChild(const LayoutBox& child,
+                                  const LayoutSize& delta);
+  void AddLayoutOverflowFromChild(const LayoutBox& child,
+                                  const LayoutSize& delta);
   void ClearLayoutOverflow();
   void ClearAllOverflows() { overflow_.reset(); }
 

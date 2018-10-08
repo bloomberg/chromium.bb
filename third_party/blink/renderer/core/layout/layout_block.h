@@ -395,6 +395,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                              const LayoutPoint& paint_offset) const;
   void UpdateAfterLayout() override;
 
+  void ComputeOverflow(LayoutUnit old_client_after_edge,
+                       bool recompute_floats = false);
+
  protected:
   virtual void AdjustInlineDirectionLineBounds(
       unsigned /* expansionOpportunityCount */,
@@ -444,15 +447,22 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool SimplifiedLayout();
   virtual void SimplifiedNormalFlowLayout();
 
- public:
-  virtual void ComputeOverflow(LayoutUnit old_client_after_edge,
-                               bool recompute_floats = false);
+ private:
+  void AddVisualOverflowFromPositionedObjects();
+  void AddVisualOverflowFromBlockChildren();
+  void AddVisualOverflowFromTheme();
+  void AddLayoutOverflowFromPositionedObjects();
+  void AddLayoutOverflowFromBlockChildren();
 
  protected:
-  virtual void AddOverflowFromChildren();
-  void AddOverflowFromPositionedObjects();
-  void AddOverflowFromBlockChildren();
-  void AddVisualOverflowFromTheme();
+  virtual void ComputeVisualOverflow(
+      const LayoutRect& previous_visual_overflow_rect,
+      bool recompute_floats);
+  virtual void ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                                     bool recompute_floats);
+
+  virtual void AddLayoutOverflowFromChildren();
+  virtual void AddVisualOverflowFromChildren();
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,

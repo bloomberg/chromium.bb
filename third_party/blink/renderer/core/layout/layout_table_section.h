@@ -299,6 +299,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
                    HitTestAction) override;
 
  private:
+  void ComputeVisualOverflowFromDescendants();
+  void ComputeLayoutOverflowFromDescendants();
+
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableSection || LayoutBox::IsOfType(type);
   }
