@@ -320,6 +320,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // to compute a name from its descendants.
   std::string ComputeAccessibleNameFromDescendants() const;
 
+  // Get text to announce for a live region change if AT does not implement.
+  std::string GetLiveRegionText() const;
+
   // Creates a text position rooted at this object.
   BrowserAccessibilityPosition::AXPositionInstance CreatePositionAt(
       int offset,
