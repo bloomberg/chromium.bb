@@ -512,7 +512,6 @@ void LayoutBlock::ComputeVisualOverflow(
     const LayoutRect& previous_visual_overflow_rect,
     bool) {
   AddVisualOverflowFromChildren();
-  AddVisualOverflowFromPositionedObjects();
 
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
@@ -590,30 +589,17 @@ void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
   }
 }
 
-void LayoutBlock::AddVisualOverflowFromPositionedObjects() {
-  TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
-  if (!positioned_descendants)
-    return;
-
-  for (auto* positioned_object : *positioned_descendants) {
-    // Fixed positioned elements don't contribute to layout overflow, since they
-    // don't scroll with the content.
-    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
-      AddVisualOverflowFromChild(*positioned_object,
-                                 ToLayoutSize(positioned_object->Location()));
-    }
-  }
-}
-
 void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
     return;
 
   for (auto* positioned_object : *positioned_descendants) {
-    // Fixed positioned elements don't contribute to layout overflow, since they
-    // don't scroll with the content.
-    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
+    // Fixed positioned elements whose containing block is the LayoutView
+    // don't contribute to layout overflow, since they don't scroll with the
+    // content.
+    if (!IsLayoutView() ||
+        positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
       AddLayoutOverflowFromChild(*positioned_object,
                                  ToLayoutSize(positioned_object->Location()));
     }
