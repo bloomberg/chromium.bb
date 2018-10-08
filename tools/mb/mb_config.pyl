@@ -403,6 +403,8 @@
       'Android arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_arm64',
       'Android CFI Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto_opt',
       'Android CFI arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto_opt_arm64',
+      'android-cfi-builder-perf-fyi': 'official_goma_minimal_symbols_android_thin_lto_opt',
+      'android_arm64-cfi-builder-perf-fyi': 'official_goma_minimal_symbols_android_thin_lto_opt_arm64',
       # TODO(crbug.com/828443): Remove 'Mac Builder Perf FYI'
       'Mac Builder Perf FYI': 'official_goma',
       # TODO(crbug.com/835288): Remove 'Win Builder Perf FYI'
