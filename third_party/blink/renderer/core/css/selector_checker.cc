@@ -1158,12 +1158,16 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       sub_context.treat_shadow_host_as_normal_scope = false;
 
       // ::slotted() only allows one compound selector.
-      //
-      // TODO(crbug.com/888042): Should account for specificity here.
       DCHECK(selector.SelectorList()->First());
       DCHECK(!CSSSelectorList::Next(*selector.SelectorList()->First()));
       sub_context.selector = selector.SelectorList()->First();
-      return Match(sub_context);
+      MatchResult sub_result;
+      if (!Match(sub_context, sub_result))
+        return false;
+      result.specificity += sub_context.selector->Specificity() +
+                            sub_result.specificity +
+                            CSSSelector::kTagSpecificity;
+      return true;
     }
     case CSSSelector::kPseudoContent:
       return element.IsInShadowTree() && element.IsV0InsertionPoint();
