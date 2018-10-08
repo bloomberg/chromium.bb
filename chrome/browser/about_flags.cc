@@ -1448,6 +1448,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorName,
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kNewEncodeCpuLoadEstimator)},
+    {"webrtc-unified-plan-by-default",
+     flag_descriptions::kWebrtcUnifiedPlanByDefaultName,
+     flag_descriptions::kWebrtcUnifiedPlanByDefaultDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kRTCUnifiedPlanByDefault)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,

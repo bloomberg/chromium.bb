@@ -39,6 +39,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
@@ -325,12 +326,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   } else {
-    if (!RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
+    if (!base::FeatureList::IsEnabled(features::kRTCUnifiedPlanByDefault) &&
+        !RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
       // By default: The default SDP semantics is: "kPlanB".
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
     } else {
       // Override default SDP semantics to "kUnifiedPlan" with
-      // RuntimeEnabled=RTCUnifiedPlanByDefault.
+      // --enable-features=RTCUnifiedPlanByDefault or with
+      // --enable-blink-features=RTCUnifiedPlanByDefault.
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   }

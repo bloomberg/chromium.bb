@@ -95,6 +95,13 @@ const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
 const base::Feature kJankTracking{"JankTracking",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Changes the default RTCPeerConnection constructor behavior to use Unified
+// Plan as the SDP semantics. When the feature is enabled, Unified Plan is used
+// unless the default is overridden (by passing {sdpSemantics:'plan-b'} as the
+// argument).
+const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
