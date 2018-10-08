@@ -15,7 +15,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
@@ -37,8 +36,7 @@ class ContextImpl;
 class FrameImpl : public chromium::web::Frame,
                   public chromium::web::NavigationController,
                   public content::WebContentsObserver,
-                  public content::WebContentsDelegate,
-                  public wm::BaseFocusRules {
+                  public content::WebContentsDelegate {
  public:
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
             ContextImpl* context,
@@ -100,9 +98,6 @@ class FrameImpl : public chromium::web::Frame,
   // content::WebContentsObserver implementation.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-
-  // wm::BaseFocusRules implementation.
-  bool SupportsChildActivation(aura::Window*) const override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
