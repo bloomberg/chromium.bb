@@ -184,6 +184,13 @@ class LoadNytimesDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadNytimesDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:nytimes:2018'
+  URL = 'http://www.nytimes.com'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadNytimesMobileStory(_LoadingStory):
   NAME = 'load:news:nytimes'
   URL = 'http://mobile.nytimes.com'
