@@ -1135,7 +1135,7 @@ class AppListPresenterDelegateHomeLauncherTest
         ->shelf_controller()
         ->model()
         ->GetShelfItemDelegate(ShelfID(kAppListId))
-        ->ItemSelected(std::move(event), display::kInvalidDisplayId,
+        ->ItemSelected(std::move(event), GetPrimaryDisplayId(),
                        ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
     GetAppListTestHelper()->WaitUntilIdle();
   }

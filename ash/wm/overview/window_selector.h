@@ -208,7 +208,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // Shifts and fades the grid in |grid_list_| associated with |location|.
   void UpdateGridAtLocationYPositionAndOpacity(
-      const gfx::Point& location,
+      int64_t display_id,
       int new_y,
       float opacity,
       const gfx::Rect& work_area,

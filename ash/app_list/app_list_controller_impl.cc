@@ -724,7 +724,7 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
       return home_launcher_gesture_handler_->OnPressEvent(
-          HomeLauncherGestureHandler::Mode::kSwipeDownToHide);
+          HomeLauncherGestureHandler::Mode::kSlideDownToHide, screen_location);
     case ui::ET_GESTURE_SCROLL_UPDATE:
       return home_launcher_gesture_handler_->OnScrollEvent(screen_location);
     case ui::ET_GESTURE_END:
@@ -742,7 +742,7 @@ bool AppListControllerImpl::IsSwipingUpOnShelf() {
     return false;
 
   return home_launcher_gesture_handler_->mode() ==
-         HomeLauncherGestureHandler::Mode::kSwipeUpToShow;
+         HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 
 ws::WindowService* AppListControllerImpl::GetWindowService() {
