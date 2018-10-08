@@ -324,8 +324,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
+// Flaky failures on ChromeOS - http://crbug.com/892310
+#if defined(OS_CHROMEOS)
+#define MAYBE_TabIconUpdated DISABLED_TabIconUpdated
+#else
+#define MAYBE_TabIconUpdated TabIconUpdated
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       TabIconUpdated) {
+                       MAYBE_TabIconUpdated) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
