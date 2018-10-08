@@ -558,6 +558,13 @@ const char kEnablePreviewsAndroidOmniboxUIDescription[] =
     "Enable showing the Previews UI in the Omnibox on Android instead of an "
     "InfoBar. This has no effect on other platforms.";
 
+const char kEnableLitePageServerPreviewsName[] = "Lite Page Server Previews";
+const char kEnableLitePageServerPreviewsDescription[] =
+    "Enable showing Lite Page Previews served from the Chrome Data Proxy "
+    "service. This feature will cause Chrome to redirect eligible navigations "
+    "to a Google-owned domain that serves a pre-rendered version of the "
+    "original page.";
+
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is not "
     "HTTPS";
