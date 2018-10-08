@@ -46,6 +46,7 @@
 #include "av1/common/resize.h"
 #include "av1/common/tile_common.h"
 
+#include "av1/encoder/av1_multi_thread.h"
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
@@ -3056,6 +3057,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td);
     }
   }
+  av1_row_mt_mem_dealloc(cpi);
   aom_free(cpi->tile_thr_data);
   aom_free(cpi->workers);
 

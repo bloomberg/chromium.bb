@@ -116,6 +116,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/av1_fwd_txfm1d.h"
             "${AOM_ROOT}/av1/encoder/av1_fwd_txfm1d_cfg.h"
             "${AOM_ROOT}/av1/encoder/av1_fwd_txfm2d.c"
+            "${AOM_ROOT}/av1/encoder/av1_multi_thread.c"
+            "${AOM_ROOT}/av1/encoder/av1_multi_thread.h"
             "${AOM_ROOT}/av1/encoder/av1_quantize.c"
             "${AOM_ROOT}/av1/encoder/av1_quantize.h"
             "${AOM_ROOT}/av1/encoder/bitstream.c"

@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/encoder/av1_multi_thread.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/ethread.h"
@@ -42,6 +43,120 @@ void av1_row_mt_sync_write_dummy(struct AV1RowMTSyncData *const row_mt_sync,
   (void)c;
   (void)cols;
   return;
+}
+
+void av1_row_mt_sync_read(AV1RowMTSync *const row_mt_sync, int r, int c) {
+#if CONFIG_MULTITHREAD
+  const int nsync = row_mt_sync->sync_range;
+
+  if (r) {
+    pthread_mutex_t *const mutex = &row_mt_sync->mutex_[r - 1];
+    pthread_mutex_lock(mutex);
+
+    while (c > row_mt_sync->cur_col[r - 1] - nsync) {
+      pthread_cond_wait(&row_mt_sync->cond_[r - 1], mutex);
+    }
+    pthread_mutex_unlock(mutex);
+  }
+#else
+  (void)row_mt_sync;
+  (void)r;
+  (void)c;
+#endif  // CONFIG_MULTITHREAD
+}
+
+void av1_row_mt_sync_write(AV1RowMTSync *const row_mt_sync, int r, int c,
+                           const int cols) {
+#if CONFIG_MULTITHREAD
+  const int nsync = row_mt_sync->sync_range;
+  int cur;
+  // Only signal when there are enough encoded blocks for next row to run.
+  int sig = 1;
+
+  if (c < cols - 1) {
+    cur = c;
+    if (c % nsync) sig = 0;
+  } else {
+    cur = cols + nsync;
+  }
+
+  if (sig) {
+    pthread_mutex_lock(&row_mt_sync->mutex_[r]);
+
+    row_mt_sync->cur_col[r] = cur;
+
+    pthread_cond_signal(&row_mt_sync->cond_[r]);
+    pthread_mutex_unlock(&row_mt_sync->mutex_[r]);
+  }
+#else
+  (void)row_mt_sync;
+  (void)r;
+  (void)c;
+  (void)cols;
+#endif  // CONFIG_MULTITHREAD
+}
+
+// Allocate memory for row synchronization
+void av1_row_mt_sync_mem_alloc(AV1RowMTSync *row_mt_sync, AV1_COMMON *cm,
+                               int rows) {
+  row_mt_sync->rows = rows;
+#if CONFIG_MULTITHREAD
+  {
+    int i;
+
+    CHECK_MEM_ERROR(cm, row_mt_sync->mutex_,
+                    aom_malloc(sizeof(*row_mt_sync->mutex_) * rows));
+    if (row_mt_sync->mutex_) {
+      for (i = 0; i < rows; ++i) {
+        pthread_mutex_init(&row_mt_sync->mutex_[i], NULL);
+      }
+    }
+
+    CHECK_MEM_ERROR(cm, row_mt_sync->cond_,
+                    aom_malloc(sizeof(*row_mt_sync->cond_) * rows));
+    if (row_mt_sync->cond_) {
+      for (i = 0; i < rows; ++i) {
+        pthread_cond_init(&row_mt_sync->cond_[i], NULL);
+      }
+    }
+  }
+#endif  // CONFIG_MULTITHREAD
+
+  CHECK_MEM_ERROR(cm, row_mt_sync->cur_col,
+                  aom_malloc(sizeof(*row_mt_sync->cur_col) * rows));
+
+  // Set up nsync.
+  if (cm->seq_params.mib_size_log2 == 4)
+    row_mt_sync->sync_range = 2;
+  else
+    row_mt_sync->sync_range = 1;
+}
+
+// Deallocate row based multi-threading synchronization related mutex and data
+void av1_row_mt_sync_mem_dealloc(AV1RowMTSync *row_mt_sync) {
+  if (row_mt_sync != NULL) {
+#if CONFIG_MULTITHREAD
+    int i;
+
+    if (row_mt_sync->mutex_ != NULL) {
+      for (i = 0; i < row_mt_sync->rows; ++i) {
+        pthread_mutex_destroy(&row_mt_sync->mutex_[i]);
+      }
+      aom_free(row_mt_sync->mutex_);
+    }
+    if (row_mt_sync->cond_ != NULL) {
+      for (i = 0; i < row_mt_sync->rows; ++i) {
+        pthread_cond_destroy(&row_mt_sync->cond_[i]);
+      }
+      aom_free(row_mt_sync->cond_);
+    }
+#endif  // CONFIG_MULTITHREAD
+    aom_free(row_mt_sync->cur_col);
+    // clear the structure as the source of this call may be dynamic change
+    // in tiles in which case this call will be followed by an _alloc()
+    // which may fail.
+    av1_zero(*row_mt_sync);
+  }
 }
 
 static int enc_row_mt_worker_hook(void *arg1, void *unused) {
@@ -322,12 +437,42 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
+  MultiThreadHandle *multi_thread_ctxt = &cpi->multi_thread_ctxt;
   int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols * tile_rows);
+  int max_sb_rows = 0;
 
-  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
+  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {
+    av1_row_mt_mem_dealloc(cpi);
     av1_alloc_tile_data(cpi);
+  }
 
   av1_init_tile_data(cpi);
+
+  for (int row = 0; row < tile_rows; row++) {
+    for (int col = 0; col < tile_cols; col++) {
+      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
+      max_sb_rows = AOMMAX(max_sb_rows,
+                           av1_get_sb_rows_in_tile(cm, tile_data->tile_info));
+    }
+  }
+
+  if (multi_thread_ctxt->allocated_tile_cols != tile_cols ||
+      multi_thread_ctxt->allocated_tile_rows != tile_rows ||
+      multi_thread_ctxt->allocated_sb_rows != max_sb_rows) {
+    av1_row_mt_mem_dealloc(cpi);
+    av1_row_mt_mem_alloc(cpi, max_sb_rows);
+  }
+
+  for (int tile_row = 0; tile_row < tile_rows; tile_row++) {
+    for (int tile_col = 0; tile_col < tile_cols; tile_col++) {
+      TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
+
+      // Initialize cur_col to -1 for all rows.
+      memset(this_tile->row_mt_sync.cur_col, -1,
+             sizeof(*this_tile->row_mt_sync.cur_col) * max_sb_rows);
+    }
+  }
+
   // Only run once to create threads and allocate thread data.
   if (cpi->num_workers == 0) {
     create_enc_workers(cpi, num_workers);

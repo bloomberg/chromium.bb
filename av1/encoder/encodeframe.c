@@ -5555,6 +5555,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cpi->row_mt = 0;
     if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1)) {
       cpi->row_mt = 1;
+      cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read;
+      cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write;
       av1_encode_tiles_row_mt(cpi);
     } else {
       if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)

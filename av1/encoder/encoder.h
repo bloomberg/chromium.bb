@@ -505,6 +505,12 @@ typedef struct {
   unsigned int count;
 } TOKENLIST;
 
+typedef struct MultiThreadHandle {
+  int allocated_tile_rows;
+  int allocated_tile_cols;
+  int allocated_sb_rows;
+} MultiThreadHandle;
+
 typedef struct RD_COUNTS {
   int64_t comp_pred_diff[REFERENCE_MODES];
   // Stores number of 4x4 blocks using global motion per reference frame.
@@ -812,6 +818,7 @@ typedef struct AV1_COMP {
   // Set as 1 for monochrome and 3 for other color formats
   int default_interp_skip_flags;
   int preserve_arf_as_gld;
+  MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
   void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
 } AV1_COMP;
