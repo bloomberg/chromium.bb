@@ -582,6 +582,14 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'ios/web/public/test/http_server',
+      (
+        'web::HTTPserver is deprecated use net::EmbeddedTestServer instead.',
+      ),
+      False,
+      (),
+    ),
 )
 
 
