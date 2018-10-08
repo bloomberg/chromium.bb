@@ -4479,6 +4479,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Has slow paths with non-AA paint"/>
 </enum>
 
+<enum name="BooleanHasWithheldHosts">
+  <int value="0" label="Does not have withheld hosts"/>
+  <int value="1" label="Has withheld hosts"/>
+</enum>
+
 <enum name="BooleanHiddenPresentationalAutofilled">
   <int value="0" label="Skipped"/>
   <int value="1" label="Autofilled"/>

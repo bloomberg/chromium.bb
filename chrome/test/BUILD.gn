@@ -3621,6 +3621,7 @@ test("unit_tests") {
       "../browser/extensions/forced_extensions/installation_tracker_unittest.cc",
       "../browser/extensions/install_tracker_unittest.cc",
       "../browser/extensions/install_verifier_unittest.cc",
+      "../browser/extensions/installed_loader_unittest.cc",
       "../browser/extensions/menu_manager_unittest.cc",
       "../browser/extensions/ntp_overridden_bubble_delegate_unittest.cc",
       "../browser/extensions/pack_extension_unittest.cc",
