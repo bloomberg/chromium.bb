@@ -45,13 +45,12 @@ class DLCGenerator(object):
   # Version of manifest file.
   _MANIFEST_VERSION = 1
 
-  def __init__(self, img_dir, meta_dir, src_dir, fs_type, pre_allocated_blocks,
-               version, dlc_id, name):
+  def __init__(self, dest_dir, src_dir, fs_type, pre_allocated_blocks, version,
+               dlc_id, name):
     """Object initializer.
 
     Args:
-      img_dir: (str) path to the DLC image dest root directory.
-      meta_dir: (str) path to the DLC metadata dest root directory.
+      dest_dir: (str) path to the DLC dest root directory.
       src_dir: (str) path to the DLC source root directory.
       fs_type: (str) file system type.
       pre_allocated_blocks: (int) number of blocks pre-allocated on device.
@@ -66,9 +65,9 @@ class DLCGenerator(object):
     self.dlc_id = dlc_id
     self.name = name
     # Create path for all final artifacts.
-    self.dest_image = os.path.join(img_dir, 'dlc.img')
-    self.dest_table = os.path.join(meta_dir, 'table')
-    self.dest_imageloader_json = os.path.join(meta_dir, 'imageloader.json')
+    self.dest_image = os.path.join(dest_dir, 'dlc.img')
+    self.dest_table = os.path.join(dest_dir, 'table')
+    self.dest_imageloader_json = os.path.join(dest_dir, 'imageloader.json')
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -198,14 +197,9 @@ def GetParser():
                         required=True,
                         help='Root directory path that contains all DLC files '
                         'to be packed.')
-  required.add_argument('--img-dir', type='path', metavar='IMG_DIR_PATH',
+  required.add_argument('--dest-dir', type='path', metavar='DEST_DIR_PATH',
                         required=True,
-                        help='Root directory path that contains DLC image file '
-                        'output.')
-  required.add_argument('--meta-dir', type='path', metavar='META_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains DLC metadata '
-                        'output.')
+                        help='Root directory path that contains output.')
   required.add_argument('--fs-type', metavar='FS_TYPE', required=True,
                         choices=['squashfs', 'ext4'],
                         help='File system type of the image.')
@@ -227,7 +221,7 @@ def main(argv):
   opts.Freeze()
 
   # Generate final DLC files.
-  dlc_generator = DLCGenerator(opts.img_dir, opts.meta_dir, opts.src_dir,
-                               opts.fs_type, opts.pre_allocated_blocks,
-                               opts.version, opts.id, opts.name)
+  dlc_generator = DLCGenerator(opts.dest_dir, opts.src_dir, opts.fs_type,
+                               opts.pre_allocated_blocks, opts.version, opts.id,
+                               opts.name)
   dlc_generator.GenerateDLC()
