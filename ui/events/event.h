@@ -34,6 +34,7 @@ class Transform;
 
 namespace ui {
 class CancelModeEvent;
+class Event;
 class EventTarget;
 class KeyEvent;
 class LocatedEvent;
@@ -42,11 +43,9 @@ class MouseWheelEvent;
 class PointerEvent;
 class ScrollEvent;
 class TouchEvent;
-enum class DomCode;
-class Event;
-class MouseWheelEvent;
 
-using ScopedEvent = std::unique_ptr<Event>;
+enum class DomCode;
+
 using PointerId = int32_t;
 
 class EVENTS_EXPORT Event {

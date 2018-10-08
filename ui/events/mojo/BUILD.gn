@@ -13,7 +13,7 @@ mojom("interfaces") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/mojo",
+    "//ui/gfx/geometry/mojo",
     "//ui/latency/mojo:interfaces",
   ]
 }

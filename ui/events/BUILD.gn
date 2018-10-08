@@ -218,6 +218,7 @@ jumbo_component("events") {
 
   public_deps = [
     ":events_base",
+    "//ui/display",
     "//ui/latency",
   ]
   deps = [
@@ -225,7 +226,6 @@ jumbo_component("events") {
     ":gesture_detection",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
