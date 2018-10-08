@@ -103,8 +103,7 @@ void WorkletGlobalScope::FetchAndInvokeScript(
 
   // TODO(nhiroki): Specify an appropriate destination defined in each worklet
   // spec (e.g., "paint worklet", "audio worklet").
-  WebURLRequest::RequestContext destination =
-      WebURLRequest::kRequestContextScript;
+  mojom::RequestContextType destination = mojom::RequestContextType::SCRIPT;
   FetchModuleScript(module_url_record, outside_settings_object, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkletAddModule, client);

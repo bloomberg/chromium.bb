@@ -96,8 +96,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetRedirectMode(network::mojom::FetchRedirectMode);
   network::mojom::FetchRedirectMode RedirectMode() const;
 
-  void SetRequestContext(WebURLRequest::RequestContext);
-  WebURLRequest::RequestContext GetRequestContext() const;
+  void SetRequestContext(mojom::RequestContextType);
+  mojom::RequestContextType GetRequestContext() const;
 
   void SetFrameType(network::mojom::RequestContextFrameType);
   network::mojom::RequestContextFrameType GetFrameType() const;

@@ -314,7 +314,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoStartAsyncRequest() {
     blink::WebURLRequest request{GURL(kTestURL)};
-    request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+    request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
     client()->loader()->LoadAsynchronously(request, client());
     ASSERT_TRUE(peer());
   }
@@ -322,7 +322,7 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoStartAsyncRequestWithPriority(
       blink::WebURLRequest::Priority priority) {
     blink::WebURLRequest request{GURL(kTestURL)};
-    request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+    request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
     request.SetPriority(priority);
     client()->loader()->LoadAsynchronously(request, client());
     ASSERT_TRUE(peer());
@@ -639,7 +639,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   const std::string kMimeType = "text/html";
   blink::WebURLRequest request(kNavigationURL);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextFrame);
+  request.SetRequestContext(blink::mojom::RequestContextType::FRAME);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
   response_override->response.mime_type = kMimeType;
@@ -777,7 +777,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const int kEncodedDataLength = 130;
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;

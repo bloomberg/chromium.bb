@@ -203,7 +203,7 @@ ThreadableLoader::ThreadableLoader(
       is_using_data_consumer_handle_(false),
       async_(resource_loader_options.synchronous_policy ==
              kRequestAsynchronously),
-      request_context_(WebURLRequest::kRequestContextUnspecified),
+      request_context_(mojom::RequestContextType::UNSPECIFIED),
       fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
       timeout_timer_(execution_context_->GetTaskRunner(TaskType::kNetworking),
@@ -1080,12 +1080,12 @@ void ThreadableLoader::LoadRequest(
 
   checker_.WillAddClient();
   ResourceFetcher* fetcher = execution_context_->Fetcher();
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextVideo ||
-      request.GetRequestContext() == WebURLRequest::kRequestContextAudio) {
+  if (request.GetRequestContext() == mojom::RequestContextType::VIDEO ||
+      request.GetRequestContext() == mojom::RequestContextType::AUDIO) {
     DCHECK(async_);
     RawResource::FetchMedia(new_params, fetcher, this);
   } else if (request.GetRequestContext() ==
-             WebURLRequest::kRequestContextManifest) {
+             mojom::RequestContextType::MANIFEST) {
     DCHECK(async_);
     RawResource::FetchManifest(new_params, fetcher, this);
   } else if (async_) {

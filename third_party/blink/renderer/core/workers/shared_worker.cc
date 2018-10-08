@@ -77,7 +77,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   }
 
   KURL script_url = ResolveURL(context, url, exception_state,
-                               WebURLRequest::kRequestContextSharedWorker);
+                               mojom::RequestContextType::SHARED_WORKER);
   if (script_url.IsEmpty())
     return nullptr;
 

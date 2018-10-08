@@ -146,9 +146,10 @@ class WebServiceWorkerNetworkProviderImpl
  private:
   static bool IsScriptRequest(const WebURLRequest& request) {
     auto request_context = request.GetRequestContext();
-    return request_context == WebURLRequest::kRequestContextServiceWorker ||
-           request_context == WebURLRequest::kRequestContextScript ||
-           request_context == WebURLRequest::kRequestContextImport;
+    return request_context ==
+               blink::mojom::RequestContextType::SERVICE_WORKER ||
+           request_context == blink::mojom::RequestContextType::SCRIPT ||
+           request_context == blink::mojom::RequestContextType::IMPORT;
   }
 
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
@@ -177,9 +178,9 @@ bool IsOutOfProcessNetworkService() {
              switches::kSingleProcess);
 }
 
-WebURLRequest::RequestContext GetBlinkRequestContext(
+blink::mojom::RequestContextType GetBlinkRequestContext(
     blink::mojom::RequestContextType request_context_type) {
-  return static_cast<WebURLRequest::RequestContext>(request_context_type);
+  return static_cast<blink::mojom::RequestContextType>(request_context_type);
 }
 
 blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(

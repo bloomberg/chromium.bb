@@ -79,7 +79,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
     return nullptr;
   }
   bool ShouldBlockFetchByMixedContentCheck(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
@@ -300,7 +300,7 @@ TEST_F(BaseFetchContextTest, CanRequest) {
 
   KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
   resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
@@ -332,7 +332,7 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CheckCSPForRequest(
-                WebURLRequest::kRequestContextScript, url, options,
+                mojom::RequestContextType::SCRIPT, url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_EQ(1u, policy->violation_reports_sent_.size());

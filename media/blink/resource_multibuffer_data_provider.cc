@@ -82,8 +82,8 @@ void ResourceMultiBufferDataProvider::Start() {
   // Prepare the request.
   auto request = std::make_unique<WebURLRequest>(url_data_->url());
   request->SetRequestContext(is_client_audio_element_
-                                 ? WebURLRequest::kRequestContextAudio
-                                 : WebURLRequest::kRequestContextVideo);
+                                 ? blink::mojom::RequestContextType::AUDIO
+                                 : blink::mojom::RequestContextType::VIDEO);
   request->SetHTTPHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kRange),
       WebString::FromUTF8(

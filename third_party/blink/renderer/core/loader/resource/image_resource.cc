@@ -130,9 +130,8 @@ class ImageResource::ImageResourceInfoImpl final
       ResourceFetcher* fetcher,
       const KURL& url,
       const AtomicString& initiator_name) override {
-    fetcher->EmulateLoadStartedForInspector(resource_.Get(), url,
-                                            WebURLRequest::kRequestContextImage,
-                                            initiator_name);
+    fetcher->EmulateLoadStartedForInspector(
+        resource_.Get(), url, mojom::RequestContextType::IMAGE, initiator_name);
   }
 
   void LoadDeferredImage(ResourceFetcher* fetcher) override {
@@ -170,8 +169,8 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
 ImageResource* ImageResource::Fetch(FetchParameters& params,
                                     ResourceFetcher* fetcher) {
   if (params.GetResourceRequest().GetRequestContext() ==
-      WebURLRequest::kRequestContextUnspecified) {
-    params.SetRequestContext(WebURLRequest::kRequestContextImage);
+      mojom::RequestContextType::UNSPECIFIED) {
+    params.SetRequestContext(mojom::RequestContextType::IMAGE);
   }
 
   ImageResource* resource = ToImageResource(

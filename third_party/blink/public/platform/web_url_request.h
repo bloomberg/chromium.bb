@@ -35,6 +35,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"
 
@@ -75,45 +76,6 @@ class WebURLRequest {
     kVeryHigh,
     kLowest = kVeryLow,
     kHighest = kVeryHigh,
-  };
-
-  // Corresponds to Fetch's "context":
-  // http://fetch.spec.whatwg.org/#concept-request-context
-  enum RequestContext : uint8_t {
-    kRequestContextUnspecified = 0,
-    kRequestContextAudio,
-    kRequestContextBeacon,
-    kRequestContextCSPReport,
-    kRequestContextDownload,
-    kRequestContextEmbed,
-    kRequestContextEventSource,
-    kRequestContextFavicon,
-    kRequestContextFetch,
-    kRequestContextFont,
-    kRequestContextForm,
-    kRequestContextFrame,
-    kRequestContextHyperlink,
-    kRequestContextIframe,
-    kRequestContextImage,
-    kRequestContextImageSet,
-    kRequestContextImport,
-    kRequestContextInternal,
-    kRequestContextLocation,
-    kRequestContextManifest,
-    kRequestContextObject,
-    kRequestContextPing,
-    kRequestContextPlugin,
-    kRequestContextPrefetch,
-    kRequestContextScript,
-    kRequestContextServiceWorker,
-    kRequestContextSharedWorker,
-    kRequestContextSubresource,
-    kRequestContextStyle,
-    kRequestContextTrack,
-    kRequestContextVideo,
-    kRequestContextWorker,
-    kRequestContextXMLHttpRequest,
-    kRequestContextXSLT
   };
 
   typedef int PreviewsState;
@@ -211,8 +173,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool ReportRawHeaders() const;
   BLINK_PLATFORM_EXPORT void SetReportRawHeaders(bool);
 
-  BLINK_PLATFORM_EXPORT RequestContext GetRequestContext() const;
-  BLINK_PLATFORM_EXPORT void SetRequestContext(RequestContext);
+  BLINK_PLATFORM_EXPORT mojom::RequestContextType GetRequestContext() const;
+  BLINK_PLATFORM_EXPORT void SetRequestContext(mojom::RequestContextType);
 
   BLINK_PLATFORM_EXPORT network::mojom::RequestContextFrameType GetFrameType()
       const;

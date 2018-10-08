@@ -113,7 +113,7 @@ void NotificationImageLoader::Start(ExecutionContext* context,
     resource_loader_options.request_initiator_context = kWorkerContext;
 
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
 
   threadable_loader_ = new ThreadableLoader(

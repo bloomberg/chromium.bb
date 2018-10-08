@@ -51,7 +51,7 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
 void ModulatorImplBase::FetchTree(
     const KURL& url,
     FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-    WebURLRequest::RequestContext destination,
+    mojom::RequestContextType destination,
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
@@ -86,7 +86,7 @@ void ModulatorImplBase::FetchTree(
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
     FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-    WebURLRequest::RequestContext destination,
+    mojom::RequestContextType destination,
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
       module_script, fetch_client_settings_object, destination, this,

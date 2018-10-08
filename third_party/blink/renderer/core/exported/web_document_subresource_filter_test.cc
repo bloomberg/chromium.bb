@@ -32,7 +32,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
       : load_policy_(policy) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
-                           WebURLRequest::RequestContext) override {
+                           mojom::RequestContextType) override {
     std::string resource_path = WebString(KURL(resource_url).GetPath()).Utf8();
     if (std::find(queried_subresource_paths_.begin(),
                   queried_subresource_paths_.end(),

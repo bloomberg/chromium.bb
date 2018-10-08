@@ -234,7 +234,7 @@ class CORE_EXPORT ThreadableLoader final
   const bool async_;
 
   // Holds the original request context (used for sanity checks).
-  WebURLRequest::RequestContext request_context_;
+  mojom::RequestContextType request_context_;
 
   // Saved so that we can use the original value for the modes in
   // ResponseReceived() where |resource| might be a reused one (e.g. preloaded

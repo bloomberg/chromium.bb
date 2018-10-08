@@ -200,7 +200,7 @@ bool WebURLRequest::ReportRawHeaders() const {
   return resource_request_->ReportRawHeaders();
 }
 
-WebURLRequest::RequestContext WebURLRequest::GetRequestContext() const {
+mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
@@ -224,7 +224,8 @@ void WebURLRequest::SetHasUserGesture(bool has_user_gesture) {
   resource_request_->SetHasUserGesture(has_user_gesture);
 }
 
-void WebURLRequest::SetRequestContext(RequestContext request_context) {
+void WebURLRequest::SetRequestContext(
+    mojom::RequestContextType request_context) {
   resource_request_->SetRequestContext(request_context);
 }
 

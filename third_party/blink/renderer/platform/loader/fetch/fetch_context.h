@@ -146,7 +146,7 @@ class PLATFORM_EXPORT FetchContext
       unsigned long identifier,
       const ResourceResponse&,
       network::mojom::RequestContextFrameType,
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       Resource*,
       ResourceResponseType);
   virtual void DispatchDidReceiveData(unsigned long identifier,
@@ -189,7 +189,7 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
   virtual base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
@@ -291,10 +291,9 @@ class PLATFORM_EXPORT FetchContext
   }
 
   // Returns if the |resource_url| is identified as ad.
-  virtual bool IsAdResource(
-      const KURL& resource_url,
-      ResourceType type,
-      WebURLRequest::RequestContext request_context) const {
+  virtual bool IsAdResource(const KURL& resource_url,
+                            ResourceType type,
+                            mojom::RequestContextType request_context) const {
     return false;
   }
 

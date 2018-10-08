@@ -459,12 +459,11 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||
         !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull()) {
-      resource_request.SetRequestContext(
-          WebURLRequest::kRequestContextImageSet);
+      resource_request.SetRequestContext(mojom::RequestContextType::IMAGE_SET);
     } else if (IsHTMLObjectElement(GetElement())) {
-      resource_request.SetRequestContext(WebURLRequest::kRequestContextObject);
+      resource_request.SetRequestContext(mojom::RequestContextType::OBJECT);
     } else if (IsHTMLEmbedElement(GetElement())) {
-      resource_request.SetRequestContext(WebURLRequest::kRequestContextEmbed);
+      resource_request.SetRequestContext(mojom::RequestContextType::EMBED);
     }
 
     bool page_is_being_dismissed =
@@ -473,7 +472,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       resource_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
                                           "max-age=0");
       resource_request.SetKeepalive(true);
-      resource_request.SetRequestContext(WebURLRequest::kRequestContextPing);
+      resource_request.SetRequestContext(mojom::RequestContextType::PING);
     }
 
     // Plug-ins should not load via service workers as plug-ins may have their

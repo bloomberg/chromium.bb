@@ -260,10 +260,10 @@ class PLATFORM_EXPORT ResourceRequest final {
     }
   }
 
-  WebURLRequest::RequestContext GetRequestContext() const {
+  mojom::RequestContextType GetRequestContext() const {
     return request_context_;
   }
-  void SetRequestContext(WebURLRequest::RequestContext context) {
+  void SetRequestContext(mojom::RequestContextType context) {
     request_context_ = context;
   }
 
@@ -421,7 +421,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
-  WebURLRequest::RequestContext request_context_;
+  mojom::RequestContextType request_context_;
   network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
   mojom::FetchImportanceMode fetch_importance_mode_;

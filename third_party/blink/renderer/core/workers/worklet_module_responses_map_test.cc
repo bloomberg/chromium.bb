@@ -36,7 +36,7 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     ResourceRequest resource_request(url);
     // TODO(nhiroki): Specify worklet-specific request context (e.g.,
     // "paintworklet").
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     FetchParameters fetch_params(resource_request);
     WorkletModuleScriptFetcher* module_fetcher =
         new WorkletModuleScriptFetcher(fetcher_.Get(), map_.Get());

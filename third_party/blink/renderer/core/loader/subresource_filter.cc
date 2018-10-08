@@ -60,7 +60,7 @@ SubresourceFilter::~SubresourceFilter() = default;
 
 bool SubresourceFilter::AllowLoad(
     const KURL& resource_url,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     SecurityViolationReportingPolicy reporting_policy) {
   // TODO(csharrison): Implement a caching layer here which is a HashMap of
   // Pair<url string, context> -> LoadPolicy.
@@ -95,7 +95,7 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
 
 bool SubresourceFilter::IsAdResource(
     const KURL& resource_url,
-    WebURLRequest::RequestContext request_context) {
+    mojom::RequestContextType request_context) {
   if (subresource_filter_->GetIsAssociatedWithAdSubframe())
     return true;
 

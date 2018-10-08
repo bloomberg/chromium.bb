@@ -6396,7 +6396,7 @@ void RenderFrameImpl::OnMixedContentFound(
   source_location.url = WebString::FromLatin1(params.source_location.url);
   source_location.line_number = params.source_location.line_number;
   source_location.column_number = params.source_location.column_number;
-  auto request_context = static_cast<blink::WebURLRequest::RequestContext>(
+  auto request_context = static_cast<blink::mojom::RequestContextType>(
       params.request_context_type);
   frame_->MixedContentFound(params.main_resource_url, params.mixed_content_url,
                             request_context, params.was_allowed,

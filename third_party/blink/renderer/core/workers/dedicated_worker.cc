@@ -67,7 +67,7 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
   }
 
   KURL script_request_url = ResolveURL(context, url, exception_state,
-                                       WebURLRequest::kRequestContextScript);
+                                       mojom::RequestContextType::SCRIPT);
   if (!script_request_url.IsValid()) {
     // Don't throw an exception here because it's already thrown in
     // ResolveURL().
@@ -175,7 +175,7 @@ void DedicatedWorker::Start() {
     classic_script_loader_ = WorkerClassicScriptLoader::Create();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), script_request_url_,
-        WebURLRequest::kRequestContextWorker, fetch_request_mode,
+        mojom::RequestContextType::WORKER, fetch_request_mode,
         fetch_credentials_mode,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),

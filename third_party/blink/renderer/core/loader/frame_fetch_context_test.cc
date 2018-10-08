@@ -112,7 +112,7 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
         is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
-                           WebURLRequest::RequestContext) override {
+                           mojom::RequestContextType) override {
     return policy_;
   }
 
@@ -232,7 +232,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     const KURL url("http://example.com/");
     EXPECT_EQ(expect_is_ad, fetch_context->IsAdResource(
                                 url, ResourceType::kMock,
-                                WebURLRequest::kRequestContextUnspecified));
+                                mojom::RequestContextType::UNSPECIFIED));
     return reason;
   }
 
@@ -315,12 +315,12 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
  protected:
   void ExpectUpgrade(const char* input, const char* expected) {
-    ExpectUpgrade(input, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(input, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNone, expected);
   }
 
   void ExpectUpgrade(const char* input,
-                     WebURLRequest::RequestContext request_context,
+                     mojom::RequestContextType request_context,
                      network::mojom::RequestContextFrameType frame_type,
                      const char* expected) {
     const KURL input_url(input);
@@ -347,7 +347,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
 
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     resource_request.SetFrameType(frame_type);
 
     fetch_context->ModifyRequestForCSP(resource_request);
@@ -371,7 +371,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
       const AtomicString& expected_required_csp) {
     const KURL input_url(input);
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     resource_request.SetFrameType(frame_type);
 
     fetch_context->ModifyRequestForCSP(resource_request);
@@ -427,29 +427,29 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
     document->InsecureNavigationsToUpgrade()->clear();
 
     // We always upgrade for FrameTypeNone.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNone,
                   test.upgraded);
 
     // We never upgrade for FrameTypeNested. This is done on the browser
     // process.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNested,
                   test.original);
 
     // We do not upgrade for FrameTypeTopLevel or FrameTypeAuxiliary...
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.original);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.original);
 
     // unless the request context is RequestContextForm.
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
+    ExpectUpgrade(test.original, mojom::RequestContextType::FORM,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.upgraded);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextForm,
+    ExpectUpgrade(test.original, mojom::RequestContextType::FORM,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.upgraded);
 
@@ -457,10 +457,10 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
     // InsecureNavigationsSet:
     document->AddInsecureNavigationUpgrade(
         example_origin->Host().Impl()->GetHash());
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kTopLevel,
                   test.upgraded);
-    ExpectUpgrade(test.original, WebURLRequest::kRequestContextScript,
+    ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kAuxiliary,
                   test.upgraded);
   }
@@ -1059,7 +1059,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(resource_request);
@@ -1071,7 +1071,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
               testing::Property(&ResourceRequest::GetFrameType,
                                 network::mojom::RequestContextFrameType::kNone),
               testing::Property(&ResourceRequest::GetRequestContext,
-                                WebURLRequest::kRequestContextImage)),
+                                mojom::RequestContextType::IMAGE)),
           ResourceResponse()));
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());
@@ -1082,7 +1082,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   ResourceResponse response(url);
@@ -1247,7 +1247,7 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
 
   fetch_context->DispatchDidReceiveResponse(
       3, response, network::mojom::RequestContextFrameType::kTopLevel,
-      WebURLRequest::kRequestContextFetch, resource,
+      mojom::RequestContextType::FETCH, resource,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   // Should not crash.
 }

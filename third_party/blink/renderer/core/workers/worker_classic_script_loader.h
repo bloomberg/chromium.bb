@@ -64,14 +64,14 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   // For importScript().
   void LoadSynchronously(ExecutionContext&,
                          const KURL&,
-                         WebURLRequest::RequestContext,
+                         mojom::RequestContextType,
                          mojom::IPAddressSpace);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
   void LoadTopLevelScriptAsynchronously(ExecutionContext&,
                                         const KURL&,
-                                        WebURLRequest::RequestContext,
+                                        mojom::RequestContextType,
                                         network::mojom::FetchRequestMode,
                                         network::mojom::FetchCredentialsMode,
                                         mojom::IPAddressSpace,

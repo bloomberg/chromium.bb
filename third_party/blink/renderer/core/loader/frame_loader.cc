@@ -219,7 +219,7 @@ void FrameLoader::Init() {
   ScriptForbiddenScope forbid_scripts;
 
   ResourceRequest initial_request{KURL(g_empty_string)};
-  initial_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+  initial_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   initial_request.SetFrameType(
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
@@ -749,25 +749,25 @@ static WebNavigationType DetermineNavigationType(
   return kWebNavigationTypeOther;
 }
 
-static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
+static mojom::RequestContextType DetermineRequestContextFromNavigationType(
     const WebNavigationType navigation_type) {
   switch (navigation_type) {
     case kWebNavigationTypeLinkClicked:
-      return WebURLRequest::kRequestContextHyperlink;
+      return mojom::RequestContextType::HYPERLINK;
 
     case kWebNavigationTypeOther:
-      return WebURLRequest::kRequestContextLocation;
+      return mojom::RequestContextType::LOCATION;
 
     case kWebNavigationTypeFormResubmitted:
     case kWebNavigationTypeFormSubmitted:
-      return WebURLRequest::kRequestContextForm;
+      return mojom::RequestContextType::FORM;
 
     case kWebNavigationTypeBackForward:
     case kWebNavigationTypeReload:
-      return WebURLRequest::kRequestContextInternal;
+      return mojom::RequestContextType::INTERNAL;
   }
   NOTREACHED();
-  return WebURLRequest::kRequestContextHyperlink;
+  return mojom::RequestContextType::HYPERLINK;
 }
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
@@ -1698,8 +1698,7 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
 
   if (resource_request.GetFrameType() ==
           network::mojom::RequestContextFrameType::kNone ||
-      resource_request.GetRequestContext() ==
-          WebURLRequest::kRequestContextForm ||
+      resource_request.GetRequestContext() == mojom::RequestContextType::FORM ||
       (!url.Host().IsNull() && origin_context->GetSecurityContext()
                                    .InsecureNavigationsToUpgrade()
                                    ->Contains(url.Host().Impl()->GetHash()))) {

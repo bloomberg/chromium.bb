@@ -1049,7 +1049,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   ResourceRequest request(url_);
   request.SetRequestorOrigin(GetSecurityOrigin());
   request.SetHTTPMethod(method_);
-  request.SetRequestContext(WebURLRequest::kRequestContextXMLHttpRequest);
+  request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
   request.SetFetchRequestMode(
       upload_events ? network::mojom::FetchRequestMode::kCORSWithForcedPreflight
                     : network::mojom::FetchRequestMode::kCORS);
