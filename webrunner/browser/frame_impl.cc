@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
 #include "webrunner/browser/context_impl.h"
 
@@ -100,13 +101,32 @@ bool ComputeNavigationEvent(const chromium::web::NavigationEntry& old_entry,
   return is_changed;
 }
 
+class FrameFocusRules : public wm::BaseFocusRules {
+ public:
+  FrameFocusRules() = default;
+  ~FrameFocusRules() override = default;
+
+  // wm::BaseFocusRules implementation.
+  bool SupportsChildActivation(aura::Window*) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameFocusRules);
+};
+
+bool FrameFocusRules::SupportsChildActivation(aura::Window*) const {
+  // TODO(crbug.com/878439): Return a result based on window properties such as
+  // visibility.
+  return true;
+}
+
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
                      fidl::InterfaceRequest<chromium::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
-      focus_controller_(std::make_unique<wm::FocusController>(this)),
+      focus_controller_(
+          std::make_unique<wm::FocusController>(new FrameFocusRules)),
       context_(context),
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
@@ -117,7 +137,7 @@ FrameImpl::~FrameImpl() {
   if (window_tree_host_) {
     aura::client::SetFocusClient(root_window(), nullptr);
     wm::SetActivationClient(root_window(), nullptr);
-
+    web_contents_->ClosePage();
     window_tree_host_->Hide();
     window_tree_host_->compositor()->SetVisible(false);
 
@@ -299,12 +319,6 @@ void FrameImpl::MaybeSendNavigationEvent() {
     // No more changes to report.
     waiting_for_navigation_event_ack_ = false;
   }
-}
-
-bool FrameImpl::SupportsChildActivation(aura::Window*) const {
-  // TODO(crbug.com/878439): Return a result based on window properties such as
-  // visibility.
-  return true;
 }
 
 }  // namespace webrunner
