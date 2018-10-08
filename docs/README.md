@@ -107,6 +107,8 @@ used when committed.
     builder migration for Chromium
 *   [Tour of Continuous Integration UI](tour_of_luci_ui.md) - A tour of our
     the user interface for LUCI, our continuous integration system
+*   [Parsing Test Results](parsing_test_results.md) - An introduction for how to
+    understand the results emitted by polygerrit and CI builds.
 *   [Closure Compilation](closure_compilation.md) - The _Closure_ JavaScript
     compiler
 *   [Threading and Tasks in Chrome](threading_and_tasks.md) - How to run tasks
@@ -290,7 +292,7 @@ used when committed.
     Enabling spoken feedback (ChromeVox) on desktop Linux.
 *   [Offscreen, Invisible and Size](accessibility/offscreen.md) - How Chrome
     defines offscreen, invisible and size in the accessibility tree.
-*   [Text to Speech](accessibility/tts.md) - Overview of text to speech in 
+*   [Text to Speech](accessibility/tts.md) - Overview of text to speech in
     Chrome and Chrome OS.
 *   [BRLTTY in Chrome OS](accessibility/brltty.md) - Chrome OS integration with
     BRLTTY to support refreshable braille displays
