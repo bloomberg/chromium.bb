@@ -13,17 +13,17 @@
 
 namespace device {
 
-FakeARCore::FakeARCore()
+FakeArCore::FakeArCore()
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-FakeARCore::~FakeARCore() = default;
+FakeArCore::~FakeArCore() = default;
 
-bool FakeARCore::Initialize() {
+bool FakeArCore::Initialize() {
   DCHECK(IsOnGlThread());
   return true;
 }
 
-void FakeARCore::SetDisplayGeometry(
+void FakeArCore::SetDisplayGeometry(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation) {
   DCHECK(IsOnGlThread());
@@ -31,9 +31,9 @@ void FakeARCore::SetDisplayGeometry(
   frame_size_ = frame_size;
 }
 
-void FakeARCore::SetCameraTexture(GLuint texture) {
+void FakeArCore::SetCameraTexture(GLuint texture) {
   DCHECK(IsOnGlThread());
-  // We need a GL_TEXTURE_EXTERNAL_OES to be compatible with the real ARCore.
+  // We need a GL_TEXTURE_EXTERNAL_OES to be compatible with the real ArCore.
   // The content doesn't really matter, just create an AHardwareBuffer-backed
   // GLImage and bind it to the texture.
 
@@ -116,19 +116,19 @@ void FakeARCore::SetCameraTexture(GLuint texture) {
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 }
 
-std::vector<float> FakeARCore::TransformDisplayUvCoords(
+std::vector<float> FakeArCore::TransformDisplayUvCoords(
     const base::span<const float> uvs) {
-  // Try to match ARCore's transfore values.
+  // Try to match ArCore's transfore values.
   //
-  // Sample ARCore input: width=1080, height=1795, rotation=0,
+  // Sample ArCore input: width=1080, height=1795, rotation=0,
   // vecs = (0, 0), (0, 1), (1, 0), (1, 1)
-  // Sample ARCore output:
+  // Sample ArCore output:
   //   (0.0325544, 1,
   //    0.967446, 1,
   //    0.0325543, 0,
   //    0.967446, 1.19209e-07)
   //
-  // FakeARCoreDriver test_arcore;
+  // FakeArCoreDriver test_arcore;
   // test_arcore.SetCameraAspect(16.f / 9.f);
   // test_arcore.SetDisplayGeometry(0, 1080, 1795);
   // float in[8] = {0, 0, 0, 1, 1, 0, 1, 1};
@@ -221,12 +221,12 @@ std::vector<float> FakeARCore::TransformDisplayUvCoords(
   return uvs_out;
 }
 
-gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
+gfx::Transform FakeArCore::GetProjectionMatrix(float near, float far) {
   DCHECK(IsOnGlThread());
   // Get a projection matrix matching the current screen orientation and
   // aspect. Currently, this uses a hardcoded FOV angle for the smaller screen
   // dimension, and adjusts the other angle to preserve the aspect. A better
-  // simulation of ARCore should apply cropping to the underlying fixed-aspect
+  // simulation of ArCore should apply cropping to the underlying fixed-aspect
   // simulated camera image.
   constexpr float fov_half_angle_degrees = 30.f;
   float base_tan = tanf(fov_half_angle_degrees * base::kPiFloat / 180.f);
@@ -253,7 +253,7 @@ gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
   return result;
 }
 
-mojom::VRPosePtr FakeARCore::Update(bool* camera_updated) {
+mojom::VRPosePtr FakeArCore::Update(bool* camera_updated) {
   DCHECK(IsOnGlThread());
   DCHECK(camera_updated);
 
@@ -274,7 +274,7 @@ mojom::VRPosePtr FakeARCore::Update(bool* camera_updated) {
   return pose;
 }
 
-bool FakeARCore::RequestHitTest(
+bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
     const gfx::Size& image_size,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
@@ -282,15 +282,15 @@ bool FakeARCore::RequestHitTest(
   return false;
 }
 
-void FakeARCore::Pause() {
+void FakeArCore::Pause() {
   DCHECK(IsOnGlThread());
 }
 
-void FakeARCore::Resume() {
+void FakeArCore::Resume() {
   DCHECK(IsOnGlThread());
 }
 
-bool FakeARCore::IsOnGlThread() const {
+bool FakeArCore::IsOnGlThread() const {
   return gl_thread_task_runner_->BelongsToCurrentThread();
 }
 

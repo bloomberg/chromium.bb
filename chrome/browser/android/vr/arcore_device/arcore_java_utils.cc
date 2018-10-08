@@ -31,7 +31,7 @@ bool ArCoreJavaUtils::EnsureLoaded() {
   return LoadArCoreSdk(base::android::ConvertJavaStringToUTF8(env, java_path));
 }
 
-ArCoreJavaUtils::ArCoreJavaUtils(device::ARCoreDevice* arcore_device)
+ArCoreJavaUtils::ArCoreJavaUtils(device::ArCoreDevice* arcore_device)
     : arcore_device_(arcore_device) {
   DCHECK(arcore_device_);
 
@@ -53,7 +53,7 @@ ArCoreJavaUtils::~ArCoreJavaUtils() {
 void ArCoreJavaUtils::OnRequestInstallSupportedArCoreCanceled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  arcore_device_->OnRequestInstallSupportedARCoreCanceled();
+  arcore_device_->OnRequestInstallSupportedArCoreCanceled();
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallArModule() {

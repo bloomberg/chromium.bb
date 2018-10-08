@@ -62,7 +62,7 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ARCORE)
     if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
-      providers.emplace_back(device::ARCoreDeviceProviderFactory::Create());
+      providers.emplace_back(device::ArCoreDeviceProviderFactory::Create());
     }
 #endif
 
