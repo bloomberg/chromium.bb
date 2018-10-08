@@ -1930,6 +1930,7 @@ test("content_unittests") {
     "//third_party/webrtc/modules/video_coding:video_codec_interface",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc/rtc_base:timeutils",
     "//third_party/webrtc/stats:rtc_stats_test_utils",
     "//third_party/webrtc_overrides",
     "//third_party/webrtc_overrides:init_webrtc",
