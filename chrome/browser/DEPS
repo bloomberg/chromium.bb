@@ -223,6 +223,11 @@ specific_include_rules = {
     # Needed for classic mode.
     "+ash/ash_service.h",
   ],
+  "platform_util_mac.mm": [
+    # The following is used to forward methods to an NSWindow in another
+    # process, via the views::Widget API.
+    "+ui/views/widget/widget.h",
+  ],
   # TODO(mash): Fix. https://crbug.com/768439, https://crbug.com/768395.
   "exo_parts\.cc": [
     "+ash/shell.h",

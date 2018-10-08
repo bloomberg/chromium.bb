@@ -17,6 +17,7 @@
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace platform_util {
@@ -97,14 +98,29 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
+  // If |window| is a doppelganger NSWindow being used to track an NSWindow that
+  // is being hosted in another process, then use the views::Widget interface to
+  // interact with it.
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    return widget->IsActive();
+
   return [window isKeyWindow] || [window isMainWindow];
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    return widget->Activate();
+
   [window makeKeyAndOrderFront:nil];
 }
 
 bool IsVisible(gfx::NativeView view) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  if (widget)
+    return widget->IsVisible();
+
   // A reasonable approximation of how you'd expect this to behave.
   return (view &&
           ![view isHiddenOrHasHiddenAncestor] &&
