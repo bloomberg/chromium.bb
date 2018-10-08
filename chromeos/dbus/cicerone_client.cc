@@ -7,12 +7,22 @@
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/vm_cicerone/dbus-constants.h"
 
 namespace chromeos {
+namespace {
+// How long to wait before timing out on regular RPCs.
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMinutes(1);
+
+// How long to wait while doing more complex operations like starting or
+// creating a container.
+constexpr base::TimeDelta kLongOperationTimeout =
+    base::TimeDelta::FromMinutes(2);
+}  // namespace
 
 class CiceroneClientImpl : public CiceroneClient {
  public:
@@ -69,7 +79,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kDefaultTimeout.InMilliseconds(),
         base::BindOnce(
             &CiceroneClientImpl::OnDBusProtoResponse<
                 vm_tools::cicerone::LaunchContainerApplicationResponse>,
@@ -92,7 +102,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kDefaultTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::ContainerAppIconResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -114,7 +124,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kDefaultTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::InstallLinuxPackageResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -135,7 +145,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kLongOperationTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::CreateLxdContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -156,7 +166,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kLongOperationTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::StartLxdContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -178,7 +188,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kDefaultTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::GetLxdContainerUsernameResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -200,7 +210,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kDefaultTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::SetUpLxdContainerUserResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
