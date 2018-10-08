@@ -148,9 +148,9 @@ suite('Multidevice', function() {
         assertFalse(!!multideviceSubpage.$$('#messagesItem'));
       });
 
-  test('clicking EasyUnlock item routes to screen lock page', function() {
+  test('clicking SmartLock item routes to SmartLock subpage', function() {
     multideviceSubpage.$$('#smartLockItem').$.card.click();
-    assertEquals(settings.getCurrentRoute(), settings.routes.LOCK_SCREEN);
+    assertEquals(settings.getCurrentRoute(), settings.routes.SMART_LOCK);
   });
 
   test('AndroidMessages item shows button when not set up', function() {
