@@ -327,11 +327,16 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     auto enrollment_token_fetcher =
         std::make_unique<ArcActiveDirectoryEnrollmentTokenFetcher>(
             ArcSessionManager::Get()->support_host());
-    enrollment_token_fetcher->Fetch(
+
+    // Add the request to |pending_token_requests_| first, before starting a
+    // token fetch. In case the callback is called immediately, we do not want
+    // to add an already completed request to |pending_token_requests_|.
+    auto* enrollment_token_fetcher_ptr = enrollment_token_fetcher.get();
+    pending_token_requests_.emplace_back(std::move(enrollment_token_fetcher));
+    enrollment_token_fetcher_ptr->Fetch(
         base::BindOnce(&ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched,
                        weak_ptr_factory_.GetWeakPtr(),
-                       enrollment_token_fetcher.get(), std::move(callback)));
-    pending_token_requests_.emplace_back(std::move(enrollment_token_fetcher));
+                       enrollment_token_fetcher_ptr, std::move(callback)));
     return;
   }
 
@@ -358,11 +363,16 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     auth_code_fetcher = CreateArcBackgroundAuthCodeFetcher(
         signin_manager->GetAuthenticatedAccountId(), initial_signin);
   }
-  auth_code_fetcher->Fetch(
-      base::BindOnce(&ArcAuthService::OnPrimaryAccountAuthCodeFetched,
-                     weak_ptr_factory_.GetWeakPtr(), auth_code_fetcher.get(),
-                     std::move(callback)));
+
+  // Add the request to |pending_token_requests_| first, before starting a token
+  // fetch. In case the callback is called immediately, we do not want to add an
+  // already completed request to |pending_token_requests_|.
+  auto* auth_code_fetcher_ptr = auth_code_fetcher.get();
   pending_token_requests_.emplace_back(std::move(auth_code_fetcher));
+  auth_code_fetcher_ptr->Fetch(
+      base::BindOnce(&ArcAuthService::OnPrimaryAccountAuthCodeFetched,
+                     weak_ptr_factory_.GetWeakPtr(), auth_code_fetcher_ptr,
+                     std::move(callback)));
 }
 
 void ArcAuthService::OnTokenUpserted(
