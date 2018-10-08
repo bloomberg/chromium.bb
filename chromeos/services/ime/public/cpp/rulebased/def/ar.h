@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_IME_RULEBASED_DEF_AR_H_
-#define CHROMEOS_SERVICES_IME_RULEBASED_DEF_AR_H_
+#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_AR_H_
+#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_AR_H_
 
 const wchar_t* key_map_ar[] = {
     // Row #1
@@ -32,4 +32,4 @@ const uint8_t key_map_index_ar[8]{0, 1, 0, 1, 0, 1, 0, 1};
 const char* id_ar = "ar";
 const bool is_102_ar = false;
 
-#endif  // CHROMEOS_SERVICES_IME_RULEBASED_DEF_AR_H_
+#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_AR_H_

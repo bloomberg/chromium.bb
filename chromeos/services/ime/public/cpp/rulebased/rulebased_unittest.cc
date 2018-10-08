@@ -4,8 +4,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 
-#include "chromeos/services/ime/rulebased/controller.h"
-#include "chromeos/services/ime/rulebased/rules_data.h"
+#include "chromeos/services/ime/public/cpp/rulebased/engine.h"
+#include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,26 +28,26 @@ class RulebasedImeTest : public testing::Test {
   ~RulebasedImeTest() override = default;
 
   // testing::Test:
-  void SetUp() override { controller_.reset(new rulebased::Controller); }
+  void SetUp() override { engine_.reset(new rulebased::Engine); }
 
   void VerifyKeys(std::vector<KeyVerifyEntry> entries) {
     for (auto entry : entries) {
       rulebased::ProcessKeyResult res =
-          controller_->ProcessKey(entry.key, entry.modifiers);
+          engine_->ProcessKey(entry.key, entry.modifiers);
       EXPECT_TRUE(res.key_handled);
       std::string expected_str = base::WideToUTF8(entry.expected_str);
       EXPECT_EQ(expected_str, res.commit_text);
     }
   }
 
-  std::unique_ptr<rulebased::Controller> controller_;
+  std::unique_ptr<rulebased::Engine> engine_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RulebasedImeTest);
 };
 
 TEST_F(RulebasedImeTest, Arabic) {
-  controller_->Activate("ar");
+  engine_->Activate("ar");
   std::vector<KeyVerifyEntry> entries;
   entries.push_back({"KeyA", rulebased::MODIFIER_SHIFT, L"\u0650"});
   entries.push_back({"KeyB", 0, L"\u0644\u0627"});
@@ -56,7 +56,7 @@ TEST_F(RulebasedImeTest, Arabic) {
 }
 
 TEST_F(RulebasedImeTest, Persian) {
-  controller_->Activate("fa");
+  engine_->Activate("fa");
   std::vector<KeyVerifyEntry> entries;
   entries.push_back({"KeyA", 0, L"\u0634"});
   entries.push_back({"KeyV", rulebased::MODIFIER_SHIFT, L""});
@@ -65,19 +65,19 @@ TEST_F(RulebasedImeTest, Persian) {
 }
 
 TEST_F(RulebasedImeTest, Thai) {
-  controller_->Activate("th");
+  engine_->Activate("th");
   std::vector<KeyVerifyEntry> entries;
   entries.push_back({"KeyA", 0, L"\u0e1f"});
   entries.push_back({"KeyA", rulebased::MODIFIER_ALTGR, L""});
   VerifyKeys(entries);
 
-  controller_->Activate("th_pattajoti");
+  engine_->Activate("th_pattajoti");
   entries.clear();
   entries.push_back({"KeyA", 0, L"\u0e49"});
   entries.push_back({"KeyB", rulebased::MODIFIER_SHIFT, L"\u0e31\u0e49"});
   VerifyKeys(entries);
 
-  controller_->Activate("th_tis");
+  engine_->Activate("th_tis");
   entries.clear();
   entries.push_back({"KeyA", 0, L"\u0e1f"});
   entries.push_back({"KeyM", rulebased::MODIFIER_SHIFT, L"?"});

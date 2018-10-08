@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_PATTAJOTI_H_
-#define CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_PATTAJOTI_H_
+#ifndef CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_PATTAJOTI_H_
+#define CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_PATTAJOTI_H_
 
 const wchar_t* key_map_th_pattajoti[] = {
     // Row #1
@@ -33,4 +33,4 @@ const uint8_t key_map_index_th_pattajoti[8]{0, 1, 0, 1, 1, 0, 1, 0};
 const char* id_th_pattajoti = "th_pattajoti";
 const bool is_102_th_pattajoti = false;
 
-#endif  // CHROMEOS_SERVICES_IME_RULEBASED_DEF_TH_PATTAJOTI_H_
+#endif  // CHROMEOS_SERVICES_IME_PUBLIC_CPP_RULEBASED_DEF_TH_PATTAJOTI_H_

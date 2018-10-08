@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/ime/rulebased/rules_data.h"
+#include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/services/ime/rulebased/def/ar.h"
-#include "chromeos/services/ime/rulebased/def/ckb_ar.h"
-#include "chromeos/services/ime/rulebased/def/ckb_en.h"
-#include "chromeos/services/ime/rulebased/def/fa.h"
-#include "chromeos/services/ime/rulebased/def/km.h"
-#include "chromeos/services/ime/rulebased/def/lo.h"
-#include "chromeos/services/ime/rulebased/def/ne_inscript.h"
-#include "chromeos/services/ime/rulebased/def/ru_phone_aatseel.h"
-#include "chromeos/services/ime/rulebased/def/ru_phone_yazhert.h"
-#include "chromeos/services/ime/rulebased/def/ta_inscript.h"
-#include "chromeos/services/ime/rulebased/def/ta_typewriter.h"
-#include "chromeos/services/ime/rulebased/def/th.h"
-#include "chromeos/services/ime/rulebased/def/th_pattajoti.h"
-#include "chromeos/services/ime/rulebased/def/th_tis.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ar.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ckb_ar.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ckb_en.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/fa.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/km.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/lo.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ne_inscript.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ru_phone_aatseel.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ru_phone_yazhert.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ta_inscript.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/ta_typewriter.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/th.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/th_pattajoti.h"
+#include "chromeos/services/ime/public/cpp/rulebased/def/th_tis.h"
 
 namespace chromeos {
 namespace ime {
