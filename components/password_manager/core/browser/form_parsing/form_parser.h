@@ -42,6 +42,29 @@ class FormDataParser {
     kCount
   };
 
+  // Records whether password fields with a "readonly" attribute were ignored
+  // during form parsing.
+  enum class ReadonlyPasswordFields {
+    // Local heuristics, which only consider the readonly attribute, were not
+    // used for the parsing. This means that either the form was unsuitable for
+    // parsing (e.g., no fields at all), or some of the more trusted methods
+    // (server hints, autocomplete attributes) succeeded.
+    kNoHeuristics = 0,
+    //
+    // The rest of the values refer to the case when local heuristics were used.
+    // In that case there are always some password fields.
+    //
+    // No password fields with "readonly" ignored but some password fields
+    // present.
+    kNoneIgnored = 2,
+    // At least one password with "readonly" was ignored and at least one other
+    // password field was not ignored (whether readonly or not).
+    kSomeIgnored = 3,
+    // At least one password with "readonly" was ignored and every password
+    // field was ignored because of being readonly.
+    kAllIgnored = 4,
+  };
+
   FormDataParser();
 
   ~FormDataParser();
@@ -51,6 +74,8 @@ class FormDataParser {
   }
 
   const base::Optional<FormPredictions>& predictions() { return predictions_; }
+
+  ReadonlyPasswordFields readonly_status() { return readonly_status_; }
 
   // Parse DOM information |form_data| into Password Manager's form
   // representation PasswordForm. Return nullptr when parsing is unsuccessful.
@@ -62,6 +87,11 @@ class FormDataParser {
   // Predictions are an optional source of server-side information about field
   // types.
   base::Optional<FormPredictions> predictions_;
+
+  // Records whether readonly password fields were seen during the last call to
+  // Parse().
+  ReadonlyPasswordFields readonly_status_ =
+      ReadonlyPasswordFields::kNoHeuristics;
 
   DISALLOW_COPY_AND_ASSIGN(FormDataParser);
 };

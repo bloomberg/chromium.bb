@@ -29,6 +29,9 @@ specific_include_rules = {
   "hsts_query_unittest\.cc": [
     "+services/network",
   ],
+  "new_password_form_manager_unittest\.cc": [
+    "+components/ukm",
+  ],
   "password_autofill_manager_unittest\.cc": [
     "+components/ukm",
   ],

@@ -291,6 +291,18 @@ class PasswordFormMetricsRecorder
   // |comparison_result| is a bitmask of values from ParsingOnSavingDifference.
   void RecordParsingOnSavingDifference(uint64_t comparison_result);
 
+  // Records the readonly status encoded with parsing success after parsing for
+  // filling. The |value| is constructed as follows: The least significant bit
+  // says whether parsing succeeded (1) or not (0). The rest, shifted by one
+  // bit to the right is the FormDataParser::ReadonlyPasswordFields
+  // representation of the readonly status.
+  void RecordReadonlyWhenFilling(uint64_t value);
+
+  // Records the readonly status encoded with parsing success after parsing for
+  // creating pending credentials. See RecordReadonlyWhenFilling for the meaning
+  // of |value|.
+  void RecordReadonlyWhenSaving(uint64_t value);
+
   // Records that Chrome noticed that it should show a manual fallback for
   // saving.
   void RecordShowManualFallbackForSaving(bool has_generated_password,

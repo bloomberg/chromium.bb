@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,6 +88,7 @@ struct FormParsingTestCase {
   const autofill::ValueElementVector* all_possible_passwords = nullptr;
   const autofill::ValueElementVector* all_possible_usernames = nullptr;
   bool username_may_use_prefilled_placeholder = false;
+  base::Optional<FormDataParser::ReadonlyPasswordFields> readonly_status;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -352,6 +354,9 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
           EXPECT_EQ(*test_case.all_possible_usernames,
                     parsed_form->other_possible_usernames);
         }
+      }
+      if (test_case.readonly_status) {
+        EXPECT_EQ(*test_case.readonly_status, parser.readonly_status());
       }
     }
   }
@@ -1331,6 +1336,83 @@ TEST(FormParserTest, CVC) {
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
+      },
+  });
+}
+
+// Check that "readonly status" is reported accordingly.
+TEST(FormParserTest, ReadonlyStatus) {
+  CheckTestData({
+      {
+          "Server hints prevent heuristics from using readonly.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::PASSWORD},
+               .is_readonly = true,
+               .form_control_type = "password"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kNoHeuristics,
+      },
+      {
+          "Autocomplete attributes prevent heuristics from using readonly.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .autocomplete_attribute = "current-password",
+               .is_readonly = true,
+               .form_control_type = "password"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kNoHeuristics,
+      },
+      {
+          "No password fields are a special case of not going through local "
+          "heuristics.",
+          {
+              {.form_control_type = "text"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kNoHeuristics,
+      },
+      {
+          "No readonly passwords ignored.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               // While readonly, this field is not ignored because it was
+               // autofilled before.
+               .is_readonly = true,
+               .properties_mask = FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+               .form_control_type = "password"},
+              {.role = ElementRole::NEW_PASSWORD,
+               .is_readonly = false,
+               .form_control_type = "password"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kNoneIgnored,
+      },
+      {
+          "Some readonly passwords ignored.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.is_readonly = true, .form_control_type = "password"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .is_readonly = false,
+               .form_control_type = "password"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kSomeIgnored,
+      },
+      {
+          "All readonly passwords ignored.",
+          {
+              {.form_control_type = "text"},
+              {.is_readonly = true, .form_control_type = "password"},
+          },
+          .readonly_status =
+              FormDataParser::ReadonlyPasswordFields::kAllIgnored,
       },
   });
 }
