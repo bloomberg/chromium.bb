@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsR
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
+import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -40,7 +41,8 @@ import java.util.List;
 /**
  * Coordinator that handles the interactions with the autocomplete system.
  */
-public class AutocompleteCoordinator implements OnSuggestionsReceivedListener {
+public class AutocompleteCoordinator
+        implements OnSuggestionsReceivedListener, UrlTextChangeListener {
     private static final String TAG = "cr_Autocomplete";
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
@@ -92,6 +94,11 @@ public class AutocompleteCoordinator implements OnSuggestionsReceivedListener {
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.
      */
     interface AutocompleteDelegate {
+        /**
+         * Notified that the URL text has changed.
+         */
+        void onUrlTextChanged();
+
         /**
          * Notified that suggestions have changed.
          * @param autocompleteText The inline autocomplete text that can be appended to the
@@ -397,7 +404,7 @@ public class AutocompleteCoordinator implements OnSuggestionsReceivedListener {
         if (mSuggestionsShown == visible) return;
         mSuggestionsShown = visible;
         if (mSuggestionList != null) {
-            final boolean isShowing = mSuggestionList.isShown();
+            final boolean isShowing = mSuggestionList.getVisibility() == View.VISIBLE;
             if (visible && !isShowing) {
                 mIgnoreOmniboxItemSelection = true; // Reset to default value.
 
@@ -613,7 +620,11 @@ public class AutocompleteCoordinator implements OnSuggestionsReceivedListener {
      * Notifies the autocomplete system that the text has changed that drives autocomplete and the
      * autocomplete suggestions should be updated.
      */
+    @Override
     public void onTextChangedForAutocomplete() {
+        // crbug.com/764749
+        Log.w(TAG, "onTextChangedForAutocomplete");
+
         if (mShouldPreventOmniboxAutocomplete) return;
 
         cancelPendingAutocompleteStart();
@@ -667,6 +678,8 @@ public class AutocompleteCoordinator implements OnSuggestionsReceivedListener {
                 mDeferredNativeRunnables.add(mRequestSuggestions);
             }
         }
+
+        mDelegate.onUrlTextChanged();
     }
 
     @Override

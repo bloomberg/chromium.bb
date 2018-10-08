@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
@@ -220,7 +221,15 @@ public class OmniboxSuggestionsList extends ListView {
     /**
      * Update the layout params to ensure the suggestion popup is properly sized.
      */
+    // TODO(tedchoc): This should likely be done in measure/layout instead of just manipulating
+    //                the layout params.  Investigate converting to that flow.
     void updateLayoutParams() {
+        // If in the middle of a layout pass, post till it is completed to avoid the layout param
+        // update being ignored.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && isInLayout()) {
+            post(this::updateLayoutParams);
+            return;
+        }
         boolean updateLayout = false;
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
         if (layoutParams == null) {

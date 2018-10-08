@@ -749,9 +749,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     // Toolbar and LocationBar calls that are not relevant here.
 
     @Override
-    public void onTextChangedForAutocomplete() {}
-
-    @Override
     public void backKeyPressed() {
         assert false : "The URL bar should never take focus in CCTs.";
     }

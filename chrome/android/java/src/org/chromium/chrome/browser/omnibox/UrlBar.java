@@ -69,6 +69,7 @@ public class UrlBar extends AutocompleteEditText {
     private int mUrlDirection;
 
     private UrlBarDelegate mUrlBarDelegate;
+    private UrlTextChangeListener mTextChangeListener;
     private UrlBarTextContextMenuDelegate mTextContextMenuDelegate;
     private UrlDirectionListener mUrlDirectionListener;
 
@@ -156,12 +157,6 @@ public class UrlBar extends AutocompleteEditText {
         boolean allowKeyboardLearning();
 
         /**
-         * Called when the text state has changed and the autocomplete suggestions should be
-         * refreshed.
-         */
-        void onTextChangedForAutocomplete();
-
-        /**
          * Called to notify that back key has been pressed while the URL bar has focus.
          */
         void backKeyPressed();
@@ -176,6 +171,15 @@ public class UrlBar extends AutocompleteEditText {
          *         whatever's in the URL bar verbatim.
          */
         boolean shouldCutCopyVerbatim();
+    }
+
+    /** Provides updates about the URL text changes. */
+    public interface UrlTextChangeListener {
+        /**
+         * Called when the text state has changed and the autocomplete suggestions should be
+         * refreshed.
+         */
+        void onTextChangedForAutocomplete();
     }
 
     /** Delegate that provides the additional functionality to the textual context menus. */
@@ -525,6 +529,14 @@ public class UrlBar extends AutocompleteEditText {
         mUrlBarDelegate = delegate;
     }
 
+    /**
+     * Set the listener to be notified when the URL text has changed.
+     * @param listener The listener to be notified.
+     */
+    public void setUrlTextChangeListener(UrlTextChangeListener listener) {
+        mTextChangeListener = listener;
+    }
+
     @Override
     public boolean onTextContextMenuItem(int id) {
         if (mTextContextMenuDelegate == null) return super.onTextContextMenuItem(id);
@@ -845,12 +857,12 @@ public class UrlBar extends AutocompleteEditText {
         if (DEBUG) {
             Log.i(TAG, "onAutocompleteTextStateChanged: DIS[%b]", updateDisplay);
         }
-        if (mUrlBarDelegate == null) return;
+        if (mTextChangeListener == null) return;
         if (updateDisplay) limitDisplayableLength();
         // crbug.com/764749
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 
-        mUrlBarDelegate.onTextChangedForAutocomplete();
+        mTextChangeListener.onTextChangedForAutocomplete();
     }
 
     /**

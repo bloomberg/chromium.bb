@@ -39,7 +39,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -107,7 +106,7 @@ public class LocationBarLayout extends FrameLayout
     protected BottomSheet mBottomSheet;
 
     protected UrlBarCoordinator mUrlCoordinator;
-    private AutocompleteCoordinator mAutocompleteCoordinator;
+    protected AutocompleteCoordinator mAutocompleteCoordinator;
 
     protected ToolbarDataProvider mToolbarDataProvider;
     private ObserverList<UrlFocusChangeListener> mUrlFocusChangeListeners = new ObserverList<>();
@@ -269,6 +268,7 @@ public class LocationBarLayout extends FrameLayout
                 };
         mAutocompleteCoordinator =
                 new AutocompleteCoordinator(this, this, embedder, mUrlCoordinator);
+        mUrlCoordinator.setUrlTextChangeListener(mAutocompleteCoordinator);
 
         mMicButton = (AppCompatImageButton) findViewById(R.id.mic_button);
 
@@ -640,13 +640,9 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void onTextChangedForAutocomplete() {
-        // crbug.com/764749
-        Log.w(TAG, "onTextChangedForAutocomplete");
-
+    public void onUrlTextChanged() {
         updateButtonVisibility();
         updateNavigationButton();
-        mAutocompleteCoordinator.onTextChangedForAutocomplete();
     }
 
     @Override
@@ -669,7 +665,7 @@ public class LocationBarLayout extends FrameLayout
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
                     UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
-            onTextChangedForAutocomplete();
+            mAutocompleteCoordinator.onTextChangedForAutocomplete();
         } else {
             ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OmniboxFocusReason.FAKE_BOX_TAP);
         }
@@ -1384,7 +1380,7 @@ public class LocationBarLayout extends FrameLayout
                                mToolbarDataProvider.getUrlBarData().getEditingOrDisplayText())) {
                 mAutocompleteCoordinator.startZeroSuggest();
             } else {
-                onTextChangedForAutocomplete();
+                mAutocompleteCoordinator.onTextChangedForAutocomplete();
             }
         }
     }
