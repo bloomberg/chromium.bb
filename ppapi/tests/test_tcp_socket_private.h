@@ -30,6 +30,13 @@ class TestTCPSocketPrivate : public TestCase {
   std::string TestSetOption();
   std::string TestLargeRead();
 
+  // The higher level test fixture is responsible for making the appropriate
+  // call in these tests fail with PP_ERROR_FAILED, and all prior events
+  // succeed.
+  std::string TestSSLHandshakeFails();
+  std::string TestSSLWriteFails();
+  std::string TestSSLReadFails();
+
   int32_t ReadFirstLineFromSocket(pp::TCPSocketPrivate* socket, std::string* s);
   int32_t WriteStringToSocket(pp::TCPSocketPrivate* socket,
                               const std::string& s);

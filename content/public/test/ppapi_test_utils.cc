@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/pepper/pepper_tcp_server_socket_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_tcp_socket_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_udp_socket_message_filter.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -143,6 +145,14 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
                                    "x-blink-deprecated-test-plugin#"
                                    "blinkdeprecatedtestplugin")));
   return RegisterPlugins(command_line, plugins);
+}
+
+void SetPepperTCPNetworkContextForTesting(
+    network::mojom::NetworkContext* network_context) {
+  content::PepperTCPServerSocketMessageFilter::SetNetworkContextForTesting(
+      network_context);
+  content::PepperTCPSocketMessageFilter::SetNetworkContextForTesting(
+      network_context);
 }
 
 void SetPepperUDPSocketCallackForTesting(

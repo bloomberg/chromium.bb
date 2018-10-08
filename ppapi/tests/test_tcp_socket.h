@@ -35,6 +35,26 @@ class TestTCPSocket: public TestCase {
   std::string TestInterface_1_0();
   std::string TestUnexpectedCalls();
 
+  // The higher level test fixture is responsible for making the appropriate
+  // call in these tests fail with PP_ERROR_FAILED, and all prior events
+  // succeed.
+  std::string TestConnectFails();
+  std::string TestWriteFails();
+  std::string TestReadFails();
+  std::string TestSetSendBufferSizeFails();
+  std::string TestSetReceiveBufferSizeFails();
+  std::string TestSetNoDelayFails();
+  // When a bind call fails, normally the socket is reuseable.
+  std::string TestBindFailsConnectSucceeds();
+  // This is needed in addition to the above test in the case where a bind
+  // failure is simulated in a way that also closes the NetworkContext pipe.
+  std::string TestBindFails();
+  std::string TestListenFails();
+  std::string TestAcceptFails();
+  std::string TestAcceptedSocketWriteFails();
+  std::string TestAcceptedSocketReadFails();
+  std::string TestBindConnectFails();
+
   std::string ReadFirstLineFromSocket(pp::TCPSocket* socket, std::string* s);
   std::string ReadFirstLineFromSocket_1_0(PP_Resource socket,
                                           std::string* s);
@@ -65,6 +85,7 @@ class TestTCPSocket: public TestCase {
     kAccept = 0x4,
     kConnect = 0x8,
     kReadWrite = 0x10,
+    kAllCommands = -1,
   };
   // Runs |commands|, consisting of one or more Command values on |socket|,
   // expecting all of them to fail with PP_ERROR_FAILED. Useful for testing
