@@ -15,12 +15,6 @@ var camera = camera || {};
 camera.bg = {};
 
 /**
- * Singleton window handle of the Camera app.
- * @type {AppWindow}
- */
-camera.bg.appWindow = null;
-
-/**
  * Fixed minimum width of the window inner-bounds in pixels.
  * @type {number}
  * @const
@@ -79,8 +73,6 @@ camera.bg.create = function() {
         chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
       });
-      inAppWindow.aspectRatio = camera.bg.INITIAL_ASPECT_RATIO;
-      camera.bg.appWindow = inAppWindow;
     });
   });
 };
