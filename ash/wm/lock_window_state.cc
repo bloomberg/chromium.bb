@@ -7,10 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/wm/lock_layout_manager.h"
-#include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"

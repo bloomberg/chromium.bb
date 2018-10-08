@@ -37,11 +37,11 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   enum class Mode {
     // There is no current scroll process.
     kNone,
-    // Swiping away the MRU window to display launcher. If in overview mode,
-    // swipes away overview mode as well.
-    kSwipeUpToShow,
-    // Swiping down the MRU window to hide launcher.
-    kSwipeDownToHide,
+    // Sliding up the MRU window to display launcher. If in overview mode,
+    // slides up overview mode as well.
+    kSlideUpToShow,
+    // Sliding down the MRU window to hide launcher.
+    kSlideDownToHide,
   };
 
   explicit HomeLauncherGestureHandler(
@@ -51,13 +51,20 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Called by owner of this object when a gesture event is received. |location|
   // should be in screen coordinates. Returns false if the the gesture event
   // was not processed.
-  bool OnPressEvent(Mode mode);
+  bool OnPressEvent(Mode mode, const gfx::Point& location);
   bool OnScrollEvent(const gfx::Point& location);
   bool OnReleaseEvent(const gfx::Point& location);
 
   // Cancel a current drag and animates the items to their final state based on
   // |last_event_location_|.
   void Cancel();
+
+  // Hide MRU window and show home launcher on specified display.
+  bool ShowHomeLauncher(const display::Display& display);
+
+  // Hide home launcher and show MRU window on specified display.
+  bool HideHomeLauncherForWindow(const display::Display& display,
+                                 aura::Window* window);
 
   bool IsDragInProgress() const { return last_event_location_.has_value(); }
 
@@ -88,7 +95,7 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
     gfx::Transform target_transform;
   };
 
-  // Animates the items based on |last_event_location_|.
+  // Animates the items based on IsFinalStateShow().
   void AnimateToFinalState();
 
   // Updates |settings| based on what we want for this class. This will listen
@@ -104,6 +111,19 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
 
   // Stop observing all windows and remove their local pointers.
   void RemoveObserversAndStopTracking();
+
+  // Returns true if there's no gesture dragging and animation.
+  bool IsIdle();
+
+  // Returns true if home launcher should run animation to show. Otherwise,
+  // returns false.
+  bool IsFinalStateShow();
+
+  // Sets up windows that will be used in dragging and animation. If |window| is
+  // not null for kSlideDownToHide mode, it will be set as the window to run
+  // slide down animation. |window| is not used for kSlideUpToShow mode. Returns
+  // true if windows are successfully set up.
+  bool SetUpWindows(Mode mode, aura::Window* window);
 
   Mode mode_ = Mode::kNone;
 
@@ -144,6 +164,9 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
 
   // Unowned and guaranteed to be non null for the lifetime of this.
   AppListControllerImpl* app_list_controller_;
+
+  // The display where the windows are being processed.
+  display::Display display_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandler);
 };

@@ -728,15 +728,13 @@ void WindowSelector::SetWindowListNotAnimatedWhenExiting(
 }
 
 void WindowSelector::UpdateGridAtLocationYPositionAndOpacity(
-    const gfx::Point& location,
+    int64_t display_id,
     int new_y,
     float opacity,
     const gfx::Rect& work_area,
     UpdateAnimationSettingsCallback callback) {
-  WindowGrid* grid =
-      GetGridWithRootWindow(display::Screen::GetScreen()
-                                ->GetWindowAtScreenPoint(location)
-                                ->GetRootWindow());
+  WindowGrid* grid = GetGridWithRootWindow(
+      ash::Shell::Get()->GetRootWindowForDisplayId(display_id));
   if (grid)
     grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }

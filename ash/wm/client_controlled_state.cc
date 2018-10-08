@@ -5,12 +5,12 @@
 #include "ash/wm/client_controlled_state.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
@@ -15,7 +16,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
-#include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"

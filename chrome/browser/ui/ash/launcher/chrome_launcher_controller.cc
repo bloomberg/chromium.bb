@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/pattern.h"
@@ -520,10 +521,17 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }
 
+  AppListClientImpl* app_list_client = AppListClientImpl::GetInstance();
   if (window->IsActive() && allow_minimize &&
-      !AppListClientImpl::GetInstance()->app_list_target_visibility()) {
+      !(app_list_client && app_list_client->app_list_target_visibility())) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
+  }
+
+  if (app_list_client && app_list_client->IsHomeLauncherEnabledInTabletMode()) {
+    // Run slide down animation to show the window.
+    wm::SetWindowVisibilityAnimationType(
+        native_window, ash::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);
   }
 
   window->Show();

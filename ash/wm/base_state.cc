@@ -4,11 +4,11 @@
 
 #include "ash/wm/base_state.h"
 
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
