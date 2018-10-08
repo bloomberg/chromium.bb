@@ -70,11 +70,11 @@ class FrameImpl : public chromium::web::Frame,
       override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, DelayedNavigationEventAck);
-  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NavigationObserverDisconnected);
-  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NoNavigationObserverAttached);
-  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, ReloadFrame);
-  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, Stop);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NavigationObserverDisconnected);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NoNavigationObserverAttached);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
+  FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
 
   aura::Window* root_window() const { return window_tree_host_->window(); }
 

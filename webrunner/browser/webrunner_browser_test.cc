@@ -37,6 +37,29 @@ void WebRunnerBrowserTest::PostRunTestOnMainThread() {
   context_.Unbind();
 }
 
+void WebRunnerBrowserTest::TearDownOnMainThread() {
+  navigation_observer_bindings_.CloseAll();
+}
+
+chromium::web::FramePtr WebRunnerBrowserTest::CreateFrame(
+    chromium::web::NavigationEventObserver* observer) {
+  chromium::web::FramePtr frame;
+  context_->CreateFrame(frame.NewRequest());
+
+  if (observer) {
+    fidl::InterfaceRequest<chromium::web::NavigationEventObserver>
+        observer_request;
+    frame->SetNavigationEventObserver(
+        navigation_observer_bindings_.AddBinding(observer));
+  }
+
+  // Pump the messages so that the caller can use the Frame instance
+  // immediately after this function returns.
+  base::RunLoop().RunUntilIdle();
+
+  return frame;
+}
+
 // static
 void WebRunnerBrowserTest::SetContextClientChannel(zx::channel channel) {
   DCHECK(channel);
