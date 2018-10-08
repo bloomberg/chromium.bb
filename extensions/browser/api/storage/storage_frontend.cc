@@ -78,23 +78,23 @@ StorageFrontend* StorageFrontend::Get(BrowserContext* context) {
 
 // static
 std::unique_ptr<StorageFrontend> StorageFrontend::CreateForTesting(
-    const scoped_refptr<ValueStoreFactory>& storage_factory,
+    scoped_refptr<ValueStoreFactory> storage_factory,
     BrowserContext* context) {
-  return base::WrapUnique(new StorageFrontend(storage_factory, context));
+  return base::WrapUnique(
+      new StorageFrontend(std::move(storage_factory), context));
 }
 
 StorageFrontend::StorageFrontend(BrowserContext* context)
     : StorageFrontend(ExtensionSystem::Get(context)->store_factory(), context) {
 }
 
-StorageFrontend::StorageFrontend(
-    const scoped_refptr<ValueStoreFactory>& factory,
-    BrowserContext* context)
+StorageFrontend::StorageFrontend(scoped_refptr<ValueStoreFactory> factory,
+                                 BrowserContext* context)
     : browser_context_(context) {
-  Init(factory);
+  Init(std::move(factory));
 }
 
-void StorageFrontend::Init(const scoped_refptr<ValueStoreFactory>& factory) {
+void StorageFrontend::Init(scoped_refptr<ValueStoreFactory> factory) {
   TRACE_EVENT0("browser,startup", "StorageFrontend::Init")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.StorageFrontendInitTime");
 

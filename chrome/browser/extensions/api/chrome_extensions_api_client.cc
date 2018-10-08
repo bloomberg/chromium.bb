@@ -49,6 +49,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "printing/buildflags/buildflags.h"
 #include "url/gurl.h"
