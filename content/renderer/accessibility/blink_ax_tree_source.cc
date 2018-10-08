@@ -827,7 +827,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              aria_rowcount);
     }
 
-    if (dst->role == ax::mojom::Role::kRow) {
+    if (ui::IsTableRowRole(dst->role)) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
                            src.RowIndex());
       WebAXObject header = src.RowHeader();
@@ -836,35 +836,33 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              header.AxID());
     }
 
-    if (dst->role == ax::mojom::Role::kCell ||
-        dst->role == ax::mojom::Role::kRowHeader ||
-        dst->role == ax::mojom::Role::kColumnHeader ||
-        dst->role == ax::mojom::Role::kRow) {
-      if (dst->role != ax::mojom::Role::kRow) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                             src.CellColumnIndex());
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                             src.CellColumnSpan());
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
-                             src.CellRowIndex());
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
-                             src.CellRowSpan());
+    if (ui::IsCellOrTableHeaderRole(dst->role)) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                           src.CellColumnIndex());
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
+                           src.CellColumnSpan());
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
+                           src.CellRowIndex());
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
+                           src.CellRowSpan());
 
-        int aria_colindex = src.AriaColumnIndex();
-        if (aria_colindex) {
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                               aria_colindex);
-        }
+      int aria_colindex = src.AriaColumnIndex();
+      if (aria_colindex) {
+        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                             aria_colindex);
       }
+    }
 
+    if (ui::IsCellOrTableHeaderRole(dst->role) ||
+        ui::IsTableRowRole(dst->role)) {
+      // aria-rowindex is supported on cells, headers and rows.
       int aria_rowindex = src.AriaRowIndex();
       if (aria_rowindex)
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
                              aria_rowindex);
     }
 
-    if ((dst->role == ax::mojom::Role::kRowHeader ||
-         dst->role == ax::mojom::Role::kColumnHeader) &&
+    if (ui::IsTableHeaderRole(dst->role) &&
         src.SortDirection() != ax::mojom::SortDirection::kNone) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                            static_cast<int32_t>(src.SortDirection()));
