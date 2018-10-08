@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
@@ -35,6 +36,7 @@ bool InspectorSession::ShouldInterruptForMethod(const String& method) {
 InspectorSession::InspectorSession(
     Client* client,
     CoreProbeSink* instrumenting_agents,
+    InspectedFrames* inspected_frames,
     int session_id,
     v8_inspector::V8Inspector* inspector,
     int context_group_id,
@@ -44,6 +46,7 @@ InspectorSession::InspectorSession(
       session_id_(session_id),
       disposed_(false),
       instrumenting_agents_(instrumenting_agents),
+      inspected_frames_(inspected_frames),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       v8_session_state_(kV8StateKey),
@@ -56,6 +59,8 @@ InspectorSession::InspectorSession(
   v8_session_ =
       inspector->connect(context_group_id, /*channel*/ this,
                          ToV8InspectorStringView(v8_session_state_json_.Get()));
+
+  instrumenting_agents_->addInspectorSession(this);
 }
 
 InspectorSession::~InspectorSession() {
@@ -77,6 +82,7 @@ void InspectorSession::Restore() {
 void InspectorSession::Dispose() {
   DCHECK(!disposed_);
   disposed_ = true;
+  instrumenting_agents_->removeInspectorSession(this);
   inspector_backend_dispatcher_.reset();
   for (wtf_size_t i = agents_.size(); i > 0; i--)
     agents_[i - 1]->Dispose();
@@ -116,9 +122,23 @@ void InspectorSession::DispatchProtocolMessage(const String& message) {
   }
 }
 
+void InspectorSession::DidStartProvisionalLoad(LocalFrame* frame) {
+  if (inspected_frames_->Root() == frame) {
+    v8_session_->setSkipAllPauses(true);
+    v8_session_->resume();
+  }
+}
+
+void InspectorSession::DidFailProvisionalLoad(LocalFrame* frame) {
+  if (inspected_frames_->Root() == frame)
+    v8_session_->setSkipAllPauses(false);
+}
+
 void InspectorSession::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   for (wtf_size_t i = 0; i < agents_.size(); i++)
     agents_[i]->DidCommitLoadForLocalFrame(frame);
+  if (inspected_frames_->Root() == frame)
+    v8_session_->setSkipAllPauses(false);
 }
 
 void InspectorSession::sendProtocolResponse(
@@ -227,6 +247,7 @@ void InspectorSession::flushProtocolNotifications() {
 
 void InspectorSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(instrumenting_agents_);
+  visitor->Trace(inspected_frames_);
   visitor->Trace(agents_);
 }
 

@@ -199,7 +199,7 @@ InspectorSession* WebDevToolsAgentImpl::AttachSession(
   bool should_reattach = !reattach_session_state.is_null();
 
   InspectorSession* inspector_session = new InspectorSession(
-      session_client, probe_sink_.Get(), 0,
+      session_client, probe_sink_.Get(), inspected_frames, 0,
       main_thread_debugger->GetV8Inspector(),
       main_thread_debugger->ContextGroupId(inspected_frames->Root()),
       std::move(reattach_session_state));
@@ -412,26 +412,6 @@ void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_content_loader_->DidCommitLoadForLocalFrame(frame);
   for (auto& session : sessions_)
     session->DidCommitLoadForLocalFrame(frame);
-  if (inspected_frames_->Root() == frame) {
-    for (auto& session : sessions_)
-      session->V8Session()->setSkipAllPauses(false);
-  }
-}
-
-void WebDevToolsAgentImpl::DidFailProvisionalLoad(LocalFrame* frame) {
-  if (inspected_frames_->Root() == frame) {
-    for (auto& session : sessions_)
-      session->V8Session()->setSkipAllPauses(false);
-  }
-}
-
-void WebDevToolsAgentImpl::DidStartProvisionalLoad(LocalFrame* frame) {
-  if (inspected_frames_->Root() == frame) {
-    for (auto& session : sessions_) {
-      session->V8Session()->setSkipAllPauses(true);
-      session->V8Session()->resume();
-    }
-  }
 }
 
 bool WebDevToolsAgentImpl::ScreencastEnabled() {

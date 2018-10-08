@@ -444,6 +444,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
+      probe::didFailProvisionalLoad(frame_);
       if (frame_)
         GetFrameLoader().DetachProvisionalDocumentLoader(this);
       break;
