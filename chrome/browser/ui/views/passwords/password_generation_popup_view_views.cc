@@ -79,11 +79,12 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   static void BuildColumnSet(views::GridLayout* layout) {
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          1.0, views::GridLayout::USE_PREF, 0, 0);
+                          0 /* resize_percent */, views::GridLayout::USE_PREF,
+                          0, 0);
     column_set->AddPaddingColumn(0 /* resize_percent */,
                                  AutofillPopupBaseView::kValueLabelPadding);
     column_set->AddColumn(views::GridLayout::TRAILING,
-                          views::GridLayout::CENTER, 1.0,
+                          views::GridLayout::CENTER, 1.0 /* resize_percent */,
                           views::GridLayout::USE_PREF, 0, 0);
   }
 
