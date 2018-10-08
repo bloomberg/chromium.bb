@@ -37,7 +37,7 @@ void StripUsageWithBreakdownCallback(
 
 }  // namespace
 
-UsageTracker::UsageTracker(const QuotaClientList& clients,
+UsageTracker::UsageTracker(const std::vector<QuotaClient*>& clients,
                            blink::mojom::StorageType type,
                            SpecialStoragePolicy* special_storage_policy,
                            StorageMonitor* storage_monitor)

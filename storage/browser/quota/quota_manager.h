@@ -449,7 +449,7 @@ class STORAGE_EXPORT QuotaManager
   GetOriginCallback lru_origin_callback_;
   std::set<url::Origin> access_notified_origins_;
 
-  QuotaClientList clients_;
+  std::vector<QuotaClient*> clients_;
 
   std::unique_ptr<UsageTracker> temporary_usage_tracker_;
   std::unique_ptr<UsageTracker> persistent_usage_tracker_;
