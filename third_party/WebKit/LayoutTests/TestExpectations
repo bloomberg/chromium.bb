@@ -3023,7 +3023,6 @@ crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_fu
 crbug.com/626703 external/wpt/svg/rendering/order/z-index.svg [ Failure ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events.html [ Timeout ]
 crbug.com/626703 external/wpt/console/console-timing-logging-manual.html [ Skip ]
-crbug.com/888042 external/wpt/css/css-scoping/slotted-specificity.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/compat/webkit-text-fill-color-property-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-001.html [ Failure ]
