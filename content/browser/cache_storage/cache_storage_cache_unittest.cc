@@ -99,10 +99,10 @@ class DelayableBackend : public disk_cache::Backend {
     return backend_->GetCacheType();
   }
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
-  int OpenEntry(const std::string& key,
-                net::RequestPriority request_priority,
-                disk_cache::Entry** entry,
-                CompletionOnceCallback callback) override {
+  net::Error OpenEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       disk_cache::Entry** entry,
+                       CompletionOnceCallback callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
       open_entry_callback_ = base::BindOnce(
           &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
@@ -113,29 +113,29 @@ class DelayableBackend : public disk_cache::Backend {
                                std::move(callback));
   }
 
-  int CreateEntry(const std::string& key,
-                  net::RequestPriority request_priority,
-                  disk_cache::Entry** entry,
-                  CompletionOnceCallback callback) override {
+  net::Error CreateEntry(const std::string& key,
+                         net::RequestPriority request_priority,
+                         disk_cache::Entry** entry,
+                         CompletionOnceCallback callback) override {
     return backend_->CreateEntry(key, request_priority, entry,
                                  std::move(callback));
   }
-  int DoomEntry(const std::string& key,
-                net::RequestPriority request_priority,
-                CompletionOnceCallback callback) override {
+  net::Error DoomEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       CompletionOnceCallback callback) override {
     return backend_->DoomEntry(key, request_priority, std::move(callback));
   }
-  int DoomAllEntries(CompletionOnceCallback callback) override {
+  net::Error DoomAllEntries(CompletionOnceCallback callback) override {
     return backend_->DoomAllEntries(std::move(callback));
   }
-  int DoomEntriesBetween(base::Time initial_time,
-                         base::Time end_time,
-                         CompletionOnceCallback callback) override {
+  net::Error DoomEntriesBetween(base::Time initial_time,
+                                base::Time end_time,
+                                CompletionOnceCallback callback) override {
     return backend_->DoomEntriesBetween(initial_time, end_time,
                                         std::move(callback));
   }
-  int DoomEntriesSince(base::Time initial_time,
-                       CompletionOnceCallback callback) override {
+  net::Error DoomEntriesSince(base::Time initial_time,
+                              CompletionOnceCallback callback) override {
     return backend_->DoomEntriesSince(initial_time, std::move(callback));
   }
   int64_t CalculateSizeOfAllEntries(

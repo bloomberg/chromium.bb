@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
-  int Init(CompletionOnceCallback completion_callback);
+  net::Error Init(CompletionOnceCallback completion_callback);
 
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int64_t max_bytes);
@@ -106,23 +106,23 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Backend:
   net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
-  int OpenEntry(const std::string& key,
-                net::RequestPriority request_priority,
-                Entry** entry,
-                CompletionOnceCallback callback) override;
-  int CreateEntry(const std::string& key,
-                  net::RequestPriority request_priority,
-                  Entry** entry,
-                  CompletionOnceCallback callback) override;
-  int DoomEntry(const std::string& key,
-                net::RequestPriority priority,
-                CompletionOnceCallback callback) override;
-  int DoomAllEntries(CompletionOnceCallback callback) override;
-  int DoomEntriesBetween(base::Time initial_time,
-                         base::Time end_time,
-                         CompletionOnceCallback callback) override;
-  int DoomEntriesSince(base::Time initial_time,
+  net::Error OpenEntry(const std::string& key,
+                       net::RequestPriority request_priority,
+                       Entry** entry,
                        CompletionOnceCallback callback) override;
+  net::Error CreateEntry(const std::string& key,
+                         net::RequestPriority request_priority,
+                         Entry** entry,
+                         CompletionOnceCallback callback) override;
+  net::Error DoomEntry(const std::string& key,
+                       net::RequestPriority priority,
+                       CompletionOnceCallback callback) override;
+  net::Error DoomAllEntries(CompletionOnceCallback callback) override;
+  net::Error DoomEntriesBetween(base::Time initial_time,
+                                base::Time end_time,
+                                CompletionOnceCallback callback) override;
+  net::Error DoomEntriesSince(base::Time initial_time,
+                              CompletionOnceCallback callback) override;
   int64_t CalculateSizeOfAllEntries(
       Int64CompletionOnceCallback callback) override;
   int64_t CalculateSizeOfEntriesBetween(
@@ -224,14 +224,15 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
   // a new empty Entry will be created, opened and filled with information from
   // the disk.
-  int OpenEntryFromHash(uint64_t entry_hash,
-                        Entry** entry,
-                        CompletionOnceCallback callback);
+  net::Error OpenEntryFromHash(uint64_t entry_hash,
+                               Entry** entry,
+                               CompletionOnceCallback callback);
 
   // Doom the entry corresponding to |entry_hash|, if it's active or currently
   // pending doom. This function does not block if there is an active entry,
   // which is very important to prevent races in DoomEntries() above.
-  int DoomEntryFromHash(uint64_t entry_hash, CompletionOnceCallback callback);
+  net::Error DoomEntryFromHash(uint64_t entry_hash,
+                               CompletionOnceCallback callback);
 
   // Called when we tried to open an entry with hash alone. When a blank entry
   // has been created and filled in with information from the disk - based on a

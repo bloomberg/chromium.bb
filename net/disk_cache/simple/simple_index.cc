@@ -208,7 +208,7 @@ void SimpleIndex::SetMaxSize(uint64_t max_bytes) {
   }
 }
 
-int SimpleIndex::ExecuteWhenReady(net::CompletionOnceCallback task) {
+net::Error SimpleIndex::ExecuteWhenReady(net::CompletionOnceCallback task) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (initialized_)
     io_thread_->PostTask(FROM_HERE, base::BindOnce(std::move(task), net::OK));

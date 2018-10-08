@@ -287,7 +287,7 @@ bool MemEntryImpl::CouldBeSparse() const {
   return (children_.get() != nullptr);
 }
 
-int MemEntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
+net::Error MemEntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
   return net::OK;
 }
 

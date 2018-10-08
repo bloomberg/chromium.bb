@@ -40,11 +40,11 @@ class CacheCreator {
                base::OnceClosure post_cleanup_callback,
                net::CompletionOnceCallback callback);
 
-  int TryCreateCleanupTrackerAndRun();
+  net::Error TryCreateCleanupTrackerAndRun();
 
   // Creates the backend, the cleanup context for it having been already
   // established... or purposefully left as null.
-  int Run();
+  net::Error Run();
 
  private:
   ~CacheCreator();
@@ -107,7 +107,7 @@ CacheCreator::CacheCreator(
 
 CacheCreator::~CacheCreator() = default;
 
-int CacheCreator::Run() {
+net::Error CacheCreator::Run() {
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   static const bool kSimpleBackendIsDefault = true;
 #else
@@ -139,14 +139,14 @@ int CacheCreator::Run() {
   new_cache->SetMaxSize(max_bytes_);
   new_cache->SetType(type_);
   new_cache->SetFlags(flags_);
-  int rv = new_cache->Init(
+  net::Error rv = new_cache->Init(
       base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
   return rv;
 #endif
 }
 
-int CacheCreator::TryCreateCleanupTrackerAndRun() {
+net::Error CacheCreator::TryCreateCleanupTrackerAndRun() {
   // Before creating a cache Backend, a BackendCleanupTracker object is needed
   // so there is a place to keep track of outstanding I/O even after the backend
   // object itself is destroyed, so that further use of the directory
@@ -211,7 +211,7 @@ void CacheCreator::OnIOComplete(int result) {
 
 namespace disk_cache {
 
-int CreateCacheBackendImpl(
+net::Error CreateCacheBackendImpl(
     net::CacheType type,
     net::BackendType backend_type,
     const base::FilePath& path,
@@ -257,14 +257,14 @@ int CreateCacheBackendImpl(
   return creator->TryCreateCleanupTrackerAndRun();
 }
 
-int CreateCacheBackend(net::CacheType type,
-                       net::BackendType backend_type,
-                       const base::FilePath& path,
-                       int64_t max_bytes,
-                       bool force,
-                       net::NetLog* net_log,
-                       std::unique_ptr<Backend>* backend,
-                       net::CompletionOnceCallback callback) {
+net::Error CreateCacheBackend(net::CacheType type,
+                              net::BackendType backend_type,
+                              const base::FilePath& path,
+                              int64_t max_bytes,
+                              bool force,
+                              net::NetLog* net_log,
+                              std::unique_ptr<Backend>* backend,
+                              net::CompletionOnceCallback callback) {
   return CreateCacheBackendImpl(type, backend_type, path, max_bytes, force,
 #if defined(OS_ANDROID)
                                 nullptr,
@@ -274,7 +274,7 @@ int CreateCacheBackend(net::CacheType type,
 }
 
 #if defined(OS_ANDROID)
-NET_EXPORT int CreateCacheBackend(
+NET_EXPORT net::Error CreateCacheBackend(
     net::CacheType type,
     net::BackendType backend_type,
     const base::FilePath& path,
@@ -291,15 +291,15 @@ NET_EXPORT int CreateCacheBackend(
 }
 #endif
 
-int CreateCacheBackend(net::CacheType type,
-                       net::BackendType backend_type,
-                       const base::FilePath& path,
-                       int64_t max_bytes,
-                       bool force,
-                       net::NetLog* net_log,
-                       std::unique_ptr<Backend>* backend,
-                       base::OnceClosure post_cleanup_callback,
-                       net::CompletionOnceCallback callback) {
+net::Error CreateCacheBackend(net::CacheType type,
+                              net::BackendType backend_type,
+                              const base::FilePath& path,
+                              int64_t max_bytes,
+                              bool force,
+                              net::NetLog* net_log,
+                              std::unique_ptr<Backend>* backend,
+                              base::OnceClosure post_cleanup_callback,
+                              net::CompletionOnceCallback callback) {
   return CreateCacheBackendImpl(
       type, backend_type, path, max_bytes, force,
 #if defined(OS_ANDROID)
