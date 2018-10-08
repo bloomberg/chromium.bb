@@ -2297,6 +2297,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreviewsAndroidOmniboxUIName,
      flag_descriptions::kEnablePreviewsAndroidOmniboxUIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kAndroidOmniboxPreviewsBadge)},
+    {"enable-lite-page-server-previews",
+     flag_descriptions::kEnableLitePageServerPreviewsName,
+     flag_descriptions::kEnableLitePageServerPreviewsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(previews::features::kLitePageServerPreviews)},
 #endif  // OS_ANDROID
     {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
      flag_descriptions::kEnableClientLoFiDescription, kOsAll,
