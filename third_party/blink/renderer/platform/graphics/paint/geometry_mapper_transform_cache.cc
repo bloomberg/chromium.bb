@@ -17,15 +17,8 @@ void GeometryMapperTransformCache::ClearCache() {
   s_global_generation++;
 }
 
-// Computes flatten(m) ^ -1, return true if the inversion succeeded.
-static bool InverseProjection(const TransformationMatrix& m,
-                              TransformationMatrix& out) {
-  out = m;
-  out.FlattenTo2d();
-  if (!out.IsInvertible())
-    return false;
-  out = out.Inverse();
-  return true;
+bool GeometryMapperTransformCache::IsValid() const {
+  return cache_generation_ == s_global_generation;
 }
 
 void GeometryMapperTransformCache::Update(
@@ -120,8 +113,13 @@ void GeometryMapperTransformCache::UpdateScreenTransform(
   if (node.FlattensInheritedTransform())
     screen_transform_->to_screen.FlattenTo2d();
   screen_transform_->to_screen.Multiply(local);
-  screen_transform_->projection_from_screen_is_valid = InverseProjection(
-      screen_transform_->to_screen, screen_transform_->projection_from_screen);
+
+  auto to_screen_flattened = screen_transform_->to_screen;
+  to_screen_flattened.FlattenTo2d();
+  screen_transform_->projection_from_screen_is_valid =
+      to_screen_flattened.IsInvertible();
+  if (screen_transform_->projection_from_screen_is_valid)
+    screen_transform_->projection_from_screen = to_screen_flattened.Inverse();
 }
 
 #if DCHECK_IS_ON()

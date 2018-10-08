@@ -22,6 +22,7 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   GeometryMapperTransformCache() = default;
 
   static void ClearCache();
+  bool IsValid() const;
 
   void UpdateIfNeeded(const TransformPaintPropertyNode& node) {
     if (cache_generation_ != s_global_generation)

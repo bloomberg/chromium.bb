@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_transform_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
@@ -97,8 +98,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       return parent_changed;
 
     DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
-    SetChanged();
     state_ = std::move(state);
+    SetChanged();
     CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
     return true;
@@ -194,6 +195,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   size_t CacheMemoryUsageInBytes() const;
 
  private:
+  friend class PaintPropertyNode<TransformPaintPropertyNode>;
+
   TransformPaintPropertyNode(const TransformPaintPropertyNode* parent,
                              State&& state,
                              bool is_parent_alias)
@@ -226,6 +229,18 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #endif
   }
 
+  void SetChanged() {
+    // TODO(crbug.com/814815): This is a workaround of the bug. When the bug is
+    // fixed, change the following condition to
+    //   DCHECK(!transform_cache_ || !transform_cache_->IsValid());
+    if (transform_cache_ && transform_cache_->IsValid()) {
+      DLOG(WARNING) << "Transform tree changed without invalidating the cache.";
+      GeometryMapperTransformCache::ClearCache();
+      GeometryMapperClipCache::ClearCache();
+    }
+    PaintPropertyNode::SetChanged();
+  }
+
   // For access to GetTransformCache() and SetCachedTransform.
   friend class GeometryMapper;
   friend class GeometryMapperTest;
@@ -239,6 +254,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return *transform_cache_;
   }
   void UpdateScreenTransform() const {
+    DCHECK(transform_cache_);
     transform_cache_->UpdateScreenTransform(*this);
   }
 

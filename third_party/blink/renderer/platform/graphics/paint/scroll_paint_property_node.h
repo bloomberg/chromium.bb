@@ -91,9 +91,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     if (state == state_)
       return parent_changed;
 
-    SetChanged();
     state_ = std::move(state);
     Validate();
+    SetChanged();
     return true;
   }
 
