@@ -48,14 +48,14 @@ ValueStoreFactory::ModelType ToFactoryModelType(syncer::ModelType sync_type) {
 }  // namespace
 
 SyncStorageBackend::SyncStorageBackend(
-    const scoped_refptr<ValueStoreFactory>& storage_factory,
+    scoped_refptr<ValueStoreFactory> storage_factory,
     const SettingsStorageQuotaEnforcer::Limits& quota,
-    const scoped_refptr<SettingsObserverList>& observers,
+    scoped_refptr<SettingsObserverList> observers,
     syncer::ModelType sync_type,
     const syncer::SyncableService::StartSyncFlare& flare)
-    : storage_factory_(storage_factory),
+    : storage_factory_(std::move(storage_factory)),
       quota_(quota),
-      observers_(observers),
+      observers_(std::move(observers)),
       sync_type_(sync_type),
       flare_(flare) {
   DCHECK(IsOnBackendSequence());

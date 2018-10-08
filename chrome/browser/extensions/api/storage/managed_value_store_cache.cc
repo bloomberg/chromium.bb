@@ -235,15 +235,15 @@ void ManagedValueStoreCache::ExtensionTracker::Register(
 
 ManagedValueStoreCache::ManagedValueStoreCache(
     BrowserContext* context,
-    const scoped_refptr<ValueStoreFactory>& factory,
-    const scoped_refptr<SettingsObserverList>& observers)
+    scoped_refptr<ValueStoreFactory> factory,
+    scoped_refptr<SettingsObserverList> observers)
     : profile_(Profile::FromBrowserContext(context)),
       policy_domain_(GetPolicyDomain(profile_)),
       policy_service_(
           policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context)
               ->policy_service()),
-      storage_factory_(factory),
-      observers_(observers) {
+      storage_factory_(std::move(factory)),
+      observers_(std::move(observers)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   policy_service_->AddObserver(policy_domain_, this);
