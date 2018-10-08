@@ -995,6 +995,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // the DidStartProvisionalLoad() notification.
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
+  probe::didStartProvisionalLoad(frame_);
   DCHECK(provisional_document_loader_);
   TakeObjectSnapshot();
 }
@@ -1088,6 +1089,7 @@ void FrameLoader::CommitNavigation(
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
+  probe::didStartProvisionalLoad(frame_);
 
   provisional_document_loader_->StartLoading();
   TakeObjectSnapshot();

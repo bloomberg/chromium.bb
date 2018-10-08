@@ -83,13 +83,13 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
   if (sessions_.find(session_id) != sessions_.end())
     return;
 
+  InspectedFrames* inspected_frames = new InspectedFrames(nullptr);
   InspectorSession* session = new InspectorSession(
-      this, probe_sink_.Get(), session_id, debugger_->GetV8Inspector(),
-      debugger_->ContextGroupId(thread_), nullptr);
+      this, probe_sink_.Get(), inspected_frames, session_id,
+      debugger_->GetV8Inspector(), debugger_->ContextGroupId(thread_), nullptr);
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
   if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
-    InspectedFrames* inspected_frames = new InspectedFrames(nullptr);
     WorkerGlobalScope* worker_global_scope =
         ToWorkerGlobalScope(thread_->GlobalScope());
     DCHECK(worker_global_scope->EnsureFetcher());
