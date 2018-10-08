@@ -89,6 +89,27 @@ cr_slider.SliderTick;
         type: Number,
         value: 0,
         notify: true,
+        observer: 'onValueChanged_',
+      },
+
+      /**
+       * If true, |value| is updated while dragging happens. If false, |value|
+       * is updated only once, when drag gesture finishes.
+       */
+      updateValueInstantly: {
+        type: Boolean,
+        value: true,
+      },
+
+      /**
+       * |immediateValue_| has the most up-to-date value and is used to render
+       * the slider UI. When dragging, |immediateValue_| is always updated, and
+       * |value| is updated at least once when dragging is stopped.
+       * @private
+       */
+      immediateValue_: {
+        type: Number,
+        value: 0,
       },
 
       /** @private */
@@ -111,8 +132,8 @@ cr_slider.SliderTick;
     },
 
     observers: [
-      'updateLabelAndAria_(value, min, max, ticks.*)',
-      'updateKnobAndBar_(value, min, max)',
+      'updateLabelAndAria_(immediateValue_, min, max)',
+      'updateKnobAndBar_(immediateValue_, min, max)',
     ],
 
     listeners: {
@@ -177,9 +198,18 @@ cr_slider.SliderTick;
      * @private
      */
     getRatio_: function() {
-      const clamped = clamp(this.min, this.max, this.value);
-      this.value = this.snaps ? Math.round(clamped) : clamped;
-      return (this.value - this.min) / (this.max - this.min);
+      return (this.immediateValue_ - this.min) / (this.max - this.min);
+    },
+
+    /** @private */
+    ensureValidValue_: function() {
+      if (this.immediateValue_ == undefined || this.value == undefined)
+        return;
+      let validValue = clamp(this.min, this.max, this.immediateValue_);
+      validValue = this.snaps ? Math.round(validValue) : validValue;
+      this.immediateValue_ = validValue;
+      if (!this.dragging || this.updateValueInstantly)
+        this.value = validValue;
     },
 
     /**
@@ -190,6 +220,7 @@ cr_slider.SliderTick;
     stopDragging_: function(pointerId) {
       this.dragging = false;
       this.draggingEventTracker_.removeAll();
+      this.value = this.immediateValue_;
       // If there is a ripple animation in progress, setTimeout will hold off
       // on updating |holdDown_|.
       setTimeout(() => {
@@ -297,6 +328,22 @@ cr_slider.SliderTick;
         this.max = this.ticks.length - 1;
         this.min = 0;
       }
+      this.ensureValidValue_();
+      this.updateLabelAndAria_();
+    },
+
+    /**
+     * Update |immediateValue_| which is used for rendering when |value| is
+     * updated either programmatically or from a keyboard input or a mouse drag
+     * (when |updateValueInstantly| is true).
+     * @private
+     */
+    onValueChanged_: function() {
+      if (this.immediateValue_ == this.value)
+        return;
+
+      this.immediateValue_ = this.value;
+      this.ensureValidValue_();
     },
 
     /** @private */
@@ -309,13 +356,13 @@ cr_slider.SliderTick;
     /** @private */
     updateLabelAndAria_: function() {
       const ticks = this.ticks;
-      const index = this.value;
+      const index = this.immediateValue_;
       if (!ticks || ticks.length == 0 || index >= ticks.length ||
           !Number.isInteger(index) || !this.snaps) {
-        this.setAttribute('aria-valuetext', this.value);
+        this.setAttribute('aria-valuetext', index);
         this.setAttribute('aria-valuemin', this.min);
         this.setAttribute('aria-valuemax', this.max);
-        this.setAttribute('aria-valuenow', this.value);
+        this.setAttribute('aria-valuenow', index);
         return;
       }
       const tick = ticks[index];
@@ -359,9 +406,8 @@ cr_slider.SliderTick;
       let ratio = (clientX - rect.left) / rect.width;
       if (this.isRtl_)
         ratio = 1 - ratio;
-      const newValue = ratio * (this.max - this.min) + this.min;
-      const clamped = clamp(this.min, this.max, newValue);
-      this.value = this.snaps ? Math.round(clamped) : clamped;
+      this.immediateValue_ = ratio * (this.max - this.min) + this.min;
+      this.ensureValidValue_();
     },
 
     _createRipple: function() {

@@ -203,6 +203,7 @@ Polymer({
         this.displayChangedListener_);
 
     this.getDisplayInfo_();
+    this.$.displaySizeSlider.updateValueInstantly = false;
   },
 
   /** @override */

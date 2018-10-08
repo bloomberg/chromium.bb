@@ -717,7 +717,7 @@ cr.define('device_page_tests', function() {
             width: 1920,
             height: 1080,
           },
-          availableDisplayZoomFactors: [1],
+          availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
         };
         fakeSystemDisplay.addDisplayForTest(display);
       };
@@ -831,6 +831,25 @@ cr.define('device_page_tests', function() {
             expectTrue(displayPage.displays[0].isPrimary);
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectTrue(displayPage.isMirrored_(displayPage.displays));
+
+            // Ensure that the zoom value remains unchanged while draggging.
+            function pointerEvent(eventType, ratio) {
+              const crSlider = displayPage.$.displaySizeSlider.$.slider;
+              const rect = crSlider.$.barContainer.getBoundingClientRect();
+              crSlider.dispatchEvent(new PointerEvent(eventType, {
+                buttons: 1,
+                pointerId: 1,
+                clientX: rect.left + (ratio * rect.width),
+              }));
+            }
+
+            expectEquals(1, displayPage.selectedZoomPref_.value);
+            pointerEvent('pointerdown', .6);
+            expectEquals(1, displayPage.selectedZoomPref_.value);
+            pointerEvent('pointermove', .3);
+            expectEquals(1, displayPage.selectedZoomPref_.value);
+            pointerEvent('pointerup', 0);
+            expectEquals(1.25, displayPage.selectedZoomPref_.value);
           });
     });
 

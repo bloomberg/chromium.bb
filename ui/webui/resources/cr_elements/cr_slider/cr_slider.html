@@ -135,7 +135,7 @@
         opacity: 1;
       }
 
-      .label {
+      #label {
         background: var(--google-blue-600);
         border-radius: 14px;
         bottom: 28px;
@@ -180,7 +180,7 @@
         <div id="bar"></div>
         <div id="markers" hidden$="[[!markerCount]]">
           <template is="dom-repeat" items="[[getMarkers_(markerCount)]]">
-            <div class$="[[getMarkerClass_(index, value, min, max,
+            <div class$="[[getMarkerClass_(index, immediateValue_, min, max,
                                            markerCount)]]"></div>
           </template>
         </div>
@@ -189,9 +189,7 @@
         <div id="knob" tabindex="0"></div>
       </div>
       <div id="labelContainer" aria-label="[[label_]]">
-        <div id="label" class="label">
-          <div id="labelText">[[label_]]</div>
-        </div>
+        <div id="label">[[label_]]</div>
       </div>
     </div>
   </template>
