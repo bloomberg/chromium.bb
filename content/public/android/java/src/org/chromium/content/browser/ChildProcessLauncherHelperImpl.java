@@ -172,7 +172,6 @@ public final class ChildProcessLauncherHelperImpl {
     // The initial value is MODERATE since a newly created connection has moderate bindings.
     private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
     private boolean mVisible;
-    private boolean mIntersectsViewport;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -468,14 +467,13 @@ public final class ChildProcessLauncherHelperImpl {
         }
 
         // Add first and remove second.
-        boolean wasAddedToBindingManager = mVisible && mIntersectsViewport;
-        boolean shouldAddToBindingManager = visible && intersectsViewport;
-        if (shouldAddToBindingManager && !wasAddedToBindingManager) {
+        if (visible && !mVisible) {
             BindingManager manager = getBindingManager();
             if (mUseBindingManager && manager != null) {
                 manager.addConnection(connection);
             }
         }
+        mVisible = visible;
 
         if (mEffectiveImportance != newEffectiveImportance) {
             switch (newEffectiveImportance) {
@@ -521,8 +519,6 @@ public final class ChildProcessLauncherHelperImpl {
         }
 
         mEffectiveImportance = newEffectiveImportance;
-        mVisible = visible;
-        mIntersectsViewport = intersectsViewport;
     }
 
     @CalledByNative
