@@ -98,8 +98,7 @@ bool WaitForDownloadButton() {
 // Tests sucessfull download up to the point where "Open in..." button is
 // presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process.
-// TODO(crbug.com/892883): Test is flaky on iOS 12 simulators.
-- (void)FLAKY_testSucessfullDownload {
+- (void)testSucessfullDownload {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
@@ -130,8 +129,7 @@ bool WaitForDownloadButton() {
 }
 
 // Tests cancelling download UI.
-// TODO(crbug.com/892883): Test is flaky on iOS 12 simulators.
-- (void)FLAKY_testCancellingDownload {
+- (void)testCancellingDownload {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
@@ -194,8 +192,7 @@ bool WaitForDownloadButton() {
 }
 
 // Tests accessibility on Download Manager UI when download is complete.
-// TODO(crbug.com/892883): Test is flaky on iOS 12 simulators.
-- (void)FLAKY_testAccessibilityOnCompletedDownloadToolbar {
+- (void)testAccessibilityOnCompletedDownloadToolbar {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
