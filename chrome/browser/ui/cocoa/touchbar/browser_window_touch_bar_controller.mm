@@ -117,6 +117,7 @@ class API_AVAILABLE(macos(10.12.2)) WebContentsNotificationBridge
 
 - (void)updateWebContents:(content::WebContents*)contents {
   [defaultTouchBar_ updateWebContents:contents];
+  [webTextfieldTouchBar_ updateWebContents:contents];
   [self invalidateTouchBar];
 }
 

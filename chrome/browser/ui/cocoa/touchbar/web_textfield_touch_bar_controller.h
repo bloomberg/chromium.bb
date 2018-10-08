@@ -14,6 +14,7 @@
 
 @class BrowserWindowTouchBarController;
 @class CreditCardAutofillTouchBarController;
+@class TextSuggestionsTouchBarController;
 @class TabContentsController;
 
 namespace autofill {
@@ -31,6 +32,8 @@ API_AVAILABLE(macos(10.12.2))
   BrowserWindowTouchBarController* controller_;  // weak.
   base::scoped_nsobject<CreditCardAutofillTouchBarController>
       autofillTouchBarController_;
+  base::scoped_nsobject<TextSuggestionsTouchBarController>
+      textSuggestionsTouchBarController_;
 }
 
 + (WebTextfieldTouchBarController*)controllerForWindow:(NSWindow*)window;
@@ -42,6 +45,8 @@ API_AVAILABLE(macos(10.12.2))
     (autofill::AutofillPopupController*)controller;
 
 - (void)hideCreditCardAutofillTouchBar;
+
+- (void)updateWebContents:(content::WebContents*)contents;
 
 - (void)invalidateTouchBar;
 
