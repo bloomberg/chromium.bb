@@ -185,6 +185,9 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
   }
   void GetIntegerv(GLenum name, GLint* params) override {
     switch (name) {
+      case GL_MAX_TEXTURE_IMAGE_UNITS:
+        *params = 8;
+        return;
       case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
         *params = 8;
         return;
