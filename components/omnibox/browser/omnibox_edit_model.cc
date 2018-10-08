@@ -334,9 +334,13 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   if (sel_min != 0)
     return;
 
-  // Check whether the user is trying to copy the current page's URL by checking
-  // if |text| is the whole permanent URL.
-  if (!user_input_in_progress_ && *text == GetPermanentDisplayText()) {
+  // If the user has not modified the display text and is copying the whole
+  // display text, copy the current page's full URL.
+  //
+  // This early exit is meant for cases where we elide portions of the URL, so
+  // it's inappropriate for the Query in Omnibox case.
+  if (!user_input_in_progress_ && *text == GetPermanentDisplayText() &&
+      !GetQueryInOmniboxSearchTerms(nullptr)) {
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).
@@ -346,6 +350,10 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     return;
   }
 
+  // This code early exits if the copied text looks like a search query. It's
+  // not at the very top of this method, as it would interpret the intranet URL
+  // "printer/path" as a search query instead of a URL.
+  //
   // We can't use CurrentTextIsURL() or GetDataForURLExport() because right now
   // the user is probably holding down control to cause the copy, which will
   // screw up our calculation of the desired_tld.
@@ -355,6 +363,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                                  &match_from_text, nullptr);
   if (AutocompleteMatch::IsSearchType(match_from_text.type))
     return;
+
   *url_from_text = match_from_text.destination_url;
 
   GURL current_page_url = PermanentURL();

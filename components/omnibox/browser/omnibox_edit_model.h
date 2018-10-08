@@ -136,11 +136,14 @@ class OmniboxEditModel {
   // URL/navigation, as opposed to a search.
   bool CurrentTextIsURL() const;
 
-  // Invoked to adjust the text before writting to the clipboard for a copy
-  // (e.g. by adding 'http' to the front). |sel_min| gives the minimum position
-  // of the selection e.g. min(selection_start, selection_end). |text| is the
-  // currently selected text. If the url should be copied to the clipboard
-  // |write_url| is set to true and |url_from_text| set to the url to write.
+  // Adjusts the copied text before writing it to the clipboard. If the copied
+  // text is a URL with the scheme elided, this method reattaches the scheme.
+  // Copied text that looks like a search query, including the Query in Omnibox
+  // case, will not be modified.
+  //
+  // |sel_min| gives the minimum of the selection, e.g. min(sel_start, sel_end).
+  // |text| is the currently selected text. If the copied text is interpreted
+  // as a URL, |write_url| is set to true and |url_from_text| set to the URL.
   void AdjustTextForCopy(int sel_min,
                          base::string16* text,
                          GURL* url_from_text,
