@@ -497,21 +497,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Preverjanje črkovanja je še vedno mogoče z uporabo prenesenega slovarja; ta pravilnik nadzira samo uporabo spletne storitve.
 
       Če ta nastavitev ni nastavljena, lahko uporabniki izberejo, ali bo storitev preverjanja črkovanja uporabljena ali ne.</translation>
-<translation id="2294283832646774959">Konfigurira seznam tiskalnikov.
-
-      Ta pravilnik skrbnikom omogoča navajanje konfiguracij tiskalnikov
-      za uporabnike.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> in <ph name="PRINTER_DESCRIPTION" /> sta poljubno oblikovana niza, ki ju je mogoče prilagoditi za preprostejše izbiranje tiskalnika. <ph name="PRINTER_MANUFACTURER" /> in <ph name="PRINTER_MODEL" /> končnim uporabnikom olajšata prepoznavo tiskalnika, saj predstavljata proizvajalca in model tiskalnika. <ph name="PRINTER_URI" /> mora biti naslov, do katerega je mogoče dostopati iz odjemalskega računalnika, vključno s temi podatki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> in <ph name="URI_QUEUE" />. Identifikator <ph name="PRINTER_UUID" /> ni obvezen. Če je naveden, se uporablja za odstranjevanje podvojenih tiskalnikov <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> se mora ujemati z enim od nizov, ki predstavljajo tiskalnik s podporo za <ph name="PRODUCT_NAME" /> Niz se uporabi za odkrivanje in namestitev ustrezne datoteke PPD za tiskalnik. Več informacij je na voljo na https://support.google.com/chrome?p=noncloudprint.
-
-      Nastavitev tiskalnika se dokonča po njegovi prvi uporabi. Datoteke PPD se prenesejo, ko se začne tiskalnik uporabljati. Nato so pogosto uporabljene datoteke PPD predpomnjene.
-
-      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dodatek konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
-
-      Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
-      </translation>
 <translation id="2294382669900758280">Predvajanje videoposnetkov v aplikacijah za Android se ne upošteva, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfiguriranje privzetega novega zavihka s povezavami v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
@@ -624,9 +609,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vse novejše različice strežnikov Samba in Windows podpirajo NTLMv2. To onemogočite samo za združljivost s prejšnjimi različicami, saj je v tem primeru zmanjšana varnost preverjanja pristnosti.
 
           Če ta pravilnik ni nastavljen, se uporabi privzeta vrednost in je preverjanje pristnosti NTLMv2 omogočeno.</translation>
-<translation id="2598508021807251719">Konfigurira jezike, v katerih je lahko prikazan <ph name="PRODUCT_OS_NAME" />.
-
-      Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih uporabniškega vmesnika. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednostmi, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> v preteklosti konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik uporabniškega vmesnika, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
 <translation id="2604182581880595781">Konfiguriranje pravilnikov, povezanih z omrežnimi napravami za skupno rabo datotek.</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1524,13 +1506,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Določitev imena gostitelja naprave, uporabljenega v zahtevah DHCP
-
-      Če je ta pravilnik nastavljen na niz, ki ni prazen, bo ta niz uporabljen kot ime gostitelja naprave v zahtevi DHCP.
-
-      Niz lahko vsebuje sprejemljivke ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ki jih pred uporabo kot ime gostitelja zamenjajo vrednosti v napravi. Posledična zamenjava mora biti veljavno ime gostitelja (skladno z RFC 1035, razdelek 3.1).
-
-      Če ta pravilnik ni nastavljen ali vrednost po zamenjavi ni veljavno ime gostitelja, v zahtevi DHCP ne bo nastavljeno ime gostitelja. </translation>
 <translation id="5148753489738115745">Določite lahko dodatne parametre, ki so uporabljeni, ko <ph name="PRODUCT_FRAME_NAME" /> zažene <ph name="PRODUCT_NAME" />.
 
           Če ta pravilnik ni nastavljen, je uporabljena privzeta ukazna vrstica.</translation>
@@ -1782,7 +1757,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5835124959204887277">Določa URL-je in domene, za katere ne bo prikazan poziv, ko so iz varnostnih ključev zahtevana potrditvena potrdila. Poleg tega bo varnostnemu ključu poslan signal, da je posamezno potrditev mogoče uporabiti. Brez tega bo v Chromu 65 in novejših različicah uporabnikom prikazan poziv, ko spletna mesta zahtevajo potrditev varnostnih ključev.
 
       URL-ji (npr. https://example.com/neka/pot) se bodo ujemali samo kot appID-ji U2F. Domene (npr. example.com) se ujemajo samo kot ID-ji za webauthn RP. Če želite, da so za določeno mesto obravnavani tako API-ji za U2F kot za webauthn, je torej treba navesti URL za appID in domeno.</translation>
-<translation id="5835412847081687053">Konfiguriranje dovoljenih jezikov uporabniškega vmesnika v uporabniški seji</translation>
 <translation id="5836064773277134605">Omeji obseg vrat UDP, ki jih uporablja gostitelj oddaljenega dostopa</translation>
 <translation id="5862253018042179045">Nastavitev privzetega stanja funkcije izgovorjave za ljudi s posebnimi potrebami na prijavnem zaslonu.
 

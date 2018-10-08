@@ -473,21 +473,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Memeriksa ejaan tetap dapat dilakukan menggunakan kamus yang didownload; kebijakan ini hanya mengontrol penggunaan layanan online.
 
       Jika setelan ini tidak dikonfigurasi, maka pengguna dapat memilih apakah layanan memeriksa ejaan harus digunakan atau tidak.</translation>
-<translation id="2294283832646774959">Mengonfigurasi daftar printer.
-
-      Kebijakan ini memungkinkan administrator memberikan konfigurasi printer untuk
-      pengguna.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> string format bebas yang dapat disesuaikan untuk mempermudah pemilihan printer. Info <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> diberikan agar pengguna akhir mudah mengidentifikasi printer. Keduanya mewakili produsen dan model printer. <ph name="PRINTER_URI" /> harus berupa alamat yang dapat dijangkau dari komputer klien, termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> bersifat opsional. Jika tersedia, akan digunakan untuk membantu menghapus duplikat printer <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> harus cocok dengan salah satu string yang mewakili printer <ph name="PRODUCT_NAME" /> yang didukung. String ini akan digunakan untuk mengidentifikasi dan menginstal PPD yang sesuai untuk printer. Informasi selengkapnya dapat ditemukan di https://support.google.com/chrome?p=noncloudprint.
-
-      Penyiapan printer diselesaikan pada saat penggunaan printer yang pertama.  PPD tidak didownload sebelum printer digunakan.  Setelah waktu tersebut, PPD yang sering digunakan akan disimpan dalam cache.
-
-      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang diberikan oleh tiap pengguna.
-
-      Untuk perangkat yang dikelola Active Directory, kebijakan ini mendukung perluasan <ph name="MACHINE_NAME_VARIABLE" /> ke nama mesin Active Directory atau substring-nya. Misalnya, jika nama mesin <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan diganti dengan 4 karakter yang dimulai setelah posisi keenam, yaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Perhatikan bahwa posisinya mulai dari nol.
-      </translation>
 <translation id="2294382669900758280">Pemutaran video di aplikasi Android tidak dipertimbangkan, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Mengonfigurasi halaman Tab Baru di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
@@ -594,9 +579,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
  mengurangi keamanan autentikasi.
 
           Jika kebijakan ini tidak disetel, default adalah true dan NTLMv2 diaktifkan.</translation>
-<translation id="2598508021807251719">Mengonfigurasi lokal yang digunakan untuk menampilkan <ph name="PRODUCT_OS_NAME" />.
-
-      Jika kebijakan ini disetel, pengguna hanya dapat mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan di salah satu lokal yang ditentukan oleh kebijakan tersebut. Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, <ph name="PRODUCT_OS_NAME" /> dapat ditampilkan di semua lokal yang didukung. Jika kebijakan ini disetel ke daftar yang memuat nilai yang tidak valid, maka semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna telah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam bahasa yang tidak diizinkan oleh kebijakan ini, lokal tampilan akan dialihkan ke lokal yang diizinkan saat berikutnya pengguna login. Jika pengguna telah mengonfigurasi beberapa lokal pilihan, dan salah satu lokal pilihan itu diizinkan oleh kebijakan ini, <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke lokal tersebut. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal alternatif yang telah ditentukan (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
 <translation id="2604182581880595781">Mengonfigurasi kebijakan terkait fitur Berbagi File Jaringan.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1463,13 +1445,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5130288486815037971">Untuk mengetahui apakah cipher suite RC4 di TLS diaktifkan</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Menentukan hostname perangkat yang digunakan di permintaan DHCP.
-
-      Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
-
-      String dapat berisi variabel ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} yang akan digantikan dengan nilai di perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan harus berupa hostname yang valid (menurut  RFC 1035, pasal 3.1).
-
-      Jika kebijakan ini tidak disetel, atau nilai setelah subsitusi bukan hostname yang valid, tidak ada hostname yang akan disetel di permintaan DHCP. </translation>
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini tidak disetel, baris perintah default akan digunakan.</translation>
@@ -1696,7 +1671,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5835124959204887277">Menentukan URL dan domain yang tidak akan diperlihatkan perintah saat sertifikat pengesahan dari Kunci Keamanan diminta. Selain itu, sinyal akan dikirimkan ke Kuanci Keamanan yang menandakan bahwa pengesahan satu per satu mungkin digunakan. Tanpa ini, pengguna akan diminta di Chrome 65+ jika situs meminta pengesahan Kunci Keamanan.
 
       URL (seperti https://example.com/some/path) hanya akan cocok sebagai U2F appID. Domain (seperti example.com) hanya akan cocok sebagai webauthn RP ID. Oleh karena itu, guna mencakup U2F dan webauthn API untuk situs tertentu, appID URL dan domain perlu dicantumkan.</translation>
-<translation id="5835412847081687053">Mengonfigurasi lokal UI yang diizinkan dalam sesi pengguna</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="5862253018042179045">Menyetel status default fitur aksesibilitas masukan yang diucapkan di layar masuk.
 

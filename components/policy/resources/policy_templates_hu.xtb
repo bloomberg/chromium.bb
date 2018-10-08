@@ -487,21 +487,6 @@
       A helyesírás-ellenőrzés továbbra is elvégezhető egy letöltött szótár használatával, ez a házirend csak az internetes szolgáltatás használatát szabályozza.
 
        Ha nincs megadva ez a beállítás, akkor a felhasználók választhatnak, hogy használják-e a helyesírás-ellenőrző szolgáltatást vagy sem.</translation>
-<translation id="2294283832646774959">Konfigurálja a nyomtatók listáját.
-
-      Ez a házirend lehetővé teszi a rendszergazdák számára, hogy 
-      nyomtatóbeállításokat biztosítsanak felhasználóiknak.
-
-      A(z) <ph name="PRINTER_DISPLAY_NAME" /> és <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A(z) <ph name="PRINTER_MANUFACTURER" /> és <ph name="PRINTER_MODEL" /> a nyomtató végfelhasználó általi azonosításának megkönnyítésére szolgálnak. A nyomtató gyártóját és modelljét jelölik. A(z) <ph name="PRINTER_URI" /> linknek olyan címnek kell lennie, amelyhez hozzáfér az ügyfélszámítógép, és amely tartalmazza a következőket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. A(z) <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, segít elkerülni a(z) <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
-
-      A(z) <ph name="PRINTER_EFFECTIVE_MODEL" /> karakterláncnak meg kell egyeznie a(z) <ph name="PRODUCT_NAME" /> támogatott nyomtatóinak egyikét képviselő karakterlánccal. A karakterlánc a nyomtatóhoz tartozó megfelelő PPD azonosításához és telepítéséhez szükséges. További információ a következő linken található: https://support.google.com/chrome?p=noncloudprint.
-
-      A nyomtató beállítása a nyomtató első használatakor történik. A PPD-k csak a nyomtató használatát követően töltődnek le. Ezután a gyakran használt PPD-k a gyorsítótárba kerülnek.
-
-      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e a nyomtatókat saját eszközeiken. A házirend célja, hogy kiegészítse az egyéni felhasználók nyomtatóbeállításait.
-
-      Az Active Directory által kezelt eszközöknél a házirend támogatja a(z) <ph name="MACHINE_NAME_VARIABLE" /> kibővítését az Active Directory gép nevére, vagy annak karakterláncrészére. Ha például a gép neve <ph name="MACHINE_NAME_EXAMPLE" />, akkor a(z) <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> karakterláncot a 6. pozíciónál kezdődő négy karakter helyettesíti, vagyis: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Megjegyzés: A pozíció meghatározásához a kiindulási pont a nulla.
-      </translation>
 <translation id="2294382669900758280">Az androidos alkalmazásokban való videólejátszást a rendszer akkor is figyelmen kívül hagyja, ha a házirend beállítása <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Az alapértelmezett Új lap oldal beállítása a(z) <ph name="PRODUCT_NAME" /> böngészőben.</translation>
 <translation id="2299220924812062390">Adja meg az engedélyezett bővítmények listáját</translation>
@@ -606,9 +591,6 @@
           A Samba- és Windows-szerverek összes újabb verziója támogatja az NTLMv2 hitelesítést. Ennek kikapcsolása csökkenti a hitelesítés biztonságát, és csak az előző verziókkal való kompatibilitáshoz ajánlott.
 
           Amennyiben a házirend nincs beállítva, az alapértelmezett értéke „igaz”, és az NTLMv2 engedélyezett.</translation>
-<translation id="2598508021807251719">Konfigurálja a nyelveket, amelyeken a <ph name="PRODUCT_OS_NAME" /> megjeleníthető.
-
-      Ha beállítja a házirendet, a felhasználó kizárólag a házirend által megadott nyelvek egyikén használhatja a <ph name="PRODUCT_OS_NAME" /> rendszert. Ha a házirend nincs beállítva, vagy ha üres listára van állítva, akkor a <ph name="PRODUCT_OS_NAME" /> a kezelőfelület összes támogatott nyelvén megjeleníthető. Ha a házirend érvénytelen értékeket tartalmazó listára van állítva, a böngésző figyelmen kívül hagyja az összes érvénytelen értéket. Ha a felhasználó korábban olyan nyelvre állította be a <ph name="PRODUCT_OS_NAME" /> rendszert, amelyet a házirend nem engedélyez, akkor a megjelenítési nyelv a kezelőfelület valamelyik engedélyezett nyelvére változik a felhasználó következő bejelentkezésekor. Ha a felhasználó megadott előnyben részesített nyelveket, és ezen előnyben részesített nyelvek egyikét engedélyezi a házirend, akkor a <ph name="PRODUCT_OS_NAME" /> arra a nyelvre vált. Máskülönben a <ph name="PRODUCT_OS_NAME" /> a házirend által megadott első érvényes értékre, illetve – amennyiben a házirend csak érvénytelen bejegyzéseket tartalmaz – a tartalék nyelvi beállításra (jelenleg en-US) vált.</translation>
 <translation id="2604182581880595781">A Hálózati fájlmegosztásokra vonatkozó házirendek konfigurálása.</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
@@ -1469,13 +1451,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="5141670636904227950">A bejelentkezési képernyőn engedélyezett alapértelmezett nagyítótípus beállítása</translation>
 <translation id="5142301680741828703">Mindig a <ph name="PRODUCT_FRAME_NAME" /> segítségével jelenítse meg a következő URL-mintákat</translation>
-<translation id="5147665094011258322">Az eszköz által DHCP-kérelmekben használt gazdagépnév meghatározása.
-
-      Ha a házirend nem üres karakterláncra van állítva, a rendszer az adott a karakterláncot használja gazdagépnévként a DHCP-kérelmeknél.
-
-      A karakterlánc tartalmazhat változókat – ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} –, amelyeket a rendszer különböző értékekkel helyettesít az eszközön a gazdagépnévként való használat előtt. Így a csere után érvényes gazdagépnév keletkezik (az RFC 1035 című dokumentum 3.1-es szakasza szerint).
-
-      Ha nincs beállítva a házirend, illetve ha a csere érvénytelen gazdagépnevet eredményez, a DHCP-kérelemben nem kerül sor a gazdagépnév beállítására. </translation>
 <translation id="5148753489738115745">Lehetővé teszi további paraméterek megadását, amelyeket a(z) <ph name="PRODUCT_FRAME_NAME" /> használ a(z) <ph name="PRODUCT_NAME" /> indításakor.
 
           Ha nincs beállítva ez a házirend, akkor a rendszer az alapértelmezett parancssort használja.</translation>
@@ -1702,7 +1677,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5835124959204887277">Meghatározza azokat az URL-eket és domaineket, amelyeknél nem jelenik meg értesítés a hitelesítési tanúsítványok biztonsági hardverkulcsoktól való kérésekor. Továbbá jelet küld a biztonsági hardverkulcsnak annak a jelzésére, hogy egyedi hitelesítésre kerülhet sor. Enélkül a Chrome 65-ös és újabb verzióinak felhasználói értesítést kapnak, amikor a webhelyek biztonsági hardverkulcs általi hitelesítést kérnek.
 
       Az URL-ek (például https://example.com/some/path) csak U2F-alkalmazásazonosítóként felelnek meg. A domainek (például example.com) csak webes hitelesítésű RP-azonosítóként felelnek meg. Ezért az adott webhely U2F és webes hitelesítésű API-jainak lefedése érdekében az alkalmazásazonosító URL-jének és domainjének is szerepelnie kell a listában.</translation>
-<translation id="5835412847081687053">A felhasználói munkamenetben engedélyezett kezelőfelületi nyelvek konfigurálása</translation>
 <translation id="5836064773277134605">A távoli gazdagép által használt UDP porttartomány korlátozása</translation>
 <translation id="5862253018042179045">A hangos visszajelzés kisegítő lehetőség alapértelmezett állapotának beállítása a bejelentkezési képernyőn.
 

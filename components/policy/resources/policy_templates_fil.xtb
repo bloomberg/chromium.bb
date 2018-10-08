@@ -495,21 +495,6 @@
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
 
       Kung hindi na-configure ang setting na ito, mapipili ng mga user kung dapat gamitin ang serbisyo ng pag-spell check o hindi.</translation>
-<translation id="2294283832646774959">Nagko-configure ng listahan ng mga printer.
-
-      Binibigyang-daan ng patakarang ito ang mga administrator na magbigay ng mga configuration ng printer para sa
-      kanilang mga user.
-
-      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na maaaring i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
-
-      Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa isang printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
-
-      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer. Hindi mada-download ang mga PPD hanggang magamit ang printer. Pagkatapos ng oras na iyon, maka-cache ang mga PPD na madalas gamitin.
-
-      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device. Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
-
-      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pag-expand ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula pagkatapos ng ika-6 na posisyon, ibig sabihin, ang <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang ang posisyon ay zero-based.
-      </translation>
 <translation id="2294382669900758280">Hindi isinasaalang-alang ang pag-play ng Video sa mga Android app, kahit nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">I-configure ang default na page ng Bagong Tab sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
@@ -620,9 +605,6 @@
           Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
 
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
-<translation id="2598508021807251719">Kino-configure ang mga lokal kung saan maaaring ipinapakita ang <ph name="PRODUCT_OS_NAME" />.
-
-      Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isa sa mga lokal na tinukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o itatakda ito sa isang blangkong listahan, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal ng UI. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isang lokal na hindi pinapayagan ng patakarang ito, ililipat ang lokal ng display sa isang pinapayagang lokal ng UI sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at ang isa sa mga piniling lokal ay pinapayagan ng patakarang ito, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy sa patakarang ito, o sa isang fallback na lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1515,13 +1497,6 @@
 <translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
 <translation id="5141670636904227950">Itakda ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Tukuyin ang hostname ng device na ginamit sa mga kahilingan ng DHCP.
-
-      Kung nakatakda ang patakarang ito sa may lamang string, gagamitin ang string na iyon bilang ang hostname ng device sa panahon ng paghiling ng DHCP.
-
-      Ang string ay maaaring magkaroon ng mga variable na ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} na papalitan ng mga value sa device bago gamitin bilang hostname. Ang resultang kapalit ay dapat valid na hostname (alinsunod sa RFC 1035, seksyon 3.1).
-
-      Kung hindi nakatakda ang patakarang ito, o hindi valid na hostname ang value pagkatapos ng pagpapalit, walang itatakdang hostname sa kahilingan ng DHCP. </translation>
 <translation id="5148753489738115745">Binibigyang-daan kang tukuyin ang mga karagdagang parameter na ginagamit kapag nilunsad ng <ph name="PRODUCT_FRAME_NAME" /> ang <ph name="PRODUCT_NAME" />.
 
           Kung hindi naitakda ang patakarang ito, ang default na command line ang gagamitin.</translation>
@@ -1771,7 +1746,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5835124959204887277">Tumutukoy ng mga URL at domain kung saan walang ipapakitang prompt kapag humiling ng mga certificate ng pagpapatunay mula sa Mga Security Key. Bukod pa rito, may ipapadalang signal sa Security Key na nagsasaad na maaaring gumamit ng indibidwal na pagpapatunay. Kung wala ito, ipo-prompt ang mga user sa Chrome 65+ kapag humiling ang mga site ng pagpapatunay ng Mga Security Key.
 
       Tutugma lang ang mga URL (tulad ng https://example.com/some/path) bilang mga U2F appID. Tutugma lang ang mga domain (tulad ng example.com) bilang mga webauthn RP ID. Samakatuwid, upang masaklaw ang mga U2F at webauthn API para sa isang partikular na site, kailangang parehong ilista ang appID URL at domain.</translation>
-<translation id="5835412847081687053">I-configure ang mga pinapayagang lokal ng UI sa isang session ng user</translation>
 <translation id="5836064773277134605">Paghigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access</translation>
 <translation id="5862253018042179045">Itakda ang default na katayuan ng tampok na pagiging naa-access ng sinasalitang feedback sa screen sa pag-login.
 

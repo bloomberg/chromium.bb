@@ -468,20 +468,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Podeu continuar comprovant la correcció ortogràfica amb un diccionari que hàgiu baixat. Aquesta política només controla l'ús del servei en línia.
 
       Si no configureu aquest paràmetre, els usuaris podran triar si volen utilitzar el servei de correcció automàtica o no.</translation>
-<translation id="2294283832646774959">Configura una llista d'impressores.
-
-      Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. Les cadenes <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> representen el fabricant i el model de la impressora, i serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representen una impressora compatible amb <ph name="PRODUCT_NAME" />. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
-
-      La configuració d'una impressora es completa quan s'utilitza per primera vegada, moment en què es baixen els fitxers PPD. Després, els que s'utilitzen sovint es desen a la memòria cau.
-
-      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets, sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
-
-      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.
-      </translation>
 <translation id="2294382669900758280">La reproducció de vídeo en aplicacions per a Android no es té en compte encara que aquesta política s'estableixi en "<ph name="TRUE" />".</translation>
 <translation id="2298647742290373702">Configura la pàgina Pestanya nova predeterminada a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
@@ -586,9 +572,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
           Totes les versions recents dels servidors de Samba i de Windows admeten NTLMv2. Aquesta política només s'ha de desactivar per permetre la compatibilitat amb versions anteriors i això redueix la seguretat de l'autenticació.
 
           Si aquesta política no s'estableix, l'opció predeterminada és "true" i s'activa l'autenticació NTLMv2.</translation>
-<translation id="2598508021807251719">Estableix les configuracions regionals en què es pot mostrar <ph name="PRODUCT_OS_NAME" />.
-
-      Si aquesta política s'estableix, l'usuari només podrà configurar <ph name="PRODUCT_OS_NAME" /> perquè es mostri en una de les configuracions regionals especificades per aquesta política. Si aquesta política no s'estableix o s'estableix en una llista buida, <ph name="PRODUCT_OS_NAME" /> es podrà mostrar en totes les configuracions regionals admeses per a IU. Si aquesta política s'estableix en una llista amb valors no vàlids, tots els valors no vàlids s'ignoraran. Si un usuari ha configurat prèviament <ph name="PRODUCT_OS_NAME" /> perquè es mostri en un idioma que aquesta política no admet, la configuració regional de visualització canviarà a una configuració regional permesa per a la IU la propera vegada que l'usuari iniciï la sessió. Si l'usuari havia establert configuracions regionals preferides i aquesta política n'admet una, <ph name="PRODUCT_OS_NAME" /> canviarà a aquesta configuració regional. En canvi, si aquesta política només conté entrades no vàlides, <ph name="PRODUCT_OS_NAME" /> canviarà al primer valor vàlid que especifiqui aquesta política o a una configuració regional alternativa (actualment, en-US).</translation>
 <translation id="2604182581880595781">Configura les polítiques relacionades amb la funció Ús compartit dels fitxers de la xarxa.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1450,13 +1433,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Determina el nom d'amfitrió del dispositiu que s'utilitza a les sol·licituds DHCP.
-
-      Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom d'amfitrió del dispositiu durant les sol·licituds DHCP.
-
-      La cadena pot incloure les variables ${ASSET_ID}, ${SERIAL_NUM} i ${MAC_ADDR}, que se substituirien per valors al dispositiu abans d'utilitzar la cadena com a nom d'amfitrió. La substitució resultant ha de ser un nom d'amfitrió vàlid (d'acord amb la norma RFC 1035, secció 3.1).
-
-      Si aquesta política no es defineix o el valor posterior a la substitució no és un nom d'amfitrió vàlid, no es definirà cap nom d'amfitrió a les sol·licituds DHCP. </translation>
 <translation id="5148753489738115745">Us permet especificar els paràmetres especials que s'utilitzen quan <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no definiu aquesta política, s'utilitzarà la línia d'ordres predeterminada.</translation>
@@ -1680,7 +1656,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5835124959204887277">Especifica els URL i els dominis per als quals no es mostrarà cap avís quan se sol·licitin certificats de confirmació de les claus de seguretat. A més, s'enviarà un senyal a la clau de seguretat per indicar que es pot utilitzar una confirmació individual. En cas contrari, els usuaris de Chrome 65 i versions posteriors rebran un avís quan els llocs web sol·licitin una confirmació de les claus de seguretat.
 
       Els URL (com ara https://example.com/un/camí) només s'identifiquen com a appID d'U2F. Els dominis (com ara example.com) només tornaran resultats com a identificadors RP de WebAuthn. Per tant, per permetre alhora les API de WebAuthn i d'U2F en un lloc web determinat, s'ha d'incloure tant el domini com l'URL de WebAuthn.</translation>
-<translation id="5835412847081687053">Estableix les configuracions regionals permeses per a IU en una sessió d'usuari</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
 <translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris de veu a la pantalla d'inici de sessió.
 

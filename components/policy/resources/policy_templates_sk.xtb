@@ -471,21 +471,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Kontrolu pravopisu je stále možné vykonať pomocou stiahnutého slovníka. Toto pravidlo sa vzťahuje iba na používanie služieb online.
 
       Ak toto nastavenie nie je nakonfigurované, používatelia môžu zvoliť, či službu na kontrolu pravopisu chcú použiť alebo nie.</translation>
-<translation id="2294283832646774959">Umožňuje nakonfigurovať zoznam tlačiarní.
-
-      Toto pravidlo umožňuje správcom poskytnúť používateľom konfigurácie 
-      tlačiarní.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú prispôsobiteľné textové reťazce, pomocou ktorých je možné zjednodušiť výber tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> uľahčujú identifikáciu tlačiarní koncovými používateľmi. Predstavujú výrobcu a model tlačiarne. <ph name="PRINTER_URI" /> by mala byť adresa dostupná z klientského počítača vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je voliteľná.  Ak je zadaná, používa sa na odobranie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> sa musí zhodovať s jedným reťazcom predstavujúcim podporovanú tlačiareň <ph name="PRODUCT_NAME" />. Reťazec sa použije na identifikáciu a inštaláciu príslušného súboru PPD pre tlačiareň. Ďalšie informácie nájdete na adrese https://support.google.com/chrome?p=noncloudprint.
-
-      Nastavenie tlačiarne sa dokončí pri prvom použití. Súbory PPD sa stiahnu až pri použití tlačiarne. Často používané súbory PPD sa následne uložia do vyrovnávacej pamäte.
-
-      Toto pravidlo nemá vplyv na to, či používatelia môžu konfigurovať tlačiarne v jednotlivých zariadeniach. Je určené ako doplnok konfigurácie tlačiarní jednotlivými používateľmi.
-
-      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podradený reťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
-      </translation>
 <translation id="2294382669900758280">Prehrávanie videí v aplikáciách pre Android sa neberie do úvahy ani v prípade, ak je toto pravidlo nastavené na hodnotu <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Nastavenie predvolenej stránky na novej karte v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
@@ -600,9 +585,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Všetky nedávne verzie serverov Samba a Windows podporujú protokol NTLMv2. Mali by ste ho deaktivovať iba vtedy, ak potrebujete zaistiť spätnú kompatibilitu, pretože to znižuje zabezpečenie overenia totožnosti.
 
           Ak toto pravidlo nenastavíte, predvolená hodnota je True (Pravda) a protokol NTLMv2 je aktivovaný.</translation>
-<translation id="2598508021807251719">Konfiguruje miestne nastavenia, v ktorých sa <ph name="PRODUCT_OS_NAME" /> môže zobrazovať.
-
-      Ak toto pravidlo nastavíte, používateľ môže nakonfigurovať iba to, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jednom z miestnych nastavení špecifikovaných týmto pravidlom. Ak toto pravidlo nenastavíte alebo ho nastavíte na prázdny zoznam, <ph name="PRODUCT_OS_NAME" /> sa môže zobrazovať vo všetkých podporovaných miestnych nastaveniach používateľského rozhrania. Ak pravidlo nastavíte na zoznam s neplatnými hodnotami, všetky neplatné hodnoty sa budú ignorovať. Ak používateľ predtým nakonfiguroval, aby sa <ph name="PRODUCT_OS_NAME" /> zobrazoval v jazyku, ktorý toto pravidlo nepovoľuje, pri najbližšom prihlásení používateľa sa zobrazené miestne nastavenie prepne na povolené miestne nastavenie používateľského rozhrania. Ak používateľ nakonfiguroval preferované miestne nastavenia a jedno z týchto nastavení je povolené týmto pravidlom, <ph name="PRODUCT_OS_NAME" /> sa prepne na toto miestne nastavenie. V opačnom prípade sa <ph name="PRODUCT_OS_NAME" /> prepne na prvú platnú hodnotu špecifikovanú týmto pravidlom alebo na záložné miestne nastavenie (aktuálne en-US), ak pravidlo obsahuje iba neplatné záznamy.</translation>
 <translation id="2604182581880595781">Konfigurácia pravidiel súvisiacich so zdieľaním súborov v sieti</translation>
 <translation id="2623014935069176671">Počkať na aktivitu používateľa</translation>
 <translation id="262740370354162807">Povolí odoslanie dokumentov do služby <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1497,13 +1479,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="5130288486815037971">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy RC4</translation>
 <translation id="5141670636904227950">Nastaviť predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke</translation>
 <translation id="5142301680741828703">Vždy vykreslovať nasledujúce vzory webových adries v doplnku <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Umožňuje určiť názov hostiteľa zariadenia používaného v žiadostiach DHCP.
-
-      Ak toto pravidlo nastavíte na reťazec, ktorý nie je prázdna hodnota, daný reťazec sa použije ako názov hostiteľa zariadenia počas žiadosti DHCP.
-
-      Reťazec môže obsahovať premenné ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ktoré budú v zariadení nahradené hodnotami ešte pred ich použitím ako názvu hostiteľa. Výsledné nahradenie by mal byť platný názov hostiteľa (podľa RFC 1035, časť 3.1).
-
-      Ak toto pravidlo nenastavíte alebo hodnota po nahradení nie je platný názov hostiteľa, v žiadosti DHCP nebude nastavený žiadny názov hostiteľa. </translation>
 <translation id="5148753489738115745">Umožňuje nastaviť dodatočné parametre, ktoré doplnok <ph name="PRODUCT_FRAME_NAME" /> pri spúšťaní aplikácie <ph name="PRODUCT_NAME" /> použije.
 
           Ak toto pravidlo nie je nastavené, použije sa predvolený príkazový riadok.</translation>
@@ -1752,7 +1727,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5835124959204887277">Umožňuje určiť webové adresy a domény, pri ktorých sa nebude zobrazovať žiadna výzva, keď sa budú vyžadovať atestačné certifikáty z bezpečnostných kľúčov. Okrem toho bude do bezpečnostného kľúča odoslaný signál označujúci, že je možné použiť individuálnu atestáciu. Bez toho sa používateľom v Chrome 65 alebo novšom zobrazí výzva, keď budú weby požadovať atestáciu bezpečnostných kľúčov.
 
       Webové adresy (ako https://príklad.com/nejaká/cesta) sa budú zhodovať iba ako identifikátory aplikácie U2F. Domény (ako príklad.com) sa budú zhodovať iba ako identifikátory webauthn RP. Ak majú byť pokryté obe rozhrania U2F aj webauthn API pre daný web, je potrebné uviesť webovú adresu a doménu identifikátora aplikácie.</translation>
-<translation id="5835412847081687053">Konfigurácia povolených miestnych nastavení používateľského rozhrania v relácii používateľa</translation>
 <translation id="5836064773277134605">Obmedzí rozsah portov UDP používaných hostiteľom vzdialeného prístupu</translation>
 <translation id="5862253018042179045">Nastaví predvolený stav hlasovej odozvy (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 

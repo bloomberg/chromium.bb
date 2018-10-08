@@ -461,20 +461,6 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
       Kontrolu pravopisu lze nicméně provést pomocí staženého slovníku. Tato zásada se vztahuje pouze na používání internetových služeb.
 
       Pokud toto nastavení není nakonfigurováno, uživatelé mohou zvolit, zda službu pro kontrolu pravopisu chtějí použít či nikoli.</translation>
-<translation id="2294283832646774959">Konfiguruje seznam tiskáren.
-
-Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
-
-Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnotou <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
-
-Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace naleznete na stránce https://support.google.com/chrome?p=noncloudprint.
-
-Nastavení tiskárny se dokončí při jejím prvním použití. Soubory PPD se stáhnou až při použití tiskárny. Často používané soubory PPD budou následně uloženy do mezipaměti.
-
-Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
-
-U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
-      </translation>
 <translation id="2294382669900758280">Přehrávání videí v aplikacích Android není bráno v potaz ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfiguruje výchozí stránku Nová karta v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
@@ -587,9 +573,6 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
           Všechny verze serverů Samba a Windows z poslední doby protokol NTLMv2 podporují. Jeho zakázání snižuje bezpečnost ověřování a měli byste k němu přistupovat jen v případě, že potřebujete zajistit zpětnou kompatibilitu.
 
           Pokud tato zásada není nastavena, použije se výchozí nastavení true a protokol NTLMv2 bude povolen.</translation>
-<translation id="2598508021807251719">Konfiguruje jazyky, ve kterých se <ph name="PRODUCT_OS_NAME" /> může zobrazovat.
-
-      Pokud je tato zásada nastavena, může uživatel nakonfigurovat zobrazení systému <ph name="PRODUCT_OS_NAME" /> jen v jednom z jazyků zadaných v této zásadě. Pokud tato zásada není nastavena nebo je nastavena na prázdný seznam, je možné systém <ph name="PRODUCT_OS_NAME" /> zobrazovat ve všech podporovaných jazycích uživatelského prostředí. Pokud je tato zásada nastavena na seznam s neplatnými hodnotami, všechny neplatné hodnoty budou ignorovány. Pokud uživatel v minulosti systém <ph name="PRODUCT_OS_NAME" /> nastavil na zobrazování v jazyce, který tato zásada nepovoluje, přepne se zobrazovaný jazyk při příštím přihlášení uživatele na povolený jazyk uživatelského rozhraní. Pokud uživatel nakonfiguroval preferované jazyky a tato zásada některý z nich povoluje, přejde <ph name="PRODUCT_OS_NAME" /> na daný jazyk. Jinak <ph name="PRODUCT_OS_NAME" /> přejde na první platnou hodnotu zadanou v této zásadě nebo na záložní jazyk (v současné době en-US), pokud tato zásada obsahuje jen neplatné položky.</translation>
 <translation id="2604182581880595781">Konfigurace zásad souvisejících se sdílenými síťovými složkami.</translation>
 <translation id="2623014935069176671">Počkat na první aktivitu uživatele</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1471,13 +1454,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Určuje název hostitele používaný pro zařízení v požadavcích DHCP.
-
-      Je-li tato zásada nastavena na neprázdný řetězec, použije se daný řetězec pro zařízení jako název hostitele v požadavku DHCP.
-
-      Řetězec může obsahovat proměnné ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, které se v zařízení nahradí hodnotami, čímž vznikne název hostitele. Po nahrazení by měl vzniknout platný název hostitele (odpovídající sekci 3.1 specifikace RFC 1035).
-
-      Pokud tato zásada není nastavena nebo název hostitele po nahrazení nebude platný, v požadavku DHCP žádný název hostitele nastaven nebude. </translation>
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
 
           Když tato zásada není nastavena, bude použit výchozí příkazový řádek.</translation>
@@ -1726,7 +1702,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5835124959204887277">Určuje adresy URL a domény, pro které se při žádosti o atestační certifikáty z bezpečnostních klíčů nezobrazí žádná výzva. Kromě toho se bezpečnostnímu klíči odešle signál, že je možné použít individuální atestaci. Bez tohoto nastavení se uživatelům v Chromu verze 65 nebo vyšší při žádosti webů o atestaci bezpečnostních klíčů zobrazí výzva.
 
       Adresy URL (jako je https://example.com/nejaka/cesta) se budou porovnávat pouze jako U2F appID. Domény (například example.com) se porovnávají pouze jako ID přijímající strany webauthn. K pokrytí rozhraní API U2F i webauthn pro konkrétní web je proto potřeba uvést jak adresu URL appID, tak doménu.</translation>
-<translation id="5835412847081687053">Konfiguruje jazyky uživatelského prostředí povolené v uživatelské relaci</translation>
 <translation id="5836064773277134605">Omezí rozsah portů UDP používaný hostitelem vzdáleného přístupu.</translation>
 <translation id="5862253018042179045">Nastavuje výchozí stav funkce usnadnění přístupu pomocí hlasové odezvy na přihlašovací obrazovce.
 

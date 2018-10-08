@@ -499,21 +499,6 @@
       Semakan ejaan masih boleh dilakukan menggunakan kamus yang dimuat turun; dasar ini hanya mengawal penggunaan perkhidmatan dalam talian.
 
       Jika tetapan ini tidak dikonfigurasi, maka pengguna boleh memilih sama ada perkhidmatan semakan ejaan harus digunakan atau tidak.</translation>
-<translation id="2294283832646774959">Mengkonfigurasi senarai pencetak.
-
-      Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk pengguna mereka.
-.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> bertujuan untuk memudahkan pengenalan pencetak oleh pengguna akhir. Dua butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, maklumat ini digunakan untuk membantu menyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> mesti sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan itu akan digunakan untuk mengenal pasti dan memasang PPD yang sesuai untuk pencetak. Maklumat lanjut boleh ditemui di https://support.google.com/chrome?p=noncloudprint.
-
-      Persediaan pencetak selesai pada penggunaan pertama pencetak. PPD tidak dimuat turun sehinggalah pencetak digunakan. Selepas waktu itu, PPD yang kerap digunakan akan dicache.
-
-      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu atau tidak. Dasar ini bertujuan menjadi pelengkap kepada pengkonfigurasian pencetak oleh pengguna individu.
-
-      Untuk peranti diurus Active Directory, dasar ini menyokong pengembangan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetannya. Sebagai contoh, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Sila ambil perhatian bahawa kedudukan adalah berasaskan sifar.
-      </translation>
 <translation id="2294382669900758280">Tindakan memainkan video dalam apl Android tidak diambil kira, walaupun jika dasar ini ditetapkan kepada <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurasi halaman Tab Baharu lalai dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan senarai pemalam yang didayakan</translation>
@@ -626,9 +611,6 @@
           Semua versi terbaru pelayan Samba dan Windows menyokong NTLMv2. Ciri ini harus dilumpuhkan untuk keserasian mundur sahaja dan mengurangkan keselamatan pengesahan.
 
           Jika dasar ini tidak ditetapkan, nilai lalainya ialah benar dan NTLMv2 didayakan.</translation>
-<translation id="2598508021807251719">Mengkonfigurasi tempat peristiwa yang digunakan <ph name="PRODUCT_OS_NAME" /> dalam paparan.
-
-      Jika dasar ini ditetapkan, pengguna hanya boleh mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam salah satu tempat peristiwa yang dinyatakan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, <ph name="PRODUCT_OS_NAME" /> boleh dipaparkan dalam semua tempat peristiwa UI yang disokong. Jika dasar ini ditetapkan kepada senarai dengan nilai yang tidak sah, semua nilai tidak sah akan diabaikan. Jika sebelum ini pengguna telah mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam tempat peristiwa yang tidak dibenarkan oleh dasar ini, tempat peristiwa paparan akan ditukar kepada tempat peristiwa UI yang dibenarkan apabila pengguna log masuk selepas ini. Jika pengguna telah mengkonfigurasi tempat peristiwa pilihan dan salah satu tempat peristiwa pilihan itu dibenarkan oleh dasar ini, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada tempat peristiwa ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada nilai sah pertama yang dinyatakan oleh dasar ini atau kepada tempat peristiwa sebelumnya (pada masa ini en-US), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
 <translation id="2604182581880595781">Konfigurasikan dasar yang berkaitan dengan Perkongsian Fail Rangkaian.</translation>
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1519,13 +1501,6 @@
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Tentukan nama hos peranti yang digunakan dalam permintaan DHCP.
-
-      Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama hos peranti semasa permintaan DHCP.
-
-      Rentetan itu boleh mengandungi pemboleh ubah ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} yang akan digantikan dengan nilai pada peranti sebelum digunakan sebagai nama hos. Penggantian yang terhasil mestilah nama hos yang sah (mengikut RFC 1035, bahagian 3.1).
-
-      Jika dasar ini tidak ditetapkan atau nilai selepas penggantian bukan nama hos yang sah, tiada nama hos akan ditetapkan dalam permintaan DHCP. </translation>
 <translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME" /> melancarkan <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini tidak ditetapkan, baris perintah lalai akan digunakan.</translation>
@@ -1774,7 +1749,6 @@
 <translation id="5835124959204887277">Menentukan URL dan domain yang mana gesaan tidak akan ditunjukkan apabila sijil pembuktian daripada Kunci Keselamatan diminta. Selain itu, isyarat akan dihantar kepada Kunci Keselamatan yang menunjukkan bahawa pembuktian individu boleh digunakan. Tanpa ini, pengguna akan digesa dalam Chrome 65+ apabila tapak meminta pembuktian Kunci Keselamatan.
 
       URL (seperti https://example.com/some/path) hanya akan sepadan sebagai appID U2F. Domain (seperti example.com) hanya sepadan sebagai ID RP webauthn. Oleh sebab itu, untuk meliputi kedua-dua API U2F dan webauthn bagi tapak tertentu, kedua-dua URL dan domain appID perlu disenaraikan.</translation>
-<translation id="5835412847081687053">Konfigurasikan tempat peristiwa UI yang dibenarkan dalam sesi pengguna</translation>
 <translation id="5836064773277134605">Hadkan julat port UDP yang digunakan oleh hos akses jauh</translation>
 <translation id="5862253018042179045">Tetapkan keadaan lalai ciri kebolehcapaian maklum balas pertuturan pada skrin log masuk.
 

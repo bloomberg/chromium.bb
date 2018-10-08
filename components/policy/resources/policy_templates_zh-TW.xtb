@@ -474,21 +474,6 @@
       你仍可使用下載的字典執行拼字檢查，這項政策僅可控制是否使用線上服務。
 
       如果你並未設置這項設定，則使用者可自行選擇是否要使用拼字檢查服務。</translation>
-<translation id="2294283832646774959">設定印表機清單。
-
-      這項政策可讓管理員為每位使用者提供
-      印表機設定。
-
-      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」是形式不拘的字串，可加以自訂方便選擇印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」則可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。「<ph name="PRINTER_URI" />」必須是可透過用戶端電腦連上的位址 (包括「<ph name="URI_SCHEME" />」、「<ph name="URI_PORT" />」和「<ph name="URI_QUEUE" />」)。「<ph name="PRINTER_UUID" />」可選用。如有提供，則會用於協助複製「<ph name="ZEROCONF_DISCOVERY" />」印表機。
-
-      「<ph name="PRINTER_EFFECTIVE_MODEL" />」必須是其中一個代表 <ph name="PRODUCT_NAME" /> 支援印表機的字串。系統會利用這個字串找出印表機適用的 PPD 並加以安裝。詳情請參閱 https://support.google.com/chrome?p=noncloudprint。
-
-      首次使用印表機時，會完成印表機設定程序。PPD 則會在使用該印表機時才下載，之後系統會快取常用的 PPD。
-
-      這項政策旨在補足個別使用者的印表機設定，對使用者能否在個別裝置上設定印表機沒有影響。
-
-      如果是受管理的 Active Directory 裝置，這項政策支援將「<ph name="MACHINE_NAME_VARIABLE" />」擴充為 Active Directory 電腦名稱或其子字串。舉例來說，如果電腦名稱為「<ph name="MACHINE_NAME_EXAMPLE" />」，「<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />」將會被第 6 個位置後的 4 個字元取代 (亦即「<ph name="MACHINE_NAME_PART_EXAMPLE" />」)。請注意，位置序數從 0 開始計算。
-      </translation>
 <translation id="2294382669900758280">即使將這項政策設為 <ph name="TRUE" />，在 Android 應用程式中播放的影片仍不會受到影響。</translation>
 <translation id="2298647742290373702">設定 <ph name="PRODUCT_NAME" /> 的預設新分頁。</translation>
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
@@ -593,9 +578,6 @@
           近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
 
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
-<translation id="2598508021807251719">控制 <ph name="PRODUCT_OS_NAME" />顯示語言的語言代碼。
-
-      如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為無效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言代碼不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的 UI 語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼，否則 <ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
@@ -1459,13 +1441,6 @@
 <translation id="5130288486815037971">是否在 TLS 中啟用 RC4 加密套件</translation>
 <translation id="5141670636904227950">設定啟用的螢幕放大鏡在登入畫面的預設類型</translation>
 <translation id="5142301680741828703">一律轉譯下列 <ph name="PRODUCT_FRAME_NAME" /> 中的網址模式</translation>
-<translation id="5147665094011258322">決定 DHCP 要求中所用的裝置主機名稱。
-
-      如果將這項政策的值設為非空白字串，該字串將成為 DHCP 要求中的裝置主機名稱。
-
-      該字串可包含 ${ASSET_ID}、${SERIAL_NUM}、${MAC_ADDR} 變數。這些變數可替換成對應的裝置屬性值，再供系統使用字串做為主機名稱。不過，替換後必須產生有效的主機名稱 (以 RFC 1035 文件第 3.1 條規定為準)。
-
-      如果未設定這項政策，或者經替換後的值不是有效的主機名稱，系統將不會在 DHCP 要求中設定主機名稱。 </translation>
 <translation id="5148753489738115745">允許你指定 <ph name="PRODUCT_FRAME_NAME" /> 啟動 <ph name="PRODUCT_NAME" /> 時使用的其他參數。
 
           如果未設定這項政策，系統會使用預設命令列。</translation>
@@ -1692,7 +1667,6 @@
 <translation id="5835124959204887277">指定在必須取得安全金鑰認證憑證的情況下不會顯示提示的網址和網域。此外，系統會傳送信號給安全金鑰，指出可能會使用個別認證。如未設定這項政策，當網站要求安全金鑰認證時，Chrome 65 以上版本的使用者會收到提示。
 
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
-<translation id="5835412847081687053">設定可在使用者工作階段中使用的 UI 語言代碼</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="5862253018042179045">設定互動朗讀協助功能在登入畫面的預設狀態。
 

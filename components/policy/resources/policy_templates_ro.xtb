@@ -476,21 +476,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
 
       Dacă această setare nu este configurată, atunci utilizatorii pot alege dacă se va utiliza sau nu serviciul de verificare a ortografiei.</translation>
-<translation id="2294283832646774959">Configurează o listă de imprimante.
-
-      Această politică permite administratorilor să ofere utilizatorilor configurații ale
-      imprimantelor.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de către utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
-
-      Configurarea imprimantei este finalizată la prima folosire a acesteia. PPD-urile nu sunt descărcate înainte de folosirea imprimantei. După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
-
-      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
-      </translation>
 <translation id="2294382669900758280">Redarea videoclipurilor în aplicațiile Android nu este luată în considerare, chiar dacă politica este setată la <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurează pagina Filă nouă prestabilită în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specifică o listă de pluginuri activate</translation>
@@ -597,9 +582,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Toate versiunile recente de servere Samba și Windows acceptă autentificarea NTLMv2. Aceasta trebuie dezactivată doar pentru compatibilitate inversă, iar prin dezactivare se reduce siguranța autentificării.
 
           Dacă această politică nu este setată, valoarea standard este „true”, iar autentificarea NTLMv2 este activată.</translation>
-<translation id="2598508021807251719">Configurează codurile locale în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
-
-      Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-unul dintre codurile locale specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate codurile locale IU acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-un cod local care nu este permis de această politică, codul local de afișare va fi înlocuit cu un cod local IU permis la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat codurile locale preferate și unul dintre ele este permis de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la codul local respectiv. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la un cod local alternativ (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="2604182581880595781">Configurează politicile pentru Dispozitive de stocare în rețea.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1465,13 +1447,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5130288486815037971">Specifică dacă suitele de codificare RC4 din TLS sunt activate</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="5142301680741828703">Redă întotdeauna următoarele șabloane de adrese URL în <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Stabilește numele de gazdă al dispozitivului folosit în solicitările DHCP.
-
-      Dacă această politică este setată la un șir completat, acel șir va fi folosit ca nume de gazdă al dispozitivului în timpul solicitării DHCP.
-
-      Șirul poate să conțină variabilele ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, care vor fi înlocuite cu valori pe dispozitiv, înainte ca acesta să fie folosit ca nume de gazdă. Înlocuirea rezultată trebuie să fie un nume de gazdă valid (conform RFC 1035, secțiunea 3.1).
-
-      Dacă această politică nu este setată sau dacă valoarea după înlocuire nu este un nume de gazdă valid, nu va fi setat niciun nume de gazdă în solicitarea DHCP. </translation>
 <translation id="5148753489738115745">Vă permite să specificați parametri suplimentari, care vor fi utilizați atunci când <ph name="PRODUCT_FRAME_NAME" /> lansează <ph name="PRODUCT_NAME" />.
 
           Dacă această politică nu este setată, va fi utilizată linia de comandă prestabilită.</translation>
@@ -1702,7 +1677,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5835124959204887277">Specifică adresele URL și domeniile pentru care nu va fi afișată nicio solicitare atunci când sunt solicitate certificate de atestare de la Cheile de securitate. În plus, va fi transmis un semnal către Cheia de securitate, indicând faptul că poate fi folosită atestarea individuală. Fără aceasta, utilizatorii vor fi atenționați în Chrome 65+ atunci când site-urile necesită atestarea Cheilor de securitate.
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
-<translation id="5835412847081687053">Configurează codurile locale IU permise într-o sesiune a utilizatorului</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 
