@@ -12,6 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
@@ -51,11 +52,11 @@ class ReportingServiceImpl : public ReportingService {
 
   void ProcessHeader(const GURL& url,
                      const std::string& header_value) override {
-    context_->delegate()->ParseJson(
+    context_->json_parser()->ParseJson(
         "[" + header_value + "]",
-        base::BindRepeating(&ReportingServiceImpl::ProcessHeaderValue,
-                            weak_factory_.GetWeakPtr(), url),
-        base::BindRepeating(
+        base::BindOnce(&ReportingServiceImpl::ProcessHeaderValue,
+                       weak_factory_.GetWeakPtr(), url),
+        base::BindOnce(
             &ReportingHeaderParser::RecordHeaderDiscardedForJsonInvalid));
   }
 
@@ -105,9 +106,10 @@ ReportingService::~ReportingService() = default;
 // static
 std::unique_ptr<ReportingService> ReportingService::Create(
     const ReportingPolicy& policy,
+    std::unique_ptr<JSONParserDelegate> json_parser,
     URLRequestContext* request_context) {
-  return std::make_unique<ReportingServiceImpl>(
-      ReportingContext::Create(policy, request_context));
+  return std::make_unique<ReportingServiceImpl>(ReportingContext::Create(
+      policy, std::move(json_parser), request_context));
 }
 
 // static

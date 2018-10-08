@@ -16,6 +16,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "net/base/rand_callback.h"
+#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
@@ -118,8 +119,7 @@ int TestReportingUploader::GetUploadDepth(const URLRequest& request) {
 }
 
 TestReportingDelegate::TestReportingDelegate()
-    : test_request_context_(std::make_unique<TestURLRequestContext>()),
-      real_delegate_(ReportingDelegate::Create(test_request_context_.get())) {}
+    : test_request_context_(std::make_unique<TestURLRequestContext>()) {}
 
 TestReportingDelegate::~TestReportingDelegate() = default;
 
@@ -161,13 +161,6 @@ bool TestReportingDelegate::CanUseClient(const url::Origin& origin,
   return true;
 }
 
-void TestReportingDelegate::ParseJson(
-    const std::string& unsafe_json,
-    const JsonSuccessCallback& success_callback,
-    const JsonFailureCallback& failure_callback) const {
-  real_delegate_->ParseJson(unsafe_json, success_callback, failure_callback);
-}
-
 TestReportingContext::TestReportingContext(base::Clock* clock,
                                            const base::TickClock* tick_clock,
                                            const ReportingPolicy& policy)
@@ -178,6 +171,7 @@ TestReportingContext::TestReportingContext(base::Clock* clock,
           base::BindRepeating(&TestReportingContext::RandIntCallback,
                               base::Unretained(this)),
           std::make_unique<TestReportingUploader>(),
+          std::make_unique<InProcessJSONParser>(),
           std::make_unique<TestReportingDelegate>()),
       rand_counter_(0),
       delivery_timer_(new base::MockOneShotTimer()),
