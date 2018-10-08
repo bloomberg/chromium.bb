@@ -1158,6 +1158,8 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       sub_context.treat_shadow_host_as_normal_scope = false;
 
       // ::slotted() only allows one compound selector.
+      //
+      // TODO(crbug.com/888042): Should account for specificity here.
       DCHECK(selector.SelectorList()->First());
       DCHECK(!CSSSelectorList::Next(*selector.SelectorList()->First()));
       sub_context.selector = selector.SelectorList()->First();
@@ -1189,10 +1191,15 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
   if (!shadow_host || shadow_host != element)
     return false;
   DCHECK(IsShadowHost(element));
+  DCHECK(element.GetShadowRoot());
+  bool is_v1_shadow = element.GetShadowRoot()->IsV1();
 
   // For the case with no parameters, i.e. just :host.
-  if (!selector.SelectorList())
+  if (!selector.SelectorList()) {
+    if (is_v1_shadow)
+      result.specificity += CSSSelector::kClassLikeSpecificity;
     return true;
+  }
 
   SelectorCheckingContext sub_context(context);
   sub_context.is_sub_selector = true;
@@ -1234,6 +1241,8 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
   }
   if (matched) {
     result.specificity += max_specificity;
+    if (is_v1_shadow)
+      result.specificity += CSSSelector::kClassLikeSpecificity;
     return true;
   }
 
