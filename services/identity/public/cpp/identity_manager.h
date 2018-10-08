@@ -187,6 +187,21 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Returns true if a refresh token exists for |account_id|.
   bool HasAccountWithRefreshToken(const std::string& account_id) const;
 
+  // Returns true if (a) a refresh token exists for |account_id|, and (b) the
+  // refresh token is in a persistent error state (defined as
+  // GoogleServiceAuthError::IsPersistentError() returning true for the error
+  // returned by GetErrorStateOfRefreshTokenForAccount(account_id)).
+  bool HasAccountWithRefreshTokenInPersistentErrorState(
+      const std::string& account_id) const;
+
+  // Returns the error state of the refresh token associated with |account_id|.
+  // In particular: Returns GoogleServiceAuthError::AuthErrorNone() if either
+  // (a) no refresh token exists for |account_id|, or (b) the refresh token is
+  // not in a persistent error state. Otherwise, returns the last persistent
+  // error that was detected when using the refresh token.
+  GoogleServiceAuthError GetErrorStateOfRefreshTokenForAccount(
+      const std::string& account_id) const;
+
   // Returns true if (a) the primary account exists, and (b) a refresh token
   // exists for the primary account.
   bool HasPrimaryAccountWithRefreshToken() const;

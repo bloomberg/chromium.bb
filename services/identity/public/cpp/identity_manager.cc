@@ -128,6 +128,16 @@ bool IdentityManager::HasAccountWithRefreshToken(
   return token_service_->RefreshTokenIsAvailable(account_id);
 }
 
+bool IdentityManager::HasAccountWithRefreshTokenInPersistentErrorState(
+    const std::string& account_id) const {
+  return GetErrorStateOfRefreshTokenForAccount(account_id).IsPersistentError();
+}
+
+GoogleServiceAuthError IdentityManager::GetErrorStateOfRefreshTokenForAccount(
+    const std::string& account_id) const {
+  return token_service_->GetAuthError(account_id);
+}
+
 bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
   return HasAccountWithRefreshToken(GetPrimaryAccountInfo().account_id);
 }

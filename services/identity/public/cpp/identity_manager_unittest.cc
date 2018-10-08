@@ -1167,6 +1167,117 @@ TEST_F(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
 }
 
+TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
+  AccountInfo primary_account_info =
+      identity_manager()->GetPrimaryAccountInfo();
+  std::string primary_account_id = primary_account_info.account_id;
+
+  // A primary account without a refresh token should not be in an error
+  // state, and setting a refresh token should not affect that.
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+
+  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+
+  // A secondary account without a refresh token should not be in an error
+  // state, and setting a refresh token should not affect that.
+  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
+  AccountInfo account_info2 =
+      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2);
+  std::string account_id2 = account_info2.account_id;
+  EXPECT_EQ(
+      GoogleServiceAuthError::AuthErrorNone(),
+      identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id2));
+
+  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  EXPECT_EQ(
+      GoogleServiceAuthError::AuthErrorNone(),
+      identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id2));
+
+  GoogleServiceAuthError account_deleted_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DELETED);
+  GoogleServiceAuthError account_disabled_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DISABLED);
+  GoogleServiceAuthError transient_error = GoogleServiceAuthError(
+      GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
+
+  // Set a persistent error for |account_id2| and check that it's reflected.
+  token_service()->UpdateAuthErrorForTesting(account_id2,
+                                             account_deleted_error);
+  EXPECT_EQ(
+      account_deleted_error,
+      identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id2));
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+
+  // A transient error should cause no change in the error state.
+  token_service()->UpdateAuthErrorForTesting(primary_account_id,
+                                             transient_error);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+
+  // Set a different persistent error for the primary account and check that
+  // it's reflected.
+  token_service()->UpdateAuthErrorForTesting(primary_account_id,
+                                             account_disabled_error);
+  EXPECT_EQ(
+      account_deleted_error,
+      identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id2));
+  EXPECT_EQ(account_disabled_error,
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+
+  // Remove the token for account2 and check that it goes back to having no
+  // error.
+  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
+                               account_id2);
+  EXPECT_EQ(
+      GoogleServiceAuthError::AuthErrorNone(),
+      identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id2));
+  EXPECT_EQ(account_disabled_error,
+            identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+                primary_account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id));
+}
+
 TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::set<std::string> scopes{"scope"};
   std::string access_token = "access_token";
