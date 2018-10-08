@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 
 #if defined(OS_ANDROID)
@@ -160,7 +161,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
                              const EntryMetadata& entry_metadata);
 
   // Executes the |callback| when the index is ready. Allows multiple callbacks.
-  int ExecuteWhenReady(net::CompletionOnceCallback callback);
+  net::Error ExecuteWhenReady(net::CompletionOnceCallback callback);
 
   // Returns entries from the index that have last accessed time matching the
   // range between |initial_time| and |end_time| where open intervals are

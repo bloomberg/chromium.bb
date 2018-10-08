@@ -933,7 +933,7 @@ void EntryImpl::CancelSparseIO() {
     background_queue_->CancelSparseIO(this);
 }
 
-int EntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
+net::Error EntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
   if (!sparse_.get())
     return net::OK;
 

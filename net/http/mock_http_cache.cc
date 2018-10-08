@@ -302,7 +302,7 @@ void MockDiskEntry::CancelSparseIO() {
   cancel_ = true;
 }
 
-int MockDiskEntry::ReadyForSparseIO(CompletionOnceCallback callback) {
+net::Error MockDiskEntry::ReadyForSparseIO(CompletionOnceCallback callback) {
   if (fail_sparse_requests_)
     return ERR_NOT_IMPLEMENTED;
   if (!cancel_)
@@ -416,10 +416,10 @@ int32_t MockDiskCache::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
 }
 
-int MockDiskCache::OpenEntry(const std::string& key,
-                             net::RequestPriority request_priority,
-                             disk_cache::Entry** entry,
-                             CompletionOnceCallback callback) {
+net::Error MockDiskCache::OpenEntry(const std::string& key,
+                                    net::RequestPriority request_priority,
+                                    disk_cache::Entry** entry,
+                                    CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   if (fail_requests_)
     return ERR_CACHE_OPEN_FAILURE;
@@ -449,10 +449,10 @@ int MockDiskCache::OpenEntry(const std::string& key,
   return ERR_IO_PENDING;
 }
 
-int MockDiskCache::CreateEntry(const std::string& key,
-                               net::RequestPriority request_priority,
-                               disk_cache::Entry** entry,
-                               CompletionOnceCallback callback) {
+net::Error MockDiskCache::CreateEntry(const std::string& key,
+                                      net::RequestPriority request_priority,
+                                      disk_cache::Entry** entry,
+                                      CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   if (fail_requests_)
     return ERR_CACHE_CREATE_FAILURE;
@@ -500,9 +500,9 @@ int MockDiskCache::CreateEntry(const std::string& key,
   return ERR_IO_PENDING;
 }
 
-int MockDiskCache::DoomEntry(const std::string& key,
-                             net::RequestPriority request_priority,
-                             CompletionOnceCallback callback) {
+net::Error MockDiskCache::DoomEntry(const std::string& key,
+                                    net::RequestPriority request_priority,
+                                    CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   auto it = entries_.find(key);
   if (it != entries_.end()) {
@@ -518,18 +518,18 @@ int MockDiskCache::DoomEntry(const std::string& key,
   return ERR_IO_PENDING;
 }
 
-int MockDiskCache::DoomAllEntries(CompletionOnceCallback callback) {
+net::Error MockDiskCache::DoomAllEntries(CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
-int MockDiskCache::DoomEntriesBetween(const base::Time initial_time,
-                                      const base::Time end_time,
-                                      CompletionOnceCallback callback) {
+net::Error MockDiskCache::DoomEntriesBetween(const base::Time initial_time,
+                                             const base::Time end_time,
+                                             CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
-int MockDiskCache::DoomEntriesSince(const base::Time initial_time,
-                                    CompletionOnceCallback callback) {
+net::Error MockDiskCache::DoomEntriesSince(const base::Time initial_time,
+                                           CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
@@ -540,8 +540,8 @@ int64_t MockDiskCache::CalculateSizeOfAllEntries(
 
 class MockDiskCache::NotImplementedIterator : public Iterator {
  public:
-  int OpenNextEntry(disk_cache::Entry** next_entry,
-                    CompletionOnceCallback callback) override {
+  net::Error OpenNextEntry(disk_cache::Entry** next_entry,
+                           CompletionOnceCallback callback) override {
     return ERR_NOT_IMPLEMENTED;
   }
 };
@@ -760,10 +760,10 @@ int MockHttpCache::GetCountWriterTransactions(const std::string& key) {
 
 //-----------------------------------------------------------------------------
 
-int MockDiskCacheNoCB::CreateEntry(const std::string& key,
-                                   net::RequestPriority request_priority,
-                                   disk_cache::Entry** entry,
-                                   CompletionOnceCallback callback) {
+net::Error MockDiskCacheNoCB::CreateEntry(const std::string& key,
+                                          net::RequestPriority request_priority,
+                                          disk_cache::Entry** entry,
+                                          CompletionOnceCallback callback) {
   return ERR_IO_PENDING;
 }
 

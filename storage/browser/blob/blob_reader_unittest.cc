@@ -153,7 +153,7 @@ class DelayedReadEntry : public disk_cache::Entry {
 
   void CancelSparseIO() override { entry_->CancelSparseIO(); }
 
-  int ReadyForSparseIO(CompletionOnceCallback callback) override {
+  net::Error ReadyForSparseIO(CompletionOnceCallback callback) override {
     return entry_->ReadyForSparseIO(std::move(callback));
   }
   void SetLastUsedTimeForTest(base::Time time) override { NOTREACHED(); }

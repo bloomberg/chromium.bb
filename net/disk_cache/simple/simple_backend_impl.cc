@@ -168,7 +168,7 @@ base::RepeatingCallback<void(int)> MakeBarrierCompletionCallback(
 // A short bindable thunk that ensures a completion callback is always called
 // after running an operation asynchronously.
 void RunOperationAndCallback(
-    base::OnceCallback<int(net::CompletionOnceCallback)> operation,
+    base::OnceCallback<net::Error(net::CompletionOnceCallback)> operation,
     net::CompletionOnceCallback operation_callback) {
   base::RepeatingCallback<void(int)> copyable_callback;
   if (operation_callback)
@@ -268,7 +268,7 @@ void SimpleBackendImpl::SetWorkerPoolForTesting(
       base::MakeRefCounted<net::PrioritizedTaskRunner>(std::move(task_runner));
 }
 
-int SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
+net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
   auto worker_pool = base::CreateTaskRunnerWithTraits(
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::USER_BLOCKING,
@@ -399,10 +399,10 @@ int32_t SimpleBackendImpl::GetEntryCount() const {
   return index_->GetEntryCount();
 }
 
-int SimpleBackendImpl::OpenEntry(const std::string& key,
-                                 net::RequestPriority request_priority,
-                                 Entry** entry,
-                                 CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::OpenEntry(const std::string& key,
+                                        net::RequestPriority request_priority,
+                                        Entry** entry,
+                                        CompletionOnceCallback callback) {
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
   std::vector<PostDoomWaiter>* post_doom = nullptr;
@@ -422,7 +422,7 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
       return net::ERR_FAILED;
     }
 
-    base::OnceCallback<int(CompletionOnceCallback)> operation =
+    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::OpenEntry, base::Unretained(this),
                        key, request_priority, entry);
     post_doom->emplace_back(base::BindOnce(
@@ -432,10 +432,10 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
   return simple_entry->OpenEntry(entry, std::move(callback));
 }
 
-int SimpleBackendImpl::CreateEntry(const std::string& key,
-                                   net::RequestPriority request_priority,
-                                   Entry** entry,
-                                   CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::CreateEntry(const std::string& key,
+                                          net::RequestPriority request_priority,
+                                          Entry** entry,
+                                          CompletionOnceCallback callback) {
   DCHECK_LT(0u, key.size());
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
@@ -464,7 +464,7 @@ int SimpleBackendImpl::CreateEntry(const std::string& key,
           &SimpleEntryImpl::NotifyDoomBeforeCreateComplete, simple_entry));
       DCHECK(insert_result.second);
     } else {
-      base::OnceCallback<int(CompletionOnceCallback)> operation =
+      base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
           base::BindOnce(&SimpleBackendImpl::CreateEntry,
                          base::Unretained(this), key, request_priority, entry);
       post_doom->emplace_back(base::BindOnce(
@@ -476,9 +476,9 @@ int SimpleBackendImpl::CreateEntry(const std::string& key,
   return simple_entry->CreateEntry(entry, std::move(callback));
 }
 
-int SimpleBackendImpl::DoomEntry(const std::string& key,
-                                 net::RequestPriority priority,
-                                 CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::DoomEntry(const std::string& key,
+                                        net::RequestPriority priority,
+                                        CompletionOnceCallback callback) {
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
   std::vector<PostDoomWaiter>* post_doom = nullptr;
@@ -489,8 +489,9 @@ int SimpleBackendImpl::DoomEntry(const std::string& key,
     // when we get here because the files corresponding to our key are being
     // deleted... but it's possible that one of the things in post_doom is a
     // create for our key, in which case we still have work to do.
-    base::OnceCallback<int(CompletionOnceCallback)> operation = base::BindOnce(
-        &SimpleBackendImpl::DoomEntry, base::Unretained(this), key, priority);
+    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+        base::BindOnce(&SimpleBackendImpl::DoomEntry, base::Unretained(this),
+                       key, priority);
     post_doom->emplace_back(base::BindOnce(
         &RunOperationAndCallback, std::move(operation), std::move(callback)));
     return net::ERR_IO_PENDING;
@@ -499,20 +500,22 @@ int SimpleBackendImpl::DoomEntry(const std::string& key,
   return simple_entry->DoomEntry(std::move(callback));
 }
 
-int SimpleBackendImpl::DoomAllEntries(CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::DoomAllEntries(CompletionOnceCallback callback) {
   return DoomEntriesBetween(Time(), Time(), std::move(callback));
 }
 
-int SimpleBackendImpl::DoomEntriesBetween(const Time initial_time,
-                                          const Time end_time,
-                                          CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::DoomEntriesBetween(
+    const Time initial_time,
+    const Time end_time,
+    CompletionOnceCallback callback) {
   return index_->ExecuteWhenReady(
       base::BindOnce(&SimpleBackendImpl::IndexReadyForDoom, AsWeakPtr(),
                      initial_time, end_time, std::move(callback)));
 }
 
-int SimpleBackendImpl::DoomEntriesSince(const Time initial_time,
-                                        CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::DoomEntriesSince(
+    const Time initial_time,
+    CompletionOnceCallback callback) {
   return DoomEntriesBetween(initial_time, Time(), std::move(callback));
 }
 
@@ -540,8 +543,8 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
   }
 
   // From Backend::Iterator:
-  int OpenNextEntry(Entry** next_entry,
-                    CompletionOnceCallback callback) override {
+  net::Error OpenNextEntry(Entry** next_entry,
+                           CompletionOnceCallback callback) override {
     CompletionOnceCallback open_next_entry_impl = base::BindOnce(
         &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
         next_entry, std::move(callback));
@@ -778,12 +781,13 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   return base::WrapRefCounted(it->second);
 }
 
-int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
-                                         Entry** entry,
-                                         CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::OpenEntryFromHash(
+    uint64_t entry_hash,
+    Entry** entry,
+    CompletionOnceCallback callback) {
   auto it = entries_pending_doom_.find(entry_hash);
   if (it != entries_pending_doom_.end()) {
-    base::OnceCallback<int(CompletionOnceCallback)> operation =
+    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::OpenEntryFromHash,
                        base::Unretained(this), entry_hash, entry);
     it->second.emplace_back(base::BindOnce(
@@ -807,14 +811,15 @@ int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
   return simple_entry->OpenEntry(entry, std::move(backend_callback));
 }
 
-int SimpleBackendImpl::DoomEntryFromHash(uint64_t entry_hash,
-                                         CompletionOnceCallback callback) {
+net::Error SimpleBackendImpl::DoomEntryFromHash(
+    uint64_t entry_hash,
+    CompletionOnceCallback callback) {
   Entry** entry = new Entry*();
   std::unique_ptr<Entry*> scoped_entry(entry);
 
   auto pending_it = entries_pending_doom_.find(entry_hash);
   if (pending_it != entries_pending_doom_.end()) {
-    base::OnceCallback<int(CompletionOnceCallback)> operation =
+    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::DoomEntryFromHash,
                        base::Unretained(this), entry_hash);
     pending_it->second.emplace_back(base::BindOnce(
