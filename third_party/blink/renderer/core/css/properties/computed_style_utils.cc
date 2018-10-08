@@ -2043,8 +2043,8 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapAlign(
     const ScrollSnapAlign& align,
     const ComputedStyle& style) {
   return CSSValuePair::Create(
-      CSSIdentifierValue::Create(align.alignment_inline),
       CSSIdentifierValue::Create(align.alignment_block),
+      CSSIdentifierValue::Create(align.alignment_inline),
       CSSValuePair::kDropIdenticalValues);
 }
 
