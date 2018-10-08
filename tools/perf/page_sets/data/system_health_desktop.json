@@ -150,6 +150,9 @@
         "load:news:hackernews": {
             "DEFAULT": "system_health_desktop_008.wprgo"
         },
+        "load:news:hackernews:2018": {
+            "DEFAULT": "system_health_desktop_fd099ca6a6.wprgo"
+        },
         "load:news:nytimes": {
             "DEFAULT": "system_health_desktop_009.wprgo"
         },
