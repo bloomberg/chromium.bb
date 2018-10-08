@@ -1946,6 +1946,7 @@ test("content_unittests") {
     "//ui/events/blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/gfx/geometry/mojo:struct_traits",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/skia",
     "//ui/gl",

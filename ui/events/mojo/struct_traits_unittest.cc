@@ -15,6 +15,7 @@
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/events/mojo/event_struct_traits.h"
 #include "ui/events/mojo/traits_test_service.mojom.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace ui {
