@@ -813,21 +813,21 @@ class QuotaManager::DumpOriginInfoTableHelper {
 QuotaManager::QuotaManager(
     bool is_incognito,
     const base::FilePath& profile_path,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
-    const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread,
+    scoped_refptr<SpecialStoragePolicy> special_storage_policy,
     const GetQuotaSettingsFunc& get_settings_function)
     : is_incognito_(is_incognito),
       profile_path_(profile_path),
       proxy_(new QuotaManagerProxy(this, io_thread)),
       db_disabled_(false),
       eviction_disabled_(false),
-      io_thread_(io_thread),
+      io_thread_(std::move(io_thread)),
       db_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       get_settings_function_(get_settings_function),
       is_getting_eviction_origin_(false),
-      special_storage_policy_(special_storage_policy),
+      special_storage_policy_(std::move(special_storage_policy)),
       get_volume_info_fn_(&QuotaManager::GetVolumeInfo),
       storage_monitor_(new StorageMonitor(this)),
       weak_factory_(this) {

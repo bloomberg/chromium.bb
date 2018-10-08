@@ -43,7 +43,7 @@ class STORAGE_EXPORT ScopedFile {
   // is DELETE_ON_SCOPE_OUT.
   ScopedFile(const base::FilePath& path,
              ScopeOutPolicy policy,
-             const scoped_refptr<base::TaskRunner>& file_task_runner);
+             scoped_refptr<base::TaskRunner> file_task_runner);
 
   ScopedFile(ScopedFile&& other);
   ScopedFile& operator=(ScopedFile&& rhs) {
