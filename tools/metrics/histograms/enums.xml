@@ -30079,6 +30079,7 @@ from previous Chrome versions.
   <int value="846951416" label="CopylessPaste:enabled"/>
   <int value="848324390" label="enable-lock-screen-apps"/>
   <int value="851085848" label="enable-settings-window"/>
+  <int value="852313529" label="RTCUnifiedPlanByDefault:disabled"/>
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
@@ -30612,6 +30613,7 @@ from previous Chrome versions.
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
+  <int value="1887882558" label="RTCUnifiedPlanByDefault:enabled"/>
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>
   <int value="1889076955" label="disable-app-link"/>
   <int value="1891210939" label="enable-blink-features"/>

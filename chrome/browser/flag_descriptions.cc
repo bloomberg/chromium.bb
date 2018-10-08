@@ -3632,6 +3632,14 @@ const char kWebrtcH264WithOpenh264FfmpegDescription[] =
     "If a hardware encoder/decoder is also available it may be used instead of "
     "this encoder/decoder.";
 
+const char kWebrtcUnifiedPlanByDefaultName[] =
+    "WebRTC: Use Unified Plan SDP Semantics by default";
+const char kWebrtcUnifiedPlanByDefaultDescription[] =
+    "RTCPeerConnections generate and expect the standards compliant SDP format "
+    "called \"Unified Plan\", unless \"Plan B\" is explicitly specified by "
+    "passing {sdpSemantics:'plan-b'} to the RTCPeerConnection constructor. "
+    "RTCRtpTransceiver support is also enabled in Unified Plan.";
+
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 const char kAutofillCreditCardUploadName[] =

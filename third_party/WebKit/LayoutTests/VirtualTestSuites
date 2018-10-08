@@ -682,7 +682,7 @@
   {
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
-    "args": ["--enable-blink-features=RTCUnifiedPlanByDefault"]
+    "args": ["--enable-features=RTCUnifiedPlanByDefault"]
   },
   {
     "prefix": "video-surface-layer",
