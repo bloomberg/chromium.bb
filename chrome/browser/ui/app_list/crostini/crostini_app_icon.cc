@@ -158,6 +158,15 @@ void CrostiniAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
     return;
   }
 
+  // TODO(jkardatzke): Remove this code for M72. This is a workaround to deal
+  // with a bug where we were caching the wrong resolution of the icons and they
+  // looked really bad. This only existed on dev channel, so there's limited
+  // reach of it, and after everyone has upgraded we can remove this check.
+  // crbug.com/891588
+  if (bitmap.width() < expected_dim || bitmap.height() < expected_dim) {
+    host_->MaybeRequestIcon(scale_factor_);
+  }
+
   // We won't always get back from Crostini the icon size we asked for, so it
   // is expected that sometimes we need to rescale it.
   SkBitmap resized_image = skia::ImageOperations::Resize(
@@ -219,6 +228,15 @@ void CrostiniAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
   // Fail safely if the icon outlives the Profile (and the Crostini Registry).
   if (!registry_service_)
     return;
+
+  // TODO(jkardatzke): Remove this for M-72, this is here temporarily to prevent
+  // continually requesting updated icons if there are not larger size ones
+  // available in Linux for that app.
+  // crbug.com/891588
+  if (already_requested_icons_.find(scale_factor) !=
+      already_requested_icons_.end())
+    return;
+  already_requested_icons_.insert(scale_factor);
 
   // CrostiniRegistryService notifies CrostiniAppModelBuilder via Observer when
   // icon is ready and CrostiniAppModelBuilder refreshes the icon of the
