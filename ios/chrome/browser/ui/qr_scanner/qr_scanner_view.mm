@@ -474,6 +474,8 @@ CGFloat GetViewportSize() {
   UILabel* viewportCaption = [[UILabel alloc] init];
   NSString* label = l10n_util::GetNSString(IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
   [viewportCaption setText:label];
+  [viewportCaption
+      setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleBody]];
   [viewportCaption setNumberOfLines:0];
   [viewportCaption setTextAlignment:NSTextAlignmentCenter];
   [viewportCaption setAccessibilityLabel:label];
