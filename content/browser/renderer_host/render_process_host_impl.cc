@@ -4336,6 +4336,14 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     return;
   }
 
+  if (!has_recorded_media_stream_frame_depth_metric_ && !visible_clients_ &&
+      media_stream_count_) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "BrowserRenderProcessHost.InvisibleMediaStreamFrameDepth", frame_depth_,
+        50);
+    has_recorded_media_stream_frame_depth_metric_ = true;
+  }
+
   const ChildProcessLauncherPriority priority(
       visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kDisableRendererBackgrounding),

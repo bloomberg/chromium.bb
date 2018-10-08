@@ -888,6 +888,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   bool cleanup_corb_exception_for_plugin_upon_destruction_ = false;
 
+  // Fields for recording MediaStream UMA.
+  bool has_recorded_media_stream_frame_depth_metric_ = false;
+
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
