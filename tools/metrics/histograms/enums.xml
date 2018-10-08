@@ -46191,6 +46191,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Small custom icon"/>
 </enum>
 
+<enum name="SplitApkWorkaroundResult">
+  <int value="0" label="Not run"/>
+  <int value="1" label="No entries"/>
+  <int value="2" label="One entry"/>
+  <int value="3" label="Multiple entries"/>
+  <int value="4" label="Toplevel exception"/>
+  <int value="5" label="Loop exception"/>
+</enum>
+
 <enum name="SqliteErrorCode">
   <summary>Error codes returned by SQLite - see sqlite3.h</summary>
   <int value="0" label="SQLITE_OK">Successful result</int>
