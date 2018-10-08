@@ -78,7 +78,7 @@ class OmniboxPedal {
 
   // Takes the action associated with this Pedal.  Non-navigation
   // Pedals must override the default, but Navigation Pedals don't need to.
-  virtual void Execute(ExecutionContext& context);
+  virtual void Execute(ExecutionContext& context) const;
 
   // Returns true if the preprocessed match suggestion text triggers
   // presentation of this Pedal.  This is not intended for general use,
@@ -100,6 +100,26 @@ class OmniboxPedal {
 class OmniboxPedalClearBrowsingData : public OmniboxPedal {
  public:
   OmniboxPedalClearBrowsingData();
+};
+
+class OmniboxPedalChangeSearchEngine : public OmniboxPedal {
+ public:
+  OmniboxPedalChangeSearchEngine();
+};
+
+class OmniboxPedalManagePasswords : public OmniboxPedal {
+ public:
+  OmniboxPedalManagePasswords();
+};
+
+class OmniboxPedalChangeHomePage : public OmniboxPedal {
+ public:
+  OmniboxPedalChangeHomePage();
+};
+
+class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
+ public:
+  OmniboxPedalUpdateCreditCard();
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_H_
