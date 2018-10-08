@@ -448,7 +448,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void SimplifiedNormalFlowLayout();
 
  private:
-  void AddVisualOverflowFromPositionedObjects();
   void AddVisualOverflowFromBlockChildren();
   void AddVisualOverflowFromTheme();
   void AddLayoutOverflowFromPositionedObjects();
