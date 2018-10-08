@@ -397,9 +397,20 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
 // LocationBarView, public LocationBar implementation:
 
 void LocationBarView::FocusLocation(bool select_all) {
+  bool already_focused = omnibox_view_->HasFocus();
   omnibox_view_->SetFocus();
-  if (select_all)
-    omnibox_view_->SelectAll(true);
+
+  if (!select_all)
+    return;
+
+  omnibox_view_->SelectAll(true);
+
+  // If the location bar is already focused, a second command to focus it
+  // should expose the full URL, temporarily disabling Steady State Elisions
+  // and Query in Omnibox. This behavior is currently gated on the Query in
+  // Omnibox flag, as it's still under active experimentation.
+  if (already_focused && base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
+    omnibox_view()->model()->SetUserTextToURLForEditing();
 }
 
 void LocationBarView::Revert() {
