@@ -52,8 +52,6 @@ class GPU_EXPORT RingBuffer {
 
   // Frees a block of memory, pending the passage of a token. That memory won't
   // be re-allocated until the token has passed through the command stream.
-  // If a block is freed out of order, that hole will be counted as used
-  // in the Get*FreeSize* functions below.
   //
   // Parameters:
   //   pointer: the pointer to the memory block to free.
