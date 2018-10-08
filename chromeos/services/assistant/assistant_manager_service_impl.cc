@@ -735,18 +735,12 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
 std::string AssistantManagerServiceImpl::BuildUserAgent(
     const std::string& arc_version) const {
-  int32_t os_major_version = 0;
-  int32_t os_minor_version = 0;
-  int32_t os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &os_major_version, &os_minor_version, &os_bugfix_version);
-
   std::string user_agent;
   base::StringAppendF(&user_agent,
-                      "Mozilla/5.0 (X11; CrOS %s %d.%d.%d; %s) "
+                      "Mozilla/5.0 (X11; CrOS %s %s; %s) "
                       "AppleWebKit/%d.%d (KHTML, like Gecko)",
                       base::SysInfo::OperatingSystemArchitecture().c_str(),
-                      os_major_version, os_minor_version, os_bugfix_version,
+                      base::SysInfo::OperatingSystemVersion().c_str(),
                       base::SysInfo::GetLsbReleaseBoard().c_str(),
                       WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
 
