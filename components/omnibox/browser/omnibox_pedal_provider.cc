@@ -31,4 +31,8 @@ void OmniboxPedalProvider::Add(OmniboxPedal* pedal) {
 
 void OmniboxPedalProvider::RegisterPedals() {
   Add(new OmniboxPedalClearBrowsingData());
+  Add(new OmniboxPedalChangeSearchEngine());
+  Add(new OmniboxPedalManagePasswords());
+  Add(new OmniboxPedalChangeHomePage());
+  Add(new OmniboxPedalUpdateCreditCard());
 }
