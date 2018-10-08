@@ -520,7 +520,7 @@ class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
   // ArcAppModelBuilderTest:
   void OnBeforeArcTestSetup() override {
     arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), nullptr);
+        profile_.get(), BrowserContextKeyedServiceFactory::TestingFactory());
   }
 
  private:
