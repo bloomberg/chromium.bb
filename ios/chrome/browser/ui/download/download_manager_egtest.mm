@@ -60,6 +60,19 @@ bool WaitForOpenInButton() {
   });
 }
 
+// Waits until Download button is shown.
+bool WaitForDownloadButton() WARN_UNUSED_RESULT;
+bool WaitForDownloadButton() {
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForPageLoadTimeout, ^{
+        NSError* error = nil;
+        [[EarlGrey selectElementWithMatcher:DownloadButton()]
+            assertWithMatcher:grey_notNil()
+                        error:&error];
+        return (error == nil);
+      });
+}
+
 }  // namespace
 
 // Tests critical user journeys for Download Manager.
@@ -91,6 +104,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
@@ -108,6 +122,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
@@ -121,6 +136,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       assertWithMatcher:grey_notNil()];
 
@@ -141,6 +157,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
@@ -169,6 +186,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       assertWithMatcher:grey_notNil()];
 
@@ -182,6 +200,7 @@ bool WaitForOpenInButton() {
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
 
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
