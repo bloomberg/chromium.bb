@@ -292,15 +292,6 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Shows UI to confirm security code.
-   * @param {string} code The security code to confirm.
-   */
-  function onRegistrationConfirmDeviceCode(code) {
-    setRegisterPage('register-device-page-adding2');
-    $('register-device-page-code').textContent = code;
-  }
-
-  /**
    * Update device unregistered device list, and update related strings to
    * reflect the number of devices available to register.
    * @param {string} name Name of the device.
@@ -431,13 +422,6 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Update visibility status for page.
-   */
-  function updateVisibility() {
-    chrome.send('isVisible', [!document.hidden]);
-  }
-
-  /**
    * Set the page that the register wizard is on.
    * @param {string} page_id ID string for page.
    */
@@ -491,14 +475,6 @@ cr.define('local_discovery', function() {
     hideRegisterOverlay();
     chrome.send('cancelRegistration');
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CANCEL);
-  }
-
-  /**
-   * Confirms device code.
-   */
-  function confirmCode() {
-    chrome.send('confirmCode');
-    setRegisterPage('register-device-page-adding1');
   }
 
   /**
@@ -623,11 +599,6 @@ cr.define('local_discovery', function() {
           button.addEventListener('click', cancelRegistration);
         });
 
-    [].forEach.call(
-        document.querySelectorAll('.confirm-code'), function(button) {
-          button.addEventListener('click', confirmCode);
-        });
-
     $('register-error-exit').addEventListener('click', cancelRegistration);
 
 
@@ -643,16 +614,6 @@ cr.define('local_discovery', function() {
     $('register-overlay-login-button')
         .addEventListener('click', registerOverlayLoginButtonClicked);
 
-    if (loadTimeData.valueExists('backButtonURL')) {
-      $('back-link').hidden = false;
-      $('back-link').addEventListener('click', function() {
-        window.location.href = loadTimeData.getString('backButtonURL');
-      });
-    }
-
-    updateVisibility();
-    document.addEventListener('visibilitychange', updateVisibility, false);
-
     focusManager = new LocalDiscoveryFocusManager();
     focusManager.initialize();
 
@@ -665,7 +626,6 @@ cr.define('local_discovery', function() {
     onRegistrationFailed: onRegistrationFailed,
     onUnregisteredDeviceUpdate: onUnregisteredDeviceUpdate,
     onRegistrationConfirmedOnPrinter: onRegistrationConfirmedOnPrinter,
-    onRegistrationConfirmDeviceCode: onRegistrationConfirmDeviceCode,
     onCloudDeviceListAvailable: onCloudDeviceListAvailable,
     onCloudDeviceListUnavailable: onCloudDeviceListUnavailable,
     onDeviceCacheFlushed: onDeviceCacheFlushed,
