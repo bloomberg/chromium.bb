@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -86,8 +88,10 @@ constexpr char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
 class FakeSelectFileDialog : public ui::SelectFileDialog {
  public:
   FakeSelectFileDialog(ui::SelectFileDialog::Listener* listener,
-                       std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)) {}
+                       std::unique_ptr<ui::SelectFilePolicy> policy,
+                       const base::FilePath& drivefs_root)
+      : ui::SelectFileDialog(listener, std::move(policy)),
+        drivefs_root_(drivefs_root) {}
 
   void SelectFileImpl(Type type,
                       const base::string16& title,
@@ -97,8 +101,12 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
                       void* params) override {
-    listener_->FileSelected(base::FilePath("/special/drive-user/root/test_dir"),
-                            0, nullptr);
+    listener_->FileSelected(
+        (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
+             ? drivefs_root_
+             : base::FilePath("/special/drive-user"))
+            .Append("root/test_dir"),
+        0, nullptr);
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -111,15 +119,23 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
 
  private:
   ~FakeSelectFileDialog() override = default;
+
+  const base::FilePath drivefs_root_;
 };
 
 class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
+ public:
+  explicit FakeSelectFileDialogFactory(const base::FilePath& drivefs_root)
+      : drivefs_root_(drivefs_root) {}
+
  private:
   ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new FakeSelectFileDialog(listener, std::move(policy));
+    return new FakeSelectFileDialog(listener, std::move(policy), drivefs_root_);
   }
+
+  const base::FilePath drivefs_root_;
 };
 
 // Sets up the initial file system state for native local and restricted native
@@ -282,6 +298,10 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
 
   FileSystemExtensionApiTestBase() = default;
   ~FileSystemExtensionApiTestBase() override = default;
+
+  bool SetUpUserDataDirectory() override {
+    return drive::SetUpUserDataDirectoryForDriveFsTest();
+  }
 
   void SetUp() override {
     InitTestFileSystem();
@@ -485,13 +505,21 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // could exist simultaneously.
     DCHECK(!fake_drive_service_);
     fake_drive_service_ = CreateDriveService();
+    base::FilePath drivefs_mount_point;
+    InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
+                              &drivefs_mount_point);
+    fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
+        profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr);
+        nullptr,
+        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
   }
 
   base::ScopedTempDir test_cache_root_;
+  base::ScopedTempDir drivefs_root_;
   drive::FakeDriveService* fake_drive_service_ = nullptr;
+  std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
@@ -635,10 +663,26 @@ class LocalAndDriveFileSystemExtensionApiTest
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    // Ignore signin and lock screen apps profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+        profile->GetPath() ==
+            chromeos::ProfileHelper::GetLockScreenAppProfilePath()) {
+      return nullptr;
+    }
+
+    // LocalAndDriveFileSystemExtensionApiTest doesn't expect that several user
+    // profiles could exist simultaneously.
+    DCHECK(!fake_drive_service_);
     fake_drive_service_ = CreateDriveService();
+    base::FilePath drivefs_mount_point;
+    InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
+                              &drivefs_mount_point);
+    fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
+        profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
-        profile, nullptr, fake_drive_service_, "drive",
-        test_cache_root_.GetPath(), nullptr);
+        profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
+        nullptr,
+        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
   }
 
  private:
@@ -648,7 +692,9 @@ class LocalAndDriveFileSystemExtensionApiTest
 
   // For drive volume.
   base::ScopedTempDir test_cache_root_;
+  base::ScopedTempDir drivefs_root_;
   drive::FakeDriveService* fake_drive_service_ = nullptr;
+  std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
@@ -765,7 +811,8 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, RetainEntry) {
-  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory());
+  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(
+      drivefs_root_.GetPath().Append("drive-user")));
   EXPECT_TRUE(RunFileSystemExtensionApiTest("file_browser/retain_entry",
                                             FILE_PATH_LITERAL("manifest.json"),
                                             "",
