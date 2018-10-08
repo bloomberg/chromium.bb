@@ -4,7 +4,14 @@ This library implements the Open Screen Protocol.  Information about the
 protocol can be found in the Open Screen [GitHub
 repository](https://github.com/webscreens/openscreenprotocol).
 
-## Style guide
+## Continuous Build
+
+Open Screen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
+to monitor the build and test health of the library.
+
+Coming soon: tryjob and submit queue integration with Gerrit code review.
+
+## Build guide
 
 Open Screen Library code should follow the
 [Open Screen Library Style Guide](docs/style_guide.md).  In addition, you should
