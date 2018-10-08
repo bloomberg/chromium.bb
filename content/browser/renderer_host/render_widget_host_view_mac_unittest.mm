@@ -127,72 +127,6 @@
 
 @end
 
-@interface FakeTextCheckingResult : NSObject<NSCopying>
-@property(readonly) NSRange range;
-@property(readonly) NSString* replacementString;
-@end
-
-@implementation FakeTextCheckingResult {
-  base::scoped_nsobject<NSString> replacementString_;
-}
-@synthesize range = range_;
-
-+ (FakeTextCheckingResult*)resultWithRange:(NSRange)range
-                         replacementString:(NSString*)replacementString {
-  FakeTextCheckingResult* result =
-      [[[FakeTextCheckingResult alloc] init] autorelease];
-  result->range_ = range;
-  result->replacementString_.reset([replacementString retain]);
-  return result;
-}
-
-- (id)copyWithZone:(NSZone*)zone {
-  return
-      [[FakeTextCheckingResult resultWithRange:self.range
-                             replacementString:self.replacementString] retain];
-}
-
-- (NSString*)replacementString {
-  return replacementString_;
-}
-@end
-
-@interface FakeSpellChecker : NSObject
-@property NSInteger sequenceNumber;
-@end
-
-@implementation FakeSpellChecker {
-  base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
-                                  NSArray<NSTextCheckingResult*>* candidates)>
-      lastCompletionHandler_;
-}
-@synthesize sequenceNumber = sequenceNumber_;
-
-- (NSInteger)
-requestCandidatesForSelectedRange:(NSRange)selectedRange
-                         inString:(NSString*)stringToCheck
-                            types:(NSTextCheckingTypes)checkingTypes
-                          options:
-                              (nullable NSDictionary<NSTextCheckingOptionKey,
-                                                     id>*)options
-           inSpellDocumentWithTag:(NSInteger)tag
-                completionHandler:
-                    (void (^__nullable)(NSInteger sequenceNumber,
-                                        NSArray<NSTextCheckingResult*>*
-                                            candidates))completionHandler
-    NS_AVAILABLE_MAC(10_12_2) {
-  sequenceNumber_ += 1;
-  lastCompletionHandler_.reset([completionHandler copy]);
-  return sequenceNumber_;
-}
-
-- (void (^)(NSInteger sequenceNumber,
-            NSArray<NSTextCheckingResult*>* candidates))lastCompletionHandler {
-  return lastCompletionHandler_;
-}
-
-@end
-
 namespace content {
 
 namespace {
@@ -1735,12 +1669,6 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
   RenderWidgetHostImpl* tab_widget() { return widget_; }
   RenderWidgetHostViewCocoa* tab_cocoa_view() { return view_->cocoa_view(); }
 
-  API_AVAILABLE(macos(10.12.2))
-  NSCandidateListTouchBarItem* candidate_list_item() {
-    return [tab_cocoa_view().touchBar
-        itemForIdentifier:NSTouchBarItemIdentifierCandidateList];
-  }
-
  protected:
   MockRenderProcessHost* process_host_;
   MockRenderWidgetHostImpl* widget_;
@@ -2025,90 +1953,6 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   message = events.at(0)->ToRequestCompositionUpdates();
   EXPECT_FALSE(message->immediate_request());
   EXPECT_FALSE(message->monitor_request());
-}
-
-TEST_F(InputMethodMacTest, TouchBarTextSuggestionsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kTextSuggestionsTouchBar);
-  if (@available(macOS 10.12.2, *)) {
-    EXPECT_NSEQ(nil, candidate_list_item());
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_NSEQ(nil, candidate_list_item());
-  }
-}
-
-TEST_F(InputMethodMacTest, TouchBarTextSuggestionsPresence) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
-  if (@available(macOS 10.12.2, *)) {
-    EXPECT_NSEQ(nil, candidate_list_item());
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
-    EXPECT_NSEQ(nil, candidate_list_item());
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_NSNE(nil, candidate_list_item());
-  }
-}
-
-TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
-  if (@available(macOS 10.12.2, *)) {
-    base::scoped_nsobject<FakeSpellChecker> spellChecker(
-        [[FakeSpellChecker alloc] init]);
-    tab_cocoa_view().spellCheckerForTesting =
-        static_cast<NSSpellChecker*>(spellChecker.get());
-
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_NSNE(nil, candidate_list_item());
-
-    FakeTextCheckingResult* fakeResult =
-        [FakeTextCheckingResult resultWithRange:NSMakeRange(0, 3)
-                              replacementString:@"foo"];
-
-    const base::string16 kOriginalString = base::UTF8ToUTF16("abcxxxghi");
-
-    // Change the selection once; requests completions from the spell checker.
-    tab_view()->SelectionChanged(kOriginalString, 3, gfx::Range(0, 0));
-
-    NSInteger firstSequenceNumber = [spellChecker sequenceNumber];
-    base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
-                                    NSArray<NSTextCheckingResult*>* candidates)>
-        firstCompletionHandler([[spellChecker lastCompletionHandler] retain]);
-
-    EXPECT_NE(nil, (id)firstCompletionHandler.get());
-    EXPECT_EQ(0U, candidate_list_item().candidates.count);
-
-    // Instead of replying right away, change the selection again!
-    tab_view()->SelectionChanged(kOriginalString, 3, gfx::Range(3, 3));
-
-    EXPECT_NE(firstSequenceNumber, [spellChecker sequenceNumber]);
-
-    // Make sure that calling the stale completion handler is a no-op.
-    firstCompletionHandler.get()(
-        firstSequenceNumber,
-        @[ static_cast<NSTextCheckingResult*>(fakeResult) ]);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(0U, candidate_list_item().candidates.count);
-
-    // But calling the current handler should work.
-    [spellChecker lastCompletionHandler](
-        [spellChecker sequenceNumber],
-        @[ static_cast<NSTextCheckingResult*>(fakeResult) ]);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(1U, candidate_list_item().candidates.count);
-
-    base::RunLoop().RunUntilIdle();
-    MockWidgetInputHandler::MessageVector events =
-        host_->GetAndResetDispatchedMessages();
-    ASSERT_EQ("", GetMessageNames(events));
-
-    // Now, select that result.
-    [tab_cocoa_view() candidateListTouchBarItem:candidate_list_item()
-                   endSelectingCandidateAtIndex:0];
-    base::RunLoop().RunUntilIdle();
-    events = widget_->GetAndResetDispatchedMessages();
-    ASSERT_EQ("CommitText", GetMessageNames(events));
-  }
 }
 
 TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {

@@ -55,7 +55,6 @@ struct DidOverscrollParams;
 @interface RenderWidgetHostViewCocoa
     : ToolTipBaseView<CommandDispatcherTarget,
                       RenderWidgetHostNSViewClientOwner,
-                      NSCandidateListTouchBarItemDelegate,
                       NSTextInputClient> {
  @private
   // The communications channel to the RenderWidgetHostViewMac. This pointer is
@@ -198,8 +197,6 @@ struct DidOverscrollParams;
 
 @property(nonatomic, assign) NSRange markedRange;
 @property(nonatomic, assign) ui::TextInputType textInputType;
-
-@property(nonatomic, assign) NSSpellChecker* spellCheckerForTesting;
 
 // Common code path for handling begin gesture events. This helper method is
 // called via different codepaths based on OS version and SDK:

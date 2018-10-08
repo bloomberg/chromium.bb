@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 
 namespace blink {
 class WebMouseEvent;
@@ -154,6 +155,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Requests the renderer to select the region between two points in the
   // currently focused frame.
   virtual void SelectRange(const gfx::Point& base, const gfx::Point& extent) {}
+
+#if defined(OS_MACOSX)
+  virtual void DidChangeTextSelection(const base::string16& text,
+                                      const gfx::Range& range,
+                                      size_t offset) {}
+#endif
 
   // Request the renderer to Move the caret to the new position.
   virtual void MoveCaret(const gfx::Point& extent) {}

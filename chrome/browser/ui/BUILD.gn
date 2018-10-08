@@ -132,6 +132,8 @@ jumbo_split_static_library("ui") {
       "cocoa/themed_window.mm",
       "cocoa/touchbar/credit_card_autofill_touch_bar_controller.h",
       "cocoa/touchbar/credit_card_autofill_touch_bar_controller.mm",
+      "cocoa/touchbar/text_suggestions_touch_bar_controller.h",
+      "cocoa/touchbar/text_suggestions_touch_bar_controller.mm",
       "cocoa/touchbar/web_textfield_touch_bar_controller.h",
       "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
       "cocoa/url_drop_target.h",
