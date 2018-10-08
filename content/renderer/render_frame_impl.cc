@@ -5930,9 +5930,9 @@ bool RenderFrameImpl::SwapIn() {
 }
 
 void RenderFrameImpl::DidStartLoading() {
+  // TODO(dgozman): consider removing this callback.
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didStartLoading",
                "id", routing_id_);
-  render_view_->FrameDidStartLoading(frame_);
 }
 
 void RenderFrameImpl::DidStopLoading() {
@@ -5946,7 +5946,6 @@ void RenderFrameImpl::DidStopLoading() {
 
   SendUpdateFaviconURL();
 
-  render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 

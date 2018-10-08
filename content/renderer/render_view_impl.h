@@ -38,7 +38,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_owner_delegate.h"
-#include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -144,20 +143,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Returns the StatsCollectionObserver associated with this view, or NULL
-  // if one wasn't created;
-  StatsCollectionObserver* GetStatsCollectionObserver() {
-    return stats_collection_observer_.get();
-  }
-
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
 #endif
-
-  bool is_loading() const { return frames_in_progress_ != 0; }
-
-  void FrameDidStartLoading(blink::WebFrame* frame);
-  void FrameDidStopLoading(blink::WebFrame* frame);
 
   // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
@@ -575,12 +563,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // process.
   int history_list_length_ = 0;
 
-  // Counter to track how many frames have sent start notifications but not stop
-  // notifications.
-  // TODO(avi): Remove this once FrameDidStartLoading/FrameDidStopLoading are
-  // gone.
-  int frames_in_progress_ = 0;
-
   // UI state ------------------------------------------------------------------
 
   // The state of our target_url transmissions. When we receive a request to
@@ -662,10 +644,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   base::ObserverList<RenderViewObserver>::Unchecked observers_;
-
-  // NOTE: stats_collection_observer_ should be the last members because their
-  // constructors call the AddObservers method of RenderViewImpl.
-  std::unique_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   blink::WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 

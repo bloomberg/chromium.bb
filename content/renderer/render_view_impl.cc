@@ -489,9 +489,6 @@ void RenderViewImpl::Initialize(
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(switches::kStatsCollectionController))
-    stats_collection_observer_.reset(new StatsCollectionObserver(this));
-
   webview()->SetDisplayMode(GetWidget()->display_mode());
   webview()->GetSettings()->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
@@ -1557,27 +1554,6 @@ bool RenderViewImpl::EnumerateChosenDirectory(
   enumeration_completions_[id] = chooser_completion;
   return Send(new ViewHostMsg_EnumerateDirectory(
       GetRoutingID(), id, blink::WebStringToFilePath(path)));
-}
-
-void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
-  DCHECK_GE(frames_in_progress_, 0);
-  if (frames_in_progress_ == 0) {
-    for (auto& observer : observers_)
-      observer.DidStartLoading();
-  }
-  frames_in_progress_++;
-}
-
-void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
-  // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
-  // calls DidStopLoading() without a matching DidStartLoading().
-  if (frames_in_progress_ == 0)
-    return;
-  frames_in_progress_--;
-  if (frames_in_progress_ == 0) {
-    for (auto& observer : observers_)
-      observer.DidStopLoading();
-  }
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
