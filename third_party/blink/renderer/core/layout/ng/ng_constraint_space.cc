@@ -248,10 +248,6 @@ LayoutUnit NGConstraintSpace::ParentPercentageResolutionInlineSize() const {
       .inline_size;
 }
 
-NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
-  return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
-}
-
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
@@ -278,10 +274,6 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          exclusion_space_ == other.exclusion_space_ &&
          clearance_offset_ == other.clearance_offset_ &&
          baseline_requests_ == other.baseline_requests_;
-}
-
-bool NGConstraintSpace::operator!=(const NGConstraintSpace& other) const {
-  return !(*this == other);
 }
 
 String NGConstraintSpace::ToString() const {

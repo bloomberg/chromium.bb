@@ -184,7 +184,10 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
-  NGFragmentationType BlockFragmentationType() const;
+  NGFragmentationType BlockFragmentationType() const {
+    return static_cast<NGFragmentationType>(
+        block_direction_fragmentation_type_);
+  }
 
   // Return true if this constraint space participates in a fragmentation
   // context.
@@ -278,7 +281,9 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   bool operator==(const NGConstraintSpace&) const;
-  bool operator!=(const NGConstraintSpace&) const;
+  bool operator!=(const NGConstraintSpace& other) const {
+    return !(*this == other);
+  }
 
   String ToString() const;
 
