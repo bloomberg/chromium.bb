@@ -138,6 +138,9 @@
         "load:news:bbc": {
             "DEFAULT": "system_health_desktop_002.wprgo"
         },
+        "load:news:bbc:2018": {
+            "DEFAULT": "system_health_desktop_72c5149b77.wprgo"
+        },
         "load:news:cnn": {
             "DEFAULT": "system_health_desktop_006.wprgo"
         },
