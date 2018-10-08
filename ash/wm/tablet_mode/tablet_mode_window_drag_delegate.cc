@@ -216,6 +216,24 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   did_move_ = false;
 }
 
+void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
+  if (ShouldFlingIntoOverview(event)) {
+    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+    Shell::Get()->window_selector_controller()->window_selector()->AddItem(
+        dragged_window_, /*reposition=*/true, /*animate=*/false);
+  }
+  EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
+                GetEventLocationInScreen(event));
+}
+
+gfx::Point TabletModeWindowDragDelegate::GetEventLocationInScreen(
+    const ui::GestureEvent* event) const {
+  gfx::Point location_in_screen(event->location());
+  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
+                             &location_in_screen);
+  return location_in_screen;
+}
+
 IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     const gfx::Point& location_in_screen) const {
   SplitViewController::SnapPosition snap_position =
@@ -351,6 +369,51 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
           (initial_location_in_screen_.y() - window_bounds.y()) * scale);
   transform.Scale(scale, scale);
   SetTransform(dragged_window_, transform);
+}
+
+bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
+    const ui::GestureEvent* event) const {
+  if (event->type() != ui::ET_SCROLL_FLING_START)
+    return false;
+
+  const gfx::Point location_in_screen = GetEventLocationInScreen(event);
+  const IndicatorState indicator_state = GetIndicatorState(location_in_screen);
+  const bool is_landscape =
+      split_view_controller_->IsCurrentScreenOrientationLandscape();
+  const float velocity = is_landscape ? event->details().velocity_x()
+                                      : event->details().velocity_y();
+
+  // Drop the window into overview if fling with large enough velocity to the
+  // opposite snap position when preview area is shown.
+  if (split_view_controller_->IsCurrentScreenOrientationPrimary()) {
+    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+      return velocity > kFlingToOverviewFromSnappingAreaThreshold;
+    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+      return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
+  } else {
+    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+      return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
+    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+      return velocity > kFlingToOverviewFromSnappingAreaThreshold;
+  }
+
+  const SplitViewController::State snap_state = split_view_controller_->state();
+  const int end_position =
+      is_landscape ? location_in_screen.x() : location_in_screen.y();
+  // Fling the window when splitview is active. Since each snapping area in
+  // splitview has a corresponding snap position. Fling the window to the
+  // opposite position of the area's snap position with large enough velocity
+  // should drop the window into overview grid.
+  if (snap_state == SplitViewController::LEFT_SNAPPED ||
+      snap_state == SplitViewController::RIGHT_SNAPPED) {
+    return end_position > split_view_controller_->divider_position()
+               ? -velocity > kFlingToOverviewFromSnappingAreaThreshold
+               : velocity > kFlingToOverviewFromSnappingAreaThreshold;
+  }
+
+  // Consider only the velocity_y if splitview is not active and preview area is
+  // not shown.
+  return event->details().velocity_y() > kFlingToOverviewThreshold;
 }
 
 }  // namespace ash

@@ -80,10 +80,7 @@ void TabletModeBrowserWindowDragController::RevertDrag() {
 
 void TabletModeBrowserWindowDragController::FlingOrSwipe(
     ui::GestureEvent* event) {
-  // TODO(xdai): Add special logic for fling events.
-  drag_delegate_->EndWindowDrag(
-      wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
-      previous_location_in_screen_);
+  drag_delegate_->FlingOrSwipe(event);
 }
 
 }  // namespace ash

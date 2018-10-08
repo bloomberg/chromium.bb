@@ -3202,7 +3202,7 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   EndScrollSequence(
       start, 10, timestamp, window.get(), /*is_fling=*/true,
       /*velocity_y=*/
-      TabletModeAppWindowDragController::kFlingToOverviewThreshold - 10.f);
+      TabletModeWindowDragDelegate::kFlingToOverviewThreshold - 10.f);
   EXPECT_FALSE(window_selector_controller->IsSelecting());
 
   // FLING the window with large veloicty (larger than
@@ -3214,7 +3214,7 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   EndScrollSequence(
       start, 10, timestamp, window.get(), /*is_fling=*/true,
       /*velocity_y=*/
-      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f);
+      TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f);
   EXPECT_TRUE(window_selector_controller->IsSelecting());
 }
 
@@ -3341,12 +3341,12 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
 
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
-  float large_velocity = TabletModeAppWindowDragController::
-                             kFlingToOverviewFromSnappingAreaThreshold +
-                         10.f;
-  float small_velocity = TabletModeAppWindowDragController::
-                             kFlingToOverviewFromSnappingAreaThreshold -
-                         10.f;
+  float large_velocity =
+      TabletModeWindowDragDelegate::kFlingToOverviewFromSnappingAreaThreshold +
+      10.f;
+  float small_velocity =
+      TabletModeWindowDragDelegate::kFlingToOverviewFromSnappingAreaThreshold -
+      10.f;
   gfx::Point start;
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
@@ -3412,9 +3412,9 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
   gfx::Rect display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
   const float long_scroll_y = display_bounds.bottom() - 10;
-  float large_velocity = TabletModeAppWindowDragController::
-                             kFlingToOverviewFromSnappingAreaThreshold +
-                         10.f;
+  float large_velocity =
+      TabletModeWindowDragDelegate::kFlingToOverviewFromSnappingAreaThreshold +
+      10.f;
   const gfx::Point start;
 
   // Fling the window in left snapping area to left should still snap the
