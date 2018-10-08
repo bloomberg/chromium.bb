@@ -707,7 +707,7 @@ def DefaultSettings():
       gcc_githash=None,
 
       # Wipe and replace the board inside the chroot.
-      board_replace=False,
+      board_replace=True,
 
       # Wipe and replace chroot, but not source.
       chroot_replace=True,

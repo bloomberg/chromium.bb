@@ -77,20 +77,6 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._Run(dir_exists=False)
     self.assertCommandContains([self.cros_sdk, '--bootstrap'])
 
-  def testBinBuildWithExistingChroot(self):
-    """Tests whether the --nosdk option works."""
-    self._PrepareFull(extra_cmd_args=['--nosdk'])
-    # Do not force chroot replacement in build config.
-    self._run._config.chroot_replace = False
-    self._run._config.separate_debug_symbols = False
-    self._run.config.useflags = ['foo']
-    self._Run(dir_exists=True)
-    self.assertCommandContains([self.cros_sdk], expected=False)
-
-    extra_env = {'USE': 'foo', 'FEATURES': ' -separatedebug splitdebug'}
-    self.assertCommandContains(['./update_chroot'],
-                               enter_chroot=True, extra_env=extra_env)
-
 
 class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the board"""
