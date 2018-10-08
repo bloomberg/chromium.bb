@@ -94,6 +94,9 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
     impl_.reset();
   else
     impl_task_runner_->DeleteSoon(FROM_HERE, std::move(impl_));
+
+  // Explicitly destroy the decoder, since it can reference picture buffers.
+  accelerated_video_decoder_.reset();
 }
 
 std::string D3D11VideoDecoder::GetDisplayName() const {
