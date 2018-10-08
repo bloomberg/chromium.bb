@@ -1410,10 +1410,14 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
         (!popup_model() || !popup_model()->has_selected_match()))
       *alternate_nav_url = result().alternate_nav_url();
   } else {
+    base::string16 text_for_match_generation =
+        (user_input_in_progress() || GetQueryInOmniboxSearchTerms(nullptr))
+            ? view_->GetText()
+            : url_for_editing_;
+
     client_->GetAutocompleteClassifier()->Classify(
-        MaybePrependKeyword(user_input_in_progress_ ? view_->GetText()
-                                                    : url_for_editing_),
-        is_keyword_selected(), true, ClassifyPage(), match, alternate_nav_url);
+        MaybePrependKeyword(text_for_match_generation), is_keyword_selected(),
+        true, ClassifyPage(), match, alternate_nav_url);
   }
 }
 

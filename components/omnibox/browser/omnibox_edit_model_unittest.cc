@@ -141,7 +141,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     AutocompleteMatch match;
     match.type = AutocompleteMatchType::NAVSUGGEST;
     match.destination_url = GURL(input[i].match_destination_url);
-    model()->SetCurrentMatch(match);
+    model()->SetCurrentMatchForTest(match);
 
     base::string16 result = base::ASCIIToUTF16(input[i].input);
     GURL url;
@@ -254,15 +254,32 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
       client->alternate_nav_match().fill_into_edit));
 }
 
-TEST_F(OmniboxEditModelTest, GenerateMatchesFromFullFormattedUrl) {
+TEST_F(OmniboxEditModelTest, CurrentMatch) {
   toolbar_model()->set_formatted_full_url(
       base::ASCIIToUTF16("http://localhost/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
 
-  // Bypass the test class's mock method to test the real behavior.
-  AutocompleteMatch match = model()->OmniboxEditModel::CurrentMatch(nullptr);
-  EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
+  // Tests that we use the formatted full URL instead of the elided URL to
+  // generate matches.
+  {
+    AutocompleteMatch match = model()->CurrentMatch(nullptr);
+    EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
+    EXPECT_TRUE(model()->CurrentTextIsURL());
+  }
+
+  // Tests that when there is a Query in Omnibox, generate matches from the
+  // query, instead of the full formatted URL.
+  TestOmniboxClient* client =
+      static_cast<TestOmniboxClient*>(model()->client());
+  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  model()->ResetDisplayTexts();
+
+  {
+    AutocompleteMatch match = model()->CurrentMatch(nullptr);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
+    EXPECT_FALSE(model()->CurrentTextIsURL());
+  }
 }
 
 TEST_F(OmniboxEditModelTest, DisplayText) {
