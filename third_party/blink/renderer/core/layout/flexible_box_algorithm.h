@@ -243,12 +243,11 @@ class FlexLine {
 //   https://drafts.csswg.org/css-flexbox/
 //
 // Expected usage is as follows:
-//    FlexItemVector flex_items;
-//    for (each child) {
-//       flex_items.emplace_back(...caller must compute these values...)
+//     FlexLayoutAlgorithm algorithm(Style(), MainAxisLength(), flex_items);
+//     for (each child) {
+//       algorithm.emplace_back(...caller must compute these values...)
 //     }
 //     LayoutUnit cross_axis_offset = border + padding;
-//     FlexLayoutAlgorithm algorithm(Style(), MainAxisLength(), flex_items);
 //     while ((FlexLine* line = algorithm.ComputenextLine(LogicalWidth()))) {
 //       // Compute main axis size, using sum_hypothetical_main_size if
 //       // indefinite
@@ -264,9 +263,14 @@ class FlexLine {
 //     // The final position of each flex item is in item.desired_location
 class FlexLayoutAlgorithm {
  public:
-  FlexLayoutAlgorithm(const ComputedStyle*,
-                      LayoutUnit line_break_length,
-                      FlexItemVector& all_items);
+  FlexLayoutAlgorithm(const ComputedStyle*, LayoutUnit line_break_length);
+
+  template <typename... Args>
+  FlexItem& emplace_back(Args&&... args) {
+    FlexItem& item = all_items_.emplace_back(std::forward<Args>(args)...);
+    item.algorithm = this;
+    return item;
+  }
 
   const ComputedStyle* Style() const { return style_; }
   const ComputedStyle& StyleRef() const { return *style_; }
@@ -305,7 +309,7 @@ class FlexLayoutAlgorithm {
 
   const ComputedStyle* style_;
   const LayoutUnit line_break_length_;
-  FlexItemVector& all_items_;
+  FlexItemVector all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
   DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);
