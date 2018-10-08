@@ -106,5 +106,10 @@ const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
 
+const char kMixedContentAutoupgradeModeParamName[] = "mode";
+const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
+const char kMixedContentAutoupgradeModeOptionallyBlockable[] =
+    "optionally-blockable";
+
 }  // namespace features
 }  // namespace blink
