@@ -17,28 +17,22 @@ namespace mojo {
 
 namespace {
 
-ui::mojom::LocationDataPtr GetLocationData(const ui::LocatedEvent* event) {
+ui::mojom::LocationDataPtr CreateLocationData(const ui::LocatedEvent* event) {
   ui::mojom::LocationDataPtr location_data(ui::mojom::LocationData::New());
-  location_data->x = event->location_f().x();
-  location_data->y = event->location_f().y();
-  location_data->screen_x = event->root_location_f().x();
-  location_data->screen_y = event->root_location_f().y();
+  location_data->relative_location = event->location_f();
+  location_data->root_location = event->root_location_f();
   return location_data;
 }
 
 void UpdateEventLocation(const ui::mojom::PointerData& pointer_data,
                          EventUniquePtr* out) {
-  // TODO(katie): Update LocationData to have two PointF instead of storing this
-  // as four floats.
-  const gfx::PointF location(pointer_data.location->x,
-                             pointer_data.location->y);
-  const gfx::PointF screen_location(pointer_data.location->screen_x,
-                                    pointer_data.location->screen_y);
   // Set the float location, as the constructor only takes a gfx::Point.
   // This uses the event root_location field to store screen pixel
   // coordinates. See http://crbug.com/608547
-  out->get()->AsLocatedEvent()->set_location_f(location);
-  out->get()->AsLocatedEvent()->set_root_location_f(screen_location);
+  out->get()->AsLocatedEvent()->set_location_f(
+      pointer_data.location->relative_location);
+  out->get()->AsLocatedEvent()->set_root_location_f(
+      pointer_data.location->root_location);
 }
 
 bool ReadPointerDetailsDeprecated(ui::mojom::EventType event_type,
@@ -92,7 +86,8 @@ bool ReadScrollData(ui::mojom::EventDataView* event,
 
   *out = std::make_unique<ui::ScrollEvent>(
       mojo::ConvertTo<ui::EventType>(event->action()),
-      gfx::Point(scroll_data->location->x, scroll_data->location->y),
+      gfx::Point(scroll_data->location->relative_location.x(),
+                 scroll_data->location->relative_location.y()),
       time_stamp, event->flags(), scroll_data->x_offset, scroll_data->y_offset,
       scroll_data->x_offset_ordinal, scroll_data->y_offset_ordinal,
       scroll_data->finger_count, scroll_data->momentum_phase);
@@ -107,8 +102,8 @@ bool ReadGestureData(ui::mojom::EventDataView* event,
     return false;
 
   *out = std::make_unique<ui::GestureEvent>(
-      gesture_data->location->x, gesture_data->location->y, event->flags(),
-      time_stamp,
+      gesture_data->location->relative_location.x(),
+      gesture_data->location->relative_location.y(), event->flags(), time_stamp,
       ui::GestureEventDetails(ConvertTo<ui::EventType>(event->action())));
   return true;
 }
@@ -347,24 +342,14 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
 ui::mojom::PointerDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
-  if (!event->IsPointerEvent() && !event->IsMouseEvent())
+  if (!event->IsPointerEvent())
     return nullptr;
 
   ui::mojom::PointerDataPtr pointer_data(ui::mojom::PointerData::New());
-  const ui::PointerDetails* pointer_details;
-  if (event->IsPointerEvent()) {
-    const ui::PointerEvent* pointer_event = event->AsPointerEvent();
-    pointer_data->changed_button_flags = pointer_event->changed_button_flags();
-    pointer_data->location = GetLocationData(event->AsLocatedEvent());
-    pointer_details = &pointer_event->pointer_details();
-  } else {
-    // Mouse event
-    const ui::MouseEvent* mouse_event = event->AsMouseEvent();
-    pointer_data->changed_button_flags = mouse_event->changed_button_flags();
-    pointer_data->location = GetLocationData(mouse_event);
-    pointer_details = &mouse_event->pointer_details();
-  }
-
+  const ui::PointerEvent* pointer_event = event->AsPointerEvent();
+  const ui::PointerDetails* pointer_details = &pointer_event->pointer_details();
+  pointer_data->changed_button_flags = pointer_event->changed_button_flags();
+  pointer_data->location = CreateLocationData(event->AsLocatedEvent());
   pointer_data->pointer_id = pointer_details->id;
   ui::EventPointerType pointer_type = pointer_details->pointer_type;
 
@@ -403,8 +388,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   // TODO(rjkroege): Handle force-touch on MacOS
   // TODO(rjkroege): Adjust brush data appropriately for Android.
 
-  if (event->type() == ui::ET_POINTER_WHEEL_CHANGED ||
-      event->type() == ui::ET_MOUSEWHEEL) {
+  if (event->type() == ui::ET_POINTER_WHEEL_CHANGED) {
     ui::mojom::WheelDataPtr wheel_data(ui::mojom::WheelData::New());
 
     // TODO(rjkroege): Support page scrolling on windows by directly
@@ -430,6 +414,23 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
 }
 
 // static
+ui::mojom::MouseDataPtr
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::mouse_data(
+    const EventUniquePtr& event) {
+  if (!event->IsMouseEvent())
+    return nullptr;
+
+  const ui::MouseEvent* mouse_event = event->AsMouseEvent();
+  ui::mojom::MouseDataPtr mouse_data(ui::mojom::MouseData::New());
+  mouse_data->changed_button_flags = mouse_event->changed_button_flags();
+  mouse_data->pointer_details = mouse_event->pointer_details();
+  mouse_data->location = CreateLocationData(mouse_event);
+  if (mouse_event->IsMouseWheelEvent())
+    mouse_data->wheel_offset = mouse_event->AsMouseWheelEvent()->offset();
+  return mouse_data;
+}
+
+// static
 ui::mojom::GestureDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::gesture_data(
     const EventUniquePtr& event) {
@@ -437,7 +438,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::gesture_data(
     return nullptr;
 
   ui::mojom::GestureDataPtr gesture_data(ui::mojom::GestureData::New());
-  gesture_data->location = GetLocationData(event->AsLocatedEvent());
+  gesture_data->location = CreateLocationData(event->AsLocatedEvent());
   return gesture_data;
 }
 
@@ -449,7 +450,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::scroll_data(
     return nullptr;
 
   ui::mojom::ScrollDataPtr scroll_data(ui::mojom::ScrollData::New());
-  scroll_data->location = GetLocationData(event->AsLocatedEvent());
+  scroll_data->location = CreateLocationData(event->AsLocatedEvent());
   const ui::ScrollEvent* scroll_event = event->AsScrollEvent();
   scroll_data->x_offset = scroll_event->x_offset();
   scroll_data->y_offset = scroll_event->y_offset();
@@ -471,11 +472,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::touch_data(
   ui::mojom::TouchDataPtr touch_data(ui::mojom::TouchData::New());
   touch_data->may_cause_scrolling = touch_event->may_cause_scrolling();
   touch_data->hovering = touch_event->hovering();
-  touch_data->location = ui::mojom::LocationData::New();
-  touch_data->location->x = touch_event->location_f().x();
-  touch_data->location->y = touch_event->location_f().y();
-  touch_data->location->screen_x = touch_event->root_location_f().x();
-  touch_data->location->screen_y = touch_event->root_location_f().y();
+  touch_data->location = CreateLocationData(touch_event);
   touch_data->pointer_details = touch_event->pointer_details();
   return touch_data;
 }
@@ -574,33 +571,28 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     case ui::mojom::EventType::MOUSE_EXITED_EVENT:
     case ui::mojom::EventType::MOUSE_WHEEL_EVENT:
     case ui::mojom::EventType::MOUSE_CAPTURE_CHANGED_EVENT: {
-      ui::mojom::PointerDataPtr pointer_data;
-      if (!event.ReadPointerData<ui::mojom::PointerDataPtr>(&pointer_data))
+      ui::mojom::MouseDataPtr mouse_data;
+      if (!event.ReadMouseData(&mouse_data))
         return false;
 
-      ui::PointerDetails pointer_details;
-      if (!ReadPointerDetailsDeprecated(event.action(), *pointer_data,
-                                        &pointer_details))
-        return false;
-
+      std::unique_ptr<ui::MouseEvent> mouse_event;
       if (event.action() == ui::mojom::EventType::MOUSE_WHEEL_EVENT) {
-        // Use the mouse event to construct a MouseWheel event to avoid asserts
-        // in ui::MouseEvent's constructor that ensure it is not used to create
-        // a wheel event.
-        ui::MouseEvent mouse_event(
-            ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), time_stamp,
-            event.flags(), pointer_data->changed_button_flags, pointer_details);
-        *out = std::make_unique<ui::MouseWheelEvent>(
-            mouse_event, pointer_details.offset.x(),
-            pointer_details.offset.y());
+        mouse_event = std::make_unique<ui::MouseWheelEvent>(
+            mouse_data->wheel_offset,
+            gfx::Point(),  // Real location set below.
+            gfx::Point(),  // Real location set below.
+            time_stamp, event.flags(), mouse_data->changed_button_flags);
       } else {
-        *out = std::make_unique<ui::MouseEvent>(
-            mojo::ConvertTo<ui::EventType>(event.action()), gfx::Point(),
-            gfx::Point(), time_stamp, event.flags(),
-            pointer_data->changed_button_flags, pointer_details);
+        mouse_event = std::make_unique<ui::MouseEvent>(
+            mojo::ConvertTo<ui::EventType>(event.action()),
+            gfx::Point(),  // Real location set below.
+            gfx::Point(),  // Real location set below.
+            time_stamp, event.flags(), mouse_data->changed_button_flags,
+            mouse_data->pointer_details);
       }
-
-      UpdateEventLocation(*pointer_data, out);
+      mouse_event->set_location_f(mouse_data->location->relative_location);
+      mouse_event->set_root_location_f(mouse_data->location->root_location);
+      *out = std::move(mouse_event);
       break;
     }
     case ui::mojom::EventType::TOUCH_RELEASED:
@@ -615,14 +607,12 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
               mojo::ConvertTo<ui::EventType>(event.action()),
               gfx::Point(),  // Real location set below.
               time_stamp, touch_data->pointer_details, event.flags());
-      touch_event->set_location_f(
-          gfx::PointF(touch_data->location->x, touch_data->location->y));
-      touch_event->set_root_location_f(gfx::PointF(
-          touch_data->location->screen_x, touch_data->location->screen_y));
+      touch_event->set_location_f(touch_data->location->relative_location);
+      touch_event->set_root_location_f(touch_data->location->root_location);
       touch_event->set_may_cause_scrolling(touch_data->may_cause_scrolling);
       touch_event->set_hovering(touch_data->hovering);
       *out = std::move(touch_event);
-      return true;
+      break;
     }
     case ui::mojom::EventType::UNKNOWN:
       NOTREACHED() << "Using unknown event types closes connections";

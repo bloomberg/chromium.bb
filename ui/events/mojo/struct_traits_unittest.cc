@@ -64,6 +64,11 @@ void ExpectMouseEventsEqual(const MouseEvent& expected,
   EXPECT_EQ(expected.changed_button_flags(), actual.changed_button_flags());
 }
 
+void ExpectMouseWheelEventsEqual(const MouseWheelEvent& expected,
+                                 const MouseWheelEvent& actual) {
+  EXPECT_EQ(expected.offset(), actual.offset());
+}
+
 void ExpectEventsEqual(const Event& expected, const Event& actual) {
   EXPECT_EQ(expected.type(), actual.type());
   EXPECT_EQ(expected.time_stamp(), actual.time_stamp());
@@ -76,6 +81,11 @@ void ExpectEventsEqual(const Event& expected, const Event& actual) {
   if (expected.IsMouseEvent()) {
     ASSERT_TRUE(actual.IsMouseEvent());
     ExpectMouseEventsEqual(*expected.AsMouseEvent(), *actual.AsMouseEvent());
+  }
+  if (expected.IsMouseWheelEvent()) {
+    ASSERT_TRUE(actual.IsMouseWheelEvent());
+    ExpectMouseWheelEventsEqual(*expected.AsMouseWheelEvent(),
+                                *actual.AsMouseWheelEvent());
   }
   if (expected.IsTouchEvent()) {
     ASSERT_TRUE(actual.IsTouchEvent());
@@ -330,12 +340,7 @@ TEST_F(StructTraitsTest, MouseWheelEvent) {
 
     const MouseWheelEvent* output_event = output->AsMouseWheelEvent();
     // TODO(sky): make this use ExpectEventsEqual().
-    EXPECT_EQ(ET_MOUSEWHEEL, output_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_event->location());
-    EXPECT_EQ(kTestData[i].root_location(), output_event->root_location());
-    EXPECT_EQ(kTestData[i].offset(), output_event->offset());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_event->time_stamp());
+    ExpectMouseWheelEventsEqual(kTestData[i], *output_event);
   }
 }
 

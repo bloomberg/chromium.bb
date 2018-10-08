@@ -56,6 +56,7 @@ jumbo_component("display") {
 
   public_deps = [
     "//ui/display/types",
+    "//ui/gfx:color_space",
     "//ui/gfx:gfx",
   ]
 

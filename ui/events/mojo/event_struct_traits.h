@@ -46,6 +46,7 @@ struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static ui::mojom::GestureDataPtr gesture_data(const EventUniquePtr& event);
   static ui::mojom::ScrollDataPtr scroll_data(const EventUniquePtr& event);
   static ui::mojom::TouchDataPtr touch_data(const EventUniquePtr& event);
+  static ui::mojom::MouseDataPtr mouse_data(const EventUniquePtr& event);
   static base::flat_map<std::string, std::vector<uint8_t>> properties(
       const EventUniquePtr& event);
   static bool Read(ui::mojom::EventDataView r, EventUniquePtr* out);
