@@ -142,6 +142,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         if (activity == null) return;
         if (!(activity instanceof ChromeActivity)) return;
         ChromeActivity chromeActivity = (ChromeActivity) activity;
+        if (chromeActivity.getSnackbarManager() == null) return;
 
         if (isOnline) {
             hideOfflineIndicator(chromeActivity);
