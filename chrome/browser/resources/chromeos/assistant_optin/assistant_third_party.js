@@ -59,6 +59,10 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
     chrome.send(
         'login.AssistantOptInFlowScreen.ThirdPartyScreen.userActed',
         ['next-pressed']);

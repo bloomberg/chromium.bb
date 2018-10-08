@@ -118,10 +118,13 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
     chrome.send(
         'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
         ['skip-pressed']);
-    this.buttonsDisabled = true;
   },
 
   /**
@@ -130,10 +133,13 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
     chrome.send(
         'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
         ['next-pressed']);
-    this.buttonsDisabled = true;
   },
 
   /**

@@ -60,6 +60,10 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
     chrome.send('login.AssistantOptInFlowScreen.flowFinished');
   },
 
