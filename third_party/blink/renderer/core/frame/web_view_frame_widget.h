@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 
@@ -58,11 +59,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
-  void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
-                           const WebFloatSize& layout_viewport_delta,
-                           const WebFloatSize& elastic_overscroll_delta,
-                           float scale_factor,
-                           float browser_controls_shown_ratio_delta) override;
+  void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;

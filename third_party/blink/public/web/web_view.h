@@ -88,7 +88,7 @@ class WebView : protected WebWidget {
   using WebWidget::HandleInputEvent;
   using WebWidget::DispatchBufferedTouchEvents;
   using WebWidget::SetCursorVisibilityState;
-  using WebWidget::ApplyViewportDeltas;
+  using WebWidget::ApplyViewportChanges;
   using WebWidget::MouseCaptureLost;
   using WebWidget::SetFocus;
   using WebWidget::SelectionBounds;

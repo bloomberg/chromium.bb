@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -94,11 +95,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
 
-  void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
-                           const WebFloatSize& main_frame_delta,
-                           const WebFloatSize& elastic_overscroll_delta,
-                           float page_scale_delta,
-                           float browser_controls_delta) override;
+  void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
   SkColor BackgroundColor() const override;

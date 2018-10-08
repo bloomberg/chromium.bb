@@ -804,6 +804,7 @@ jumbo_component("platform") {
     "graphics/animation_worklet_mutator_dispatcher_impl.cc",
     "graphics/animation_worklet_mutator_dispatcher_impl.h",
     "graphics/animation_worklet_mutators_state.h",
+    "graphics/apply_viewport_changes.h",
     "graphics/begin_frame_provider.cc",
     "graphics/begin_frame_provider.h",
     "graphics/bitmap_image.cc",

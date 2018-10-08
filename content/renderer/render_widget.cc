@@ -929,17 +929,11 @@ void RenderWidget::SetNeedsMainFrame() {
 ///////////////////////////////////////////////////////////////////////////////
 // LayerTreeViewDelegate
 
-void RenderWidget::ApplyViewportDeltas(
-    const gfx::Vector2dF& inner_delta,
-    const gfx::Vector2dF& outer_delta,
-    const gfx::Vector2dF& elastic_overscroll_delta,
-    float page_scale,
-    float top_controls_delta) {
+void RenderWidget::ApplyViewportChanges(
+    const cc::ApplyViewportChangesArgs& args) {
   if (!GetWebWidget())
     return;
-  GetWebWidget()->ApplyViewportDeltas(inner_delta, outer_delta,
-                                      elastic_overscroll_delta, page_scale,
-                                      top_controls_delta);
+  GetWebWidget()->ApplyViewportChanges(args);
 }
 
 void RenderWidget::RecordWheelAndTouchScrollingCount(

@@ -50,6 +50,10 @@
 
 class SkBitmap;
 
+namespace cc {
+struct ApplyViewportChangesArgs;
+}
+
 namespace blink {
 
 class WebCoalescedInputEvent;
@@ -164,11 +168,7 @@ class WebWidget {
 
   // Applies viewport related properties during a commit from the compositor
   // thread.
-  virtual void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
-                                   const WebFloatSize& layout_viewport_delta,
-                                   const WebFloatSize& elastic_overscroll_delta,
-                                   float scale_factor,
-                                   float browser_controls_shown_ratio_delta) {}
+  virtual void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) {}
 
   virtual void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                                  bool has_scrolled_by_touch) {}

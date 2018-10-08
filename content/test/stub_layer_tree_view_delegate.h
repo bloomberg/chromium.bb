@@ -7,16 +7,16 @@
 
 #include "content/renderer/gpu/layer_tree_view_delegate.h"
 
+namespace cc {
+struct ApplyViewportChangesArgs;
+}
+
 namespace content {
 
 class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
  public:
   // LayerTreeViewDelegate implementation.
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs&) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}

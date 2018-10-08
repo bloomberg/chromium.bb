@@ -3286,14 +3286,7 @@ void WebViewImpl::InitializeLayerTreeView() {
   scoped_defer_commits_ = layer_tree_view_->DeferCommits();
 }
 
-void WebViewImpl::ApplyViewportDeltas(
-    const WebFloatSize& visual_viewport_delta,
-    // TODO(bokan): This parameter is to be removed but requires adjusting many
-    // callsites.
-    const WebFloatSize&,
-    const WebFloatSize& elastic_overscroll_delta,
-    float page_scale_delta,
-    float browser_controls_shown_ratio_delta) {
+void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
   // Store the desired offsets the visual viewport before setting the top
@@ -3301,21 +3294,21 @@ void WebViewImpl::ApplyViewportDeltas(
   // viewports to keep the offsets valid. The compositor may have already
   // done that so we don't want to double apply the deltas here.
   FloatPoint visual_viewport_offset = visual_viewport.VisibleRect().Location();
-  visual_viewport_offset.Move(visual_viewport_delta.width,
-                              visual_viewport_delta.height);
+  visual_viewport_offset.Move(args.inner_delta.x(), args.inner_delta.y());
 
   GetBrowserControls().SetShownRatio(GetBrowserControls().ShownRatio() +
-                                     browser_controls_shown_ratio_delta);
+                                     args.browser_controls_delta);
 
-  SetPageScaleFactorAndLocation(PageScaleFactor() * page_scale_delta,
+  SetPageScaleFactorAndLocation(PageScaleFactor() * args.page_scale_delta,
                                 visual_viewport_offset);
 
-  if (page_scale_delta != 1) {
+  if (args.page_scale_delta != 1) {
     double_tap_zoom_pending_ = false;
     visual_viewport.UserDidChangeScale();
   }
 
-  elastic_overscroll_ += elastic_overscroll_delta;
+  elastic_overscroll_ += FloatSize(args.elastic_overscroll_delta.x(),
+                                   args.elastic_overscroll_delta.y());
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(

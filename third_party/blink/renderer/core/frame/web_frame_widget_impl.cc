@@ -599,13 +599,7 @@ WebFrameWidgetImpl::EnsureCompositorMutatorDispatcher(
   return mutator_dispatcher_;
 }
 
-void WebFrameWidgetImpl::ApplyViewportDeltas(
-    const WebFloatSize& visual_viewport_delta,
-    const WebFloatSize& main_frame_delta,
-    const WebFloatSize& elastic_overscroll_delta,
-    float page_scale_delta,
-    float browser_controls_delta) {
-  // FIXME: To be implemented.
+void WebFrameWidgetImpl::ApplyViewportChanges(const ApplyViewportChangesArgs&) {
 }
 
 void WebFrameWidgetImpl::MouseCaptureLost() {
