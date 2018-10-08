@@ -260,6 +260,11 @@ class MEDIA_EXPORT AudioOutputController
   // Helper method that stops, closes, and NULLs |*stream_|.
   void DoStopCloseAndClearStream();
 
+  // Equivalent to OnDeviceChange(), but without any UMA events recorded. This
+  // is necessary for proper apples-to-apples comparison with the new Audio
+  // Service code paths. http://crbug.com/866455
+  void DoStartOrStopDivertingInternal();
+
   // Send audio data to each duplication target.
   void BroadcastDataToDuplicationTargets(std::unique_ptr<AudioBus> audio_bus,
                                          base::TimeTicks reference_time);
