@@ -156,6 +156,9 @@
         "load:news:nytimes": {
             "DEFAULT": "system_health_desktop_009.wprgo"
         },
+        "load:news:nytimes:2018": {
+            "DEFAULT": "system_health_desktop_6d7605317e.wprgo"
+        },
         "load:news:qq": {
             "DEFAULT": "system_health_desktop_010.wprgo"
         },
