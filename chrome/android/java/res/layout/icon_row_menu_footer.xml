@@ -6,6 +6,7 @@
 -->
 <org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
@@ -42,10 +43,11 @@
             android:src="@drawable/btn_info"
             android:contentDescription="@string/accessibility_menu_info" />
 
+        <!-- The src will be set in onFinishInflate. -->
         <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/reload_menu_id"
             style="@style/OverflowMenuButton"
-            android:src="@drawable/btn_reload_stop"
-            android:contentDescription="@string/accessibility_btn_refresh" />
+            android:contentDescription="@string/accessibility_btn_refresh"
+            tools:src="@drawable/btn_reload_stop" />
     </LinearLayout>
 </org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter>

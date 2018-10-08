@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
@@ -53,6 +55,13 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
 
         mReloadButton = (AppCompatImageButton) findViewById(R.id.reload_menu_id);
         mReloadButton.setOnClickListener(this);
+
+        // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
+        // See https://crbug.com/891593 for details.
+        Drawable icon = AppCompatResources.getDrawable(getContext(), R.drawable.btn_reload_stop);
+        DrawableCompat.setTintList(
+                icon, AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint));
+        mReloadButton.setImageDrawable(icon);
     }
 
     /**
@@ -74,7 +83,6 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
 
         mDownloadButton.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
 
-        mReloadButton.setImageResource(R.drawable.btn_reload_stop);
         loadingStateChanged(currentTab.isLoading());
     }
 
