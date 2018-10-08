@@ -887,6 +887,15 @@ extern const char kTPMFirmwareUpdateCleanupDismissed[] =
 const char kNetBiosShareDiscoveryEnabled[] =
     "network_file_shares.netbios_discovery.enabled";
 
+// Amount of screen time that a child user has used in the current day.
+const char kChildScreenTimeMilliseconds[] = "child_screen_time";
+
+// Last time the kChildScreenTimeMilliseconds was saved.
+const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
+
+// Last time that the kChildScreenTime pref was reset.
+const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

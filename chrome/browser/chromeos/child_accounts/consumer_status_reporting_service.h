@@ -36,6 +36,9 @@ class ConsumerStatusReportingService : public KeyedService {
   ~ConsumerStatusReportingService() override;
   void RequestImmediateStatusReport();
 
+  // Get the child's usage time so far today.
+  base::TimeDelta GetChildScreenTime() const;
+
  private:
   // Creates new status uploader if parameters changed.
   void CreateStatusUploaderIfNeeded(policy::CloudPolicyClient* client);

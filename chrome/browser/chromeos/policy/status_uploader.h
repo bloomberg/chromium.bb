@@ -57,6 +57,10 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
 
   void ScheduleNextStatusUploadImmediately();
 
+  const DeviceStatusCollector* device_status_collector() const {
+    return collector_.get();
+  }
+
  private:
   // Callback invoked periodically to upload the device status from the
   // DeviceStatusCollector.

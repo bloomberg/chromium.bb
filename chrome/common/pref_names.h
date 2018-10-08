@@ -285,6 +285,9 @@ extern const char kNetworkFileSharesAllowed[];
 extern const char kManagedSessionEnabled[];
 extern const char kTPMFirmwareUpdateCleanupDismissed[];
 extern const char kNetBiosShareDiscoveryEnabled[];
+extern const char kChildScreenTimeMilliseconds[];
+extern const char kLastChildScreenTimeSaved[];
+extern const char kLastChildScreenTimeReset[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
