@@ -429,11 +429,29 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
   // during message dispatch.
   base::WeakPtr<Connector> weak_self = weak_self_;
 
-  Message message;
-  const MojoResult rv = ReadMessage(message_pipe_.get(), &message);
+  ScopedMessageHandle message_handle;
+  const MojoResult rv = ReadMessageNew(message_pipe_.get(), &message_handle,
+                                       MOJO_READ_MESSAGE_FLAG_NONE);
   *read_result = rv;
 
   if (rv == MOJO_RESULT_OK) {
+    Message message = Message::CreateFromMessageHandle(&message_handle);
+    if (message.IsNull()) {
+      // Even if the read was successful, the Message may still be null if there
+      // was a problem extracting handles from it. We treat this essentially as
+      // a bad IPC because we don't really have a better option.
+      //
+      // We include |heap_profiler_tag_| in the error message since it usually
+      // (via this Connector's owner) provides useful information about which
+      // binding interface is using this Connector.
+      NotifyBadMessage(message_handle.get(),
+                       std::string(heap_profiler_tag_) +
+                           "One or more handle attachments were invalid.");
+      HandleError(false /* force_pipe_reset */,
+                  false /* force_async_handler */);
+      return false;
+    }
+
     base::Optional<ActiveDispatchTracker> dispatch_tracker;
     if (!is_dispatching_ && nesting_observer_) {
       is_dispatching_ = true;

@@ -74,7 +74,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // If the message had any handles attached, they will be extracted and
   // retrievable via |handles()|. Such messages may NOT be sent back over
   // another message pipe, but are otherwise safe to inspect and pass around.
-  Message(ScopedMessageHandle handle);
+  //
+  // If handles are attached and their extraction fails for any reason,
+  // |*handle| remains unchanged and the returned Message will be null (i.e.
+  // calling IsNull() on it will return |true|).
+  static Message CreateFromMessageHandle(ScopedMessageHandle* message_handle);
 
   ~Message();
 
@@ -89,6 +93,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
 
   // Indicates whether this Message is uninitialized.
   bool IsNull() const { return !handle_.is_valid(); }
+
+  // Indicates whether this Message is in valid state. A Message may be in an
+  // invalid state iff it failed partial deserialization during construction
+  // over a ScopedMessageHandle.
+  bool IsValid() const;
 
   // Indicates whether this Message is serialized.
   bool is_serialized() const { return serialized_; }
@@ -222,6 +231,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
 #endif
 
  private:
+  // Internal constructor used by |CreateFromMessageHandle()| when either there
+  // are no attached handles or all attached handles are successfully extracted
+  // from the message object.
+  Message(ScopedMessageHandle message_handle,
+          std::vector<ScopedHandle> attached_handles,
+          internal::Buffer payload_buffer,
+          bool serialized);
+
   ScopedMessageHandle handle_;
 
   // A Buffer which may be used to allocate blocks of data within the message
@@ -357,16 +374,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SyncMessageResponseContext {
 
   DISALLOW_COPY_AND_ASSIGN(SyncMessageResponseContext);
 };
-
-// Read a single message from the pipe. The caller should have created the
-// Message, but not called Initialize(). Returns MOJO_RESULT_SHOULD_WAIT if
-// the caller should wait on the handle to become readable. Returns
-// MOJO_RESULT_OK if the message was read successfully and should be
-// dispatched, otherwise returns an error code if something went wrong.
-//
-// NOTE: The message hasn't been validated and may be malformed!
-COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
-MojoResult ReadMessage(MessagePipeHandle handle, Message* message);
 
 // Reports the currently dispatching Message as bad. Note that this is only
 // legal to call from directly within the stack frame of a message dispatch. If

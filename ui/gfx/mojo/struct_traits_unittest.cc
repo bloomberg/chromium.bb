@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojo/accelerated_widget_struct_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
@@ -27,15 +28,6 @@ gfx::AcceleratedWidget CastToAcceleratedWidget(int i) {
 #else
   return reinterpret_cast<gfx::AcceleratedWidget>(i);
 #endif
-}
-
-// Test StructTrait serialization and deserialization for copyable type. |input|
-// will be serialized and then deserialized into |output|.
-template <class MojomType, class Type>
-void SerializeAndDeserialize(const Type& input, Type* output) {
-  MojomType::DeserializeFromMessage(
-      mojo::Message(MojomType::SerializeAsMessage(&input).TakeMojoMessage()),
-      output);
 }
 
 class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
@@ -148,7 +140,8 @@ TEST_F(StructTraitsTest, Transform) {
 TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
   gfx::AcceleratedWidget input(CastToAcceleratedWidget(1001));
   gfx::AcceleratedWidget output;
-  SerializeAndDeserialize<gfx::mojom::AcceleratedWidget>(input, &output);
+  mojo::test::SerializeAndDeserialize<gfx::mojom::AcceleratedWidget>(&input,
+                                                                     &output);
   EXPECT_EQ(input, output);
 }
 
@@ -236,7 +229,8 @@ TEST_F(StructTraitsTest, PresentationFeedback) {
       PresentationFeedback::kVSync | PresentationFeedback::kZeroCopy;
   PresentationFeedback input{timestamp, interval, flags};
   PresentationFeedback output;
-  SerializeAndDeserialize<gfx::mojom::PresentationFeedback>(input, &output);
+  mojo::test::SerializeAndDeserialize<gfx::mojom::PresentationFeedback>(
+      &input, &output);
   EXPECT_EQ(timestamp, output.timestamp);
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(flags, output.flags);
