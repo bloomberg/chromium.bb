@@ -61,8 +61,9 @@ suite('cr-slider', function() {
     pointerEvent('pointermove', ratio);
   }
 
-  function pointerUp(ratio) {
-    pointerEvent('pointerup', ratio);
+  function pointerUp() {
+    // Ignores clientX for pointerup event.
+    pointerEvent('pointerup', 0);
   }
 
   // Ensure that value-changed event bubbles, since users of cr-slider rely on
@@ -118,11 +119,33 @@ suite('cr-slider', function() {
     assertEquals(0, crSlider.value);
     pointerMove(2);
     assertEquals(100, crSlider.value);
-    pointerUp(0);
+    pointerUp();
     assertEquals(100, crSlider.value);
     assertEquals(0, crSlider.draggingEventTracker_.listeners_.length);
     pointerMove(.25);
     assertEquals(100, crSlider.value);
+  });
+
+  test('update value instantly both off and on', () => {
+    crSlider.updateValueInstantly = false;
+    assertEquals(0, crSlider.value);
+    pointerDown(.5);
+    assertEquals(0, crSlider.value);
+    pointerUp();
+    assertEquals(50, crSlider.value);
+
+    // Once |updateValueInstantly| is turned on, |value| should start updating
+    // again during drag.
+    pointerDown(0);
+    assertEquals(50, crSlider.value);
+    crSlider.updateValueInstantly = true;
+    pointerMove(0);
+    assertEquals(0, crSlider.value);
+    crSlider.updateValueInstantly = false;
+    pointerMove(.4);
+    assertEquals(0, crSlider.value);
+    pointerUp();
+    assertEquals(40, crSlider.value);
   });
 
   test('snaps to closest value', () => {
@@ -164,11 +187,13 @@ suite('cr-slider', function() {
     assertEquals('8', crSlider.getAttribute('aria-valuemax'));
     assertEquals('4', crSlider.getAttribute('aria-valuetext'));
     assertEquals('4', crSlider.getAttribute('aria-valuenow'));
+    assertEquals('', crSlider.$.label.innerHTML.trim());
     assertEquals(2, crSlider.value);
     crSlider.value = 100;
     assertEquals(3, crSlider.value);
     assertEquals('8', crSlider.getAttribute('aria-valuetext'));
     assertEquals('8', crSlider.getAttribute('aria-valuenow'));
+    assertEquals('', crSlider.$.label.innerHTML.trim());
     crSlider.ticks = [
       {
         value: 10,
@@ -188,9 +213,11 @@ suite('cr-slider', function() {
     assertEquals('1', crSlider.getAttribute('aria-valuemin'));
     assertEquals('3', crSlider.getAttribute('aria-valuemax'));
     assertEquals('Third', crSlider.getAttribute('aria-valuetext'));
+    assertEquals('Third', crSlider.$.label.innerHTML.trim());
     assertEquals('3', crSlider.getAttribute('aria-valuenow'));
     crSlider.value = 1;
     assertEquals('Second', crSlider.getAttribute('aria-valuetext'));
     assertEquals('20', crSlider.getAttribute('aria-valuenow'));
+    assertEquals('Second', crSlider.$.label.innerHTML.trim());
   });
 });

@@ -54,6 +54,11 @@ Polymer({
       type: Boolean,
     },
 
+    updateValueInstantly: {
+      type: Boolean,
+      value: true,
+    },
+
     loaded_: Boolean,
   },
 

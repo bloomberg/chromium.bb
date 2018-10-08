@@ -53,7 +53,8 @@
     </template>
     <div class="outer">
       <cr-slider id="slider" disabled$="[[disableSlider_]]" ticks="[[ticks]]"
-          on-value-changed="onSliderChanged_" max="[[max]]" min="[[min]]">
+          on-value-changed="onSliderChanged_" max="[[max]]" min="[[min]]"
+          update-value-instantly="[[updateValueInstantly]]">
       </cr-slider>
       <div id="labels" disabled$="[[disableSlider_]]">
         <div id="label-begin">[[labelMin]]</div>
