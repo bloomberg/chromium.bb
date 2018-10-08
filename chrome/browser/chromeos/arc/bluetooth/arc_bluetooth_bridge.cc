@@ -1197,6 +1197,11 @@ void ArcBluetoothBridge::GetRemoteServices(
 }
 
 void ArcBluetoothBridge::StartDiscovery() {
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartDiscoveryImpl,
+                                       weak_factory_.GetWeakPtr(), false));
+}
+
+void ArcBluetoothBridge::StartDiscoveryImpl(bool le_scan) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bluetooth_adapter_);
 
@@ -1206,10 +1211,14 @@ void ArcBluetoothBridge::StartDiscovery() {
                                base::Bind(&ArcBluetoothBridge::CancelDiscovery,
                                           weak_factory_.GetWeakPtr()));
     SendCachedDevicesFound();
+    discovery_queue_.Pop();
     return;
   }
 
-  bluetooth_adapter_->StartDiscoverySession(
+  bluetooth_adapter_->StartDiscoverySessionWithFilter(
+      le_scan ? std::make_unique<BluetoothDiscoveryFilter>(
+                    device::BLUETOOTH_TRANSPORT_LE)
+              : nullptr,
       base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
@@ -1217,14 +1226,20 @@ void ArcBluetoothBridge::StartDiscovery() {
 }
 
 void ArcBluetoothBridge::CancelDiscovery() {
-  if (!discovery_session_) {
-    return;
-  }
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::CancelDiscoveryImpl,
+                                       weak_factory_.GetWeakPtr()));
+}
 
-  discovery_session_->Stop(base::Bind(&ArcBluetoothBridge::OnDiscoveryStopped,
-                                      weak_factory_.GetWeakPtr()),
-                           base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
-                                      weak_factory_.GetWeakPtr()));
+void ArcBluetoothBridge::CancelDiscoveryImpl() {
+  discovery_off_timer_.Stop();
+  discovery_session_.reset();
+  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnDiscoveryStateChanged);
+  if (bluetooth_instance != nullptr) {
+    bluetooth_instance->OnDiscoveryStateChanged(
+        mojom::BluetoothDiscoveryState::STOPPED);
+  }
+  discovery_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnPoweredOn(
@@ -1260,37 +1275,22 @@ void ArcBluetoothBridge::OnDiscoveryStarted(
     std::unique_ptr<BluetoothDiscoverySession> session) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnDiscoveryStateChanged);
-  if (!bluetooth_instance)
-    return;
-
-  discovery_session_ = std::move(session);
-
   // We need to set timer to turn device discovery off because of the difference
   // between Android API (do device discovery once) and Chrome API (do device
   // discovery until user turns it off).
   discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
                              base::Bind(&ArcBluetoothBridge::CancelDiscovery,
                                         weak_factory_.GetWeakPtr()));
+  discovery_session_ = std::move(session);
 
-  bluetooth_instance->OnDiscoveryStateChanged(
-      mojom::BluetoothDiscoveryState::STARTED);
-
-  SendCachedDevicesFound();
-}
-
-void ArcBluetoothBridge::OnDiscoveryStopped() {
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnDiscoveryStateChanged);
-  if (!bluetooth_instance)
-    return;
-
-  discovery_session_.reset();
-  discovery_off_timer_.Stop();
-
-  bluetooth_instance->OnDiscoveryStateChanged(
-      mojom::BluetoothDiscoveryState::STOPPED);
+  if (bluetooth_instance != nullptr) {
+    bluetooth_instance->OnDiscoveryStateChanged(
+        mojom::BluetoothDiscoveryState::STARTED);
+    SendCachedDevicesFound();
+  }
+  discovery_queue_.Pop();
 }
 
 void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
@@ -1363,19 +1363,8 @@ void ArcBluetoothBridge::GetConnectionState(
 }
 
 void ArcBluetoothBridge::StartLEScan() {
-  DCHECK(bluetooth_adapter_);
-  if (discovery_session_) {
-    LOG(WARNING) << "Discovery session already running; leaving alone";
-    SendCachedDevicesFound();
-    return;
-  }
-  bluetooth_adapter_->StartDiscoverySessionWithFilter(
-      std::make_unique<BluetoothDiscoveryFilter>(
-          device::BLUETOOTH_TRANSPORT_LE),
-      base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
-                 weak_factory_.GetWeakPtr()));
+  discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartDiscoveryImpl,
+                                       weak_factory_.GetWeakPtr(), true));
 }
 
 void ArcBluetoothBridge::StopLEScan() {
@@ -2183,31 +2172,6 @@ void ArcBluetoothBridge::RemoveSdpRecord(uint32_t service_handle,
       base::Bind(&OnRemoveServiceRecordError, repeating_callback));
 }
 
-template <typename... Args>
-void ArcBluetoothBridge::AddAdvertisementTask(
-    base::OnceCallback<void(base::OnceCallback<void(Args...)>)> task,
-    base::OnceCallback<void(Args...)> callback) {
-  advertisement_task_queue_.emplace(base::BindOnce(
-      std::move(task),
-      base::BindOnce(&ArcBluetoothBridge::CompleteAdvertisementTask<Args...>,
-                     weak_factory_.GetWeakPtr(), std::move(callback))));
-  if (advertisement_task_queue_.size() != 1)
-    return;
-  // No task pending, run immediately.
-  std::move(advertisement_task_queue_.front()).Run();
-}
-
-template <typename... Args>
-void ArcBluetoothBridge::CompleteAdvertisementTask(
-    base::OnceCallback<void(Args...)> callback,
-    Args... args) {
-  std::move(callback).Run(std::forward<Args>(args)...);
-  advertisement_task_queue_.pop();  // Current task is done. Pop it from queue.
-  if (advertisement_task_queue_.empty())
-    return;
-  std::move(advertisement_task_queue_.front()).Run();  // Run next task.
-}
-
 bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
   for (int i = 0; i < kMaxAdvertisements; i++) {
     if (advertisements_.find(i) == advertisements_.end()) {
@@ -2220,10 +2184,9 @@ bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
 
 void ArcBluetoothBridge::ReserveAdvertisementHandle(
     ReserveAdvertisementHandleCallback callback) {
-  AddAdvertisementTask(
+  advertisement_queue_.Push(
       base::BindOnce(&ArcBluetoothBridge::ReserveAdvertisementHandleImpl,
-                     weak_factory_.GetWeakPtr()),
-      std::move(callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ArcBluetoothBridge::ReserveAdvertisementHandleImpl(
@@ -2236,6 +2199,7 @@ void ArcBluetoothBridge::ReserveAdvertisementHandleImpl(
     LOG(WARNING) << "Out of space for advertisement data";
     std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE,
                             kInvalidAdvertisementHandle);
+    advertisement_queue_.Pop();
     return;
   }
 
@@ -2245,17 +2209,16 @@ void ArcBluetoothBridge::ReserveAdvertisementHandleImpl(
   // The advertisement will be registered when we get the call
   // to SetAdvertisingData. For now, just return the adv_handle.
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS, adv_handle);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::EnableAdvertisement(
     int32_t adv_handle,
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
     EnableAdvertisementCallback callback) {
-  AddAdvertisementTask(
-      base::BindOnce(&ArcBluetoothBridge::EnableAdvertisementImpl,
-                     weak_factory_.GetWeakPtr(), adv_handle,
-                     std::move(advertisement)),
-      std::move(callback));
+  advertisement_queue_.Push(base::BindOnce(
+      &ArcBluetoothBridge::EnableAdvertisementImpl, weak_factory_.GetWeakPtr(),
+      adv_handle, std::move(advertisement), std::move(callback)));
 }
 
 void ArcBluetoothBridge::EnableAdvertisementImpl(
@@ -2268,7 +2231,7 @@ void ArcBluetoothBridge::EnableAdvertisementImpl(
   // updating the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  base::Callback<void(void)> done_callback =
+  base::Closure done_callback =
       base::Bind(&ArcBluetoothBridge::OnReadyToRegisterAdvertisement,
                  weak_factory_.GetWeakPtr(), repeating_callback, adv_handle,
                  base::Passed(std::move(advertisement)));
@@ -2278,7 +2241,8 @@ void ArcBluetoothBridge::EnableAdvertisementImpl(
 
   auto it = advertisements_.find(adv_handle);
   if (it == advertisements_.end()) {
-    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    error_callback.Run(
+        BluetoothAdvertisement::ErrorCode::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
     return;
   }
   if (it->second == nullptr) {
@@ -2291,10 +2255,9 @@ void ArcBluetoothBridge::EnableAdvertisementImpl(
 void ArcBluetoothBridge::DisableAdvertisement(
     int32_t adv_handle,
     EnableAdvertisementCallback callback) {
-  AddAdvertisementTask(
-      base::BindOnce(&ArcBluetoothBridge::DisableAdvertisementImpl,
-                     weak_factory_.GetWeakPtr(), adv_handle),
-      std::move(callback));
+  advertisement_queue_.Push(base::BindOnce(
+      &ArcBluetoothBridge::DisableAdvertisementImpl, weak_factory_.GetWeakPtr(),
+      adv_handle, std::move(callback)));
 }
 
 void ArcBluetoothBridge::DisableAdvertisementImpl(
@@ -2306,7 +2269,7 @@ void ArcBluetoothBridge::DisableAdvertisementImpl(
   // updating the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  base::Callback<void(void)> done_callback =
+  base::Closure done_callback =
       base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementDone,
                  weak_factory_.GetWeakPtr(), repeating_callback, adv_handle);
   base::Callback<void(BluetoothAdvertisement::ErrorCode)> error_callback =
@@ -2315,7 +2278,8 @@ void ArcBluetoothBridge::DisableAdvertisementImpl(
 
   auto it = advertisements_.find(adv_handle);
   if (it == advertisements_.end()) {
-    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    error_callback.Run(
+        BluetoothAdvertisement::ErrorCode::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
     return;
   }
   if (it->second == nullptr) {
@@ -2328,10 +2292,9 @@ void ArcBluetoothBridge::DisableAdvertisementImpl(
 void ArcBluetoothBridge::ReleaseAdvertisementHandle(
     int32_t adv_handle,
     ReleaseAdvertisementHandleCallback callback) {
-  AddAdvertisementTask(
-      base::BindOnce(&ArcBluetoothBridge::ReleaseAdvertisementHandleImpl,
-                     weak_factory_.GetWeakPtr(), adv_handle),
-      std::move(callback));
+  advertisement_queue_.Push(base::BindOnce(
+      &ArcBluetoothBridge::ReleaseAdvertisementHandleImpl,
+      weak_factory_.GetWeakPtr(), adv_handle, std::move(callback)));
 }
 
 void ArcBluetoothBridge::ReleaseAdvertisementHandleImpl(
@@ -2340,12 +2303,14 @@ void ArcBluetoothBridge::ReleaseAdvertisementHandleImpl(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (advertisements_.find(adv_handle) == advertisements_.end()) {
     std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    advertisement_queue_.Pop();
     return;
   }
 
   if (!advertisements_[adv_handle]) {
     advertisements_.erase(adv_handle);
     std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+    advertisement_queue_.Pop();
     return;
   }
 
@@ -2384,6 +2349,7 @@ void ArcBluetoothBridge::OnRegisterAdvertisementDone(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisements_[adv_handle] = std::move(advertisement);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnRegisterAdvertisementError(
@@ -2395,6 +2361,7 @@ void ArcBluetoothBridge::OnRegisterAdvertisementError(
                << ", error code = " << error_code;
   advertisements_[adv_handle] = nullptr;
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnUnregisterAdvertisementDone(
@@ -2403,6 +2370,7 @@ void ArcBluetoothBridge::OnUnregisterAdvertisementDone(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisements_[adv_handle] = nullptr;
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnUnregisterAdvertisementError(
@@ -2414,6 +2382,7 @@ void ArcBluetoothBridge::OnUnregisterAdvertisementError(
                << ", error code = " << error_code;
   advertisements_[adv_handle] = nullptr;
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnReleaseAdvertisementHandleDone(
@@ -2422,6 +2391,7 @@ void ArcBluetoothBridge::OnReleaseAdvertisementHandleDone(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   advertisements_.erase(adv_handle);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnReleaseAdvertisementHandleError(
@@ -2433,10 +2403,12 @@ void ArcBluetoothBridge::OnReleaseAdvertisementHandleError(
                << ", error code = " << error_code;
   advertisements_.erase(adv_handle);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+  advertisement_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnDiscoveryError() {
   LOG(WARNING) << "failed to change discovery state";
+  discovery_queue_.Pop();
 }
 
 void ArcBluetoothBridge::OnPairing(mojom::BluetoothAddressPtr addr) const {
