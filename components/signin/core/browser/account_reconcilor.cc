@@ -80,12 +80,15 @@ AccountReconcilor::Lock::~Lock() {
 
 AccountReconcilor::ScopedSyncedDataDeletion::ScopedSyncedDataDeletion(
     AccountReconcilor* reconcilor)
-    : reconcilor_(reconcilor) {
+    : reconcilor_(reconcilor->weak_factory_.GetWeakPtr()) {
   DCHECK(reconcilor_);
   ++reconcilor_->synced_data_deletion_in_progress_count_;
 }
 
 AccountReconcilor::ScopedSyncedDataDeletion::~ScopedSyncedDataDeletion() {
+  if (!reconcilor_)
+    return;  // The reconcilor was destroyed.
+
   DCHECK_GT(reconcilor_->synced_data_deletion_in_progress_count_, 0);
   --reconcilor_->synced_data_deletion_in_progress_count_;
 }
@@ -111,7 +114,8 @@ AccountReconcilor::AccountReconcilor(
       chrome_accounts_changed_(false),
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false),
-      timer_(new base::OneShotTimer) {
+      timer_(new base::OneShotTimer),
+      weak_factory_(this) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
   DCHECK(delegate_);
   delegate_->set_reconcilor(this);

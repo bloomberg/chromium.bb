@@ -264,6 +264,8 @@ class AccountReconcilorTest : public ::testing::Test {
 
   PrefService* pref_service() { return &pref_service_; }
 
+  void DeleteReconcilor() { mock_reconcilor_.reset(); }
+
  private:
   base::MessageLoop loop;
   signin::AccountConsistencyMethod account_consistency_;
@@ -2109,4 +2111,12 @@ TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalledIfTimeoutIsNotReached) {
   EXPECT_EQ(0, spy_delegate->num_reconcile_timeout_calls_);
   EXPECT_EQ(1, spy_delegate->num_reconcile_finished_calls_);
   EXPECT_FALSE(reconcilor->is_reconcile_started_);
+}
+
+TEST_F(AccountReconcilorTest, ScopedSyncedDataDeletionDestructionOrder) {
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> data_deletion =
+      reconcilor->GetScopedSyncDataDeletion();
+  DeleteReconcilor();
+  // data_deletion is destroyed after the reconcilor, this should not crash.
 }

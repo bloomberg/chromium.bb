@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -62,7 +63,7 @@ class AccountReconcilor : public KeyedService,
    private:
     friend class AccountReconcilor;
     explicit ScopedSyncedDataDeletion(AccountReconcilor* reconcilor);
-    AccountReconcilor* reconcilor_;
+    base::WeakPtr<AccountReconcilor> reconcilor_;
     DISALLOW_COPY_AND_ASSIGN(ScopedSyncedDataDeletion);
   };
 
@@ -332,6 +333,8 @@ class AccountReconcilor : public KeyedService,
   // Greater than 0 when synced data is being deleted, and it is important to
   // not invalidate the primary token while this is happening.
   int synced_data_deletion_in_progress_count_ = 0;
+
+  base::WeakPtrFactory<AccountReconcilor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };
