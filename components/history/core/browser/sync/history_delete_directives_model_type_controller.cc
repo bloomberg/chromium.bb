@@ -50,7 +50,7 @@ void HistoryDeleteDirectivesModelTypeController::LoadModels(
 }
 
 void HistoryDeleteDirectivesModelTypeController::Stop(
-    syncer::SyncStopMetadataFate metadata_fate,
+    syncer::ShutdownReason shutdown_reason,
     StopCallback callback) {
   DCHECK(CalledOnValidThread());
 
@@ -58,7 +58,7 @@ void HistoryDeleteDirectivesModelTypeController::Stop(
     sync_client_->GetSyncService()->RemoveObserver(this);
   }
 
-  SyncableServiceBasedModelTypeController::Stop(metadata_fate,
+  SyncableServiceBasedModelTypeController::Stop(shutdown_reason,
                                                 std::move(callback));
 }
 

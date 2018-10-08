@@ -59,7 +59,7 @@ void ProxyDataTypeController::StartAssociating(
                      syncer_merge_result);
 }
 
-void ProxyDataTypeController::Stop(SyncStopMetadataFate metadata_fate,
+void ProxyDataTypeController::Stop(ShutdownReason shutdown_reason,
                                    StopCallback callback) {
   state_ = NOT_RUNNING;
   std::move(callback).Run();

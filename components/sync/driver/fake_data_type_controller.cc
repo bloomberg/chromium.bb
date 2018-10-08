@@ -102,7 +102,7 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
 }
 
 // * -> NOT_RUNNING
-void FakeDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
+void FakeDataTypeController::Stop(ShutdownReason shutdown_reason) {
   DCHECK(CalledOnValidThread());
   if (state() == MODEL_STARTING) {
     // Real data type controllers run the callback and specify "ABORTED" as an
@@ -111,7 +111,7 @@ void FakeDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
     SimulateModelLoadFinishing();
   }
 
-  if (metadata_fate == CLEAR_METADATA)
+  if (shutdown_reason == DISABLE_SYNC)
     ++clear_metadata_call_count_;
 
   state_ = NOT_RUNNING;

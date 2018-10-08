@@ -47,7 +47,7 @@ class ModelTypeController : public DataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
-  void Stop(SyncStopMetadataFate metadata_fate, StopCallback callback) override;
+  void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
   State state() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;

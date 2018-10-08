@@ -32,7 +32,7 @@ class HistoryDeleteDirectivesModelTypeController
   bool ReadyForStart() const override;
   void LoadModels(const syncer::ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  void Stop(syncer::SyncStopMetadataFate metadata_fate,
+  void Stop(syncer::ShutdownReason shutdown_reason,
             StopCallback callback) override;
 
   // syncer::SyncServiceObserver implementation.

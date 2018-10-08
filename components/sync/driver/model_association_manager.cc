@@ -180,25 +180,10 @@ void ModelAssociationManager::StopDatatype(
 
   delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
 
-  // Leave metadata if we do not disable sync completely.
-  SyncStopMetadataFate metadata_fate = KEEP_METADATA;
-  switch (shutdown_reason) {
-    case STOP_SYNC:
-      // Special case: For AUTOFILL_WALLET_DATA, we want to clear all data even
-      // when Sync is stopped temporarily.
-      // TODO(crbug.com/890361): Consider moving this decision into the
-      // individual controller
-      if (dtc->type() == AUTOFILL_WALLET_DATA) {
-        metadata_fate = CLEAR_METADATA;
-      }
-      break;
-    case DISABLE_SYNC:
-      metadata_fate = CLEAR_METADATA;
-      break;
-    case BROWSER_SHUTDOWN:
-      break;
-  }
-  dtc->Stop(metadata_fate, std::move(callback));
+  // Note: Depending on |shutdown_reason|, USS types might clear their metadata
+  // in response to Stop(). For directory types, the clearing happens in
+  // SyncManager::PurgeDisabledTypes() instead.
+  dtc->Stop(shutdown_reason, std::move(callback));
 }
 
 void ModelAssociationManager::LoadEnabledTypes() {
