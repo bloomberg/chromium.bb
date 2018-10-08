@@ -388,7 +388,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickView").TabletMode(),
                       TestCase("openQuickViewImage"),
                       TestCase("openQuickViewVideo"),
+// QuickView PDF test fails on MSAN, crbug.com/768070 crbug.com/891150
+#if !defined(MEMORY_SANITIZER)
                       TestCase("openQuickViewPdf"),
+#endif
                       TestCase("openQuickViewScrollText"),
                       TestCase("openQuickViewScrollHtml"),
                       TestCase("openQuickViewBackgroundColorText"),
