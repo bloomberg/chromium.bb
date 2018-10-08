@@ -85,11 +85,14 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   // Simulates the adapter at |object_path_str| being removed.
   void SimulateAdapterRemoved(const std::string& object_path_str) {
     dbus::ObjectPath object_path(object_path_str);
-    size_t removed = adapter_object_paths_to_properties_.erase(object_path);
-    DCHECK_EQ(1u, removed);
 
+    // When BlueZ calls into AdapterRemoved, the adapter is still exposed
+    // through GetAdapters() and its properties are still accessible.
     for (auto& observer : observers_)
       observer.AdapterRemoved(object_path);
+
+    size_t removed = adapter_object_paths_to_properties_.erase(object_path);
+    DCHECK_EQ(1u, removed);
   }
 
   // Simulates adapter at |object_path_str| changing its powered state to
