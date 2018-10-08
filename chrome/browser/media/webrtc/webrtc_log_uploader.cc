@@ -24,6 +24,7 @@
 #include "components/webrtc_logging/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
@@ -31,6 +32,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/zlib/zlib.h"
 
 using content::BrowserThread;
@@ -327,6 +329,33 @@ void WebRtcLogUploader::OnSimpleLoaderComplete(
   NotifyUploadDone(response_code, report_id, upload_done_data);
 }
 
+void WebRtcLogUploader::InitURLLoaderFactoryIfNeeded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!shutting_down_);
+
+  if (!url_loader_factory_.is_bound())
+    return;
+
+  // Clone UI thread URLLoaderFactory for use on the IO thread.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          [](network::mojom::URLLoaderFactoryRequest loader_factory_request) {
+            g_browser_process->shared_url_loader_factory()->Clone(
+                std::move(loader_factory_request));
+          },
+          mojo::MakeRequest(&url_loader_factory_)));
+  // Need to set an error handler so that the class will monitor the state of
+  // the Mojo pipe. Without this, an errored out pipe would only be noticed
+  // after the URLLoaderFactory is used, and a request failed as a result.
+  url_loader_factory_.set_connection_error_handler(base::BindOnce(
+      &WebRtcLogUploader::OnFactoryConnectionClosed, base::Unretained(this)));
+}
+
+void WebRtcLogUploader::OnFactoryConnectionClosed() {
+  url_loader_factory_.reset();
+}
+
 void WebRtcLogUploader::SetupMultipart(
     std::string* post_data,
     const std::string& compressed_log,
@@ -488,10 +517,9 @@ void WebRtcLogUploader::UploadCompressedLog(
   auto it = pending_uploads_.insert(pending_uploads_.begin(),
                                     std::move(simple_url_loader));
   network::SimpleURLLoader* raw_loader = it->get();
+  InitURLLoaderFactoryIfNeeded();
   raw_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory()
-          .get(),
+      url_loader_factory_.get(),
       base::BindOnce(&WebRtcLogUploader::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(it), upload_done_data));
 }
@@ -507,6 +535,7 @@ void WebRtcLogUploader::ShutdownOnIOThread() {
 
   // Clear the pending uploads list, which will reset all URL loaders.
   pending_uploads_.clear();
+  url_loader_factory_.reset();
   shutting_down_ = true;
 }
 
