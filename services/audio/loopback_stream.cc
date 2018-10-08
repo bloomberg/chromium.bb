@@ -108,9 +108,8 @@ LoopbackStream::~LoopbackStream() {
   if (network_) {
     if (network_->is_started()) {
       coordinator_->RemoveObserver(group_id_, this);
-      for (LoopbackGroupMember* member :
-           coordinator_->GetCurrentMembers(group_id_)) {
-        OnMemberLeftGroup(member);
+      while (!snoopers_.empty()) {
+        OnMemberLeftGroup(snoopers_.begin()->first);
       }
     }
     DCHECK(snoopers_.empty());
