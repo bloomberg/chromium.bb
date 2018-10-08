@@ -34,6 +34,7 @@ from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 
+FORCE_BUILD_PACKAGES = '10774.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -83,6 +84,18 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
       manifest-version.VersionInfo object based on the workspace checkout.
     """
     return manifest_version.VersionInfo.from_repo(self._build_root)
+
+  def BeforeLimit(self, limit):
+    """Is worksapce version older that cutoff limit?
+
+    Args:
+      limit: String version of format '123.0.0'
+
+    Returns:
+      bool: True if workspace has older version than limit.
+    """
+    version_info = self.GetWorkspaceVersionInfo()
+    return version_info < manifest_version.VersionInfo(limit)
 
 
 class WorkspaceCleanStage(WorkspaceStageBase):
@@ -235,17 +248,22 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
         profile=self._run.options.profile or self._run.config.profile)
 
 
-class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage):
+class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
+                                  WorkspaceStageBase):
   """Build Chromium OS packages."""
 
   category = constants.PRODUCT_OS_STAGE
 
   def PerformStage(self):
+    usepkg = self._run.config.usepkg_build_packages
+    if self.BeforeLimit(FORCE_BUILD_PACKAGES):
+      usepkg = False
+
     packages = self.GetListOfPackagesToBuild()
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=False,
-                   usepkg=self._run.config.usepkg_build_packages,
+                   usepkg=usepkg,
                    packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
