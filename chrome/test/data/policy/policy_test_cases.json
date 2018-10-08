@@ -2324,6 +2324,43 @@
     ]
   },
 
+  "BrowserSignin.DesktopNoForce": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserSignin": 1 },
+    "pref_mappings": [
+      { "pref": "signin.allowed_on_next_startup",
+        "indicator_tests": [
+          { "policy": { "BrowserSignin": 1 } }
+        ]
+      }
+    ]
+  },
+
+  "BrowserSignin.DesktopForce": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserSignin": 2 },
+    "pref_mappings": [
+      { "pref": "signin.allowed_on_next_startup" },
+      { "pref": "profile.force_browser_signin",
+        "local_state": true
+      },
+      { "pref": "profile.browser_guest_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "BrowserSignin.AndroidForce": {
+    "os": ["android"],
+    "test_policy": { "BrowserSignin": 2 },
+    "pref_mappings": [
+      { "pref": "signin.allowed" },
+      { "pref": "profile.force_browser_signin",
+        "local_state": true
+      }
+    ]
+  },
+
   "MachineLevelUserCloudPolicyEnrollmentToken": {
     "os": ["win", "linux", "mac"],
     "test_policy": {"MachineLevelUserCloudPolicyEnrollmentToken": ""},

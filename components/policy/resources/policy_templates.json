@@ -2291,7 +2291,7 @@
       'id': 190,
       'caption': '''Allow sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
-      'desc': '''This policy is deprecated, consider using SyncDisabled instead.
+      'desc': '''This policy is deprecated, consider using BrowserSignin instead.
 
       Allows the user to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -9347,6 +9347,7 @@
     {
       'name': 'ForceBrowserSignin',
       'type': 'main',
+      'deprecated': True,
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:64-', 'chrome.mac:66-', 'android:65-'],
       'features': {
@@ -9357,9 +9358,54 @@
       'id': 346,
       'caption': '''Enable force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
-      'desc': '''If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article.
+      'desc': '''This policy is deprecated, consider using BrowserSignin instead.
+
+      If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article.
 
       If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'BrowserSignin',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Disable',
+          'value': 0,
+          'caption': '''Disable browser sign-in''',
+        },
+        {
+          'name': 'Enable',
+          'value': 1,
+          'caption': '''Enable browser sign-in''',
+        },
+        {
+          'name': 'Force',
+          'value': 2,
+          'caption': '''Force users to sign-in to use the browser''',
+        },
+      ],
+      'supported_on': ['chrome.*:70-', 'android:70-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False
+      },
+      'example_value': 2,
+      'id': 487,
+      'caption': '''Browser sign in settings''',
+      'tags': [],
+      'desc': '''This policy controls the sign-in behavior of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their account and use account related services like Chrome sync.
+
+      If the policy is set to "Disable browser sign-in" then the user can not sign in to the browser and use account based services. In this case browser level features like Chrome sync can not be used and will be unavailable. If the user was signed in and the policy is set "Disabled" they will be signed out the next time they run Chrome but their local profile data like bookmarks, passwords etc. will stay preserved. The user will still be able to sign into and use Google web services like Gmail.
+
+      If the policy is set to "Enable browser sign-in," then the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means the user's account information will be kept by the browser. However, it does not mean that Chrome sync will be turned on per default; the user must separately opt-in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome sync, use the "SyncDisabled" policy.
+
+      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the "SyncDisabled" policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556.
+
+      If this policy is not set then the user can decide if they want to enable the browser sign in option and use it as they see fit.''',
     },
     {
       'name': 'SSLVersionMin',
@@ -13429,6 +13475,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
-  'deleted_policy_ids': [412],
-  'highest_id_currently_used': 484
+  'deleted_policy_ids': [412, 485, 486],
+  'highest_id_currently_used': 487
 }

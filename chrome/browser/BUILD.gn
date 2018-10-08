@@ -3129,6 +3129,8 @@ jumbo_split_static_library("browser") {
   } else {  # Non-ChromeOS.
     sources += [
       "fullscreen.h",
+      "policy/browser_signin_policy_handler.cc",
+      "policy/browser_signin_policy_handler.h",
       "policy/cloud/user_cloud_policy_manager_factory.cc",
       "policy/cloud/user_cloud_policy_manager_factory.h",
       "policy/cloud/user_policy_signin_service_base.cc",

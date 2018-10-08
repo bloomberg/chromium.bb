@@ -100,6 +100,10 @@
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #endif
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/policy/browser_signin_policy_handler.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -266,16 +270,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultGeolocationSetting,
     prefs::kManagedDefaultGeolocationSetting,
     base::Value::Type::INTEGER },
-  { key::kSigninAllowed,
-#if defined(OS_ANDROID)
-    // The new kSigninAllowedOnNextStartup pref is only used on Desktop.
-    // Keep the old kSigninAllowed pref for Android until the policy is
-    // fully depricated in M71 and can be removed.
-    prefs::kSigninAllowed,
-#else
-    prefs::kSigninAllowedOnNextStartup,
-#endif
-    base::Value::Type::BOOLEAN },
   { key::kEnableOnlineRevocationChecks,
     prefs::kCertRevocationCheckingEnabled,
     base::Value::Type::BOOLEAN },
@@ -751,10 +745,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
-  { key::kForceBrowserSignin,
-    prefs::kForceBrowserSignin,
-    base::Value::Type::BOOLEAN },
-
 #if defined(OS_WIN)
   { key::kWelcomePageOnOSUpgradeEnabled,
     prefs::kWelcomePageOnOSUpgradeEnabled,
@@ -1115,6 +1105,28 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema.GetValidationSchema(),
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+#endif
+
+#if !defined(OS_CHROMEOS)
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
+      signin_legacy_policies;
+  signin_legacy_policies.push_back(std::make_unique<SimplePolicyHandler>(
+      key::kForceBrowserSignin, prefs::kForceBrowserSignin,
+      base::Value::Type::BOOLEAN));
+  signin_legacy_policies.push_back(std::make_unique<SimplePolicyHandler>(
+      key::kSigninAllowed,
+#if defined(OS_ANDROID)
+      // The new kSigninAllowedOnNextStartup pref is only used on Desktop.
+      // Keep the old kSigninAllowed pref for Android until the policy is
+      // fully deprecated in M71 and can be removed.
+      prefs::kSigninAllowed,
+#else
+      prefs::kSigninAllowedOnNextStartup,
+#endif
+      base::Value::Type::BOOLEAN));
+  handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
+      std::move(signin_legacy_policies),
+      std::make_unique<BrowserSigninPolicyHandler>(chrome_schema)));
 #endif
 
 #if defined(OS_CHROMEOS)
