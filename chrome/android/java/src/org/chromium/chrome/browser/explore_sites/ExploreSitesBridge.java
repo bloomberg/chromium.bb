@@ -42,10 +42,7 @@ public class ExploreSitesBridge {
 
     public static void getCategoryImage(
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
-        // TODO(dewittj): Remove this when image decoding works correctly.
-        Bitmap image = Bitmap.createBitmap(pixelSize, pixelSize, Bitmap.Config.ARGB_8888);
-        image.eraseColor(android.graphics.Color.GREEN);
-        callback.onResult(image);
+        nativeGetCategoryImage(profile, categoryID, pixelSize, callback);
     }
 
     /**
@@ -93,4 +90,7 @@ public class ExploreSitesBridge {
 
     private static native void nativeUpdateCatalogFromNetwork(
             Profile profile, boolean isImmediateFetch, Callback<Boolean> callback);
+
+    private static native void nativeGetCategoryImage(
+            Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback);
 }

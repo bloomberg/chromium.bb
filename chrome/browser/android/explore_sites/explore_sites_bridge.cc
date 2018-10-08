@@ -127,7 +127,6 @@ void JNI_ExploreSitesBridge_GetIcon(
       ExploreSitesServiceFactory::GetForBrowserContext(profile);
   if (!service) {
     DLOG(ERROR) << "Unable to create the ExploreSitesService!";
-
     base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
     return;
   }
@@ -181,4 +180,28 @@ float ExploreSitesBridge::GetScaleFactorFromDevice() {
   return Java_ExploreSitesBridge_getScaleFactorFromDevice(env);
 }
 
+// static
+void JNI_ExploreSitesBridge_GetCategoryImage(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const jint j_category_id,
+    const jint j_pixel_size,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    base::android::RunBooleanCallbackAndroid(j_callback_obj, false);
+    return;
+  }
+
+  service->GetCategoryImage(
+      j_category_id, j_pixel_size,
+      base::BindOnce(&ImageReady,
+                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+}
 }  // namespace explore_sites

@@ -62,6 +62,7 @@ using BooleanCallback = base::OnceCallback<void(bool)>;
 using EncodedImageBytes = std::vector<uint8_t>;
 using EncodedImageList = std::vector<std::unique_ptr<EncodedImageBytes>>;
 using EncodedImageListCallback = base::OnceCallback<void(EncodedImageList)>;
+using ImageJobFinishedCallback = base::OnceCallback<void(void)>;
 
 using BitmapCallback = base::OnceCallback<void(std::unique_ptr<SkBitmap>)>;
 
