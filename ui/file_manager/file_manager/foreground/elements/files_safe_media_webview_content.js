@@ -26,9 +26,14 @@ window.onload = function() {
           contentChanged(text);
         });
         break;
-      default:
+      case 'audio':
+      case 'video':
+        content.onloadeddata = (e) => contentChanged(e.target.src);
         content.src = event.data.src;
-        contentChanged(content.src);
+        break;
+      default:
+        content.onload = (e) => contentChanged(e.target.src);
+        content.src = event.data.src;
         break;
     }
   });
