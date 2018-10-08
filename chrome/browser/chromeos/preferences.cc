@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -324,6 +325,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
   registry->RegisterListPref(prefs::kLanguageAllowedInputMethods,
                              std::make_unique<base::ListValue>());
+  registry->RegisterListPref(prefs::kAllowedLanguages,
+                             std::make_unique<base::ListValue>());
   registry->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                                kFallbackInputMethodLocale);
   registry->RegisterStringPref(prefs::kLanguagePreloadEngines,
@@ -539,6 +542,9 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                               prefs, callback);
   allowed_input_methods_.Init(prefs::kLanguageAllowedInputMethods, prefs,
                               callback);
+  allowed_languages_.Init(prefs::kAllowedLanguages, prefs, callback);
+  preferred_languages_.Init(prefs::kLanguagePreferredLanguages, prefs,
+                            callback);
   ime_menu_activated_.Init(prefs::kLanguageImeMenuActivated, prefs, callback);
   // Notifies the system tray to remove the IME items.
   if (base::FeatureList::IsEnabled(features::kOptInImeMenu) &&
@@ -808,6 +814,15 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       preload_engines_.SetValue(
           base::JoinString(ime_state_->GetActiveInputMethodIds(), ","));
     }
+  }
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kAllowedLanguages)
+    locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
+
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kLanguagePreferredLanguages) {
+    // In case setting has been changed with sync it can contain disallowed
+    // values.
+    locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
   }
 
   if (reason == REASON_INITIALIZATION)

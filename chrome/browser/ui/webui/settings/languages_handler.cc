@@ -70,14 +70,6 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
   std::string language_code;
   CHECK(args->GetString(0, &language_code));
 
-#if defined(OS_CHROMEOS)
-  // check if prospectiveUILanguage is allowed by policy (AllowedUILocales)
-  if (!chromeos::locale_util::IsAllowedUILocale(language_code,
-                                                profile_->GetPrefs())) {
-    return;
-  }
-#endif
-
 #if defined(OS_WIN)
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(language::prefs::kApplicationLocale, language_code);

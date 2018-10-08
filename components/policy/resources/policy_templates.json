@@ -12545,13 +12545,13 @@
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
     {
-      'name': 'AllowedUILocales',
+      'name': 'AllowedLanguages',
       'type': 'list',
       'schema': {
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:68-'],
+      'supported_on': ['chrome_os:71-'],
       'device_only': False,
       'features': {
         'dynamic_refresh': False,
@@ -12560,11 +12560,11 @@
       'example_value': [ 'en-US' ],
       'max_size': 16777216,
       'id': 444,
-      'caption': '''Configure the allowed UI locales in a user session''',
+      'caption': '''Configure the allowed languages in a user session''',
       'tags': [],
-      'desc': '''Configures the locales <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> may be displayed in.
+      'desc': '''Configures the languages that can be used as the preferred languages by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
-      If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be displayed in all supported UI locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in a locale that is not allowed by this policy, the display locale will be switched to an allowed UI locale the next time the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.'''
+      If this policy is set, the user can only add one of the languages listed in this policy to the list of preferred languages. If this policy is not set or set to an empty list, user can specify any languages as preferred. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously added some languages that are not allowed by this policy to the list of preferred languages they will be removed. If the user had previously configured <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in one of the languages not allowed by this policy, the display language will be switched to an allowed UI language next time user signs in. Otherwise, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.'''
     },
     {
       'name': 'AllowedInputMethods',
