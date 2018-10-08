@@ -74,6 +74,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
+    &kAndroidSiteSettingsUI,
     &kAutofillAssistant,
     &kCastDeviceFilter,
     &kCCTBackgroundTab,
@@ -195,6 +196,8 @@ const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
 
 const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAndroidSiteSettingsUI{"AndroidSiteSettingsUI",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillAssistant{"AutofillAssistant",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

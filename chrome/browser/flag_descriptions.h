@@ -58,6 +58,9 @@ extern const char kAndroidMessagesIntegrationDescription[];
 extern const char kAndroidMessagesProdEndpointName[];
 extern const char kAndroidMessagesProdEndpointDescription[];
 
+extern const char kAndroidSiteSettingsUIName[];
+extern const char kAndroidSiteSettingsUIDescription[];
+
 extern const char kAppBannersName[];
 extern const char kAppBannersDescription[];
 

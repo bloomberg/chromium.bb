@@ -4435,6 +4435,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseAngleDescription, kOsWin,
      MULTI_VALUE_TYPE(kUseAngleChoices)},
 #endif
+#if defined(OS_ANDROID)
+    {"android-site-settings-ui", flag_descriptions::kAndroidSiteSettingsUIName,
+     flag_descriptions::kAndroidSiteSettingsUIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUI)},
+#endif
 };
 
 class FlagsStateSingleton {

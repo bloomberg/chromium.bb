@@ -53,6 +53,11 @@ const char kAndroidMessagesProdEndpointDescription[] =
     "For Android Messages integration, point to the prod endpoint instead of "
     "sandbox.";
 
+const char kAndroidSiteSettingsUIName[] = "Android Site Settings UI changes.";
+const char kAndroidSiteSettingsUIDescription[] =
+    "Enable the new UI "
+    "changes in Site Settings in Android.";
+
 const char kAppBannersName[] = "App Banners";
 const char kAppBannersDescription[] =
     "Enable the display of Progressive Web App banners, which prompt a user to "
