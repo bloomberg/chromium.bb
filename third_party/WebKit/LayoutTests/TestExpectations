@@ -5253,3 +5253,5 @@ crbug.com/892772 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pas
 # Flakiness in DTMF
 crbug.com/893112 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Failure ]
 
+# Sheriff 2018-10-08
+crbug.com/893015 virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Failure Pass ]
