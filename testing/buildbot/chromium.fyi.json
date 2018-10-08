@@ -3245,15 +3245,6 @@
         "test": "base_unittests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
