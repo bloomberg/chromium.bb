@@ -2670,7 +2670,7 @@ class FakeAvailableOfflineContentProvider
 
   MOCK_METHOD2(LaunchItem,
                void(const std::string& item_ID, const std::string& name_space));
-  MOCK_METHOD0(LaunchDownloadsPage, void());
+  MOCK_METHOD1(LaunchDownloadsPage, void(bool open_prefetched_articles_tab));
 
   void AddBinding(mojo::ScopedMessagePipeHandle handle) {
     bindings_.AddBinding(this,

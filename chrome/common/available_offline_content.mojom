@@ -68,5 +68,5 @@ interface AvailableOfflineContentProvider {
   // Opens one of the items returned by List().
   LaunchItem(string item_id, string name_space);
   // Opens the downloads page to view all offline content.
-  LaunchDownloadsPage();
+  LaunchDownloadsPage(bool open_prefetched_articles_tab);
 };

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/download/available_offline_content_provider.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/base64.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
@@ -226,9 +229,10 @@ void AvailableOfflineContentProvider::LaunchItem(
       offline_items_collection::ContentId(name_space, item_id));
 }
 
-void AvailableOfflineContentProvider::LaunchDownloadsPage() {
+void AvailableOfflineContentProvider::LaunchDownloadsPage(
+    bool open_prefetched_articles_tab) {
   DownloadManagerService::GetInstance()->ShowDownloadManager(
-      has_prefetched_content_);
+      open_prefetched_articles_tab);
 }
 
 void AvailableOfflineContentProvider::Create(
@@ -268,7 +272,6 @@ void AvailableOfflineContentProvider::SummarizeFinalize(
         break;
     }
   }
-  has_prefetched_content_ = summary->has_prefetched_page;
 
   // If the number of interesting items is lower then the minimum required then
   // reset all summary data so avoid presenting the card.
@@ -289,12 +292,12 @@ void AvailableOfflineContentProvider::ListFinalize(
   // If the number of interesting items is lower then the minimum don't show any
   // suggestions. Otherwise trim it down to the number of expected items.
   size_t copied_count = end - selected.begin();
-  if (copied_count == kMinInterestingItemCount &&
-      ContentType(selected[kMinInterestingItemCount - 1]) !=
-          AvailableContentType::kUninteresting) {
-    selected.resize(kMaxListItemsToReturn);
-  } else {
+  DCHECK(copied_count <= kMinInterestingItemCount);
+  if (copied_count < kMinInterestingItemCount ||
+      ContentType(selected.back()) == AvailableContentType::kUninteresting) {
     selected.clear();
+  } else {
+    selected.resize(kMaxListItemsToReturn);
   }
 
   std::vector<offline_items_collection::ContentId> selected_ids;
