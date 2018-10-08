@@ -36,6 +36,22 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [8, 8],
       "bounds": [320, 240]
+    },
+    {
+      "name": "LayoutFlexibleBox DIV",
+      "position": [8, 8],
+      "bounds": [320, 240]
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [8, 8],
+      "bounds": [320, 240],
+      "drawsContent": false
+    },
+    {
+      "name": "LayoutButton (positioned) INPUT",
+      "position": [118, 66],
+      "bounds": [100, 100]
     }
   ]
 }

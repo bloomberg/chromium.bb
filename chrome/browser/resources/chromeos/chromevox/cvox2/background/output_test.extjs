@@ -229,18 +229,18 @@ TEST_F('OutputE2ETest', 'Audio', function() {
           .withoutHints()
           .withSpeechAndBraille(range, null, 'navigate');
 
-      checkSpeechOutput('play|Disabled|Button|audio|Tool bar',
+      checkSpeechOutput('play|Button|audio|Tool bar',
           [
             {value: new Output.EarconAction('BUTTON'), start: 0, end: 4},
-            {value: 'name', start: 21, end: 26},
-            {value: 'role', start: 27, end: 35}
+            {value: 'name', start: 12, end: 17},
+            {value: 'role', start: 18, end: 26}
           ],
           o);
 
       checkBrailleOutput(
-          'play xx btn audio tlbar',
-          [{value: new Output.NodeSpan(el), start: 0, end: 11},
-           {value: new Output.NodeSpan(el.parent), start: 12, end: 23}],
+          'play btn audio tlbar',
+          [{value: new Output.NodeSpan(el), start: 0, end: 8},
+           {value: new Output.NodeSpan(el.parent), start: 9, end: 20}],
           o);
 
       // TODO(dmazzoni/dtseng): Replace with a query.

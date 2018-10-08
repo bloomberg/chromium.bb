@@ -287,13 +287,6 @@ function playButton(videoElement) {
     return mediaControlsButton(videoElement, 'play-button');
 }
 
-function enabledPlayButton(videoElement) {
-  if (internals.runtimeFlags.mediaControlsOverlayPlayButtonEnabled) {
-    return mediaControlsOverlayPlayButton(videoElement);
-  }
-  return playButton(videoElement);
-}
-
 function muteButton(videoElement) {
     return mediaControlsButton(videoElement, 'mute-button');
 }

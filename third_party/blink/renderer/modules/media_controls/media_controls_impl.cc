@@ -538,7 +538,8 @@ void MediaControlsImpl::InitializeControls() {
 
   overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
 
-  if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled()) {
+  if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled() ||
+      IsModern()) {
     overlay_play_button_ = new MediaControlOverlayPlayButtonElement(*this);
 
     if (!IsModern())
@@ -649,7 +650,7 @@ void MediaControlsImpl::PopulatePanel() {
     if (display_cutout_fullscreen_button_)
       panel_->ParserAppendChild(display_cutout_fullscreen_button_);
 
-    MaybeParserAppendChild(panel_, overlay_play_button_);
+    panel_->ParserAppendChild(overlay_play_button_);
     panel_->ParserAppendChild(media_button_panel_);
     button_panel = media_button_panel_;
   }
@@ -769,35 +770,18 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   // If we are in the "no-source" state we should show the overflow menu on a
   // video element.
   if (IsModern()) {
-    bool updated = false;
-
     if (state == kNoSource) {
-      // Check if the play button or overflow menu has the "disabled" attribute
-      // set so we avoid unnecessarily resetting it.
-      if (!play_button_->hasAttribute(HTMLNames::disabledAttr)) {
-        play_button_->setAttribute(HTMLNames::disabledAttr, "");
-        updated = true;
-      }
-
+      // Check if the overflow menu has the "disabled" attribute set so we avoid
+      // unnecessarily resetting it.
       if (ShouldShowVideoControls() &&
           !overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
         overflow_menu_->setAttribute(HTMLNames::disabledAttr, "");
-        updated = true;
+        UpdateOverflowMenuWanted();
       }
-    } else {
-      if (play_button_->hasAttribute(HTMLNames::disabledAttr)) {
-        play_button_->removeAttribute(HTMLNames::disabledAttr);
-        updated = true;
-      }
-
-      if (overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
-        overflow_menu_->removeAttribute(HTMLNames::disabledAttr);
-        updated = true;
-      }
-    }
-
-    if (updated)
+    } else if (overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
+      overflow_menu_->removeAttribute(HTMLNames::disabledAttr);
       UpdateOverflowMenuWanted();
+    }
   }
 }
 
@@ -1281,16 +1265,13 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   // room and hide the overlay play button if there is not enough room.
   if (ShouldShowVideoControls()) {
     // Allocate vertical room for overlay play button if necessary.
-    if (overlay_play_button_) {
-      WebSize overlay_play_button_size =
-          overlay_play_button_->GetSizeOrDefault();
-      if (controls_size.height >= overlay_play_button_size.height &&
-          controls_size.width >= kModernMinWidthForOverlayPlayButton) {
-        overlay_play_button_->SetDoesFit(true);
-        controls_size.height -= overlay_play_button_size.height;
-      } else {
-        overlay_play_button_->SetDoesFit(false);
-      }
+    WebSize overlay_play_button_size = overlay_play_button_->GetSizeOrDefault();
+    if (controls_size.height >= overlay_play_button_size.height &&
+        controls_size.width >= kModernMinWidthForOverlayPlayButton) {
+      overlay_play_button_->SetDoesFit(true);
+      controls_size.height -= overlay_play_button_size.height;
+    } else {
+      overlay_play_button_->SetDoesFit(false);
     }
 
     controls_size.width -= kModernControlsVideoButtonPadding;
@@ -1307,8 +1288,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     }
 
     // If we cannot show the overlay play button, show the normal one.
-    play_button_->SetIsWanted(!overlay_play_button_ ||
-                              !overlay_play_button_->DoesFit());
+    play_button_->SetIsWanted(!overlay_play_button_->DoesFit());
   } else {
     controls_size.width -= kModernControlsAudioButtonPadding;
 
@@ -1529,7 +1509,7 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
     const String& key = ToKeyboardEvent(event).key();
     if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
-      if (IsModern() && overlay_play_button_) {
+      if (IsModern()) {
         overlay_play_button_->OnMediaKeyboardEvent(&event);
       } else {
         play_button_->OnMediaKeyboardEvent(&event);
