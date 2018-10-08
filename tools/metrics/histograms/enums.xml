@@ -33882,6 +33882,7 @@ Called by update_net_error_codes.py.-->
   <int value="177" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
   <int value="178" label="EARLY_DATA_REJECTED"/>
   <int value="179" label="WRONG_VERSION_ON_EARLY_DATA"/>
+  <int value="180" label="TLS13_DOWNGRADE_DETECTED"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
