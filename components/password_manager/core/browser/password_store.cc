@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -276,6 +277,13 @@ void PasswordStore::GetBlacklistLoginsWithAffiliationAndBrandingInformation(
   Schedule(&PasswordStore::
                GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl,
            consumer);
+}
+
+void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
+    PasswordStoreConsumer* consumer) {
+  Schedule(
+      &PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformationImpl,
+      consumer);
 }
 
 void PasswordStore::ReportMetrics(const std::string& sync_username,
@@ -757,6 +765,27 @@ void PasswordStore::GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
       FROM_HERE,
       base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
                      this, std::move(obtained_forms), std::move(request)));
+}
+
+void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformationImpl(
+    std::unique_ptr<GetLoginsRequest> request) {
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  for (auto fill_logins : {&PasswordStore::FillAutofillableLogins,
+                           &PasswordStore::FillBlacklistLogins}) {
+    std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
+    if ((this->*fill_logins)(&obtained_forms)) {
+      results.insert(results.end(),
+                     std::make_move_iterator(obtained_forms.begin()),
+                     std::make_move_iterator(obtained_forms.end()));
+    }
+  }
+
+  // Since AffiliatedMatchHelper's requests should be sent from UI thread,
+  // post a request to UI thread.
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
+                     this, std::move(results), std::move(request)));
 }
 
 void PasswordStore::NotifyAllSiteStats(

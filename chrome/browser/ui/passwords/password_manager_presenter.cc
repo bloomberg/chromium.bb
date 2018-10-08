@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/bind.h"
@@ -137,9 +138,7 @@ int AddPasswordOperation::GetRedoLabelId() const {
 
 PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
-    : populater_(this),
-      exception_populater_(this),
-      password_view_(password_view) {
+    : password_view_(password_view) {
   DCHECK(password_view_);
 }
 
@@ -174,8 +173,12 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   password_exception_list_.clear();
   password_exception_duplicates_.clear();
 
-  populater_.Populate();
-  exception_populater_.Populate();
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  CancelAllRequests();
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
@@ -319,55 +322,20 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   store->RemoveLogin(form);
 }
 
-PasswordManagerPresenter::ListPopulater::ListPopulater(
-    PasswordManagerPresenter* page) : page_(page) {
-}
-
-PasswordManagerPresenter::ListPopulater::~ListPopulater() {
-}
-
-PasswordManagerPresenter::PasswordListPopulater::PasswordListPopulater(
-    PasswordManagerPresenter* page) : ListPopulater(page) {
-}
-
-void PasswordManagerPresenter::PasswordListPopulater::Populate() {
-  PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL) {
-    CancelAllRequests();
-    store->GetAutofillableLoginsWithAffiliationAndBrandingInformation(this);
-  } else {
-    LOG(ERROR) << "No password store! Cannot display passwords.";
-  }
-}
-
-void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
+void PasswordManagerPresenter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  page_->password_list_ = std::move(results);
-  password_manager::SortEntriesAndHideDuplicates(&page_->password_list_,
-                                                 &page_->password_duplicates_);
-  page_->SetPasswordList();
-}
+  std::partition_copy(std::make_move_iterator(results.begin()),
+                      std::make_move_iterator(results.end()),
+                      std::back_inserter(password_exception_list_),
+                      std::back_inserter(password_list_), [](const auto& form) {
+                        return form->blacklisted_by_user;
+                      });
 
-PasswordManagerPresenter::PasswordExceptionListPopulater::
-    PasswordExceptionListPopulater(PasswordManagerPresenter* page)
-        : ListPopulater(page) {
-}
-
-void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
-  PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL) {
-    CancelAllRequests();
-    store->GetBlacklistLoginsWithAffiliationAndBrandingInformation(this);
-  } else {
-    LOG(ERROR) << "No password store! Cannot display exceptions.";
-  }
-}
-
-void PasswordManagerPresenter::PasswordExceptionListPopulater::
-    OnGetPasswordStoreResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  page_->password_exception_list_ = std::move(results);
+  password_manager::SortEntriesAndHideDuplicates(&password_list_,
+                                                 &password_duplicates_);
   password_manager::SortEntriesAndHideDuplicates(
-      &page_->password_exception_list_, &page_->password_exception_duplicates_);
-  page_->SetPasswordExceptionList();
+      &password_exception_list_, &password_exception_duplicates_);
+
+  SetPasswordList();
+  SetPasswordExceptionList();
 }
