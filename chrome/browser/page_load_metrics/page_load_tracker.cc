@@ -356,6 +356,13 @@ void PageLoadTracker::DidCommitSameDocumentNavigation(
   }
 }
 
+void PageLoadTracker::DidInternalNavigationAbort(
+    content::NavigationHandle* navigation_handle) {
+  for (const auto& observer : observers_) {
+    observer->OnDidInternalNavigationAbort(navigation_handle);
+  }
+}
+
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   for (const auto& observer : observers_) {

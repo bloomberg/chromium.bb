@@ -572,7 +572,9 @@ void NavigationSimulator::AbortCommit() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
-void NavigationSimulator::Fail(int error_code) {
+void NavigationSimulator::FailWithResponseHeaders(
+    int error_code,
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
   CHECK_LE(state_, STARTED) << "NavigationSimulator::Fail can only be "
                                "called once, and cannot be called after "
                                "NavigationSimulator::ReadyToCommit";
@@ -583,6 +585,10 @@ void NavigationSimulator::Fail(int error_code) {
 
   if (state_ == INITIALIZATION)
     Start();
+
+  DCHECK(!handle_->GetResponseHeaders());
+  static_cast<NavigationHandleImpl*>(handle_)->set_response_headers_for_testing(
+      response_headers);
 
   state_ = FAILED;
 
@@ -602,6 +608,10 @@ void NavigationSimulator::Fail(int error_code) {
     return;
   }
   std::move(complete_closure).Run();
+}
+
+void NavigationSimulator::Fail(int error_code) {
+  FailWithResponseHeaders(error_code, nullptr);
 }
 
 void NavigationSimulator::FailComplete(int error_code) {
