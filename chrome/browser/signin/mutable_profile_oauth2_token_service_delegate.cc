@@ -173,7 +173,8 @@ LoadCredentialsStateFromTokenResult(TokenServiceTable::Result token_result) {
       return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
   }
   NOTREACHED();
-  return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN;
+  return OAuth2TokenServiceDelegate::
+      LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
 }
 
 // Returns whether the token service should be migrated to Dice.
@@ -339,7 +340,6 @@ MutableProfileOAuth2TokenServiceDelegate::
         bool revoke_all_tokens_on_load,
         bool can_revoke_credentials)
     : web_data_service_request_(0),
-      load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
@@ -476,25 +476,20 @@ MutableProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return client_->GetURLLoaderFactory();
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-MutableProfileOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
-  return load_credentials_state_;
-}
-
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
-  if (load_credentials_state_ == LOAD_CREDENTIALS_IN_PROGRESS) {
+  if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
     VLOG(1) << "Load credentials operation already in progress";
     return;
   }
 
-  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
 
 #if defined(OS_CHROMEOS)
   // ChromeOS OOBE loads credentials without a primary account and expects this
   // to be a no-op. See htttp://crbug.com/891818
   if (primary_account_id.empty()) {
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FinishLoadingCredentials();
     return;
   }
@@ -510,7 +505,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   if (!token_web_data_) {
     // This case only exists in unit tests that do not care about loading
     // credentials.
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
     FinishLoadingCredentials();
     return;
   }
@@ -542,10 +537,10 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     const WDResult<TokenResult>* token_result =
         static_cast<const WDResult<TokenResult>*>(result.get());
     LoadAllCredentialsIntoMemory(token_result->GetValue().tokens);
-    load_credentials_state_ =
-        LoadCredentialsStateFromTokenResult(token_result->GetValue().db_result);
+    set_load_credentials_state(LoadCredentialsStateFromTokenResult(
+        token_result->GetValue().db_result));
   } else {
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
   }
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
@@ -553,9 +548,9 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // while this profile is connected to an account.
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
-    if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
-      load_credentials_state_ =
-          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT;
+    if (load_credentials_state() == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+      set_load_credentials_state(
+          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT);
     }
     AddAccountStatus(loading_primary_account_id_, kInvalidRefreshToken,
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -902,8 +897,5 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_UNKNOWN);
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED);
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_IN_PROGRESS);
   FireRefreshTokensLoaded();
 }

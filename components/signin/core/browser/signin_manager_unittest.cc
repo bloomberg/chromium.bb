@@ -87,6 +87,7 @@ class SigninManagerTest : public testing::Test {
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
+    ProfileOAuth2TokenService::RegisterProfilePrefs(user_prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
     SigninManagerBase::RegisterPrefs(local_state_.registry());
     account_tracker_.Initialize(&user_prefs_, base::FilePath());

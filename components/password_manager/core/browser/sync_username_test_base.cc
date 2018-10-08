@@ -40,6 +40,9 @@ SyncUsernameTestBase::SyncUsernameTestBase()
 #endif
   SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
   AccountTrackerService::RegisterPrefs(prefs_.registry());
+#if !defined(OS_CHROMEOS)
+  ProfileOAuth2TokenService::RegisterProfilePrefs(prefs_.registry());
+#endif
   account_tracker_.Initialize(&prefs_, base::FilePath());
 }
 

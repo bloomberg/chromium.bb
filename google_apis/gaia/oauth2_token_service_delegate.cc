@@ -115,7 +115,9 @@ const net::BackoffEntry* OAuth2TokenServiceDelegate::BackoffEntry() const {
   return nullptr;
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-OAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
-  return LOAD_CREDENTIALS_UNKNOWN;
+void OAuth2TokenServiceDelegate::LoadCredentials(
+    const std::string& primary_account_id) {
+  NOTREACHED() << "OAuth2TokenServiceDelegate does not load credentials. "
+                  "Subclasses that need to load credentials must provide "
+                  "an implemenation of this method";
 }

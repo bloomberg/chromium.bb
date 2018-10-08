@@ -68,6 +68,7 @@ void FakeOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
 void FakeOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
+  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 

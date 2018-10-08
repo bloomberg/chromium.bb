@@ -61,6 +61,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Returns true iff all credentials have been loaded from disk.
   bool AreAllCredentialsLoaded();
 
+  // Returns true if LoadCredentials finished with no errors.
+  bool HasLoadCredentialsFinishedWithNoErrors();
+
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
   // and available through |LoadCredentials| after service is restarted.
   virtual void UpdateCredentials(const std::string& account_id,

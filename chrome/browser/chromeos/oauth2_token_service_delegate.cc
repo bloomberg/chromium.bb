@@ -105,7 +105,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   ValidateAccountId(account_id);
 
@@ -139,7 +139,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 
 bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
-  if (load_credentials_state_ != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+  if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
   }
 
@@ -192,7 +192,7 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
 
 std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys_) {
@@ -210,11 +210,11 @@ void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED) {
+  if (load_credentials_state() != LOAD_CREDENTIALS_NOT_STARTED) {
     return;
   }
 
-  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
 
   DCHECK(account_manager_);
   account_manager_->AddObserver(this);
@@ -227,7 +227,7 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -246,21 +246,16 @@ ChromeOSOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return account_manager_->GetUrlLoaderFactory();
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-ChromeOSOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
-  return load_credentials_state_;
-}
-
 void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
     std::vector<AccountManager::AccountKey> account_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This callback should only be triggered during |LoadCredentials|, which
-  // implies that |load_credentials_state_| should in
+  // implies that |load_credentials_state())| should in
   // |LOAD_CREDENTIALS_IN_PROGRESS| state.
-  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
 
-  load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
 
   // The typical order of |OAuth2TokenService::Observer| callbacks is:
   // 1. OnStartBatchChanges
@@ -304,7 +299,7 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
 void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
     const AccountManager::AccountKey& account_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   auto it = account_keys_.find(account_key);
   if (it == account_keys_.end()) {

@@ -91,8 +91,6 @@ std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
 std::string TokenServiceLoadCredentialsStateToLabel(
     OAuth2TokenServiceDelegate::LoadCredentialsState state) {
   switch (state) {
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN:
-      return "Unknown";
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
       return "Load credentials not started";
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
@@ -534,7 +532,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(basic_info, "Signin Status",
       signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
   OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
-      token_service->GetDelegate()->GetLoadCredentialsState();
+      token_service->GetDelegate()->load_credentials_state();
   AddSectionEntry(basic_info, "TokenService Load Status",
                   TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
 

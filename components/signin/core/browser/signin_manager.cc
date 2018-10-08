@@ -47,11 +47,6 @@ SigninManager::SigninManager(
 
 SigninManager::~SigninManager() {}
 
-void SigninManager::InitTokenService() {
-  if (token_service_)
-    token_service_->LoadCredentials(GetAuthenticatedAccountId());
-}
-
 std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
   switch (type) {
     case SIGNIN_TYPE_NONE:
@@ -297,15 +292,16 @@ void SigninManager::Initialize(PrefService* local_state) {
                               signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
-  if (account_tracker_service()->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_IN_PROGRESS) {
-    token_service_->AddObserver(this);
-  }
-  InitTokenService();
   account_tracker_service()->AddObserver(this);
+
+  // It is important to only load credentials after starting to observe the
+  // token service.
+  token_service_->AddObserver(this);
+  token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
 void SigninManager::Shutdown() {
+  token_service_->RemoveObserver(this);
   account_tracker_service()->RemoveObserver(this);
   local_state_pref_registrar_.RemoveAll();
   SigninManagerBase::Shutdown();
@@ -507,9 +503,24 @@ void SigninManager::OnAccountUpdateFailed(const std::string& account_id) {
 }
 
 void SigninManager::OnRefreshTokensLoaded() {
+  token_service_->RemoveObserver(this);
+
   if (account_tracker_service()->GetMigrationState() ==
       AccountTrackerService::MIGRATION_IN_PROGRESS) {
     account_tracker_service()->SetMigrationDone();
-    token_service_->RemoveObserver(this);
+  }
+
+  // Remove account information from the account tracker service if needed.
+  if (token_service_->HasLoadCredentialsFinishedWithNoErrors()) {
+    std::vector<AccountInfo> accounts_in_tracker_service =
+        account_tracker_service()->GetAccounts();
+    for (const auto& account : accounts_in_tracker_service) {
+      if (GetAuthenticatedAccountId() != account.account_id &&
+          !token_service_->RefreshTokenIsAvailable(account.account_id)) {
+        DVLOG(0) << "Removed account from account tracker service: "
+                 << account.account_id;
+        account_tracker_service()->RemoveAccount(account.account_id);
+      }
+    }
   }
 }
