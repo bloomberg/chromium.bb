@@ -56,6 +56,9 @@ bool TestTCPServerSocketPrivate::Init() {
 void TestTCPServerSocketPrivate::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, Listen, filter);
   RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, Backlog, filter);
+
+  RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, ListenFails, filter);
+  RUN_CALLBACK_TEST(TestTCPServerSocketPrivate, AcceptFails, filter);
 }
 
 std::string TestTCPServerSocketPrivate::GetLocalAddress(
@@ -120,6 +123,30 @@ void TestTCPServerSocketPrivate::ForceConnect(TCPSocketPrivate* socket,
   do {
     error_message = SyncConnect(socket, address);
   } while (!error_message.empty());
+}
+
+std::string TestTCPServerSocketPrivate::SyncListenFails(
+    pp::TCPServerSocketPrivate* socket) {
+  uint8_t localhost_ip[4] = {127, 0, 0, 1};
+  PP_NetAddress_Private ipv4;
+  ASSERT_TRUE(
+      NetAddressPrivate::CreateFromIPv4Address(localhost_ip, 80, &ipv4));
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket->Listen(&ipv4, 2 /* backlog */, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  PASS();
+}
+
+std::string TestTCPServerSocketPrivate::SyncAcceptFails(
+    pp::TCPServerSocketPrivate* socket) {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  PP_Resource resource;
+  callback.WaitForResult(socket->Accept(&resource, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  PASS();
 }
 
 std::string TestTCPServerSocketPrivate::SyncListen(
@@ -260,5 +287,41 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   }
 
   server_socket.StopListening();
+  PASS();
+}
+
+std::string TestTCPServerSocketPrivate::TestListenFails() {
+  TCPServerSocketPrivate socket(instance_);
+  ASSERT_SUBTEST_SUCCESS(SyncListenFails(&socket));
+
+  // After a listen failure, accept should fail, too.
+  ASSERT_SUBTEST_SUCCESS(SyncAcceptFails(&socket));
+
+  // Listening again fails, just because of the test fixture simulating another
+  // failure.
+  ASSERT_SUBTEST_SUCCESS(SyncListenFails(&socket));
+
+  PASS();
+}
+
+std::string TestTCPServerSocketPrivate::TestAcceptFails() {
+  TCPServerSocketPrivate socket(instance_);
+  uint8_t localhost_ip[4] = {127, 0, 0, 1};
+  PP_NetAddress_Private ipv4;
+  ASSERT_TRUE(
+      NetAddressPrivate::CreateFromIPv4Address(localhost_ip, 80, &ipv4));
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(
+      socket.Listen(&ipv4, 2 /* backlog */, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  // Accept calls should fail.
+  ASSERT_SUBTEST_SUCCESS(SyncAcceptFails(&socket));
+  ASSERT_SUBTEST_SUCCESS(SyncAcceptFails(&socket));
+
+  // Listening again fails, since the socket is already listening.
+  ASSERT_SUBTEST_SUCCESS(SyncListenFails(&socket));
+
   PASS();
 }

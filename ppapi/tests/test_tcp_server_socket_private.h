@@ -46,8 +46,17 @@ class TestTCPServerSocketPrivate : public TestCase {
                          PP_NetAddress_Private* address,
                          int32_t backlog);
 
+  // Checks that a listen/accept attempt on |socket| fails.
+  std::string SyncListenFails(pp::TCPServerSocketPrivate* socket);
+  std::string SyncAcceptFails(pp::TCPServerSocketPrivate* socket);
+
   std::string TestListen();
   std::string TestBacklog();
+
+  // The higher level test fixture must configure the corresponding events to
+  // fail with PP_ERROR_FAILED.
+  std::string TestListenFails();
+  std::string TestAcceptFails();
 
   std::string host_;
   uint16_t port_;
