@@ -14,7 +14,7 @@ async_test(function(t) {
         runAfterHideMediaControlsTimerFired(t.step_func(function() {
           assert_false(isControlsPanelVisible(video));
 
-          var coords = elementCoordinates(enabledPlayButton(video));
+          var coords = mediaControlsButtonCoordinates(video, "overlay-play-button");
 
           eventSender.gestureTapDown(coords[0], coords[1]);
           assert_false(video.paused);

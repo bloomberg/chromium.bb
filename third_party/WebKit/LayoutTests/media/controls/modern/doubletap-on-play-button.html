@@ -1,21 +1,13 @@
 <!DOCTYPE html>
 <html>
-<title>Test that player will play then pause if double tapped on the overlay play button.</title>
+<title>Test that player will play then pause if double tapped on the play button.</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
-<script src="../overlay-play-button.js"></script>
-<body></body>
+<video controls width=400 src="../../content/60_sec_video.webm"></video>
 <script>
 async_test(t => {
-  // This test is only valid when the overlay play button is enabled.
-  enableOverlayPlayButtonForTest(t);
-
-  const video = document.createElement('video');
-  video.controls = true;
-  video.width = 400;
-  video.src = '../../content/60_sec_video.webm';
-  document.body.appendChild(video);
+  const video = document.querySelector('video');
   let didPause = false;
 
   video.onplaying = t.step_func(() => {
