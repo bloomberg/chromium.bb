@@ -29376,6 +29376,7 @@ from previous Chrome versions.
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
+  <int value="-584624723" label="AndroidSiteSettingsUI:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
@@ -30085,6 +30086,7 @@ from previous Chrome versions.
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
+  <int value="863770274" label="AndroidSiteSettingsUI:disabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
