@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -331,13 +331,6 @@ class ArcBluetoothBridge
       ReleaseAdvertisementHandleCallback callback) override;
 
  private:
-  template <typename... Args>
-  void AddAdvertisementTask(
-      base::OnceCallback<void(base::OnceCallback<void(Args...)>)> task,
-      base::OnceCallback<void(Args...)> callback);
-  template <typename... Args>
-  void CompleteAdvertisementTask(base::OnceCallback<void(Args...)> callback,
-                                 Args... args);
   void ReserveAdvertisementHandleImpl(
       ReserveAdvertisementHandleCallback callback);
   void EnableAdvertisementImpl(
@@ -349,6 +342,9 @@ class ArcBluetoothBridge
   void ReleaseAdvertisementHandleImpl(
       int32_t adv_handle,
       ReleaseAdvertisementHandleCallback callback);
+
+  void StartDiscoveryImpl(bool le_scan);
+  void CancelDiscoveryImpl();
 
   template <typename InstanceType, typename HostType>
   class ConnectionObserverImpl;
@@ -362,7 +358,6 @@ class ArcBluetoothBridge
   void OnPoweredError(AdapterStateCallback callback) const;
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);
-  void OnDiscoveryStopped();
   void OnDiscoveryError();
   void OnPairing(mojom::BluetoothAddressPtr addr) const;
   void OnPairedDone(mojom::BluetoothAddressPtr addr) const;
@@ -619,7 +614,8 @@ class ArcBluetoothBridge
   enum { kMaxAdvertisements = 1 };
   std::map<int32_t, scoped_refptr<device::BluetoothAdvertisement>>
       advertisements_;
-  base::queue<base::OnceClosure> advertisement_task_queue_;
+  ArcBluetoothTaskQueue advertisement_queue_;
+  ArcBluetoothTaskQueue discovery_queue_;
 
   THREAD_CHECKER(thread_checker_);
 
