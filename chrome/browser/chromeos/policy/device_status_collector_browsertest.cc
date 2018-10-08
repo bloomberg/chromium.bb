@@ -64,7 +64,6 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -2443,9 +2442,6 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(
-      5 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2468,9 +2464,6 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(4 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(
-      4 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2495,9 +2488,6 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(
-      5 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
   EXPECT_EQ(user_account_id_.GetUserEmail(),
             device_status_.active_period(0).user_email());
 }
@@ -2535,9 +2525,6 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
   GetStatus();
   EXPECT_EQ(12 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(
-      12 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
@@ -2562,49 +2549,10 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(5 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(
-      5 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
 
   // Nothing should be written to local state, because it is only used for
   // enterprise reporting.
   EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ActivityCrossingMidnight) {
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kLeaveSessionActive};
-
-  // Set the baseline time to 15 seconds before midnight, so the activity is
-  // split between two days.
-  status_collector_->SetBaselineTime(Time::Now().LocalMidnight() -
-                                     TimeDelta::FromSeconds(15));
-
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-  GetStatus();
-  ASSERT_EQ(2, device_status_.active_period_size());
-
-  em::ActiveTimePeriod period0 = device_status_.active_period(0);
-  em::ActiveTimePeriod period1 = device_status_.active_period(1);
-  EXPECT_EQ(ActivePeriodMilliseconds() - 15000, period0.active_duration());
-  EXPECT_EQ(15000, period1.active_duration());
-
-  em::TimePeriod time_period0 = period0.time_period();
-  em::TimePeriod time_period1 = period1.time_period();
-
-  EXPECT_EQ(time_period0.end_timestamp(), time_period1.start_timestamp());
-
-  // Ensure that the start and end times for the period are a day apart.
-  EXPECT_EQ(time_period0.end_timestamp() - time_period0.start_timestamp(),
-            kMillisecondsPerDay);
-  EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
-            kMillisecondsPerDay);
-  EXPECT_EQ(
-      0.5 * ActivePeriodMilliseconds(),
-      profile_pref_service_.GetInteger(prefs::kChildScreenTimeMilliseconds));
 }
 
 }  // namespace policy

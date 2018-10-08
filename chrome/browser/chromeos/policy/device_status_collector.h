@@ -134,10 +134,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // The total number of hardware resource usage samples cached internally.
   static const unsigned int kMaxResourceUsageSamples = 10;
 
-  // Returns the amount of time the child has used so far today. If the user is
-  // not a child or if there is no user logged in, it returns 0.
-  base::TimeDelta GetActiveChildScreenTime();
-
  protected:
   // Check whether the user has been idle for a certain period of time.
   virtual void CheckIdleState();

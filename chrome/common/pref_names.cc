@@ -843,6 +843,19 @@ const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
 // system volume, and higher than 1.0 is louder.
 const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
 
+// This is a timestamp to keep track of the screen start time when a unichrome
+// user starts using the device for the first time of the day. Used to calculate
+// the screen time limit and this will be refreshed daily.
+const char kFirstScreenStartTime[] = "screen_time.first_screen.start_time";
+
+// This is a timestamp to keep track of the screen start time for the current
+// active screen. The pref is used to restore the screen start time after
+// browser crashes and device reboots.
+const char kCurrentScreenStartTime[] = "screen_time.current_screen.start_time";
+
+// How much screen time in minutes has been used.
+const char kScreenTimeMinutesUsed[] = "screen_time.time_usage";
+
 // A dictionary preference holding the usage time limit definitions for a user.
 const char kUsageTimeLimit[] = "screen_time.limit";
 
@@ -873,15 +886,6 @@ extern const char kTPMFirmwareUpdateCleanupDismissed[] =
 // Shares for Chrome OS feature.
 const char kNetBiosShareDiscoveryEnabled[] =
     "network_file_shares.netbios_discovery.enabled";
-
-// Amount of screen time that a child user has used in the current day.
-const char kChildScreenTimeMilliseconds[] = "child_screen_time";
-
-// Last time the kChildScreenTimeMilliseconds was saved.
-const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
-
-// Last time that the kChildScreenTime pref was reset.
-const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 
 #endif  // defined(OS_CHROMEOS)
 

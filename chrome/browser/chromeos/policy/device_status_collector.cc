@@ -459,8 +459,7 @@ class DeviceStatusCollector::ActivityStorage {
   // represents the distance from midnight.
   ActivityStorage(PrefService* pref_service,
                   const std::string& pref_name,
-                  TimeDelta activity_day_start,
-                  bool is_enterprise_reporting);
+                  TimeDelta activity_day_start);
   ~ActivityStorage();
 
   // Adds an activity period. Accepts empty |active_user_email| if it should not
@@ -502,7 +501,6 @@ class DeviceStatusCollector::ActivityStorage {
   void ProcessActivityPeriods(const base::DictionaryValue& activity_times,
                               const std::vector<std::string>& reporting_users,
                               base::DictionaryValue* const filtered_times);
-  void StoreChildScreenTime(Time activity_day_start, TimeDelta activity);
 
   // Determine the day key (milliseconds since epoch for corresponding
   // |day_start_| in UTC) for a given |timestamp|.
@@ -515,21 +513,16 @@ class DeviceStatusCollector::ActivityStorage {
   // from midnight.
   const TimeDelta day_start_;
 
-  // Whether reporting is for enterprise or consumer.
-  bool is_enterprise_reporting_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(ActivityStorage);
 };
 
 DeviceStatusCollector::ActivityStorage::ActivityStorage(
     PrefService* pref_service,
     const std::string& pref_name,
-    TimeDelta activity_day_start,
-    bool is_enterprise_reporting)
+    TimeDelta activity_day_start)
     : pref_service_(pref_service),
       pref_name_(pref_name),
-      day_start_(activity_day_start),
-      is_enterprise_reporting_(is_enterprise_reporting) {
+      day_start_(activity_day_start) {
   DCHECK(pref_service_);
   const PrefService::PrefInitializationStatus pref_service_status =
       pref_service_->GetInitializationStatus();
@@ -561,15 +554,6 @@ void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
     int previous_activity = 0;
     activity_times->GetInteger(key, &previous_activity);
     activity_times->SetInteger(key, previous_activity + activity);
-
-    // If the user is a child, the child screen time pref may need to be
-    // updated.
-    if (user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
-        !is_enterprise_reporting_) {
-      StoreChildScreenTime(day_start - TimeDelta::FromDays(1),
-                           TimeDelta::FromMilliseconds(activity));
-    }
-
     start = day_start;
   }
 }
@@ -721,35 +705,6 @@ int64_t DeviceStatusCollector::ActivityStorage::TimestampToDayKey(
   return out_time.ToJavaTime();
 }
 
-void DeviceStatusCollector::ActivityStorage::StoreChildScreenTime(
-    Time activity_day_start,
-    TimeDelta activity) {
-  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
-         !is_enterprise_reporting_);
-
-  // Today's start time.
-  Time today_start = Time::Now().LocalMidnight() + day_start_;
-
-  TimeDelta previous_activity = TimeDelta::FromMilliseconds(
-      pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
-
-  // Reset screen time if it has not been reset today.
-  if (today_start > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
-    pref_service_->SetTime(prefs::kLastChildScreenTimeReset, Time::Now());
-    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds, 0);
-    previous_activity = TimeDelta::FromSeconds(0);
-  }
-
-  // If this activity window belongs to the current day, the screen time pref
-  // should be updated.
-  if (activity_day_start >= today_start) {
-    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds,
-                              (previous_activity + activity).InMilliseconds());
-    pref_service_->SetTime(prefs::kLastChildScreenTimeSaved, Time::Now());
-  }
-  pref_service_->CommitPendingWrite();
-}
-
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* pref_service,
     chromeos::system::StatisticsProvider* provider,
@@ -867,7 +822,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       pref_service_,
       (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
                                 : prefs::kUserActivityTimes),
-      activity_day_start, is_enterprise_reporting_);
+      activity_day_start);
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -886,18 +841,6 @@ void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
   registry->RegisterDictionaryPref(prefs::kUserActivityTimes,
                                    std::make_unique<base::DictionaryValue>());
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, Time());
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, Time());
-  registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
-}
-
-TimeDelta DeviceStatusCollector::GetActiveChildScreenTime() {
-  if (!user_manager::UserManager::Get()->IsLoggedInAsChildUser())
-    return TimeDelta::FromSeconds(0);
-
-  UpdateChildUsageTime();
-  return TimeDelta::FromMilliseconds(
-      pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -986,7 +929,7 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
   // Do nothing if device activity reporting is disabled or if it's a child
   // account. Usage time for child accounts are calculated differently.
-  if (!report_activity_times_ || !is_enterprise_reporting_ ||
+  if (!report_activity_times_ ||
       user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
     return;
   }
@@ -1204,9 +1147,8 @@ bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
 
 bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
-  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser())
     UpdateChildUsageTime();
-  }
 
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
