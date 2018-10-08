@@ -15,7 +15,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 
-from infra_libs.ts_mon.common import interface
+from infra_libs import ts_mon
 
 
 # pylint: disable=protected-access
@@ -36,7 +36,21 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.PatchObject(ts_mon_config, '_SetupTsMonFromOptions')
     self.PatchObject(ts_mon_config, '_WasSetup', True)
     self.mock_metric = self.PatchObject(metrics, 'Boolean')
+    self.common_metric_fields, _ = ts_mon_config.AddCommonFields({}, [])
 
+
+  def testGetMetricFieldSpec(self):
+    """Test each field type gets its FieldSpec."""
+    fields = {
+        'int': 12,
+        'bool': True,
+        'str': 'string',
+    }
+    expected_fieldspec = [ts_mon.IntegerField('int'),
+                          ts_mon.BooleanField('bool'),
+                          ts_mon.StringField('str')]
+    self.assertEqual(ts_mon_config.GetMetricFieldSpec(fields),
+                     expected_fieldspec)
 
   def testNoneEndsProcess(self):
     """Putting None on the Queue should immediately end the consumption loop."""
@@ -65,7 +79,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         ts_mon_config.FLUSH_INTERVAL - 1)
     ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
-        'arg1', kwarg1='value')
+        'arg1', fields=self.common_metric_fields, kwarg1='value')
 
   def testConsumeTwoMetrics(self):
     """Tests that sending two metrics only calls flush once."""
@@ -85,9 +99,9 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         ts_mon_config.FLUSH_INTERVAL - 2)
     ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name1.assert_called_once_with(
-        'arg1', kwarg1='value')
+        'arg1', fields=self.common_metric_fields, kwarg1='value')
     self.mock_metric.return_value.mock_name2.assert_called_once_with(
-        'arg2', kwarg2='value')
+        'arg2', fields=self.common_metric_fields, kwarg2='value')
 
   def testFlushingProcessExits(self):
     """Tests that _CreateTsMonFlushingProcess cleans up the process."""
@@ -152,7 +166,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         [self.mock_metric.return_value],
         ts_mon_config.metrics.Flush.call_args[1]['reset_after'])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
-        'arg1', kwarg1='value1')
+        'arg1', fields=self.common_metric_fields, kwarg1='value1')
 
   def testSubprocessQuitsWhenNotSetup(self):
     self.PatchObject(ts_mon_config.logging, 'exception')
@@ -184,7 +198,7 @@ class TestSetupTsMonGlobalState(cros_test_lib.MockTestCase):
     """The task_num argument should set the task_num in ts-mon."""
     ts_mon_config.SetupTsMonGlobalState('unittest', auto_flush=False,
                                         task_num=42)
-    self.assertEqual(interface.state.target.task_num, 42)
+    self.assertEqual(ts_mon.common.interface.state.target.task_num, 42)
 
   def testTaskNumWithIndirect(self):
     """The task_num argument should propagate to the flushing subprocess."""

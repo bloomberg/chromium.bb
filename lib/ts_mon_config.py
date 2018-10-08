@@ -22,6 +22,9 @@ from chromite.lib import parallel
 
 try:
   from infra_libs.ts_mon import config
+  from infra_libs.ts_mon import BooleanField
+  from infra_libs.ts_mon import IntegerField
+  from infra_libs.ts_mon import StringField
   import googleapiclient.discovery
 except (ImportError, RuntimeError) as e:
   config = None
@@ -29,6 +32,7 @@ except (ImportError, RuntimeError) as e:
 
 
 _WasSetup = False
+_CommonMetricFields = {}
 
 FLUSH_INTERVAL = 60
 
@@ -39,11 +43,58 @@ def TrivialContextManager():
   yield
 
 
+def GetMetricFieldSpec(fields=None):
+  """Return the corresponding field_spec for metric fields.
+
+  Args:
+    fields: Dictionary containing metric fields.
+
+  Returns:
+    field_spec: List containing any *Field object associated with metric.
+  """
+  field_spec = []
+  if fields:
+    for key, val in fields.iteritems():
+      if isinstance(val, bool):
+        field_spec.append(BooleanField(key))
+      elif isinstance(val, int):
+        field_spec.append(IntegerField(key))
+      elif isinstance(val, basestring):
+        field_spec.append(StringField(key))
+      else:
+        logging.error("Couldn't classify the metric field %s:%s",
+                      key, val)
+
+  return field_spec
+
+def AddCommonFields(fields=None, field_spec=None):
+  """Add cbuildbot-wide common fields to a given field set.
+
+  Args:
+    fields: Dictionary containing metric fields to which common metric fields
+            will be added.
+    field_spec: List containing any *Field object associated with metric.
+
+  Returns:
+    Dictionary containing complete set of metric fields to be applied to
+    metric and a list of corresponding field_spec.
+  """
+  metric_fields = (dict(_CommonMetricFields) if _CommonMetricFields
+                   else {})
+
+  if metric_fields:
+    metric_fields.update(fields or {})
+    return metric_fields, GetMetricFieldSpec(metric_fields)
+  else:
+    return fields, field_spec
+
+
 def SetupTsMonGlobalState(service_name,
                           indirect=False,
                           suppress_exception=True,
                           short_lived=False,
                           auto_flush=True,
+                          common_metric_fields=None,
                           debug_file=None,
                           task_num=0):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
@@ -54,11 +105,13 @@ def SetupTsMonGlobalState(service_name,
               process for indirect metrics flushing. Useful for forking,
               because forking would normally create a duplicate ts_mon thread.
     suppress_exception: True to silence any exception during the setup. Default
-                        is set to True.
+              is set to True.
     short_lived: Whether this process is short-lived and should use the autogen
-                 hostname prefix.
+              hostname prefix.
     auto_flush: Whether to create a thread to automatically flush metrics every
-                minute.
+              minute.
+    common_metric_fields: Dictionary containing the metric fields that will be
+              added to all metrics.
     debug_file: If non-none, send metrics to this path instead of to PubSub.
     task_num: (Default 0) The task_num target field of the metrics to emit.
   """
@@ -68,6 +121,9 @@ def SetupTsMonGlobalState(service_name,
   # The flushing subprocess calls .flush manually.
   if indirect:
     auto_flush = False
+
+  if common_metric_fields:
+    _CommonMetricFields.update(common_metric_fields)
 
   # google-api-client has too much noisey logging.
   options = _GenerateTsMonArgparseOptions(
@@ -268,6 +324,11 @@ class MetricConsumer(object):
     """Calls the metric method from |message|, ignoring exceptions."""
     try:
       cls = getattr(metrics, message.metric_name)
+      message.method_kwargs.setdefault('fields', {})
+      message.metric_kwargs.setdefault('field_spec', [])
+      message.method_kwargs['fields'], message.metric_kwargs['field_spec'] = (
+          AddCommonFields(message.method_kwargs['fields'],
+                          message.metric_kwargs['field_spec']))
       metric = cls(*message.metric_args, **message.metric_kwargs)
       if message.reset_after:
         self.reset_after_flush.append(metric)
