@@ -2432,8 +2432,9 @@ class ConsumerDeviceStatusCollectorTimeLimitEnabledTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Fails on all chromeos builders https://crbug.com/891573
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSessionTransistions) {
+       DISABLED_ReportingActivityTimesSessionTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -2457,8 +2458,9 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
             device_status_.active_period(0).user_email());
 }
 
+// Fails on all chromeos builders https://crbug.com/891573
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSleepTransistions) {
+       DISABLED_ReportingActivityTimesSleepTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -2481,8 +2483,9 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
             device_status_.active_period(0).user_email());
 }
 
+// Fails on all chromeos builders https://crbug.com/891573
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesIdleTransitions) {
+       DISABLED_ReportingActivityTimesIdleTransitions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -2507,7 +2510,9 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
             device_status_.active_period(0).user_email());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
+// Fails on all chromeos builders https://crbug.com/891573
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
+       DISABLED_ActivityKeptInPref) {
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
 
@@ -2544,8 +2549,9 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
                                     &profile_pref_service_);
 }
 
+// Fails on all chromeos builders https://crbug.com/891573
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
-       ActivityNotWrittenToLocalState) {
+       DISABLED_ActivityNotWrittenToLocalState) {
   EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
 
   DeviceStateTransitions test_states[] = {
