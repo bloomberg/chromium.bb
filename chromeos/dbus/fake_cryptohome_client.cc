@@ -317,13 +317,14 @@ void FakeCryptohomeClient::TpmAttestationIsPrepared(
 void FakeCryptohomeClient::TpmAttestationGetEnrollmentId(
     bool ignore_cache,
     DBusMethodCallback<TpmAttestationDataResult> callback) {
+  auto result =
+      service_is_available_
+          ? base::make_optional(TpmAttestationDataResult{
+                true, ignore_cache ? tpm_attestation_enrollment_id_ignore_cache_
+                                   : tpm_attestation_enrollment_id_})
+          : base::nullopt;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          std::move(callback),
-          TpmAttestationDataResult{
-              true, ignore_cache ? tpm_attestation_enrollment_id_ignore_cache_
-                                 : tpm_attestation_enrollment_id_}));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeCryptohomeClient::TpmAttestationIsEnrolled(

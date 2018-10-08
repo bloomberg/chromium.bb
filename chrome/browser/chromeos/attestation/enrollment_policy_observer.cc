@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -107,6 +109,7 @@ void EnrollmentPolicyObserver::Start() {
   // contain an EID).
   if (did_upload_empty_eid_)
     return;
+
   // If identification for enrollment isn't needed, there is nothing to do.
   const enterprise_management::PolicyData* policy_data =
       device_settings_service_->policy_data();
@@ -118,6 +121,11 @@ void EnrollmentPolicyObserver::Start() {
     LOG(ERROR) << "EnrollmentPolicyObserver: Invalid CloudPolicyClient.";
     return;
   }
+
+  // Do not allow multiple concurrent starts.
+  if (request_in_flight_)
+    return;
+  request_in_flight_ = true;
 
   if (!cryptohome_client_)
     cryptohome_client_ = DBusThreadManager::Get()->GetCryptohomeClient();
@@ -158,20 +166,26 @@ void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
         base::TimeDelta::FromSeconds(retry_delay_));
   } else {
     LOG(WARNING) << "EnrollmentPolicyObserver: Retry limit exceeded.";
+    request_in_flight_ = false;
   }
 }
 
 void EnrollmentPolicyObserver::OnUploadComplete(
     const std::string& enrollment_id,
     bool status) {
+  const std::string& printable_enrollment_id = base::ToLowerASCII(
+      base::HexEncode(enrollment_id.data(), enrollment_id.size()));
+  request_in_flight_ = false;
   if (status) {
     if (enrollment_id.empty())
       did_upload_empty_eid_ = true;
   } else {
-    LOG(ERROR) << "Failed to upload Enrollment Identifier to DMServer.";
+    LOG(ERROR) << "Failed to upload Enrollment Identifier \""
+               << printable_enrollment_id << "\" to DMServer.";
     return;
   }
-  VLOG(1) << "Enrollment Identifier uploaded to DMServer.";
+  VLOG(1) << "Enrollment Identifier \"" << printable_enrollment_id
+          << "\" uploaded to DMServer.";
 }
 
 }  // namespace attestation
