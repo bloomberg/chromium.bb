@@ -134,11 +134,6 @@
 -SigninProfileAppsPolicyTest.BackgroundPage
 -SigninProfileAppsPolicyTest.MultipleApps
 
-# Navigation blocked by Safe Browsing.
-# e.g. Showing 'Your connection is not private' instead of opening 'app.com'.
--HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh
--HostedAppNonClientFrameViewAshTest.FocusableViews/material_refresh_touch_optimized
-
 # Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
 -DevToolsSanityTest.DisposeEmptyBrowserContext
 
