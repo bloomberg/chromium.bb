@@ -31,9 +31,9 @@ const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
     "Sync.ModelTypeStoreInitResult";
 
 const base::Feature kModelTypeStoreAvoidReadCache{
-    "kModelTypeStoreAvoidReadCache", base::FEATURE_DISABLED_BY_DEFAULT};
+    "kModelTypeStoreAvoidReadCache", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kModelTypeStoreSmallWriteBufferSize{
-    "kModelTypeStoreSmallWriteBufferSize", base::FEATURE_DISABLED_BY_DEFAULT};
+    "kModelTypeStoreSmallWriteBufferSize", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
