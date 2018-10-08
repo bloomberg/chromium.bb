@@ -1764,7 +1764,12 @@ TEST_F('BackgroundTest', 'TabSwitchAndRefreshRecovery', function() {
           .expectSpeech('tab2')
           .clearPendingOutput()
           .call(press(82  /* R */, {ctrl: true}))
-          .expectSpeech('tab2')
+
+          // ChromeVox stays on the same node due to tree path recovery.
+          .call(() => {
+            assertEquals('tab2',
+                         ChromeVoxState.instance.currentRange.start.node.name);
+          })
           .replay();
     });
   });
@@ -1781,6 +1786,34 @@ TEST_F('BackgroundTest', 'ListName', function() {
     </div>
   */}, function(root) {
     mockFeedback.expectSpeech('Favorite Sports')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'ReinsertedNodeRecovery', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <div>
+      <button id="start">start</button>
+      <button id="hot">hot</button>
+    </div>
+    <button id="end">end</button>
+    <script>
+      var div =       document.body.firstElementChild;
+      var start =       document.getElementById('start');
+      document.getElementById('hot').addEventListener('focus', (evt) => {
+        var hot = evt.target;
+        hot.remove();
+        div.insertAfter(hot, start);
+      });
+    </script>
+  */}, function(root) {
+    mockFeedback.expectSpeech('start')
+        .clearPendingOutput()
+        .call(doCmd('nextObject'))
+        .call(doCmd('nextObject'))
+        .call(doCmd('nextObject'))
+        .expectSpeech('end', 'Button')
         .replay();
   });
 });
