@@ -27,6 +27,23 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
 }
 
+void av1_row_mt_sync_read_dummy(struct AV1RowMTSyncData *const row_mt_sync,
+                                int r, int c) {
+  (void)row_mt_sync;
+  (void)r;
+  (void)c;
+  return;
+}
+
+void av1_row_mt_sync_write_dummy(struct AV1RowMTSyncData *const row_mt_sync,
+                                 int r, int c, const int cols) {
+  (void)row_mt_sync;
+  (void)r;
+  (void)c;
+  (void)cols;
+  return;
+}
+
 static int enc_row_mt_worker_hook(void *arg1, void *unused) {
   EncWorkerData *const thread_data = (EncWorkerData *)arg1;
   AV1_COMP *const cpi = thread_data->cpi;

@@ -470,6 +470,18 @@ typedef struct inter_modes_info {
 } InterModesInfo;
 #endif
 
+// Encoder row synchronization
+typedef struct AV1RowMTSyncData {
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *mutex_;
+  pthread_cond_t *cond_;
+#endif
+  // Allocate memory to store the sb/mb block index in each row.
+  int *cur_col;
+  int sync_range;
+  int rows;
+} AV1RowMTSync;
+
 // TODO(jingning) All spatially adaptive variables should go to TileDataEnc.
 typedef struct TileDataEnc {
   TileInfo tile_info;
@@ -484,6 +496,7 @@ typedef struct TileDataEnc {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
 #endif
+  AV1RowMTSync row_mt_sync;
 } TileDataEnc;
 
 typedef struct {
@@ -799,6 +812,8 @@ typedef struct AV1_COMP {
   // Set as 1 for monochrome and 3 for other color formats
   int default_interp_skip_flags;
   int preserve_arf_as_gld;
+  void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
+  void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
 } AV1_COMP;
 
 // Must not be called more than once.

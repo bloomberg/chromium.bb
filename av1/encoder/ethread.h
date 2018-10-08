@@ -18,12 +18,18 @@ extern "C" {
 
 struct AV1_COMP;
 struct ThreadData;
+struct AV1RowMTSyncData;
 
 typedef struct EncWorkerData {
   struct AV1_COMP *cpi;
   struct ThreadData *td;
   int start;
 } EncWorkerData;
+
+void av1_row_mt_sync_read_dummy(struct AV1RowMTSyncData *const row_mt_sync,
+                                int r, int c);
+void av1_row_mt_sync_write_dummy(struct AV1RowMTSyncData *const row_mt_sync,
+                                 int r, int c, const int cols);
 
 void av1_encode_tiles_mt(struct AV1_COMP *cpi);
 void av1_encode_tiles_row_mt(struct AV1_COMP *cpi);

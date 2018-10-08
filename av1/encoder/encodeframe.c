@@ -4492,6 +4492,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   SPEED_FEATURES *const sf = &cpi->sf;
   const int leaf_nodes = 256;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
+  int sb_row =
+      (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
@@ -4506,10 +4508,13 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   PC_TREE *const pc_root =
       td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
+
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end;
        mi_col += cm->seq_params.mib_size, sb_col_in_tile++) {
+    (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
+                                   sb_col_in_tile);
     if ((cpi->row_mt == 1) && (tile_info->mi_col_start == mi_col) &&
         (tile_info->mi_row_start != mi_row)) {
       // restore frame context of 1st column sb
@@ -4745,6 +4750,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       if (update_context)
         memcpy(x->backup_tile_ctx, xd->tile_ctx, sizeof(*xd->tile_ctx));
     }
+    (*(cpi->row_mt_sync_write_ptr))(&tile_data->row_mt_sync, sb_row,
+                                    sb_col_in_tile, sb_cols_in_tile);
   }
 }
 
@@ -5543,6 +5550,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
 #endif
 
+    cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read_dummy;
+    cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write_dummy;
     if (cpi->row_mt && (cpi->oxcf.max_threads > 1)) {
       av1_encode_tiles_row_mt(cpi);
     } else {
