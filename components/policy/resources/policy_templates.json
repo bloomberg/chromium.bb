@@ -10747,7 +10747,8 @@
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
-      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${machine_name[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${machine_name,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${MACHINE_NAME[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${MACHINE_NAME,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE">${machine_name}</ph> (lowercase) is deprecated in M71 and will be removed in M72.
       ''',
     },
     {
@@ -11959,7 +11960,7 @@
 
       If this policy is set to a non empty string, that string will be used as the device hostname during DHCP request.
 
-      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },

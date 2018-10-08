@@ -96,6 +96,9 @@ class BrowserPolicyConnectorChromeOS
   // Returns the device asset ID if it is set.
   std::string GetDeviceAssetID() const;
 
+  // Returns the machine name if it is set.
+  std::string GetMachineName() const;
+
   // Returns the device annotated location if it is set.
   std::string GetDeviceAnnotatedLocation() const;
 
