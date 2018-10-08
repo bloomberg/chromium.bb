@@ -213,11 +213,24 @@ class RunIsolatedTest(RunIsolatedTestBase):
       self.assertNotIn('B', os.environ)
       os.environ['C'] = 'foo'
       os.environ['D'] = 'bar'
+      os.environ['E'] = 'baz'
       env = run_isolated.get_command_env(
-          '/a', None, '/b', {'A': 'a', 'B': None, 'C': None}, {'D': ['foo']})
+          '/a',
+          None,
+          '/b',
+          {
+              'A': 'a',
+              'B': None,
+              'C': None,
+              'E': '${ISOLATED_OUTDIR}/eggs'
+          },
+          {'D': ['foo']},
+          '/spam',
+          None)
       self.assertNotIn('B', env)
       self.assertNotIn('C', env)
       self.assertEqual('/b/foo:bar', env['D'])
+      self.assertEqual('/spam/eggs', env['E'])
     finally:
       os.environ = old_env
 

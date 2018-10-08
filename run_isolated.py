@@ -13,21 +13,24 @@ appends args to the command in the fetched isolated and runs it.
 To improve performance, keeps a local cache.
 The local cache can safely be deleted.
 
-Any ${EXECUTABLE_SUFFIX} on the command line will be replaced with ".exe" string
-on Windows and "" on other platforms.
+Any ${EXECUTABLE_SUFFIX} on the command line or the environment variables passed
+with the --env option will be replaced with ".exe" string on Windows and "" on
+other platforms.
 
-Any ${ISOLATED_OUTDIR} on the command line will be replaced by the location of a
-temporary directory upon execution of the command specified in the .isolated
-file. All content written to this directory will be uploaded upon termination
-and the .isolated file describing this directory will be printed to stdout.
+Any ${ISOLATED_OUTDIR} on the command line or the environment variables passed
+with the --env option will be replaced by the location of a temporary directory
+upon execution of the command specified in the .isolated file. All content
+written to this directory will be uploaded upon termination and the .isolated
+file describing this directory will be printed to stdout.
 
-Any ${SWARMING_BOT_FILE} on the command line will be replaced by the value of
-the --bot-file parameter. This file is used by a swarming bot to communicate
-state of the host to tasks. It is written to by the swarming bot's
-on_before_task() hook in the swarming server's custom bot_config.py.
+Any ${SWARMING_BOT_FILE} on the command line  or the environment variables
+passed with the --env option will be replaced by the value of the --bot-file
+parameter. This file is used by a swarming bot to communicate state of the host
+to tasks. It is written to by the swarming bot's on_before_task() hook in the
+swarming server's custom bot_config.py.
 """
 
-__version__ = '0.11.0'
+__version__ = '0.11.1'
 
 import argparse
 import base64
@@ -332,39 +335,49 @@ def set_luci_context_account(account, tmp_dir):
 
 
 def process_command(command, out_dir, bot_file):
-  """Replaces variables in a command line.
+  """Replaces parameters in a command line.
 
   Raises:
     ValueError if a parameter is requested in |command| but its value is not
       provided.
   """
-  def fix(arg):
-    arg = arg.replace(EXECUTABLE_SUFFIX_PARAMETER, cipd.EXECUTABLE_SUFFIX)
-    replace_slash = False
-    if ISOLATED_OUTDIR_PARAMETER in arg:
-      if not out_dir:
-        raise ValueError(
-            'output directory is requested in command, but not provided; '
-            'please specify one')
-      arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
+  return [replace_parameters(arg, out_dir, bot_file) for arg in command]
+
+
+def replace_parameters(arg, out_dir, bot_file):
+  """Replaces parameter tokens with appropriate values in a string.
+
+  Raises:
+    ValueError if a parameter is requested in |arg| but its value is not
+      provided.
+  """
+  arg = arg.replace(EXECUTABLE_SUFFIX_PARAMETER, cipd.EXECUTABLE_SUFFIX)
+  replace_slash = False
+  if ISOLATED_OUTDIR_PARAMETER in arg:
+    if not out_dir:
+      raise ValueError(
+          'output directory is requested in command or env var, but not '
+          'provided; please specify one')
+    arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
+    replace_slash = True
+  if SWARMING_BOT_FILE_PARAMETER in arg:
+    if bot_file:
+      arg = arg.replace(SWARMING_BOT_FILE_PARAMETER, bot_file)
       replace_slash = True
-    if SWARMING_BOT_FILE_PARAMETER in arg:
-      if bot_file:
-        arg = arg.replace(SWARMING_BOT_FILE_PARAMETER, bot_file)
-        replace_slash = True
-      else:
-        logging.warning('SWARMING_BOT_FILE_PARAMETER found in command, but no '
-                        'bot_file specified. Leaving parameter unchanged.')
-    if replace_slash:
-      # Replace slashes only if parameters are present
-      # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
-      arg = arg.replace('/', os.sep)
-    return arg
-
-  return [fix(arg) for arg in command]
+    else:
+      logging.warning('SWARMING_BOT_FILE_PARAMETER found in command or env '
+                      'var, but no bot_file specified. Leaving parameter '
+                      'unchanged.')
+  if replace_slash:
+    # Replace slashes only if parameters are present
+    # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
+    arg = arg.replace('/', os.sep)
+  return arg
 
 
-def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes):
+
+def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes, out_dir,
+                    bot_file):
   """Returns full OS environment to run a command in.
 
   Sets up TEMP, puts directory with cipd binary in front of PATH, exposes
@@ -376,13 +389,17 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes):
     run_dir: The root directory the isolated tree is mapped in.
     env: environment variables to use
     env_prefixes: {"ENV_KEY": ['cwd', 'relative', 'paths', 'to', 'prepend']}
+    out_dir: Isolated output directory. Required to be != None if any of the
+        env vars contain ISOLATED_OUTDIR_PARAMETER.
+    bot_file: Required to be != None if any of the env vars contain
+        SWARMING_BOT_FILE_PARAMETER.
   """
   out = os.environ.copy()
   for k, v in env.iteritems():
     if not v:
       out.pop(k, None)
     else:
-      out[k] = v
+      out[k] = replace_parameters(v, out_dir, bot_file)
 
   if cipd_info:
     bin_dir = os.path.dirname(cipd_info.client.binary_path)
@@ -756,7 +773,8 @@ def map_and_run(data, constant_run_path):
           # so it can grab correct value of LUCI_CONTEXT env var.
           with set_luci_context_account(data.switch_to_account, tmp_dir):
             env = get_command_env(
-                tmp_dir, cipd_info, run_dir, data.env, data.env_prefix)
+                tmp_dir, cipd_info, run_dir, data.env, data.env_prefix, out_dir,
+                data.bot_file)
             command = tools.fix_python_cmd(command, env)
             command = process_command(command, out_dir, data.bot_file)
             file_path.ensure_command_has_abs_path(command, cwd)
