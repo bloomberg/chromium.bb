@@ -231,6 +231,9 @@ void LocalPrinterHandlerChromeos::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
+  size_t size_in_kb = print_data->size() / 1024;
+  UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
+
   printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
                             std::move(callback));
 }
