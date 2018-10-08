@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -602,7 +603,9 @@ void OfflinePageRequestHandlerTestBase::SetUp() {
   public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
       kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel);
+      profile(),
+      base::BindRepeating(
+          &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel));
 
   // Initialize OfflinePageModel.
   OfflinePageModelTaskified* model = static_cast<OfflinePageModelTaskified*>(
