@@ -59,7 +59,8 @@ public class ManualFillingTestHelper {
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     private class FakeKeyboard extends KeyboardVisibilityDelegate {
-        static final int KEYBOARD_HEIGHT = 400;
+        static final int KEYBOARD_HEIGHT = 234;
+
         private boolean mIsShowing;
 
         @Override
@@ -89,6 +90,11 @@ public class ManualFillingTestHelper {
         @Override
         public int calculateKeyboardHeight(Context context, View rootView) {
             return mIsShowing ? KEYBOARD_HEIGHT : 0;
+        }
+
+        @Override
+        protected int calculateKeyboardDetectionThreshold(Context context, View rootView) {
+            return 0;
         }
 
         /**
