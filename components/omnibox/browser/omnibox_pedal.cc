@@ -26,6 +26,14 @@ const OmniboxPedal::LabelStrings& OmniboxPedal::GetLabelStrings() const {
   return strings_;
 }
 
+bool OmniboxPedal::IsNavigation() const {
+  return !url_.is_empty();
+}
+
+const GURL& OmniboxPedal::GetNavigationUrl() const {
+  return url_;
+}
+
 bool OmniboxPedal::ShouldExecute(bool button_pressed) const {
   const auto mode = OmniboxFieldTrial::GetPedalSuggestionMode();
   return (mode == OmniboxFieldTrial::PedalSuggestionMode::DEDICATED) ||
@@ -38,16 +46,20 @@ bool OmniboxPedal::ShouldPresentButton() const {
          OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION;
 }
 
+void OmniboxPedal::Execute(OmniboxPedal::ExecutionContext& context) {
+  DCHECK(IsNavigation());
+  OpenURL(context, url_);
+}
+
 bool OmniboxPedal::IsTriggerMatch(const base::string16& match_text) const {
   return triggers_.find(match_text) != triggers_.end();
 }
 
 void OmniboxPedal::OpenURL(OmniboxPedal::ExecutionContext& context,
                            const GURL& url) const {
-  // TODO(orinj): This will use AutocompleteMatchType::PEDAL
   context.controller_.OnAutocompleteAccept(
       url, WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_GENERATED,
-      AutocompleteMatchType::NAVSUGGEST, context.match_selection_timestamp_);
+      AutocompleteMatchType::PEDAL, context.match_selection_timestamp_);
 }
 
 // =============================================================================
@@ -57,6 +69,7 @@ OmniboxPedalClearBrowsingData::OmniboxPedalClearBrowsingData()
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
           IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS)) {
+  url_ = GURL("chrome://settings/clearBrowserData");
   // TODO(orinj): Move all trigger strings to files (maybe even per language).
   const auto triggers = {
       "how to clear browsing data on chrome",
@@ -83,9 +96,4 @@ OmniboxPedalClearBrowsingData::OmniboxPedalClearBrowsingData()
   for (const auto* trigger : triggers) {
     triggers_.insert(base::ASCIIToUTF16(trigger));
   }
-}
-
-void OmniboxPedalClearBrowsingData::Execute(
-    OmniboxPedal::ExecutionContext& context) const {
-  OpenURL(context, GURL("chrome://settings/clearBrowserData"));
 }

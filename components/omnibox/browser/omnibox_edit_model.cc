@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -635,6 +636,20 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   autocomplete_controller()->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
+  // TODO(orinj): This is being used to distinguish between button
+  // press and other (keyboard/click) acceptance of suggestion but
+  // if in-suggestion side button Pedals are liked/kept by UX & PM then
+  // the meaning should be clarified.  Instead of relying on SWITCH_TO_TAB,
+  // it may make sense to add a new disposition and change/move this code.
+  const bool button_pressed =
+      disposition == WindowOpenDisposition::SWITCH_TO_TAB;
+  if (match.pedal && match.pedal->ShouldExecute(button_pressed)) {
+    OmniboxPedal::ExecutionContext context(*client_, *controller_,
+                                           match_selection_timestamp);
+    match.pedal->Execute(context);
+    return;
+  }
+
   base::string16 input_text(pasted_text);
   if (input_text.empty())
     input_text = user_input_in_progress_ ? user_text_ : url_for_editing_;
@@ -768,6 +783,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     base::RecordAction(
         base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
   }
+
   if (match.destination_url.is_valid()) {
     // This calls RevertAll again.
     base::AutoReset<bool> tmp(&in_revert_, true);

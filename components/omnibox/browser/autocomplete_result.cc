@@ -8,6 +8,7 @@
 #include <functional>
 #include <iterator>
 #include <string>
+#include <unordered_set>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -22,6 +23,8 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
+#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
@@ -226,6 +229,49 @@ void AutocompleteResult::SortAndCull(
       GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 
+void AutocompleteResult::AppendDedicatedPedalMatches(
+    AutocompleteProviderClient* client,
+    const AutocompleteInput& input) {
+  ACMatches pedal_suggestions;
+  const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  for (const auto& match : matches_) {
+    if (match.pedal)
+      continue;
+    OmniboxPedal* pedal = provider->FindPedalMatch(match.contents);
+    if (pedal) {
+      AutocompleteMatch suggestion = match;
+      suggestion.relevance--;
+      suggestion.pedal = pedal;
+      suggestion.ApplyPedal();
+      pedal_suggestions.push_back(suggestion);
+    }
+  }
+  if (!pedal_suggestions.empty()) {
+    AppendMatches(input, pedal_suggestions);
+  }
+}
+
+void AutocompleteResult::ConvertInSuggestionPedalMatches(
+    AutocompleteProviderClient* client) {
+  const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  // Used to ensure we keep only one Pedal of each kind.
+  std::unordered_set<OmniboxPedal*> pedals_found;
+  for (auto& match : matches_) {
+    // Skip matches that will not show Pedal because they already
+    // have a tab match or associated keyword.  Also skip matches
+    // that have already detected their Pedal.
+    if (match.has_tab_match || match.associated_keyword || match.pedal)
+      continue;
+
+    OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
+    if (pedal) {
+      const auto result = pedals_found.insert(pedal);
+      if (result.second)
+        match.pedal = pedal;
+    }
+  }
+}
+
 void AutocompleteResult::ConvertOpenTabMatches(
     AutocompleteProviderClient* client,
     const AutocompleteInput* input) {
@@ -239,6 +285,7 @@ void AutocompleteResult::ConvertOpenTabMatches(
       match.has_tab_match = true;
   }
 }
+
 bool AutocompleteResult::HasCopiedMatches() const {
   for (auto i(begin()); i != end(); ++i) {
     if (i->from_previous)

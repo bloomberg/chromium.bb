@@ -58,6 +58,12 @@ class OmniboxPedal {
   // Provides read access to labels associated with this Pedal.
   const LabelStrings& GetLabelStrings() const;
 
+  // Returns true if this is purely a navigation Pedal with URL.
+  bool IsNavigation() const;
+
+  // For navigation Pedals, returns the destination URL.
+  const GURL& GetNavigationUrl() const;
+
   // These Should* methods can likely be eliminated when Pedal
   // suggestion mode is firmly established.
 
@@ -70,8 +76,9 @@ class OmniboxPedal {
   // button; this method returns true if this Pedal presents a button.
   virtual bool ShouldPresentButton() const;
 
-  // Takes the action associated with this Pedal.
-  virtual void Execute(ExecutionContext& context) const = 0;
+  // Takes the action associated with this Pedal.  Non-navigation
+  // Pedals must override the default, but Navigation Pedals don't need to.
+  virtual void Execute(ExecutionContext& context);
 
   // Returns true if the preprocessed match suggestion text triggers
   // presentation of this Pedal.  This is not intended for general use,
@@ -84,12 +91,15 @@ class OmniboxPedal {
 
   std::unordered_set<base::string16> triggers_;
   LabelStrings strings_;
+
+  // For navigation Pedals, this holds the destination URL; for action Pedals,
+  // this remains empty.
+  GURL url_;
 };
 
 class OmniboxPedalClearBrowsingData : public OmniboxPedal {
  public:
   OmniboxPedalClearBrowsingData();
-  void Execute(ExecutionContext& context) const override;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_H_

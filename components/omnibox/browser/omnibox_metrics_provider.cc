@@ -66,6 +66,10 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::CLIPBOARD;
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
       return OmniboxEventProto::Suggestion::DOCUMENT;
+    case AutocompleteMatchType::PEDAL:
+      // TODO(orinj): Add a new OmniboxEventProto type for Pedals.
+      // return OmniboxEventProto::Suggestion::PEDAL;
+      return OmniboxEventProto::Suggestion::NAVSUGGEST;
     case AutocompleteMatchType::VOICE_SUGGEST:
       // VOICE_SUGGEST matches are only used in Java and are not logged,
       // so we should never reach this case.

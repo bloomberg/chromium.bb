@@ -23,6 +23,7 @@
 #include "url/gurl.h"
 
 class AutocompleteProvider;
+class OmniboxPedal;
 class SuggestionAnswer;
 class TemplateURL;
 class TemplateURLService;
@@ -303,6 +304,9 @@ struct AutocompleteMatch {
   // there isn't an image URL, returns an empty GURL (test with is_empty()).
   GURL ImageUrl() const;
 
+  // Changes properties to make use of the Pedal (e.g. content, URLs...).
+  void ApplyPedal();
+
   // Adds optional information to the |additional_info| dictionary.
   void RecordAdditionalInfo(const std::string& property,
                             const std::string& value);
@@ -476,6 +480,10 @@ struct AutocompleteMatch {
   // accesses it must perform any necessary sanity checks before blindly using
   // it!
   base::string16 keyword;
+
+  // Set to a matching pedal if appropriate.  The pedal is not owned, and the
+  // owning OmniboxPedalProvider must outlive this.
+  OmniboxPedal* pedal = nullptr;
 
   // True if this match is from a previous result.
   bool from_previous;
