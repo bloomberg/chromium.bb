@@ -103,6 +103,10 @@ class CORE_EXPORT CSSSelector {
 
   bool operator==(const CSSSelector&) const;
 
+  static constexpr unsigned kIdSpecificity = 0x010000;
+  static constexpr unsigned kClassLikeSpecificity = 0x000100;
+  static constexpr unsigned kTagSpecificity = 0x000001;
+
   // http://www.w3.org/TR/css3-selectors/#specificity
   // We use 256 as the base of the specificity number system.
   unsigned Specificity() const;
