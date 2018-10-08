@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortal) {
 #else
 #define MAYBE_ActivatePortalInShell ActivatePortalInShell
 #endif
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortalInShell) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_ActivatePortalInShell) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
