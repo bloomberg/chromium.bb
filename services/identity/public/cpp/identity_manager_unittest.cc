@@ -600,6 +600,10 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
+
+  std::string primary_account_id = identity_manager()->GetPrimaryAccountId();
+  EXPECT_EQ(primary_account_id, kTestGaiaId);
+  EXPECT_EQ(primary_account_id, primary_account_info.account_id);
 }
 
 TEST_F(IdentityManagerTest, ClearPrimaryAccount_RemoveAll) {
@@ -666,7 +670,7 @@ TEST_F(IdentityManagerTest,
   // Set primary account to have authentication error.
   SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
   token_service()->UpdateAuthErrorForTesting(
-      identity_manager()->GetPrimaryAccountInfo().account_id,
+      identity_manager()->GetPrimaryAccountId(),
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 
@@ -759,6 +763,36 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ("", primary_account_info.gaia);
   EXPECT_EQ("", primary_account_info.email);
+
+  std::string primary_account_id = identity_manager()->GetPrimaryAccountId();
+  EXPECT_EQ("", primary_account_id);
+  EXPECT_EQ(primary_account_id, primary_account_info.account_id);
+}
+
+// Test that the primary account's ID remains tracked by the IdentityManager
+// after signing in even after having removed the account without signing out.
+TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
+  // First ensure that the user is signed in from the POV of the
+  // IdentityManager.
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_primary_account_set_callback(
+      run_loop.QuitClosure());
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  run_loop.Run();
+
+  // Remove the account from the AccountTrackerService and check that
+  // the returned AccountInfo won't have a valid ID anymore, even if
+  // the IdentityManager is still storing the primary account's ID.
+  account_tracker()->RemoveAccount(kTestGaiaId);
+
+  AccountInfo primary_account_info =
+      identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_EQ("", primary_account_info.gaia);
+  EXPECT_EQ("", primary_account_info.email);
+  EXPECT_EQ("", primary_account_info.account_id);
+
+  std::string primary_account_id = identity_manager()->GetPrimaryAccountId();
+  EXPECT_EQ(primary_account_id, kTestGaiaId);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -767,8 +801,7 @@ TEST_F(IdentityManagerTest, HasPrimaryAccount) {
 
   // Removing the account from the AccountTrackerService should not cause
   // IdentityManager to think that there is no longer a primary account.
-  account_tracker()->RemoveAccount(
-      identity_manager()->GetPrimaryAccountInfo().account_id);
+  account_tracker()->RemoveAccount(identity_manager()->GetPrimaryAccountId());
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
 
 #if !defined(OS_CHROMEOS)
@@ -1308,9 +1341,8 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountInfo().account_id,
-          "dummy_consumer", scopes, std::move(callback),
-          AccessTokenFetcher::Mode::kImmediate);
+          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
   EXPECT_TRUE(token_fetcher);
 }
 
@@ -1328,9 +1360,8 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountInfo().account_id,
-          "dummy_consumer", scopes, std::move(callback),
-          AccessTokenFetcher::Mode::kImmediate);
+          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 

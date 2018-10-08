@@ -68,6 +68,10 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
   return signin_manager_->GetAuthenticatedAccountInfo();
 }
 
+const std::string& IdentityManager::GetPrimaryAccountId() const {
+  return signin_manager_->GetAuthenticatedAccountId();
+}
+
 bool IdentityManager::HasPrimaryAccount() const {
   return signin_manager_->IsAuthenticated();
 }
@@ -139,7 +143,7 @@ GoogleServiceAuthError IdentityManager::GetErrorStateOfRefreshTokenForAccount(
 }
 
 bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
-  return HasAccountWithRefreshToken(GetPrimaryAccountInfo().account_id);
+  return HasAccountWithRefreshToken(GetPrimaryAccountId());
 }
 
 std::unique_ptr<AccessTokenFetcher>
@@ -198,8 +202,7 @@ void IdentityManager::SetPrimaryAccountSynchronously(
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
 
   if (!refresh_token.empty()) {
-    token_service_->UpdateCredentials(GetPrimaryAccountInfo().account_id,
-                                      refresh_token);
+    token_service_->UpdateCredentials(GetPrimaryAccountId(), refresh_token);
   }
 }
 

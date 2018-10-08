@@ -129,13 +129,23 @@ class IdentityManager : public SigninManagerBase::Observer,
                   GaiaCookieManagerService* gaia_cookie_manager_service);
   ~IdentityManager() override;
 
-  // Provides access to the latest cached information of the user's primary
-  // account.
+  // Provides access to the extended information of the user's primary account.
+  // Returns an empty struct if no such info is available, either because there
+  // is no primary account or because the extended information for the primary
+  // account has been removed (this happens when the refresh token is revoked,
+  // for example).
   AccountInfo GetPrimaryAccountInfo() const;
 
-  // Returns whether the primary account is available, according to the latest
-  // cached information. Simple convenience wrapper over checking whether the
-  // primary account info has a valid account ID.
+  // Provides access to the account ID of the user's primary account. Note that
+  // this may return a valid string even in cases where GetPrimaryAccountInfo()
+  // returns an empty struct, as the extended information for the primary
+  // account is removed on certain events (e.g., when its refresh token is
+  // revoked).
+  const std::string& GetPrimaryAccountId() const;
+
+  // Returns whether the primary account is available. Simple convenience
+  // wrapper over checking whether GetPrimaryAccountId() returns a non-empty
+  // string.
   bool HasPrimaryAccount() const;
 
 // For ChromeOS, mutation of primary account state is not managed externally.
