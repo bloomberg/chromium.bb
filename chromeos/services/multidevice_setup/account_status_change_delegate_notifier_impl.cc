@@ -13,9 +13,6 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -76,7 +73,7 @@ void AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(
   registry->RegisterInt64Pref(kExistingUserChromebookAddedPrefName,
                               kTimestampNotSet);
   registry->RegisterStringPref(
-      kHostDeviceIdFromMostRecentHostStatusUpdatePrefName, kNoHost);
+      kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName, kNoHost);
 }
 
 AccountStatusChangeDelegateNotifierImpl::
@@ -103,9 +100,12 @@ const char AccountStatusChangeDelegateNotifierImpl::
     kExistingUserChromebookAddedPrefName[] =
         "multidevice_setup.existing_user_chromebook_added";
 
+// Note that, despite the pref string name, this pref only records the IDs of
+// verified hosts. In particular, if a host has been set but is waiting for
+// verification, it will not recorded.
 // static
 const char AccountStatusChangeDelegateNotifierImpl::
-    kHostDeviceIdFromMostRecentHostStatusUpdatePrefName[] =
+    kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName[] =
         "multidevice_setup.host_device_id_from_most_recent_sync";
 
 AccountStatusChangeDelegateNotifierImpl::
@@ -118,7 +118,7 @@ AccountStatusChangeDelegateNotifierImpl::
       pref_service_(pref_service),
       setup_flow_completion_recorder_(setup_flow_completion_recorder),
       clock_(clock) {
-  host_device_id_from_most_recent_update_ =
+  verified_host_device_id_from_most_recent_update_ =
       LoadHostDeviceIdFromEndOfPreviousSession();
   host_status_provider_->AddObserver(this);
 }
@@ -137,27 +137,30 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
     return;
   }
 
-  // Track and update host info.
-  base::Optional<std::string> host_device_id_before_update =
-      host_device_id_from_most_recent_update_;
+  // Track and update verified host info.
+  base::Optional<std::string> verified_host_device_id_before_update =
+      verified_host_device_id_from_most_recent_update_;
 
-  // Check if a host has been set.
-  if (host_status_with_device.host_device()) {
-    host_device_id_from_most_recent_update_ =
+  // Check if a host has been verified.
+  if (host_status_with_device.host_status() ==
+      mojom::HostStatus::kHostVerified) {
+    verified_host_device_id_from_most_recent_update_ =
         host_status_with_device.host_device()->GetDeviceId();
     pref_service_->SetString(
-        kHostDeviceIdFromMostRecentHostStatusUpdatePrefName,
-        *host_device_id_from_most_recent_update_);
+        kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName,
+        *verified_host_device_id_from_most_recent_update_);
   } else {
     // No host set.
-    host_device_id_from_most_recent_update_.reset();
+    verified_host_device_id_from_most_recent_update_.reset();
+    pref_service_->SetString(
+        kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName, kNoHost);
   }
 
   CheckForNewUserPotentialHostExistsEvent(host_status_with_device);
   CheckForExistingUserHostSwitchedEvent(host_status_with_device,
-                                        host_device_id_before_update);
-  CheckForExistingUserChromebookAddedEvent(host_status_with_device,
-                                           host_device_id_before_update);
+                                        verified_host_device_id_before_update);
+  CheckForExistingUserChromebookAddedEvent(
+      host_status_with_device, verified_host_device_id_before_update);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::
@@ -165,7 +168,7 @@ void AccountStatusChangeDelegateNotifierImpl::
         const HostStatusProvider::HostStatusWithDevice&
             host_status_with_device) {
   // We only check for new user events if there is no enabled host.
-  if (host_device_id_from_most_recent_update_)
+  if (verified_host_device_id_from_most_recent_update_)
     return;
 
   // If the observer has been notified of this event before, the user is not
@@ -190,14 +193,17 @@ void AccountStatusChangeDelegateNotifierImpl::
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserHostSwitchedEvent(
         const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
-        const base::Optional<std::string>& host_device_id_before_update) {
-  // The host switched event requires both a pre-update and a post-update host.
-  if (!host_device_id_from_most_recent_update_ ||
-      !host_device_id_before_update) {
+        const base::Optional<std::string>&
+            verified_host_device_id_before_update) {
+  // The host switched event requires both a pre-update and a post-update
+  // verified host.
+  if (!verified_host_device_id_from_most_recent_update_ ||
+      !verified_host_device_id_before_update) {
     return;
   }
   // If the host stayed the same, there was no switch.
-  if (*host_device_id_from_most_recent_update_ == *host_device_id_before_update)
+  if (*verified_host_device_id_from_most_recent_update_ ==
+      *verified_host_device_id_before_update)
     return;
 
   delegate()->OnConnectedHostSwitchedForExistingUser(
@@ -209,11 +215,13 @@ void AccountStatusChangeDelegateNotifierImpl::
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserChromebookAddedEvent(
         const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
-        const base::Optional<std::string>& host_device_id_before_update) {
-  // The Chromebook added event requires that a set host was found by the
-  // update, i.e. there was no host before the host status update but afterward
-  // there is a set host.
-  if (!host_device_id_from_most_recent_update_ || host_device_id_before_update)
+        const base::Optional<std::string>&
+            verified_host_device_id_before_update) {
+  // The Chromebook added event requires that a verified host was found by the
+  // update, i.e. there was no verified host before the host status update but
+  // afterward there was a verified host.
+  if (!verified_host_device_id_from_most_recent_update_ ||
+      verified_host_device_id_before_update)
     return;
 
   delegate()->OnNewChromebookAddedForExistingUser(
@@ -224,11 +232,12 @@ void AccountStatusChangeDelegateNotifierImpl::
 
 base::Optional<std::string> AccountStatusChangeDelegateNotifierImpl::
     LoadHostDeviceIdFromEndOfPreviousSession() {
-  std::string host_device_id_from_most_recent_update = pref_service_->GetString(
-      kHostDeviceIdFromMostRecentHostStatusUpdatePrefName);
-  if (host_device_id_from_most_recent_update.empty())
+  std::string verified_host_device_id_from_most_recent_update =
+      pref_service_->GetString(
+          kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName);
+  if (verified_host_device_id_from_most_recent_update.empty())
     return base::nullopt;
-  return host_device_id_from_most_recent_update;
+  return verified_host_device_id_from_most_recent_update;
 }
 
 }  // namespace multidevice_setup
