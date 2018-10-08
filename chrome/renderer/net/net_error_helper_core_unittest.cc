@@ -2637,8 +2637,7 @@ std::vector<chrome::mojom::AvailableOfflineContentPtr> TestAvailableContent() {
   std::vector<chrome::mojom::AvailableOfflineContentPtr> content;
   content.push_back(chrome::mojom::AvailableOfflineContent::New(
       "ID", "name_space", "title", "snippet", "date_modified", "attribution",
-      GURL(kDataURI),
-      chrome::mojom::AvailableContentType::kPrefetchedUnopenedPage));
+      GURL(kDataURI), chrome::mojom::AvailableContentType::kPrefetchedPage));
   content.push_back(chrome::mojom::AvailableOfflineContent::New(
       "ID2", "name_space2", "title2", "snippet2", "date_modified2",
       "attribution2", GURL(kDataURI),
@@ -2662,7 +2661,7 @@ class FakeAvailableOfflineContentProvider
   void Summarize(SummarizeCallback callback) override {
     auto summary = chrome::mojom::AvailableOfflineContentSummary::New();
     if (return_content_) {
-      summary->total_items = 2;
+      summary->total_items = 3;
       summary->has_offline_page = true;
       summary->has_prefetched_page = true;
     }
@@ -2718,7 +2717,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
   // Note: content_type is an AvailableContentType enum value.
-  // Below, 0=kPrefetchedUnopenedPage and 3=kOtherPage.
+  // Below, 0=kPrefetchedPage and 3=kOtherPage.
   std::string want_json = R"([
       {
         "ID": "ID",
@@ -2748,7 +2747,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
                                      2);
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts.SuggestionPresented",
-      chrome::mojom::AvailableContentType::kPrefetchedUnopenedPage, 1);
+      chrome::mojom::AvailableContentType::kPrefetchedPage, 1);
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts.SuggestionPresented",
       chrome::mojom::AvailableContentType::kOtherPage, 1);
@@ -2759,7 +2758,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
   core()->LaunchOfflineItem("ID", "name_space");
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts.SuggestionPresented",
-      chrome::mojom::AvailableContentType::kPrefetchedUnopenedPage, 1);
+      chrome::mojom::AvailableContentType::kPrefetchedPage, 1);
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts",
       error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTION_CLICKED, 1);
@@ -2793,7 +2792,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, SummaryAvailableContent) {
     "has_offline_page": true,
     "has_prefetched_page": true,
     "has_video": false,
-    "total_items": 2
+    "total_items": 3
   })";
   base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
   EXPECT_EQ(want_json, offline_content_summary_json());

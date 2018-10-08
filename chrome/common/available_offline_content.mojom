@@ -14,7 +14,7 @@ import "url/mojom/url.mojom";
 // components/neterror/resources/neterror.js.
 enum AvailableContentType {
   // The offline page is prefetched suggested content.
-  kPrefetchedUnopenedPage = 0,
+  kPrefetchedPage = 0,
   kVideo = 1,
   kAudio = 2,
   // The offline page was downloaded in some other way.
@@ -43,7 +43,8 @@ struct AvailableOfflineContent {
 
 // A summary of available offline content.
 struct AvailableOfflineContentSummary {
-  // Total number of offline content items.
+  // Total number of offline content items (not limited to the categories listed
+  // below).
   uint32 total_items;
   // True if at least one prefetched article (Articles For You) is available.
   bool has_prefetched_page;
@@ -57,9 +58,12 @@ struct AvailableOfflineContentSummary {
 
 // Provides access to items available while offline.
 interface AvailableOfflineContentProvider {
-  // Returns some available pieces of content from downloads.
+  // Returns some available pieces of content from downloads. If not there's not
+  // enough available content deemed interesting, the returned array will be
+  // empty.
   List() => (array<AvailableOfflineContent> out);
-  // Returns summary of available offline content.
+  // Returns a summary of available offline content. If not there's not enough
+  // available content deemed interesting, the returned summary will be empty.
   Summarize() => (AvailableOfflineContentSummary out);
   // Opens one of the items returned by List().
   LaunchItem(string item_id, string name_space);

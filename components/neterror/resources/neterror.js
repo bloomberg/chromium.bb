@@ -174,8 +174,10 @@ function launchDownloadsPage() {
 
 // Populates a summary of suggested offline content.
 function offlineContentSummaryAvailable(summary) {
-  if (!summary || !loadTimeData.valueExists('offlineContentSummary'))
+  if (!summary || summary.total_items == 0 ||
+      !loadTimeData.valueExists('offlineContentSummary')) {
     return;
+  }
 
   document.getElementById('offline-content-summary').hidden = false;
 }
