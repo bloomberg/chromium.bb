@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlDirectionListener;
+import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -51,6 +52,11 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider {
     /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
     public void setDelegate(UrlBarDelegate delegate) {
         mMediator.setDelegate(delegate);
+    }
+
+    /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
+    public void setUrlTextChangeListener(UrlTextChangeListener listener) {
+        mMediator.setUrlTextChangeListener(listener);
     }
 
     /** @see UrlBarMediator#setUrlBarData(UrlBarData, int, int) */

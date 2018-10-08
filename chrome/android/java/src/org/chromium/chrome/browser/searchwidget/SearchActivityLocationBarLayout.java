@@ -90,7 +90,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         getAutocompleteCoordinator().setShouldPreventOmniboxAutocomplete(
                 mPendingSearchPromoDecision);
         if (!TextUtils.isEmpty(mUrlCoordinator.getTextWithAutocomplete())) {
-            onTextChangedForAutocomplete();
+            mAutocompleteCoordinator.onTextChangedForAutocomplete();
         }
 
         if (mPendingBeginQuery) {
