@@ -523,8 +523,10 @@ void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
 void NetErrorHelper::OfflineContentAvailable(
     const std::string& offline_content_json) {
 #if defined(OS_ANDROID)
-  render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(
-      base::StrCat({"offlineContentAvailable(", offline_content_json, ");"})));
+  if (!offline_content_json.empty()) {
+    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(base::StrCat(
+        {"offlineContentAvailable(", offline_content_json, ");"})));
+  }
 #endif
 }
 

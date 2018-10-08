@@ -34023,8 +34023,8 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetErrorOfflineSuggestionType">
-  <int value="0" label="Prefetched Unopened Page">
-    A Prefetched article that has not yet been opened by the user.
+  <int value="0" label="Prefetched Page">
+    A Prefetched article that has been offlined.
   </int>
   <int value="1" label="Video">
     A video file previously downloaded by the user.
@@ -34133,6 +34133,9 @@ Called by update_net_error_codes.py.-->
   </int>
   <int value="26" label="Downloads Page Button Clicked">
     The user pressed a button to open the downloads page.
+  </int>
+  <int value="27" label="Offline Content Summary Shown">
+    A summary of available offline content was presented.
   </int>
 </enum>
 
