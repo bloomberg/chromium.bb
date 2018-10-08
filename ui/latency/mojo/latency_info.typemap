@@ -13,6 +13,7 @@ sources = [
   "latency_info_struct_traits.h",
 ]
 public_deps = [
+  "//ui/gfx/geometry/mojo:struct_traits",
   "//ui/latency",
 ]
 deps = [

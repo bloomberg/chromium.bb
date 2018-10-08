@@ -70,7 +70,6 @@ source_set("tests") {
     "//testing/gtest",
     "//ui/display/types",
     "//ui/gfx:test_support",
-    "//ui/gfx/geometry/mojo:struct_traits",
     "//ui/gfx/range/mojo:struct_traits",
   ]
 }
