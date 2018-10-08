@@ -75,7 +75,6 @@ class SmbService : public KeyedService,
   // for each of the hosts found. |discovery_callback| is called as soon as host
   // discovery is complete. |shares_callback| is called once per host and will
   // contain the URLs to the shares found.
-  void GatherSharesInNetwork(GatherSharesResponse shares_callback);
   void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                              GatherSharesResponse shares_callback);
 
