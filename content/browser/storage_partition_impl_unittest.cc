@@ -287,26 +287,36 @@ class RemoveCodeCacheTester {
   explicit RemoveCodeCacheTester(GeneratedCodeCacheContext* code_cache_context)
       : code_cache_context_(code_cache_context) {}
 
-  bool ContainsEntry(GURL url, url::Origin origin) {
+  enum Cache { kJs, kWebAssembly };
+
+  bool ContainsEntry(Cache cache, GURL url, url::Origin origin) {
     entry_exists_ = false;
     GeneratedCodeCache::ReadDataCallback callback = base::BindRepeating(
         &RemoveCodeCacheTester::FetchEntryCallback, base::Unretained(this));
-    code_cache_context_->generated_js_code_cache()->FetchEntry(url, origin,
-                                                               callback);
+    GetCache(cache)->FetchEntry(url, origin, callback);
     await_completion_.BlockUntilNotified();
     return entry_exists_;
   }
 
-  void AddEntry(GURL url, url::Origin origin, const std::string& data) {
+  void AddEntry(Cache cache,
+                GURL url,
+                url::Origin origin,
+                const std::string& data) {
     std::vector<uint8_t> data_vector(data.begin(), data.end());
-    code_cache_context_->generated_js_code_cache()->WriteData(
-        url, origin, base::Time::Now(), data_vector);
+    GetCache(cache)->WriteData(url, origin, base::Time::Now(), data_vector);
     base::RunLoop().RunUntilIdle();
   }
 
   std::string received_data() { return received_data_; }
 
  private:
+  GeneratedCodeCache* GetCache(Cache cache) {
+    if (cache == kJs)
+      return code_cache_context_->generated_js_code_cache();
+    else
+      return code_cache_context_->generated_wasm_code_cache();
+  }
+
   void FetchEntryCallback(const base::Time& response_time,
                           const std::vector<uint8_t>& data) {
     if (!response_time.is_null()) {
@@ -1337,16 +1347,30 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 
   url::Origin origin = kOrigin1;
   std::string data("SomeData");
-  tester.AddEntry(kResourceURL, origin, data);
-  EXPECT_TRUE(tester.ContainsEntry(kResourceURL, origin));
+  std::string data2("SomeData.wasm");
+  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
+  tester.AddEntry(RemoveCodeCacheTester::kWebAssembly, kResourceURL, origin,
+                  data2);
+  EXPECT_TRUE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
   EXPECT_EQ(tester.received_data(), data);
+  EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kWebAssembly,
+                                   kResourceURL, origin));
+  EXPECT_EQ(tester.received_data(), data2);
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
   run_loop.Run();
 
-  EXPECT_FALSE(tester.ContainsEntry(kResourceURL, origin));
+  EXPECT_FALSE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+  EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kWebAssembly,
+                                    kResourceURL, origin));
+
+  // Make sure there isn't a second invalid callback sitting in the queue.
+  // (this used to be a bug).
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
