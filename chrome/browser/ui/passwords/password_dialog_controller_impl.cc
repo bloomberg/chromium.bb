@@ -57,12 +57,8 @@ PasswordDialogControllerImpl::GetLocalForms() const {
   return local_credentials_;
 }
 
-std::pair<base::string16, gfx::Range>
-PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
-  std::pair<base::string16, gfx::Range> result;
-  result.first =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
-  return result;
+base::string16 PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
 }
 
 bool PasswordDialogControllerImpl::ShouldShowSignInButton() const {
@@ -76,17 +72,16 @@ base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-std::pair<base::string16, gfx::Range>
-PasswordDialogControllerImpl::GetAutoSigninText() const {
-  std::pair<base::string16, gfx::Range> result;
-  result.first = l10n_util::GetStringFUTF16(
+base::string16 PasswordDialogControllerImpl::GetAutoSigninText() const {
+  return l10n_util::GetStringFUTF16(
       IDS_AUTO_SIGNIN_FIRST_RUN_TEXT,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
-  return result;
 }
 
-void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
-  delegate_->NavigateToSmartLockHelpPage();
+bool PasswordDialogControllerImpl::ShouldShowFooter() const {
+  const browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 
 void PasswordDialogControllerImpl::OnChooseCredentials(

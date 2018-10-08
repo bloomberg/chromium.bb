@@ -55,11 +55,8 @@ gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
 std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
     const autofill::PasswordForm& form) {
   base::string16 federation;
-  if (!form.federation_origin.opaque()) {
-    federation = l10n_util::GetStringFUTF16(
-        IDS_PASSWORDS_VIA_FEDERATION,
-        base::UTF8ToUTF16(form.federation_origin.host()));
-  }
+  if (!form.federation_origin.opaque())
+    federation = base::UTF8ToUTF16(form.federation_origin.host());
 
   if (form.display_name.empty())
     return std::make_pair(form.username_value, std::move(federation));

@@ -443,13 +443,6 @@ TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
   DestroyModelAndVerifyControllerExpectations();
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
-  PretendPasswordWaiting();
-
-  EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());
-  model()->OnBrandLinkClicked();
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
   prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
                       true);

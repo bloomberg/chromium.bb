@@ -13,7 +13,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -83,28 +83,17 @@ base::string16 AutoSigninFirstRunDialogView::GetDialogButtonLabel(
                                        : IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF);
 }
 
-void AutoSigninFirstRunDialogView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  controller_->OnSmartLockLinkClicked();
-}
-
 void AutoSigninFirstRunDialogView::InitWindow() {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  std::pair<base::string16, gfx::Range> text_content =
-      controller_->GetAutoSigninText();
-  auto text = std::make_unique<views::StyledLabel>(text_content.first, this);
-  text->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  text->SetDefaultTextStyle(STYLE_SECONDARY);
-  if (!text_content.second.is_empty()) {
-    text->AddStyleRange(text_content.second,
-                        views::StyledLabel::RangeStyleInfo::CreateForLink());
-  }
-  AddChildView(text.release());
+  auto label =
+      std::make_unique<views::Label>(controller_->GetAutoSigninText(),
+                                     CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(label.release());
 }
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
