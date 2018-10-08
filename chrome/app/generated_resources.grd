@@ -5190,9 +5190,6 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_PASSWORD_LABEL" desc="Label for the password field in a prompt to store new credential">
           Password
         </message>
-        <message name="IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION" desc="Text for password replacement for federated credential in save prompt.">
-          Sign in with <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
-        </message>
       </if>
       <if expr="is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Remember password' option">

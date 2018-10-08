@@ -203,9 +203,6 @@ const char kSettingsSearchHelpURL[] =
     "https://support.google.com/chrome/?p=settings_search_help";
 #endif
 
-const char kSmartLockHelpPage[] =
-    "https://support.google.com/accounts/answer/6197437";
-
 const char kSyncAndGoogleServicesLearnMoreURL[] =
     "https://support.google.com/chrome?p=syncgoogleservices";
 

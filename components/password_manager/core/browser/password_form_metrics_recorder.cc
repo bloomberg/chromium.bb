@@ -39,7 +39,6 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
 
     // Ignore these for metrics collection:
     case metrics_util::CLICKED_MANAGE:
-    case metrics_util::CLICKED_BRAND_NAME:
     case metrics_util::CLICKED_PASSWORDS_DASHBOARD:
     case metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT:
       break;
@@ -50,6 +49,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
     case metrics_util::CLICKED_UNBLACKLIST_OBSOLETE:
     case metrics_util::CLICKED_CREDENTIAL_OBSOLETE:
     case metrics_util::AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE:
+    case metrics_util::CLICKED_BRAND_NAME_OBSOLETE:
     case metrics_util::NUM_UI_RESPONSES:
       NOTREACHED();
       break;

@@ -167,8 +167,6 @@ extern const char kResetProfileSettingsLearnMoreURL[];
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 
-extern const char kSmartLockHelpPage[];
-
 // The URL for the Learn More page about Sync and Google services.
 extern const char kSyncAndGoogleServicesLearnMoreURL[];
 

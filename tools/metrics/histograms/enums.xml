@@ -38918,7 +38918,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Clicked on a credential (obsolete)"/>
   <int value="9" label="Auto-signin toast timeout"/>
   <int value="10" label="Auto-signin toast clicked (obsolete)"/>
-  <int value="11" label="Clicked 'Google Smart Lock'"/>
+  <int value="11" label="Clicked 'Google Smart Lock' (obsolete)"/>
   <int value="12" label="Clicked the link passwords.google.com"/>
 </enum>
 
