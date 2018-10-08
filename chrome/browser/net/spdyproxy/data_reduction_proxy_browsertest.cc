@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
@@ -63,6 +66,10 @@ class DataReductionProxyBrowsertest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyRobustConnection,
+        {{params::GetMissingViaBypassParamName(), "true"},
+         {params::GetWarmupCallbackParamName(), "true"}});
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
     EnableDataSaver(true);
   }
@@ -92,6 +99,9 @@ class DataReductionProxyBrowsertest : public InProcessBrowserTest {
     EXPECT_TRUE(base_url.is_valid()) << base_url.possibly_invalid_spec();
     return base_url.Resolve(relative_url);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
