@@ -142,6 +142,13 @@ class LoadBbcDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadBbcDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:bbc:2018'
+  URL = 'https://www.bbc.co.uk/news'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadCnnStory(_LoadingStory):
   NAME = 'load:news:cnn'
   # Using "https://" shows "Your connection is not private".
