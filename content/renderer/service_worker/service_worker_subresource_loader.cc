@@ -586,7 +586,7 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
   UMA_HISTOGRAM_TIMES("ServiceWorker.SubresourceStartBlobReadingDelay", delay);
 
   return ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
-      &body_as_blob_, body_as_blob_size_, resource_request_.headers,
+      &body_as_blob_, body_as_blob_size_,
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,
                      weak_factory_.GetWeakPtr()),
       body_pipe);

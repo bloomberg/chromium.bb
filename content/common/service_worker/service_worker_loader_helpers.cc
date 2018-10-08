@@ -44,71 +44,6 @@ class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
   BlobCompleteCallback callback_;
 };
 
-// Sets |has_range_out| to true if |headers| specify a single range request, and
-// |offset_out| and |length_out| to the range. If the range has an unbounded
-// end, |length_out| is set to uint64_t's max value. Returns true on valid input
-// (regardless of |has_range_out|), and false if there is more than one range or
-// if the bounds overflow.
-bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
-                                bool* has_range_out,
-                                uint64_t* offset_out,
-                                uint64_t* length_out) {
-  std::string range_header;
-  *has_range_out = false;
-  if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header))
-    return true;
-
-  std::vector<net::HttpByteRange> ranges;
-  if (!net::HttpUtil::ParseRangeHeader(range_header, &ranges))
-    return true;
-
-  // Multi-part (or invalid) ranges are not supported.
-  if (ranges.size() != 1)
-    return false;
-
-  // Safely parse the single range to our more-sane output format.
-  *has_range_out = true;
-  const net::HttpByteRange& byte_range = ranges[0];
-
-  // The first byte must be non-negative.
-  if (byte_range.first_byte_position() < 0)
-    return false;
-
-  // The last byte can be -1 to specify unbounded end.
-  if (byte_range.last_byte_position() == -1) {
-    // The range [0, -1] is the same as the entire range (no range specified).
-    if (byte_range.first_byte_position() == 0 &&
-        byte_range.last_byte_position() == -1) {
-      *has_range_out = false;
-      return true;
-    }
-
-    // Otherwise, return the range with unbounded end.
-    *length_out = std::numeric_limits<uint64_t>::max();
-    return true;
-  }
-
-  // The last byte must be non-negative.
-  if (byte_range.last_byte_position() < 0)
-    return false;
-
-  uint64_t first_byte_position =
-      static_cast<uint64_t>(byte_range.first_byte_position());
-  uint64_t last_byte_position =
-      static_cast<uint64_t>(byte_range.last_byte_position());
-
-  base::CheckedNumeric<uint64_t> length = last_byte_position;
-  length -= first_byte_position;
-  length += 1;
-
-  if (!length.IsValid())
-    return false;
-
-  *offset_out = static_cast<uint64_t>(byte_range.first_byte_position());
-  *length_out = length.ValueOrDie();
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -199,31 +134,18 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
     blink::mojom::BlobPtr* blob,
     uint64_t blob_size,
-    const net::HttpRequestHeaders& headers,
     base::OnceCallback<void(int)> on_blob_read_complete,
     mojo::ScopedDataPipeConsumerHandle* handle_out) {
-  bool byte_range_set = false;
-  uint64_t offset = 0;
-  uint64_t length = 0;
-  // We don't support multiple range requests in one single URL request,
-  // because we need to do multipart encoding here.
-  // TODO(falken): Support multipart byte range requests.
-  if (!ExtractSinglePartHttpRange(headers, &byte_range_set, &offset, &length))
-    return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
-
+  // TODO(falken): Change to CreateDataPipe() and return an error if allocation
+  // failed.
   mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity(blob_size));
   blink::mojom::BlobReaderClientPtr blob_reader_client;
   mojo::MakeStrongBinding(
       std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),
       mojo::MakeRequest(&blob_reader_client));
 
-  if (byte_range_set) {
-    (*blob)->ReadRange(offset, length, std::move(data_pipe.producer_handle),
-                       std::move(blob_reader_client));
-  } else {
-    (*blob)->ReadAll(std::move(data_pipe.producer_handle),
-                     std::move(blob_reader_client));
-  }
+  (*blob)->ReadAll(std::move(data_pipe.producer_handle),
+                   std::move(blob_reader_client));
   *handle_out = std::move(data_pipe.consumer_handle);
   return net::OK;
 }
