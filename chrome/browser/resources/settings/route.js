@@ -94,6 +94,7 @@
  *   SITE_SETTINGS_UNSANDBOXED_PLUGINS: (undefined|!settings.Route),
  *   SITE_SETTINGS_USB_DEVICES: (undefined|!settings.Route),
  *   SITE_SETTINGS_ZOOM_LEVELS: (undefined|!settings.Route),
+ *   SMART_LOCK: (undefined|!settings.Route),
  *   SMB_SHARES: (undefined|!settings.Route),
  *   STORAGE: (undefined|!settings.Route),
  *   STYLUS: (undefined|!settings.Route),
@@ -238,6 +239,8 @@ cr.define('settings', function() {
 
     r.MULTIDEVICE = r.BASIC.createSection('/multidevice', 'multidevice');
     r.MULTIDEVICE_FEATURES = r.MULTIDEVICE.createChild('/multidevice/features');
+    r.SMART_LOCK =
+        r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
     // </if>
 
     if (pageVisibility.appearance !== false) {

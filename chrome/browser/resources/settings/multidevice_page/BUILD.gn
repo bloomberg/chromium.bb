@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":multidevice_feature_item",
     ":multidevice_feature_toggle",
     ":multidevice_page",
+    ":multidevice_smartlock_subpage",
     ":multidevice_subpage",
     ":multidevice_tether_item",
   ]
@@ -62,6 +63,16 @@ js_library("multidevice_page") {
     "../controls:password_prompt_dialog",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("multidevice_smartlock_subpage") {
+  deps = [
+    ":multidevice_constants",
+    ":multidevice_feature_behavior",
+    "../prefs:prefs_behavior",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
+    "//ui/webui/resources/js:cr",
   ]
 }
 

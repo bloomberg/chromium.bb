@@ -1117,6 +1117,10 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_FAR},
       {"easyUnlockProximityThresholdVeryFar",
        IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_FAR},
+      {"easyUnlockUnlockDeviceOnly",
+       IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_ONLY},
+      {"easyUnlockUnlockDeviceAndAllowSignin",
+       IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_AND_ALLOW_SIGNIN},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -2663,6 +2667,8 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION},
       {"multideviceForgetDeviceDialogMessage",
        IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE},
+      {"multideviceSmartLockOptions",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
