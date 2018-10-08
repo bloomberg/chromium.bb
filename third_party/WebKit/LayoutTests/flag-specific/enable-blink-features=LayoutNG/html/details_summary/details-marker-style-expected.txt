@@ -13,7 +13,7 @@ layer at (0,0) size 800x477
         LayoutNGBlockFlow {DETAILS} at (0,0) size 118.83x183.42
           LayoutNGBlockFlow {SUMMARY} at (0,0) size 118.83x183.42
             LayoutDetailsMarker {DIV} at (0,0) size 111.83x79.83 [border: (8px solid #00FF00) (16px solid #00FF00) (24px solid #00FF00) (32px solid #00FF00)]: down
-            LayoutText {#text} at (90,89) size 27x95
+            LayoutText {#text} at (90,89) size 28x95
               text run at (90,89) width 95: "Summary"
       LayoutNGBlockFlow {DIV} at (0,270.25) size 784x47
         LayoutNGBlockFlow {DETAILS} at (0,0) size 784x47

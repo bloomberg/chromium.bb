@@ -1955,7 +1955,10 @@ LayoutRect LayoutText::LinesBoundingBox() const {
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
       bounding_box.UniteIfNonZero(child.RectInContainerBox());
-    return bounding_box.ToLayoutRect();
+    LayoutRect rect = bounding_box.ToLayoutRect();
+    if (HasFlippedBlocksWritingMode())
+      ContainingBlock()->FlipForWritingMode(rect);
+    return rect;
   }
 
   LayoutRect result;
