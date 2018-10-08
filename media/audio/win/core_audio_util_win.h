@@ -184,6 +184,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   static HRESULT SharedModeInitialize(IAudioClient* client,
                                       const WAVEFORMATPCMEX* format,
                                       HANDLE event_handle,
+                                      uint32_t requested_buffer_size,
                                       uint32_t* endpoint_buffer_size,
                                       const GUID* session_guid);
 
