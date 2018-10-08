@@ -47,6 +47,7 @@ enum class UmaLogStep {
   CREATE_CLIENT,
   GET_MIX_FORMAT,
   GET_DEVICE_PERIOD,
+  GET_SHARED_MODE_ENGINE_PERIOD,
 };
 
 using UMALogCallback = base::RepeatingCallback<void(UmaLogStep, HRESULT)>;
@@ -90,6 +91,9 @@ void LogUMAPreferredOutputParams(UmaLogStep step, HRESULT hr) {
           "Media.AudioOutputStreamProxy."
           "GetPreferredOutputStreamParametersWin.GetDevicePeriodResult",
           hr);
+      break;
+    case UmaLogStep::GET_SHARED_MODE_ENGINE_PERIOD:
+      // TODO(crbug.com/892044): add histogram logging.
       break;
   }
 }
@@ -392,29 +396,58 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
   if (FAILED(hr))
     return hr;
 
-  REFERENCE_TIME default_period = 0;
-  hr = CoreAudioUtil::GetDevicePeriod(client, AUDCLNT_SHAREMODE_SHARED,
-                                      &default_period);
-  uma_log_cb.Run(UmaLogStep::GET_DEVICE_PERIOD, hr);
-  if (FAILED(hr))
-    return hr;
-
-  ChannelLayout channel_layout = GetChannelLayout(mix_format);
-
   // Preferred sample rate.
   int sample_rate = mix_format.Format.nSamplesPerSec;
 
-  // We are using the native device period to derive the smallest possible
-  // buffer size in shared mode. Note that the actual endpoint buffer will be
-  // larger than this size but it will be possible to fill it up in two calls.
-  // TODO(henrika): ensure that this scheme works for capturing as well.
-  int frames_per_buffer = static_cast<int>(
-      sample_rate *
-          CoreAudioUtil::ReferenceTimeToTimeDelta(default_period).InSecondsF() +
-      0.5);
+  int min_frames_per_buffer = 0;
+  int max_frames_per_buffer = 0;
+  int frames_per_buffer;
 
-  AudioParameters audio_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               channel_layout, sample_rate, frames_per_buffer);
+  ComPtr<IAudioClient3> audio_client_3;
+  hr = client->QueryInterface(audio_client_3.GetAddressOf());
+  if (SUCCEEDED(hr)) {
+    UINT32 default_period_frames;
+    UINT32 fundamental_period_frames;
+    UINT32 min_period_frames;
+    UINT32 max_period_frames;
+    hr = audio_client_3->GetSharedModeEnginePeriod(
+        &(mix_format.Format), &default_period_frames,
+        &fundamental_period_frames, &min_period_frames, &max_period_frames);
+
+    uma_log_cb.Run(UmaLogStep::GET_SHARED_MODE_ENGINE_PERIOD, hr);
+    if (SUCCEEDED(hr)) {
+      min_frames_per_buffer = min_period_frames;
+      max_frames_per_buffer = max_period_frames;
+      frames_per_buffer = default_period_frames;
+    }
+  }
+
+  // If we don't have access to IAudioClient3 or if the call to
+  // GetSharedModeEnginePeriod() fails we fall back to GetDevicePeriod().
+  if (FAILED(hr)) {
+    REFERENCE_TIME default_period = 0;
+    hr = CoreAudioUtil::GetDevicePeriod(client, AUDCLNT_SHAREMODE_SHARED,
+                                        &default_period);
+    uma_log_cb.Run(UmaLogStep::GET_DEVICE_PERIOD, hr);
+    if (FAILED(hr))
+      return hr;
+
+    // We are using the native device period to derive the smallest possible
+    // buffer size in shared mode. Note that the actual endpoint buffer will be
+    // larger than this size but it will be possible to fill it up in two calls.
+    // TODO(henrika): ensure that this scheme works for capturing as well.
+    frames_per_buffer = static_cast<int>(
+        sample_rate * CoreAudioUtil::ReferenceTimeToTimeDelta(default_period)
+                          .InSecondsF() +
+        0.5);
+  }
+
+  ChannelLayout channel_layout = GetChannelLayout(mix_format);
+  AudioParameters audio_params(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
+      frames_per_buffer,
+      AudioParameters::HardwareCapabilities(min_frames_per_buffer,
+                                            max_frames_per_buffer));
   *params = audio_params;
   DVLOG(1) << params->AsHumanReadableString();
 
@@ -806,6 +839,7 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
 HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
                                             const WAVEFORMATPCMEX* format,
                                             HANDLE event_handle,
+                                            uint32_t requested_buffer_size,
                                             uint32_t* endpoint_buffer_size,
                                             const GUID* session_guid) {
   // Use default flags (i.e, dont set AUDCLNT_STREAMFLAGS_NOPERSIST) to
@@ -825,16 +859,31 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
     stream_flags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
   DVLOG(2) << "stream_flags: 0x" << std::hex << stream_flags;
 
-  // Initialize the shared mode client for minimal delay.
-  HRESULT hr = client->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                                  stream_flags,
-                                  0,
-                                  0,
-                                  reinterpret_cast<const WAVEFORMATEX*>(format),
-                                  session_guid);
-  if (FAILED(hr)) {
-    DVLOG(1) << "IAudioClient::Initialize: " << std::hex << hr;
-    return hr;
+  HRESULT hr;
+  if (requested_buffer_size > 0) {
+    ComPtr<IAudioClient3> audio_client_3;
+    hr = client->QueryInterface(audio_client_3.GetAddressOf());
+    if (FAILED(hr)) {
+      DVLOG(1) << "Failed to QueryInterface on IAudioClient3 with explicit "
+                  "buffer size: "
+               << std::hex << hr;
+      return hr;
+    }
+    hr = audio_client_3->InitializeSharedAudioStream(
+        stream_flags, requested_buffer_size, &(format->Format), session_guid);
+    if (FAILED(hr)) {
+      DVLOG(1) << "IAudioClient3::InitializeSharedAudioStream: " << std::hex
+               << hr;
+      return hr;
+    }
+  } else {
+    // Initialize the shared mode client for minimal delay.
+    hr = client->Initialize(AUDCLNT_SHAREMODE_SHARED, stream_flags, 0, 0,
+                            &(format->Format), session_guid);
+    if (FAILED(hr)) {
+      DVLOG(1) << "IAudioClient::Initialize: " << std::hex << hr;
+      return hr;
+    }
   }
 
   if (use_event) {
