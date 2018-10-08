@@ -20,6 +20,7 @@ class Value;
 
 namespace net {
 
+class JSONParserDelegate;
 class ReportingContext;
 struct ReportingPolicy;
 class URLRequest;
@@ -35,6 +36,7 @@ class NET_EXPORT ReportingService {
   // outlive the ReportingService.
   static std::unique_ptr<ReportingService> Create(
       const ReportingPolicy& policy,
+      std::unique_ptr<JSONParserDelegate> json_parser,
       URLRequestContext* request_context);
 
   // Creates a ReportingService for testing purposes using an

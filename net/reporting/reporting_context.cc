@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/rand_callback.h"
+#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
@@ -35,12 +36,14 @@ namespace {
 class ReportingContextImpl : public ReportingContext {
  public:
   ReportingContextImpl(const ReportingPolicy& policy,
+                       std::unique_ptr<JSONParserDelegate> json_parser,
                        URLRequestContext* request_context)
       : ReportingContext(policy,
                          base::DefaultClock::GetInstance(),
                          base::DefaultTickClock::GetInstance(),
                          base::BindRepeating(&base::RandInt),
                          ReportingUploader::Create(request_context),
+                         std::move(json_parser),
                          ReportingDelegate::Create(request_context)) {}
 };
 
@@ -49,8 +52,10 @@ class ReportingContextImpl : public ReportingContext {
 // static
 std::unique_ptr<ReportingContext> ReportingContext::Create(
     const ReportingPolicy& policy,
+    std::unique_ptr<JSONParserDelegate> json_parser,
     URLRequestContext* request_context) {
-  return std::make_unique<ReportingContextImpl>(policy, request_context);
+  return std::make_unique<ReportingContextImpl>(policy, std::move(json_parser),
+                                                request_context);
 }
 
 ReportingContext::~ReportingContext() = default;
@@ -70,16 +75,19 @@ void ReportingContext::NotifyCacheUpdated() {
     observer.OnCacheUpdated();
 }
 
-ReportingContext::ReportingContext(const ReportingPolicy& policy,
-                                   base::Clock* clock,
-                                   const base::TickClock* tick_clock,
-                                   const RandIntCallback& rand_callback,
-                                   std::unique_ptr<ReportingUploader> uploader,
-                                   std::unique_ptr<ReportingDelegate> delegate)
+ReportingContext::ReportingContext(
+    const ReportingPolicy& policy,
+    base::Clock* clock,
+    const base::TickClock* tick_clock,
+    const RandIntCallback& rand_callback,
+    std::unique_ptr<ReportingUploader> uploader,
+    std::unique_ptr<JSONParserDelegate> json_parser,
+    std::unique_ptr<ReportingDelegate> delegate)
     : policy_(policy),
       clock_(clock),
       tick_clock_(tick_clock),
       uploader_(std::move(uploader)),
+      json_parser_(std::move(json_parser)),
       delegate_(std::move(delegate)),
       cache_(ReportingCache::Create(this)),
       endpoint_manager_(ReportingEndpointManager::Create(this, rand_callback)),

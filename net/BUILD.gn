@@ -1734,6 +1734,8 @@ component("net") {
         "network_error_logging/network_error_logging_delegate.h",
         "network_error_logging/network_error_logging_service.cc",
         "network_error_logging/network_error_logging_service.h",
+        "reporting/json_parser_delegate.cc",
+        "reporting/json_parser_delegate.h",
         "reporting/reporting_browsing_data_remover.cc",
         "reporting/reporting_browsing_data_remover.h",
         "reporting/reporting_cache.cc",
