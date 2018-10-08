@@ -11,17 +11,20 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/gpu_client.h"
+#include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/ws/gpu_host/gpu_client.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -45,6 +48,40 @@ const int32_t kInternalGpuChannelClientId = 2;
 bool HasSplitVizProcess() {
   constexpr char kEnableViz[] = "enable-viz";
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableViz);
+}
+
+class GpuClientDelegate : public viz::GpuClientDelegate {
+ public:
+  GpuClientDelegate(viz::GpuHostImpl* gpu_host_impl,
+                    viz::HostGpuMemoryBufferManager* gpu_memory_buffer_manager);
+  ~GpuClientDelegate() override;
+
+  // viz::GpuClientDelegate:
+  viz::GpuHostImpl* EnsureGpuHost() override;
+  viz::HostGpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+
+ private:
+  viz::GpuHostImpl* gpu_host_impl_;
+  viz::HostGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuClientDelegate);
+};
+
+GpuClientDelegate::GpuClientDelegate(
+    viz::GpuHostImpl* gpu_host_impl,
+    viz::HostGpuMemoryBufferManager* gpu_memory_buffer_manager)
+    : gpu_host_impl_(gpu_host_impl),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {}
+
+GpuClientDelegate::~GpuClientDelegate() = default;
+
+viz::GpuHostImpl* GpuClientDelegate::EnsureGpuHost() {
+  return gpu_host_impl_;
+}
+
+viz::HostGpuMemoryBufferManager*
+GpuClientDelegate::GetGpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager_;
 }
 
 }  // namespace
@@ -82,7 +119,9 @@ DefaultGpuHost::DefaultGpuHost(
   viz::GpuHostImpl::InitParams params;
   params.restart_id = viz::BeginFrameSource::kNotRestartableId + 1;
   params.in_process = in_process;
-  params.disable_gpu_shader_disk_cache = true;
+  params.disable_gpu_shader_disk_cache =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache);
   params.deadline_to_synchronize_surfaces =
       switches::GetDeadlineToSynchronizeSurfaces();
   params.main_thread_task_runner = main_thread_task_runner_;
@@ -107,6 +146,8 @@ DefaultGpuHost::DefaultGpuHost(
               gpu_host_impl_->gpu_service()),
           next_client_id_++, std::make_unique<gpu::GpuMemoryBufferSupport>(),
           main_thread_task_runner_);
+
+  shader_cache_factory_ = std::make_unique<gpu::ShaderCacheFactory>();
 }
 
 DefaultGpuHost::~DefaultGpuHost() {
@@ -132,11 +173,18 @@ void DefaultGpuHost::CreateFrameSinkManager(
 void DefaultGpuHost::Shutdown() {
   gpu_host_impl_.reset();
 
-  gpu_bindings_.CloseAllBindings();
+  gpu_clients_.clear();
 }
 
 void DefaultGpuHost::Add(mojom::GpuRequest request) {
-  AddInternal(std::move(request));
+  const int client_id = next_client_id_++;
+  const uint64_t client_tracing_id = 0;
+  auto client = std::make_unique<viz::GpuClient>(
+      std::make_unique<GpuClientDelegate>(gpu_host_impl_.get(),
+                                          gpu_memory_buffer_manager_.get()),
+      client_id, client_tracing_id, main_thread_task_runner_);
+  client->Add(std::move(request));
+  gpu_clients_.push_back(std::move(client));
 }
 
 void DefaultGpuHost::OnAcceleratedWidgetAvailable(
@@ -160,15 +208,6 @@ void DefaultGpuHost::AddArc(mojom::ArcRequest request) {
       std::move(request));
 }
 #endif  // defined(OS_CHROMEOS)
-
-GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
-  auto client(std::make_unique<GpuClient>(
-      next_client_id_++, &gpu_info_, &gpu_feature_info_,
-      gpu_memory_buffer_manager_.get(), gpu_host_impl_->gpu_service()));
-  GpuClient* client_ref = client.get();
-  gpu_bindings_.AddBinding(std::move(client), std::move(request));
-  return client_ref;
-}
 
 void DefaultGpuHost::OnBadMessageFromGpu() {
   // TODO(sad): Received some unexpected message from the gpu process. We
@@ -217,13 +256,11 @@ void DefaultGpuHost::BlockDomainFrom3DAPIs(const GURL& url,
 void DefaultGpuHost::DisableGpuCompositing() {}
 
 bool DefaultGpuHost::GpuAccessAllowed() const {
-  NOTREACHED();
   return true;
 }
 
 gpu::ShaderCacheFactory* DefaultGpuHost::GetShaderCacheFactory() {
-  NOTREACHED();
-  return nullptr;
+  return shader_cache_factory_.get();
 }
 
 void DefaultGpuHost::RecordLogMessage(int32_t severity,

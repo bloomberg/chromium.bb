@@ -26,24 +26,22 @@ namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
 
+namespace gpu {
+class ShaderCacheFactory;
+}
+
 namespace service_manager {
 class Connector;
 }
 
 namespace viz {
+class GpuClient;
 class GpuHostImpl;
 class HostGpuMemoryBufferManager;
 }
 
 namespace ws {
 namespace gpu_host {
-
-class GpuClient;
-
-namespace test {
-class GpuHostTest;
-}  // namespace test
-
 class GpuHostDelegate;
 
 // GpuHost sets up connection from clients to the real service implementation in
@@ -84,9 +82,8 @@ class DefaultGpuHost : public GpuHost, public viz::GpuHostImpl::Delegate {
 #endif  // defined(OS_CHROMEOS)
 
  private:
-  friend class test::GpuHostTest;
+  friend class GpuHostTestApi;
 
-  GpuClient* AddInternal(mojom::GpuRequest request);
   void OnBadMessageFromGpu();
 
   // TODO(crbug.com/611505): this goes away after the gpu process split in mus.
@@ -132,11 +129,14 @@ class DefaultGpuHost : public GpuHost, public viz::GpuHostImpl::Delegate {
 
   std::unique_ptr<viz::HostGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
+  std::unique_ptr<gpu::ShaderCacheFactory> shader_cache_factory_;
+
+  std::vector<std::unique_ptr<viz::GpuClient>> gpu_clients_;
+
   // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
   base::Thread gpu_thread_;
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
 
-  mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 #if defined(OS_CHROMEOS)
   mojo::StrongBindingSet<mojom::Arc> arc_bindings_;
 #endif  // defined(OS_CHROMEOS)
