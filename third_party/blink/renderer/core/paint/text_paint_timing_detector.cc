@@ -21,19 +21,19 @@ namespace blink {
 // Calculate metrics candidate every 1 second after the first text pre-paint.
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
 
-static bool LargeOnTop(std::unique_ptr<TextRecord>& a,
-                       std::unique_ptr<TextRecord>& b) {
+static bool LargeTextOnTop(std::unique_ptr<TextRecord>& a,
+                           std::unique_ptr<TextRecord>& b) {
   return a->first_size < b->first_size;
 }
 
-static bool LateOnTop(std::unique_ptr<TextRecord>& a,
-                      std::unique_ptr<TextRecord>& b) {
+static bool LateTextOnTop(std::unique_ptr<TextRecord>& a,
+                          std::unique_ptr<TextRecord>& b) {
   return a->first_paint_time < b->first_paint_time;
 }
 
 TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
-    : largest_text_heap_(LargeOnTop),
-      latest_text_heap_(LateOnTop),
+    : largest_text_heap_(LargeTextOnTop),
+      latest_text_heap_(LateTextOnTop),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &TextPaintTimingDetector::TimerFired),

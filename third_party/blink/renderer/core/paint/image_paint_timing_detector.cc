@@ -22,19 +22,19 @@ namespace blink {
 // capped. Exceeding such limit will deactivate the algorithm.
 constexpr size_t kNodeNumberLimit = 5000;
 
-static bool LargeOnTop(const std::shared_ptr<ImageRecord>& a,
-                       const std::shared_ptr<ImageRecord>& b) {
+static bool LargeImageOnTop(const std::shared_ptr<ImageRecord>& a,
+                            const std::shared_ptr<ImageRecord>& b) {
   return a->first_size < b->first_size;
 }
 
-static bool LateOnTop(const std::shared_ptr<ImageRecord>& a,
-                      const std::shared_ptr<ImageRecord>& b) {
+static bool LateImageOnTop(const std::shared_ptr<ImageRecord>& a,
+                           const std::shared_ptr<ImageRecord>& b) {
   return a->first_paint_index < b->first_paint_index;
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : largest_image_heap_(LargeOnTop),
-      latest_image_heap_(LateOnTop),
+    : largest_image_heap_(LargeImageOnTop),
+      latest_image_heap_(LateImageOnTop),
       frame_view_(frame_view) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
