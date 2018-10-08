@@ -82,7 +82,7 @@ int FrameTreeNode::next_frame_tree_node_id_ = 1;
 FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FrameTreeNodeIdMap* nodes = g_frame_tree_node_id_map.Pointer();
-  FrameTreeNodeIdMap::iterator it = nodes->find(frame_tree_node_id);
+  auto it = nodes->find(frame_tree_node_id);
   return it == nodes->end() ? nullptr : it->second;
 }
 

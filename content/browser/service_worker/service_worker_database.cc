@@ -576,8 +576,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   // Used for avoiding multiple writes for the same resource id or url.
   std::set<int64_t> pushed_resources;
   std::set<GURL> pushed_urls;
-  for (std::vector<ResourceRecord>::const_iterator itr = resources.begin();
-       itr != resources.end(); ++itr) {
+  for (auto itr = resources.begin(); itr != resources.end(); ++itr) {
     if (!itr->url.is_valid())
       return STATUS_ERROR_FAILED;
 
@@ -1682,8 +1681,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
 
   if (ids.empty())
     return STATUS_OK;
-  for (std::set<int64_t>::const_iterator itr = ids.begin(); itr != ids.end();
-       ++itr) {
+  for (auto itr = ids.begin(); itr != ids.end(); ++itr) {
     // Value should be empty.
     batch->Put(CreateResourceIdKey(id_key_prefix, *itr), "");
   }
@@ -1705,8 +1703,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIdsInBatch(
   if (status != STATUS_OK)
     return status;
 
-  for (std::set<int64_t>::const_iterator itr = ids.begin(); itr != ids.end();
-       ++itr) {
+  for (auto itr = ids.begin(); itr != ids.end(); ++itr) {
     batch->Delete(CreateResourceIdKey(id_key_prefix, *itr));
   }
   return STATUS_OK;

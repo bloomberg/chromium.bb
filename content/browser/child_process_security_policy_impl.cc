@@ -108,9 +108,8 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   ~SecurityState() {
     storage::IsolatedContext* isolated_context =
         storage::IsolatedContext::GetInstance();
-    for (FileSystemMap::iterator iter = filesystem_permissions_.begin();
-         iter != filesystem_permissions_.end();
-         ++iter) {
+    for (auto iter = filesystem_permissions_.begin();
+         iter != filesystem_permissions_.end(); ++iter) {
       isolated_context->RemoveReference(iter->first);
     }
     UMA_HISTOGRAM_COUNTS_1M(
@@ -544,7 +543,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
 
   {
     base::AutoLock lock(lock_);
-    SecurityStateMap::iterator state = security_state_.find(child_id);
+    auto state = security_state_.find(child_id);
     if (state == security_state_.end())
       return;
 
@@ -580,7 +579,7 @@ void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -591,7 +590,7 @@ void ChildProcessSecurityPolicyImpl::RevokeAllPermissionsForFile(
     int child_id, const base::FilePath& file) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -632,7 +631,7 @@ void ChildProcessSecurityPolicyImpl::GrantDeleteFromFileSystem(
 void ChildProcessSecurityPolicyImpl::GrantSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -644,7 +643,7 @@ void ChildProcessSecurityPolicyImpl::GrantCommitOrigin(
     const url::Origin& origin) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -656,7 +655,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestOrigin(
     const url::Origin& origin) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -683,7 +682,7 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
 
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -699,7 +698,7 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
 void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -709,7 +708,7 @@ void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {
 void ChildProcessSecurityPolicyImpl::RevokeReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -751,7 +750,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   {
     base::AutoLock lock(lock_);
 
-    SecurityStateMap::iterator state = security_state_.find(child_id);
+    auto state = security_state_.find(child_id);
     if (state == security_state_.end())
       return false;
 
@@ -839,7 +838,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
-    SecurityStateMap::iterator state = security_state_.find(child_id);
+    auto state = security_state_.find(child_id);
     if (state == security_state_.end())
       return false;
 
@@ -989,7 +988,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
   if (!result) {
     // If this is a worker thread that has no access to a given file,
     // let's check that its renderer process has access to that file instead.
-    WorkerToMainProcessMap::iterator iter = worker_map_.find(child_id);
+    auto iter = worker_map_.find(child_id);
     if (iter != worker_map_.end() && iter->second != 0) {
       result = ChildProcessHasPermissionsForFile(iter->second,
                                                  file,
@@ -1034,8 +1033,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   int found_permissions = 0;
   {
     base::AutoLock lock(lock_);
-    FileSystemPermissionPolicyMap::iterator found =
-        file_system_policy_map_.find(filesystem_url.type());
+    auto found = file_system_policy_map_.find(filesystem_url.type());
     if (found == file_system_policy_map_.end())
       return false;
     found_permissions = found->second;
@@ -1103,7 +1101,7 @@ bool ChildProcessSecurityPolicyImpl::CanDeleteFileSystemFile(
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 
@@ -1113,7 +1111,7 @@ bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
 bool ChildProcessSecurityPolicyImpl::CanReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 
@@ -1131,7 +1129,7 @@ void ChildProcessSecurityPolicyImpl::AddChild(int child_id) {
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
   return state->second->HasPermissionsForFile(file, permissions);
@@ -1149,7 +1147,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   GURL site_url = SiteInstance::GetSiteForURL(nullptr, url);
 
   base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end()) {
     // TODO(nick): Returning true instead of false here is a temporary
     // workaround for https://crbug.com/600441
@@ -1181,7 +1179,7 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
   // "gurl" can be currently empty in some cases, such as file://blah.
   DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(nullptr, gurl), gurl);
   base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl);
 }
@@ -1190,7 +1188,7 @@ ChildProcessSecurityPolicyImpl::CheckOriginLockResult
 ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
                                                 const GURL& site_url) {
   base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
   return state->second->CheckOriginLock(site_url);
@@ -1198,7 +1196,7 @@ ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
 
 GURL ChildProcessSecurityPolicyImpl::GetOriginLock(int child_id) {
   base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return GURL();
   return state->second->origin_lock();
@@ -1210,7 +1208,7 @@ void ChildProcessSecurityPolicyImpl::GrantPermissionsForFileSystem(
     int permission) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
   state->second->GrantPermissionsForFileSystem(filesystem_id, permission);
@@ -1222,7 +1220,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
     int permission) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
   return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
@@ -1238,7 +1236,7 @@ void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
 bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
+  auto state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 

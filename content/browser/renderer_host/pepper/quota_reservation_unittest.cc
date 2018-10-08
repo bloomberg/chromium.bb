@@ -136,9 +136,8 @@ void GotReservedQuota(int64_t* reserved_quota_ptr,
   *reserved_quota_ptr = reserved_quota;
 
   file_growths_ptr->clear();
-  for (ppapi::FileSizeMap::const_iterator it = maximum_written_offsets.begin();
-       it != maximum_written_offsets.end();
-       ++it)
+  for (auto it = maximum_written_offsets.begin();
+       it != maximum_written_offsets.end(); ++it)
     (*file_growths_ptr)[it->first] = ppapi::FileGrowth(it->second, 0);
 }
 

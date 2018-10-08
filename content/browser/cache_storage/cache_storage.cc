@@ -975,8 +975,7 @@ void CacheStorage::DeleteCacheDidWriteIndex(
 
   cache_index_->FinalizeDoomedCache();
 
-  CacheMap::iterator map_iter =
-      cache_map_.find(cache_handle.value()->cache_name());
+  auto map_iter = cache_map_.find(cache_handle.value()->cache_name());
   DCHECK(map_iter != cache_map_.end());
 
   doomed_caches_.insert(
@@ -1162,7 +1161,7 @@ CacheStorageCacheHandle CacheStorage::GetLoadedCache(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized_);
 
-  CacheMap::iterator map_iter = cache_map_.find(cache_name);
+  auto map_iter = cache_map_.find(cache_name);
   if (map_iter == cache_map_.end())
     return CacheStorageCacheHandle();
 

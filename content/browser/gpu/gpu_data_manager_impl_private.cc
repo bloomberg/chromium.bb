@@ -821,7 +821,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(const GURL& url,
   // TODO(kbr): make this pay attention to the TDR thresholds in the
   // Windows registry, but make sure it continues to be testable.
   {
-    std::list<base::Time>::iterator iter = timestamps_of_gpu_resets_.begin();
+    auto iter = timestamps_of_gpu_resets_.begin();
     int num_resets_within_timeframe = 0;
     while (iter != timestamps_of_gpu_resets_.end()) {
       base::Time time = *iter;

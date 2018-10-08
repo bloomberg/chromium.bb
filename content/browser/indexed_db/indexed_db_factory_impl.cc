@@ -138,7 +138,7 @@ void IndexedDBFactoryImpl::RemoveDatabaseFromMaps(
   std::pair<OriginDBMap::iterator, OriginDBMap::iterator> range =
       origin_dbs_.equal_range(database->identifier().first);
   DCHECK(range.first != range.second);
-  for (OriginDBMap::iterator it2 = range.first; it2 != range.second; ++it2) {
+  for (auto it2 = range.first; it2 != range.second; ++it2) {
     if (it2->second == database) {
       origin_dbs_.erase(it2);
       break;
@@ -768,7 +768,7 @@ size_t IndexedDBFactoryImpl::GetConnectionCount(const Origin& origin) const {
   size_t count(0);
 
   OriginDBs range = GetOpenDatabasesForOrigin(origin);
-  for (OriginDBMapIterator it = range.first; it != range.second; ++it)
+  for (auto it = range.first; it != range.second; ++it)
     count += it->second->ConnectionCount();
 
   return count;

@@ -607,7 +607,7 @@ bool ServiceWorkerContextCore::IsValidRegisterRequest(
 
 ServiceWorkerRegistration* ServiceWorkerContextCore::GetLiveRegistration(
     int64_t id) {
-  RegistrationsMap::iterator it = live_registrations_.find(id);
+  auto it = live_registrations_.find(id);
   return (it != live_registrations_.end()) ? it->second : nullptr;
 }
 
@@ -625,7 +625,7 @@ void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
 }
 
 ServiceWorkerVersion* ServiceWorkerContextCore::GetLiveVersion(int64_t id) {
-  VersionMap::iterator it = live_versions_.find(id);
+  auto it = live_versions_.find(id);
   return (it != live_versions_.end()) ? it->second : nullptr;
 }
 

@@ -197,7 +197,7 @@ class AudioMirroringManagerTest : public testing::Test {
   int CountStreamsDivertedTo(
       const std::unique_ptr<MockMirroringDestination>& dest) const {
     int count = 0;
-    for (StreamRoutes::const_iterator it = mirroring_manager_.routes_.begin();
+    for (auto it = mirroring_manager_.routes_.begin();
          it != mirroring_manager_.routes_.end(); ++it) {
       if (it->destination == dest.get())
         ++count;
@@ -208,7 +208,7 @@ class AudioMirroringManagerTest : public testing::Test {
   int CountStreamsDuplicatedTo(
       const std::unique_ptr<MockMirroringDestination>& dest) const {
     int count = 0;
-    for (StreamRoutes::const_iterator it = mirroring_manager_.routes_.begin();
+    for (auto it = mirroring_manager_.routes_.begin();
          it != mirroring_manager_.routes_.end(); ++it) {
       if (it->duplications.find(dest.get()) != it->duplications.end())
         ++count;

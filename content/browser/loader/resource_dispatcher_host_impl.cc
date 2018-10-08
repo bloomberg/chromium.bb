@@ -373,8 +373,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   typedef std::vector<std::unique_ptr<ResourceLoader>> LoaderList;
   LoaderList loaders_to_cancel;
 
-  for (LoaderMap::iterator i = pending_loaders_.begin();
-       i != pending_loaders_.end();) {
+  for (auto i = pending_loaders_.begin(); i != pending_loaders_.end();) {
     ResourceLoader* loader = i->second.get();
     if (loader->GetRequestInfo()->GetContext() == context) {
       loaders_to_cancel.push_back(std::move(i->second));
@@ -389,7 +388,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
     }
   }
 
-  for (BlockedLoadersMap::iterator i = blocked_loaders_map_.begin();
+  for (auto i = blocked_loaders_map_.begin();
        i != blocked_loaders_map_.end();) {
     BlockedLoadersList* loaders = i->second.get();
     if (loaders->empty()) {
@@ -771,8 +770,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // the request needs to be aborted or continued.
   for (net::HttpRequestHeaders::Iterator it(request_data.headers);
        it.GetNext();) {
-    HeaderInterceptorMap::iterator index =
-        http_header_interceptor_map_.find(it.name());
+    auto index = http_header_interceptor_map_.find(it.name());
     if (index != http_header_interceptor_map_.end()) {
       HeaderInterceptorInfo& interceptor_info = index->second;
 
@@ -1276,7 +1274,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
 
   // Remove matches.
   for (size_t i = 0; i < matching_requests.size(); ++i) {
-    LoaderMap::iterator iter = pending_loaders_.find(matching_requests[i]);
+    auto iter = pending_loaders_.find(matching_requests[i]);
     // Although every matching request was in pending_requests_ when we built
     // matching_requests, it is normal for a matching request to be not found
     // in pending_requests_ after we have removed some matching requests from
@@ -1315,8 +1313,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
 // Cancels the request and removes it from the list.
 void ResourceDispatcherHostImpl::RemovePendingRequest(int child_id,
                                                       int request_id) {
-  LoaderMap::iterator i = pending_loaders_.find(
-      GlobalRequestID(child_id, request_id));
+  auto i = pending_loaders_.find(GlobalRequestID(child_id, request_id));
   if (i == pending_loaders_.end()) {
     NOTREACHED() << "Trying to remove a request that's not here";
     return;
@@ -1355,8 +1352,7 @@ void ResourceDispatcherHostImpl::CancelRequest(int child_id,
 ResourceDispatcherHostImpl::OustandingRequestsStats
 ResourceDispatcherHostImpl::GetOutstandingRequestsStats(
     const ResourceRequestInfoImpl& info) {
-  OutstandingRequestsStatsMap::iterator entry =
-      outstanding_requests_stats_map_.find(info.GetChildID());
+  auto entry = outstanding_requests_stats_map_.find(info.GetChildID());
   OustandingRequestsStats stats = { 0, 0 };
   if (entry != outstanding_requests_stats_map_.end())
     stats = entry->second;
@@ -2048,8 +2044,7 @@ void ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute(
 void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
     const GlobalFrameRoutingId& global_routing_id,
     bool cancel_requests) {
-  BlockedLoadersMap::iterator iter =
-      blocked_loaders_map_.find(global_routing_id);
+  auto iter = blocked_loaders_map_.find(global_routing_id);
   if (iter == blocked_loaders_map_.end()) {
     // It's possible to reach here if the renderer crashed while an interstitial
     // page was showing.
@@ -2105,7 +2100,7 @@ ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
     const GlobalRequestID& id) const {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
-  LoaderMap::const_iterator i = pending_loaders_.find(id);
+  auto i = pending_loaders_.find(id);
   if (i == pending_loaders_.end())
     return nullptr;
 

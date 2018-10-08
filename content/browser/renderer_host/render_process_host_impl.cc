@@ -422,13 +422,13 @@ class SiteProcessMap : public base::SupportsUserData::Data {
     // two WebContents with blank SiteInstances. If that occurs, keeping the
     // exising entry and not overwriting it is a predictable behavior that is
     // safe.
-    SiteToProcessMap::iterator i = map_.find(site);
+    auto i = map_.find(site);
     if (i == map_.end())
       map_[site] = process;
   }
 
   RenderProcessHost* FindProcess(const std::string& site) {
-    SiteToProcessMap::iterator i = map_.find(site);
+    auto i = map_.find(site);
     if (i != map_.end())
       return i->second;
     return nullptr;
@@ -443,9 +443,8 @@ class SiteProcessMap : public base::SupportsUserData::Data {
       if (i->second == host)
         sites.insert(i->first);
     }
-    for (std::set<std::string>::iterator i = sites.begin(); i != sites.end();
-         ++i) {
-      SiteToProcessMap::iterator iter = map_.find(*i);
+    for (auto i = sites.begin(); i != sites.end(); ++i) {
+      auto iter = map_.find(*i);
       if (iter != map_.end()) {
         DCHECK_EQ(iter->second, host);
         map_.erase(iter);

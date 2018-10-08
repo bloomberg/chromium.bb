@@ -632,8 +632,7 @@ bool ServiceWorkerVersion::FinishExternalRequest(
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
     return false;
 
-  RequestUUIDToRequestIDMap::iterator iter =
-      external_request_uuid_to_request_id_.find(request_uuid);
+  auto iter = external_request_uuid_to_request_id_.find(request_uuid);
   if (iter != external_request_uuid_to_request_id_.end()) {
     int request_id = iter->second;
     external_request_uuid_to_request_id_.erase(iter);

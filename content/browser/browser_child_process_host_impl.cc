@@ -198,8 +198,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
   // Make a copy since the BrowserChildProcessHost dtor mutates the original
   // list.
   BrowserChildProcessList copy = g_child_process_list.Get();
-  for (BrowserChildProcessList::iterator it = copy.begin();
-       it != copy.end(); ++it) {
+  for (auto it = copy.begin(); it != copy.end(); ++it) {
     delete (*it)->delegate();  // ~*HostDelegate deletes *HostImpl.
   }
 }

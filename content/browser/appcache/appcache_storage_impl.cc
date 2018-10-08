@@ -1568,8 +1568,7 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
       working_set()->GetGroupsInOrigin(origin);
   if (groups_in_use) {
     if (!preferred_manifest_url.is_empty()) {
-      AppCacheWorkingSet::GroupMap::const_iterator found =
-          groups_in_use->find(preferred_manifest_url);
+      auto found = groups_in_use->find(preferred_manifest_url);
       if (found != groups_in_use->end() &&
           FindResponseForMainRequestInGroup(
               found->second, *url_ptr, delegate)) {
@@ -1847,7 +1846,7 @@ void AppCacheStorageImpl::OnDeletedOneResponse(int rv) {
 
 AppCacheStorageImpl::CacheLoadTask*
 AppCacheStorageImpl::GetPendingCacheLoadTask(int64_t cache_id) {
-  PendingCacheLoads::iterator found = pending_cache_loads_.find(cache_id);
+  auto found = pending_cache_loads_.find(cache_id);
   if (found != pending_cache_loads_.end())
     return found->second;
   return nullptr;
@@ -1855,7 +1854,7 @@ AppCacheStorageImpl::GetPendingCacheLoadTask(int64_t cache_id) {
 
 AppCacheStorageImpl::GroupLoadTask*
 AppCacheStorageImpl::GetPendingGroupLoadTask(const GURL& manifest_url) {
-  PendingGroupLoads::iterator found = pending_group_loads_.find(manifest_url);
+  auto found = pending_group_loads_.find(manifest_url);
   if (found != pending_group_loads_.end())
     return found->second;
   return nullptr;

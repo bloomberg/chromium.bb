@@ -46,8 +46,7 @@ namespace {
 void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
                      const std::set<std::string>& categorySet) {
   base::ListValue category_list;
-  for (std::set<std::string>::const_iterator it = categorySet.begin();
-       it != categorySet.end(); it++) {
+  for (auto it = categorySet.begin(); it != categorySet.end(); it++) {
     category_list.AppendString(*it);
   }
 

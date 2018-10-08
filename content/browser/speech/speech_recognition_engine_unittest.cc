@@ -667,10 +667,8 @@ bool SpeechRecognitionEngineTest::ResultsAreEqual(
   if (a.size() != b.size())
     return false;
 
-  std::vector<blink::mojom::SpeechRecognitionResultPtr>::const_iterator it_a =
-      a.begin();
-  std::vector<blink::mojom::SpeechRecognitionResultPtr>::const_iterator it_b =
-      b.begin();
+  auto it_a = a.begin();
+  auto it_b = b.begin();
   for (; it_a != a.end() && it_b != b.end(); ++it_a, ++it_b) {
     if ((*it_a)->is_provisional != (*it_b)->is_provisional ||
         (*it_a)->hypotheses.size() != (*it_b)->hypotheses.size()) {

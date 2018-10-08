@@ -351,8 +351,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
     int32_t widget_routing_id,
     bool swapped_out,
     bool hidden) {
-  RenderViewHostMap::iterator iter =
-      render_view_host_map_.find(site_instance->GetId());
+  auto iter = render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end())
     return iter->second;
 
@@ -367,8 +366,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
 }
 
 RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
-  RenderViewHostMap::iterator iter =
-      render_view_host_map_.find(site_instance->GetId());
+  auto iter = render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end())
     return iter->second;
 
@@ -377,8 +375,7 @@ RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
 
 void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* render_view_host) {
   SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  RenderViewHostMap::iterator iter =
-      render_view_host_map_.find(site_instance->GetId());
+  auto iter = render_view_host_map_.find(site_instance->GetId());
   CHECK(iter != render_view_host_map_.end());
   CHECK(iter->second == render_view_host);
 
@@ -388,8 +385,7 @@ void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* render_view_host) {
 void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
   SiteInstance* site_instance = render_view_host->GetSiteInstance();
   int32_t site_instance_id = site_instance->GetId();
-  RenderViewHostMap::iterator iter =
-      render_view_host_map_.find(site_instance_id);
+  auto iter = render_view_host_map_.find(site_instance_id);
 
   CHECK(iter != render_view_host_map_.end());
   CHECK_EQ(iter->second, render_view_host);

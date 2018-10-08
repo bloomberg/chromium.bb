@@ -613,8 +613,7 @@ void NavigationEntryImpl::SetExtraData(const std::string& key,
 
 bool NavigationEntryImpl::GetExtraData(const std::string& key,
                                        base::string16* data) const {
-  std::map<std::string, base::string16>::const_iterator iter =
-      extra_data_.find(key);
+  auto iter = extra_data_.find(key);
   if (iter == extra_data_.end())
     return false;
   *data = iter->second;

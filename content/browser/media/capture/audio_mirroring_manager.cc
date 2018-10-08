@@ -50,7 +50,7 @@ void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
 
   // Find and remove the entry from the routing table.  If the stream is being
   // diverted, it is stopped.
-  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+  for (auto it = routes_.begin(); it != routes_.end(); ++it) {
     if (it->diverter == diverter) {
       // Stop the diverted flow.
       RouteDivertedFlow(&(*it), nullptr);
@@ -103,7 +103,7 @@ void AudioMirroringManager::StopMirroring(MirroringDestination* destination) {
   // Each stopped stream becomes a candidate to be diverted to another
   // destination.
   std::set<GlobalFrameRoutingId> redivert_candidates;
-  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+  for (auto it = routes_.begin(); it != routes_.end(); ++it) {
     if (it->destination == destination) {
       RouteDivertedFlow(&(*it), nullptr);
       redivert_candidates.insert(it->source_render_frame);
@@ -202,7 +202,7 @@ void AudioMirroringManager::UpdateRoutesToDivertDestination(
   // Start/stop diverting based on |matches|.  Any stopped stream becomes a
   // candidate to be diverted to another destination.
   std::set<GlobalFrameRoutingId> redivert_candidates;
-  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+  for (auto it = routes_.begin(); it != routes_.end(); ++it) {
     if (matches.find(it->source_render_frame) != matches.end()) {
       // Only change the route if the stream is not already being diverted.
       if (!it->destination)
@@ -230,7 +230,7 @@ void AudioMirroringManager::UpdateRoutesToDuplicateDestination(
     return;  // Query result callback invoked after StopMirroring().
   }
 
-  for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
+  for (auto it = routes_.begin(); it != routes_.end(); ++it) {
     if (matches.find(it->source_render_frame) != matches.end()) {
       // The same destination cannot have both a diverted audio flow and a
       // duplicated flow from the same source.

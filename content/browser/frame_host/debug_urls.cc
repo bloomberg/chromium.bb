@@ -59,8 +59,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
   std::vector<PpapiPluginProcessHost*> hosts;
   PpapiPluginProcessHost::FindByName(
       base::UTF8ToUTF16(kFlashPluginName), &hosts);
-  for (std::vector<PpapiPluginProcessHost*>::iterator iter = hosts.begin();
-       iter != hosts.end(); ++iter) {
+  for (auto iter = hosts.begin(); iter != hosts.end(); ++iter) {
     if (crash)
       (*iter)->Send(new PpapiMsg_Crash());
     else

@@ -310,8 +310,7 @@ void InterstitialPageImpl::Hide() {
 
   static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSecurityState();
 
-  InterstitialPageMap::iterator iter =
-      g_web_contents_to_interstitial_page->find(web_contents_);
+  auto iter = g_web_contents_to_interstitial_page->find(web_contents_);
   DCHECK(iter != g_web_contents_to_interstitial_page->end());
   if (iter != g_web_contents_to_interstitial_page->end())
     g_web_contents_to_interstitial_page->erase(iter);

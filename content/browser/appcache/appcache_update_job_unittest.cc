@@ -3630,8 +3630,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
           // Check that any copied entries have the expected response id
           // and that entries that are not copied have a different response id.
-          std::map<GURL, int64_t>::iterator found =
-              expect_response_ids_.find(pair.first);
+          auto found = expect_response_ids_.find(pair.first);
           if (found != expect_response_ids_.end()) {
             EXPECT_EQ(found->second, pair.second.response_id());
           } else if (expect_old_cache_) {

@@ -415,8 +415,7 @@ static const unsigned int kCrashesInterval = 120;
 
 void PluginServiceImpl::RegisterPluginCrash(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::map<base::FilePath, std::vector<base::Time> >::iterator i =
-      crash_times_.find(path);
+  auto i = crash_times_.find(path);
   if (i == crash_times_.end()) {
     crash_times_[path] = std::vector<base::Time>();
     i = crash_times_.find(path);
