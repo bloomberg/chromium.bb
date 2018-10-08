@@ -533,6 +533,11 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
 }
 
 void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
+  // There might be a case that |dialog| is already deleted
+  // in SelectFileDialogImplGTK::FileSelected.
+  // See https://crbug.com/880073.
+  if (!dialog)
+    return;
   // |parent| can be nullptr when closing the host window
   // while opening the file-picker.
   aura::Window* parent = dialogs_[dialog]->parent;
