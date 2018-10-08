@@ -40,9 +40,4 @@ KeyedService* StrikeDatabaseFactory::BuildServiceInstanceFor(
       profile->GetPath().Append(FILE_PATH_LITERAL("AutofillStrikeDatabase")));
 }
 
-content::BrowserContext* StrikeDatabaseFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
-}
-
 }  // namespace autofill

@@ -146,9 +146,8 @@ StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {
   // to determine whether or not to offer save of Autofill data. However, we
   // don't allow saving of Autofill data while in incognito anyway, so an
   // incognito code path should never get far enough to query StrikeDatabase.
-  return profile->IsOffTheRecord()
-             ? nullptr
-             : StrikeDatabaseFactory::GetForProfile(profile);
+  DCHECK(!profile->IsOffTheRecord());
+  return StrikeDatabaseFactory::GetForProfile(profile);
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
