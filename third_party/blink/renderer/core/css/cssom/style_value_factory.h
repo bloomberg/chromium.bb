@@ -19,13 +19,20 @@ class CORE_EXPORT StyleValueFactory {
   STATIC_ONLY(StyleValueFactory);
 
  public:
-  static CSSStyleValueVector FromString(CSSPropertyID,
-                                        const PropertyRegistration*,
-                                        const String&,
-                                        const CSSParserContext*);
-  static CSSStyleValue* CssValueToStyleValue(CSSPropertyID, const CSSValue&);
-  static CSSStyleValueVector CssValueToStyleValueVector(CSSPropertyID,
-                                                        const CSSValue&);
+  static CSSStyleValueVector FromString(
+      CSSPropertyID,
+      const AtomicString& custom_property_name,
+      const PropertyRegistration*,
+      const String&,
+      const CSSParserContext*);
+  static CSSStyleValue* CssValueToStyleValue(
+      CSSPropertyID,
+      const AtomicString& custom_property_name,
+      const CSSValue&);
+  static CSSStyleValueVector CssValueToStyleValueVector(
+      CSSPropertyID,
+      const AtomicString& custom_property_name,
+      const CSSValue&);
   // If you don't have complex CSS properties, use this one.
   static CSSStyleValueVector CssValueToStyleValueVector(const CSSValue&);
 };

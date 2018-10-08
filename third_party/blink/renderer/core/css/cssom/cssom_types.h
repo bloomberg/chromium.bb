@@ -34,6 +34,7 @@ class CSSOMTypes {
 
   static bool IsPropertySupported(CSSPropertyID);
   static bool PropertyCanTake(CSSPropertyID,
+                              const AtomicString& custom_property_name,
                               const PropertyRegistration*,
                               const CSSStyleValue&);
 };

@@ -85,7 +85,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
           ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
         return CSSKeywordValue::Create("currentcolor");
       }
-      return CSSUnsupportedStyleValue::Create(property_id, value);
+      return CSSUnsupportedStyleValue::Create(property_id, g_null_atom, value);
     case CSSPropertyContain: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
@@ -205,8 +205,10 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
         ToCSSCustomPropertyDeclaration(value));
   }
 
-  if (!CSSOMTypes::IsPropertySupported(property_id))
-    return CSSUnsupportedStyleValue::Create(property_id, value);
+  if (!CSSOMTypes::IsPropertySupported(property_id)) {
+    DCHECK_NE(property_id, CSSPropertyVariable);
+    return CSSUnsupportedStyleValue::Create(property_id, g_null_atom, value);
+  }
 
   CSSStyleValue* style_value =
       CreateStyleValueWithPropertyInternal(property_id, value);
@@ -215,11 +217,14 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
   return CreateStyleValue(value);
 }
 
-CSSStyleValueVector UnsupportedCSSValue(CSSPropertyID property_id,
-                                        const CSSValue& value) {
+CSSStyleValueVector UnsupportedCSSValue(
+    CSSPropertyID property_id,
+    const AtomicString& custom_property_name,
+    const CSSValue& value) {
+  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSStyleValueVector style_value_vector;
-  style_value_vector.push_back(
-      CSSUnsupportedStyleValue::Create(property_id, value));
+  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(
+      property_id, custom_property_name, value));
   return style_value_vector;
 }
 
@@ -227,10 +232,12 @@ CSSStyleValueVector UnsupportedCSSValue(CSSPropertyID property_id,
 
 CSSStyleValueVector StyleValueFactory::FromString(
     CSSPropertyID property_id,
+    const AtomicString& custom_property_name,
     const PropertyRegistration* registration,
     const String& css_text,
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyInvalid);
+  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSTokenizer tokenizer(css_text);
   const auto tokens = tokenizer.TokenizeToEOF();
   const CSSParserTokenRange range(tokens);
@@ -242,16 +249,19 @@ CSSStyleValueVector StyleValueFactory::FromString(
                                     StyleRule::RuleType::kStyle)) {
     if (parsed_properties.size() == 1) {
       const auto result = StyleValueFactory::CssValueToStyleValueVector(
-          parsed_properties[0].Id(), *parsed_properties[0].Value());
+          parsed_properties[0].Id(), g_null_atom,
+          *parsed_properties[0].Value());
       // TODO(801935): Handle list-valued properties.
       if (result.size() == 1U)
         result[0]->SetCSSText(css_text);
+
       return result;
     }
 
     // Shorthands are not yet supported.
     CSSStyleValueVector result;
-    result.push_back(CSSUnsupportedStyleValue::Create(property_id, css_text));
+    result.push_back(
+        CSSUnsupportedStyleValue::Create(property_id, g_null_atom, css_text));
     return result;
   }
 
@@ -262,7 +272,8 @@ CSSStyleValueVector StyleValueFactory::FromString(
     if (!value)
       return CSSStyleValueVector();
 
-    return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
+    return StyleValueFactory::CssValueToStyleValueVector(
+        property_id, custom_property_name, *value);
   }
 
   if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
@@ -281,18 +292,24 @@ CSSStyleValueVector StyleValueFactory::FromString(
 
 CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
     CSSPropertyID property_id,
+    const AtomicString& custom_property_name,
     const CSSValue& css_value) {
   DCHECK(!CSSProperty::Get(property_id).IsRepeated());
+  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSStyleValue* style_value =
       CreateStyleValueWithProperty(property_id, css_value);
-  if (!style_value)
-    return CSSUnsupportedStyleValue::Create(property_id, css_value);
+  if (!style_value) {
+    return CSSUnsupportedStyleValue::Create(property_id, custom_property_name,
+                                            css_value);
+  }
   return style_value;
 }
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     CSSPropertyID property_id,
+    const AtomicString& custom_property_name,
     const CSSValue& css_value) {
+  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSStyleValueVector style_value_vector;
 
   CSSStyleValue* style_value =
@@ -315,7 +332,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
       // https://github.com/w3c/css-houdini-drafts/issues/290
       (property_id == CSSPropertyVariable &&
        CSSTransformComponent::FromCSSValue(css_value))) {
-    return UnsupportedCSSValue(property_id, css_value);
+    return UnsupportedCSSValue(property_id, custom_property_name, css_value);
   }
 
   // We assume list-valued properties are always stored as a list.
@@ -323,7 +340,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
   for (const CSSValue* inner_value : css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
     if (!style_value)
-      return UnsupportedCSSValue(property_id, css_value);
+      return UnsupportedCSSValue(property_id, custom_property_name, css_value);
     style_value_vector.push_back(style_value);
   }
   return style_value_vector;
@@ -331,7 +348,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     const CSSValue& css_value) {
-  return CssValueToStyleValueVector(CSSPropertyInvalid, css_value);
+  return CssValueToStyleValueVector(CSSPropertyInvalid, g_null_atom, css_value);
 }
 
 }  // namespace blink
