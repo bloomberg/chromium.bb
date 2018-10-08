@@ -266,6 +266,11 @@ void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
   }
 }
 
+void IdentityManager::OnRefreshTokensLoaded() {
+  for (auto& observer : observer_list_)
+    observer.OnRefreshTokensLoaded();
+}
+
 void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,

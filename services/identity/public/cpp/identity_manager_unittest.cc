@@ -225,6 +225,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     on_refresh_token_removed_callback_ = std::move(callback);
   }
 
+  void set_on_refresh_tokens_loaded_callback(base::OnceClosure callback) {
+    on_refresh_tokens_loaded_callback_ = std::move(callback);
+  }
+
   const AccountInfo& account_from_refresh_token_updated_callback() {
     return account_from_refresh_token_updated_callback_;
   }
@@ -278,6 +282,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     if (on_refresh_token_removed_callback_)
       on_refresh_token_removed_callback_.Run(account_id);
   }
+  void OnRefreshTokensLoaded() override {
+    if (on_refresh_tokens_loaded_callback_)
+      std::move(on_refresh_tokens_loaded_callback_).Run();
+  }
   void OnAccountsInCookieUpdated(
       const std::vector<AccountInfo>& accounts) override {
     accounts_from_cookie_change_callback_ = accounts;
@@ -292,6 +300,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_refresh_token_updated_callback_;
   base::RepeatingCallback<void(const std::string&)>
       on_refresh_token_removed_callback_;
+  base::OnceClosure on_refresh_tokens_loaded_callback_;
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   AccountInfo primary_account_from_set_callback_;
   AccountInfo primary_account_from_cleared_callback_;
@@ -1544,6 +1553,22 @@ TEST_F(
       run_loop2.QuitClosure());
   token_service()->RevokeCredentials(account_id);
   run_loop2.Run();
+}
+
+TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_tokens_loaded_callback(
+      run_loop.QuitClosure());
+
+  // Credentials are already loaded in SigninManager::Initialize()
+  // which runs even before the IdentityManager is created. That's why
+  // we fake the credentials loaded state and force another load in
+  // order to be able to capture the TokensLoaded event.
+  token_service()->set_all_credentials_loaded_for_testing(false);
+  token_service()->LoadCredentials("");
+  run_loop.Run();
 }
 
 TEST_F(IdentityManagerTest,
