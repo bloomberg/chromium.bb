@@ -581,7 +581,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     protocol = response.GetResourceLoadInfo()->npn_negotiated_protocol;
   if (protocol.IsEmpty() || protocol == "unknown") {
     if (response.WasFetchedViaSPDY()) {
-      protocol = "spdy";
+      protocol = "h2";
     } else if (response.IsHTTP()) {
       protocol = "http";
       if (response.HttpVersion() ==
