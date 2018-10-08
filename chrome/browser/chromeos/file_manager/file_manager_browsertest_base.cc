@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
@@ -35,9 +36,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/chromeos_features.h"
@@ -48,7 +47,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "components/drive/chromeos/file_system_interface.h"
-#include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -422,8 +420,6 @@ class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
 
   DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
 };
-
-constexpr char kPredefinedProfileSalt[] = "salt";
 
 }  // anonymous namespace
 
@@ -854,7 +850,7 @@ class DriveFsTestVolume : public DriveTestVolume {
     const base::FilePath target_path = GetTargetPathForTestEntry(entry);
 
     entries_.insert(std::make_pair(target_path, entry));
-    fake_drivefs_->SetMetadata(
+    fake_drivefs_helper_->fake_drivefs().SetMetadata(
         GetRelativeDrivePathForTestEntry(entry), entry.mime_type,
         base::FilePath(entry.target_path).BaseName().value(), entry.pinned,
         entry.shared_option == AddEntriesMessage::SharedOption::SHARED ||
@@ -897,25 +893,12 @@ class DriveFsTestVolume : public DriveTestVolume {
     CHECK(base::CreateDirectory(GetMyDrivePath()));
     CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
 
-    InitializeFakeDriveFs();
-    return base::BindRepeating(&drivefs::FakeDriveFs::CreateConnectionDelegate,
-                               base::Unretained(fake_drivefs_.get()));
-  }
+    if (!fake_drivefs_helper_) {
+      fake_drivefs_helper_ =
+          std::make_unique<drive::FakeDriveFsHelper>(profile_, mount_path());
+    }
 
-  void InitializeFakeDriveFs() {
-    fake_drivefs_ = std::make_unique<drivefs::FakeDriveFs>(mount_path());
-    fake_drivefs_->RegisterMountingForAccountId(base::BindRepeating(
-        [](Profile* profile) {
-          auto* user =
-              chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-          if (!user)
-            return std::string();
-
-          return base::MD5String(
-              kPredefinedProfileSalt +
-              ("-" + user->GetAccountId().GetAccountIdKey()));
-        },
-        profile_));
+    return fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory();
   }
 
   // Updates the ModifiedTime of the entry, and its parent directories if
@@ -988,7 +971,7 @@ class DriveFsTestVolume : public DriveTestVolume {
 
   Profile* const profile_;
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
-  std::unique_ptr<drivefs::FakeDriveFs> fake_drivefs_;
+  std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsTestVolume);
 };
@@ -1037,6 +1020,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   std::vector<base::Feature> enabled_features;
+  std::vector<base::Feature> disabled_features;
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
     enabled_features.emplace_back(features::kExperimentalCrostiniUI);
@@ -1044,8 +1028,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);
+  } else {
+    disabled_features.emplace_back(chromeos::features::kDriveFs);
   }
-  feature_list_.InitWithFeatures(enabled_features, {});
+  feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
@@ -1054,26 +1040,7 @@ bool FileManagerBrowserTestBase::SetUpUserDataDirectory() {
   if (IsGuestModeTest())
     return true;
 
-  auto known_users_list = std::make_unique<base::ListValue>();
-  auto user_dict = std::make_unique<base::DictionaryValue>();
-  user_dict->SetString("account_type", "google");
-  user_dict->SetString("email", "testuser@gmail.com");
-  user_dict->SetString("gaia_id", "123456");
-  known_users_list->Append(std::move(user_dict));
-
-  base::DictionaryValue local_state;
-  local_state.SetList("KnownUsers", std::move(known_users_list));
-
-  std::string local_state_json;
-  if (!base::JSONWriter::Write(local_state, &local_state_json))
-    return false;
-
-  base::FilePath local_state_file;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file))
-    return false;
-  local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
-  return base::WriteFile(local_state_file, local_state_json.data(),
-                         local_state_json.size()) != -1;
+  return drive::SetUpUserDataDirectoryForDriveFsTest();
 }
 
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
@@ -1422,8 +1389,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
   if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    profile->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt,
-                                   kPredefinedProfileSalt);
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
     if (!IsIncognitoModeTest() &&
