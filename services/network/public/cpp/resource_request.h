@@ -224,6 +224,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // The profile ID of network conditions to throttle the network request.
   base::Optional<base::UnguessableToken> throttling_profile_id;
+
+  // Headers that will be added pre and post cache if the network context uses
+  // the custom proxy for this request. The custom proxy is used for requests
+  // that match the custom proxy config, and would otherwise be made direct.
+  net::HttpRequestHeaders custom_proxy_pre_cache_headers;
+  net::HttpRequestHeaders custom_proxy_post_cache_headers;
 };
 
 }  // namespace network

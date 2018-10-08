@@ -74,6 +74,7 @@
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
+#include "services/network/network_service_proxy_delegate.h"
 #include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
@@ -1479,6 +1480,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   std::unique_ptr<net::NetworkDelegate> network_delegate =
       std::make_unique<NetworkServiceNetworkDelegate>(this);
   builder.set_network_delegate(std::move(network_delegate));
+
+  if (params_->custom_proxy_config_client_request) {
+    proxy_delegate_ = std::make_unique<NetworkServiceProxyDelegate>(
+        std::move(params_->custom_proxy_config_client_request));
+    builder.set_shared_proxy_delegate(proxy_delegate_.get());
+  }
 
   // |network_service_| may be nullptr in tests.
   auto result = ApplyContextParamsToBuilder(&builder);

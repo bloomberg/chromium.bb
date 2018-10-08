@@ -30,9 +30,44 @@ import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/websocket.mojom";
+import "services/network/public/mojom/http_request_headers.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+
+// Config for setting a custom proxy config that will be used if a request
+// matches the proxy rules and would otherwise be direct. This config allows
+// headers to be set on requests to the proxies from the config before and/or
+// after the caching layer. Currently only supports proxying http requests.
+struct CustomProxyConfig {
+  // The custom proxy rules to use. Right now this is limited to proxies for
+  // http requests.
+  ProxyRules rules;
+
+  // The custom proxy can set these headers in this config which will be added
+  // to all requests using the proxy. This allows setting headers that may be
+  // privacy/security sensitive which we don't want to send to the renderer.
+  // Headers that require per-request logic can be added through the
+  // |custom_proxy_pre_cache_headers| and |custom_proxy_post_cache_headers|
+  // fields in ResourceRequest.
+  //
+  // Headers that will be set before the cache for http requests. If the request
+  // does not use a custom proxy, these headers will be removed before sending
+  // to the network. If a request already has one of these headers set, it may
+  // be overwritten if a custom proxy is used, or removed if a custom proxy is
+  // not used.
+  HttpRequestHeaders pre_cache_headers;
+
+  // Headers that will be set after the cache for requests that are issued
+  // through a custom proxy. Headers here will overwrite matching headers on the
+  // request if a custom proxy is used.
+  HttpRequestHeaders post_cache_headers;
+};
+
+// Client to update the custom proxy config.
+interface CustomProxyConfigClient {
+  OnCustomProxyConfigUpdated(CustomProxyConfig proxy_config);
+};
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
@@ -140,6 +175,11 @@ struct NetworkContextParams {
   // If both are null, the NetworkContext will not use a proxy.
   ProxyConfigWithAnnotation? initial_proxy_config;
   ProxyConfigClient&? proxy_config_client_request;
+
+  // If |custom_proxy_config_client_request| is set, this context will listen
+  // for updates to the custom proxy config, and use it if applicable for
+  // requests which would otherwise be made direct.
+  CustomProxyConfigClient&? custom_proxy_config_client_request;
 
   // If |proxy_config_client_request| is non-null, this is called during
   // periods of network activity, and can be used as a signal for polling-based
