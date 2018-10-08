@@ -164,7 +164,7 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
 
   AutocompleteMatch match;
   match.destination_url = kUrl;
-  model()->SetCurrentMatch(match);
+  model()->SetCurrentMatchForTest(match);
 
   bookmark_model()->AddURL(bookmark_model()->bookmark_bar_node(), 0,
                            base::ASCIIToUTF16("a bookmark"), kUrl);
@@ -190,7 +190,7 @@ TEST_F(OmniboxViewTest, GetIcon_Favicon) {
   AutocompleteMatch match;
   match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
   match.destination_url = kUrl;
-  model()->SetCurrentMatch(match);
+  model()->SetCurrentMatchForTest(match);
 
   view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
 
