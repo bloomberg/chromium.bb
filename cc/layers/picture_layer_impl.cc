@@ -727,10 +727,10 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
           1.f - layer_tree_impl()->CurrentBrowserControlsShownRatio();
 
       viewport_rect_for_tile_priority_in_content_space_.Inset(
-          0,                                                   // left
-          0,                                                   // top,
-          0,                                                   // right,
-          std::ceilf(-total_controls_height * hidden_ratio));  // bottom
+          0,                                                  // left
+          0,                                                  // top,
+          0,                                                  // right,
+          std::ceil(-total_controls_height * hidden_ratio));  // bottom
     }
   }
 }
