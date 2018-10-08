@@ -2674,9 +2674,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       const gfx::Rect& bounds = display.bounds();
       const gfx::Insets& insets = display.GetWorkAreaInsets();
 
-      double device_scale_factor = WMHelper::GetInstance()
-                                       ->GetDisplayInfo(display.id())
-                                       .device_scale_factor();
+      double device_scale_factor = display.device_scale_factor();
 
       uint32_t display_id_hi = static_cast<uint32_t>(display.id() >> 32);
       uint32_t display_id_lo = static_cast<uint32_t>(display.id());
