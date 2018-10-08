@@ -134,6 +134,11 @@ class DateOrderedListView {
             super.onLayoutChildren(recycler, state);
         }
 
+        @Override
+        public boolean supportsPredictiveItemAnimations() {
+            return false;
+        }
+
         private class SpanSizeLookupImpl extends SpanSizeLookup {
             // SpanSizeLookup implementation.
             @Override
