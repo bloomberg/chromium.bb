@@ -407,6 +407,75 @@ testcase.openQuickViewBackgroundColorText = function() {
 };
 
 /**
+ * Tests opening Quick View containing a PDF document.
+ */
+testcase.openQuickViewPdf = function() {
+  const caller = getCaller();
+  let appId;
+
+  /**
+   * The PDF <webview> resides in the #quick-view shadow DOM, as a child of
+   * the #dialog element.
+   */
+  const webView = ['#quick-view', '#dialog[open] webview.content'];
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.tallText.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.tallPdf], []);
+    },
+    // Open the file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.tallPdf.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Wait for the Quick View <webview> to load and display its content.
+    function() {
+      function checkWebViewPdfLoaded(elements) {
+        let haveElements = Array.isArray(elements) && elements.length === 1;
+        if (haveElements)
+          haveElements = elements[0].styles.display.includes('block');
+        if (!haveElements || !elements[0].attributes.src)
+          return pending(caller, 'Waiting for <webview> to load.');
+        return;
+      }
+      repeatUntil(function() {
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepQueryAllElements', appId, [webView, ['display']])
+            .then(checkWebViewPdfLoaded);
+      }).then(this.next);
+    },
+    // Get the <webview> embed type attribute.
+    function() {
+      function checkPdfEmbedType(type) {
+        let haveElements = Array.isArray(type) && type.length === 1;
+        if (!haveElements || !type[0].toString().includes('pdf'))
+          return pending(caller, 'Waiting for plugin <embed> type.');
+        return type[0];
+      }
+      repeatUntil(function() {
+        const getType = 'window.document.querySelector("embed").type';
+        return remoteCall
+            .callRemoteTestUtil(
+                'deepExecuteScriptInWebView', appId, [webView, getType])
+            .then(checkPdfEmbedType);
+      }).then(this.next);
+    },
+    // Check: the <webview> embed type should be PDF mime type.
+    function(type) {
+      chrome.test.assertEq('application/pdf', type);
+      checkIfNoErrorsOccured(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * html document.
  */
