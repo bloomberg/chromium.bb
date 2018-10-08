@@ -570,7 +570,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType response_type) {
   if (IsDetached())
@@ -1182,7 +1182,7 @@ FrameFetchContext::CreateWebSocketHandshakeThrottle() {
 }
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
@@ -1212,7 +1212,7 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     return false;
 
   if (resource_request.GetRequestContext() ==
-      WebURLRequest::kRequestContextXMLHttpRequest) {
+      mojom::RequestContextType::XML_HTTP_REQUEST) {
     return false;
   }
 
@@ -1389,8 +1389,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   // callsite when we make Shared Worker loading off-main-thread.
   if (document_ && request.Url().ProtocolIs("blob") &&
       BlobUtils::MojoBlobURLsEnabled() && !url_loader_factory &&
-      request.GetRequestContext() !=
-          WebURLRequest::kRequestContextSharedWorker) {
+      request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
     document_->GetPublicURLManager().Resolve(request.Url(),
                                              MakeRequest(&url_loader_factory));
   }

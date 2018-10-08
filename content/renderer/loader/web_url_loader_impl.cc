@@ -712,7 +712,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->enable_upload_progress = request.ReportUploadProgress();
   GURL gurl(url_);
   if (request.GetRequestContext() ==
-          WebURLRequest::kRequestContextXMLHttpRequest &&
+          blink::mojom::RequestContextType::XML_HTTP_REQUEST &&
       (gurl.has_username() || gurl.has_password())) {
     resource_request->do_not_prompt_for_login = true;
   }
@@ -1021,7 +1021,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
 
   // Data url requests from object tags may need to be intercepted as streams
   // and so need to be sent to the browser.
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextObject)
+  if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
     return false;
 
   // Optimize for the case where we can handle a data URL locally.  We must
@@ -1378,36 +1378,36 @@ net::NetworkTrafficAnnotationTag
 WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
     const blink::WebURLRequest& request) {
   switch (request.GetRequestContext()) {
-    case WebURLRequest::kRequestContextUnspecified:
-    case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextBeacon:
-    case WebURLRequest::kRequestContextCSPReport:
-    case WebURLRequest::kRequestContextDownload:
-    case WebURLRequest::kRequestContextEventSource:
-    case WebURLRequest::kRequestContextFetch:
-    case WebURLRequest::kRequestContextFont:
-    case WebURLRequest::kRequestContextForm:
-    case WebURLRequest::kRequestContextFrame:
-    case WebURLRequest::kRequestContextHyperlink:
-    case WebURLRequest::kRequestContextIframe:
-    case WebURLRequest::kRequestContextImage:
-    case WebURLRequest::kRequestContextImageSet:
-    case WebURLRequest::kRequestContextImport:
-    case WebURLRequest::kRequestContextInternal:
-    case WebURLRequest::kRequestContextLocation:
-    case WebURLRequest::kRequestContextManifest:
-    case WebURLRequest::kRequestContextPing:
-    case WebURLRequest::kRequestContextPrefetch:
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextServiceWorker:
-    case WebURLRequest::kRequestContextSharedWorker:
-    case WebURLRequest::kRequestContextSubresource:
-    case WebURLRequest::kRequestContextStyle:
-    case WebURLRequest::kRequestContextTrack:
-    case WebURLRequest::kRequestContextVideo:
-    case WebURLRequest::kRequestContextWorker:
-    case WebURLRequest::kRequestContextXMLHttpRequest:
-    case WebURLRequest::kRequestContextXSLT:
+    case blink::mojom::RequestContextType::UNSPECIFIED:
+    case blink::mojom::RequestContextType::AUDIO:
+    case blink::mojom::RequestContextType::BEACON:
+    case blink::mojom::RequestContextType::CSP_REPORT:
+    case blink::mojom::RequestContextType::DOWNLOAD:
+    case blink::mojom::RequestContextType::EVENT_SOURCE:
+    case blink::mojom::RequestContextType::FETCH:
+    case blink::mojom::RequestContextType::FONT:
+    case blink::mojom::RequestContextType::FORM:
+    case blink::mojom::RequestContextType::FRAME:
+    case blink::mojom::RequestContextType::HYPERLINK:
+    case blink::mojom::RequestContextType::IFRAME:
+    case blink::mojom::RequestContextType::IMAGE:
+    case blink::mojom::RequestContextType::IMAGE_SET:
+    case blink::mojom::RequestContextType::IMPORT:
+    case blink::mojom::RequestContextType::INTERNAL:
+    case blink::mojom::RequestContextType::LOCATION:
+    case blink::mojom::RequestContextType::MANIFEST:
+    case blink::mojom::RequestContextType::PING:
+    case blink::mojom::RequestContextType::PREFETCH:
+    case blink::mojom::RequestContextType::SCRIPT:
+    case blink::mojom::RequestContextType::SERVICE_WORKER:
+    case blink::mojom::RequestContextType::SHARED_WORKER:
+    case blink::mojom::RequestContextType::SUBRESOURCE:
+    case blink::mojom::RequestContextType::STYLE:
+    case blink::mojom::RequestContextType::TRACK:
+    case blink::mojom::RequestContextType::VIDEO:
+    case blink::mojom::RequestContextType::WORKER:
+    case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
+    case blink::mojom::RequestContextType::XSLT:
       return net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
       semantics {
         sender: "Blink Resource Loader"
@@ -1429,9 +1429,9 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           "to load any webpage."
       })");
 
-    case WebURLRequest::kRequestContextEmbed:
-    case WebURLRequest::kRequestContextObject:
-    case WebURLRequest::kRequestContextPlugin:
+    case blink::mojom::RequestContextType::EMBED:
+    case blink::mojom::RequestContextType::OBJECT:
+    case blink::mojom::RequestContextType::PLUGIN:
       return net::DefineNetworkTrafficAnnotation(
           "blink_extension_resource_loader", R"(
         semantics {
@@ -1460,7 +1460,7 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           }
         })");
 
-    case WebURLRequest::kRequestContextFavicon:
+    case blink::mojom::RequestContextType::FAVICON:
       return net::DefineNetworkTrafficAnnotation("favicon_loader", R"(
         semantics {
           sender: "Blink Resource Loader"

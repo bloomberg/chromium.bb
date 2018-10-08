@@ -90,7 +90,7 @@ class MemoryCacheCorrectnessTest : public testing::Test {
   // RawResource.
   RawResource* FetchRawResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
-    resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+    resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
     FetchParameters fetch_params(resource_request);
     return RawResource::Fetch(fetch_params, Fetcher(), nullptr);

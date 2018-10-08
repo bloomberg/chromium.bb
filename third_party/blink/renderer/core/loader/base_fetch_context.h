@@ -40,7 +40,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       ResourceRequest::RedirectStatus) const override;
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
@@ -65,7 +65,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void AddErrorConsoleMessage(const String&, LogSource) const override;
   bool IsAdResource(const KURL&,
                     ResourceType,
-                    WebURLRequest::RequestContext) const override;
+                    mojom::RequestContextType) const override;
 
  protected:
   // Used for security checks.
@@ -82,7 +82,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
@@ -110,7 +110,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       ResourceRequest::RedirectStatus) const;
 
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequestInternal(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,

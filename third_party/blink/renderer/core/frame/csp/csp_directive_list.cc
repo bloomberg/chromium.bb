@@ -301,7 +301,7 @@ bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
 }
 
 bool CSPDirectiveList::CheckRequestWithoutIntegrity(
-    WebURLRequest::RequestContext context) const {
+    mojom::RequestContextType context) const {
   if (require_sri_for_ == RequireSRIForToken::kNone)
     return true;
   // SRI specification
@@ -309,41 +309,41 @@ bool CSPDirectiveList::CheckRequestWithoutIntegrity(
   // says to match token with request's destination with the token.
   // Keep this logic aligned with ContentSecurityPolicy::allowRequest
   if ((require_sri_for_ & RequireSRIForToken::kScript) &&
-      (context == WebURLRequest::kRequestContextScript ||
-       context == WebURLRequest::kRequestContextImport ||
-       context == WebURLRequest::kRequestContextServiceWorker ||
-       context == WebURLRequest::kRequestContextSharedWorker ||
-       context == WebURLRequest::kRequestContextWorker)) {
+      (context == mojom::RequestContextType::SCRIPT ||
+       context == mojom::RequestContextType::IMPORT ||
+       context == mojom::RequestContextType::SERVICE_WORKER ||
+       context == mojom::RequestContextType::SHARED_WORKER ||
+       context == mojom::RequestContextType::WORKER)) {
     return false;
   }
   if ((require_sri_for_ & RequireSRIForToken::kStyle) &&
-      context == WebURLRequest::kRequestContextStyle)
+      context == mojom::RequestContextType::STYLE)
     return false;
   return true;
 }
 
 bool CSPDirectiveList::CheckRequestWithoutIntegrityAndReportViolation(
-    WebURLRequest::RequestContext context,
+    mojom::RequestContextType context,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (CheckRequestWithoutIntegrity(context))
     return true;
   String resource_type;
   switch (context) {
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextImport:
+    case mojom::RequestContextType::SCRIPT:
+    case mojom::RequestContextType::IMPORT:
       resource_type = "script";
       break;
-    case WebURLRequest::kRequestContextStyle:
+    case mojom::RequestContextType::STYLE:
       resource_type = "stylesheet";
       break;
-    case WebURLRequest::kRequestContextServiceWorker:
+    case mojom::RequestContextType::SERVICE_WORKER:
       resource_type = "service worker";
       break;
-    case WebURLRequest::kRequestContextSharedWorker:
+    case mojom::RequestContextType::SHARED_WORKER:
       resource_type = "shared worker";
       break;
-    case WebURLRequest::kRequestContextWorker:
+    case mojom::RequestContextType::WORKER:
       resource_type = "worker";
       break;
     default:
@@ -363,7 +363,7 @@ bool CSPDirectiveList::CheckRequestWithoutIntegrityAndReportViolation(
 }
 
 bool CSPDirectiveList::AllowRequestWithoutIntegrity(
-    WebURLRequest::RequestContext context,
+    mojom::RequestContextType context,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy) const {

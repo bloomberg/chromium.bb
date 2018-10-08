@@ -455,8 +455,7 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetHeader("Origin", "null");
 
   correction_fetcher_->Start(
-      render_frame()->GetWebFrame(),
-      blink::WebURLRequest::kRequestContextInternal,
+      render_frame()->GetWebFrame(), blink::mojom::RequestContextType::INTERNAL,
       render_frame()->GetURLLoaderFactory(), GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnNavigationCorrectionsFetched,
                      base::Unretained(this)));
@@ -479,8 +478,7 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->SetHeader("Content-Type", "application/json");
 
   tracking_fetcher_->Start(
-      render_frame()->GetWebFrame(),
-      blink::WebURLRequest::kRequestContextInternal,
+      render_frame()->GetWebFrame(), blink::mojom::RequestContextType::INTERNAL,
       render_frame()->GetURLLoaderFactory(), GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnTrackingRequestComplete,
                      base::Unretained(this)));

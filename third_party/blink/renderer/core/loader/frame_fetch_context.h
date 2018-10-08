@@ -109,7 +109,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
                                   network::mojom::RequestContextFrameType,
-                                  WebURLRequest::RequestContext,
+                                  mojom::RequestContextType,
                                   Resource*,
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,
@@ -229,7 +229,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
       override;
   bool ShouldBlockFetchByMixedContentCheck(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,

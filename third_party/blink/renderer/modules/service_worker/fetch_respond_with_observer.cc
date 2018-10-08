@@ -114,10 +114,10 @@ bool IsNavigationRequest(network::mojom::RequestContextFrameType frame_type) {
 }
 
 bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
-                     WebURLRequest::RequestContext request_context) {
+                     mojom::RequestContextType request_context) {
   return IsNavigationRequest(frame_type) ||
-         request_context == WebURLRequest::kRequestContextSharedWorker ||
-         request_context == WebURLRequest::kRequestContextWorker;
+         request_context == mojom::RequestContextType::SHARED_WORKER ||
+         request_context == mojom::RequestContextType::WORKER;
 }
 
 // Notifies the result of FetchDataLoader to |handle_|. |handle_| pass through
@@ -171,7 +171,7 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchRedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     WaitUntilObserver* observer) {
   return new FetchRespondWithObserver(context, fetch_event_id, request_url,
                                       request_mode, redirect_mode, frame_type,
@@ -337,7 +337,7 @@ FetchRespondWithObserver::FetchRespondWithObserver(
     network::mojom::FetchRequestMode request_mode,
     network::mojom::FetchRedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     WaitUntilObserver* observer)
     : RespondWithObserver(context, fetch_event_id, observer),
       request_url_(request_url),

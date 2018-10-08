@@ -102,7 +102,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     extra_data->set_initiated_in_secure_context(is_secure_context_);
     if (response_override_) {
       DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-      DCHECK_EQ(blink::WebURLRequest::kRequestContextSharedWorker,
+      DCHECK_EQ(blink::mojom::RequestContextType::SHARED_WORKER,
                 request.GetRequestContext());
       extra_data->set_navigation_response_override(
           std::move(response_override_));
@@ -116,7 +116,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     // controller (i.e., via claim()) on the browser-side could handle the
     // request and break the assumptions of the renderer.
     if (request.GetRequestContext() !=
-            blink::WebURLRequest::kRequestContextSharedWorker &&
+            blink::mojom::RequestContextType::SHARED_WORKER &&
         provider_->IsControlledByServiceWorker() ==
             blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
@@ -155,7 +155,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     // If the request is for the main script, use the script_loader_factory.
     if (provider_->script_loader_factory() &&
         request.GetRequestContext() ==
-            blink::WebURLRequest::kRequestContextSharedWorker) {
+            blink::mojom::RequestContextType::SHARED_WORKER) {
       // TODO(crbug.com/796425): Temporarily wrap the raw
       // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
       return std::make_unique<WebURLLoaderImpl>(

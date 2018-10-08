@@ -662,7 +662,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -2100,7 +2100,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   // See that subresource requests are also tagged with the provider's id.
   EXPECT_EQ(frame(), RenderFrameImpl::FromWebFrame(GetMainFrame()));
   blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextSubresource);
+  request.SetRequestContext(blink::mojom::RequestContextType::SUBRESOURCE);
   blink::WebURLResponse redirect_response;
   webprovider->WillSendRequest(request);
   extra_data = static_cast<RequestExtraData*>(request.GetExtraData());

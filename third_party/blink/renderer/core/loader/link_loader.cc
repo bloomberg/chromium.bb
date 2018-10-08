@@ -472,8 +472,7 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
       link_loader->DispatchLinkLoadingErroredAsync();
     return;
   }
-  WebURLRequest::RequestContext destination =
-      WebURLRequest::kRequestContextScript;
+  mojom::RequestContextType destination = mojom::RequestContextType::SCRIPT;
 
   // Step 4. "Parse the URL given by the href attribute, relative to the
   // element's node document. If that fails, then return. Otherwise, let url be

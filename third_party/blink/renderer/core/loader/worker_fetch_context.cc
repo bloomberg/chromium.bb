@@ -180,7 +180,7 @@ WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
 }
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
@@ -195,7 +195,7 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const KURL& url) const {
   if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
       resource_request.GetRequestContext() !=
-          WebURLRequest::kRequestContextXMLHttpRequest) {
+          mojom::RequestContextType::XML_HTTP_REQUEST) {
     if (Url().User() != url.User() || Url().Pass() != url.Pass()) {
       CountDeprecation(
           WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
@@ -266,7 +266,7 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
         ->CreateURLLoader(wrapped, CreateResourceLoadingTaskRunnerHandle());
   }
 
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextScript) {
+  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT) {
     if (!script_loader_factory_)
       script_loader_factory_ = web_context_->CreateScriptLoaderFactory();
     if (script_loader_factory_) {
@@ -331,7 +331,7 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     network::mojom::RequestContextFrameType frame_type,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     Resource* resource,
     ResourceResponseType) {
   if (response.HasMajorCertificateErrors()) {

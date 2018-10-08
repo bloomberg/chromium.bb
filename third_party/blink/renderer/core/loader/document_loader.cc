@@ -221,7 +221,7 @@ Resource* DocumentLoader::StartPreload(ResourceType type,
       resource = ImageResource::Fetch(params, Fetcher());
       break;
     case ResourceType::kScript:
-      params.SetRequestContext(WebURLRequest::kRequestContextScript);
+      params.SetRequestContext(mojom::RequestContextType::SCRIPT);
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
     case ResourceType::kCSSStyleSheet:

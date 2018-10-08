@@ -24,7 +24,7 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.initiator_info.name = "script";
   FetchParameters params(resource_request, resource_loader_options);
-  params.SetRequestContext(WebURLRequest::kRequestContextScript);
+  params.SetRequestContext(mojom::RequestContextType::SCRIPT);
 
   // Step 1. ... and CORS setting. [spec text]
   if (cross_origin != kCrossOriginAttributeNotSet)

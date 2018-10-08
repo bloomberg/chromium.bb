@@ -387,14 +387,14 @@ void HTMLAnchorElement::HandleClick(Event& event) {
         GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
       request.SetSuggestedFilename(
           static_cast<String>(FastGetAttribute(downloadAttr)));
-      request.SetRequestContext(WebURLRequest::kRequestContextDownload);
+      request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
       request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
       frame->Client()->DownloadURL(request,
                                    DownloadCrossOriginRedirects::kNavigate);
       return;
     }
   }
-  request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
+  request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   FrameLoadRequest frame_request(&GetDocument(), request,
                                  getAttribute(targetAttr));
   if (HasRel(kRelationNoReferrer)) {

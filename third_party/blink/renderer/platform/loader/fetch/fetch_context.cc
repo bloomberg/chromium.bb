@@ -78,7 +78,7 @@ void FetchContext::DispatchDidReceiveResponse(
     unsigned long,
     const ResourceResponse&,
     network::mojom::RequestContextFrameType FrameType,
-    WebURLRequest::RequestContext,
+    mojom::RequestContextType,
     Resource*,
     ResourceResponseType) {}
 

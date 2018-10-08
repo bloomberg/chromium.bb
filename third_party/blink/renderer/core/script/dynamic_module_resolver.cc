@@ -221,7 +221,7 @@ void DynamicModuleResolver::ResolveDynamically(
       ExecutionContext::From(modulator_->GetScriptState());
   modulator_->FetchTree(
       url, execution_context->CreateFetchClientSettingsObjectSnapshot(),
-      WebURLRequest::kRequestContextScript, options,
+      mojom::RequestContextType::SCRIPT, options,
       ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 2.[5-8] are implemented at

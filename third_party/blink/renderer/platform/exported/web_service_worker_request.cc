@@ -32,8 +32,8 @@ class WebServiceWorkerRequestPrivate
   mojom::FetchCacheMode cache_mode_ = mojom::FetchCacheMode::kDefault;
   network::mojom::FetchRedirectMode redirect_mode_ =
       network::mojom::FetchRedirectMode::kFollow;
-  WebURLRequest::RequestContext request_context_ =
-      WebURLRequest::kRequestContextUnspecified;
+  mojom::RequestContextType request_context_ =
+      mojom::RequestContextType::UNSPECIFIED;
   network::mojom::RequestContextFrameType frame_type_ =
       network::mojom::RequestContextFrameType::kNone;
   WebString integrity_;
@@ -226,12 +226,11 @@ network::mojom::FetchRedirectMode WebServiceWorkerRequest::RedirectMode()
 }
 
 void WebServiceWorkerRequest::SetRequestContext(
-    WebURLRequest::RequestContext request_context) {
+    mojom::RequestContextType request_context) {
   private_->request_context_ = request_context;
 }
 
-WebURLRequest::RequestContext WebServiceWorkerRequest::GetRequestContext()
-    const {
+mojom::RequestContextType WebServiceWorkerRequest::GetRequestContext() const {
   return private_->request_context_;
 }
 

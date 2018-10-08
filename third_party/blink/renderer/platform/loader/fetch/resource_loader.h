@@ -179,7 +179,7 @@ class PLATFORM_EXPORT ResourceLoader final
   bool GetCORSFlag() const { return resource_->Options().cors_flag; }
 
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const ResourceResponse&) const;
 
   bool ShouldCheckCORSInResourceLoader() const;

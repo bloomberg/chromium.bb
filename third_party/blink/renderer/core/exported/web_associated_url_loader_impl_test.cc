@@ -306,7 +306,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   WebURLRequest request(url);
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
-  request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  request.SetRequestContext(mojom::RequestContextType::SCRIPT);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
@@ -689,7 +689,7 @@ TEST_F(WebAssociatedURLLoaderTest, AccessCheckForLocalURL) {
   KURL url = ToKURL("file://test.pdf");
 
   WebURLRequest request(url);
-  request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
+  request.SetRequestContext(mojom::RequestContextType::PLUGIN);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
@@ -716,7 +716,7 @@ TEST_F(WebAssociatedURLLoaderTest, BypassAccessCheckForLocalURL) {
   KURL url = ToKURL("file://test.pdf");
 
   WebURLRequest request(url);
-  request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
+  request.SetRequestContext(mojom::RequestContextType::PLUGIN);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 

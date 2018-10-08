@@ -2229,7 +2229,7 @@ void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
 void WebLocalFrameImpl::MixedContentFound(
     const WebURL& main_resource_url,
     const WebURL& mixed_content_url,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     bool was_allowed,
     bool had_redirect,
     const WebSourceLocation& source_location) {

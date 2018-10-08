@@ -82,7 +82,7 @@ class PLATFORM_EXPORT FetchParameters {
   }
   const KURL& Url() const { return resource_request_.Url(); }
 
-  void SetRequestContext(WebURLRequest::RequestContext context) {
+  void SetRequestContext(mojom::RequestContextType context) {
     resource_request_.SetRequestContext(context);
   }
 

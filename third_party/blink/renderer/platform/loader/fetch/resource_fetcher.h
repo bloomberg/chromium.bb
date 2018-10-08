@@ -153,7 +153,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
 
-  WARN_UNUSED_RESULT static WebURLRequest::RequestContext
+  WARN_UNUSED_RESULT static mojom::RequestContextType
   DetermineRequestContext(ResourceType, IsImageSet, bool is_main_frame);
 
   void UpdateAllImageResourcePriorities();
@@ -175,7 +175,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // TODO(hiroshige): Remove this hack.
   void EmulateLoadStartedForInspector(Resource*,
                                       const KURL&,
-                                      WebURLRequest::RequestContext,
+                                      mojom::RequestContextType,
                                       const AtomicString& initiator_name);
 
   // This is called from leak detectors (Real-world leak detector & layout test

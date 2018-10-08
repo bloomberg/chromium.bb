@@ -80,7 +80,7 @@ class MockFetchContext : public FetchContext {
     return base::nullopt;
   }
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL& url,
       const ResourceLoaderOptions& options,
       SecurityViolationReportingPolicy reporting_policy,

@@ -126,7 +126,7 @@ void EventSource::Connect() {
   request.SetHTTPMethod(HTTPNames::GET);
   request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
-  request.SetRequestContext(WebURLRequest::kRequestContextEventSource);
+  request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   request.SetFetchCredentialsMode(
       with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude

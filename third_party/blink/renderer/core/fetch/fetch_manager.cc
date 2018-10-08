@@ -972,7 +972,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
     return promise;
   }
 
-  request->SetContext(WebURLRequest::kRequestContextFetch);
+  request->SetContext(mojom::RequestContextType::FETCH);
 
   Loader* loader =
       Loader::Create(GetExecutionContext(), this, resolver, request,

@@ -255,7 +255,7 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
   scoped_refptr<WorkerClassicScriptLoader> classic_script_loader(
       WorkerClassicScriptLoader::Create());
   classic_script_loader->LoadSynchronously(
-      *execution_context, script_url, WebURLRequest::kRequestContextScript,
+      *execution_context, script_url, mojom::RequestContextType::SCRIPT,
       execution_context->GetSecurityContext().AddressSpace());
 
   // If the fetching attempt failed, throw a NetworkError exception and

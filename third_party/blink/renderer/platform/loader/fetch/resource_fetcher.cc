@@ -224,7 +224,7 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
       //     granular approach with loading team
       if (type == ResourceType::kImage ||
           resource_request.GetRequestContext() ==
-              WebURLRequest::RequestContext::kRequestContextFetch ||
+              mojom::RequestContextType::FETCH ||
           is_link_preload) {
         new_priority = ResourceLoadPriority::kLow;
       }
@@ -284,11 +284,11 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   } else if (FetchParameters::kLazyLoad == defer_option) {
     priority = ResourceLoadPriority::kVeryLow;
   } else if (resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextBeacon ||
+                 mojom::RequestContextType::BEACON ||
              resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextPing ||
+                 mojom::RequestContextType::PING ||
              resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextCSPReport) {
+                 mojom::RequestContextType::CSP_REPORT) {
     priority = ResourceLoadPriority::kVeryLow;
   }
 
@@ -312,7 +312,7 @@ static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
   info->SetFinalResponse(resource->GetResponse());
 }
 
-WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
+mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
     ResourceType type,
     IsImageSet is_image_set,
     bool is_main_frame) {
@@ -321,44 +321,44 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
   switch (type) {
     case ResourceType::kMainResource:
       if (!is_main_frame)
-        return WebURLRequest::kRequestContextIframe;
+        return mojom::RequestContextType::IFRAME;
       // FIXME: Change this to a context frame type (once we introduce them):
       // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
-      return WebURLRequest::kRequestContextHyperlink;
+      return mojom::RequestContextType::HYPERLINK;
     case ResourceType::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
       FALLTHROUGH;
     case ResourceType::kCSSStyleSheet:
-      return WebURLRequest::kRequestContextStyle;
+      return mojom::RequestContextType::STYLE;
     case ResourceType::kScript:
-      return WebURLRequest::kRequestContextScript;
+      return mojom::RequestContextType::SCRIPT;
     case ResourceType::kFont:
-      return WebURLRequest::kRequestContextFont;
+      return mojom::RequestContextType::FONT;
     case ResourceType::kImage:
       if (is_image_set == kImageIsImageSet)
-        return WebURLRequest::kRequestContextImageSet;
-      return WebURLRequest::kRequestContextImage;
+        return mojom::RequestContextType::IMAGE_SET;
+      return mojom::RequestContextType::IMAGE;
     case ResourceType::kRaw:
-      return WebURLRequest::kRequestContextSubresource;
+      return mojom::RequestContextType::SUBRESOURCE;
     case ResourceType::kImportResource:
-      return WebURLRequest::kRequestContextImport;
+      return mojom::RequestContextType::IMPORT;
     case ResourceType::kLinkPrefetch:
-      return WebURLRequest::kRequestContextPrefetch;
+      return mojom::RequestContextType::PREFETCH;
     case ResourceType::kTextTrack:
-      return WebURLRequest::kRequestContextTrack;
+      return mojom::RequestContextType::TRACK;
     case ResourceType::kSVGDocument:
-      return WebURLRequest::kRequestContextImage;
+      return mojom::RequestContextType::IMAGE;
     case ResourceType::kAudio:
-      return WebURLRequest::kRequestContextAudio;
+      return mojom::RequestContextType::AUDIO;
     case ResourceType::kVideo:
-      return WebURLRequest::kRequestContextVideo;
+      return mojom::RequestContextType::VIDEO;
     case ResourceType::kManifest:
-      return WebURLRequest::kRequestContextManifest;
+      return mojom::RequestContextType::MANIFEST;
     case ResourceType::kMock:
-      return WebURLRequest::kRequestContextSubresource;
+      return mojom::RequestContextType::SUBRESOURCE;
   }
   NOTREACHED();
-  return WebURLRequest::kRequestContextSubresource;
+  return mojom::RequestContextType::SUBRESOURCE;
 }
 
 ResourceFetcher::ResourceFetcher(FetchContext* new_context)
@@ -696,7 +696,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_request, resource_type, params.Defer()));
   }
   if (resource_request.GetRequestContext() ==
-      WebURLRequest::kRequestContextUnspecified) {
+      mojom::RequestContextType::UNSPECIFIED) {
     resource_request.SetRequestContext(DetermineRequestContext(
         resource_type, kImageNotImageSet, Context().IsMainFrame()));
   }
@@ -1823,7 +1823,7 @@ void ResourceFetcher::OnNetworkQuiet() {
 void ResourceFetcher::EmulateLoadStartedForInspector(
     Resource* resource,
     const KURL& url,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     const AtomicString& initiator_name) {
   if (CachedResource(url))
     return;

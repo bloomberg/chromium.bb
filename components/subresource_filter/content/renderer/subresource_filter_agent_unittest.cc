@@ -202,8 +202,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
       base::StringPiece url_spec,
       blink::WebDocumentSubresourceFilter::LoadPolicy expected_policy) {
     blink::WebURL url = GURL(url_spec);
-    blink::WebURLRequest::RequestContext request_context =
-        blink::WebURLRequest::kRequestContextImage;
+    blink::mojom::RequestContextType request_context =
+        blink::mojom::RequestContextType::IMAGE;
     blink::WebDocumentSubresourceFilter::LoadPolicy actual_policy =
         agent()->filter()->GetLoadPolicy(url, request_context);
     EXPECT_EQ(expected_policy, actual_policy);

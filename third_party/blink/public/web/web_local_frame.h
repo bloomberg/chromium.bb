@@ -327,7 +327,7 @@ class WebLocalFrame : public WebFrame {
   // console.
   virtual void MixedContentFound(const WebURL& main_resource_url,
                                  const WebURL& mixed_content_url,
-                                 WebURLRequest::RequestContext,
+                                 mojom::RequestContextType,
                                  bool was_allowed,
                                  bool had_redirect,
                                  const WebSourceLocation&) = 0;

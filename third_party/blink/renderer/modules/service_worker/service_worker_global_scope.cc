@@ -188,8 +188,7 @@ void ServiceWorkerGlobalScope::ImportModuleScript(
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
 
   FetchModuleScript(module_url_record, outside_settings_object,
-                    WebURLRequest::kRequestContextServiceWorker,
-                    credentials_mode,
+                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     new WorkerModuleTreeClient(modulator));
 }

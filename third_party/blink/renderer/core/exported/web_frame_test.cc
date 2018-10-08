@@ -7642,7 +7642,7 @@ class TestSameDocumentWithImageWebFrameClient
 
   // FrameTestHelpers::TestWebFrameClient:
   void WillSendRequest(WebURLRequest& request) override {
-    if (request.GetRequestContext() == WebURLRequest::kRequestContextImage) {
+    if (request.GetRequestContext() == mojom::RequestContextType::IMAGE) {
       num_of_image_requests_++;
       EXPECT_EQ(mojom::FetchCacheMode::kDefault, request.GetCacheMode());
     }
@@ -8762,7 +8762,7 @@ TEST_F(WebFrameTest, NotifyManifestChange) {
 
 static Resource* FetchManifest(Document* document, const KURL& url) {
   FetchParameters fetch_parameters{ResourceRequest(url)};
-  fetch_parameters.SetRequestContext(WebURLRequest::kRequestContextManifest);
+  fetch_parameters.SetRequestContext(mojom::RequestContextType::MANIFEST);
 
   return RawResource::FetchSynchronously(fetch_parameters, document->Fetcher());
 }

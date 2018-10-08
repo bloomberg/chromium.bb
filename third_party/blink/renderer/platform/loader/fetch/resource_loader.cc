@@ -64,16 +64,16 @@ namespace blink {
 
 namespace {
 
-bool IsThrottlableRequestContext(WebURLRequest::RequestContext context) {
+bool IsThrottlableRequestContext(mojom::RequestContextType context) {
   // Requests that could run long should not be throttled as they
   // may stay there forever and avoid other requests from making
   // progress.
   // See https://crbug.com/837771 for the sample breakages.
-  return context != WebURLRequest::kRequestContextEventSource &&
-         context != WebURLRequest::kRequestContextFetch &&
-         context != WebURLRequest::kRequestContextXMLHttpRequest &&
-         context != WebURLRequest::kRequestContextVideo &&
-         context != WebURLRequest::kRequestContextAudio;
+  return context != mojom::RequestContextType::EVENT_SOURCE &&
+         context != mojom::RequestContextType::FETCH &&
+         context != mojom::RequestContextType::XML_HTTP_REQUEST &&
+         context != mojom::RequestContextType::VIDEO &&
+         context != mojom::RequestContextType::AUDIO;
 }
 
 }  // namespace
@@ -309,8 +309,7 @@ bool ResourceLoader::ShouldFetchCodeCache() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   if (!request.Url().ProtocolIsInHTTPFamily())
     return false;
-  if (request.GetRequestContext() ==
-      WebURLRequest::kRequestContextServiceWorker)
+  if (request.GetRequestContext() == mojom::RequestContextType::SERVICE_WORKER)
     return false;
   if (request.DownloadToBlob())
     return false;
@@ -483,7 +482,7 @@ void ResourceLoader::CancelForRedirectAccessCheckError(
 static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
   return request.GetFetchRedirectMode() ==
              network::mojom::FetchRedirectMode::kManual &&
-         request.GetRequestContext() == WebURLRequest::kRequestContextFetch;
+         request.GetRequestContext() == mojom::RequestContextType::FETCH;
 }
 
 bool ResourceLoader::WillFollowRedirect(
@@ -513,7 +512,7 @@ bool ResourceLoader::WillFollowRedirect(
 
   const ResourceRequest& initial_request = resource_->GetResourceRequest();
   // The following parameters never change during the lifetime of a request.
-  WebURLRequest::RequestContext request_context =
+  mojom::RequestContextType request_context =
       initial_request.GetRequestContext();
   network::mojom::RequestContextFrameType frame_type =
       initial_request.GetFrameType();
@@ -734,7 +733,7 @@ void ResourceLoader::DidReceiveResponse(
 
   const ResourceRequest& initial_request = resource_->GetResourceRequest();
   // The following parameters never change during the lifetime of a request.
-  WebURLRequest::RequestContext request_context =
+  mojom::RequestContextType request_context =
       initial_request.GetRequestContext();
   network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
@@ -1107,9 +1106,8 @@ void ResourceLoader::FinishedCreatingBlob(
 }
 
 base::Optional<ResourceRequestBlockedReason>
-ResourceLoader::CheckResponseNosniff(
-    WebURLRequest::RequestContext request_context,
-    const ResourceResponse& response) const {
+ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
+                                     const ResourceResponse& response) const {
   bool sniffing_allowed =
       ParseContentTypeOptionsHeader(response.HttpHeaderField(
           HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff;
@@ -1117,7 +1115,7 @@ ResourceLoader::CheckResponseNosniff(
     return base::nullopt;
 
   String mime_type = response.HttpContentType();
-  if (request_context == WebURLRequest::kRequestContextStyle &&
+  if (request_context == mojom::RequestContextType::STYLE &&
       !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
     Context().AddErrorConsoleMessage(
         "Refused to apply style from '" + response.Url().ElidedString() +

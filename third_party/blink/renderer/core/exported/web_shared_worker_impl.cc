@@ -131,7 +131,7 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
 
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), script_request_url_,
-      WebURLRequest::kRequestContextSharedWorker, fetch_request_mode,
+      mojom::RequestContextType::SHARED_WORKER, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),

@@ -423,17 +423,17 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
 
     const ResourceRequest& webcore_request = new_request.ToResourceRequest();
-    WebURLRequest::RequestContext context = webcore_request.GetRequestContext();
-    if (context == WebURLRequest::kRequestContextUnspecified) {
+    mojom::RequestContextType context = webcore_request.GetRequestContext();
+    if (context == mojom::RequestContextType::UNSPECIFIED) {
       // TODO(yoav): We load URLs without setting a TargetType (and therefore a
       // request context) in several places in content/
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
-      new_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-    } else if (context == WebURLRequest::kRequestContextVideo) {
+      new_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+    } else if (context == mojom::RequestContextType::VIDEO) {
       resource_loader_options.initiator_info.name =
           FetchInitiatorTypeNames::video;
-    } else if (context == WebURLRequest::kRequestContextAudio) {
+    } else if (context == mojom::RequestContextType::AUDIO) {
       resource_loader_options.initiator_info.name =
           FetchInitiatorTypeNames::audio;
     }
