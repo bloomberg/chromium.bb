@@ -326,6 +326,7 @@ weston_config_section_get_bool(struct weston_config_section *section,
 	return 0;
 }
 
+WL_EXPORT
 const char *
 weston_config_get_name_from_env(void)
 {
@@ -387,6 +388,7 @@ section_add_entry(struct weston_config_section *section,
 	return entry;
 }
 
+WL_EXPORT
 struct weston_config *
 weston_config_parse(const char *name)
 {
