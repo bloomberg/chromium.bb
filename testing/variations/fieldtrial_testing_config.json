@@ -1,4 +1,19 @@
 {
+    "AImageReaderMediaPlayer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Use_AImageReaderMediaPlayer_V2",
+                    "enable_features": [
+                        "AImageReaderMediaPlayer"
+                    ]
+                }
+            ]
+        }
+    ],
     "AImageReaderVideoOutput": [
         {
             "platforms": [
