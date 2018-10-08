@@ -99,8 +99,8 @@ void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
 
 // The expected state sequence is CacheState::NONE --> CacheState::CREATE_MAIN
 // --> CacheState::DELETE_MAIN --> CacheState::CREATE_MEDIA -->
-// CacheState::DELETE_MEDIA --> CacheState::DELETE_CODE --> CacheState::DONE,
-// and any errors are ignored.
+// CacheState::DELETE_MEDIA --> CacheState::DELETE_CODE_JS --> DELETE_CODE_WASM
+// -> CacheState::DONE, and any errors are ignored.
 void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
   DCHECK_NE(CacheState::NONE, next_cache_state_);
 
@@ -118,7 +118,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         if (!getter) {
           next_cache_state_ = (next_cache_state_ == CacheState::CREATE_MAIN)
                                   ? CacheState::CREATE_MEDIA
-                                  : CacheState::DELETE_CODE;
+                                  : CacheState::DELETE_CODE_JS;
           break;
         }
 
@@ -145,7 +145,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
       case CacheState::DELETE_MEDIA: {
         next_cache_state_ = (next_cache_state_ == CacheState::DELETE_MAIN)
                                 ? CacheState::CREATE_MEDIA
-                                : CacheState::DELETE_CODE;
+                                : CacheState::DELETE_CODE_JS;
 
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
@@ -172,22 +172,28 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         }
         break;
       }
-      case CacheState::DELETE_CODE: {
+      case CacheState::DELETE_CODE_JS: {
+        next_cache_state_ = CacheState::DELETE_CODE_WASM;
+        // TODO(crbug.com/866419): Currently we just clear entire caches.
+        // Change it to conditionally clear entries based on the filters.
+        // Likewise for DELETE_CODE_WASM.
+        if (generated_code_cache_context_ &&
+            generated_code_cache_context_->generated_js_code_cache()) {
+          rv = generated_code_cache_context_->generated_js_code_cache()
+                   ->ClearCache(base::BindRepeating(
+                       &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                       base::Unretained(this)));
+        }
+        break;
+      }
+      case CacheState::DELETE_CODE_WASM: {
         next_cache_state_ = CacheState::DONE;
-        if (generated_code_cache_context_) {
-          // TODO(crbug.com/866419): Currently we just clear entire caches.
-          // Change it to conditionally clear entries based on the filters.
-          auto callback = base::BindRepeating(
-              &StoragePartitionHttpCacheDataRemover::DoClearCache,
-              base::Unretained(this));
-          if (generated_code_cache_context_->generated_js_code_cache()) {
-            rv = generated_code_cache_context_->generated_js_code_cache()
-                     ->ClearCache(callback);
-          }
-          if (generated_code_cache_context_->generated_wasm_code_cache()) {
-            rv = generated_code_cache_context_->generated_wasm_code_cache()
-                     ->ClearCache(callback);
-          }
+        if (generated_code_cache_context_ &&
+            generated_code_cache_context_->generated_wasm_code_cache()) {
+          rv = generated_code_cache_context_->generated_wasm_code_cache()
+                   ->ClearCache(base::BindRepeating(
+                       &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                       base::Unretained(this)));
         }
         break;
       }

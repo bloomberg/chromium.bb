@@ -57,7 +57,8 @@ class StoragePartitionHttpCacheDataRemover {
     CREATE_MEDIA,
     DELETE_MAIN,
     DELETE_MEDIA,
-    DELETE_CODE,
+    DELETE_CODE_JS,
+    DELETE_CODE_WASM,
     DONE
   };
 
