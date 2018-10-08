@@ -53,8 +53,6 @@ OfflineItem OfflinePageItem() {
   item.filter = offline_items_collection::FILTER_PAGE;
   item.id.id = "NonSuggestedOfflinePage";
   item.id.name_space = kProviderNamespace;
-  // Configuring this item as being read to make sure that's not taken into
-  // account for filtering and prioritization.
   item.last_accessed_time = base::Time::Now();
   return item;
 }
@@ -72,8 +70,6 @@ OfflineItem SuggestedOfflinePageItem() {
   // even if the test takes 1 hour to run.
   item.creation_time =
       base::Time::Now() - base::TimeDelta::FromMinutes(60 * 3.5);
-  // Configuring this item as being read to make sure that's not taken into
-  // account for filtering and prioritization.
   item.last_accessed_time = base::Time::Now();
   return item;
 }
@@ -129,6 +125,7 @@ OfflineItemVisuals TestThumbnail() {
 class AvailableOfflineContentTest : public testing::Test {
  protected:
   void SetUp() override {
+    scoped_feature_list_->InitAndEnableFeature(features::kNewNetErrorPageUI);
     // To control the items in the aggregator, we create it and register a
     // single MockOfflineContentProvider.
     aggregator_ = static_cast<OfflineContentAggregator*>(
@@ -156,14 +153,14 @@ class AvailableOfflineContentTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_ =
+      std::make_unique<base::test::ScopedFeatureList>();
   OfflineContentAggregator* aggregator_;
   offline_items_collection::MockOfflineContentProvider content_provider_;
   AvailableOfflineContentProvider provider_{&profile_};
 };
 
 TEST_F(AvailableOfflineContentTest, NoContent) {
-  scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
   chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
@@ -177,7 +174,6 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
 }
 
 TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
-  scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   // Adds items so that we're one-ff of reaching the minimum required count so
   // that any extra item considered interesting would effect the results.
   content_provider_.SetItems({UninterestingImageItem(), OfflinePageItem(),
@@ -202,7 +198,6 @@ TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
 }
 
 TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
-  scoped_feature_list_.InitAndEnableFeature(features::kNewNetErrorPageUI);
   // We need at least 4 interesting items for anything to show up at all.
   content_provider_.SetItems({UninterestingImageItem(), VideoItem(),
                               SuggestedOfflinePageItem(), AudioItem(),
@@ -251,7 +246,8 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
 }
 
 TEST_F(AvailableOfflineContentTest, NotEnabled) {
-  scoped_feature_list_.InitAndDisableFeature(features::kNewNetErrorPageUI);
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitAndDisableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({SuggestedOfflinePageItem()});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
