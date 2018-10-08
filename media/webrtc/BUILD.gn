@@ -24,6 +24,14 @@ component("webrtc") {
 
   defines = [ "IS_MEDIA_WEBRTC_IMPL" ]
 
+  # TODO(bugs.webrtc.org/9419): Remove this when Chromium will depend on a
+  # WebRTC component instead of rtc_static_libraries. In this phase we are
+  # marking WebRTC symbols as visible, but since this target is a component
+  # too, it will statically link WebRTC code so it doesn't need to dllimport
+  # symbols (this config tells the build system that //media/webrtc is part
+  # of the WebRTC implementation).
+  configs += [ "//third_party/webrtc:library_impl_config" ]
+
   deps = [
     "//base",
     "//third_party/webrtc/modules/audio_processing",
