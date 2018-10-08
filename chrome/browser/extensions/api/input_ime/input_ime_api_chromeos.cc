@@ -441,8 +441,7 @@ void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
 }
 
 InputMethodEngine* InputImeEventRouter::GetEngine(
-    const std::string& extension_id,
-    const std::string& component_id) {
+    const std::string& extension_id) {
   std::map<std::string, InputMethodEngine*>::iterator it =
       engine_map_.find(extension_id);
   return (it != engine_map_.end()) ? it->second : nullptr;
@@ -496,8 +495,7 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
-                   : nullptr;
+      event_router ? event_router->GetEngine(extension_id()) : nullptr;
   if (!engine) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
   }
@@ -627,8 +625,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
-                   : nullptr;
+      event_router ? event_router->GetEngine(extension_id()) : nullptr;
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
@@ -652,8 +649,7 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
-                   : nullptr;
+      event_router ? event_router->GetEngine(extension_id()) : nullptr;
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
@@ -677,8 +673,7 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
-                   : nullptr;
+      event_router ? event_router->GetEngine(extension_id()) : nullptr;
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
