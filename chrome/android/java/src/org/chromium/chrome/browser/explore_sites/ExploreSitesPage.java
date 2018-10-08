@@ -106,7 +106,7 @@ public class ExploreSitesPage extends BasicNativePage {
         host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
-                mModel, layoutManager, iconGenerator, mContextMenuManager, navDelegate);
+                mModel, layoutManager, iconGenerator, mContextMenuManager, navDelegate, profile);
 
         RecyclerView recyclerView =
                 (RecyclerView) mView.findViewById(R.id.explore_sites_category_recycler);

@@ -7,40 +7,33 @@ package org.chromium.chrome.browser.explore_sites;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
  * An object encapsulating info for a website.
  */
 public class ExploreSitesSite {
-    private int mSiteId;
-    private String mSiteTitle;
-    private Bitmap mIcon;
-    private String mUrl;
+    static final PropertyModel.ReadableIntPropertyKey ID_KEY =
+            new PropertyModel.ReadableIntPropertyKey();
+    static final PropertyModel.ReadableObjectPropertyKey<String> TITLE_KEY =
+            new PropertyModel.ReadableObjectPropertyKey<>();
+    static final PropertyModel.ReadableObjectPropertyKey<String> URL_KEY =
+            new PropertyModel.ReadableObjectPropertyKey<>();
+    static final PropertyModel.WritableObjectPropertyKey<Bitmap> ICON_KEY =
+            new PropertyModel.WritableObjectPropertyKey<>();
+
+    private PropertyModel mModel;
 
     public ExploreSitesSite(int id, String title, String url) {
-        mSiteId = id;
-        mSiteTitle = title;
-        mUrl = url;
+        mModel = new PropertyModel.Builder(ID_KEY, TITLE_KEY, URL_KEY, ICON_KEY)
+                         .with(ID_KEY, id)
+                         .with(TITLE_KEY, title)
+                         .with(URL_KEY, url)
+                         .build();
     }
 
-    public int getId() {
-        return mSiteId;
-    }
-
-    public void setIcon(Bitmap icon) {
-        mIcon = icon;
-    }
-
-    public String getTitle() {
-        return mSiteTitle;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public Bitmap getIcon() {
-        return mIcon;
+    public PropertyModel getModel() {
+        return mModel;
     }
 
     @CalledByNative

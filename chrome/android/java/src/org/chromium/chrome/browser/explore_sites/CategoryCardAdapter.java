@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -41,13 +42,14 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     private final RoundedIconGenerator mIconGenerator;
     private final ContextMenuManager mContextMenuManager;
     private final NativePageNavigationDelegate mNavDelegate;
+    private final Profile mProfile;
 
     private RecyclerView.LayoutManager mLayoutManager;
     private PropertyModel mCategoryModel;
 
     public CategoryCardAdapter(PropertyModel model, RecyclerView.LayoutManager layoutManager,
             RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
-            NativePageNavigationDelegate navDelegate) {
+            NativePageNavigationDelegate navDelegate, Profile profile) {
         mCategoryModel = model;
         mCategoryModel.addObserver(this);
         mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).addObserver(this);
@@ -56,6 +58,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
         mIconGenerator = iconGenerator;
         mContextMenuManager = contextMenuManager;
         mNavDelegate = navDelegate;
+        mProfile = profile;
     }
 
     @Override
@@ -95,7 +98,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             // Position - 1 because there is always title.
             view.setCategory(
                     mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1),
-                    mIconGenerator, mContextMenuManager, mNavDelegate);
+                    mIconGenerator, mContextMenuManager, mNavDelegate, mProfile);
         } else if (holder.getItemViewType() == ViewType.LOADING) {
             // Start spinner.
             LoadingView spinner = holder.itemView.findViewById(R.id.loading);

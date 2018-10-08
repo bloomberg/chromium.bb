@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -16,13 +17,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,18 +36,23 @@ import java.util.List;
  */
 public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final int MAX_TILE_COUNT = 8;
+    private static final int TITLE_LINES = 1;
 
     private TextView mTitleView;
     private GridLayout mTileView;
     private RoundedIconGenerator mIconGenerator;
     private ContextMenuManager mContextMenuManager;
     private NativePageNavigationDelegate mNavigationDelegate;
+    private Profile mProfile;
+    private List<PropertyModelChangeProcessor<PropertyModel, ExploreSitesTileView, PropertyKey>>
+            mModelChangeProcessors;
 
     private class CategoryCardInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
-        private ExploreSitesSite mSite;
-        public CategoryCardInteractionDelegate(ExploreSitesSite site) {
-            mSite = site;
+        private String mSiteUrl;
+
+        public CategoryCardInteractionDelegate(String siteUrl) {
+            mSiteUrl = siteUrl;
         }
 
         @Override
@@ -67,7 +78,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         @Override
         public String getUrl() {
-            return mSite.getUrl();
+            return mSiteUrl;
         }
 
         @Override
@@ -82,8 +93,29 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         public void onContextMenuCreated(){};
     }
 
+    private class ExploreSitesSiteViewBinder
+            implements PropertyModelChangeProcessor
+                               .ViewBinder<PropertyModel, ExploreSitesTileView, PropertyKey> {
+        @Override
+        public void bind(PropertyModel model, ExploreSitesTileView view, PropertyKey key) {
+            if (key == ExploreSitesSite.ICON_KEY) {
+                view.updateIcon(model.get(ExploreSitesSite.ICON_KEY),
+                        model.get(ExploreSitesSite.TITLE_KEY));
+            } else if (key == ExploreSitesSite.TITLE_KEY) {
+                view.setTitle(model.get(ExploreSitesSite.TITLE_KEY), TITLE_LINES);
+            } else if (key == ExploreSitesSite.URL_KEY) {
+                // Attach click handlers.
+                CategoryCardInteractionDelegate interactionDelegate =
+                        new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY));
+                view.setOnClickListener(interactionDelegate);
+                view.setOnCreateContextMenuListener(interactionDelegate);
+            }
+        }
+    }
+
     public ExploreSitesCategoryCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mModelChangeProcessors = new ArrayList<>(MAX_TILE_COUNT);
     }
 
     @Override
@@ -94,11 +126,12 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     }
 
     public void setCategory(ExploreSitesCategory category, RoundedIconGenerator iconGenerator,
-            ContextMenuManager contextMenuManager,
-            NativePageNavigationDelegate navigationDelegate) {
+            ContextMenuManager contextMenuManager, NativePageNavigationDelegate navigationDelegate,
+            Profile profile) {
         mIconGenerator = iconGenerator;
         mContextMenuManager = contextMenuManager;
         mNavigationDelegate = navigationDelegate;
+        mProfile = profile;
 
         updateTitle(category.getTitle());
         updateTileViews(category.getSites());
@@ -109,6 +142,13 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     }
 
     public void updateTileViews(List<ExploreSitesSite> sites) {
+        // Clear observers.
+        for (PropertyModelChangeProcessor<PropertyModel, ExploreSitesTileView, PropertyKey>
+                        observer : mModelChangeProcessors) {
+            observer.destroy();
+        }
+        mModelChangeProcessors.clear();
+
         // Remove extra tiles if too many.
         if (mTileView.getChildCount() > sites.size()) {
             mTileView.removeViews(sites.size(), mTileView.getChildCount() - sites.size());
@@ -129,13 +169,17 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         // Initialize all the non-empty tiles again to update.
         for (int i = 0; i < tileMax; i++) {
             ExploreSitesTileView tileView = (ExploreSitesTileView) mTileView.getChildAt(i);
-            final ExploreSitesSite site = sites.get(i);
-            tileView.initialize(site, mIconGenerator);
+            final PropertyModel site = sites.get(i).getModel();
+            tileView.initialize(mIconGenerator);
 
-            CategoryCardInteractionDelegate interactionDelegate =
-                    new CategoryCardInteractionDelegate(site);
-            tileView.setOnClickListener(interactionDelegate);
-            tileView.setOnCreateContextMenuListener(interactionDelegate);
+            mModelChangeProcessors.add(PropertyModelChangeProcessor.create(
+                    site, tileView, new ExploreSitesSiteViewBinder()));
+
+            // Fetch icon if not present already.
+            if (site.get(ExploreSitesSite.ICON_KEY) == null) {
+                ExploreSitesBridge.getSiteImage(mProfile, site.get(ExploreSitesSite.ID_KEY),
+                        (Bitmap icon) -> site.set(ExploreSitesSite.ICON_KEY, icon));
+            }
         }
     }
 }

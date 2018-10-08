@@ -32,8 +32,8 @@ public class ExploreSitesCategoryUnitTest {
         assertEquals(id, category.getId());
         assertEquals(type, category.getType());
         assertEquals(1, category.getSites().size());
-        assertEquals(siteId, category.getSites().get(0).getId());
-        assertEquals(title, category.getSites().get(0).getTitle());
-        assertEquals(url, category.getSites().get(0).getUrl());
+        assertEquals(siteId, category.getSites().get(0).getModel().get(ExploreSitesSite.ID_KEY));
+        assertEquals(title, category.getSites().get(0).getModel().get(ExploreSitesSite.TITLE_KEY));
+        assertEquals(url, category.getSites().get(0).getModel().get(ExploreSitesSite.URL_KEY));
     }
 }

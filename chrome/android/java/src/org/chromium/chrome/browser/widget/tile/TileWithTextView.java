@@ -48,10 +48,15 @@ public class TileWithTextView extends FrameLayout {
      * @param titleLines The number of text lines to use for the tile title.
      */
     public void initialize(String title, boolean showOfflineBadge, Drawable icon, int titleLines) {
-        mTitleView.setLines(titleLines);
-        mTitleView.setText(title);
+        setTitle(title, titleLines);
         setOfflineBadgeVisibility(showOfflineBadge);
         setIconDrawable(icon);
+    }
+
+    /** Sets the title text and number lines. */
+    public void setTitle(String title, int titleLines) {
+        mTitleView.setLines(titleLines);
+        mTitleView.setText(title);
     }
 
     /**

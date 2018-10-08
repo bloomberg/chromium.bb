@@ -19,8 +19,6 @@ import org.chromium.chrome.browser.widget.tile.TileWithTextView;
  * View for a category name and site tiles.
  */
 public class ExploreSitesTileView extends TileWithTextView {
-    private static final int TITLE_LINES = 1;
-
     private final int mIconSizePx;
     private RoundedIconGenerator mIconGenerator;
 
@@ -29,10 +27,8 @@ public class ExploreSitesTileView extends TileWithTextView {
         mIconSizePx = getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
     }
 
-    public void initialize(ExploreSitesSite site, RoundedIconGenerator generator) {
+    public void initialize(RoundedIconGenerator generator) {
         mIconGenerator = generator;
-        super.initialize(site.getTitle(), /* showOfflineBadge = */ false,
-                getDrawableForBitmap(site.getIcon(), site.getTitle()), TITLE_LINES);
     }
 
     public void updateIcon(Bitmap iconImage, String text) {
