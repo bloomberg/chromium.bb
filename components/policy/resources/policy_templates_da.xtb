@@ -475,21 +475,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Stavekontrol kan stadig udføres ved hjælp af den downloadede ordbog. Denne politik kontrollerer kun brugen af onlinetjenesten.
 
       Hvis denne indstilling ikke er konfigureret, kan brugerne vælge, om stavekontrol skal aktiveres eller ej.</translation>
-<translation id="2294283832646774959">Konfigurerer en liste over printere.
-
-      Denne politik giver administratorer mulighed for at angive printerkonfigurationer
-      for deres brugere.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så valg af printer bliver nemmere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> skal stemme overens med en af de strenge, der repræsenterer en <ph name="PRODUCT_NAME" />-understøttet printer. Strengen bruges til at identificere og installere den relevante PPD-fil til printeren. Du kan finde flere oplysninger på https://support.google.com/chrome?p=noncloudprint.
-
-      Printerkonfigurationen fuldføres, første gang printeren tages i brug.  PPD-filer downloades ikke, før printeren benyttes.  Derefter gemmes ofte anvendte PPD-filer i cachen.
-
-      Denne politik påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
-
-      For enheder, der administreres med Active Directory, understøtter denne politik udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk! Positionen er nulbaseret.
-      </translation>
 <translation id="2294382669900758280">Videoafspilning i Android-apps tages ikke med i betragtning, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurer standardsiden Ny fane i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
@@ -594,9 +579,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Alle nye versioner af Samba- og Windows-servere understøtter NTLMv2. Politikken bør kun deaktiveres for bagudrettet kompatibilitet, og den reducerer sikkerheden ved godkendelse.
 
           Hvis politikken ikke er angivet, indstilles den som standard til Sand, og NTLMv2 aktiveres.</translation>
-<translation id="2598508021807251719">Konfigurerer de sprog, som <ph name="PRODUCT_OS_NAME" /> kan vises på.
-
-      Hvis denne politik er angivet, kan brugeren kun konfigurere <ph name="PRODUCT_OS_NAME" /> til at blive vist på et af de sprog, der angives af denne politik. Hvis politikken ikke er angivet eller er angivet med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises på alle understøttede sprog. Hvis denne politik er angivet med en liste, der indeholder ugyldige værdier, ignoreres alle ugyldige værdier. Hvis en bruger tidligere konfigurerede <ph name="PRODUCT_OS_NAME" /> til at blive vist på et sprog, der ikke tillades af denne politik, ændres visningssproget til et tilladt sprog, næste gang brugeren logger ind. Hvis brugeren har konfigureret foretrukne sprog, og et af de foretrukne sprog er tilladt af denne politik, skifter <ph name="PRODUCT_OS_NAME" /> til det pågældende sprog. Ellers skifter <ph name="PRODUCT_OS_NAME" /> til den første gyldige værdi, der er angivet af denne politik, eller til en alternativ landestandard (som i øjeblikket er en-US), hvis politikken kun indeholder ugyldige poster.</translation>
 <translation id="2604182581880595781">Konfigurer politikker for fildeling via netværk.</translation>
 <translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1463,13 +1445,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="5142301680741828703">Gengiv altid følgende webadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Fastlægger det hostname, enheden anvender i DHCP-anmodninger.
-
-      Hvis denne politik er angivet til en udfyldt streng, bruges strengen som enhedens hostname i forbindelse med en DHCP-anmodning.
-
-      Strengen kan indeholde variabler ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, som ville blive erstattet af værdier på enheden, inden de bruges som hostname. Resultatet af udskiftningen skal være et gyldigt hostname (i overensstemmelse med afsnit 3.1 i RFC 1035).
-
-      Hvis denne politik ikke er angivet, eller værdien efter udskiftningen ikke er et gyldigt hostname, angives der ikke noget hostname i DHCP-anmodninger. </translation>
 <translation id="5148753489738115745">Giver dig mulighed for at angive yderligere parametre, som bruges, når <ph name="PRODUCT_FRAME_NAME" /> starter <ph name="PRODUCT_NAME" />.
 
           Hvis denne politik ikke er angivet, bruges standardkommandolinjen.</translation>
@@ -1694,7 +1669,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5835124959204887277">Angiver webadresser og domæner, for hvilke der ikke vises en meddelelse, når der anmodes om attesteringscertifikater fra sikkerhedsnøgler. Desuden sendes et signal til sikkerhedsnøglen, som indikerer, at der kan anvendes individuel attestering. Uden dette får brugerne en meddelelse i version 65 og nyere af Chrome, når websites anmoder om attestering af sikkerhedsnøgler.
 
       Webadresser (såsom https://eksempel.dk/en/sti) matcher kun som U2F-app-id'er. Domæner (såsom eksempel.dk) matcher kun som webauthn RP-id'er. Derfor skal både app-id, webadresse og domæne angives for at dække både U2F- og webauthn-API'er for et givet website.</translation>
-<translation id="5835412847081687053">Konfigurer tilladte brugerfladesprog i en brugersession</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
 <translation id="5862253018042179045">Angiv standardtilstanden for hjælpefunktionen Talefeedback på loginskærmen.
 

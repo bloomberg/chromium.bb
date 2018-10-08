@@ -482,20 +482,6 @@
       Yazım denetimi indirilen bir sözlük kullanılarak gerçekleştirilebilir; bu politika yalnızca çevrimiçi hizmetin kullanımını denetler.
 
       Bu ayar yapılandırılmazsa, kullanıcılar yazım denetimi hizmetinin kullanılıp kullanılmayacağını belirleyebilirler.</translation>
-<translation id="2294283832646774959">Yazıcılar listesini yapılandırır.
-
-      Bu politika, yöneticilerin kendi kullanıcıları için yazıcı yapılandırmaları sunmalarına izin verir.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ve <ph name="PRINTER_DESCRIPTION" />, yazıcı seçimini kolaylaştıracak şekilde özelleştirilebilen serbest biçimli dizelerdir. <ph name="PRINTER_MANUFACTURER" /> ve <ph name="PRINTER_MODEL" />, son kullanıcıların yazıcıyı tanımasını kolaylaştırmayı amaçlar. Bu ibareler yazıcının üreticisini ve modelini temsil eder. <ph name="PRINTER_URI" />; <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ve <ph name="URI_QUEUE" /> bilgilerini içeren bir istemci bilgisayardan ulaşılabilen bir adres olmalıdır. <ph name="PRINTER_UUID" /> isteğe bağlıdır. Sağlandığı takdirde, <ph name="ZEROCONF_DISCOVERY" /> yazıcıların tekilleştirilmesine yardımcı olmak için kullanılabilir.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" />, <ph name="PRODUCT_NAME" /> tarafından desteklenen bir yazıcıyı temsil eden dizelerden biriyle eşleşmelidir. Dize, yazıcıya uygun PPD'yi tanımlamak ve yüklemek için kullanılır. Daha fazla bilgiye https://support.google.com/chrome?p=noncloudprint adresinden ulaşabilirsiniz.
-
-      Yazıcı ilk kez kullanıldığında kurulum tamamlanmış olur. Yazıcı kullanılana kadar PPD'ler indirilmez. Bundan sonra sık kullanılan PPD'ler önbelleğe alınır.
-
-      Bu politika, kullanıcıların yazıcıları ayrı ayrı cihazlarda yapılandırıp yapılandıramayacakları konusunu etkilemez. Ayrı ayrı kullanıcılar tarafından yazıcıların yapılandırılması konusunda tamamlayıcı olacak şekilde tasarlanmıştır.
-
-      Active Directory tarafından yönetilen cihazlarda bu politika, <ph name="MACHINE_NAME_VARIABLE" /> değişkeninin Active Directory makine adına veya bunun bir alt dizesine genişletilmesini destekler. Örneğin, makine adı <ph name="MACHINE_NAME_EXAMPLE" /> ise <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />, 6. konumdan sonra başlayan 4 karakterle değiştirilir (<ph name="MACHINE_NAME_PART_EXAMPLE" /> gibi). Konumun sıfır tabanlı olduğuna dikkat edin.
-      </translation>
 <translation id="2294382669900758280">Bu politika <ph name="TRUE" /> seçeneğine ayarlansa bile Android uygulamalarında video oynatma dikkate alınmaz.</translation>
 <translation id="2298647742290373702"><ph name="PRODUCT_NAME" /> ürününde varsayılan Yeni Sekme sayfasını yapılandırın.</translation>
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
@@ -606,9 +592,6 @@
           Son Samba ve Windows sunucularının tamamı NTLMv2'yi desteklemektedir. Bu politika yalnızca geriye dönük uyumluluk için devre dışı bırakılmalıdır ve kimlik doğrulaması güvenliğini azaltmaktadır.
 
           Bu politika ayarlanmazsa, varsayılan değer true (doğru) olarak belirlenir ve NTLMv2 etkinleştirilir.</translation>
-<translation id="2598508021807251719"><ph name="PRODUCT_OS_NAME" /> ürününün görüntülenebileceği yerel ayarları yapılandırır.
-
-      Bu politika ayarlanırsa kullanıcı, <ph name="PRODUCT_OS_NAME" /> ürününü yalnızca bu politikada belirtilen yerel ayarların birinde görüntülenecek şekilde yapılandırabilir. Bu politika ayarlanmazsa veya boş bir listeye ayarlanırsa <ph name="PRODUCT_OS_NAME" />, desteklenen tüm kullanıcı arayüzü yerel ayarlarında görüntülenebilir. Bu politika geçersiz değerler içeren bir listeye ayarlanırsa tüm geçersiz değerler yoksayılır. Bir kullanıcı daha önce <ph name="PRODUCT_OS_NAME" /> ürününü bu politika tarafından izin verilmeyen bir yerel ayarda görüntülenecek şekilde yapılandırmışsa, kullanıcı tekrar oturum açtığında görüntüleme yerel ayarı izin verilen bir kullanıcı arayüzü yerel ayarıyla değiştirilir. Kullanıcı tercih edilen yerel ayarları yapılandırdıysa ve bu politika, tercih edilen yerel ayarlardan birine izin veriyorsa <ph name="PRODUCT_OS_NAME" />, bu yerel ayara geçiş yapar. Aksi halde, <ph name="PRODUCT_OS_NAME" /> bu politika tarafından belirtilen geçerli değere veya bu politika yalnızca geçersiz girişler içerirse bir yedek yerel ayara (şu anda en-US) geçiş yapar.</translation>
 <translation id="2604182581880595781">Ağ Üzerinde Dosya Paylaşımı ile ilgili politikaları yapılandırın.</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
@@ -1497,13 +1480,6 @@ politikayı geçersiz kılamaz.
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>
-<translation id="5147665094011258322">DHCP isteklerinde kullanılan cihazın ana makine adını belirler.
-
-      Bu politika boş olmayan bir dizeye ayarlanırsa, o dize, DHCP isteği sırasında cihazın ana makine adı olarak kullanılır.
-
-      Dize, değişkenler (${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}) içerebilir. Ana makine adı olarak kullanılmadan önce cihazda bu değişkenlerin yerine değerler getirilir. Bu işlemin sonucunda ortaya çıkan değişikliğin geçerli bir ana makine adı olması gerekir (RFC 1035, bölüm 3.1 uyarınca).
-
-      Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse, DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" /> tarafından <ph name="PRODUCT_NAME" /> başlatıldığında kullanılan ek parametreleri belirtmenize olanak verir.
 
           Bu politika ayarlanmazsa varsayılan komut satırı kullanılır.</translation>
@@ -1752,7 +1728,6 @@ politikayı geçersiz kılamaz.
 <translation id="5835124959204887277">Güvenlik Anahtarlarından doğrulama sertifikaları istendiğinde kendisi için hiçbir istemin gösterilmeyeceği URL'leri ve alan adlarını belirtir. Ayrıca, Güvenlik Anahtarına, bireysel doğrulamanın kullanılabileceğini belirten bir sinyal gönderilir. Bu olmadığında kullanıcılar, siteler Güvenlik Anahtarlarının doğrulanmasını istediğinde Chrome 65+ sürümünde istem alırlar.
 
       URL'ler (https://example.com/herhangibir/yoladı gibi) yalnızca U2F appID'leri olarak eşleşir. Alan adları (example.com gibi) yalnızca webauthn RP ID'leri olarak eşleşir. Dolayısıyla, belirli bir site için hem U2F hem de webauthn API'lerini kapsamak istiyorsanız hem appID URL'sini hem de alan adını listelemeniz gerekir.</translation>
-<translation id="5835412847081687053">Kullanıcı oturumunda izin verilen kullanıcı arayüzü yerel ayarlarını yapılandırma</translation>
 <translation id="5836064773277134605">Uzaktan erişen ana makine tarafından kullanılan UDP bağlantı noktası aralığını kısıtla</translation>
 <translation id="5862253018042179045">Giriş ekranında sesli geri bildirim erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 

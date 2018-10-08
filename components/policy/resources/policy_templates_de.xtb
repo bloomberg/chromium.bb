@@ -481,20 +481,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
 
       Ist diese Einstellung nicht konfiguriert, können die Nutzer auswählen, ob die Rechtschreibprüfung verwendet werden soll oder nicht.</translation>
-<translation id="2294283832646774959">Eine Liste der Drucker wird konfiguriert.
-
-      Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen bereitstellen.
-
-      Bei <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> handelt es sich um Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Der String wird zur Ermittlung und Installation der korrekten PPD für den Drucker verwendet. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
-
-      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen. PPDs werden erst dann heruntergeladen, wenn der Drucker genutzt wird. Anschließend werden häufig verwendete PPDs im Cache gespeichert.
-
-      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können. Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
-
-      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von <ph name="MACHINE_NAME_VARIABLE" /> auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise <ph name="MACHINE_NAME_EXAMPLE" /> lautet, wird <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Beachten Sie, dass die Position auf Null basiert.
-      </translation>
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="2298647742290373702">Standardmäßige "Neuer Tab"-Seite in <ph name="PRODUCT_NAME" /> konfigurieren.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
@@ -599,9 +585,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Alle aktuellen Versionen der Samba- und Windows-Server unterstützen NTLMv2. Eine Deaktivierung sollte nur zum Zweck der Rückwärtskompatibilität erfolgen und verringert die Sicherheit der Authentifizierung.
 
           Wenn diese Richtlinie nicht konfiguriert ist, ist der Standardwert "true" und NTLMv2 ist aktiviert.</translation>
-<translation id="2598508021807251719">Mit dieser Richtlinie werden die Sprachen konfiguriert, in denen <ph name="PRODUCT_OS_NAME" /> angezeigt werden kann.
-
-      Wenn diese Richtlinie festgelegt ist, kann der Nutzer <ph name="PRODUCT_OS_NAME" /> nur in einer der durch diese Richtlinie angegebenen Sprachen anzeigen lassen. Falls diese Richtlinie nicht festgelegt ist oder auf eine leere Liste verweist, kann <ph name="PRODUCT_OS_NAME" /> in allen unterstützten UI-Sprachen angezeigt werden. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Wenn ein Nutzer <ph name="PRODUCT_OS_NAME" /> zuvor so konfiguriert hat, dass das Betriebssystem in einer Sprache angezeigt wird, die nicht durch diese Richtlinie zugelassen ist, wird die UI-Sprache in eine zulässige Sprache geändert, wenn sich der Nutzer das nächste Mal anmeldet. Falls der Nutzer bevorzugte Sprachen konfiguriert hatte und eine der bevorzugten Sprachen durch diese Richtlinie zugelassen ist, wechselt <ph name="PRODUCT_OS_NAME" /> zu dieser Sprache. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
@@ -1463,13 +1446,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
-<translation id="5147665094011258322">Legen Sie den Hostnamen des in DHCP-Anfragen verwendeten Geräts fest.
-
-      Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser String während der DHCP-Anfrage als Geräte-Hostname verwendet.
-
-      Der String kann die Variablen ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname verwendet werden. Das Ergebnis sollte ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
-
-      Wird diese Richtlinie nicht definiert oder ist der Wert nach dem Ersetzen kein gültiger Hostname, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="5148753489738115745">Ermöglicht die Verwendung zusätzlicher Parameter, die beim Start von <ph name="PRODUCT_NAME" /> durch <ph name="PRODUCT_FRAME_NAME" /> eingesetzt werden.
 
           Wenn diese Richtlinie nicht festgelegt wird, wird die Standardbefehlszeile verwendet.</translation>
@@ -1696,7 +1672,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5835124959204887277">In der Richtlinie werden URLs und Domains spezifiziert, für die keine Eingabeaufforderung angezeigt werden, wenn Nachweiszertifikate von Sicherheitsschlüsseln angefordert werden. Zusätzlich wird an den Sicherheitsschlüssel ein Signal gesendet, das angibt, dass individuelle Nachweise verwendet werden können. Andernfalls erhalten Nutzer in Chrome 65 und höher eine Eingabeaufforderung, wenn von Websites ein Nachweis für Sicherheitsschlüssel angefordert wird.
 
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
-<translation id="5835412847081687053">In einer Nutzersitzung zulässige UI-Sprachen konfigurieren</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
 

@@ -482,21 +482,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
 
       Hvis denne innstillingen ikke er konfigurert, kan brukere velge om tjenesten for stavekontroll skal eller ikke skal brukes.</translation>
-<translation id="2294283832646774959">Konfigurerer en liste over skrivere.
-
-      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner til
-      brukerne sine.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> brukes til å gjøre det lettere for brukerne å identifisere skrivere. De representerer skrivermodellen og -produsenten. <ph name="PRINTER_URI" /> skal være en adresse som kan nås fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den oppgis, brukes den til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en <ph name="PRODUCT_NAME" />-støttet skriver. Strengen blir brukt til å identifisere og installere den riktige PPD-filen for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
-
-      Skriverkonfigureringen er fullført når en skriver brukes for første gang. PPD-filer lastes ikke ned før skriveren brukes. Etter det blir PPD-filer som brukes ofte, bufret.
-
-      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter. Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
-
-      For Active Directory-administrerte enheter støtter denne regelen utvidelse av <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av det. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de 4 tegnene etter 6. posisjon, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Merk at posisjonen er null-basert.
-      </translation>
 <translation id="2294382669900758280">Videoavspilling i Android-apper tas ikke med i betraktningen – selv ikke når denne regelen er angitt som <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurer standardsiden for nye faner i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
@@ -605,9 +590,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Dette bør bare slås av for bakoverkompatibilitet og reduserer sikkerheten for autentisering.
 
           Når denne regelen ikke er definert, er standardverdien «true» (sann) og NTLMv2 er slått på.</translation>
-<translation id="2598508021807251719">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
-
-      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle UI-lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på en lokalitet som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt UI-lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="2604182581880595781">Konfigurer retningslinjer knyttet til delte nettverksresurser.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1491,13 +1473,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Finn vertsnavnet for enheten som brukes i DHCP-forespørsler.
-
-      Hvis denne regelen er angitt som en streng som ikke er tom, blir den strengen brukt som vertsnavnet for enheten ved DHCP-forespørsler.
-
-      Strengen kan inneholde variablene ${ASSET_ID}, ${SERIAL_NUM} og ${MAC_ADDR}. Disse blir erstattet med verdier på enheten før strengen blir tatt i bruk som vertsnavn. Den resulterende strengen må være et gyldig vertsnavn (per RFC 1035, del 3.1).
-
-      Hvis denne regelen ikke er angitt, eller hvis den endelige verdien ikke er et gyldig vertsnavn, blir ikke noe vertsnavn angitt i DHCP-forespørsler. </translation>
 <translation id="5148753489738115745">Lar deg spesifisere ytterligere parametere som brukes når <ph name="PRODUCT_FRAME_NAME" /> kjører <ph name="PRODUCT_NAME" />.
 
           Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
@@ -1746,7 +1721,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5835124959204887277">Spesifiserer nettadresser og domener som det ikke blir vist noen forespørsel for når det blir bedt om attestsertifikater fra sikkerhetsnøkler. I tillegg blir et signal sendt til sikkerhetsnøkkelen. Dette signalet indikerer at enkeltattester kan brukes. Uten dette kommer brukere til å få opp en forespørsel i Chrome v65+ når nettsteder ber om attest for sikkerhetsnøkler.
 
       Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
-<translation id="5835412847081687053">Konfigurer tillatte lokaliteter i brukerøkter</translation>
 <translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
 <translation id="5862253018042179045">Angi standard tilstand for tilgjengelighetsfunksjonen for muntlig tilbakemelding på påloggingssiden.
 

@@ -499,20 +499,6 @@
       A verificação ortográfica também pode ser efetuada através de um dicionário previamente transferido; esta política apenas controla a utilização do serviço online.
 
       Se esta definição não estiver configurada, os utilizadores podem optar por utilizar o serviço de verificação ortográfica ou não.</translation>
-<translation id="2294283832646774959">Configura uma lista de impressoras.
-
-      Esta política permite que os administradores facultem configurações de impressoras aos utilizadores.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar os PPDs adequados à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
-
-      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
-
-      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
-
-      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
-      </translation>
 <translation id="2294382669900758280">A reprodução de vídeos em aplicações para Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurar a página Novo separador predefinida no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
@@ -617,9 +603,6 @@
           Todas as versões recentes dos servidores Samba e Windows são compatíveis com o NTLMv2. Só deve ser desativado para retrocompatibilidade e reduz a segurança da autenticação.
 
           Se esta política não estiver definida, a predefinição assume o valor "verdadeiro" e o NTLMv2 está ativado.</translation>
-<translation id="2598508021807251719">Configura os locais em que o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado.
-
-      Se esta política estiver definida, o utilizador pode configurar a apresentação do <ph name="PRODUCT_OS_NAME" /> apenas num dos locais especificados por esta política. Se esta política não for definida ou for definida com uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado em todos os locais da IU compatíveis. Se esta política estiver definida com uma lista com valores inválidos, os mesmos serão ignorados. Se um utilizador configurou o <ph name="PRODUCT_OS_NAME" /> anteriormente de forma a ser apresentado num local não permitido por esta política, o local da apresentação será alterado para um local da IU permitido da próxima vez que o utilizador iniciar sessão. Se o utilizador tiver configurado locais preferidos e um destes for permitido por esta política, o <ph name="PRODUCT_OS_NAME" /> mudará para esse local. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> mudará para o primeiro valor válido especificado por esta política ou para um local alternativo (atualmente, en-US), se esta política incluir apenas entradas inválidas.</translation>
 <translation id="2604182581880595781">Configure as políticas relacionadas com a Partilha de ficheiros na rede.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do utilizador</translation>
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1484,13 +1467,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5130288486815037971">Determinar se os conjuntos de cifras RC4 no TLS estão ativados</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa predefinida ativada no ecrã de início de sessão</translation>
 <translation id="5142301680741828703">Processar sempre os seguintes padrões de URL no <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Determinar o nome do anfitrião do dispositivo utilizado nos pedidos de DHCP.
-
-      Se esta política estiver definida como uma string não vazia, essa string é utilizada como o nome do anfitrião do dispositivo durante o pedido de DHCP.
-
-      A string pode conter variáveis ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} que são substituídas por valores no dispositivo antes de ser utilizada como nome do anfitrião. A substituição resultante deve ser um nome de anfitrião válido (de acordo com o RFC 1035, secção 3.1).
-
-      Se esta política não estiver definida ou o valor após a substituição não for um nome de anfitrião válido, não é definido um nome de anfitrião no pedido de DHCP. </translation>
 <translation id="5148753489738115745">Permite especificar parâmetros adicionais utilizados quando o <ph name="PRODUCT_FRAME_NAME" /> iniciar o <ph name="PRODUCT_NAME" />.
 
           Se esta política não estiver definida, será utilizada a linha de comandos predefinida.</translation>
@@ -1717,7 +1693,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5835124959204887277">Especifica os URLs e os domínios para os quais não é apresentada um pedido quando são solicitados os certificados de comprovação das Chaves de segurança. Além disso, é enviado um sinal para a Chave de segurança a indicar que a comprovação individual pode ser utilizada. Sem isto, os utilizadores do Chrome 65 e superior recebem um pedido quando os sites solicitarem a comprovação das Chaves de segurança.
 
       Os URLs (como https://example.com/some/path) obtêm correspondência apenas como appIDs de U2F. Os domínios (como example.com) obtêm correspondência apenas como IDs de RP de webauthn. Desta forma, para abranger APIs de U2F e de webauthn de um determinado site, tanto o URL como o domínio do appID têm de constar da lista.</translation>
-<translation id="5835412847081687053">Configurar os locais da IU permitidos numa sessão de utilizador.</translation>
 <translation id="5836064773277134605">Restringir o intervalo da porta UDP utilizado pelo anfitrião de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado predefinido da funcionalidade de acessibilidade de respostas faladas no ecrã de início de sessão.
 

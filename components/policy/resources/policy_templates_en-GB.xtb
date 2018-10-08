@@ -497,21 +497,6 @@
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.</translation>
-<translation id="2294283832646774959">Configures a list of printers.
-
-      This policy allows administrators to provide printer configurations for
-      their users.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" />-supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
-
-      Printer setup is completed upon the first use of a printer. PPDs are not downloaded until the printer is used. After that time, frequently used PPDs are cached.
-
-      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
-
-      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
-      </translation>
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configure the default New Tab page in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
@@ -624,9 +609,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
 
           If this policy is not set, the default is true and NTLMv2 is enabled.</translation>
-<translation id="2598508021807251719">Configures the locales <ph name="PRODUCT_OS_NAME" /> may be displayed in.
-
-      If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME" /> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME" /> can be displayed in all supported UI locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME" /> to be displayed in a locale that is not allowed by this policy, the display locale will be switched to an allowed UI locale the next time the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME" /> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME" /> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.</translation>
 <translation id="2604182581880595781">Configure Network File Shares-related policies.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -847,6 +829,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
+<translation id="3211426942294667684">Browser sign in settings</translation>
 <translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
@@ -1124,6 +1107,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you do not set this policy, <ph name="PRODUCT_NAME" /> will use its usual default directory (platform-specific).
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.</translation>
+<translation id="3904459740090265495">This policy controls the sign-in behaviour of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME" /> with their account and use account-related services such as Chrome Sync.
+
+      If the policy is set to 'Disable browser sign-in', the user cannot sign in to the browser and use account-based services. In this case browser-level features such as Chrome Sync cannot be used and will be unavailable. If the user was signed in and the policy is set 'Disabled', they will be signed out the next time that they run Chrome but their local profile data such as bookmarks, passwords, etc. will stay preserved. The user will still be able to sign in to and use Google web services such as Gmail.
+
+      If the policy is set to 'Enable browser sign-in', the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services such as Gmail. Being signed in to the browser means that the user's account information will be kept by the browser. However, it does not mean that Chrome Sync will be turned on per default; the user must separately opt in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome Sync, use the 'SyncDisabled' policy.
+
+      If the policy is set to 'Force browser sign-in', the user is presented with an account selection dialogue and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome Sync for the account, except for the case when sync was disabled by the domain admin or via the 'SyncDisabled' policy. The default value of BrowserGuestModeEnabled will be set to false. Note: Existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article: https://support.google.com/chrome/a/answer/7572556.
+
+      If this policy is not set then the user can decide if they want to enable the browser sign-in option and use it as they see fit.</translation>
 <translation id="3911737181201537215">This policy has no effect on the logging done by Android.</translation>
 <translation id="391531815696899618">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -1174,6 +1166,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Note: When the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, this policy is ignored and Google Location services are always disabled.</translation>
 <translation id="408029843066770167">Allow queries to a Google time service</translation>
+<translation id="408076456549153854">Enable browser sign-in</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
 <translation id="4088983553732356374">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
@@ -1484,6 +1477,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the user manager.</translation>
+<translation id="4970855112942626932">Disable browser sign-in</translation>
 <translation id="4971529314808359013">Allows you to specify a list of URL patterns that specify sites for which <ph name="PRODUCT_NAME" /> should automatically select a client certificate, if the site requests a certificate.
 
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
@@ -1520,13 +1514,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Determine the hostname of the device used in DHCP requests.
-
-      If this policy is set to a non-empty string, that string will be used as the device hostname during DHCP request.
-
-      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
-
-      If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
 
           If this policy is not set the default command line will be used.</translation>
@@ -1780,7 +1767,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5835124959204887277">Specifies URLs and domains for which no prompt will be shown when attestation certificates from Security Keys are requested. Additionally, a signal will be sent to the Security Key indicating that individual attestation may be used. Without this, users will be prompted in Chrome 65+ when sites request attestation of Security Keys.
 
       URLs (like https://example.com/some/path) will only match as U2F appIDs. Domains (like example.com) only match as webauthn RP IDs. Thus, to cover both U2F and webauthn APIs for a given site, both the appID URL and domain would need to be listed.</translation>
-<translation id="5835412847081687053">Configure the allowed UI locales in a user session</translation>
 <translation id="5836064773277134605">Restrict the UDP port range used by the remote access host</translation>
 <translation id="5862253018042179045">Set the default state of the spoken feedback accessibility feature on the login screen.
 
@@ -1902,6 +1888,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
 <translation id="6083631234867522991">Windows (Windows clients):</translation>
+<translation id="6091233616732024397">Force users to sign-in to use the browser</translation>
 <translation id="6093156968240188330">Allow remote users to interact with elevated windows in remote assistance sessions</translation>
 <translation id="6095999036251797924">Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
 
@@ -1976,6 +1963,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6376659517206731212">Can Be Mandatory</translation>
+<translation id="6377355597423503887">This policy is deprecated. Consider using BrowserSignin instead.
+
+      Allows the user to sign in to <ph name="PRODUCT_NAME" />.
+
+      If you set this policy, you can configure whether a user is allowed to sign in to <ph name="PRODUCT_NAME" />. Setting this policy to 'False' will prevent apps and extensions that use the chrome.identity API from functioning, so you may want to use SyncDisabled instead.</translation>
 <translation id="6378076389057087301">Specify whether audio activity affects power management</translation>
 <translation id="637934607141010488">Report list of device users that have recently logged in.
 
@@ -2922,6 +2914,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8548832052135586762">Sets printing to colour only, monochrome only or no colour mode restriction. Unset policy is treated as no restriction.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
+<translation id="857369585509260201">This policy is deprecated. Consider using BrowserSignin instead.
+
+      If this policy is set to true, the user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note: Existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article.
+
+      If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Specifies the printers which a user cannot use.
 
       This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.

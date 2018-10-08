@@ -505,21 +505,6 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
 
       En cas de non-configuration de ce paramètre, les utilisateurs peuvent décider d'utiliser le service de correction orthographique ou non.</translation>
-<translation id="2294283832646774959">Configure une liste d'imprimantes.
-
-      Cette règle autorise les administrateurs à fournir des configurations d'imprimante
-      pour leurs utilisateurs.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre que vous pouvez personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> servent à faciliter l'identification de l'imprimante par les utilisateurs finaux. Ces chaînes correspondent au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client, et doit contenir le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes en double <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> doit correspondre à l'une des chaînes qui représentent une imprimante <ph name="PRODUCT_NAME" /> compatible. Cette chaîne est utilisée pour identifier et installer le fichier PPD approprié pour l'imprimante. Pour plus d'informations, consultez la page https://support.google.com/chrome?p=noncloudprint.
-
-      La configuration d'une imprimante est effectuée lors de sa première utilisation. Les fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en cache.
-
-      Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
-
-      Pour les appareils gérés par Active Directory, cette règle permet l'expansion de <ph name="MACHINE_NAME_VARIABLE" /> en fonction du nom de machine Active Directory ou de l'une de ses sous-chaînes. Par exemple, si le nom de machine est <ph name="MACHINE_NAME_EXAMPLE" />, alors <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> est remplacé par les 4 caractères suivant la 6e position, soit <ph name="MACHINE_NAME_PART_EXAMPLE" />. Notez que la position prend en compte le zéro.
-      </translation>
 <translation id="2294382669900758280">La lecture vidéo dans les applications Android n'est pas prise en compte même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="2298647742290373702">Configurer la page "Nouvel onglet" par défaut dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
@@ -632,9 +617,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
           Toutes les versions récentes des serveurs Samba et Windows incluent l'authentification NTLMv2. La désactivation de cette fonctionnalité, qui réduit la sécurité de l'authentification, n'est conseillée qu'à des fins de rétrocompatibilité.
 
           Lorsque cette règle n'est pas définie, la valeur par défaut "true" indique que l'authentification NTLMv2 est activée.</translation>
-<translation id="2598508021807251719">Permet de configurer les langues dans lesquelles <ph name="PRODUCT_OS_NAME" /> peut s'afficher.
-
-      Si cette règle est définie, l'utilisateur ne peut configurer l'affichage de <ph name="PRODUCT_OS_NAME" /> que dans l'une des langues spécifiées dans cette règle. Si cette dernière n'est pas configurée ou si elle est définie sur une liste vide, <ph name="PRODUCT_OS_NAME" /> peut s'afficher dans toutes les langues compatibles de l'interface utilisateur. Si cette règle est définie sur une liste contenant des valeurs non valides, ces dernières sont toutes ignorées. Si un utilisateur a auparavant configuré l'affichage de <ph name="PRODUCT_OS_NAME" /> dans une langue non autorisée par cette règle, la langue d'affichage est remplacée par une langue autorisée lors de la prochaine connexion de l'utilisateur. Si l'utilisateur a configuré des langues préférées et que l'une d'entre elles est autorisée par cette règle, <ph name="PRODUCT_OS_NAME" /> s'affiche dans cette langue. Sinon, <ph name="PRODUCT_OS_NAME" /> s'affiche dans la langue définie par la première valeur valide spécifiée par cette règle, ou dans une langue de remplacement (actuellement, en-US), si cette règle contient uniquement des entrées non valides.</translation>
 <translation id="2604182581880595781">Configurer les règles associées à la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1528,13 +1510,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Déterminez le nom d'hôte de l'appareil utilisé pour les requêtes DHCP.
-
-      Si cette règle est définie sur une chaîne non vide, la chaîne servira de nom d'hôte de l'appareil lors de la requête DHCP.
-
-      La chaîne peut contenir les variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} qui seront remplacées par des valeurs sur l'appareil avant l'utilisation comme nom d'hôte. Le résultat de cette substitution doit former un nom d'hôte valide (conformément à la RFC 1035, section 3.1).
-
-      Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME" /> lance <ph name="PRODUCT_NAME" />.
 
           Si cette règle n'est pas configurée, la ligne de commande par défaut est utilisée.</translation>
@@ -1788,7 +1763,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5835124959204887277">Précise les URL et les domaines pour lesquels aucune boîte de dialogue ne s'affiche lorsque les certificats d'attestation de la clé de sécurité sont demandés. Un signal est également envoyé à la clé de sécurité pour indiquer qu'une attestation individuelle peut être utilisée. Dans les autres cas, les utilisateurs sont avertis dans Chrome 65 et versions ultérieures lorsque des sites demandent une attestation des clés de sécurité.
 
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
-<translation id="5835412847081687053">Configurer les langues autorisées de l'interface utilisateur dans une session utilisateur</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="5862253018042179045">Définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion
 

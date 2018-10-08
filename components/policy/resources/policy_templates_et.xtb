@@ -499,21 +499,6 @@
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
 
       Kui seade pole seadistatud, siis saavad kasutajad valida, kas kasutada õigekirjakontrolli teenust või mitte.</translation>
-<translation id="2294283832646774959">Seadistab printerite loendi.
-
-      See reegel võimaldab administraatoritel kasutajatele printerite seadistusi
-      pakkuda.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab printeri valimise hõlbustamiseks kohandada. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> lihtsustavad printeri tuvastamist lõppkasutajatele. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus printerite <ph name="ZEROCONF_DISCOVERY" /> duplikaate eemaldada.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab ühtima mõne stringiga, mis esindab teenuses <ph name="PRODUCT_NAME" /> toetatud printerit. Stringi kasutatakse printeri vastava PPD tuvastamiseks ja installimiseks. Lisateavet leiate aadressilt https://support.google.com/chrome?p=noncloudprint.
-
-      Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral. PPD-sid ei laadita alla enne, kui printerit kasutatakse. Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
-
-      Reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes printereid seadistada. See on mõeldud individuaalsete kasutajate printerite seadistusi täiendama.
-
-      Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
-      </translation>
 <translation id="2294382669900758280">Video esitamist Androidi rakendustes ei arvestata, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Seadistab uue vaikevahelehe teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
@@ -625,9 +610,6 @@
           Kõik hiljutised Samba ja Windowsi serverid toetavad NTLMv2. See tuleks keelata ainult tagasiulatuva ühilduvuse puhul ja see vähendab autentimise turvalisust.
 
           Kui see reegel on määramata, siis on vaikeväärtus Tõene ja NTLMv2 on lubatud.</translation>
-<translation id="2598508021807251719">Seadistab lokaadid, kus tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada.
-
-      Kui reegel on määratud, saab kasutaja seadistada operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> nii, et seda tohiks kuvada ainult selle reegliga määratud lokaatides. Kui reegel on määramata või määratud on tühi loend, tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada kõikides toetatud lokaatides. Kui reegli jaoks on määratud sobimatute väärtustega loend, eiratakse kõiki sobimatuid väärtusi. Kui kasutaja oli operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> valinud kuvatava keele, mis ei ole selle reegli kohaselt lubatud, määratakse kasutaja järgmisel sisselogimisel lubatud kuvatav lokaat. Kui kasutaja oli seadistanud eelistatud lokaadid ja üks eelistatud lokaatidest on selle reegli alusel lubatud, aktiveeritakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> see lokaat. Muul juhul kasutatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> reegli esimest sobivat väärtust või varulokaati (praegu en-US), kui reegel sisaldab ainult sobimatuid kirjeid.</translation>
 <translation id="2604182581880595781">Failide võrguhoidlatega seotud reeglite seadistamine.</translation>
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1518,13 +1500,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="5130288486815037971">Kas RC4 šifreerimiskomplektid TLS-is on lubatud?</translation>
 <translation id="5141670636904227950">Lubage ekraaniluubi vaiketüüp sisselogimisekraanil</translation>
 <translation id="5142301680741828703">Renderda alati rakenduses <ph name="PRODUCT_FRAME_NAME" /> järgmiste URL-ide mustrid</translation>
-<translation id="5147665094011258322">Määrake DHCP-päringutes kasutatava seadme hostinimi.
-
-      Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi DHCP-päringu ajal seadme hostinimena.
-
-      String võib sisaldada muutujaid ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, mis asendatakse seadmes väärtustega enne hostinimena kasutamist. Nende asendamisel peaks tekkima kehtiv hostinimi (eeskirja RFC 1035 jaotise 3.1 kohaselt).
-
-      Kui see reegel on määramata või pärast asendamist tekkiv väärtus ei ole kehtiv hostinimi, siis DHCP-päringus hostinime ei määrata. </translation>
 <translation id="5148753489738115745">Võimaldab teil määrata täiendavad parameetrid, mida kasutatakse siis, kui <ph name="PRODUCT_FRAME_NAME" /> käivitab rakenduse <ph name="PRODUCT_NAME" />.
 
           Kui jätate eeskirjad määramata, siis kasutatakse vaikekäsurida.</translation>
@@ -1774,7 +1749,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="5835124959204887277">Määrab URL-id ja domeenid, mille puhul viipa ei kuvata, kui turvavõtmetelt nõutakse atesteerimise sertifikaate. Lisaks saadetakse turvavõtmele signaal, mis näitab, et kasutada võib individuaalset atesteerimist. Ilma selleta esitatakse kasutajatele Chrome'i versioonis 65 ja uuemates versioonides viip, kui saidid nõuavad turvavõtmete atesteerimist.
 
       URL-id (nt https://example.com/mingi/tee) vastendatakse ainul U2F appID-dega. Domeenid (nt example.com) vastendatakse ainult webauthn RP ID-dena. Seega antud saidil nii U2F-i kui ka webauthn API-de kasutamiseks tuleb loendisse lisada nii appID URL kui ka domeen.</translation>
-<translation id="5835412847081687053">Kasutajaseansis lubatud kasutajaliidese lokaatide seadistamine</translation>
 <translation id="5836064773277134605">Piira kaugjuurdepääsuhosti kasutatavate UDP-portide vahemikku</translation>
 <translation id="5862253018042179045">Sisselogimisekraanil suulise tagasiside hõlbustusfunktsiooni vaikeoleku määramine.
 

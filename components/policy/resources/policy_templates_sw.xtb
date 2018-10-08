@@ -472,20 +472,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
       Ukaguzi tahajia bado unaweza kutekelezwa kwa kutumia kamusi iliyopakuliwa; sera hii inadhibiti tu matumizi ya huduma ya mtandaoni.
 
       Ikiwa mpangilio huu haujasanidiwa basi watumiaji wanaweza kuchagua iwapo huduma ya ukaguzi tahajia unapaswa kutumika au la.</translation>
-<translation id="2294283832646774959">Huweka mipangilio ya orodha ya printa.
-
-      Sera hii huruhusu wasimamizi kutoa mipangilio ya printa kwa watumiaji wake.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ziko katika mifuatano wazi ambayo inaweza kubadilishwa ikufae ili kurahisisha kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> hukusaidia kutambulisha printa kulingana na watumiaji wake. Huwakilisha mtengenezaji na muundo wa printa. <ph name="PRINTER_URI" /> inapaswa kuwa mahali ambapo panafikika kutoka kwenye kiteja cha kompyuta ikiwa ni pamoja na <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> na <ph name="URI_QUEUE" />. Si lazima uweke <ph name="PRINTER_UUID" />. Ikiwekwa, itatumika kusaidia kuondoa nakala za printa za <ph name="ZEROCONF_DISCOVERY" />.
-
-      Ni lazima <ph name="PRINTER_EFFECTIVE_MODEL" /> ifanane na mojawapo ya mfuatano unaowakilisha printa inayotumika ya <ph name="PRODUCT_NAME" />. Mfuatano huo utatumiwa kutambua na kusakinisha PPD inayofaa kwenye printa. Maelezo zaidi yanaweza kupatikana katika https://support.google.com/chrome?p=noncloudprint.
-
-     Shughuli ya kuweka mipangilio ya printa hukamilika baada ya kutumia printa mara ya kwanza. PPD hazipakuliwi mpaka printa itumike. Baada ya hapo, PDD zinazotumiwa sana huakibishwa.
-
-      Sera hii haiathiri iwapo watumiaji wanaweza kuweka mipangilio kwenye vifaa vya kibinafsi. Imewekwa iwe mbinu ya ziada ya kuweka mipangilio ya printa inayotumiwa na watumiaji mahususi.
-
-      Kwa vifaa vinavyodhibitiwa na Saraka Inayotumika, sera hii inatumia upanuzi wa <ph name="MACHINE_NAME_VARIABLE" /> kwenye jina la mashine ya Saraka Inayotumika au kiambishi cha msimbo. Kwa mfano, ikiwa jina la mashine ni <ph name="MACHINE_NAME_EXAMPLE" />, basi herufi 4 zitatumiwa badala ya <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> kuanzia nafasi ya 6, kwa mfano <ph name="MACHINE_NAME_PART_EXAMPLE" />. Kumbuka kwamba nafasi hii inatumia sufuri.
-      </translation>
 <translation id="2294382669900758280">Video inayocheza katika programu za Android haizingatiwi, hata kama sera hii imewekwa kuwa <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Weka ukurasa chaguomsingi wa Kichupo Kipya katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Bainisha orodha ya programu jalizi zilizowezeshwa</translation>
@@ -593,9 +579,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Matoleo yote ya hivi majuzi ya seva za Samba na Windows yanatumia NTLMv2. Hali hii inastahili kuzimwa ili matoleo ya awali yaoane pekee na hupunguza usalama wa uthibishaji.
 
           Kama sera hii haijawekwa, sera chaguomsing itakuwa ndivyo na NTLMv2 imewashwa.</translation>
-<translation id="2598508021807251719">Huweka mipangilio ya lugha ambazo huenda zikatumika kuonyesha <ph name="PRODUCT_OS_NAME" />.
-
-      Ikiwa sera hii imewekwa, mtumiaji anaweza tu kuweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> ili ionyeshwe katika mojawapo ya lugha zilizobainishwa kwenye sera hii. Ikiwa sera hii haijawekwa au imewekewa kuwa orodha isiyo na chochote, <ph name="PRODUCT_OS_NAME" /> inaweza kuonyeshwa katika lugha zote zinazotumika. Ikiwa sera hii imewekewa kuwa orodha yenye thamani zisizo sahihi, thamani zote zisizo sahihi zitapuuzwa. Ikiwa mtumiaji aliweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> awali ili ionyeshwe katika lugha isiyokubalika na sera hii, lugha inayotumika kuonyesha itabadilishwa iwe lugha ya kiolesura inayokubalika mtumiaji atakapoingia tena katika akaunti. Ikiwa mtumiaji alikuwa ameweka lugha zinazopendelewa na mojawapo ya lugha zinazopendelewa imeruhusiwa na sera hii, <ph name="PRODUCT_OS_NAME" /> itatumia lugha hii. Vinginevyo, <ph name="PRODUCT_OS_NAME" /> itabadilisha itumie thamani ya kwanza inayoweza kutumika na iliyobainishwa kwenye sera hii au kwenye lugha mbadala (kwa sasa ni en-US), ikiwa sera hii ina maelezo ambayo si sahihi pekee.</translation>
 <translation id="2604182581880595781">Weka mipangilio ya sera zinazohusiana na Faili ya Kushiriki katika Mtandao.</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1484,13 +1467,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5130288486815037971">Ikiwa mipangilio ya kriptografia ya RC4 katika TLS imewashwa</translation>
 <translation id="5141670636904227950">Weka aina ya kikuza skrini cha msingi kama kimewashwa kwenye skrini ya kuingia katika skrini</translation>
 <translation id="5142301680741828703">Onyesha ruwaza zifuatazo za URL mara kwa mara katika <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Hubainisha jina la mpangishaji wa kifaa linalotumika katika maombi ya DHCP.
-
-      Kama sera hii imewekwa kuwa mfuatano ulio na herufi au nambari yoyote, mfuatano huo utatumika kama jina la mpangishaji wa kifaa wakati wa ombi la DHCP.
-
-      Mfuatano huu unaweza kujumuisha vigezo ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} ambavyo vinaweza kubadilishwa na thamani kwenye kifaa kabla ya kuvitumia kama jina la mpangishaji. Matokeo ya ubadilishaji sharti yawe na jina sahihi la mpangishaji (kulingana na RFC 1035, sehemu ya 3.1).
-
-      Kama sera hii haijawekwa au thamani ya baada ya ubadilishaji si jina sahihi la mpangishaji, jina la mpangishaji halitawekwa katika ombi la DHCP. </translation>
 <translation id="5148753489738115745">Inakuruhusu kubainisha kigezo za ziada ambazo ziinatumika wakati <ph name="PRODUCT_FRAME_NAME" /> inazindua <ph name="PRODUCT_NAME" />.
 
           Ikiwa sera hii haijawekwa mpangilio wa amri chaguomsingi  utatumika.</translation>
@@ -1742,7 +1718,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5835124959204887277">Hubainisha URL na vikoa ambavyo hakuna kidokezo kitakachoonyeshwa wakati vyeti vya ufikiaji uliothibitishwa vinaombwa kutoka Funguo za Usalama. Vile vile, ishara itatumwa kwa Funguo za Usalama inayoonyesha ufikiaji uliothibitishwa wa kibinafsi ambao unaweza kutumiwa. Bila hii, watumiaji watadokezewa katika Chrome 65+ wakati tovuti zinaomba ufikiaji uliothibitishwa wa Funguo za Usalama. 
 
     URL (kama vile https://example.com/some/path) zitalingana kama U2F appIDs pekee. Vikoa (kama vile example.com) vinalingana kama Vitambulisho vya webauthn RP pekee. Ili kushughulikia API zote mbili za U2F na webauthn za tovuti fulani iliyotolewa, ni sharti URL zote mbili za appID na kikoa ziorodheshwe.</translation>
-<translation id="5835412847081687053">Weka mipangilio ya lugha za kiolesura zinazoruhusiwa katika kipindi cha mtumiaji</translation>
 <translation id="5836064773277134605">Zuia masafa ya lango la UDP yaliyotumiwa na mpangishi wa ufikiaji wa mbali</translation>
 <translation id="5862253018042179045">Weka hali ya chaguomsingi ya kipengee cha ufikiaji cha maoni yaliyotamkwa kwenye skrini ya kuingi. 
         Iwapo sera hii imewekwa kuwa kweli, maoni yaliyosemwa yatawashwa skrini ya kuingina katika akaunti itakapoonyeshwa. 

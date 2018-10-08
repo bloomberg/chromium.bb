@@ -497,21 +497,6 @@
       Rašybą tikrinti vis tiek galima naudojant atsisiųstą žodyną; taikant šią politiką valdomas tik internetinės paslaugos naudojimas.
 
       Jei šis nustatymas nesukonfigūruotas, naudotojai gali pasirinkti, ar turėtų būti naudojama rašybos tikrinimo paslauga.</translation>
-<translation id="2294283832646774959">Konfigūruojamas spausdintuvų sąrašas.
-
-      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
-      naudotojams.
-
-      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ naudojamos siekiant palengvinti spausdintuvo identifikavimą galutiniams naudotojams. Jos nurodo spausdintuvo gamintoją ir modelį. „<ph name="PRINTER_URI" />“ turėtų būti adresas, kurį galima pasiekti iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“, „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ yra pasirenkama. Jei nurodyta, ji naudojama siekiant panaikinti pasikartojančius „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvus.
-
-      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi atitikti vieną iš eilučių, nurodančių „<ph name="PRODUCT_NAME" />“ palaikomą spausdintuvą. Eilutė bus naudojama siekiant identifikuoti ir įdiegti tinkamą spausdintuvo PPD. Daugiau informacijos galima rasti adresu https://support.google.com/chrome?p=noncloudprint.
-
-      Spausdintuvo sąranka užbaigiama pirmą kartą panaudojus spausdintuvą. PPD neatsisiunčiami, kol spausdintuvas nenaudojamas. Paskui dažnai naudojami PPD saugomi talpykloje.
-
-      Ši politika neturi įtakos tam, ar naudotojai gali konfigūruoti spausdintuvus atskiruose įrenginiuose. Ji skirta papildyti atskirų naudotojų spausdintuvų konfigūraciją.
-
-      Jei naudojami „Active Directory“ tvarkomi įrenginiai, ši politika palaiko „Active Directory“ įrenginio pavadinimo „<ph name="MACHINE_NAME_VARIABLE" />“ arba jo poeilučio plėtinį. Pavyzdžiui, jei įrenginio pavadinimas yra „<ph name="MACHINE_NAME_EXAMPLE" />“, tada „<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />“ turėtų būti pakeistas 4 simboliais nuo 6-osios pozicijos, pvz., „<ph name="MACHINE_NAME_PART_EXAMPLE" />“. Atminkite, kad pozicija nustatoma nuo nulio.
-      </translation>
 <translation id="2294382669900758280">Į vaizdo įrašų leidimą „Android“ programose neatsižvelgiama, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="2298647742290373702">Konfigūruokite numatytąjį naujo skirtuko puslapį sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
@@ -624,9 +609,6 @@
           Visų naujausių versijų „Samba“ ir „Windows“ serveriai palaiko NTLMv2. Tai turėtų būti išjungta tik atgalinio suderinamumo tikslais, nes suprastėja autentifikavimo sauga.
 
           Jei ši politika nenustatyta, numatytasis nustatymas yra „true“ ir NTLMv2 yra įgalinta.</translation>
-<translation id="2598508021807251719">Konfigūruojamos lokalės, kuriose galima pateikti „<ph name="PRODUCT_OS_NAME" />“.
-
-      Jei ši politika nustatyta, naudotojas gali konfigūruoti, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta tik vienoje iš lokalių, nurodytų pagal šią politiką. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, „<ph name="PRODUCT_OS_NAME" />“ galima pateikti visose palaikomose NS lokalėse. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta pagal šią politiką neleidžiamoje lokalėje, pateikimo lokalė bus perjungta į leidžiamą NS lokalę kitą kartą naudotojui prisijungus. Jei naudotojas sukonfigūravo pageidaujamas lokales ir viena iš pageidaujamų lokalių leidžiama pagal šią politiką, „<ph name="PRODUCT_OS_NAME" />“ bus perjungta į šią lokalę. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
 <translation id="2604182581880595781">Konfigūruojama su tinklo failų bendrinimo įrenginiu susijusi politika.</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
@@ -845,6 +827,7 @@
 
           Jie šią politiką paliksite nenustatytą, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3205825995289802549">Pirmo naršyklės lango padidinimas pirmą kartą paleidus programą</translation>
+<translation id="3211426942294667684">Prisijungimo prie naršyklės nustatymai</translation>
 <translation id="3213821784736959823">Valdoma, ar integruota DNS kliento programa naudojama „<ph name="PRODUCT_NAME" />“.
 
       Jei ši politika aktyvinta, esant galimybei integruota DNS kliento programa bus naudojama.
@@ -1122,6 +1105,15 @@
       Nenustačius šios politikos, „<ph name="PRODUCT_NAME" />“ naudos įprastą numatytąjį katalogą (konkrečios platformos).
 
       Jei reikia kintamųjų, kuriuos galima naudoti, sąrašo, žr. https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">Ši politika valdo naršyklės prisijungimo elgseną. Ji leidžia nurodyti, ar naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo paskyrą ir naudoti su paskyra susijusias paslaugas, pvz., „Chrome“ sinchronizavimą.
+
+      Jei politika nustatyta kaip „Išjungti naršyklės prisijungimą“, naudotojas negali prisijungti prie naršyklės ir naudoti su paskyra susijusių paslaugų. Šiuo atveju negalima naudoti naršyklės lygio funkcijų, pvz., „Chrome“ sinchronizavimo, ir jos bus nepasiekiamos. Jei naudotojas buvo prisijungęs ir politika nustatoma kaip „Išjungta“, kitą kartą paleidęs „Chrome“ naudotojas nebus prisijungęs, bet jo vietiniai profilio duomenys, pvz., žymės, slaptažodžiai ir kt., bus saugomi. Naudotojas vis tiek galės prisijungti ir naudoti „Google“ žiniatinklio paslaugas, pvz., „Gmail“.
+
+      Jei politika nustatyta kaip „Įgalinti naršyklės prisijungimą“, naudotojui leidžiama prisijungti prie naršyklės ir automatiškai prisijungiama prie naršyklės, prisijungus prie „Google“ žiniatinklio paslaugų, pvz., „Gmail“. Prisijungus prie naršyklės naudotojo paskyros informacija saugoma naršyklėje. Tačiau tai nereiškia, kad „Chrome“ sinchronizavimas bus įjungtas pagal numatytuosius nustatymus. Naudotojas turi atskirai pasirinkti naudoti šią funkciją. Įgalinus šią funkciją nebus leidžiama naudotojui išjungti nustatymo, leidžiančio prisijungti prie naršyklės. Jei norite valdyti „Chrome“ sinchronizavimo pasiekiamumą, naudokite politiką „SyncDisabled“.
+
+      Jei politika nustatyta kaip „Priverstinis naršyklės prisijungimas“, naudotojui pateikiamas paskyros pasirinkimo dialogo langas ir jis turi pasirinkti ir prisijungti prie paskyros, kad galėtų naudoti naršyklę. Tai reiškia, kad valdomoms paskyroms taikoma ir vykdoma su paskyra susijusi politika. Pagal numatytuosius nustatymus įjungiamas „Chrome“ sinchronizavimas paskyroje, išskyrus tuo atveju, jei sinchronizavimą išjungė domeno administratorius arba jis buvo išjungtas taikant politiką „SyncDisabled“. Numatytoji politikos „BrowserGuestModeEnabled“ vertė bus nustatyta kaip „netiesa“. Atminkite, kad įgalinus šią politiką esami neprijungti profiliai bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį adresu https://support.google.com/chrome/a/answer/7572556.
+
+      Jei ši politika nenustatyta, naudotojas gali nuspręsti, ar nori įgalinti naršyklės prisijungimo parinktį ir naudoti ją, kai tinkama.</translation>
 <translation id="3911737181201537215">Ši politika neturi įtakos „Android“ vykdomam registravimo procesui.</translation>
 <translation id="391531815696899618">Kai nustatyta kaip „true“, neleidžiamas „Google“ disko sinchronizavimas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“. Tokiu atveju duomenys į „Google“ diską neįkeliami.
 
@@ -1172,6 +1164,7 @@
 
       Atminkite, kad politiką „<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />“ nustačius kaip „<ph name="BLOCK_GEOLOCATION_SETTING" />“, šios politikos nepaisoma, o „Google“ vietovės paslaugos visada išjungtos.</translation>
 <translation id="408029843066770167">Leisti užklausas į „Google“ laiko paslaugą</translation>
+<translation id="408076456549153854">Naršyklės prisijungimo įgalinimas</translation>
 <translation id="4088589230932595924">Įjungtas inkognito režimas</translation>
 <translation id="4088983553732356374">Leidžiama nustatyti, ar svetainėms galima nustatyti vietinius duomenis. Nustatyti vietinius duomenis galima leisti arba uždrausti visoms svetainėms.
 
@@ -1481,6 +1474,7 @@
 <translation id="4962262530309732070">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis kurti naujų profilių naudojant naudotojų tvarkytuvę.</translation>
+<translation id="4970855112942626932">Naršyklės prisijungimo išjungimas</translation>
 <translation id="4971529314808359013">Jums leidžiama nurodyti URL šablonų sąrašą, nurodantį, kurioms svetainėms „<ph name="PRODUCT_NAME" />“ turi automatiškai pasirinkti kliento sertifikatą (jei svetainėje jo reikalaujama).
 
           Vertė turi būti eilutėmis suskirstytų JSON žodynų masyvas. Kiekvienas žodynas turi būti tokios formos: { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kur $URL_PATTERN yra turinio nustatymo šablonas. $FILTER apriboja, iš kurių klientų sertifikatų naršyklė automatiškai pasirinks. Neatsižvelgiant į filtrą, bus pasirinkti tik tie sertifikatai, kurie atitinka serverio sertifikato užklausą. Jei $FILTER yra tokios formos: { "ISSUER": { "CN": "$ISSUER_CN" } }, papildomai pasirenkami tik klientų sertifikatai, kurie išduoti pagal sertifikatą, kurio „CommonName“ $ISSUER_CN. Jei $FILTER yra tuščias žodynas {}, klientų sertifikatų pasirinkimas nėra papildomai ribojamas.
@@ -1517,13 +1511,6 @@
 <translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME" />“ visada pateikti šiuos URL šablonus</translation>
-<translation id="5147665094011258322">Galima nustatyti įrenginio, naudoto DHCP užklausose, prieglobos serverio pavadinimą.
-
-      Jei ši politika nustatyta kaip ne tuščia eilutė, ši eilutė bus naudojama kaip įrenginio prieglobos serverio pavadinimas pateikiant DHCP užklausą.
-
-      Eilutėje gali būti kintamųjų ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, kurie bus pakeisti įrenginio vertėmis, prieš naudojant juos kaip prieglobos serverio pavadinimą. Rodomas pakeitimas turi būti tinkamas prieglobos serverio pavadinimas (RFC 1035, 3.1 skiltis).
-
-      Jei ši politika nenustatyta arba po pakeitimo rodoma vertė nėra tinkamas prieglobos serverio pavadinimas, DHCP užklausoje nebus nustatytas joks prieglobos serverio pavadinimas. </translation>
 <translation id="5148753489738115745">Leidžia nurodyti papildomus parametrus, naudojamus, kai „<ph name="PRODUCT_FRAME_NAME" />“ paleidžia „<ph name="PRODUCT_NAME" />“.
 
           Nenustačius šios politikos bus naudojama numatytoji komandinė eilutė.</translation>
@@ -1777,7 +1764,6 @@
 <translation id="5835124959204887277">Nurodomi URL ir domenai, kuriuose nebus rodomas raginimas, kai bus pateikiamos saugos raktų atestacijos sertifikatų užklausos. Be to, saugos raktui bus išsiunčiamas signalas, nurodantis, kad galima naudoti individualią atestaciją. Nenustačius šios politikos, naudotojams bus pateikiami raginimai 65 ir naujesnių versijų „Chrome“, kai svetainėse bus reikalaujama saugos raktų atestacijos.
 
       URL (pvz., https://example.com/some/path) atitiks tik kaip U2F „appID“. Domenai (pvz., example.com) atitiks tik kaip „webauthn“ RP ID. Todėl, kad būtų įtrauktos ir tam tikros svetainės U2F, ir „webauthn“ API, sąraše turi būti ir „appID“ URL, ir domenas.</translation>
-<translation id="5835412847081687053">Naudotojo sesijoje leidžiamų UI lokalių konfigūravimas</translation>
 <translation id="5836064773277134605">Apriboti UDP prievado diapazoną, naudojamą nuotolinės prieigos prieglobos</translation>
 <translation id="5862253018042179045">Nustatyti numatytąją ekrano skaitymo balsu būklę prisijungimo ekrane.
 
@@ -1898,6 +1884,7 @@
 
       Jei ši politika nesukonfigūruota, atjungiamų USB įrenginių sąrašas yra tuščias.</translation>
 <translation id="6083631234867522991">„Windows“ („Windows“ klientai):</translation>
+<translation id="6091233616732024397">Priverstinis naudotojų prisijungimas norint naudoti naršyklę</translation>
 <translation id="6093156968240188330">Leisti nuotoliniams naudotojams sąveikauti su pakeltais langais nuotolinės pagalbos sesijose</translation>
 <translation id="6095999036251797924">Nurodo laikotarpį, per kurį naudotojas neatliko įvesties veiksmų ir po kurio užrakinamas ekranas, kai įrenginys veikia naudojant kintamosios srovės arba akumuliatoriaus maitinimą.
 
@@ -1976,6 +1963,11 @@
 <translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
 <translation id="6376659517206731212">Gali būti nustatyta kaip būtina</translation>
+<translation id="6377355597423503887">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „BrowserSignin“.
+
+      Naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“.
+
+      Jei nustatysite šią politiką, galėsite konfigūruoti, ar naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“. Šią politiką nustačius kaip „Netiesa“ nebus leidžiama veikti programoms ir plėtiniams, kuriuose naudojama „chrome.identity“ API, todėl vietoje jos turėtumėte naudoti „SyncDisabled“.</translation>
 <translation id="6378076389057087301">Nurodykite, ar garso įrašo veikla paveikia energijos valdymą</translation>
 <translation id="637934607141010488">Pateikti neseniai prisijungusių įrenginio naudotojų sąrašą.
 
@@ -2922,6 +2914,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8548832052135586762">Nustatomas tik spalvoto, tik vienspalvio arba nespalvoto režimo apribojimas. Jei politika nenustatyta, netaikomi jokie apribojimai.</translation>
 <translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
+<translation id="857369585509260201">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „BrowserSignin“.
+
+      Jei ši politika nustatyta kaip „tiesa“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta kaip „netiesa“. Atminkite, kad įgalinus šią politiką esami profiliai, prie kurių neprisijungta, bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį.
+
+      Jei ši politika nustatyta kaip „netiesa“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="8586528890725660268">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
 
       Ši politika naudojama, tik jei pasirinktas politikos „<ph name="BULK_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_BLACKLIST" />“.

@@ -497,21 +497,6 @@
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du laddar ned. Policyn styr endast användningen av onlinetjänsten.
 
       Om den här inställningen inte konfigureras kan användare välja om de vill använda stavningskontrollen eller inte.</translation>
-<translation id="2294283832646774959">Konfigurerar en lista över skrivare.
-
-      Med hjälp av den här principen kan administratören tillhandahålla
-      skrivarkonfigurationer åt användarna.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> och <ph name="PRINTER_DESCRIPTION" /> är strängar i fritt format som kan anpassas så att det blir enkelt att välja skrivare. <ph name="PRINTER_MANUFACTURER" /> och <ph name="PRINTER_MODEL" /> gör det enklare för användarna att identifiera skrivaren och står för tillverkare och märke. <ph name="PRINTER_URI" /> ska vara en adress som går att nå från en klientdator, inklusive <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> och <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> är valfritt. Om det anges används det för att deduplicera <ph name="ZEROCONF_DISCOVERY" />-skrivare.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> måste matcha någon av strängarna som står för en skrivare som stöds i <ph name="PRODUCT_NAME" />. Strängen används för att identifiera och installera rätt PPD-fil för skrivaren. Mer information finns på https://support.google.com/chrome?p=noncloudprint.
-
-      Skrivarkonfigureringen slutförs första gången en skrivare används. Inga PPD-filer laddas ned förrän skrivaren används. Därefter cachelagras PPD-filer som används ofta.
-
-      Principen påverkar inte om användarna kan konfigurera skrivare på enskilda enheter eller inte. Den är tänkt att vara ett supplement till de enskilda användarnas skrivarkonfiguration.
-
-      På enheter som hanteras via Active Directory har principen stöd för att utöka <ph name="MACHINE_NAME_VARIABLE" /> till datornamnet i Active Directory eller en delsträng av det. Med datornamnet <ph name="MACHINE_NAME_EXAMPLE" /> skulle till exempel <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ersättas av de fyra tecknen från och med position nummer sex, d.v.s. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Observera att positionerna räknas från och med noll.
-      </translation>
 <translation id="2294382669900758280">Videouppspelning i Android-appar påverkas inte även om den här principen har ställts in på <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurera standardinställningen för sidan Ny flik i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
@@ -624,9 +609,6 @@
           Alla nyare versioner av Samba- och Windows-servrar har stöd för NTLMv2. Detta bör bara inaktiveras om det krävs för bakåtkompatibilitet eftersom det gör autentiseringen mindre säker.
 
           Om inget värde anges för principen används standardvärdet sant och NTLMv2 aktiveras.</translation>
-<translation id="2598508021807251719">Konfigurerar de språk som <ph name="PRODUCT_OS_NAME" /> får visas på.
-
-      Om principen har ställts in får användaren bara välja någon av de språkkoder som har angetts i principen som visningsspråk i <ph name="PRODUCT_OS_NAME" />. Om principen har lämnats utan inställning eller ställts in på en tom lista kan <ph name="PRODUCT_OS_NAME" /> visas på alla språk som användargränssnittet har stöd för. Om en lista med ogiltiga värden anges för principen ignoreras de ogiltiga värdena. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på en språkkod som inte är tillåten enligt denna princip byts visningsspråket ut mot ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av dem är tillåten enligt denna princip används den språkkoden i <ph name="PRODUCT_OS_NAME" />. I annat fall används det första giltiga värdet i denna princip eller, om principen bara innehåller ogiltiga värden, en standardspråkkod (för närvarande en-US) i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2604182581880595781">Konfigurera principer relaterade till Network File Share.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1520,13 +1502,6 @@
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Bestäm värdnamn för enheten som används i DHCP-begäranden.
-
-      Om principen är inställd på något annat än en tom sträng används den strängen som enhetens värdnamn under DHCP-begäran.
-
-      Strängen kan innehålla variablerna ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} som ersätts av värden på enheten innan de används som värdnamn. Detta ersättningsvärde ska bara ett giltigt värdnamn (enligt RFC 1035, avsnitt 3.1).
-
-      Om principen inte är inställd eller om värdet efter ersättningen inte är ett giltigt värdnamn så anges inget värdnamn i DHCP-förfrågan. </translation>
 <translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME" /> startar <ph name="PRODUCT_NAME" />.
 
           Om policyn inte anges används standardkommandoraden.</translation>
@@ -1779,7 +1754,6 @@
 <translation id="5835124959204887277">Anger webbadresser och domäner som det inte visas meddelanden för när attesteringscertifikat begärs från säkerhetsnycklar. Dessutom skickas en signal till säkerhetsnyckeln som indikerar att enskild attestering kan användas. Utan detta meddelas användare i version 65 eller senare av Chrome när webbplatser begär attestering för säkerhetsnycklar.
 
       Webbadresser (som https://example.com/some/path) matchar endast som U2F appID. Domäner (som example.com) matchar endast som WebAuthn RP ID. Därför måste både webbadressen och domänen för appID anges om båda API:erna U2F och WebAuthn ska täcka en viss webbplats.</translation>
-<translation id="5835412847081687053">Konfigurera tillåtna gränssnittsspråk i en användarsession</translation>
 <translation id="5836064773277134605">Begränsa UDP-portintervallet som används av värden för fjärråtkomst</translation>
 <translation id="5862253018042179045">Ställer in standardtillståndet för hjälpmedelsfunktionen talad feedback på inloggningsskärmen.
 

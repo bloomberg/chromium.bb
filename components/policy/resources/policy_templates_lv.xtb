@@ -486,21 +486,6 @@
       Pareizrakstības pārbaudi joprojām var veikt, izmantojot lejupielādēto vārdnīcu; šī politika tikai kontrolē tiešsaistes pakalpojuma lietojumu.
 
       Ja šis iestatījums nav konfigurēts, lietotāji var izvēlēties, vai izmantot pareizrakstības pārbaudes pakalpojumu vai neizmantot to.</translation>
-<translation id="2294283832646774959">Konfigurē printeru sarakstu.
-
-      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
-      lietotājiem.
-
-      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīva formāta virknes, ko var pielāgot ērtai printera atlasei. Parametri <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. Parametrs <ph name="PRINTER_UUID" /> nav norāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
-
-      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāatbilst vienai no virknēm, kas apzīmē pārlūkā <ph name="PRODUCT_NAME" /> atbalstītu printeri. Šī virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju skatiet vietnē https://support.google.com/chrome?p=noncloudprint.
-
-      Printera iestatīšana tiek pabeigta, kad printeris tiek izmantots pirmo reizi. PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots. Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs. Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
-
-      Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozīciju numurēšana sākas ar nulli.
-      </translation>
 <translation id="2294382669900758280">Android lietotnēs atskaņoti videoklipi netiek ņemti vērā, pat ja šī politika ir iestatīta kā <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurēt noklusējuma jaunas cilnes lapu sistēmā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Norādīt iespējoto spraudņu sarakstu</translation>
@@ -613,9 +598,6 @@
           Visās jaunākajās Samba un Windows serveru versijās NTLMv2 tiek atbalstīta. Tā jāatspējo tikai tad, ja nepieciešama saderība ar vecākām versijām. Atspējošana samazina autentifikācijas drošību.
 
           Ja šai politikai nav iestatīta nekāda vērtība, noklusējums ir “True” un NTLMv2 ir iespējota.</translation>
-<translation id="2598508021807251719">Konfigurē operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlojuma lokalizācijas.
-
-      Ja šī politika ir iestatīta, lietotājs var konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu vienā no šajā rakstā norādītajām lokalizācijām. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, operētājsistēma <ph name="PRODUCT_OS_NAME" /> var tikt attēlota visās atbalstītajās lietotāja saskarnes lokalizācijās. Ja politikai iestatītajā sarakstā ir nederīgas vērtības, tās tiks ignorētas. Ja lietotājs iepriekš konfigurēja operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu lokalizācijā, kas šajā politikā nav atļauta, nākamajā lietotāja pierakstīšanās reizē attēlojuma lokalizācija tiks mainīta uz politikā atļautu lietotāja saskarnes lokalizāciju. Ja lietotājs iepriekš konfigurēja vēlamās lokalizācijas un viena no vēlamajām lokalizācijām ir atļauta šajā politikā, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantota attiecīgā lokalizācija. Ja vēlamā lokalizācija nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tika izmantota pirmā derīgā politikā norādītā vērtība vai atkāpšanās lokalizācija (šobrīd “en-US”), ja politikā ir norādītas nederīgas vērtības.</translation>
 <translation id="2604182581880595781">Konfigurēt ar tīkla failu kopīgošanas ierīcēm saistīto politiku.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1502,13 +1484,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Tiek noteikts DHCP pieprasījumiem izmantotās ierīces saimniekdatora nosaukums.
-
-      Ja šai politikai ir iestatīta virkne, kas nav tukša, DHCP pieprasījuma laikā attiecīgā virkne tiks izmantota kā ierīces saimniekdatora nosaukums.
-
-      Virknē var būt mainīgie ${ASSET_ID}, ${SERIAL_NUM} un ${MAC_ADDR}, kas pirms saimniekdatora nosaukuma izmantošanas tiks aizstāti ar vērtībām ierīcē. Aizstāšanas rezultātam ir jābūt derīgam saimniekdatora nosaukumam (atbilstoši RFC 1035 3.1. sadaļai).
-
-      Ja šī politika nav iestatīta vai vērtība pēc aizstāšanas nav derīgs saimniekdatora nosaukums, DHCP pieprasījumā netiks iestatīts saimniekdatora nosaukums. </translation>
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
 
           Ja šī politika nav iestatīta, tiks izmantota noklusējuma komandrinda.</translation>
@@ -1763,7 +1738,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5835124959204887277">Tiek norādīti vietrāži URL un domēni, kuriem netiks rādīta uzvedne, kad tiks pieprasīti drošības atslēgu apstiprinājuma sertifikāti. Turklāt uz drošības atslēgu tiks nosūtīts signāls, norādot, ka var izmantot atsevišķu apstiprinājumu. Ja šī politika netiek izmantota, Chrome 65. versijas vai jaunākas versijas lietotājiem tiks parādīta uzvedne, kad vietnēs tiks pieprasīts drošības atslēgu apstiprinājums.
 
       Vietrāži URL (piemēram, https://example.com/kads/cels) atbildīs tikai kā U2F appID. Domēni (piemēram, example.com) atbildīs tikai kā tīmekļa autorizācijas RP ID. Tādējādi, lai nodrošinātu U2F un tīmekļa autorizācijas API konkrētai vietnei, ir jābūt norādītam gan appID vietrādim URL, gan domēnam.</translation>
-<translation id="5835412847081687053">Konfigurē lietotāja sesijā atļautās lietotāja saskarnes lokalizācijas</translation>
 <translation id="5836064773277134605">Attālās piekļuves saimniekdatora izmantoto UDP portu diapazona ierobežošana</translation>
 <translation id="5862253018042179045">Iestatiet mutisko atsauksmju pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 

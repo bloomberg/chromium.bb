@@ -493,21 +493,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Aun así, la función de corrección ortográfica se puede utilizar si se descarga un diccionario, ya que esta política solo controla el uso del servicio online.
 
       Si no se configura esta opción, los usuarios pueden decidir si quieren utilizar o no el servicio de corrección ortográfica.</translation>
-<translation id="2294283832646774959">Configura una lista de impresoras.
-
-      Esta política permite que los administradores proporcionen opciones de configuración de impresoras a
-      sus usuarios.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son cadenas de formato libre que se pueden personalizar para que la selección de impresoras sea sencilla. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> permiten que la identificación de la impresora sea sencilla para los usuarios finales. Representan el fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debería ser una dirección que esté disponible desde un ordenador cliente (incluidos <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />). <ph name="PRINTER_UUID" /> es opcional. Si se especifica, se utiliza para anular el duplicado de impresoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con una de las cadenas que representan una impresora compatible <ph name="PRODUCT_NAME" />. La cadena se usará para identificar e instalar los archivos PPD adecuados para la impresora. Consulta más información en la página https://support.google.com/chrome?p=noncloudprint&amp;hl=es.
-
-      La configuración de la impresora se completa la primera vez que se utiliza. Los archivos PPD no se descargan hasta que la impresora se usa. Después de ese momento, los archivos PPD que se utilizan con frecuencia se almacenan en caché.
-
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos. La política se ha diseñado con el objetivo de ser complementaria a la configuración de impresoras por parte de los usuarios.
-
-      En los dispositivos administrados de Active Directory, esta política admite una expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de máquina de Active Directory o una subcadena de este. Por ejemplo, si el nombre de máquina es <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se sustituiría por 4 caracteres después de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que la posición se basa en cero.
-      </translation>
 <translation id="2294382669900758280">La reproducción de vídeo en las aplicaciones para Android no se tiene en cuenta, aunque se haya asignado el valor <ph name="TRUE" /> a esta política.</translation>
 <translation id="2298647742290373702">Configura la página Nueva pestaña predeterminada de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
@@ -620,9 +605,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe inhabilitarse para obtener compatibilidad con versiones anteriores, lo cual reduce la seguridad a la hora de autenticarse.
 
           Si no se le asigna ningún valor a esta política, se asignará el valor predeterminado "true" y la autenticación NTLMv2 se habilitará.</translation>
-<translation id="2598508021807251719">Establece las configuraciones regionales en las que puede mostrarse <ph name="PRODUCT_OS_NAME" />.
-
-      Si asigna a esta política una lista de configuraciones regionales, el usuario solo podrá mostrar <ph name="PRODUCT_OS_NAME" /> en una de esas configuraciones. Si no asigna ninguna configuración regional a esta política o le asigna una lista vacía, <ph name="PRODUCT_OS_NAME" /> se podrá mostrar en cualquier configuración de UI admitida. Si se asigna a esta política una lista con configuraciones regionales no válidas, los valores que no sean válidos se ignorarán. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> anteriormente en un idioma no permitido por esta política, la configuración regional se cambiará a otra permitida la próxima vez que el usuario inicie sesión. Si el usuario había establecido configuraciones regionales de preferencia y una de ellas está permitida por esta política, <ph name="PRODUCT_OS_NAME" /> se mostrará en dicha configuración. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará a la primera configuración regional válida especificada por esta política, o bien a una alternativa (actualmente en-US) si ninguna de las entradas de la política es válida.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1520,13 +1502,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5130288486815037971">Indicar si se han habilitado los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establecer el tipo de lupa predeterminada habilitada en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Determina el nombre de host del dispositivo que se utiliza en las solicitudes DHCP.
-
-      Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre de host del dispositivo durante las solicitudes DHCP.
-
-      La cadena puede incluir variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} que se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que resulte de la sustitución debe ser un nombre de host válido (de acuerdo con la sección 3.1 de la RFC 1035).
-
-      Si no se asigna ningún valor a esta política o el valor que resulta después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se establece esta política, se utilizará la línea de comandos predeterminada.</translation>
@@ -1779,7 +1754,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5835124959204887277">Especifica las URL y los dominios para los que no se muestra ningún mensaje cuando se solicitan certificados de confirmación de las llaves de seguridad. Asimismo, se envía una señal a la llave de seguridad para indicar que es posible que se utilice esa confirmación individual. Sin esta política, se muestra un mensaje a los usuarios de Chrome 65 y versiones posteriores cuando los sitios web soliciten la confirmación de las llaves de seguridad.
 
       Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
-<translation id="5835412847081687053">Configurar las configuraciones regionales de UI permitidas en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de comentarios por voz en la pantalla de inicio de sesión.
 

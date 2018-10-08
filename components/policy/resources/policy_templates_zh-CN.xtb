@@ -453,20 +453,6 @@
       使用已下载的字典，仍然可以进行拼写检查，此策略仅控制在线服务的使用情况。
 
       如果未配置此设置，那么用户可以选择是否使用拼写检查服务。</translation>
-<translation id="2294283832646774959">配置打印机列表。
-
-      通过此政策，管理员可为他们的用户提供打印机配置。
-
-      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均是自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可帮助最终用户轻松地识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
-
-      “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" />所支持打印机的某个字符串匹配。该字符串将会被用来识别和为打印机安装相应的 PPD。如需了解详情，请访问 https://support.google.com/chrome?p=noncloudprint。
-
-      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-
-      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个位置后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
-      </translation>
 <translation id="2294382669900758280">即使此政策设为 <ph name="TRUE" />，系统也不会考虑在 Android 应用中播放视频。</translation>
 <translation id="2298647742290373702">在 <ph name="PRODUCT_NAME" /> 中配置默认的“打开新的标签页”页面。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
@@ -571,9 +557,6 @@
           近期推出的所有 Samba 和 Windows 服务器版本都支持 NTLMv2。除非是为了实现向后兼容，否则请勿停用 NTLMv2（因为这样做会降低身份验证的安全性）。
 
           如果未设置此政策，则默认值为 true，且系统会启用 NTLMv2。</translation>
-<translation id="2598508021807251719">配置 <ph name="PRODUCT_OS_NAME" />可以使用哪些语言区域进行显示。
-
-      如果已设置此政策，则用户只能将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策中指定的语言区域之一进行显示。如果此政策设为空列表或未设置，则 <ph name="PRODUCT_OS_NAME" />可以使用所有受支持的界面语言区域进行显示。如果此政策设为一个包含无效值的列表，则系统会忽略所有无效值。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的某种语言区域进行显示，那么当用户下次登录时，相应的显示语言区域将会切换到所允许的某种界面语言区域。如果用户已配置了首选语言区域，并且此政策允许其中的某一种首选语言区域，<ph name="PRODUCT_OS_NAME" />将会切换到此语言区域。否则，<ph name="PRODUCT_OS_NAME" />将会切换到此政策中指定的第一个有效值；如果此政策所含的条目都无效，就会切换到后备语言区域（目前为 en-US）。</translation>
 <translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1427,13 +1410,6 @@
 <translation id="5130288486815037971">是否在 TLS 中启用 RC4 加密套件</translation>
 <translation id="5141670636904227950">设置登录屏幕上启用的默认放大镜类型</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>
-<translation id="5147665094011258322">确定在 DHCP 请求中使用的设备主机名。
-
-      如果此政策设为非空字符串，该字符串将用作 DHCP 请求中的设备主机名。
-
-      该字符串可以包含变量 ${ASSET_ID}、${SERIAL_NUM}、${MAC_ADDR}。系统会先将这些变量替换为设备上的相应值，然后再将该字符串用作主机名。替换后的字符串应为有效的主机名（符合 RFC 1035 第 3.1 节中的规定）。
-
-      如果此政策未设置，或替换后的值不是有效的主机名，系统将不会在 DHCP 请求中设置主机名。 </translation>
 <translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME" />启动 <ph name="PRODUCT_NAME" />时所使用的其他参数。
 
           如果未设置此政策，系统将会使用默认命令行。</translation>
@@ -1657,7 +1633,6 @@
 <translation id="5835124959204887277">指定网址和网域，当相应网站需要取得安全密钥认证证书时，系统将不会显示任何提示。此外，系统还将向安全密钥发送信号，以指明可能会使用个人认证。如果未设置此政策，当网站需要取得安全密钥认证时，Chrome 65+ 将会提示用户。
 
       网址（如 https://example.com/some/path）将仅匹配为 U2F appID。网域（如 example.com）将仅匹配为 webauthn RP ID。因此，要同时涵盖指定网址的 U2F 和 webauthn API，必须同时列出 appID 网址和网域。</translation>
-<translation id="5835412847081687053">配置可在用户会话中使用的界面语言区域</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5862253018042179045">设置登录屏幕上语音反馈辅助功能的默认状态。
 

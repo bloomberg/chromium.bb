@@ -487,21 +487,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Pisownię można nadal sprawdzać, korzystając z pobranego słownika. Ta zasada kontroluje tylko używanie usługi internetowej.
 
       Jeśli to ustawienie nie zostanie skonfigurowane, użytkownicy będą mogli wybrać, czy chcą używać usługi sprawdzania pisowni.</translation>
-<translation id="2294283832646774959">Konfiguruje listę drukarek.
-
-      Ta zasada umożliwia administratorom przekazanie konfiguracji drukarek
-      użytkownikom.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolny tekst, który ma ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> ułatwiają użytkownikom identyfikację drukarki. Oznaczają producenta i model drukarki. <ph name="PRINTER_URI" /> to adres, który powinien być dostępny z komputera klienckiego, zawierający te składniki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Opcjonalny składnik to <ph name="PRINTER_UUID" />. Jeśli jest podany, umożliwia usunięcie duplikatów drukarek <ph name="ZEROCONF_DISCOVERY" />.
-
-      Ciąg znaków <ph name="PRINTER_EFFECTIVE_MODEL" /> musi być zgodny z jednym z ciągów oznaczających obsługiwaną drukarkę <ph name="PRODUCT_NAME" />. Zostanie on użyty do zidentyfikowania oraz zainstalowania pliku PPD odpowiedniego dla drukarki. Więcej informacji znajdziesz na https://support.google.com/chrome?p=noncloudprint
-
-      Konfiguracja drukarki jest wykonywana przy jej pierwszym użyciu. Pliki PPD nie są pobierane przed użyciem drukarki. Później często używane pliki PPD są przechowywane w pamięci podręcznej.
-
-      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na pojedynczych urządzeniach. Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
-
-      W przypadku urządzeń zarządzanych Active Directory zasada ta obsługuje rozszerzanie nazwy <ph name="MACHINE_NAME_VARIABLE" /> do nazwy komputera Active Directory lub jej podłańcucha. Jeśli na przykład nazwa komputera to <ph name="MACHINE_NAME_EXAMPLE" />, ciąg <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zastępowany jest czterema znakami, zaczynając po szóstej pozycji, np. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozycja jest liczona od zera.
-      </translation>
 <translation id="2294382669900758280">Odtwarzanie filmów w aplikacjach na Androida nie jest uwzględniane, nawet gdy zasada jest ustawiona na <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Skonfiguruj domyślną stronę nowej karty w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
@@ -606,9 +591,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           Wszystkie nowsze wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności. Wyłączenie zmniejsza bezpieczeństwo uwierzytelniania.
 
           Jeśli ta zasada jest nieskonfigurowana, wartością domyślną jest prawda i NTLMv2 jest włączone.</translation>
-<translation id="2598508021807251719">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
-
-      Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
 <translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi udziałami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1476,13 +1458,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
 <translation id="5142301680741828703">Zawsze renderuj strony we wtyczce <ph name="PRODUCT_FRAME_NAME" /> według następujących wzorców adresów URL</translation>
-<translation id="5147665094011258322">Określa nazwę hosta urządzenia używaną w żądaniach DHCP.
-
-      Jeśli dla tej zasady ustawiono niepusty ciąg znaków, będzie on używany jako nazwa hosta w żądaniach DHCP.
-
-      Ciąg może zawierać zmienne ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}. Zanim ciąg zostanie użyty jako nazwa hosta, zmienne będą zastąpione wartościami z urządzenia. Utworzony w ten sposób ciąg musi być prawidłową nazwą hosta (zgodnie z sekcją 3.1 wymogów RFC 1035).
-
-      Jeśli ta zasada nie jest ustawiona lub wartość po zastąpieniu zmiennych nie jest prawidłową nazwą hosta, w żądaniu DHCP nazwa hosta nie zostanie skonfigurowana. </translation>
 <translation id="5148753489738115745">Pozwala określić dodatkowe parametry używane, gdy <ph name="PRODUCT_FRAME_NAME" /> uruchamia <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada nie jest ustawiona, używany jest domyślny wiersz polecenia.</translation>
@@ -1708,7 +1683,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
-<translation id="5835412847081687053">Skonfiguruj dozwolone języki sesji użytkownika</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
 <translation id="5862253018042179045">Ustawia domyślny stan funkcji ułatwień dostępu w postaci potwierdzeń głosowych na ekranie logowania.
 

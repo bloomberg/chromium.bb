@@ -2006,7 +2006,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3983586614702900908">enheder fra en ukendt leverandør</translation>
 <translation id="3984159763196946143">Demotilstand kunne ikke startes</translation>
 <translation id="3985261842049607969">Sikkerhedskopiér til Google Drev. Du kan til enhver tid nemt gendanne dine data eller skifte til en anden enhed. Din backup omfatter appdata. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
-<translation id="3987348946546879621">Gemte data</translation>
+<translation id="3987348946546879621">Sparede data</translation>
 <translation id="3987938432087324095">Det forstod jeg ikke.</translation>
 <translation id="3988996860813292272">Vælg tidszone</translation>
 <translation id="399179161741278232">Importeret</translation>
@@ -3737,7 +3737,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6619801788773578757">Tilføj terminalapp</translation>
 <translation id="6619990499523117484">Bekræft din pinkode</translation>
 <translation id="662080504995468778">Bliv her</translation>
-<translation id="6621639333161417145">Log ind med <ph name="PROVIDER" /></translation>
 <translation id="6621715389962683284">Der kan ikke oprettes en netværksforbindelse</translation>
 <translation id="6622980291894852883">Fortsæt blokering af billeder</translation>
 <translation id="6624687053722465643">Sukkersød</translation>

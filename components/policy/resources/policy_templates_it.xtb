@@ -458,21 +458,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
 
       Se questa impostazione non è configurata, gli utenti possono scegliere se utilizzare o meno il servizio di controllo ortografico.</translation>
-<translation id="2294283832646774959">Consente di configurare un elenco di stampanti.
-
-      Questa norma consente agli amministratori di fornire configurazioni delle stampanti
-      ai propri utenti.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> sono stringhe in formato libero che è possibile personalizzare per selezionare facilmente le stampanti. I valori <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" />, che rappresentano il produttore e il modello della stampante, consentono agli utenti finali di identificare più facilmente le stampanti. Il valore <ph name="PRINTER_URI" /> deve essere un indirizzo raggiungibile da un computer client che includa <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. Il valore <ph name="PRINTER_UUID" /> è facoltativo, ma se viene specificato viene utilizzato per consentire la deduplicazione delle stampanti <ph name="ZEROCONF_DISCOVERY" />.
-
-      Il valore <ph name="PRINTER_EFFECTIVE_MODEL" /> deve corrispondere a una delle stringhe che rappresentano una stampante supportata da <ph name="PRODUCT_NAME" />. La stringa verrà usata per identificare e installare il file PPD appropriato per la stampante. È possibile trovare ulteriori informazioni all'indirizzo https://support.google.com/chrome?p=noncloudprint.
-
-      La configurazione viene completata al primo utilizzo della stampante. I file PPD vengono scaricati soltanto quando viene utilizzata la stampante. Dopodiché, i PPD utilizzati più spesso vengono memorizzati nella cache.
-
-      Questa norma non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
-
-      Per i dispositivi Active Directory gestiti, questa norma supporta l'espansione di <ph name="MACHINE_NAME_VARIABLE" /> al nome della macchina Active Directory oppure a una sua sottostringa. Ad esempio, se il nome della macchina è <ph name="MACHINE_NAME_EXAMPLE" />, allora la variabile <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> verrà sostituita dai quattro caratteri che iniziano dopo la sesta posizione, ad esempio, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tieni presente che la posizione è in base zero.
-      </translation>
 <translation id="2294382669900758280">Il video riprodotto nelle app Android non viene considerato, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configura la pagina predefinita Nuova scheda in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
@@ -577,9 +562,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
 
           Se questa norma non viene impostata, l'impostazione predefinita è true e l'autenticazione NTLMv2 è attivata.</translation>
-<translation id="2598508021807251719">Questa norma consente di configurare le impostazioni internazionali che possono essere visualizzate in <ph name="PRODUCT_OS_NAME" />.
-
-      Se questa norma viene impostata, l'utente potrà configurare soltanto una delle impostazioni internazionali di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le impostazioni internazionali dell'interfaccia utente supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato un'impostazione internazionale di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo l'impostazione internazionale visualizzata verrà sostituita con una impostazione internazionale dell'interfaccia utente consentita. Se l'utente aveva configurato delle impostazioni internazionali preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale impostazione internazionale. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato da questa norma oppure, se la norma contiene soltanto voci non valide, verrà usata un'impostazione internazionale di riserva (attualmente en-US).</translation>
 <translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1431,13 +1413,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="5142301680741828703">Visualizza sempre i seguenti schemi di URL in <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5147665094011258322">Consente di stabilire il nome host del dispositivo usato nelle richieste DHCP.
-
-      Se per questa norma viene impostata una stringa, tale stringa verrà usata come nome host del dispositivo durante la richiesta DHCP.
-
-      La stringa può contenere variabili ${ASSET_ID}, ${SERIAL_NUM} e ${MAC_ADDR} che verrebbero sostituite con valori sul dispositivo prima di usare la stringa come nome host. La sostituzione finale dovrebbe essere un nome host valido (come da RFC 1035, sezione 3.1).
-
-      Se questa norma non viene impostata o se il valore ottenuto in seguito alla sostituzione non è un nome host valido, non verrà impostato alcun nome host nella richiesta DHCP. </translation>
 <translation id="5148753489738115745">Consente di specificare dei parametri aggiuntivi da utilizzare quando <ph name="PRODUCT_FRAME_NAME" /> avvia <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata viene utilizzata la riga di comando predefinita.</translation>
@@ -1661,7 +1636,6 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5835124959204887277">Consente di specificare URL e domini per i quali non verranno mostrati messaggi quando verranno richiesti certificati di attestazione dei token di sicurezza. Verrà inoltre inviato un segnale al token di sicurezza per indicare che potrebbe essere usata la singola attestazione. Senza questo segnale, gli utenti di Chrome 65 e versioni successive riceveranno un messaggio quando i siti richiederanno l'attestazione dei token di sicurezza.
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
-<translation id="5835412847081687053">Configura le impostazioni internazionali UI consentite in una sessione utente</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
 
