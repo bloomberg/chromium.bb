@@ -321,6 +321,8 @@ URLLoader::URLLoader(
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
       first_auth_attempt_(true),
+      custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
+      custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {

@@ -61,6 +61,7 @@ class CookieManager;
 class ExpectCTReporter;
 class HostResolver;
 class NetworkService;
+class NetworkServiceProxyDelegate;
 class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
@@ -279,6 +280,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return proxy_lookup_requests_.size();
   }
 
+  NetworkServiceProxyDelegate* proxy_delegate() const {
+    return proxy_delegate_.get();
+  }
+
  private:
   class ContextNetworkDelegate;
 
@@ -393,6 +398,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<HostResolver> internal_host_resolver_;
   std::set<std::unique_ptr<HostResolver>, base::UniquePtrComparator>
       host_resolvers_;
+
+  std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
 
   // Used for Signed Exchange certificate verification.
   int next_cert_verify_id_ = 0;

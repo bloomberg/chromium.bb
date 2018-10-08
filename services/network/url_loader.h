@@ -103,6 +103,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t GetRenderFrameId() const;
   uint32_t GetProcessId() const;
 
+  const net::HttpRequestHeaders& custom_proxy_pre_cache_headers() const {
+    return custom_proxy_pre_cache_headers_;
+  }
+
+  const net::HttpRequestHeaders& custom_proxy_post_cache_headers() const {
+    return custom_proxy_post_cache_headers_;
+  }
+
   // Gets the URLLoader associated with this request.
   static URLLoader* ForRequest(const net::URLRequest& request);
 
@@ -254,6 +262,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool first_auth_attempt_;
 
   std::unique_ptr<ScopedThrottlingToken> throttling_token_;
+
+  net::HttpRequestHeaders custom_proxy_pre_cache_headers_;
+  net::HttpRequestHeaders custom_proxy_post_cache_headers_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 
