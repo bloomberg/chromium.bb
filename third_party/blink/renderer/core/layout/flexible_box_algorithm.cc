@@ -359,15 +359,10 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
 }
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
-                                         LayoutUnit line_break_length,
-                                         FlexItemVector& all_items)
+                                         LayoutUnit line_break_length)
     : style_(style),
       line_break_length_(line_break_length),
-      all_items_(all_items),
-      next_item_index_(0) {
-  for (FlexItem& item : all_items_)
-    item.algorithm = this;
-}
+      next_item_index_(0) {}
 
 FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     LayoutUnit container_logical_width) {

@@ -36,7 +36,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   LayoutUnit flex_container_content_inline_size =
       flex_container_content_box_size.inline_size;
 
-  FlexItemVector flex_items;
+  FlexLayoutAlgorithm algorithm(&Style(), flex_container_content_inline_size);
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     NGBlockNode child = ToNGBlockNode(generic_child);
@@ -94,14 +94,12 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
-    flex_items.emplace_back(child.GetLayoutBox(), flex_base_content_size,
-                            min_max_sizes_in_main_axis_direction,
-                            main_axis_border_and_padding, main_axis_margin);
-    flex_items.back().ng_input_node = child;
+    algorithm
+        .emplace_back(child.GetLayoutBox(), flex_base_content_size,
+                      min_max_sizes_in_main_axis_direction,
+                      main_axis_border_and_padding, main_axis_margin)
+        .ng_input_node = child;
   }
-
-  FlexLayoutAlgorithm algorithm(&Style(), flex_container_content_inline_size,
-                                flex_items);
 
   NGBoxStrut borders_scrollbar_padding =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
