@@ -2400,7 +2400,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   cpi->oxcf = *oxcf;
   cpi->common.options = oxcf->cfg;
-  cpi->row_mt = oxcf->row_mt;
   x->e_mbd.bd = (int)seq_params->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
 
