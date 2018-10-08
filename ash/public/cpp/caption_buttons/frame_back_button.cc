@@ -28,9 +28,6 @@ FrameBackButton::~FrameBackButton() = default;
 
 void FrameBackButton::ButtonPressed(Button* sender, const ui::Event& event) {
   // Send up event as well as down event as ARC++ clients expect this sequence.
-  // TODO(estade): this may not actually work in Mash, but thus far isn't used
-  // there. Consider fixing or moving back to //ash/frame/.
-  // https://crbug.com/887663
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
                                ui::EF_NONE);
