@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.cli import command
 from chromite.cli import flash
 from chromite.lib import commandline
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import dev_server_wrapper
 
 
@@ -138,6 +143,13 @@ Examples:
   def Run(self):
     """Perfrom the cros flash command."""
     self.options.Freeze()
+
+    if not cros_build_lib.IsInsideChroot():
+      chroot_dir = os.path.join(constants.SOURCE_ROOT,
+                                constants.DEFAULT_CHROOT_DIR)
+
+      if not cros_sdk_lib.MountChroot(chroot=chroot_dir, create=False):
+        raise Exception('Unable to find chroot.')
 
     try:
       flash.Flash(
