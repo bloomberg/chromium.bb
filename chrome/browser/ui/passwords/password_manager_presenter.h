@@ -32,6 +32,7 @@ class PasswordUIView;
 // PasswordStore operations and updates the view on PasswordStore changes.
 class PasswordManagerPresenter
     : public password_manager::PasswordStore::Observer,
+      public password_manager::PasswordStoreConsumer,
       public password_manager::CredentialProviderInterface {
  public:
   // |password_view| the UI view that owns this presenter, must not be NULL.
@@ -83,55 +84,16 @@ class PasswordManagerPresenter
  private:
   friend class PasswordManagerPresenterTest;
 
+  // PasswordStoreConsumer:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
   void SetPasswordExceptionList();
 
   // Returns the password store associated with the currently active profile.
   password_manager::PasswordStore* GetPasswordStore();
-
-  // A short class to mediate requests to the password store.
-  class ListPopulater : public password_manager::PasswordStoreConsumer {
-   public:
-    explicit ListPopulater(PasswordManagerPresenter* page);
-    ~ListPopulater() override;
-
-    // Send a query to the password store to populate a list.
-    virtual void Populate() = 0;
-
-   protected:
-    PasswordManagerPresenter* page_;
-  };
-
-  // A short class to mediate requests to the password store for passwordlist.
-  class PasswordListPopulater : public ListPopulater {
-   public:
-    explicit PasswordListPopulater(PasswordManagerPresenter* page);
-
-    // Send a query to the password store to populate a password list.
-    void Populate() override;
-
-    // Send the password store's reply back to the handler.
-    void OnGetPasswordStoreResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-  };
-
-  // A short class to mediate requests to the password store for exceptions.
-  class PasswordExceptionListPopulater : public ListPopulater {
-   public:
-    explicit PasswordExceptionListPopulater(PasswordManagerPresenter* page);
-
-    // Send a query to the password store to populate a passwordException list.
-    void Populate() override;
-
-    // Send the password store's reply back to the handler.
-    void OnGetPasswordStoreResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-  };
-
-  // Password store consumer for populating the password list and exceptions.
-  PasswordListPopulater populater_;
-  PasswordExceptionListPopulater exception_populater_;
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_exception_list_;

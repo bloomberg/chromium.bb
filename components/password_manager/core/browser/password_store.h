@@ -222,6 +222,12 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetBlacklistLoginsWithAffiliationAndBrandingInformation(
       PasswordStoreConsumer* consumer);
 
+  // Gets the complete list of PasswordForms, regardless of their blacklist
+  // status. Also fills in affiliation and branding information for Android
+  // credentials.
+  virtual void GetAllLoginsWithAffiliationAndBrandingInformation(
+      PasswordStoreConsumer* consumer);
+
   // Reports usage metrics for the database. |sync_username| and
   // |custom_passphrase_sync_enabled| determine some of the UMA stats that
   // may be reported.
@@ -600,6 +606,11 @@ class PasswordStore : protected PasswordStoreSync,
   // Same as above, but also fills in affiliation and branding information for
   // Android credentials.
   void GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
+      std::unique_ptr<GetLoginsRequest> request);
+
+  // Find all PasswordForms, fills in affiliation and branding information for
+  // Android credentials, and notifies the consumer.
+  void GetAllLoginsWithAffiliationAndBrandingInformationImpl(
       std::unique_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for all sites.

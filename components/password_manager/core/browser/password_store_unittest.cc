@@ -817,6 +817,72 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
   }
 }
 
+TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
+  static constexpr PasswordFormData kTestCredentials[] = {
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+       L"username_value_1", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+       L"username_value_2", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm3, "", "", L"", L"", L"",
+       L"username_value_3", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
+       L"", L"username_value_4", L"", true, 1},
+      // A PasswordFormData with nullptr as the username_value will be converted
+      // in a blacklisted PasswordForm in FillPasswordFormWithData().
+      {PasswordForm::SCHEME_HTML, kTestWebRealm2, kTestWebOrigin2, "", L"", L"",
+       L"", nullptr, L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestWebRealm3, kTestWebOrigin3, "", L"", L"",
+       L"", nullptr, L"", true, 1}};
+
+  auto store = base::MakeRefCounted<PasswordStoreDefault>(
+      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  for (const auto& test_credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(test_credential));
+    store->AddLogin(*all_credentials.back());
+  }
+
+  MockPasswordStoreConsumer mock_consumer;
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  for (const auto& credential : all_credentials)
+    expected_results.push_back(std::make_unique<PasswordForm>(*credential));
+
+  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+      affiliation_info_for_results = {
+          {kTestWebRealm1, kTestAndroidName1, GURL(kTestAndroidIconURL1)},
+          {kTestWebRealm2, kTestAndroidName2, GURL(kTestAndroidIconURL2)},
+          {/* Pretend affiliation or branding info is unavailable. */},
+          {/* Pretend affiliation or branding info is unavailable. */},
+          {/* Pretend affiliation or branding info is unavailable. */},
+          {/* Pretend affiliation or branding info is unavailable. */}};
+
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
+      affiliation_info_for_results);
+  store->SetAffiliatedMatchHelper(std::move(mock_helper));
+  for (size_t i = 0; i < expected_results.size(); ++i) {
+    expected_results[i]->affiliated_web_realm =
+        affiliation_info_for_results[i].affiliated_web_realm;
+    expected_results[i]->app_display_name =
+        affiliation_info_for_results[i].app_display_name;
+    expected_results[i]->app_icon_url =
+        affiliation_info_for_results[i].app_icon_url;
+  }
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(&mock_consumer);
+
+  // Since GetAutofillableLoginsWithAffiliationAndBrandingInformation
+  // schedules a request for affiliation information to UI thread, don't
+  // shutdown UI thread until there are no tasks in the UI queue.
+  WaitForPasswordStore();
+  store->ShutdownOnUIThread();
+}
+
 TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
   static constexpr const PasswordFormData kSameOrganizationCredentials[] = {
       // Credential that is an exact match of the observed form.
