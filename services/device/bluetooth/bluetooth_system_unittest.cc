@@ -20,6 +20,7 @@
 namespace device {
 
 constexpr const char kFooObjectPathStr[] = "fake/hci0";
+constexpr const char kBarObjectPathStr[] = "fake/hci1";
 
 namespace {
 
@@ -76,6 +77,19 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
         base::BindRepeating(&TestBluetoothAdapterClient::OnPropertyChanged,
                             base::Unretained(this), object_path));
     DCHECK(was_inserted);
+
+    for (auto& observer : observers_)
+      observer.AdapterAdded(object_path);
+  }
+
+  // Simulates the adapter at |object_path_str| being removed.
+  void SimulateAdapterRemoved(const std::string& object_path_str) {
+    dbus::ObjectPath object_path(object_path_str);
+    size_t removed = adapter_object_paths_to_properties_.erase(object_path);
+    DCHECK_EQ(1u, removed);
+
+    for (auto& observer : observers_)
+      observer.AdapterRemoved(object_path);
   }
 
   // Simulates adapter at |object_path_str| changing its powered state to
@@ -232,6 +246,7 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystemTest);
 };
 
+// Tests that the Create method for BluetoothSystemFactory works.
 TEST_F(BluetoothSystemTest, FactoryCreate) {
   mojom::BluetoothSystemPtr system_ptr;
   mojo::Binding<mojom::BluetoothSystemClient> client_binding(this);
@@ -250,6 +265,8 @@ TEST_F(BluetoothSystemTest, FactoryCreate) {
   EXPECT_TRUE(system_ptr.is_bound());
 }
 
+// Tests that the state is 'Unavailable' when there is no Bluetooth adapter
+// present.
 TEST_F(BluetoothSystemTest, GetState_NoAdapter) {
   auto system = CreateBluetoothSystem();
 
@@ -262,6 +279,7 @@ TEST_F(BluetoothSystemTest, GetState_NoAdapter) {
   EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable, last_state_.value());
 }
 
+// Tests that the state is "Off" when the Bluetooth adapter is powered off.
 TEST_F(BluetoothSystemTest, GetState_PoweredOffAdapter) {
   test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
   // Added adapters are Off by default.
@@ -277,6 +295,7 @@ TEST_F(BluetoothSystemTest, GetState_PoweredOffAdapter) {
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
 }
 
+// Tests that the state is "On" when the Bluetooth adapter is powered on.
 TEST_F(BluetoothSystemTest, GetState_PoweredOnAdapter) {
   test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
   test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
@@ -291,6 +310,167 @@ TEST_F(BluetoothSystemTest, GetState_PoweredOnAdapter) {
   run_loop.Run();
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+}
+
+// Tests that the state is updated as expected when removing and re-adding the
+// same adapter.
+TEST_F(BluetoothSystemTest, GetState_AdapterRemoved) {
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, true);
+
+  auto system = CreateBluetoothSystem();
+
+  {
+    // The adapter is initially powered on.
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
+
+  {
+    // Remove the adapter. The state should change to Unavailable.
+    test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable, last_state_.value());
+  }
+
+  {
+    // Add the adapter again; it's off by default.
+    test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
+  }
+}
+
+// Tests that the state is updated as expected when replacing the adapter with a
+// different adapter.
+TEST_F(BluetoothSystemTest, GetState_AdapterReplaced) {
+  // Start with a powered on adapter.
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, true);
+
+  auto system = CreateBluetoothSystem();
+
+  {
+    // The adapter is initially powered on.
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
+
+  {
+    // Remove the adapter. The state should change to Unavailable.
+    test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable, last_state_.value());
+  }
+
+  {
+    // Add a different adapter. it's off by default.
+    test_bluetooth_adapter_client_->SimulateAdapterAdded(kBarObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
+  }
+}
+
+// Tests that an extra adapter does not interfer with the state.
+TEST_F(BluetoothSystemTest, GetState_MultipleAdapters) {
+  // Start with a powered on "foo" adapter.
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, true);
+
+  auto system = CreateBluetoothSystem();
+
+  {
+    // The "foo" adapter is initially powered on.
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
+
+  {
+    // Add an extra "bar" adapter. The state should not change.
+    test_bluetooth_adapter_client_->SimulateAdapterAdded(kBarObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
+
+  {
+    // Remove "foo". We should retrieve the state from "bar".
+    test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff, last_state_.value());
+  }
+
+  {
+    // Change "bar"'s state to On.
+    test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+        kBarObjectPathStr, true);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
+
+  {
+    // Add "foo" again. We should still retrieve the state from "bar".
+    test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+    base::RunLoop run_loop;
+    system->GetState(base::BindOnce(&BluetoothSystemTest::StateCallback,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, last_state_.value());
+  }
 }
 
 }  // namespace device
