@@ -11,15 +11,14 @@
 #include "chrome/browser/browsing_data/counters/signin_data_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -48,11 +47,13 @@ base::string16 FormatBytesMBOrHigher(
 
 bool ShouldShowCookieException(Profile* profile) {
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-    auto* signin_manager = SigninManagerFactory::GetForProfile(profile);
-    return signin_manager->IsAuthenticated();
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+    return identity_manager->HasPrimaryAccount();
   }
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
+    // TODO(http://crbug.com/890796): Migrate this part once sync_ui_util has
+    // been migrated to the IdentityManager.
     sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
         profile, ProfileSyncServiceFactory::GetForProfile(profile),
         *SigninManagerFactory::GetForProfile(profile));
