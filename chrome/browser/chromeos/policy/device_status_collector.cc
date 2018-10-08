@@ -281,13 +281,7 @@ std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
 }
 
 base::Version GetPlatformVersion() {
-  int32_t major_version;
-  int32_t minor_version;
-  int32_t bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  return base::Version(base::StringPrintf("%d.%d.%d", major_version,
-                                          minor_version, bugfix_version));
+  return base::Version(base::SysInfo::OperatingSystemVersion());
 }
 
 // Helper routine to convert from Shill-provided signal strength (percent)
