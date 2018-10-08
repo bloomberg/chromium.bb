@@ -62,7 +62,8 @@ class AccountStatusChangeDelegateNotifierImpl
   static const char kExistingUserHostSwitchedPrefName[];
   static const char kExistingUserChromebookAddedPrefName[];
 
-  static const char kHostDeviceIdFromMostRecentHostStatusUpdatePrefName[];
+  static const char
+      kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName[];
 
   AccountStatusChangeDelegateNotifierImpl(
       HostStatusProvider* host_status_provider,
@@ -84,17 +85,17 @@ class AccountStatusChangeDelegateNotifierImpl
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device);
   void CheckForExistingUserHostSwitchedEvent(
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
-      const base::Optional<std::string>& host_device_id_before_update);
+      const base::Optional<std::string>& verified_host_device_id_before_update);
   void CheckForExistingUserChromebookAddedEvent(
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
-      const base::Optional<std::string>& host_device_id_before_update);
+      const base::Optional<std::string>& verified_host_device_id_before_update);
 
   // Loads data from previous session using PrefService.
   base::Optional<std::string> LoadHostDeviceIdFromEndOfPreviousSession();
 
   // Set to base::nullopt if there was no enabled host in the most recent
   // host status update.
-  base::Optional<std::string> host_device_id_from_most_recent_update_;
+  base::Optional<std::string> verified_host_device_id_from_most_recent_update_;
 
   mojom::AccountStatusChangeDelegatePtr delegate_ptr_;
   HostStatusProvider* host_status_provider_;
