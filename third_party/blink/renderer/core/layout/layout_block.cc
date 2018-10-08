@@ -486,20 +486,49 @@ void LayoutBlock::UpdateBlockLayout(bool) {
   ClearNeedsLayout();
 }
 
-void LayoutBlock::AddOverflowFromChildren() {
+void LayoutBlock::AddVisualOverflowFromChildren() {
   if (ChildrenInline())
-    ToLayoutBlockFlow(this)->AddOverflowFromInlineChildren();
+    ToLayoutBlockFlow(this)->AddVisualOverflowFromInlineChildren();
   else
-    AddOverflowFromBlockChildren();
+    AddVisualOverflowFromBlockChildren();
+}
+
+void LayoutBlock::AddLayoutOverflowFromChildren() {
+  if (ChildrenInline())
+    ToLayoutBlockFlow(this)->AddLayoutOverflowFromInlineChildren();
+  else
+    AddLayoutOverflowFromBlockChildren();
+}
+
+void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge,
+                                  bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  overflow_.reset();
+  ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
+  ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
+}
+
+void LayoutBlock::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool) {
+  AddVisualOverflowFromChildren();
+  AddVisualOverflowFromPositionedObjects();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 DISABLE_CFI_PERF
-void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
-  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-  overflow_.reset();
-
-  AddOverflowFromChildren();
-  AddOverflowFromPositionedObjects();
+void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                                        bool) {
+  AddLayoutOverflowFromChildren();
+  AddLayoutOverflowFromPositionedObjects();
 
   if (HasOverflowClip()) {
     // When we have overflow clip, propagate the original spillout since it will
@@ -521,18 +550,9 @@ void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
     if (HasOverflowModel())
       overflow_->SetLayoutClientAfterEdge(old_client_after_edge);
   }
-
-  AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
-
-  if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
-    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
-  }
 }
 
-void LayoutBlock::AddOverflowFromBlockChildren() {
+void LayoutBlock::AddVisualOverflowFromBlockChildren() {
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
     if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
@@ -545,13 +565,32 @@ void LayoutBlock::AddOverflowFromBlockChildren() {
     // the outline which may enclose continuations.
     if (child->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
-      ToLayoutBlockFlow(child)->AddOverflowFromInlineChildren();
+      ToLayoutBlockFlow(child)->AddVisualOverflowFromInlineChildren();
 
-    AddOverflowFromChild(*child);
+    AddVisualOverflowFromChild(*child);
   }
 }
 
-void LayoutBlock::AddOverflowFromPositionedObjects() {
+void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
+  for (LayoutBox* child = FirstChildBox(); child;
+       child = child->NextSiblingBox()) {
+    if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
+      continue;
+
+    // If the child contains inline with outline and continuation, its
+    // visual overflow computed during its layout might be inaccurate because
+    // the layout of continuations might not be up-to-date at that time.
+    // Re-add overflow from inline children to ensure its overflow covers
+    // the outline which may enclose continuations.
+    if (child->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
+      ToLayoutBlockFlow(child)->AddLayoutOverflowFromInlineChildren();
+
+    AddLayoutOverflowFromChild(*child);
+  }
+}
+
+void LayoutBlock::AddVisualOverflowFromPositionedObjects() {
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
     return;
@@ -559,9 +598,25 @@ void LayoutBlock::AddOverflowFromPositionedObjects() {
   for (auto* positioned_object : *positioned_descendants) {
     // Fixed positioned elements don't contribute to layout overflow, since they
     // don't scroll with the content.
-    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed)
-      AddOverflowFromChild(*positioned_object,
-                           ToLayoutSize(positioned_object->Location()));
+    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
+      AddVisualOverflowFromChild(*positioned_object,
+                                 ToLayoutSize(positioned_object->Location()));
+    }
+  }
+}
+
+void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
+  TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
+  if (!positioned_descendants)
+    return;
+
+  for (auto* positioned_object : *positioned_descendants) {
+    // Fixed positioned elements don't contribute to layout overflow, since they
+    // don't scroll with the content.
+    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
+      AddLayoutOverflowFromChild(*positioned_object,
+                                 ToLayoutSize(positioned_object->Location()));
+    }
   }
 }
 

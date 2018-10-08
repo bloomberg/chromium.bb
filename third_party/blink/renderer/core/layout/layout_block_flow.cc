@@ -2509,20 +2509,31 @@ EBreakBetween LayoutBlockFlow::BreakAfter() const {
                     : EBreakBetween::kAuto;
 }
 
-void LayoutBlockFlow::AddOverflowFromFloats() {
+void LayoutBlockFlow::AddVisualOverflowFromFloats() {
   if (!floating_objects_)
     return;
 
-  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
-  FloatingObjectSetIterator end = floating_object_set.end();
-  for (FloatingObjectSetIterator it = floating_object_set.begin(); it != end;
-       ++it) {
-    const FloatingObject& floating_object = *it->get();
-    if (floating_object.IsDescendant())
-      AddOverflowFromChild(
-          *floating_object.GetLayoutObject(),
-          LayoutSize(XPositionForFloatIncludingMargin(floating_object),
-                     YPositionForFloatIncludingMargin(floating_object)));
+  for (auto& floating_object : floating_objects_->Set()) {
+    if (floating_object->IsDescendant()) {
+      AddVisualOverflowFromChild(
+          *floating_object->GetLayoutObject(),
+          LayoutSize(XPositionForFloatIncludingMargin(*floating_object),
+                     YPositionForFloatIncludingMargin(*floating_object)));
+    }
+  }
+}
+
+void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
+  if (!floating_objects_)
+    return;
+
+  for (auto& floating_object : floating_objects_->Set()) {
+    if (floating_object->IsDescendant()) {
+      AddLayoutOverflowFromChild(
+          *floating_object->GetLayoutObject(),
+          LayoutSize(XPositionForFloatIncludingMargin(*floating_object),
+                     YPositionForFloatIncludingMargin(*floating_object)));
+    }
   }
 }
 
@@ -2552,12 +2563,24 @@ void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
     scoped_refptr<const NGPhysicalFragment>,
     NGPhysicalOffset) {}
 
-void LayoutBlockFlow::ComputeOverflow(LayoutUnit old_client_after_edge,
-                                      bool recompute_floats) {
-  LayoutBlock::ComputeOverflow(old_client_after_edge, recompute_floats);
+void LayoutBlockFlow::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  LayoutBlock::ComputeVisualOverflow(previous_visual_overflow_rect,
+                                     recompute_floats);
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())
-    AddOverflowFromFloats();
+    AddVisualOverflowFromFloats();
+}
+
+void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                                            bool recompute_floats) {
+  LayoutBlock::ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
+  // TODO(chrishtr): why does it check for a self-painting layer? That should
+  // only apply to visual overflow.
+  if (recompute_floats || CreatesNewFormattingContext() ||
+      HasSelfPaintingLayer())
+    AddLayoutOverflowFromFloats();
 }
 
 void LayoutBlockFlow::ComputeSelfHitTestRects(
@@ -4134,11 +4157,18 @@ void LayoutBlockFlow::AddOverhangingFloats(LayoutBlockFlow* child,
 
       // Since the float doesn't overhang, it didn't get put into our list. We
       // need to go ahead and add its overflow in to the child now.
-      if (floating_object.IsDescendant())
-        child->AddOverflowFromChild(
+      if (floating_object.IsDescendant()) {
+        // TODO(chrishtr): this looks weird, is it correct? Also, do we need
+        // both types of overflow?
+        child->AddVisualOverflowFromChild(
             *floating_object.GetLayoutObject(),
             LayoutSize(XPositionForFloatIncludingMargin(floating_object),
                        YPositionForFloatIncludingMargin(floating_object)));
+        child->AddLayoutOverflowFromChild(
+            *floating_object.GetLayoutObject(),
+            LayoutSize(XPositionForFloatIncludingMargin(floating_object),
+                       YPositionForFloatIncludingMargin(floating_object)));
+      }
     }
   }
 }

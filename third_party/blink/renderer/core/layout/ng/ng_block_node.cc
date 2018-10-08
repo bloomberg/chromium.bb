@@ -576,7 +576,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
                                         physical_fragment);
     }
 
-    // |ComputeOverflow()| below calls |AddOverflowFromChildren()|, which
+    // |ComputeOverflow()| below calls |AddVisualOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
     block->ComputeOverflow(intrinsic_block_size - borders.block_end -
                            scrollbars.block_end);
@@ -592,8 +592,10 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->UpdateIsSelfCollapsing();
 
-    if (constraint_space.IsNewFormattingContext())
-      block_flow->AddOverflowFromFloats();
+    if (constraint_space.IsNewFormattingContext()) {
+      block_flow->AddVisualOverflowFromFloats();
+      block_flow->AddLayoutOverflowFromFloats();
+    }
   }
 }
 
@@ -617,8 +619,10 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
       CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
                                 offset_from_start);
     }
-    if (child_object->IsLayoutBlockFlow())
-      ToLayoutBlockFlow(child_object)->AddOverflowFromFloats();
+    if (child_object->IsLayoutBlockFlow()) {
+      ToLayoutBlockFlow(child_object)->AddVisualOverflowFromFloats();
+      ToLayoutBlockFlow(child_object)->AddLayoutOverflowFromFloats();
+    }
   }
 
   if (rendered_legend) {

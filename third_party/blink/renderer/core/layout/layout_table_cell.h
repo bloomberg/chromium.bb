@@ -341,8 +341,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     return is_spanning_collapsed_column_;
   }
 
-  void ComputeOverflow(LayoutUnit old_client_after_edge,
-                       bool recompute_floats = false) override;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) override;
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;

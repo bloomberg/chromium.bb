@@ -66,12 +66,11 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::AddOverflowFromChildren() {
+void LayoutNGMixin<Base>::AddVisualOverflowFromChildren() {
   // |ComputeOverflow()| calls this, which is called from
   // |CopyFragmentDataToLayoutBox()| and |RecalcOverflowAfterStyleChange()|.
   // Add overflow from the last layout cycle.
   if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
-    AddScrollingOverflowFromChildren();
     if (Base::ChildrenInline()) {
       Base::AddSelfVisualOverflow(
           physical_fragment->SelfInkOverflow().ToLayoutFlippedRect(
@@ -87,7 +86,19 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
       // correctly without RootInlineBox though.
     }
   }
-  Base::AddOverflowFromChildren();
+  Base::AddVisualOverflowFromChildren();
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::AddLayoutOverflowFromChildren() {
+  // |ComputeOverflow()| calls this, which is called from
+  // |CopyFragmentDataToLayoutBox()| and |RecalcOverflow()|.
+  // Add overflow from the last layout cycle.
+  // TODO(chrishtr): do we need to condition on CurrentFragment()? Why?
+  if (CurrentFragment()) {
+    AddScrollingOverflowFromChildren();
+  }
+  Base::AddLayoutOverflowFromChildren();
 }
 
 template <typename Base>
