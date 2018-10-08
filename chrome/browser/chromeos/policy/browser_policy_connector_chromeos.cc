@@ -277,6 +277,13 @@ std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() const {
   return std::string();
 }
 
+std::string BrowserPolicyConnectorChromeOS::GetMachineName() const {
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_machine_name())
+    return policy->machine_name();
+  return std::string();
+}
+
 std::string BrowserPolicyConnectorChromeOS::GetDeviceAnnotatedLocation() const {
   const em::PolicyData* policy = GetDevicePolicy();
   if (policy && policy->has_annotated_location())
