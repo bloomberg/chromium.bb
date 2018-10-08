@@ -34,8 +34,14 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
+#ifdef MTK_MT8183
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV21, DRM_FORMAT_NV12,
+                                                   DRM_FORMAT_YUYV, DRM_FORMAT_YVU420,
+                                                   DRM_FORMAT_YVU420_ANDROID };
+#else
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID };
+                                                   DRM_FORMAT_YVU420_ANDROID };
+#endif
 
 static int mediatek_init(struct driver *drv)
 {
@@ -56,6 +62,20 @@ static int mediatek_init(struct driver *drv)
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_DECODER);
 	drv_modify_combination(drv, DRM_FORMAT_YVU420_ANDROID, &metadata, BO_USE_HW_VIDEO_DECODER);
+
+#ifdef MTK_MT8183
+	/* Only for MT8183 Camera subsystem */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_NV21, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_YUYV, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
+                               BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+#endif
 
 	return drv_modify_linear_combinations(drv);
 }
@@ -202,9 +222,19 @@ static uint32_t mediatek_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+#ifdef MTK_MT8183
+		/* Only for MT8183 Camera subsystem requires NV12. */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
+#endif
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
+#ifdef MTK_MT8183
+		/* Only for MT8183 Camera subsystem requires NV12 */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+                        return DRM_FORMAT_NV12;
+#endif
 		return DRM_FORMAT_YVU420;
 	default:
 		return format;
