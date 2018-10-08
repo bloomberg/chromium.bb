@@ -17,3 +17,14 @@ mojom("interfaces") {
     "//ui/latency/mojo:interfaces",
   ]
 }
+
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":interfaces",
+  ]
+}
