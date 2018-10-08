@@ -439,6 +439,18 @@ void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
     return;
   }
 
+  // Guard against inconsistent state, and recover from it by starting from
+  // scratch, which will cause the eventual refetching of all entities from the
+  // server.
+  if (!metadata_batch->GetModelTypeState().initial_sync_done() &&
+      !in_memory_store_.empty()) {
+    in_memory_store_.clear();
+    store_->DeleteAllDataAndMetadata(base::DoNothing());
+    change_processor()->ModelReadyToSync(std::make_unique<MetadataBatch>());
+    DCHECK(!change_processor()->IsTrackingMetadata());
+    return;
+  }
+
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
   MaybeStartSyncableService();
 }
@@ -487,10 +499,11 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
 }
 
 SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
-    std::unique_ptr<MetadataChangeList> metadata_change_list,
+    std::unique_ptr<MetadataChangeList> initial_metadata_change_list,
     EntityChangeList entity_change_list) {
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
+  batch->TakeMetadataChangesFrom(std::move(initial_metadata_change_list));
 
   SyncChangeList output_change_list;
   output_change_list.reserve(entity_change_list.size());
@@ -523,7 +536,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         // know.
         change_processor()->UpdateStorageKey(
             change.data(), /*storage_key=*/change.data().client_tag_hash,
-            metadata_change_list.get());
+            batch->GetMetadataChangeList());
         FALLTHROUGH;
 
       case EntityChange::ACTION_UPDATE: {
