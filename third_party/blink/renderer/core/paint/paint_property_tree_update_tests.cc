@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 
@@ -1365,6 +1366,56 @@ TEST_P(PaintPropertyTreeUpdateTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
   // The effect's OutputClip is nullptr because of the absolute descendant.
   EXPECT_EQ(nullptr, effect_properties->Effect()->OutputClip());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg1" filter="url(#filter)">
+      <filter id="filter">
+        <feImage id="image" href="#rect"/>
+      </filter>
+    </svg>
+    <svg id="svg2" style="perspective: 10px">
+      <rect id="rect" width="100" height="100" transform="translate(1)"/>
+    </svg>
+  )HTML");
+
+  const auto* svg2_properties = PaintPropertiesForElement("svg2");
+  EXPECT_NE(nullptr, svg2_properties->PaintOffsetTranslation());
+  EXPECT_EQ(nullptr, svg2_properties->Transform());
+  EXPECT_NE(nullptr, svg2_properties->Perspective());
+  EXPECT_EQ(svg2_properties->PaintOffsetTranslation(),
+            svg2_properties->Perspective()->Parent());
+
+  const auto* rect_properties = PaintPropertiesForElement("rect");
+  ASSERT_NE(nullptr, rect_properties->Transform());
+  EXPECT_EQ(svg2_properties->Perspective(),
+            rect_properties->Transform()->Parent());
+  EXPECT_EQ(TransformationMatrix().Translate(1, 0),
+            GeometryMapper::SourceToDestinationProjection(
+                rect_properties->Transform(),
+                svg2_properties->PaintOffsetTranslation()));
+
+  // Change filter which forward references rect, and insert a transform
+  // node above rect's transform.
+  GetDocument().getElementById("filter")->setAttribute("width", "20");
+  GetDocument().getElementById("svg2")->setAttribute("transform",
+                                                     "translate(2)");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_NE(nullptr, svg2_properties->Transform());
+  EXPECT_EQ(svg2_properties->PaintOffsetTranslation(),
+            svg2_properties->Transform()->Parent());
+  EXPECT_EQ(svg2_properties->Transform(),
+            svg2_properties->Perspective()->Parent());
+  EXPECT_EQ(svg2_properties->Perspective(),
+            rect_properties->Transform()->Parent());
+
+  // Ensure that GeometryMapper's cache is properly invalidated and updated.
+  EXPECT_EQ(TransformationMatrix().Translate(3, 0),
+            GeometryMapper::SourceToDestinationProjection(
+                rect_properties->Transform(),
+                svg2_properties->PaintOffsetTranslation()));
 }
 
 }  // namespace blink

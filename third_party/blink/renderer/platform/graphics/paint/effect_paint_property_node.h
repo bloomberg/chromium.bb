@@ -82,8 +82,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       return parent_changed;
 
     DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
-    SetChanged();
     state_ = std::move(state);
+    SetChanged();
     return true;
   }
 

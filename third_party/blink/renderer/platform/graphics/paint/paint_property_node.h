@@ -122,8 +122,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     if (parent == parent_)
       return false;
 
-    SetChanged();
     parent_ = parent;
+    static_cast<NodeType*>(this)->SetChanged();
     return true;
   }
 
