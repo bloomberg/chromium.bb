@@ -160,7 +160,7 @@ public class KeyboardVisibilityDelegate {
         return bottomMargin; // This might include a bottom navigation.
     }
 
-    private int calculateKeyboardDetectionThreshold(Context context, View rootView) {
+    protected int calculateKeyboardDetectionThreshold(Context context, View rootView) {
         Rect appRect = new Rect();
         rootView.getWindowVisibleDisplayFrame(appRect);
 
