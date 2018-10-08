@@ -4,8 +4,6 @@
 
 source_set("gpu_host") {
   sources = [
-    "gpu_client.cc",
-    "gpu_client.h",
     "gpu_host.cc",
     "gpu_host.h",
     "gpu_host_delegate.h",
@@ -19,8 +17,10 @@ source_set("gpu_host") {
     "//components/viz/service/main",  # TODO(sad): Temporary until GPU process split.
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/service",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
+    "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
@@ -51,6 +51,23 @@ source_set("gpu_host") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "gpu_host_test_api.cc",
+    "gpu_host_test_api.h",
+  ]
+
+  deps = [
+    ":gpu_host",
+    "//base",
+    "//components/viz/host",
+    "//components/viz/test:test_support",
+    "//services/viz/privileged/interfaces",
+  ]
+}
+
 source_set("tests") {
   testonly = true
 
@@ -60,6 +77,7 @@ source_set("tests") {
 
   deps = [
     ":gpu_host",
+    ":test_support",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
