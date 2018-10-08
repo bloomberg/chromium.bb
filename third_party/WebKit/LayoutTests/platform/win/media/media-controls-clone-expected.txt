@@ -42,13 +42,12 @@ layer at (308,104) size 300x54
   LayoutFlexibleBox {DIV} at (0,0) size 300x54 [bgcolor=#F1F3F4]
 layer at (308,104) size 300x54 scrollHeight 55
   LayoutFlexibleBox {DIV} at (0,0) size 300x54
-    LayoutSlider {INPUT} at (10,-1) size 248x56 [color=#C4C4C4]
-      LayoutFlexibleBox {DIV} at (16,26) size 216x4
-    LayoutButton {INPUT} at (258,11) size 32x32
-layer at (334,129) size 216x4
-  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 216x4 [bgcolor=#00000033]
-layer at (334,129) size 216x4
-  LayoutBlockFlow (positioned) {DIV} at (0,0) size 216x4
+    LayoutSlider {INPUT} at (10,-1) size 280x56 [color=#C4C4C4]
+      LayoutFlexibleBox {DIV} at (16,26) size 248x4
+layer at (334,129) size 248x4
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 248x4 [bgcolor=#00000033]
+layer at (334,129) size 248x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 248x4
 layer at (334,129) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
 layer at (334,129) size 0x4
@@ -82,13 +81,12 @@ layer at (308,259) size 300x54
   LayoutFlexibleBox {DIV} at (0,0) size 300x54 [bgcolor=#F1F3F4]
 layer at (308,259) size 300x54 scrollHeight 55
   LayoutFlexibleBox {DIV} at (0,0) size 300x54
-    LayoutSlider {INPUT} at (10,-1) size 248x56 [color=#C4C4C4]
-      LayoutFlexibleBox {DIV} at (16,26) size 216x4
-    LayoutButton {INPUT} at (258,11) size 32x32
-layer at (334,284) size 216x4
-  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 216x4 [bgcolor=#00000033]
-layer at (334,284) size 216x4
-  LayoutBlockFlow (positioned) {DIV} at (0,0) size 216x4
+    LayoutSlider {INPUT} at (10,-1) size 280x56 [color=#C4C4C4]
+      LayoutFlexibleBox {DIV} at (16,26) size 248x4
+layer at (334,284) size 248x4
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 248x4 [bgcolor=#00000033]
+layer at (334,284) size 248x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 248x4
 layer at (334,284) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
 layer at (334,284) size 0x4
