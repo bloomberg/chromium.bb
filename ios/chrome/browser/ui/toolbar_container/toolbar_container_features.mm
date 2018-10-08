@@ -10,6 +10,9 @@
 
 namespace toolbar_container {
 
+const base::Feature kToolbarContainerCustomViewEnabled{
+    "ToolbarContainerCustomViewEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kToolbarContainerEnabled{"ToolbarContainerEnabled",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
