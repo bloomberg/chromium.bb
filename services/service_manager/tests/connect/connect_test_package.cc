@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -17,8 +18,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 
@@ -74,11 +74,17 @@ class ProvidedService : public Service,
     registry_.AddInterface<test::mojom::UserIdTest>(base::Bind(
         &ProvidedService::BindUserIdTestRequest, base::Unretained(this)));
   }
+
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(interface_name, std::move(interface_pipe),
                             source_info);
+  }
+
+  void OnDisconnected() override {
+    service_binding_.Close();
+    run_loop_->Quit();
   }
 
   void BindConnectTestServiceRequest(
@@ -88,10 +94,11 @@ class ProvidedService : public Service,
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
     state->connection_remote_userid = source_info.identity.user_id();
-    state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
+    state->initialize_local_name = service_binding_.identity().name();
+    state->initialize_userid = service_binding_.identity().user_id();
 
-    context()->connector()->BindInterface(source_info.identity, &caller_);
+    service_binding_.GetConnector()->BindInterface(source_info.identity,
+                                                   &caller_);
     caller_->ConnectionAccepted(std::move(state));
   }
 
@@ -111,7 +118,7 @@ class ProvidedService : public Service,
   }
 
   void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+    std::move(callback).Run(service_binding_.identity().instance());
   }
 
   // test::mojom::BlockedInterface:
@@ -123,12 +130,12 @@ class ProvidedService : public Service,
   void ConnectToClassAppAsDifferentUser(
       const service_manager::Identity& target,
       ConnectToClassAppAsDifferentUserCallback callback) override {
-    context()->connector()->StartService(target);
+    service_binding_.GetConnector()->StartService(target);
     mojom::ConnectResult result;
     Identity resolved_identity;
     {
       base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-      Connector::TestApi test_api(context()->connector());
+      Connector::TestApi test_api(service_binding_.GetConnector());
       test_api.SetStartServiceCallback(
           base::Bind(&QuitLoop, &loop, &result, &resolved_identity));
       loop.Run();
@@ -138,8 +145,13 @@ class ProvidedService : public Service,
 
   // base::SimpleThread:
   void Run() override {
-    ServiceRunner(new ForwardingService(this)).Run(
-        request_.PassMessagePipe().release().value(), false);
+    base::MessageLoop message_loop;
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    service_binding_.Bind(std::move(request_));
+    run_loop.Run();
+    run_loop_ = nullptr;
+
     caller_.reset();
     bindings_.CloseAllBindings();
     blocked_bindings_.CloseAllBindings();
@@ -147,10 +159,15 @@ class ProvidedService : public Service,
   }
 
   void OnConnectionError() {
-    if (bindings_.empty())
-      context()->QuitNow();
+    if (bindings_.empty()) {
+      if (service_binding_.is_bound())
+        service_binding_.Close();
+      run_loop_->Quit();
+    }
   }
 
+  base::RunLoop* run_loop_;
+  service_manager::ServiceBinding service_binding_{this};
   const std::string title_;
   mojom::ServiceRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -166,8 +183,11 @@ class ConnectTestService : public Service,
                            public mojom::ServiceFactory,
                            public test::mojom::ConnectTestService {
  public:
-  ConnectTestService() {}
-  ~ConnectTestService() override {}
+  ConnectTestService(service_manager::mojom::ServiceRequest request,
+                     base::OnceClosure quit_closure)
+      : service_binding_(this, std::move(request)),
+        quit_closure_(std::move(quit_closure)) {}
+  ~ConnectTestService() override = default;
 
  private:
   // service_manager::Service:
@@ -184,15 +204,16 @@ class ConnectTestService : public Service,
         base::Bind(&ConnectTestService::BindConnectTestServiceRequest,
                    base::Unretained(this)));
   }
+
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  bool OnServiceManagerConnectionLost() override {
+  void OnDisconnected() override {
     provided_services_.clear();
-    return true;
+    std::move(quit_closure_).Run();
   }
 
   void BindServiceFactoryRequest(mojom::ServiceFactoryRequest request) {
@@ -223,14 +244,16 @@ class ConnectTestService : public Service,
   }
 
   void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+    std::move(callback).Run(service_binding_.identity().instance());
   }
 
   void OnConnectionError() {
     if (bindings_.empty() && service_factory_bindings_.empty())
-      context()->CreateQuitClosure().Run();
+      service_binding_.RequestClose();
   }
 
+  service_manager::ServiceBinding service_binding_;
+  base::OnceClosure quit_closure_;
   std::vector<std::unique_ptr<Service>> delegates_;
   mojo::BindingSet<mojom::ServiceFactory> service_factory_bindings_;
   BinderRegistry registry_;
@@ -243,7 +266,12 @@ class ConnectTestService : public Service,
 }  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(
-      new service_manager::ConnectTestService);
-  return runner.Run(service_request_handle);
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+  service_manager::ConnectTestService service(
+      service_manager::mojom::ServiceRequest(mojo::MakeScopedHandle(
+          mojo::MessagePipeHandle(service_request_handle))),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  return MOJO_RESULT_OK;
 }
