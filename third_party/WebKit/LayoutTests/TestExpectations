@@ -2849,7 +2849,6 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/speech-api/idlharness.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_wrapped.html [ Failure ]
@@ -3762,6 +3761,7 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
+crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 
