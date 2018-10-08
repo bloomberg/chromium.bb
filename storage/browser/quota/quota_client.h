@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <set>
 #include <string>
 
@@ -78,9 +77,6 @@ class STORAGE_EXPORT QuotaClient {
 
   virtual bool DoesSupport(blink::mojom::StorageType type) const = 0;
 };
-
-// TODO(dmikurube): Replace it to std::vector for efficiency.
-using QuotaClientList = std::list<QuotaClient*>;
 
 }  // namespace storage
 

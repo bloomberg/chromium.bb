@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -19,7 +21,6 @@
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
 using storage::QuotaClient;
-using storage::QuotaClientList;
 using storage::SpecialStoragePolicy;
 using storage::UsageTracker;
 
@@ -221,8 +222,8 @@ class UsageTrackerTest : public testing::Test {
   }
 
  private:
-  QuotaClientList GetUsageTrackerList() {
-    QuotaClientList client_list;
+  std::vector<QuotaClient*> GetUsageTrackerList() {
+    std::vector<QuotaClient*> client_list;
     client_list.push_back(&quota_client_);
     return client_list;
   }

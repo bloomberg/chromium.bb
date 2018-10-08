@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -33,7 +34,7 @@ class StorageMonitor;
 // An instance of this class is created per storage type.
 class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
  public:
-  UsageTracker(const QuotaClientList& clients,
+  UsageTracker(const std::vector<QuotaClient*>& clients,
                blink::mojom::StorageType type,
                SpecialStoragePolicy* special_storage_policy,
                StorageMonitor* storage_monitor);
