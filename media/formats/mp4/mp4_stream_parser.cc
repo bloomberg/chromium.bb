@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/string_number_conversions.h"
@@ -849,7 +850,11 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
         // they mismatch. If other out-of-order codecs in mp4 (e.g. HEVC, DV)
         // implement keyframe analysis in their frame_bitstream_converter, we'll
         // similarly trust that analysis instead of the mp4.
-        is_keyframe = analysis.is_keyframe.value();
+        // We'll only use the analysis to override the MP4 keyframeness if
+        // |media::kMseBufferByPts| is enabled.
+        if (base::FeatureList::IsEnabled(kMseBufferByPts)) {
+          is_keyframe = analysis.is_keyframe.value();
+        }
       }
     }
   }
