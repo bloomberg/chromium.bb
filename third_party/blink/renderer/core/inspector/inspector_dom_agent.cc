@@ -2231,8 +2231,10 @@ protocol::Response InspectorDOMAgent::describeNode(
   return Response::OK();
 }
 
-protocol::Response InspectorDOMAgent::getFrameOwner(const String& frame_id,
-                                                    int* node_id) {
+protocol::Response InspectorDOMAgent::getFrameOwner(
+    const String& frame_id,
+    int* backend_node_id,
+    protocol::Maybe<int>* node_id) {
   Frame* frame = inspected_frames_->Root();
   for (; frame; frame = frame->Tree().TraverseNext(inspected_frames_->Root())) {
     if (IdentifiersFactory::FrameId(frame) == frame_id)
@@ -2243,8 +2245,14 @@ protocol::Response InspectorDOMAgent::getFrameOwner(const String& frame_id,
   HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(frame->Owner());
   if (!frame_owner)
     return Response::Error("No iframe owner for given node");
-  *node_id =
-      PushNodePathToFrontend(frame_owner, document_node_to_id_map_.Get());
+
+  *backend_node_id = DOMNodeIds::IdForNode(frame_owner);
+  if (enabled_.Get()) {
+    Response response = PushDocumentUponHandlelessOperation();
+    if (!response.isSuccess())
+      return response;
+    *node_id = PushNodePathToFrontend(frame_owner);
+  }
   return Response::OK();
 }
 
