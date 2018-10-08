@@ -268,6 +268,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     compositor_node.scroll_offset = scroll_offset;
     compositor_node.local.MakeIdentity();
     compositor_node.scrolls = true;
+    compositor_node.should_be_snapped = true;
 
     CreateCompositorScrollNode(scroll_node, compositor_node);
   }
