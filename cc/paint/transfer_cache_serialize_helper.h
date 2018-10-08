@@ -24,6 +24,8 @@ class CC_PAINT_EXPORT TransferCacheSerializeHelper {
 
   void AssertLocked(TransferCacheEntryType type, uint32_t id);
 
+  virtual void SubmitDeferredEntries() {}
+
  protected:
   using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
 
