@@ -20,8 +20,8 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -1171,8 +1171,7 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
   const base::TimeDelta duration =
       event_generator->CalculateScrollDurationForFlingVelocity(
           start, end,
-          ash::TabletModeAppWindowDragController::kFlingToOverviewThreshold +
-              10.f,
+          ash::TabletModeWindowDragDelegate::kFlingToOverviewThreshold + 10.f,
           200);
   event_generator->GestureScrollSequence(start, end, duration, 200);
   EXPECT_TRUE(shell->window_selector_controller()->IsSelecting());

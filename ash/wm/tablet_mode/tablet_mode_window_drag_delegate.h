@@ -30,6 +30,14 @@ class TabletModeWindowDragDelegate {
   // into overview.
   static constexpr float kDragPositionToOverviewRatio = 0.5f;
 
+  // Threshold of the fling velocity to drop the dragged window into overview if
+  // fling from the top of the display or from the caption area of the window.
+  static constexpr float kFlingToOverviewThreshold = 2000.f;
+
+  // Threshold of the fling velocity to drop the dragged window into overview if
+  // fling inside preview area or when splitview is active.
+  static constexpr float kFlingToOverviewFromSnappingAreaThreshold = 1000.f;
+
   enum class UpdateDraggedWindowType {
     UPDATE_BOUNDS,
     UPDATE_TRANSFORM,
@@ -53,6 +61,12 @@ class TabletModeWindowDragDelegate {
   // Calls when a window ends dragging with its drag result |result|.
   void EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                      const gfx::Point& location_in_screen);
+
+  // Calls when a window ends dragging because of fling or swipe.
+  void FlingOrSwipe(ui::GestureEvent* event);
+
+  // Return the location of |event| in screen coordinates.
+  gfx::Point GetEventLocationInScreen(const ui::GestureEvent* event) const;
 
   // Returns the IndicatorState according to |location_in_screen|.
   IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
@@ -94,6 +108,9 @@ class TabletModeWindowDragDelegate {
   bool ShouldDropWindowIntoOverviewOnDragPosition(
       SplitViewController::SnapPosition snap_position,
       int end_y_position_in_screen) const;
+
+  // Returns true if fling event should drop the window into overview grid.
+  bool ShouldFlingIntoOverview(const ui::GestureEvent* event) const;
 
   SplitViewController* const split_view_controller_;
 
