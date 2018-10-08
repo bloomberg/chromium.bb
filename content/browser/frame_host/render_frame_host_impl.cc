@@ -616,8 +616,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
                                                  int routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
-  RoutingIDFrameMap::iterator it = frames->find(
-      RenderFrameHostID(process_id, routing_id));
+  auto it = frames->find(RenderFrameHostID(process_id, routing_id));
   return it == frames->end() ? NULL : it->second;
 }
 
@@ -2413,8 +2412,7 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
     return;
   }
 
-  std::map<int, JavaScriptResultCallback>::iterator it =
-      javascript_callbacks_.find(id);
+  auto it = javascript_callbacks_.find(id);
   if (it != javascript_callbacks_.end()) {
     it->second.Run(result_value);
     javascript_callbacks_.erase(it);
@@ -5653,7 +5651,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // be modified to take |validated_params| by const reference.
   process->FilterURL(false, &validated_params->url);
   process->FilterURL(true, &validated_params->referrer.url);
-  for (std::vector<GURL>::iterator it(validated_params->redirects.begin());
+  for (auto it(validated_params->redirects.begin());
        it != validated_params->redirects.end(); ++it) {
     process->FilterURL(false, &(*it));
   }

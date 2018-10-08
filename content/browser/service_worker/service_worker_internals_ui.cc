@@ -157,10 +157,7 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
 std::unique_ptr<ListValue> GetRegistrationListValue(
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
   auto result = std::make_unique<ListValue>();
-  for (std::vector<ServiceWorkerRegistrationInfo>::const_iterator it =
-           registrations.begin();
-       it != registrations.end();
-       ++it) {
+  for (auto it = registrations.begin(); it != registrations.end(); ++it) {
     const ServiceWorkerRegistrationInfo& registration = *it;
     auto registration_info = std::make_unique<DictionaryValue>();
     registration_info->SetString("scope", registration.pattern.spec());
@@ -194,10 +191,7 @@ std::unique_ptr<ListValue> GetRegistrationListValue(
 std::unique_ptr<ListValue> GetVersionListValue(
     const std::vector<ServiceWorkerVersionInfo>& versions) {
   auto result = std::make_unique<ListValue>();
-  for (std::vector<ServiceWorkerVersionInfo>::const_iterator it =
-           versions.begin();
-       it != versions.end();
-       ++it) {
+  for (auto it = versions.begin(); it != versions.end(); ++it) {
     auto info = std::make_unique<DictionaryValue>();
     UpdateVersionInfo(*it, info.get());
     result->Append(std::move(info));

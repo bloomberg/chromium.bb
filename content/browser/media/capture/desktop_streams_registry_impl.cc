@@ -84,7 +84,7 @@ DesktopMediaID DesktopStreamsRegistryImpl::RequestMediaForStreamId(
     const DesktopStreamRegistryType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  StreamsMap::iterator it = approved_streams_.find(id);
+  auto it = approved_streams_.find(id);
 
   // Verify that if there is a request with the specified ID it was created for
   // the same origin and the same renderer.

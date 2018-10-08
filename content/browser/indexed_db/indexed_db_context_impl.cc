@@ -200,9 +200,7 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
       std::unique_ptr<base::ListValue> database_list(
           std::make_unique<base::ListValue>());
 
-      for (IndexedDBFactory::OriginDBMapIterator it = range.first;
-           it != range.second;
-           ++it) {
+      for (auto it = range.first; it != range.second; ++it) {
         const IndexedDBDatabase* db = it->second;
         std::unique_ptr<base::DictionaryValue> db_info(
             std::make_unique<base::DictionaryValue>());

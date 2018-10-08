@@ -344,8 +344,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     use_gpu_compositing = false;
 
   // The widget might have been released in the meantime.
-  PerCompositorDataMap::iterator it =
-      per_compositor_data_.find(compositor.get());
+  auto it = per_compositor_data_.find(compositor.get());
   if (it == per_compositor_data_.end())
     return;
 
@@ -708,7 +707,7 @@ void GpuProcessTransportFactory::RemoveReflector(ui::Reflector* reflector) {
 }
 
 void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -780,7 +779,7 @@ GpuProcessTransportFactory::GetHostFrameSinkManager() {
 
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
                                                    bool visible) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -793,7 +792,7 @@ void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
 
 void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
                                                const gfx::Size& size) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -804,7 +803,7 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
 
 void GpuProcessTransportFactory::DisableSwapUntilResize(
     ui::Compositor* compositor) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -816,7 +815,7 @@ void GpuProcessTransportFactory::DisableSwapUntilResize(
 void GpuProcessTransportFactory::SetDisplayColorMatrix(
     ui::Compositor* compositor,
     const SkMatrix44& matrix) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -830,7 +829,7 @@ void GpuProcessTransportFactory::SetDisplayColorSpace(
     ui::Compositor* compositor,
     const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -845,7 +844,7 @@ void GpuProcessTransportFactory::SetDisplayVSyncParameters(
     ui::Compositor* compositor,
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -859,7 +858,7 @@ void GpuProcessTransportFactory::SetDisplayVSyncParameters(
 void GpuProcessTransportFactory::IssueExternalBeginFrame(
     ui::Compositor* compositor,
     const viz::BeginFrameArgs& args) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
@@ -870,7 +869,7 @@ void GpuProcessTransportFactory::IssueExternalBeginFrame(
 
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
                                                    bool secure) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();

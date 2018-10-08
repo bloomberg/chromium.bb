@@ -181,7 +181,7 @@ void VideoCaptureManager::Close(int capture_session_id) {
                 << capture_session_id;
   EmitLogMessage(string_stream.str(), 1);
 
-  SessionMap::iterator session_it = sessions_.find(capture_session_id);
+  auto session_it = sessions_.find(capture_session_id);
   if (session_it == sessions_.end()) {
     return;
   }
@@ -259,7 +259,7 @@ void VideoCaptureManager::DoStopDevice(VideoCaptureController* controller) {
 
 void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DeviceStartQueue::iterator request = device_start_request_queue_.begin();
+  auto request = device_start_request_queue_.begin();
   if (request == device_start_request_queue_.end())
     return;
 
@@ -516,7 +516,7 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(supported_formats->empty());
 
-  SessionMap::iterator it = sessions_.find(capture_session_id);
+  auto it = sessions_.find(capture_session_id);
   if (it == sessions_.end())
     return false;
   std::ostringstream string_stream;
@@ -545,7 +545,7 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(formats_in_use->empty());
 
-  SessionMap::iterator it = sessions_.find(capture_session_id);
+  auto it = sessions_.find(capture_session_id);
   if (it == sessions_.end())
     return false;
   std::ostringstream string_stream;
@@ -582,7 +582,7 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
 
 void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
     media::VideoCaptureSessionId session_id) {
-  SessionMap::iterator session_it = sessions_.find(session_id);
+  auto session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
     return;
 
@@ -812,7 +812,7 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  SessionMap::iterator session_it = sessions_.find(capture_session_id);
+  auto session_it = sessions_.find(capture_session_id);
   if (session_it == sessions_.end())
     return nullptr;
   const MediaStreamDevice& device_info = session_it->second;

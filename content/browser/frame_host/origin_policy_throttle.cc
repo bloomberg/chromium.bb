@@ -120,7 +120,7 @@ OriginPolicyThrottle::WillProcessResponse() {
   DCHECK(!origin.Serialize().empty());
   DCHECK(!origin.opaque());
   KnownVersionMap& versions = GetKnownVersions();
-  KnownVersionMap::iterator iter = versions.find(origin);
+  auto iter = versions.find(origin);
 
   // Process policy deletion first!
   if (header_found && response_version == kDeletePolicy) {

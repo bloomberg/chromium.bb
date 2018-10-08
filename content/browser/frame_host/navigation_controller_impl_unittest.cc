@@ -4004,12 +4004,9 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
       other_controller.GetSessionStorageNamespaceMap();
   EXPECT_EQ(session_storage_namespace_map.size(),
             other_session_storage_namespace_map.size());
-  for (SessionStorageNamespaceMap::const_iterator it =
-           session_storage_namespace_map.begin();
-       it != session_storage_namespace_map.end();
-       ++it) {
-    SessionStorageNamespaceMap::const_iterator other =
-        other_session_storage_namespace_map.find(it->first);
+  for (auto it = session_storage_namespace_map.begin();
+       it != session_storage_namespace_map.end(); ++it) {
+    auto other = other_session_storage_namespace_map.find(it->first);
     EXPECT_TRUE(other != other_session_storage_namespace_map.end());
   }
 }

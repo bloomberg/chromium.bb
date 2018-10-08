@@ -137,7 +137,7 @@ void PepperFileSystemBrowserHost::CloseQuotaFile(
     PepperFileIOHost* file_io_host,
     const ppapi::FileGrowth& file_growth) {
   int32_t id = file_io_host->pp_resource();
-  FileMap::iterator it = files_.find(id);
+  auto it = files_.find(id);
   if (it != files_.end()) {
     files_.erase(it);
   } else {

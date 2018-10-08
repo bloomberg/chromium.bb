@@ -151,9 +151,8 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
     if (trimmed == "*")
       return false;
 
-    ServiceWorkerHeaderMap::const_iterator request_iter = request.find(trimmed);
-    ServiceWorkerHeaderMap::const_iterator cached_request_iter =
-        cached_request.find(trimmed);
+    auto request_iter = request.find(trimmed);
+    auto cached_request_iter = cached_request.find(trimmed);
 
     // If the header exists in one but not the other, no match.
     if ((request_iter == request.end()) !=

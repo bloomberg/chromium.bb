@@ -32,7 +32,7 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   std::string site = SiteInstance::GetSiteForURL(browser_context_, url)
                          .possibly_invalid_spec();
 
-  SiteInstanceMap::iterator i = site_instance_map_.find(site);
+  auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end())
     return i->second;
 
@@ -55,7 +55,7 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
   // tabs are navigated there at the same time.  (We don't call SetSite or
   // register them until DidNavigate.)  If there is a previously existing
   // SiteInstance for this site, we just won't register the new one.
-  SiteInstanceMap::iterator i = site_instance_map_.find(site);
+  auto i = site_instance_map_.find(site);
   if (i == site_instance_map_.end()) {
     // Not previously registered, so register it.
     site_instance_map_[site] = site_instance;
@@ -70,7 +70,7 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstanceImpl* site_instance) {
   // Only unregister the SiteInstance if it is the same one that is registered
   // for the site.  (It might have been an unregistered SiteInstance.  See the
   // comments in RegisterSiteInstance.)
-  SiteInstanceMap::iterator i = site_instance_map_.find(site);
+  auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end() && i->second == site_instance) {
     // Matches, so erase it.
     site_instance_map_.erase(i);

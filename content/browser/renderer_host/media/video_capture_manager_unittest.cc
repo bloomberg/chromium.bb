@@ -691,7 +691,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
-  MediaStreamDevices::iterator it = devices_.begin();
+  auto it = devices_.begin();
 
   int video_session_id_first = vcm_->Open(*it);
   ++it;

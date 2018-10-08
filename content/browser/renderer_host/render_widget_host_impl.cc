@@ -457,8 +457,7 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
     int32_t routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
-  RoutingIDWidgetMap::iterator it = widgets->find(
-      RenderWidgetHostID(process_id, routing_id));
+  auto it = widgets->find(RenderWidgetHostID(process_id, routing_id));
   return it == widgets->end() ? NULL : it->second;
 }
 
@@ -2722,7 +2721,7 @@ void RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived(
     image = gfx::Image::CreateFrom1xBitmap(bitmap);
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
-  PendingSnapshotMap::iterator it = pending_surface_browser_snapshots_.begin();
+  auto it = pending_surface_browser_snapshots_.begin();
   while (it != pending_surface_browser_snapshots_.end()) {
     if (it->first <= snapshot_id) {
       it->second.Run(image);
@@ -2737,7 +2736,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
                                               gfx::Image image) {
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
-  PendingSnapshotMap::iterator it = pending_browser_snapshots_.begin();
+  auto it = pending_browser_snapshots_.begin();
   while (it != pending_browser_snapshots_.end()) {
     if (it->first <= snapshot_id) {
       it->second.Run(image);

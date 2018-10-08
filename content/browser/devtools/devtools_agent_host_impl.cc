@@ -129,7 +129,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
     const std::string& id) {
   if (!g_devtools_instances.IsCreated())
     return nullptr;
-  DevToolsMap::iterator it = g_devtools_instances.Get().find(id);
+  auto it = g_devtools_instances.Get().find(id);
   if (it == g_devtools_instances.Get().end())
     return nullptr;
   return it->second;
@@ -348,12 +348,10 @@ void DevToolsAgentHost::DetachAllClients() {
   // Make a copy, since detaching may lead to agent destruction, which
   // removes it from the instances.
   std::vector<scoped_refptr<DevToolsAgentHostImpl>> copy;
-  for (DevToolsMap::iterator it(g_devtools_instances.Get().begin());
+  for (auto it(g_devtools_instances.Get().begin());
        it != g_devtools_instances.Get().end(); ++it)
     copy.push_back(it->second);
-  for (std::vector<scoped_refptr<DevToolsAgentHostImpl>>::iterator it(
-           copy.begin());
-       it != copy.end(); ++it)
+  for (auto it(copy.begin()); it != copy.end(); ++it)
     it->get()->ForceDetachAllSessions();
 }
 

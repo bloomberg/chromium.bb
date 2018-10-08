@@ -587,8 +587,7 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
 
 ServiceWorkerRegistration*
 ServiceWorkerProviderHost::MatchRegistration() const {
-  ServiceWorkerRegistrationMap::const_reverse_iterator it =
-      matching_registrations_.rbegin();
+  auto it = matching_registrations_.rbegin();
   for (; it != matching_registrations_.rend(); ++it) {
     if (it->second->is_uninstalled())
       continue;

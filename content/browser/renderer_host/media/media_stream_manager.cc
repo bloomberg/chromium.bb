@@ -713,7 +713,7 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
 void MediaStreamManager::CancelAllRequests(int render_process_id,
                                            int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DeviceRequests::iterator request_it = requests_.begin();
+  auto request_it = requests_.begin();
   while (request_it != requests_.end()) {
     if (request_it->second->requesting_process_id != render_process_id ||
         request_it->second->requesting_frame_id != render_frame_id) {
@@ -773,7 +773,7 @@ void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
   DVLOG(1) << "StopDevice"
            << "{type = " << type << "}"
            << "{session_id = " << session_id << "}";
-  DeviceRequests::iterator request_it = requests_.begin();
+  auto request_it = requests_.begin();
   while (request_it != requests_.end()) {
     DeviceRequest* request = request_it->second;
     MediaStreamDevices* devices = &request->devices;
@@ -782,7 +782,7 @@ void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
       ++request_it;
       continue;
     }
-    MediaStreamDevices::iterator device_it = devices->begin();
+    auto device_it = devices->begin();
     while (device_it != devices->end()) {
       if (device_it->type != type || device_it->session_id != session_id) {
         ++device_it;
@@ -1034,8 +1034,8 @@ MediaStreamManager::DeviceRequest* MediaStreamManager::FindRequest(
 void MediaStreamManager::DeleteRequest(const std::string& label) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "DeleteRequest({label= " << label << "})";
-  for (DeviceRequests::iterator request_it = requests_.begin();
-       request_it != requests_.end(); ++request_it) {
+  for (auto request_it = requests_.begin(); request_it != requests_.end();
+       ++request_it) {
     if (request_it->first == label) {
       std::unique_ptr<DeviceRequest> request(request_it->second);
       requests_.erase(request_it);

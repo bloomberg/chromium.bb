@@ -540,8 +540,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
     }
   }
 
-  SessionStorageMetadata::NamespaceEntry namespace_entry =
-      metadata_.GetOrCreateNamespaceEntry(new_namespace_id);
+  auto namespace_entry = metadata_.GetOrCreateNamespaceEntry(new_namespace_id);
   metadata_.RegisterShallowClonedNamespace(source_namespace_entry,
                                            namespace_entry, &save_operations);
   database_->Write(std::move(save_operations),

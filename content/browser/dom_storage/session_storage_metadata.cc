@@ -347,7 +347,7 @@ void SessionStorageMetadata::DeleteArea(
     const std::string& namespace_id,
     const url::Origin& origin,
     std::vector<BatchedOperationPtr>* delete_operations) {
-  NamespaceEntry ns_entry = namespace_origin_map_.find(namespace_id);
+  auto ns_entry = namespace_origin_map_.find(namespace_id);
   if (ns_entry == namespace_origin_map_.end())
     return;
 

@@ -784,8 +784,7 @@ SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::ProcessFinalResult(const FSMEventArgs& event_args) {
   const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results =
       event_args.engine_results;
-  std::vector<blink::mojom::SpeechRecognitionResultPtr>::const_iterator i =
-      results.begin();
+  auto i = results.begin();
   bool provisional_results_pending = false;
   bool results_are_empty = true;
   for (; i != results.end(); ++i) {

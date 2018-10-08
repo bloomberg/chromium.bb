@@ -1661,10 +1661,8 @@ void NavigationControllerImpl::CopyStateFrom(const NavigationController& temp,
   needs_reload_ = needs_reload;
   InsertEntriesFrom(source, source.GetEntryCount());
 
-  for (SessionStorageNamespaceMap::const_iterator it =
-           source.session_storage_namespace_map_.begin();
-       it != source.session_storage_namespace_map_.end();
-       ++it) {
+  for (auto it = source.session_storage_namespace_map_.begin();
+       it != source.session_storage_namespace_map_.end(); ++it) {
     SessionStorageNamespaceImpl* source_namespace =
         static_cast<SessionStorageNamespaceImpl*>(it->second.get());
     session_storage_namespace_map_[it->first] = source_namespace->Clone();

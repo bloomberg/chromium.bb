@@ -188,8 +188,7 @@ download::MockDownloadItemImpl* MockDownloadItemFactory::PopItem() {
   if (items_.empty())
     return nullptr;
 
-  std::map<uint32_t, download::MockDownloadItemImpl*>::iterator first_item =
-      items_.begin();
+  auto first_item = items_.begin();
   download::MockDownloadItemImpl* result = first_item->second;
   items_.erase(first_item);
   return result;

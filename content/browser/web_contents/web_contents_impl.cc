@@ -357,10 +357,8 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
     opener = opener_rfh->frame_tree_node();
   new_contents->SetOpenerForNewContents(opener, params.opener_suppressed);
 
-  for (SessionStorageNamespaceMap::const_iterator it =
-           session_storage_namespace_map.begin();
-       it != session_storage_namespace_map.end();
-       ++it) {
+  for (auto it = session_storage_namespace_map.begin();
+       it != session_storage_namespace_map.end(); ++it) {
     new_contents->GetController()
         .SetSessionStorageNamespace(it->first, it->second.get());
   }

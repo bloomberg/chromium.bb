@@ -187,8 +187,7 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
 RenderViewHostImpl* RenderViewHostImpl::FromID(int process_id, int routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
-  RoutingIDViewMap::iterator it =
-      views->find(RenderViewHostID(process_id, routing_id));
+  auto it = views->find(RenderViewHostID(process_id, routing_id));
   return it == views->end() ? nullptr : it->second;
 }
 
@@ -725,8 +724,7 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
     int request_id,
     const std::vector<base::FilePath>& files) {
   // Grant the security access requested to the given files.
-  for (std::vector<base::FilePath>::const_iterator file = files.begin();
-       file != files.end(); ++file) {
+  for (auto file = files.begin(); file != files.end(); ++file) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         GetProcess()->GetID(), *file);
   }

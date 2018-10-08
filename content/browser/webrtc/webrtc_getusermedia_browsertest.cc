@@ -158,8 +158,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase,
     base::ListValue* values;
     ASSERT_TRUE(value->GetAsList(&values));
 
-    for (base::ListValue::iterator it = values->begin();
-         it != values->end(); ++it) {
+    for (auto it = values->begin(); it != values->end(); ++it) {
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;

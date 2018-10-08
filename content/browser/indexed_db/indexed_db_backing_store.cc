@@ -1886,9 +1886,8 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   // matching (database_id, blob_key) tuple, we should move it to the primary
   // journal.
   BlobJournalType new_live_blob_journal;
-  for (BlobJournalType::iterator journal_iter = live_blob_journal.begin();
-       journal_iter != live_blob_journal.end();
-       ++journal_iter) {
+  for (auto journal_iter = live_blob_journal.begin();
+       journal_iter != live_blob_journal.end(); ++journal_iter) {
     int64_t current_database_id = journal_iter->first;
     int64_t current_blob_key = journal_iter->second;
     bool current_all_blobs =

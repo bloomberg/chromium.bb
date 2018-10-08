@@ -59,7 +59,7 @@ AudioInputDeviceManager::~AudioInputDeviceManager() {
 const MediaStreamDevice* AudioInputDeviceManager::GetOpenedDeviceById(
     int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaStreamDevices::iterator device = GetDevice(session_id);
+  auto device = GetDevice(session_id);
   if (device == devices_.end())
     return nullptr;
 
@@ -117,7 +117,7 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
 
 void AudioInputDeviceManager::Close(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaStreamDevices::iterator device = GetDevice(session_id);
+  auto device = GetDevice(session_id);
   if (device == devices_.end())
     return;
   const MediaStreamType stream_type = device->type;
@@ -223,8 +223,7 @@ void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
 
 MediaStreamDevices::iterator AudioInputDeviceManager::GetDevice(
     int session_id) {
-  for (MediaStreamDevices::iterator it = devices_.begin(); it != devices_.end();
-       ++it) {
+  for (auto it = devices_.begin(); it != devices_.end(); ++it) {
     if (it->session_id == session_id)
       return it;
   }

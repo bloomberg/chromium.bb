@@ -413,8 +413,7 @@ void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
   SSLManagerSet* managers =
       static_cast<SSLManagerSet*>(context->GetUserData(kSSLManagerKeyName));
 
-  for (std::set<SSLManager*>::iterator i = managers->get().begin();
-       i != managers->get().end(); ++i) {
+  for (auto i = managers->get().begin(); i != managers->get().end(); ++i) {
     (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry(), 0, 0);
   }
 }

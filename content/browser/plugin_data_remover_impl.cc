@@ -50,8 +50,7 @@ void PluginDataRemover::GetSupportedPlugins(
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), kFlashPluginSwfMimeType, allow_wildcard, &plugins, nullptr);
   base::Version min_version(kMinFlashVersion);
-  for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
-       it != plugins.end(); ++it) {
+  for (auto it = plugins.begin(); it != plugins.end(); ++it) {
     base::Version version;
     WebPluginInfo::CreateVersionFromString(it->version, &version);
     if (version.IsValid() && min_version.CompareTo(version) == -1)

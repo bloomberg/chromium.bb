@@ -41,7 +41,7 @@ RenderWidgetHelper::~RenderWidgetHelper() {
 
   // Delete this RWH from the map if it is found.
   WidgetHelperMap& widget_map = g_widget_helpers.Get();
-  WidgetHelperMap::iterator it = widget_map.find(render_process_id_);
+  auto it = widget_map.find(render_process_id_);
   if (it != widget_map.end() && it->second == this)
     widget_map.erase(it);
 }

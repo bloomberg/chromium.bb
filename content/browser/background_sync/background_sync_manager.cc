@@ -640,8 +640,7 @@ BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
     const std::string& tag) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  SWIdToRegistrationsMap::iterator it =
-      active_registrations_.find(sw_registration_id);
+  auto it = active_registrations_.find(sw_registration_id);
   if (it == active_registrations_.end())
     return nullptr;
 
@@ -838,8 +837,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     return;
   }
 
-  SWIdToRegistrationsMap::iterator it =
-      active_registrations_.find(sw_registration_id);
+  auto it = active_registrations_.find(sw_registration_id);
 
   if (it != active_registrations_.end()) {
     const BackgroundSyncRegistrations& registrations = it->second;

@@ -100,8 +100,7 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
     // Update hosts of older caches to add a reference to the newest cache.
     // (This loop mutates |old_caches_| so a range-based for-loop cannot be
     // used, because it caches the end iterator.)
-    for (Caches::iterator it = old_caches_.begin(); it != old_caches_.end();
-         ++it) {
+    for (auto it = old_caches_.begin(); it != old_caches_.end(); ++it) {
       AppCache* cache = *it;
       for (AppCacheHost* host : cache->associated_hosts())
         host->SetSwappableCache(this);
@@ -121,8 +120,7 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
   } else {
     scoped_refptr<AppCacheGroup> protect(this);
 
-    Caches::iterator it =
-        std::find(old_caches_.begin(), old_caches_.end(), cache);
+    auto it = std::find(old_caches_.begin(), old_caches_.end(), cache);
     if (it != old_caches_.end()) {
       AppCache* tmp_cache = *it;
       old_caches_.erase(it);

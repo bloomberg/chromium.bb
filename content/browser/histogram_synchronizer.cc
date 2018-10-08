@@ -96,8 +96,7 @@ class HistogramSynchronizer::RequestContext {
   static RequestContext* GetRequestContext(int sequence_number) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    RequestContextMap::iterator it =
-        outstanding_requests_.Get().find(sequence_number);
+    auto it = outstanding_requests_.Get().find(sequence_number);
     if (it == outstanding_requests_.Get().end())
       return nullptr;
 
@@ -112,8 +111,7 @@ class HistogramSynchronizer::RequestContext {
   static void Unregister(int sequence_number) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    RequestContextMap::iterator it =
-        outstanding_requests_.Get().find(sequence_number);
+    auto it = outstanding_requests_.Get().find(sequence_number);
     if (it == outstanding_requests_.Get().end())
       return;
 
@@ -137,7 +135,7 @@ class HistogramSynchronizer::RequestContext {
   static void OnShutdown() {
     // Just in case we have any pending tasks, clear them out.
     while (!outstanding_requests_.Get().empty()) {
-      RequestContextMap::iterator it = outstanding_requests_.Get().begin();
+      auto it = outstanding_requests_.Get().begin();
       delete it->second;
       outstanding_requests_.Get().erase(it);
     }

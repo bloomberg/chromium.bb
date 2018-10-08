@@ -716,8 +716,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
     URLRequestTestDelayedStartJob::ClearQueue();
 
-    for (std::set<int>::iterator it = child_ids_.begin();
-         it != child_ids_.end(); ++it) {
+    for (auto it = child_ids_.begin(); it != child_ids_.end(); ++it) {
       host_.CancelRequestsForProcess(*it);
     }
 
