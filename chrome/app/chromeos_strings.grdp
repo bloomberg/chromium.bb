@@ -650,7 +650,7 @@
     Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips and updates on Google products and share feedback. Unsubscribe anytime.
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_PLAY_UPDATES" desc="A label next to the checkbox that controls user subscription to marketing updates from Google about Google Play Store.">
-    Get the lastest updates and recommendations on Play Store apps
+    Get the latest updates and recommendations on Play Store apps
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES" desc="A lablel next to the checkbox that controls user subscription to marketing updates and useful information about the user's Chrome device.">
     Tips and updates on <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
