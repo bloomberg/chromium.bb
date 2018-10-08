@@ -43,9 +43,13 @@ ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
       BrowserView::GetBrowserViewForNativeWindow(window);
   if (!browser_view)
     return nullptr;
-  ToolbarActionView* reference_view = browser_view->toolbar_button_provider()
-                                          ->GetBrowserActionsContainer()
-                                          ->GetViewForId(extension_id);
+  DCHECK(browser_view->toolbar_button_provider());
+  BrowserActionsContainer* const browser_actions_container =
+      browser_view->toolbar_button_provider()->GetBrowserActionsContainer();
+  if (!browser_actions_container)
+    return nullptr;
+  ToolbarActionView* const reference_view =
+      browser_actions_container->GetViewForId(extension_id);
   return reference_view && reference_view->visible() ? reference_view : nullptr;
 }
 
