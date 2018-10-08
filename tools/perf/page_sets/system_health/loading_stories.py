@@ -205,6 +205,13 @@ class LoadQqMobileStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
+class LoadQqDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:qq:2018'
+  URL = 'https://news.qq.com'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadRedditDesktopStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'

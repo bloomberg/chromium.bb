@@ -162,6 +162,9 @@
         "load:news:qq": {
             "DEFAULT": "system_health_desktop_010.wprgo"
         },
+        "load:news:qq:2018": {
+            "DEFAULT": "system_health_desktop_413e958e1c.wprgo"
+        },
         "load:news:reddit": {
             "DEFAULT": "system_health_desktop_011.wprgo"
         },
