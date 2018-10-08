@@ -143,13 +143,12 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
   bool have_context = !!api;
   // Only delete textures that are not referenced by a TexturePassthrough
   // object, they handle their own deletion once all references are lost
-  DeleteServiceObjects(
-      &texture_id_map, have_context,
-      [this, api](GLuint client_id, GLuint texture) {
-        if (!texture_object_map.GetServiceID(client_id, nullptr)) {
-          api->glDeleteTexturesFn(1, &texture);
-        }
-      });
+  DeleteServiceObjects(&texture_id_map, have_context,
+                       [this, api](GLuint client_id, GLuint texture) {
+                         if (!texture_object_map.HasClientID(client_id)) {
+                           api->glDeleteTexturesFn(1, &texture);
+                         }
+                       });
   DeleteServiceObjects(&buffer_id_map, have_context,
                        [api](GLuint client_id, GLuint buffer) {
                          api->glDeleteBuffersARBFn(1, &buffer);

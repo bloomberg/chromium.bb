@@ -26,7 +26,7 @@ error::Error GenHelper(GLsizei n,
   DCHECK(n >= 0);
   std::vector<ClientType> client_ids_copy(client_ids, client_ids + n);
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (id_map->GetServiceID(client_ids_copy[ii], nullptr)) {
+    if (id_map->HasClientID(client_ids_copy[ii])) {
       return error::kInvalidArguments;
     }
   }
@@ -47,7 +47,7 @@ template <typename ClientType, typename ServiceType, typename GenFunction>
 error::Error CreateHelper(ClientType client_id,
                           ClientServiceMap<ClientType, ServiceType>* id_map,
                           GenFunction create_function) {
-  if (id_map->GetServiceID(client_id, nullptr)) {
+  if (id_map->HasClientID(client_id)) {
     return error::kInvalidArguments;
   }
   ServiceType service_id = create_function();
@@ -110,12 +110,19 @@ GLuint GetTextureServiceID(gl::GLApi* api,
                            GLuint client_id,
                            PassthroughResources* resources,
                            bool create_if_missing) {
-  return GetServiceID(client_id, &resources->texture_id_map, create_if_missing,
-                      [api]() {
-                        GLuint service_id = 0;
-                        api->glGenTexturesFn(1, &service_id);
-                        return service_id;
-                      });
+  GLuint service_id = resources->texture_id_map.invalid_service_id();
+  if (resources->texture_id_map.GetServiceID(client_id, &service_id)) {
+    return service_id;
+  }
+
+  if (create_if_missing) {
+    GLuint service_id = 0;
+    api->glGenTexturesFn(1, &service_id);
+    resources->texture_id_map.SetIDMapping(client_id, service_id);
+    return service_id;
+  }
+
+  return resources->texture_id_map.invalid_service_id();
 }
 
 GLuint GetBufferServiceID(gl::GLApi* api,
@@ -1091,7 +1098,7 @@ error::Error GLES2DecoderPassthroughImpl::DoEnableVertexAttribArray(
 error::Error GLES2DecoderPassthroughImpl::DoFenceSync(GLenum condition,
                                                       GLbitfield flags,
                                                       GLuint client_id) {
-  if (resources_->sync_id_map.GetServiceID(client_id, nullptr)) {
+  if (resources_->sync_id_map.HasClientID(client_id)) {
     return error::kInvalidArguments;
   }
 
@@ -4038,7 +4045,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLuint texture_client_id,
     const volatile GLbyte* mailbox) {
   if (!texture_client_id ||
-      resources_->texture_id_map.GetServiceID(texture_client_id, nullptr)) {
+      resources_->texture_id_map.HasClientID(texture_client_id)) {
     return error::kInvalidArguments;
   }
 
