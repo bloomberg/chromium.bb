@@ -405,6 +405,8 @@ bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
   is_submitted_ = true;
   parsed_submitted_form_ =
       ParseFormAndMakeLogging(submitted_form_, FormDataParser::Mode::kSaving);
+  RecordMetricOnReadonly(parser_.readonly_status(), !!parsed_submitted_form_,
+                         FormDataParser::Mode::kSaving);
   CreatePendingCredentials();
   return true;
 }
@@ -433,6 +435,8 @@ void NewPasswordFormManager::Fill() {
   // parse result, but to parse each time again.
   std::unique_ptr<PasswordForm> observed_password_form =
       ParseFormAndMakeLogging(observed_form_, FormDataParser::Mode::kFilling);
+  RecordMetricOnReadonly(parser_.readonly_status(), !!observed_password_form,
+                         FormDataParser::Mode::kFilling);
   if (!observed_password_form)
     return;
 
@@ -487,6 +491,25 @@ void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
   } else {
     metrics_recorder_->RecordParsingsComparisonResult(
         PasswordFormMetricsRecorder::ParsingComparisonResult::kDifferent);
+  }
+}
+
+void NewPasswordFormManager::RecordMetricOnReadonly(
+    FormDataParser::ReadonlyPasswordFields readonly_status,
+    bool parsing_successful,
+    FormDataParser::Mode mode) {
+  // The reported value is combined of the |readonly_status| shifted by one bit
+  // to the left, and the success bit put in the least significant bit. Note:
+  // C++ guarantees that bool->int conversions map false to 0 and true to 1.
+  uint64_t value = static_cast<uint64_t>(parsing_successful) +
+                   (static_cast<uint64_t>(readonly_status) << 1);
+  switch (mode) {
+    case FormDataParser::Mode::kSaving:
+      metrics_recorder_->RecordReadonlyWhenSaving(value);
+      break;
+    case FormDataParser::Mode::kFilling:
+      metrics_recorder_->RecordReadonlyWhenFilling(value);
+      break;
   }
 }
 

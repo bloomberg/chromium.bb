@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,8 +97,6 @@ class MockFormSaver : public StubFormSaver {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
 };
-
-}  // namespace
 
 // TODO(https://crbug.com/831123): Test sending metrics.
 // TODO(https://crbug.com/831123): Test create pending credentials when
@@ -839,5 +838,122 @@ TEST_F(NewPasswordFormManagerTest, Clone) {
   EXPECT_EQ(form_manager_->metrics_recorder(),
             cloned_manager->metrics_recorder());
 }
+
+// Extracts the information whether parsing was successful from a metric
+// specified by |metric_name| stored in |entry|. The metric name should be one
+// of ukm::builders::PasswordForm::kReadonlyWhenSavingName and
+// ukm::builders::PasswordForm::kReadonlyWhenFillingName.
+bool ParsingSuccessReported(const ukm::mojom::UkmEntry* entry,
+                            base::StringPiece metric_name) {
+  const int64_t* value =
+      ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+  EXPECT_TRUE(value);
+  // Ideally, an ASSERT_TRUE above would prevent the test suite from crashing on
+  // dereferencing |value| below. But ASSERT_* is not available in non-void
+  // returning functions, so the null value is handled explicitly.
+  if (!value)
+    return false;  // Value does not matter, the test already failed.
+  return 1 == (1 & *value);
+}
+
+// Test that an attempt to log to ReadonlyWhenFilling UKM is made when filling.
+TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenFilling) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
+
+  // Destroy the form manager to destroy the UKM recorder it owns. The recorder
+  // only records metrics in its destructor.
+  form_manager_.reset();
+
+  auto entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  EXPECT_TRUE(ParsingSuccessReported(
+      entries[0], ukm::builders::PasswordForm::kReadonlyWhenFillingName));
+}
+
+// Test that an attempt to log to ReadonlyWhenFilling UKM is made when filling,
+// even when the parsing itself is unsuccessful.
+TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenFilling_ParsingFailed) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+  FormData malformed_form = observed_form_;
+  malformed_form.fields.clear();
+  CreateFormManager(malformed_form);
+  // Only create the recorder after the current form manager is created,
+  // otherwise the destruction of the previous one will add unwanted UKM entries
+  // in it.
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
+
+  // Destroy the form manager to destroy the UKM recorder it owns. The recorder
+  // only records metrics in its destructor.
+  form_manager_.reset();
+
+  auto entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  EXPECT_FALSE(ParsingSuccessReported(
+      entries[0], ukm::builders::PasswordForm::kReadonlyWhenFillingName));
+}
+
+// Test that an attempt to log to ReadonlyWhenSaving UKM is made when creating
+// pending credentials.
+TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenSaving) {
+  // The scoped context is needed for the UKM recorder.
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
+
+  // Destroy the form manager to destroy the UKM recorder it owns. The recorder
+  // only records metrics in its destructor.
+  form_manager_.reset();
+
+  auto entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  EXPECT_TRUE(ParsingSuccessReported(
+      entries[0], ukm::builders::PasswordForm::kReadonlyWhenSavingName));
+}
+
+// Test that an attempt to log to ReadonlyWhenSaving UKM is made when creating
+// pending credentials, even when their parsing itself is unsuccessful.
+TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenSaving_ParsingFailed) {
+  // The scoped context is needed for the UKM recorder.
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  FormData malformed_form = observed_form_;
+  malformed_form.fields.clear();
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(malformed_form, &driver_));
+
+  // Destroy the form manager to destroy the UKM recorder it owns. The recorder
+  // only records metrics in its destructor.
+  form_manager_.reset();
+
+  auto entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  EXPECT_FALSE(ParsingSuccessReported(
+      entries[0], ukm::builders::PasswordForm::kReadonlyWhenSavingName));
+}
+
+}  // namespace
 
 }  // namespace  password_manager

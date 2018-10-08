@@ -288,6 +288,14 @@ void PasswordFormMetricsRecorder::RecordParsingOnSavingDifference(
   ukm_entry_builder_.SetParsingOnSavingDifference(comparison_result);
 }
 
+void PasswordFormMetricsRecorder::RecordReadonlyWhenFilling(uint64_t value) {
+  ukm_entry_builder_.SetReadonlyWhenFilling(value);
+}
+
+void PasswordFormMetricsRecorder::RecordReadonlyWhenSaving(uint64_t value) {
+  ukm_entry_builder_.SetReadonlyWhenSaving(value);
+}
+
 void PasswordFormMetricsRecorder::RecordShowManualFallbackForSaving(
     bool has_generated_password,
     bool is_update) {

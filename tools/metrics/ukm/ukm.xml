@@ -3153,6 +3153,22 @@ be describing additional metrics about the same event.
       bitmask can be combined.
     </summary>
   </metric>
+  <metric name="ReadonlyWhenFilling">
+    <summary>
+      Records the readonly status encoded with parsing success after parsing for
+      filling. The |value| is constructed as follows: The least significant bit
+      says whether parsing succeeded (1) or not (0). The rest, shifted by one
+      bit to the right is the FormDataParser::ReadonlyPasswordFields
+      representation of the readonly status.
+    </summary>
+  </metric>
+  <metric name="ReadonlyWhenSaving">
+    <summary>
+      Records the readonly status encoded with parsing success after parsing for
+      creating pending credentials. The |value| is constructed the same way as
+      for ReadonlyWhenFilling.
+    </summary>
+  </metric>
   <metric name="Saving.Prompt.Interaction">
     <summary>
       Records how the user interacted with a saving prompt. Recorded values

@@ -157,6 +157,14 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   void RecordMetricOnCompareParsingResult(
       const autofill::PasswordForm& parsed_form);
 
+  // Records the status of readonly fields during parsing, combined with the
+  // overall success of the parsing. It reports through two different metrics,
+  // depending on whether |mode| indicates parsing for saving or filling.
+  void RecordMetricOnReadonly(
+      FormDataParser::ReadonlyPasswordFields readonly_status,
+      bool parsing_successful,
+      FormDataParser::Mode mode);
+
   // Report the time between receiving credentials from the password store and
   // the autofill server responding to the lookup request.
   void ReportTimeBetweenStoreAndServerUMA();

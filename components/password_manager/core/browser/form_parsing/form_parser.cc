@@ -269,23 +269,31 @@ std::unique_ptr<SignificantFields> ParseUsingAutocomplete(
 // useless). This ignores all passwords with Interactability below
 // |best_interactability| and also fields with names which sound like CVC
 // fields. Stores the iterator to the first relevant password in
-// |first_relevant_password|.
+// |first_relevant_password|. |readonly_status| will be updated according to the
+// processing of the parsed fields; it must not be null.
 std::vector<const FormFieldData*> GetRelevantPasswords(
     const std::vector<ProcessedField>& processed_fields,
     FormDataParser::Mode mode,
     Interactability best_interactability,
-    std::vector<ProcessedField>::const_iterator* first_relevant_password) {
+    std::vector<ProcessedField>::const_iterator* first_relevant_password,
+    FormDataParser::ReadonlyPasswordFields* readonly_status) {
   DCHECK(first_relevant_password);
   *first_relevant_password = processed_fields.end();
   std::vector<const FormFieldData*> result;
   result.reserve(processed_fields.size());
+  DCHECK(readonly_status);
 
   const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
 
+  // These two counters are used to determine the ReadonlyPassowrdFields value
+  // corresponding to this form.
+  size_t all_passwords_seen = 0;
+  size_t ignored_readonly = 0;
   for (auto it = processed_fields.begin(); it != processed_fields.end(); ++it) {
     const ProcessedField& processed_field = *it;
     if (!processed_field.is_password)
       continue;
+    ++all_passwords_seen;
     if (!MatchesInteractability(processed_field, best_interactability))
       continue;
     if (consider_only_non_empty && processed_field.field->value.empty())
@@ -299,6 +307,7 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
         !(processed_field.field->properties_mask &
           (FieldPropertiesFlags::USER_TYPED |
            FieldPropertiesFlags::AUTOFILLED))) {
+      ++ignored_readonly;
       continue;
     }
     if (IsFieldCVC(*processed_field.field))
@@ -307,6 +316,15 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
       *first_relevant_password = it;
     result.push_back(processed_field.field);
   }
+
+  DCHECK_NE(0u, all_passwords_seen);
+  DCHECK_LE(ignored_readonly, all_passwords_seen);
+  if (ignored_readonly == 0)
+    *readonly_status = FormDataParser::ReadonlyPasswordFields::kNoneIgnored;
+  else if (ignored_readonly < all_passwords_seen)
+    *readonly_status = FormDataParser::ReadonlyPasswordFields::kSomeIgnored;
+  else
+    *readonly_status = FormDataParser::ReadonlyPasswordFields::kAllIgnored;
 
   return result;
 }
@@ -432,12 +450,14 @@ uint32_t ExtractUniqueId(const FormFieldData* field) {
 // complete it. The result is stored back in |found_fields|. The best
 // interactability for usernames, which depends on position of the found
 // passwords as well, is returned through |username_max| to be used in other
-// kinds of analysis.
+// kinds of analysis. If password fields end up being parsed, |readonly_status|
+// will be updated according to that processing.
 void ParseUsingBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
     FormDataParser::Mode mode,
     SignificantFields* found_fields,
-    Interactability* username_max) {
+    Interactability* username_max,
+    FormDataParser::ReadonlyPasswordFields* readonly_status) {
   // If there is both the username and the minimal set of fields to build a
   // PasswordForm, return early -- no more work to do.
   if (found_fields->HasPasswords() && found_fields->username)
@@ -458,8 +478,9 @@ void ParseUsingBaseHeuristics(
     // Try to find password elements (current, new, confirmation) among those
     // with best interactability.
     first_relevant_password = processed_fields.end();
-    std::vector<const FormFieldData*> passwords = GetRelevantPasswords(
-        processed_fields, mode, password_max, &first_relevant_password);
+    std::vector<const FormFieldData*> passwords =
+        GetRelevantPasswords(processed_fields, mode, password_max,
+                             &first_relevant_password, readonly_status);
     if (passwords.empty())
       return;
     LocateSpecificPasswords(passwords, &found_fields->password,
@@ -692,6 +713,7 @@ FormDataParser::~FormDataParser() = default;
 std::unique_ptr<PasswordForm> FormDataParser::Parse(
     const autofill::FormData& form_data,
     Mode mode) {
+  readonly_status_ = ReadonlyPasswordFields::kNoHeuristics;
   autofill::ValueElementVector all_possible_passwords;
   autofill::ValueElementVector all_possible_usernames;
   std::vector<ProcessedField> processed_fields = ProcessFields(
@@ -731,7 +753,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
   // Try to parse with base heuristic.
   Interactability username_max = Interactability::kUnlikely;
   ParseUsingBaseHeuristics(processed_fields, mode, significant_fields.get(),
-                           &username_max);
+                           &username_max, &readonly_status_);
   if (username_detection_method ==
           UsernameDetectionMethod::kNoUsernameDetected &&
       significant_fields && significant_fields->username) {
