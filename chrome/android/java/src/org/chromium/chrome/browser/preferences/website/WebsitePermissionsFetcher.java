@@ -234,6 +234,17 @@ public class WebsitePermissionsFetcher {
     }
 
     private void setException(int contentSettingsType) {
+        @ContentSettingException.Type
+        int exceptionType;
+        for (exceptionType = 0; exceptionType < ContentSettingException.Type.NUM_ENTRIES;
+                exceptionType++) {
+            if (contentSettingsType == ContentSettingException.CONTENT_TYPES[exceptionType]) break;
+        }
+        assert contentSettingsType
+                == ContentSettingException.CONTENT_TYPES[exceptionType]
+            : "Unexpected content setting type received: "
+                        + contentSettingsType;
+
         for (ContentSettingException exception :
                 WebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
             // The pattern "*" represents the default setting, not a specific website.
@@ -241,13 +252,7 @@ public class WebsitePermissionsFetcher {
             WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
             if (address == null) continue;
             Website site = findOrCreateSite(address, null);
-            for (int i = 0; i < ContentSettingException.CONTENT_TYPES.length; i++) {
-                if (contentSettingsType == ContentSettingException.CONTENT_TYPES[i]) {
-                    site.setContentSettingException(i, exception);
-                    return;
-                }
-            }
-            assert false : "Unexpected content setting type received: " + contentSettingsType;
+            site.setContentSettingException(exceptionType, exception);
         }
     }
 
