@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -31,24 +30,6 @@ namespace chromeos {
 namespace attestation {
 
 namespace {
-
-void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, ATTESTATION_SUCCESS, "fake_cert"));
-}
-
-void CertCallbackUnspecifiedFailure(
-    const AttestationFlow::CertificateCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""));
-}
-
-void CertCallbackBadRequestFailure(
-    const AttestationFlow::CertificateCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
-}
 
 void StatusCallbackSuccess(
     const policy::CloudPolicyClient::StatusCallback& callback) {
@@ -77,10 +58,8 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
 
   void SetUpEnrollmentIdNeeded(bool enrollment_id_needed) {
     if (enrollment_id_needed) {
-      EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-          .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
       EXPECT_CALL(policy_client_,
-                  UploadEnterpriseEnrollmentCertificate("fake_cert", _))
+                  UploadEnterpriseEnrollmentId(enrollment_id_, _))
           .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
     }
     SetUpDevicePolicy(enrollment_id_needed);
@@ -93,23 +72,21 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   }
 
   void Run() {
-    EnrollmentPolicyObserver observer(&policy_client_,
-                                      &device_settings_service_,
-                                      &cryptohome_client_, &attestation_flow_);
+    EnrollmentPolicyObserver observer(
+        &policy_client_, &device_settings_service_, &cryptohome_client_);
     observer.set_retry_limit(3);
     observer.set_retry_delay(0);
     base::RunLoop().RunUntilIdle();
   }
 
   FakeCryptohomeClient cryptohome_client_;
-  StrictMock<MockAttestationFlow> attestation_flow_;
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
   std::string enrollment_id_;
 };
 
 constexpr char EnrollmentPolicyObserverTest::kEnrollmentId[];
 
-TEST_F(EnrollmentPolicyObserverTest, UploadEnterpriseEnrollmentCertificate) {
+TEST_F(EnrollmentPolicyObserverTest, UploadEnterpriseEnrollmentId) {
   SetUpEnrollmentIdNeeded(true);
   Run();
 }
@@ -121,38 +98,6 @@ TEST_F(EnrollmentPolicyObserverTest, FeatureDisabled) {
 
 TEST_F(EnrollmentPolicyObserverTest, UnregisteredPolicyClient) {
   policy_client_.SetDMToken("");
-  Run();
-}
-
-TEST_F(EnrollmentPolicyObserverTest, GetCertificateUnspecifiedFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackUnspecifiedFailure)));
-  SetUpDevicePolicy(true);
-  Run();
-}
-
-TEST_F(EnrollmentPolicyObserverTest, GetCertificateBadRequestFailure) {
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
-  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId(enrollment_id_, _))
-      .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
-  SetUpDevicePolicy(true);
-  Run();
-}
-
-TEST_F(EnrollmentPolicyObserverTest,
-       UploadEmptyEnterpriseEnrollmentIdOnlyOnce) {
-  cryptohome_client_.set_tpm_attestation_enrollment_id(true /* ignore_cache */,
-                                                       "");
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
-      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
-  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId("", _))
-      .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
-  SetUpDevicePolicy(true);
-  // Request the EID again. We first setup device policy so that there is
-  // a change so the observer gets called again.
-  SetUpDevicePolicy(false);
-  SetUpDevicePolicy(true);
   Run();
 }
 
