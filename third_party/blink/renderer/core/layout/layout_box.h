@@ -68,6 +68,7 @@ struct LayoutBoxRareData {
       : spanner_placeholder_(nullptr),
         override_logical_width_(-1),
         override_logical_height_(-1),
+        // TODO(rego): We should store these based on physical direction.
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
         has_override_containing_block_percentage_resolution_logical_height_(
@@ -754,6 +755,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit OverrideContentLogicalWidth() const;
   LayoutUnit OverrideContentLogicalHeight() const;
 
+  LayoutUnit OverrideContainingBlockContentWidth() const override;
+  LayoutUnit OverrideContainingBlockContentHeight() const override;
+  bool HasOverrideContainingBlockContentWidth() const override;
+  bool HasOverrideContainingBlockContentHeight() const override;
   LayoutUnit OverrideContainingBlockContentLogicalWidth() const;
   LayoutUnit OverrideContainingBlockContentLogicalHeight() const;
   bool HasOverrideContainingBlockContentLogicalWidth() const;

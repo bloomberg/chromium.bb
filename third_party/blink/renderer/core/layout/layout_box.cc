@@ -1412,6 +1412,39 @@ LayoutUnit LayoutBox::OverrideContentLogicalHeight() const {
       .ClampNegativeToZero();
 }
 
+LayoutUnit LayoutBox::OverrideContainingBlockContentWidth() const {
+  DCHECK(HasOverrideContainingBlockContentWidth());
+  return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
+             ? rare_data_->override_containing_block_content_logical_width_
+             : rare_data_->override_containing_block_content_logical_height_;
+}
+
+LayoutUnit LayoutBox::OverrideContainingBlockContentHeight() const {
+  DCHECK(HasOverrideContainingBlockContentHeight());
+  return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
+             ? rare_data_->override_containing_block_content_logical_height_
+             : rare_data_->override_containing_block_content_logical_width_;
+}
+
+bool LayoutBox::HasOverrideContainingBlockContentWidth() const {
+  if (!rare_data_ || !ContainingBlock())
+    return false;
+
+  return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
+             ? rare_data_->has_override_containing_block_content_logical_width_
+             : rare_data_
+                   ->has_override_containing_block_content_logical_height_;
+}
+
+bool LayoutBox::HasOverrideContainingBlockContentHeight() const {
+  if (!rare_data_ || !ContainingBlock())
+    return false;
+
+  return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
+             ? rare_data_->has_override_containing_block_content_logical_height_
+             : rare_data_->has_override_containing_block_content_logical_width_;
+}
+
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
