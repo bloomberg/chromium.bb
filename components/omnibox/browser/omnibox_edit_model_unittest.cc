@@ -155,6 +155,43 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   }
 }
 
+// Tests that AdjustTextForCopy behaves properly with Query in Omnibox enabled.
+// For more general tests of copy adjustment, see the AdjustTextForCopy test.
+TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
+  toolbar_model()->set_formatted_full_url(
+      base::ASCIIToUTF16("https://www.example.com/"));
+  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+  TestOmniboxClient* client =
+      static_cast<TestOmniboxClient*>(model()->client());
+  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  model()->ResetDisplayTexts();
+
+  // Verify that we copy the query verbatim when nothing has been modified.
+  {
+    base::string16 result = base::ASCIIToUTF16("foobar");
+    GURL url;
+    bool write_url;
+    model()->AdjustTextForCopy(0, &result, &url, &write_url);
+
+    EXPECT_EQ(base::ASCIIToUTF16("foobar"), result);
+    EXPECT_EQ(GURL(), url);
+    EXPECT_FALSE(write_url);
+  }
+
+  // Verify we copy the query verbatim even if the user has refined the query.
+  {
+    base::string16 result = base::ASCIIToUTF16("something else");
+    GURL url;
+    bool write_url;
+    model()->AdjustTextForCopy(0, &result, &url, &write_url);
+
+    EXPECT_EQ(base::ASCIIToUTF16("something else"), result);
+    EXPECT_EQ(GURL(), url);
+    EXPECT_FALSE(write_url);
+  }
+}
+
 TEST_F(OmniboxEditModelTest, InlineAutocompleteText) {
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
