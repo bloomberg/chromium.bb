@@ -21,13 +21,13 @@ using base::android::JavaRef;
 
 namespace device {
 
-ARCoreImpl::ARCoreImpl()
+ArCoreImpl::ArCoreImpl()
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
-ARCoreImpl::~ARCoreImpl() = default;
+ArCoreImpl::~ArCoreImpl() = default;
 
-bool ARCoreImpl::Initialize() {
+bool ArCoreImpl::Initialize() {
   DCHECK(IsOnGlThread());
   DCHECK(!arcore_session_.is_valid());
 
@@ -35,7 +35,7 @@ bool ARCoreImpl::Initialize() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!env) {
-    DLOG(ERROR) << "Unable to get JNIEnv for ARCore";
+    DLOG(ERROR) << "Unable to get JNIEnv for ArCore";
     return false;
   }
 
@@ -48,7 +48,7 @@ bool ARCoreImpl::Initialize() {
   }
 
   if (!vr::ArCoreJavaUtils::EnsureLoaded()) {
-    DLOG(ERROR) << "ARCore could not be loaded.";
+    DLOG(ERROR) << "ArCore could not be loaded.";
     return false;
   }
 
@@ -97,24 +97,24 @@ bool ARCoreImpl::Initialize() {
   return true;
 }
 
-void ARCoreImpl::SetCameraTexture(GLuint camera_texture_id) {
+void ArCoreImpl::SetCameraTexture(GLuint camera_texture_id) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   ArSession_setCameraTextureName(arcore_session_.get(), camera_texture_id);
 }
 
-void ARCoreImpl::SetDisplayGeometry(
+void ArCoreImpl::SetDisplayGeometry(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   // Display::Rotation is the same as Android's rotation and is compatible with
-  // what ARCore is expecting.
+  // what ArCore is expecting.
   ArSession_setDisplayGeometry(arcore_session_.get(), display_rotation,
                                frame_size.width(), frame_size.height());
 }
 
-std::vector<float> ARCoreImpl::TransformDisplayUvCoords(
+std::vector<float> ArCoreImpl::TransformDisplayUvCoords(
     const base::span<const float> uvs) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
@@ -128,7 +128,7 @@ std::vector<float> ARCoreImpl::TransformDisplayUvCoords(
   return uvs_out;
 }
 
-mojom::VRPosePtr ARCoreImpl::Update(bool* camera_updated) {
+mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
@@ -182,7 +182,7 @@ mojom::VRPosePtr ARCoreImpl::Update(bool* camera_updated) {
   return pose;
 }
 
-void ARCoreImpl::Pause() {
+void ArCoreImpl::Pause() {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   ArStatus status = ArSession_pause(arcore_session_.get());
@@ -190,7 +190,7 @@ void ARCoreImpl::Pause() {
       << "ArSession_pause failed: status = " << status;
 }
 
-void ARCoreImpl::Resume() {
+void ArCoreImpl::Resume() {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   ArStatus status = ArSession_resume(arcore_session_.get());
@@ -198,7 +198,7 @@ void ARCoreImpl::Resume() {
       << "ArSession_resume failed: status = " << status;
 }
 
-gfx::Transform ARCoreImpl::GetProjectionMatrix(float near, float far) {
+gfx::Transform ArCoreImpl::GetProjectionMatrix(float near, float far) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
@@ -209,7 +209,7 @@ gfx::Transform ARCoreImpl::GetProjectionMatrix(float near, float far) {
   DCHECK(arcore_camera.is_valid())
       << "ArFrame_acquireCamera failed despite documentation saying it cannot";
 
-  // ARCore's projection matrix is 16 floats in column-major order.
+  // ArCore's projection matrix is 16 floats in column-major order.
   float matrix_4x4[16];
   ArCamera_getProjectionMatrix(arcore_session_.get(), arcore_camera.get(), near,
                                far, matrix_4x4);
@@ -219,7 +219,7 @@ gfx::Transform ARCoreImpl::GetProjectionMatrix(float near, float far) {
 }
 
 // TODO(835948): remove image-size
-bool ARCoreImpl::RequestHitTest(
+bool ArCoreImpl::RequestHitTest(
     const mojom::XRRayPtr& ray,
     const gfx::Size& image_size,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
@@ -240,7 +240,7 @@ bool ARCoreImpl::RequestHitTest(
     return false;
   }
 
-  // ARCore returns hit-results in sorted order, thus providing the guarantee
+  // ArCore returns hit-results in sorted order, thus providing the guarantee
   // of sorted results promised by the WebXR spec for requestHitTest().
   ArFrame_hitTest(arcore_session_.get(), arcore_frame_.get(),
                   screen_point.x() * image_size.width(),
@@ -317,7 +317,7 @@ bool ARCoreImpl::RequestHitTest(
 }
 
 // TODO(835948): remove this method.
-bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
+bool ArCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
                                            const gfx::Size& image_size,
                                            gfx::PointF* screen_point) {
   DCHECK(IsOnGlThread());
@@ -370,7 +370,7 @@ bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
   return true;
 }
 
-bool ARCoreImpl::IsOnGlThread() {
+bool ArCoreImpl::IsOnGlThread() {
   return gl_thread_task_runner_->BelongsToCurrentThread();
 }
 

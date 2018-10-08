@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 
 namespace device {
-class ARCoreDevice;
+class ArCoreDevice;
 }
 
 namespace vr {
@@ -19,7 +19,7 @@ class ArCoreJavaUtils {
  public:
   static base::android::ScopedJavaLocalRef<jobject> GetApplicationContext();
   static bool EnsureLoaded();
-  explicit ArCoreJavaUtils(device::ARCoreDevice* arcore_device);
+  explicit ArCoreJavaUtils(device::ArCoreDevice* arcore_device);
   ~ArCoreJavaUtils();
   bool ShouldRequestInstallArModule();
   void RequestInstallArModule();
@@ -37,7 +37,7 @@ class ArCoreJavaUtils {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  device::ARCoreDevice* arcore_device_;
+  device::ArCoreDevice* arcore_device_;
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
 };
 

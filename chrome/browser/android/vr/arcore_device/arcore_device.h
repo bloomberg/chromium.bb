@@ -28,12 +28,12 @@ class WebContents;
 
 namespace device {
 
-class ARCoreGlThread;
+class ArCoreGlThread;
 
-class ARCoreDevice : public VRDeviceBase {
+class ArCoreDevice : public VRDeviceBase {
  public:
-  ARCoreDevice();
-  ~ARCoreDevice() override;
+  ArCoreDevice();
+  ~ArCoreDevice() override;
 
   // VRDeviceBase implementation.
   void PauseTracking() override;
@@ -42,12 +42,12 @@ class ARCoreDevice : public VRDeviceBase {
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
-  base::WeakPtr<ARCoreDevice> GetWeakPtr() {
+  base::WeakPtr<ArCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
   void OnRequestInstallArModuleResult(bool success);
-  void OnRequestInstallSupportedARCoreCanceled();
+  void OnRequestInstallSupportedArCoreCanceled();
 
  private:
   // VRDeviceBase implementation
@@ -60,7 +60,7 @@ class ARCoreDevice : public VRDeviceBase {
       override;
 
   void OnMailboxBridgeReady();
-  void OnARCoreGlThreadInitialized();
+  void OnArCoreGlThreadInitialized();
   void OnRequestCameraPermissionComplete(
       bool success);
 
@@ -76,7 +76,7 @@ class ARCoreDevice : public VRDeviceBase {
   template <typename... Args>
   base::OnceCallback<void(Args...)> CreateMainThreadCallback(
       base::OnceCallback<void(Args...)> callback) {
-    return base::BindOnce(&ARCoreDevice::RunCallbackOnTaskRunner<Args...>,
+    return base::BindOnce(&ArCoreDevice::RunCallbackOnTaskRunner<Args...>,
                           main_thread_task_runner_, std::move(callback));
   }
 
@@ -110,12 +110,11 @@ class ARCoreDevice : public VRDeviceBase {
       base::OnceCallback<void(bool)> callback,
       bool was_android_camera_permission_granted);
   void RequestArCoreGlInitialization();
-  void OnARCoreGlInitializationComplete(
-      bool success);
+  void OnArCoreGlInitializationComplete(bool success);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
-  std::unique_ptr<ARCoreGlThread> arcore_gl_thread_;
+  std::unique_ptr<ArCoreGlThread> arcore_gl_thread_;
   std::unique_ptr<vr::ArCoreJavaUtils> arcore_java_utils_;
 
   bool is_arcore_gl_thread_initialized_ = false;
@@ -140,8 +139,8 @@ class ARCoreDevice : public VRDeviceBase {
   base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
 
   // Must be last.
-  base::WeakPtrFactory<ARCoreDevice> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ARCoreDevice);
+  base::WeakPtrFactory<ArCoreDevice> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ArCoreDevice);
 };
 
 }  // namespace device
