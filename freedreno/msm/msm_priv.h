@@ -57,6 +57,17 @@ struct msm_pipe {
 	uint32_t gmem;
 	uint32_t chip_id;
 	uint32_t queue_id;
+
+	/* Allow for sub-allocation of stateobj ring buffers (ie. sharing
+	 * the same underlying bo)..
+	 *
+	 * This takes advantage of each context having it's own fd_pipe,
+	 * so we don't have to worry about access from multiple threads.
+	 *
+	 * We also rely on previous stateobj having been fully constructed
+	 * so we can reclaim extra space at it's end.
+	 */
+	struct fd_ringbuffer *suballoc_ring;
 };
 
 static inline struct msm_pipe * to_msm_pipe(struct fd_pipe *x)

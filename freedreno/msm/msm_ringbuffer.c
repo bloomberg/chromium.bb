@@ -85,6 +85,8 @@ struct msm_ringbuffer {
 	int is_growable;
 	unsigned cmd_count;
 
+	unsigned offset;    /* for sub-allocated stateobj rb's */
+
 	unsigned seqno;
 
 	/* maps fd_bo to idx: */
@@ -100,6 +102,13 @@ static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
 
 static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
 
+static struct msm_cmd *current_cmd(struct fd_ringbuffer *ring)
+{
+	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
+	assert(!LIST_IS_EMPTY(&msm_ring->cmd_list));
+	return LIST_LAST_ENTRY(&msm_ring->cmd_list, struct msm_cmd, list);
+}
+
 static void ring_cmd_del(struct msm_cmd *cmd)
 {
 	fd_bo_del(cmd->ring_bo);
@@ -109,7 +118,8 @@ static void ring_cmd_del(struct msm_cmd *cmd)
 	free(cmd);
 }
 
-static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
+static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size,
+		enum fd_ringbuffer_flags flags)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct msm_cmd *cmd = calloc(1, sizeof(*cmd));
@@ -118,7 +128,48 @@ static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
 		return NULL;
 
 	cmd->ring = ring;
-	cmd->ring_bo = fd_bo_new_ring(ring->pipe->dev, size, 0);
+
+	/* TODO separate suballoc buffer for small non-streaming state, using
+	 * smaller page-sized backing bo's.
+	 */
+	if (flags & FD_RINGBUFFER_STREAMING) {
+		struct msm_pipe *msm_pipe = to_msm_pipe(ring->pipe);
+		unsigned suballoc_offset = 0;
+		struct fd_bo *suballoc_bo = NULL;
+
+		if (msm_pipe->suballoc_ring) {
+			struct msm_ringbuffer *suballoc_ring = to_msm_ringbuffer(msm_pipe->suballoc_ring);
+
+			assert(msm_pipe->suballoc_ring->flags & FD_RINGBUFFER_OBJECT);
+			assert(suballoc_ring->cmd_count == 1);
+
+			suballoc_bo = current_cmd(msm_pipe->suballoc_ring)->ring_bo;
+
+			suballoc_offset = fd_ringbuffer_size(msm_pipe->suballoc_ring) +
+					suballoc_ring->offset;
+
+			suballoc_offset = ALIGN(suballoc_offset, 0x10);
+
+			if ((size + suballoc_offset) > suballoc_bo->size) {
+				suballoc_bo = NULL;
+			}
+		}
+
+		if (!suballoc_bo) {
+			cmd->ring_bo = fd_bo_new_ring(ring->pipe->dev, 0x8000, 0);
+			msm_ring->offset = 0;
+		} else {
+			cmd->ring_bo = fd_bo_ref(suballoc_bo);
+			msm_ring->offset = suballoc_offset;
+		}
+
+		if (msm_pipe->suballoc_ring)
+			fd_ringbuffer_del(msm_pipe->suballoc_ring);
+
+		msm_pipe->suballoc_ring = fd_ringbuffer_ref(ring);
+	} else {
+		cmd->ring_bo = fd_bo_new_ring(ring->pipe->dev, size, 0);
+	}
 	if (!cmd->ring_bo)
 		goto fail;
 
@@ -130,13 +181,6 @@ static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
 fail:
 	ring_cmd_del(cmd);
 	return NULL;
-}
-
-static struct msm_cmd *current_cmd(struct fd_ringbuffer *ring)
-{
-	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	assert(!LIST_IS_EMPTY(&msm_ring->cmd_list));
-	return LIST_LAST_ENTRY(&msm_ring->cmd_list, struct msm_cmd, list);
 }
 
 static uint32_t append_bo(struct fd_ringbuffer *ring, struct fd_bo *bo)
@@ -238,7 +282,9 @@ static int get_cmd(struct fd_ringbuffer *ring, struct msm_cmd *target_cmd,
 
 static void * msm_ringbuffer_hostptr(struct fd_ringbuffer *ring)
 {
-	return fd_bo_map(current_cmd(ring)->ring_bo);
+	struct msm_cmd *cmd = current_cmd(ring);
+	uint8_t *base = fd_bo_map(cmd->ring_bo);
+	return base + to_msm_ringbuffer(ring)->offset;
 }
 
 static uint32_t find_next_reloc_idx(struct msm_cmd *msm_cmd,
@@ -374,9 +420,10 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		int in_fence_fd, int *out_fence_fd)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
+	struct msm_pipe *msm_pipe = to_msm_pipe(ring->pipe);
 	struct drm_msm_gem_submit req = {
-			.flags = to_msm_pipe(ring->pipe)->pipe,
-			.queueid = to_msm_pipe(ring->pipe)->queue_id,
+			.flags = msm_pipe->pipe,
+			.queueid = msm_pipe->queue_id,
 	};
 	uint32_t i;
 	int ret;
@@ -464,7 +511,7 @@ static void msm_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t size)
 {
 	assert(to_msm_ringbuffer(ring)->is_growable);
 	finalize_current_cmd(ring, ring->last_start);
-	ring_cmd_new(ring, size);
+	ring_cmd_new(ring, size, 0);
 }
 
 static void msm_ringbuffer_reset(struct fd_ringbuffer *ring)
@@ -488,7 +535,8 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	reloc->reloc_offset = r->offset;
 	reloc->or = r->or;
 	reloc->shift = r->shift;
-	reloc->submit_offset = offset_bytes(ring->cur, ring->start);
+	reloc->submit_offset = offset_bytes(ring->cur, ring->start) +
+			to_msm_ringbuffer(ring)->offset;
 
 	addr = msm_bo->presumed;
 	if (reloc->shift < 0)
@@ -513,7 +561,8 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 		reloc_hi->reloc_offset = r->offset;
 		reloc_hi->or = r->orhi;
 		reloc_hi->shift = r->shift - 32;
-		reloc_hi->submit_offset = offset_bytes(ring->cur, ring->start);
+		reloc_hi->submit_offset = offset_bytes(ring->cur, ring->start) +
+				to_msm_ringbuffer(ring)->offset;
 
 		addr = msm_bo->presumed >> 32;
 		if (reloc_hi->shift < 0)
@@ -529,10 +578,13 @@ static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		uint32_t submit_offset, uint32_t size)
 {
 	struct msm_cmd *cmd = NULL;
+	struct msm_ringbuffer *msm_target = to_msm_ringbuffer(target);
 	uint32_t idx = 0;
 	int added_cmd = FALSE;
 
-	LIST_FOR_EACH_ENTRY(cmd, &to_msm_ringbuffer(target)->cmd_list, list) {
+	submit_offset += msm_target->offset;
+
+	LIST_FOR_EACH_ENTRY(cmd, &msm_target->cmd_list, list) {
 		if (idx == cmd_idx)
 			break;
 		idx++;
@@ -540,7 +592,7 @@ static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 
 	assert(cmd && (idx == cmd_idx));
 
-	if (idx < (to_msm_ringbuffer(target)->cmd_count - 1)) {
+	if (idx < (msm_target->cmd_count - 1)) {
 		/* All but the last cmd buffer is fully "baked" (ie. already has
 		 * done get_cmd() to add it to the cmds table).  But in this case,
 		 * the size we get is invalid (since it is calculated from the
@@ -628,7 +680,7 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 	ring->size = size;
 	ring->pipe = pipe;   /* needed in ring_cmd_new() */
 
-	ring_cmd_new(ring, size);
+	ring_cmd_new(ring, size, flags);
 
 	return ring;
 }

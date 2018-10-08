@@ -46,6 +46,20 @@ enum fd_ringbuffer_flags {
 	 * to a parent ringbuffer.
 	 */
 	FD_RINGBUFFER_OBJECT = 0x1,
+
+	/* Hint that the stateobj will be used for streaming state
+	 * that is used once or a few times and then discarded.
+	 *
+	 * For sub-allocation, non streaming stateobj's should be
+	 * sub-allocated from a page size buffer, so one long lived
+	 * state obj doesn't prevent other pages from being freed.
+	 * (Ie. it would be no worse than allocating a page sized
+	 * bo for each small non-streaming stateobj).
+	 *
+	 * But streaming stateobj's could be sub-allocated from a
+	 * larger buffer to reduce the alloc/del overhead.
+	 */
+	FD_RINGBUFFER_STREAMING = 0x2,
 };
 
 struct fd_ringbuffer {
