@@ -41,10 +41,10 @@ using DataBlock = void (^)(scoped_refptr<net::IOBufferWithSize> buffer,
 
 // Translates an CFNetwork error code to a net error code. Returns 0 if |error|
 // is nil.
-int GetNetErrorCodeFromNSError(NSError* error) {
+int GetNetErrorCodeFromNSError(NSError* error, NSURL* url) {
   int error_code = 0;
   if (error) {
-    if (!web::GetNetErrorFromIOSErrorCode(error.code, &error_code)) {
+    if (!web::GetNetErrorFromIOSErrorCode(error.code, &error_code, url)) {
       error_code = net::ERR_FAILED;
     }
   }
@@ -337,7 +337,8 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
           return;
         }
 
-        error_code_ = GetNetErrorCodeFromNSError(error);
+        error_code_ =
+            GetNetErrorCodeFromNSError(error, task.currentRequest.URL);
         percent_complete_ = GetTaskPercentComplete(task);
         received_bytes_ = task.countOfBytesReceived;
         if (total_bytes_ == -1 || task.countOfBytesExpectedToReceive) {
