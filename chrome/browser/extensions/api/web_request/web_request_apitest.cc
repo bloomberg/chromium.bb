@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -974,14 +975,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // frames, this shouldn't show up as a blocked action.
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
 
-  // If we revoke the extension's tab permissions, it should no longer receive
-  // webRequest events.
+  // Revoke the extension's tab permissions.
   ActiveTabPermissionGranter* granter =
       TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
   ASSERT_TRUE(granter);
   granter->RevokeForTesting();
   base::RunLoop().RunUntilIdle();
+
+  // The extension should no longer receive webRequest events since they are
+  // withheld. The extension icon should get updated to show the wants-to-run
+  // badge UI.
+  TestExtensionActionAPIObserver action_updated_waiter(profile(),
+                                                       extension->id());
   PerformXhrInFrame(main_frame, kHost, port, kXhrPath);
+  action_updated_waiter.Wait();
+  EXPECT_EQ(web_contents, action_updated_waiter.last_web_contents());
+
   EXPECT_EQ(xhr_count,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));

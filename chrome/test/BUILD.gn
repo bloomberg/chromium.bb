@@ -1239,6 +1239,8 @@ test("browser_tests") {
         "../browser/extensions/api/extension_action/browser_action_browsertest.cc",
         "../browser/extensions/api/extension_action/extension_action_apitest.cc",
         "../browser/extensions/api/extension_action/page_action_apitest.cc",
+        "../browser/extensions/api/extension_action/test_extension_action_api_observer.cc",
+        "../browser/extensions/api/extension_action/test_extension_action_api_observer.h",
         "../browser/extensions/api/feedback_private/feedback_browsertest.cc",
         "../browser/extensions/api/file_system/file_system_apitest.cc",
         "../browser/extensions/api/file_system/file_system_apitest_chromeos.cc",
