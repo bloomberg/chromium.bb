@@ -170,6 +170,13 @@ class LoadHackerNewsDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadHackerNewsDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:hackernews:2018'
+  URL = 'https://news.ycombinator.com'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadNytimesDesktopStory(_LoadingStory):
   NAME = 'load:news:nytimes'
   URL = 'http://www.nytimes.com'
