@@ -727,16 +727,24 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // don't use containingBlockLogicalWidthForContent() here, but instead
   // explicitly call availableWidth on our containing block.
   // https://drafts.csswg.org/css-position-3/#rel-pos
+  // However for grid items the containing block is the grid area, so offsets
+  // should be resolved against that:
+  // https://drafts.csswg.org/css-grid/#grid-item-sizing
   base::Optional<LayoutUnit> left;
   base::Optional<LayoutUnit> right;
-  if (!StyleRef().Left().IsAuto()) {
-    left =
-        ValueForLength(StyleRef().Left(), containing_block->AvailableWidth());
+  LayoutUnit available_width = containing_block->AvailableWidth();
+  LayoutUnit available_height = containing_block->AvailableHeight();
+  bool has_override_containing_block_content = false;
+  if (HasOverrideContainingBlockContentWidth()) {
+    DCHECK(HasOverrideContainingBlockContentHeight());
+    has_override_containing_block_content = true;
+    available_width = OverrideContainingBlockContentWidth();
+    available_height = OverrideContainingBlockContentHeight();
   }
-  if (!StyleRef().Right().IsAuto()) {
-    right =
-        ValueForLength(StyleRef().Right(), containing_block->AvailableWidth());
-  }
+  if (!StyleRef().Left().IsAuto())
+    left = ValueForLength(StyleRef().Left(), available_width);
+  if (!StyleRef().Right().IsAuto())
+    right = ValueForLength(StyleRef().Right(), available_width);
   if (!left && !right) {
     left = LayoutUnit();
     right = LayoutUnit();
@@ -771,21 +779,24 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // <html> and <body> assume the size of the viewport. In this case, calculate
   // the percent offset based on this height.
   // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
+  // Another exception is a grid item, as the containing block is the grid area:
+  // https://drafts.csswg.org/css-grid/#grid-item-sizing
 
   base::Optional<LayoutUnit> top;
   base::Optional<LayoutUnit> bottom;
   if (!StyleRef().Top().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Top().IsPercentOrCalc() ||
-       containing_block->StretchesToViewport())) {
-    top = ValueForLength(StyleRef().Top(), containing_block->AvailableHeight());
+       containing_block->StretchesToViewport() ||
+       has_override_containing_block_content)) {
+    top = ValueForLength(StyleRef().Top(), available_height);
   }
   if (!StyleRef().Bottom().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Bottom().IsPercentOrCalc() ||
-       containing_block->StretchesToViewport())) {
-    bottom = ValueForLength(StyleRef().Bottom(),
-                            containing_block->AvailableHeight());
+       containing_block->StretchesToViewport() ||
+       has_override_containing_block_content)) {
+    bottom = ValueForLength(StyleRef().Bottom(), available_height);
   }
   if (!top && !bottom) {
     top = LayoutUnit();

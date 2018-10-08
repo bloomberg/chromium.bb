@@ -1298,13 +1298,9 @@ void LayoutGrid::LayoutGridItems() {
     // paint them even if the grid-area is not visible. Using physical
     // dimensions for simplicity, so we can forget about orthogonalty.
     LayoutUnit child_grid_area_height =
-        IsHorizontalWritingMode()
-            ? child->OverrideContainingBlockContentLogicalHeight()
-            : child->OverrideContainingBlockContentLogicalWidth();
+        child->OverrideContainingBlockContentHeight();
     LayoutUnit child_grid_area_width =
-        IsHorizontalWritingMode()
-            ? child->OverrideContainingBlockContentLogicalWidth()
-            : child->OverrideContainingBlockContentLogicalHeight();
+        child->OverrideContainingBlockContentWidth();
     LayoutRect grid_area_rect(
         GridAreaLogicalPosition(area),
         LayoutSize(child_grid_area_width, child_grid_area_height));
