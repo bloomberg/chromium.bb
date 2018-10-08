@@ -63,26 +63,26 @@ struct ScrollSnapType {
 
 struct ScrollSnapAlign {
   ScrollSnapAlign()
-      : alignment_inline(SnapAlignment::kNone),
-        alignment_block(SnapAlignment::kNone) {}
+      : alignment_block(SnapAlignment::kNone),
+        alignment_inline(SnapAlignment::kNone) {}
 
   explicit ScrollSnapAlign(SnapAlignment alignment)
-      : alignment_inline(alignment), alignment_block(alignment) {}
+      : alignment_block(alignment), alignment_inline(alignment) {}
 
-  ScrollSnapAlign(SnapAlignment i, SnapAlignment b)
-      : alignment_inline(i), alignment_block(b) {}
+  ScrollSnapAlign(SnapAlignment b, SnapAlignment i)
+      : alignment_block(b), alignment_inline(i) {}
 
   bool operator==(const ScrollSnapAlign& other) const {
-    return alignment_inline == other.alignment_inline &&
-           alignment_block == other.alignment_block;
+    return alignment_block == other.alignment_block &&
+           alignment_inline == other.alignment_inline;
   }
 
   bool operator!=(const ScrollSnapAlign& other) const {
     return !(*this == other);
   }
 
-  SnapAlignment alignment_inline;
   SnapAlignment alignment_block;
+  SnapAlignment alignment_inline;
 };
 
 // We should really use gfx::RangeF. However, it includes windows.h which would

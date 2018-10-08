@@ -32,7 +32,7 @@ PASS Property scroll-padding-right does not inherit
 FAIL Property scroll-padding-top has initial value 0px assert_equals: expected "0px" but got "auto"
 PASS Property scroll-padding-top does not inherit
 PASS Property scroll-snap-align has initial value none
-FAIL Property scroll-snap-align does not inherit assert_equals: expected "start end" but got "end start"
+PASS Property scroll-snap-align does not inherit
 PASS Property scroll-snap-stop has initial value normal
 PASS Property scroll-snap-stop does not inherit
 PASS Property scroll-snap-type has initial value none

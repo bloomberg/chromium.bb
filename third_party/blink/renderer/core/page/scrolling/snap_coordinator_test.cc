@@ -620,10 +620,10 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
       ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
-  // Under vertical-rl writing mode, 'start' should align to the right, so the
-  // alignment on x should be reversed.
+  // Under vertical-rl writing mode, 'start' should align to the right
+  // and 'end' should align to the left.
   SnapAreaData expected_area(
-      ScrollSnapAlign(SnapAlignment::kEnd, SnapAlignment::kStart),
+      ScrollSnapAlign(SnapAlignment::kStart, SnapAlignment::kEnd),
       gfx::RectF(192, 192, 116, 116), false);
   expected_container.AddSnapAreaData(expected_area);
 
