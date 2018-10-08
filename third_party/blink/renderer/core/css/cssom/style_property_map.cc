@@ -40,14 +40,23 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
 
 const CSSValue* StyleValueToCSSValue(
     const CSSProperty& property,
+    const AtomicString& custom_property_name,
     const PropertyRegistration* registration,
     const CSSStyleValue& style_value,
     const ExecutionContext& execution_context) {
-  const CSSPropertyID property_id = property.PropertyID();
-  if (!CSSOMTypes::PropertyCanTake(property_id, registration, style_value))
-    return nullptr;
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
+            !custom_property_name.IsNull());
 
-  if (style_value.GetType() == CSSStyleValue::kUnknownType) {
+  const CSSPropertyID property_id = property.PropertyID();
+  if (!CSSOMTypes::PropertyCanTake(property_id, custom_property_name,
+                                   registration, style_value)) {
+    return nullptr;
+  }
+
+  if (style_value.GetType() == CSSStyleValue::kUnknownType &&
+      // Registered custom properties must enter the CSSPropertyVariable
+      // switch-case below, for proper parsing according to registered syntax.
+      !(property_id == CSSPropertyVariable && registration)) {
     return CSSParser::ParseSingleValue(
         property.PropertyID(), style_value.toString(),
         CSSParserContext::Create(execution_context));
@@ -194,35 +203,41 @@ const CSSValue* StyleValueToCSSValue(
 
 const CSSValue* CoerceStyleValueOrString(
     const CSSProperty& property,
+    const AtomicString& custom_property_name,
     const PropertyRegistration* registration,
     const CSSStyleValueOrString& value,
     const ExecutionContext& execution_context) {
   DCHECK(!property.IsRepeated());
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
+            !custom_property_name.IsNull());
 
   if (value.IsCSSStyleValue()) {
     if (!value.GetAsCSSStyleValue())
       return nullptr;
 
-    return StyleValueToCSSValue(property, registration,
+    return StyleValueToCSSValue(property, custom_property_name, registration,
                                 *value.GetAsCSSStyleValue(), execution_context);
   } else {
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
-        property.PropertyID(), registration, value.GetAsString(),
-        CSSParserContext::Create(execution_context));
+        property.PropertyID(), custom_property_name, registration,
+        value.GetAsString(), CSSParserContext::Create(execution_context));
     if (values.size() != 1U)
       return nullptr;
 
-    return StyleValueToCSSValue(property, registration, *values[0],
-                                execution_context);
+    return StyleValueToCSSValue(property, custom_property_name, registration,
+                                *values[0], execution_context);
   }
 }
 
 const CSSValue* CoerceStyleValuesOrStrings(
     const CSSProperty& property,
+    const AtomicString& custom_property_name,
     const HeapVector<CSSStyleValueOrString>& values,
     const ExecutionContext& execution_context) {
   DCHECK(property.IsRepeated());
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
+            !custom_property_name.IsNull());
   if (values.IsEmpty())
     return nullptr;
 
@@ -234,22 +249,25 @@ const CSSValue* CoerceStyleValuesOrStrings(
       if (!value.GetAsCSSStyleValue())
         return nullptr;
 
-      css_values.push_back(StyleValueToCSSValue(
-          property, nullptr, *value.GetAsCSSStyleValue(), execution_context));
+      css_values.push_back(
+          StyleValueToCSSValue(property, custom_property_name, nullptr,
+                               *value.GetAsCSSStyleValue(), execution_context));
     } else {
       DCHECK(value.IsString());
       if (!parser_context)
         parser_context = CSSParserContext::Create(execution_context);
 
       const auto subvalues = StyleValueFactory::FromString(
-          property.PropertyID(), nullptr, value.GetAsString(), parser_context);
+          property.PropertyID(), custom_property_name, nullptr,
+          value.GetAsString(), parser_context);
       if (subvalues.IsEmpty())
         return nullptr;
 
       for (const auto& subvalue : subvalues) {
         DCHECK(subvalue);
-        css_values.push_back(StyleValueToCSSValue(property, nullptr, *subvalue,
-                                                  execution_context));
+        css_values.push_back(
+            StyleValueToCSSValue(property, custom_property_name, nullptr,
+                                 *subvalue, execution_context));
       }
     }
   }
@@ -290,8 +308,8 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     String css_text;
     if (values[0].IsCSSStyleValue()) {
       CSSStyleValue* style_value = values[0].GetAsCSSStyleValue();
-      if (style_value &&
-          CSSOMTypes::PropertyCanTake(property_id, nullptr, *style_value)) {
+      if (style_value && CSSOMTypes::PropertyCanTake(property_id, g_null_atom,
+                                                     nullptr, *style_value)) {
         css_text = style_value->toString();
       }
     } else {
@@ -306,22 +324,28 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
+  AtomicString custom_property_name = (property_id == CSSPropertyVariable)
+                                          ? AtomicString(property_name)
+                                          : g_null_atom;
+
   const PropertyRegistration* registration = nullptr;
 
   if (property_id == CSSPropertyVariable && IsA<Document>(execution_context)) {
     const PropertyRegistry* registry =
         To<Document>(*execution_context).GetPropertyRegistry();
     if (registry) {
-      registration = registry->Registration(AtomicString(property_name));
+      registration = registry->Registration(custom_property_name);
     }
   }
 
   const CSSValue* result = nullptr;
   if (property.IsRepeated()) {
-    result = CoerceStyleValuesOrStrings(property, values, *execution_context);
+    result = CoerceStyleValuesOrStrings(property, custom_property_name, values,
+                                        *execution_context);
   } else if (values.size() == 1U) {
-    result = CoerceStyleValueOrString(property, registration, values[0],
-                                      *execution_context);
+    result =
+        CoerceStyleValueOrString(property, custom_property_name, registration,
+                                 values[0], *execution_context);
   }
 
   if (!result) {
@@ -330,7 +354,7 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
   }
 
   if (property_id == CSSPropertyVariable)
-    SetCustomProperty(AtomicString(property_name), *result);
+    SetCustomProperty(custom_property_name, *result);
   else
     SetProperty(property_id, *result);
 }
@@ -369,8 +393,10 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     current_value = CssValueListForPropertyID(property_id);
   }
 
-  const CSSValue* result =
-      CoerceStyleValuesOrStrings(property, values, *execution_context);
+  // TODO(andruud): Don't pass g_null_atom as custom property name
+  // once appending to custom properties is supported.
+  const CSSValue* result = CoerceStyleValuesOrStrings(
+      property, g_null_atom, values, *execution_context);
   if (!result || !result->IsValueList()) {
     exception_state.ThrowTypeError("Invalid type for property");
     return;

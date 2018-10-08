@@ -70,9 +70,13 @@ CSSStyleValue* StylePropertyMapReadOnly::get(
   if (property.IsShorthand())
     return GetShorthandProperty(property);
 
+  AtomicString custom_property_name = property_id == CSSPropertyVariable
+                                          ? AtomicString(property_name)
+                                          : g_null_atom;
+
   const CSSValue* value =
       (property_id == CSSPropertyVariable)
-          ? GetCustomProperty(*execution_context, AtomicString(property_name))
+          ? GetCustomProperty(*execution_context, custom_property_name)
           : GetProperty(property_id);
   if (!value)
     return nullptr;
@@ -80,12 +84,13 @@ CSSStyleValue* StylePropertyMapReadOnly::get(
   // Custom properties count as repeated whenever we have a CSSValueList.
   if (property.IsRepeated() ||
       (property_id == CSSPropertyVariable && value->IsValueList())) {
-    CSSStyleValueVector values =
-        StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
+    CSSStyleValueVector values = StyleValueFactory::CssValueToStyleValueVector(
+        property_id, custom_property_name, *value);
     return values.IsEmpty() ? nullptr : values[0];
   }
 
-  return StyleValueFactory::CssValueToStyleValue(property_id, *value);
+  return StyleValueFactory::CssValueToStyleValue(property_id,
+                                                 custom_property_name, *value);
 }
 
 CSSStyleValueVector StylePropertyMapReadOnly::getAll(
@@ -107,14 +112,19 @@ CSSStyleValueVector StylePropertyMapReadOnly::getAll(
     return values;
   }
 
+  AtomicString custom_property_name = property_id == CSSPropertyVariable
+                                          ? AtomicString(property_name)
+                                          : g_null_atom;
+
   const CSSValue* value =
       (property_id == CSSPropertyVariable)
-          ? GetCustomProperty(*execution_context, AtomicString(property_name))
+          ? GetCustomProperty(*execution_context, custom_property_name)
           : GetProperty(property_id);
   if (!value)
     return CSSStyleValueVector();
 
-  return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
+  return StyleValueFactory::CssValueToStyleValueVector(
+      property_id, custom_property_name, *value);
 }
 
 bool StylePropertyMapReadOnly::has(const ExecutionContext* execution_context,
@@ -131,8 +141,12 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
                             const CSSValue& css_value) {
     const auto property_id = cssPropertyID(property_name);
 
-    auto values =
-        StyleValueFactory::CssValueToStyleValueVector(property_id, css_value);
+    AtomicString custom_property_name = property_id == CSSPropertyVariable
+                                            ? AtomicString(property_name)
+                                            : g_null_atom;
+
+    auto values = StyleValueFactory::CssValueToStyleValueVector(
+        property_id, custom_property_name, css_value);
     result.emplace_back(property_name, std::move(values));
   });
 
@@ -145,7 +159,8 @@ CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
   const auto serialization = SerializationForShorthand(property);
   if (serialization.IsEmpty())
     return nullptr;
-  return CSSUnsupportedStyleValue::Create(property.PropertyID(), serialization);
+  return CSSUnsupportedStyleValue::Create(property.PropertyID(), g_null_atom,
+                                          serialization);
 }
 
 const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
