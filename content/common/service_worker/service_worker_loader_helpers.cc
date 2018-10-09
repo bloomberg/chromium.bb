@@ -136,17 +136,23 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
     uint64_t blob_size,
     base::OnceCallback<void(int)> on_blob_read_complete,
     mojo::ScopedDataPipeConsumerHandle* handle_out) {
-  // TODO(falken): Change to CreateDataPipe() and return an error if allocation
-  // failed.
-  mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity(blob_size));
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = blink::BlobUtils::GetDataPipeCapacity(blob_size);
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  MojoResult rv = mojo::CreateDataPipe(&options, &producer_handle, handle_out);
+  if (rv != MOJO_RESULT_OK)
+    return net::ERR_FAILED;
+
   blink::mojom::BlobReaderClientPtr blob_reader_client;
   mojo::MakeStrongBinding(
       std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),
       mojo::MakeRequest(&blob_reader_client));
 
-  (*blob)->ReadAll(std::move(data_pipe.producer_handle),
-                   std::move(blob_reader_client));
-  *handle_out = std::move(data_pipe.consumer_handle);
+  (*blob)->ReadAll(std::move(producer_handle), std::move(blob_reader_client));
   return net::OK;
 }
 
