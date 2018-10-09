@@ -517,7 +517,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/ListItem.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListItemModel.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/CustomViewHolder.java",
-  "java/src/org/chromium/chrome/browser/download/home/list/holder/DateViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/GenericViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/ImageViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/InProgressImageViewHolder.java",

@@ -15,11 +15,11 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.ListUtils;
+import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
 import java.util.ArrayList;
@@ -30,8 +30,11 @@ import java.util.List;
  * A {@link ViewHolder} specifically meant to display a section header.
  */
 public class SectionTitleViewHolder extends ListItemViewHolder implements ListMenuButton.Delegate {
+    private final TextView mDate;
     private final TextView mTitle;
     private final ListMenuButton mMore;
+    private final View mTopSpace;
+    private final View mBottomSpace;
 
     private Runnable mShareCallback;
     private Runnable mDeleteCallback;
@@ -51,8 +54,11 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
 
     private SectionTitleViewHolder(View view) {
         super(view);
+        mDate = (TextView) view.findViewById(R.id.date);
         mTitle = (TextView) view.findViewById(R.id.title);
         mMore = (ListMenuButton) view.findViewById(R.id.more);
+        mTopSpace = view.findViewById(R.id.top_space);
+        mBottomSpace = view.findViewById(R.id.bottom_space);
         if (mMore != null) mMore.setDelegate(this);
     }
 
@@ -62,30 +68,19 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         SectionHeaderListItem sectionItem = (SectionHeaderListItem) item;
         mTitle.setText(ListUtils.getTextForSection(sectionItem.filter));
 
-        boolean isPhoto = sectionItem.filter == OfflineItemFilter.FILTER_IMAGE;
-        Resources resources = itemView.getContext().getResources();
-
-        int paddingTop = resources.getDimensionPixelSize(isPhoto
-                        ? R.dimen.download_manager_section_title_padding_image
-                        : R.dimen.download_manager_section_title_padding_top);
-        int paddingBottom = resources.getDimensionPixelSize(isPhoto
-                        ? R.dimen.download_manager_section_title_padding_image
-                        : R.dimen.download_manager_section_title_padding_bottom);
-
-        if (sectionItem.isFirstSectionOfDay) {
-            paddingTop = resources.getDimensionPixelSize(
-                    R.dimen.download_manager_section_title_padding_top_condensed);
+        if (sectionItem.showDate) {
+            mDate.setText(UiUtils.dateToHeaderString(sectionItem.date));
         }
 
-        mTitle.setPadding(
-                mTitle.getPaddingLeft(), paddingTop, mTitle.getPaddingRight(), paddingBottom);
-
-        if (mMore != null) mMore.setVisibility(isPhoto ? View.VISIBLE : View.GONE);
+        updateTopBottomSpacing(sectionItem.showMenu);
+        mDate.setVisibility(sectionItem.showDate ? View.VISIBLE : View.GONE);
+        mTitle.setVisibility((sectionItem.showTitle ? View.VISIBLE : View.GONE));
+        if (mMore != null) mMore.setVisibility(sectionItem.showMenu ? View.VISIBLE : View.GONE);
 
         mHasMultipleItems = sectionItem.items.size() > 1;
         mCanSelectItems = !getCompletedItems(sectionItem.items).isEmpty();
 
-        if (isPhoto && mMore != null) {
+        if (sectionItem.showMenu && mMore != null) {
             assert sectionItem.items.size() > 0;
             mShareCallback = ()
                     -> properties.get(ListProperties.CALLBACK_SHARE)
@@ -135,6 +130,22 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         } else if (item.getTextId() == R.string.delete_group) {
             mDeleteAllCallback.run();
         }
+    }
+
+    private void updateTopBottomSpacing(boolean showMenu) {
+        Resources resources = itemView.getContext().getResources();
+        ViewGroup.LayoutParams topSpaceParams = mTopSpace.getLayoutParams();
+        ViewGroup.LayoutParams bottomSpaceParams = mBottomSpace.getLayoutParams();
+
+        topSpaceParams.height = resources.getDimensionPixelSize(showMenu
+                        ? R.dimen.download_manager_section_title_padding_image
+                        : R.dimen.download_manager_section_title_padding_top);
+        bottomSpaceParams.height = resources.getDimensionPixelSize(showMenu
+                        ? R.dimen.download_manager_section_title_padding_image
+                        : R.dimen.download_manager_section_title_padding_bottom);
+
+        mTopSpace.setLayoutParams(topSpaceParams);
+        mBottomSpace.setLayoutParams(bottomSpaceParams);
     }
 
     private static List<OfflineItem> getCompletedItems(Collection<OfflineItem> items) {

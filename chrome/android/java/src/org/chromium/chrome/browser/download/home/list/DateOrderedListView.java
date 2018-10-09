@@ -167,7 +167,8 @@ class DateOrderedListView {
                 case ListUtils.ViewType.IN_PROGRESS_VIDEO:
                     outRect.left = mPrefetchHorizontalPaddingPx;
                     outRect.right = mPrefetchHorizontalPaddingPx;
-                    outRect.bottom = mPrefetchHorizontalPaddingPx;
+                    outRect.top = mPrefetchVerticalPaddingPx / 2;
+                    outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     break;
                 case ListUtils.ViewType.PREFETCH:
                     outRect.left = mPrefetchHorizontalPaddingPx;
