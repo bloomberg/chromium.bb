@@ -85,18 +85,6 @@ template <int BITS> class MapSelector {
   typedef TCMalloc_PageMap3<BITS-kPageShift> Type;
 };
 
-#ifndef TCMALLOC_SMALL_BUT_SLOW
-// x86-64 and arm64 are using 48 bits of address space. So we can use
-// just two level map, but since initial ram consumption of this mode
-// is a bit on the higher side, we opt-out of it in
-// TCMALLOC_SMALL_BUT_SLOW mode.
-template <> class MapSelector<48> {
- public:
-  typedef TCMalloc_PageMap2<48-kPageShift> Type;
-};
-
-#endif // TCMALLOC_SMALL_BUT_SLOW
-
 // A two-level map for 32-bit machines
 template <> class MapSelector<32> {
  public:
