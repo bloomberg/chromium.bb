@@ -4,20 +4,20 @@
 
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 
-#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 
 namespace ui {
 
 const AXNodeData& AXPlatformNodeDelegateBase::GetData() const {
-  CR_DEFINE_STATIC_LOCAL(AXNodeData, empty_data, ());
-  return empty_data;
+  static base::NoDestructor<AXNodeData> empty_data;
+  return *empty_data;
 }
 
 const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(AXTreeData, empty_data, ());
-  return empty_data;
+  static base::NoDestructor<AXTreeData> empty_data;
+  return *empty_data;
 }
 
 gfx::NativeWindow AXPlatformNodeDelegateBase::GetTopLevelWidget() {
@@ -131,8 +131,8 @@ std::set<int32_t> AXPlatformNodeDelegateBase::GetReverseRelations(
 }
 
 const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
-  CR_DEFINE_STATIC_LOCAL(AXUniqueId, dummy_unique_id, ());
-  return dummy_unique_id;
+  static base::NoDestructor<AXUniqueId> dummy_unique_id;
+  return *dummy_unique_id;
 }
 
 }  // namespace ui

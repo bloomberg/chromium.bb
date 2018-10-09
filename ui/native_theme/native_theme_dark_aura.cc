@@ -9,8 +9,8 @@
 namespace ui {
 
 NativeThemeDarkAura* NativeThemeDarkAura::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeDarkAura, s_native_theme, ());
-  return &s_native_theme;
+  static base::NoDestructor<NativeThemeDarkAura> s_native_theme;
+  return s_native_theme.get();
 }
 
 SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {

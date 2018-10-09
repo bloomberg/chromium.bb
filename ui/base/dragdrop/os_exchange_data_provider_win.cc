@@ -18,6 +18,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
@@ -38,11 +39,9 @@
 namespace ui {
 
 static const Clipboard::FormatType& GetRendererTaintFormatType() {
-  CR_DEFINE_STATIC_LOCAL(
-      Clipboard::FormatType,
-      format,
-      (ui::Clipboard::GetFormatType("chromium/x-renderer-taint")));
-  return format;
+  static base::NoDestructor<Clipboard::FormatType> format(
+      ui::Clipboard::GetFormatType("chromium/x-renderer-taint"));
+  return *format;
 }
 
 // Creates a new STGMEDIUM object to hold the specified text. The caller

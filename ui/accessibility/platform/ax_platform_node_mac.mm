@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -289,8 +290,8 @@ ActionList BuildActionList() {
 }
 
 const ActionList& GetActionList() {
-  CR_DEFINE_STATIC_LOCAL(const ActionList, action_map, (BuildActionList()));
-  return action_map;
+  static const base::NoDestructor<ActionList> action_map(BuildActionList());
+  return *action_map;
 }
 
 void PostAnnouncementNotification(NSString* announcement) {
@@ -337,21 +338,21 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 @synthesize node = node_;
 
 + (NSString*)nativeRoleFromAXRole:(ax::mojom::Role)role {
-  CR_DEFINE_STATIC_LOCAL(const RoleMap, role_map, (BuildRoleMap()));
-  RoleMap::const_iterator it = role_map.find(role);
-  return it != role_map.end() ? it->second : NSAccessibilityUnknownRole;
+  static const base::NoDestructor<RoleMap> role_map(BuildRoleMap());
+  RoleMap::const_iterator it = role_map->find(role);
+  return it != role_map->end() ? it->second : NSAccessibilityUnknownRole;
 }
 
 + (NSString*)nativeSubroleFromAXRole:(ax::mojom::Role)role {
-  CR_DEFINE_STATIC_LOCAL(const RoleMap, subrole_map, (BuildSubroleMap()));
-  RoleMap::const_iterator it = subrole_map.find(role);
-  return it != subrole_map.end() ? it->second : nil;
+  static const base::NoDestructor<RoleMap> subrole_map(BuildSubroleMap());
+  RoleMap::const_iterator it = subrole_map->find(role);
+  return it != subrole_map->end() ? it->second : nil;
 }
 
 + (NSString*)nativeNotificationFromAXEvent:(ax::mojom::Event)event {
-  CR_DEFINE_STATIC_LOCAL(const EventMap, event_map, (BuildEventMap()));
-  EventMap::const_iterator it = event_map.find(event);
-  return it != event_map.end() ? it->second : nil;
+  static const base::NoDestructor<EventMap> event_map(BuildEventMap());
+  EventMap::const_iterator it = event_map->find(event);
+  return it != event_map->end() ? it->second : nil;
 }
 
 - (instancetype)initWithNode:(ui::AXPlatformNodeBase*)node {

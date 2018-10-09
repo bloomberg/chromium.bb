@@ -4,6 +4,7 @@
 
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 
+#include "base/no_destructor.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -31,9 +32,9 @@ int TooltipManagerMac::GetMaxWidth(const gfx::Point& location) const {
 }
 
 const gfx::FontList& TooltipManagerMac::GetFontList() const {
-  CR_DEFINE_STATIC_LOCAL(gfx::FontList, font_list,
-                         (gfx::Font([NSFont toolTipsFontOfSize:0])));
-  return font_list;
+  static base::NoDestructor<gfx::FontList> font_list(
+      []() { return gfx::Font([NSFont toolTipsFontOfSize:0]); }());
+  return *font_list;
 }
 
 void TooltipManagerMac::UpdateTooltip() {

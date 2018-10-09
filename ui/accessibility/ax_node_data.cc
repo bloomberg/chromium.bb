@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -309,9 +310,9 @@ bool AXNodeData::HasStringAttribute(
 
 const std::string& AXNodeData::GetStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::string, empty_string, ());
+  static base::NoDestructor<std::string> empty_string;
   auto iter = FindInVectorOfPairs(attribute, string_attributes);
-  return iter != string_attributes.end() ? iter->second : empty_string;
+  return iter != string_attributes.end() ? iter->second : *empty_string;
 }
 
 bool AXNodeData::GetStringAttribute(ax::mojom::StringAttribute attribute,
@@ -350,11 +351,11 @@ bool AXNodeData::HasIntListAttribute(
 
 const std::vector<int32_t>& AXNodeData::GetIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::vector<int32_t>, empty_vector, ());
+  static base::NoDestructor<std::vector<int32_t>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
   if (iter != intlist_attributes.end())
     return iter->second;
-  return empty_vector;
+  return *empty_vector;
 }
 
 bool AXNodeData::GetIntListAttribute(ax::mojom::IntListAttribute attribute,
@@ -376,11 +377,11 @@ bool AXNodeData::HasStringListAttribute(
 
 const std::vector<std::string>& AXNodeData::GetStringListAttribute(
     ax::mojom::StringListAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, empty_vector, ());
+  static base::NoDestructor<std::vector<std::string>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, stringlist_attributes);
   if (iter != stringlist_attributes.end())
     return iter->second;
-  return empty_vector;
+  return *empty_vector;
 }
 
 bool AXNodeData::GetStringListAttribute(

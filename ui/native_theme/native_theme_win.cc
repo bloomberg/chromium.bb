@@ -157,8 +157,8 @@ void NativeThemeWin::CloseHandles() {
 
 // static
 NativeThemeWin* NativeThemeWin::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeWin, s_native_theme, ());
-  return &s_native_theme;
+  static base::NoDestructor<NativeThemeWin> s_native_theme;
+  return s_native_theme.get();
 }
 
 gfx::Size NativeThemeWin::GetPartSize(Part part,
