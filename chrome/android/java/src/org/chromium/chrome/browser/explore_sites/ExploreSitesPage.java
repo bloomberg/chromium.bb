@@ -56,29 +56,32 @@ public class ExploreSitesPage extends BasicNativePage {
         int LOADING_NET = 4; // Retrieving catalog resources from internet.
     }
 
-    private final TabModelSelector mTabModelSelector;
+    private TabModelSelector mTabModelSelector;
     private NativePageHost mHost;
+    private Profile mProfile;
     private ViewGroup mView;
     private String mTitle;
     private PropertyModel mModel;
-    private CategoryCardAdapter mAdapter;
     private ContextMenuManager mContextMenuManager;
     private String mNavFragment;
+    private boolean mHasFetchedNetworkCatalog;
 
     /**
      * Create a new instance of the explore sites page.
      */
     public ExploreSitesPage(ChromeActivity activity, NativePageHost host) {
         super(activity, host);
-        mTabModelSelector = activity.getTabModelSelector();
     }
 
     @Override
     protected void initialize(ChromeActivity activity, final NativePageHost host) {
         mHost = host;
+        mTabModelSelector = activity.getTabModelSelector();
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
+        mProfile = mHost.getActiveTab().getProfile();
+        mHasFetchedNetworkCatalog = false;
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
                          .with(CATEGORY_LIST_KEY, new ListModel<ExploreSitesCategory>())
@@ -95,18 +98,17 @@ public class ExploreSitesPage extends BasicNativePage {
                                 context.getResources(), R.color.default_favicon_background_color),
                         context.getResources().getDimensionPixelSize(R.dimen.headline_size_medium));
 
-        Profile profile = host.getActiveTab().getProfile();
         NativePageNavigationDelegateImpl navDelegate =
-                new NativePageNavigationDelegateImpl(activity, profile, host, mTabModelSelector);
+                new NativePageNavigationDelegateImpl(activity, mProfile, host, mTabModelSelector);
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
                 () -> host.getActiveTab().getActivity().closeContextMenu();
-        mContextMenuManager = new ContextMenuManager(navDelegate, this ::setTouchEnabled,
+        mContextMenuManager = new ContextMenuManager(navDelegate, this::setTouchEnabled,
                 closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
         host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
-                mModel, layoutManager, iconGenerator, mContextMenuManager, navDelegate, profile);
+                mModel, layoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
         RecyclerView recyclerView =
                 (RecyclerView) mView.findViewById(R.id.explore_sites_category_recycler);
@@ -116,19 +118,24 @@ public class ExploreSitesPage extends BasicNativePage {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
-        ExploreSitesBridge.getEspCatalog(profile, this::translateToModel);
+        ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
         RecordUserAction.record("Android.ExploreSitesPage.Open");
 
         // TODO(chili): Set layout to be an observer of list model
     }
 
     private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
-        if (categoryList == null) {
+        // If list is null or we received an empty catalog from network, show error.
+        if (categoryList == null || (categoryList.isEmpty() && mHasFetchedNetworkCatalog)) {
             mModel.set(STATUS_KEY, CatalogLoadingState.ERROR);
             return;
         }
+        // If list is empty and we never fetched from network before, fetch from network.
         if (categoryList.isEmpty()) {
             mModel.set(STATUS_KEY, CatalogLoadingState.LOADING_NET);
+            mHasFetchedNetworkCatalog = true;
+            ExploreSitesBridge.updateCatalogFromNetwork(
+                    mProfile, /* isImmediateFetch =*/true, this::onUpdatedCatalog);
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
@@ -136,6 +143,14 @@ public class ExploreSitesPage extends BasicNativePage {
         categoryListModel.set(categoryList);
         if (mNavFragment != null) {
             lookupCategoryAndScroll(mNavFragment);
+        }
+    }
+
+    private void onUpdatedCatalog(Boolean hasFetchedCatalog) {
+        if (hasFetchedCatalog) {
+            ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
+        } else {
+            mModel.set(STATUS_KEY, CatalogLoadingState.ERROR);
         }
     }
 
@@ -163,7 +178,7 @@ public class ExploreSitesPage extends BasicNativePage {
         } catch (URISyntaxException e) {
             fragment = "";
         }
-        if (mModel.get(STATUS_KEY) == CatalogLoadingState.LOADING) {
+        if (mModel.get(STATUS_KEY) != CatalogLoadingState.SUCCESS) {
             mNavFragment = fragment;
         } else {
             lookupCategoryAndScroll(fragment);
