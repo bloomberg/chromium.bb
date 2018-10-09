@@ -18,8 +18,9 @@
 
 namespace device {
 
-FidoDeviceAuthenticator::FidoDeviceAuthenticator(FidoDevice* device)
-    : device_(device), weak_factory_(this) {}
+FidoDeviceAuthenticator::FidoDeviceAuthenticator(
+    std::unique_ptr<FidoDevice> device)
+    : device_(std::move(device)), weak_factory_(this) {}
 FidoDeviceAuthenticator::~FidoDeviceAuthenticator() = default;
 
 void FidoDeviceAuthenticator::InitializeAuthenticator(
@@ -37,15 +38,15 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
       << "InitializeAuthenticator() must be called first.";
   // TODO(martinkr): Change FidoTasks to take all request parameters by const
   // reference, so we can avoid copying these from the RequestHandler.
-  task_ = std::make_unique<MakeCredentialTask>(device_, std::move(request),
-                                               std::move(callback));
+  task_ = std::make_unique<MakeCredentialTask>(
+      device_.get(), std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-  task_ = std::make_unique<GetAssertionTask>(device_, std::move(request),
+  task_ = std::make_unique<GetAssertionTask>(device_.get(), std::move(request),
                                              std::move(callback));
 }
 

@@ -120,54 +120,56 @@ void FidoDiscovery::NotifyAuthenticatorRemoved(
   observer()->AuthenticatorRemoved(this, authenticator);
 }
 
-std::vector<FidoDevice*> FidoDiscovery::GetDevices() {
-  std::vector<FidoDevice*> devices;
-  devices.reserve(devices_.size());
-  for (const auto& device : devices_)
-    devices.push_back(device.second.second.get());
-  return devices;
+std::vector<FidoDeviceAuthenticator*>
+FidoDiscovery::GetAuthenticatorsForTesting() {
+  std::vector<FidoDeviceAuthenticator*> authenticators;
+  authenticators.reserve(authenticators_.size());
+  for (const auto& authenticator : authenticators_)
+    authenticators.push_back(authenticator.second.get());
+  return authenticators;
 }
 
-std::vector<const FidoDevice*> FidoDiscovery::GetDevices() const {
-  std::vector<const FidoDevice*> devices;
-  devices.reserve(devices_.size());
-  for (const auto& device : devices_)
-    devices.push_back(device.second.second.get());
-  return devices;
+std::vector<const FidoDeviceAuthenticator*>
+FidoDiscovery::GetAuthenticatorsForTesting() const {
+  std::vector<const FidoDeviceAuthenticator*> authenticators;
+  authenticators.reserve(authenticators_.size());
+  for (const auto& authenticator : authenticators_)
+    authenticators.push_back(authenticator.second.get());
+  return authenticators;
 }
 
-FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) {
-  return const_cast<FidoDevice*>(
-      static_cast<const FidoDiscovery*>(this)->GetDevice(device_id));
+FidoDeviceAuthenticator* FidoDiscovery::GetAuthenticatorForTesting(
+    base::StringPiece authenticator_id) {
+  return GetAuthenticator(authenticator_id);
 }
 
-const FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) const {
-  auto found = devices_.find(device_id);
-  return found != devices_.end() ? found->second.second.get() : nullptr;
+FidoDeviceAuthenticator* FidoDiscovery::GetAuthenticator(
+    base::StringPiece authenticator_id) {
+  auto found = authenticators_.find(authenticator_id);
+  return found != authenticators_.end() ? found->second.get() : nullptr;
 }
 
 bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
-  std::string device_id = device->GetId();
-  auto authenticator = std::make_unique<FidoDeviceAuthenticator>(device.get());
-  const auto result = devices_.emplace(
-      std::move(device_id),
-      std::make_pair(std::move(authenticator), std::move(device)));
+  auto authenticator =
+      std::make_unique<FidoDeviceAuthenticator>(std::move(device));
+  const auto result =
+      authenticators_.emplace(authenticator->GetId(), std::move(authenticator));
   if (!result.second) {
     return false;  // Duplicate device id.
   }
 
-  NotifyAuthenticatorAdded(result.first->second.first.get());
+  NotifyAuthenticatorAdded(result.first->second.get());
   return true;
 }
 
 bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {
-  auto found = devices_.find(device_id);
-  if (found == devices_.end())
+  auto found = authenticators_.find(device_id);
+  if (found == authenticators_.end())
     return false;
 
-  auto authenticator_device_pair = std::move(found->second);
-  devices_.erase(found);
-  NotifyAuthenticatorRemoved(authenticator_device_pair.first.get());
+  auto authenticator = std::move(found->second);
+  authenticators_.erase(found);
+  NotifyAuthenticatorRemoved(authenticator.get());
   return true;
 }
 
