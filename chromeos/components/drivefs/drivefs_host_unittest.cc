@@ -282,8 +282,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
       chromeos::disks::DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-    static_cast<chromeos::disks::DiskMountManager::Observer&>(*host_)
-        .OnMountEvent(event, error_code, mount_info);
+    disk_manager_->NotifyMountEvent(event, error_code, mount_info);
   }
 
   std::string StartMount() {

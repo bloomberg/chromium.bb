@@ -35,8 +35,7 @@ class DriveFsHostObserver;
 // A host for a DriveFS process. In addition to managing its lifetime via
 // mounting and unmounting, it also bridges between the DriveFS process and the
 // file manager.
-class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
-    : public chromeos::disks::DiskMountManager::Observer {
+class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
  public:
   // Public for overriding in tests. A default implementation is used under
   // normal conditions.
@@ -82,7 +81,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   DriveFsHost(const base::FilePath& profile_path,
               Delegate* delegate,
               std::unique_ptr<base::OneShotTimer> timer);
-  ~DriveFsHost() override;
+  ~DriveFsHost();
 
   void AddObserver(DriveFsHostObserver* observer);
   void RemoveObserver(DriveFsHostObserver* observer);
@@ -106,12 +105,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
  private:
   class MountState;
-
-  // DiskMountManager::Observer:
-  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
-                    chromeos::MountError error_code,
-                    const chromeos::disks::DiskMountManager::MountPointInfo&
-                        mount_info) override;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
