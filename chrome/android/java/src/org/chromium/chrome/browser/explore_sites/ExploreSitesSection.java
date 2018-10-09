@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory.CategoryType;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -56,6 +57,7 @@ public class ExploreSitesSection {
     }
 
     private void initialize() {
+        RecordUserAction.record("Android.ExploreSitesNTP.Opened");
         ExploreSitesBridge.getEspCatalog(mProfile, this::gotEspCatalog);
     }
 
@@ -125,10 +127,14 @@ public class ExploreSitesSection {
      * from the ExploreSitesBridge.
      */
     private void gotEspCatalog(List<ExploreSitesCategory> categoryList) {
+        boolean loadingCatalogFromNetwork = false;
         if (categoryList == null || categoryList.size() == 0) {
+            loadingCatalogFromNetwork = true;
             ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true /*isImmediateFetch*/,
                     (Boolean success) -> { updateCategoryIcons(); });
         }
+        RecordHistogram.recordBooleanHistogram(
+                "ExploreSites.NTPLoadingCatalogFromNetwork", loadingCatalogFromNetwork);
         // Initialize with defaults right away.
         initializeCategoryTiles(categoryList);
     }

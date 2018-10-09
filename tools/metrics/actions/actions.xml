@@ -1647,6 +1647,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ExploreSitesNTP.Opened">
+  <owner>dimich@chromium.org</owner>
+  <description>User opened NTP with enabled ExploreSites section.</description>
+</action>
+
 <action name="Android.ExploreSitesPage.Open">
   <owner>dimich@chromium.org</owner>
   <description>
