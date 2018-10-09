@@ -4,9 +4,10 @@
 
 module media_session.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 2
+// Next MinVersion: 4
 
 // These are the different types of audio focus that can be requested.
 [Extensible]
@@ -31,8 +32,9 @@ enum AudioFocusType {
 struct AudioFocusRequestState {
   MediaSessionInfo session_info;
   AudioFocusType audio_focus_type;
-  uint64 request_id;
+
   [MinVersion=2] string? source_name;
+  [MinVersion=3] mojo_base.mojom.UnguessableToken? request_id;
 };
 
 // The observer for audio focus events.
@@ -46,7 +48,8 @@ interface AudioFocusObserver {
 };
 
 // Controls audio focus for an associated request.
-// Next Method ID: 4
+// Next Method ID: 5
+// Deprecated method IDs: 3
 interface AudioFocusRequestClient {
   // Requests updated audio focus for this request. If the request was granted
   // then the callback will resolve.
@@ -59,7 +62,8 @@ interface AudioFocusRequestClient {
   MediaSessionInfoChanged@2(MediaSessionInfo session_info);
 
   // Retrieve a unique ID for this request.
-  GetRequestId@3() => (uint64 request_id);
+  [MinVersion=3] GetRequestId@4()
+      => (mojo_base.mojom.UnguessableToken request_id);
 };
 
 // Controls audio focus across the entire system.
@@ -91,6 +95,6 @@ interface AudioFocusManager {
 // Provides debug information about audio focus requests.
 interface AudioFocusManagerDebug {
   // Gets debugging information for a |MediaSession| with |request_id|.
-  GetDebugInfoForRequest(uint64 request_id)
+  GetDebugInfoForRequest(mojo_base.mojom.UnguessableToken request_id)
       => (MediaSessionDebugInfo debug_info);
 };

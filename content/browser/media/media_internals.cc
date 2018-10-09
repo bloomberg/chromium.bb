@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -856,15 +857,19 @@ void MediaInternals::DidGetAudioFocusRequestList(
   // We should go backwards through the stack so the top of the stack is
   // always shown first in the list.
   base::ListValue stack_data;
-  for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
-    int request_id = (*iter)->request_id;
+  for (const auto& session : base::Reversed(stack)) {
+    if (!session->request_id.has_value())
+      continue;
+
+    std::string id_string = session->request_id.value().ToString();
     base::DictionaryValue media_session_data;
-    media_session_data.SetKey(kAudioFocusIdKey, base::Value(request_id));
+    media_session_data.SetKey(kAudioFocusIdKey, base::Value(id_string));
     stack_data.GetList().push_back(std::move(media_session_data));
 
     audio_focus_debug_ptr_->GetDebugInfoForRequest(
-        request_id, base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
-                                   base::Unretained(this), request_id));
+        session->request_id.value(),
+        base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
+                       base::Unretained(this), id_string));
   }
 
   audio_focus_data_.SetKey(kAudioFocusSessionsKey, std::move(stack_data));
@@ -874,7 +879,7 @@ void MediaInternals::DidGetAudioFocusRequestList(
 }
 
 void MediaInternals::DidGetAudioFocusDebugInfo(
-    int id,
+    const std::string& id,
     media_session::mojom::MediaSessionDebugInfoPtr info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -887,7 +892,7 @@ void MediaInternals::DidGetAudioFocusDebugInfo(
 
   bool updated = false;
   for (auto& session : sessions_list->GetList()) {
-    if (session.FindKey(kAudioFocusIdKey)->GetInt() != id)
+    if (session.FindKey(kAudioFocusIdKey)->GetString() != id)
       continue;
 
     session.SetKey("name", base::Value(info->name));

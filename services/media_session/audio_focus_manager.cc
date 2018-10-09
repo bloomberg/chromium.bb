@@ -7,26 +7,15 @@
 #include <iterator>
 #include <utility>
 
-#include "base/atomic_sequence_num.h"
 #include "base/containers/adapters.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace media_session {
-
-namespace {
-
-// Generate a unique audio focus request ID for the audio focus request. The IDs
-// are only handed out by the audio focus manager.
-int GenerateAudioFocusRequestId() {
-  static base::AtomicSequenceNumber request_id;
-  return request_id.GetNext();
-}
-
-}  // namespace
 
 class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
  public:
@@ -172,7 +161,7 @@ void AudioFocusManager::RequestAudioFocus(
   RequestAudioFocusInternal(
       std::make_unique<StackRow>(
           this, std::move(request), std::move(media_session),
-          std::move(session_info), type, GenerateAudioFocusRequestId(),
+          std::move(session_info), type, base::UnguessableToken::Create(),
           GetBindingSourceName()),
       type, std::move(callback));
 }
@@ -193,7 +182,7 @@ void AudioFocusManager::GetFocusRequests(GetFocusRequestsCallback callback) {
 }
 
 void AudioFocusManager::GetDebugInfoForRequest(
-    uint64_t request_id,
+    const RequestId& request_id,
     GetDebugInfoForRequestCallback callback) {
   for (auto& row : audio_focus_stack_) {
     if (row->id() != request_id)
