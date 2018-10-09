@@ -376,19 +376,6 @@ void WebFrameTestClient::DownloadURL(
   }
 }
 
-void WebFrameTestClient::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
-  // PlzNavigate
-  // A provisional load notification is received when a frame navigation is
-  // sent to the browser. We don't want to log it again during commit.
-  if (delegate_->IsNavigationInitiatedByRenderer(request))
-    return;
-
-  test_runner()->tryToSetTopLoadingFrame(
-      web_frame_test_proxy_base_->web_frame());
-}
-
 void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
                                          blink::WebTextDirection direction) {
   if (test_runner()->shouldDumpFrameLoadCallbacks() &&
@@ -416,6 +403,11 @@ void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
     PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(" - didFailLoadWithError\n");
   }
+}
+
+void WebFrameTestClient::DidStartLoading() {
+  test_runner()->tryToSetTopLoadingFrame(
+      web_frame_test_proxy_base_->web_frame());
 }
 
 void WebFrameTestClient::DidStopLoading() {

@@ -156,13 +156,6 @@ void WebFrameTestProxy::DownloadURL(
                                std::move(blob_url_token));
 }
 
-void WebFrameTestProxy::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
-  test_client_->DidStartProvisionalLoad(document_loader, request);
-  RenderFrameImpl::DidStartProvisionalLoad(document_loader, request);
-}
-
 void WebFrameTestProxy::DidReceiveTitle(const blink::WebString& title,
                                         blink::WebTextDirection direction) {
   test_client_->DidReceiveTitle(title, direction);
@@ -178,6 +171,11 @@ void WebFrameTestProxy::DidFailLoad(const blink::WebURLError& error,
                                     blink::WebHistoryCommitType commit_type) {
   test_client_->DidFailLoad(error, commit_type);
   RenderFrameImpl::DidFailLoad(error, commit_type);
+}
+
+void WebFrameTestProxy::DidStartLoading() {
+  test_client_->DidStartLoading();
+  RenderFrameImpl::DidStartLoading();
 }
 
 void WebFrameTestProxy::DidStopLoading() {
