@@ -458,7 +458,8 @@ void ContentSecurityPolicy::FillInCSPHashValues(
   if (hash_algorithms_used == kContentSecurityPolicyHashAlgorithmNone)
     return;
 
-  StringUTF8Adaptor utf8_source(source);
+  StringUTF8Adaptor utf8_source(
+      source, kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
 
   for (const auto& algorithm_map : kAlgorithmMap) {
     DigestValue digest;
