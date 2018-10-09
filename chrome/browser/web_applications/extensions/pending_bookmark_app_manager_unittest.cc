@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -45,28 +46,28 @@ web_app::PendingAppManager::AppInfo GetFooAppInfo(
     bool override_previous_user_uninstall = web_app::PendingAppManager::
         AppInfo::kDefaultOverridePreviousUserUninstall) {
   return web_app::PendingAppManager::AppInfo(
-      GURL(kFooWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab,
-      web_app::PendingAppManager::InstallSource::kExternalPolicy,
+      GURL(kFooWebAppUrl), web_app::LaunchContainer::kTab,
+      web_app::InstallSource::kExternalPolicy,
       web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
       override_previous_user_uninstall);
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
   return web_app::PendingAppManager::AppInfo(
-      GURL(kBarWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kExternalPolicy);
+      GURL(kBarWebAppUrl), web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
 }
 
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
   return web_app::PendingAppManager::AppInfo(
-      GURL(kQuxWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kExternalPolicy);
+      GURL(kQuxWebAppUrl), web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
 }
 
 web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
   return web_app::PendingAppManager::AppInfo(
-      GURL(kXyzWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kExternalPolicy);
+      GURL(kXyzWebAppUrl), web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kExternalPolicy);
 }
 
 scoped_refptr<const Extension> CreateDummyExtension(const std::string& id) {

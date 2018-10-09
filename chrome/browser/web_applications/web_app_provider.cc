@@ -12,6 +12,7 @@
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
@@ -75,7 +76,7 @@ void WebAppProvider::Observe(int type,
 void WebAppProvider::OnScanForExternalWebApps(
     std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(app_infos), PendingAppManager::InstallSource::kExternalDefault);
+      std::move(app_infos), InstallSource::kExternalDefault);
 }
 
 }  // namespace web_app

@@ -7,6 +7,7 @@ source_set("components") {
     "install_result_code.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
+    "web_app_constants.h",
     "web_app_data_retriever.cc",
     "web_app_data_retriever.h",
     "web_app_helpers.cc",

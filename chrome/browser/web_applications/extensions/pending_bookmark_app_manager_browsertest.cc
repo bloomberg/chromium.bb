@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/install_result_code.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,8 +35,8 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   web_app::WebAppProvider::Get(browser()->profile())
       ->pending_app_manager()
       .Install(web_app::PendingAppManager::AppInfo(
-                   url, web_app::PendingAppManager::LaunchContainer::kWindow,
-                   web_app::PendingAppManager::InstallSource::kInternal,
+                   url, web_app::LaunchContainer::kWindow,
+                   web_app::InstallSource::kInternal,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::BindLambdaForTesting(
@@ -71,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
       .Install(web_app::PendingAppManager::AppInfo(
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
-                   web_app::PendingAppManager::LaunchContainer::kWindow,
-                   web_app::PendingAppManager::InstallSource::kInternal,
+                   web_app::LaunchContainer::kWindow,
+                   web_app::InstallSource::kInternal,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::DoNothing());

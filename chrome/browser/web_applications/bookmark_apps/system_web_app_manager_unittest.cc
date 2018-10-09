@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -37,16 +38,14 @@ const char kDefaultContainerUrl[] = "https://default-container.example";
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
   return PendingAppManager::AppInfo(
-      GURL(kWindowedUrl), PendingAppManager::LaunchContainer::kWindow,
-      PendingAppManager::InstallSource::kSystemInstalled,
-      false /* create_shortcuts */);
+      GURL(kWindowedUrl), LaunchContainer::kWindow,
+      InstallSource::kSystemInstalled, false /* create_shortcuts */);
 }
 
 PendingAppManager::AppInfo GetTabbedAppInfo() {
-  return PendingAppManager::AppInfo(
-      GURL(kTabbedUrl), PendingAppManager::LaunchContainer::kTab,
-      PendingAppManager::InstallSource::kSystemInstalled,
-      false /* create_shortcuts */);
+  return PendingAppManager::AppInfo(GURL(kTabbedUrl), LaunchContainer::kTab,
+                                    InstallSource::kSystemInstalled,
+                                    false /* create_shortcuts */);
 }
 
 }  // namespace
@@ -60,8 +59,7 @@ class TestSystemWebAppManager : public SystemWebAppManager {
         system_apps_(std::move(system_apps)) {}
   ~TestSystemWebAppManager() override {}
 
-  std::vector<web_app::PendingAppManager::AppInfo> CreateSystemWebApps()
-      override {
+  std::vector<PendingAppManager::AppInfo> CreateSystemWebApps() override {
     return std::move(system_apps_);
   }
 
@@ -82,13 +80,13 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
 
     // Reset WebAppProvider so that its SystemWebAppManager doesn't interfere
     // with tests.
-    web_app::WebAppProvider::Get(profile())->Reset();
+    WebAppProvider::Get(profile())->Reset();
   }
 
   void SimulatePreviouslyInstalledApp(
       TestPendingAppManager* pending_app_manager,
       GURL url,
-      PendingAppManager::InstallSource install_source) {
+      InstallSource install_source) {
     std::string id =
         crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
     extensions::ExtensionRegistry::Get(profile())->AddEnabled(
@@ -113,9 +111,8 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
 
-  SimulatePreviouslyInstalledApp(
-      pending_app_manager.get(), GURL(kWindowedUrl),
-      PendingAppManager::InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kWindowedUrl),
+                                 InstallSource::kSystemInstalled);
 
   std::vector<PendingAppManager::AppInfo> system_apps;
   system_apps.push_back(GetWindowedAppInfo());
@@ -154,15 +151,13 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(
-      pending_app_manager.get(), GURL(kWindowedUrl),
-      PendingAppManager::InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(
-      pending_app_manager.get(), GURL(kTabbedUrl),
-      PendingAppManager::InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kWindowedUrl),
+                                 InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kTabbedUrl),
+                                 InstallSource::kSystemInstalled);
   SimulatePreviouslyInstalledApp(pending_app_manager.get(),
                                  GURL(kDefaultContainerUrl),
-                                 PendingAppManager::InstallSource::kInternal);
+                                 InstallSource::kInternal);
   std::vector<PendingAppManager::AppInfo> system_apps;
   system_apps.push_back(GetWindowedAppInfo());
 

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
@@ -28,8 +29,8 @@ BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask(
           // can use the information.
           web_app::PendingAppManager::AppInfo(
               GURL(),
-              web_app::PendingAppManager::LaunchContainer::kTab,
-              web_app::PendingAppManager::InstallSource::kInternal)) {}
+              web_app::LaunchContainer::kTab,
+              web_app::InstallSource::kInternal)) {}
 
 BookmarkAppShortcutInstallationTask::~BookmarkAppShortcutInstallationTask() =
     default;

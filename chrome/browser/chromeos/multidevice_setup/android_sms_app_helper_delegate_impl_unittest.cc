@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -80,8 +81,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   std::vector<web_app::PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(
       chromeos::android_sms::GetAndroidMessagesURLWithParams(),
-      web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kInternal,
+      web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal,
       web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
       true);  // override_previous_user_uninstall
   EXPECT_EQ(expected_apps_to_install,
