@@ -144,18 +144,28 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 class AndroidHostDisplayClient : public viz::HostDisplayClient {
  public:
   explicit AndroidHostDisplayClient(
-      base::RepeatingCallback<void(const gfx::Size&)> on_swap)
+      base::RepeatingCallback<void(const gfx::Size&)> on_swap,
+      base::RepeatingCallback<void(gpu::ContextResult)>
+          on_context_creation_failure)
       : HostDisplayClient(gfx::kNullAcceleratedWidget),
-        on_swap_(std::move(on_swap)) {}
+        on_swap_(std::move(on_swap)),
+        on_context_creation_failure_(std::move(on_context_creation_failure)) {}
 
   // viz::mojom::DisplayClient implementation:
   void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
     if (on_swap_)
       on_swap_.Run(pixel_size);
   }
+  void OnFatalOrSurfaceContextCreationFailure(
+      gpu::ContextResult context_result) override {
+    if (on_context_creation_failure_)
+      on_context_creation_failure_.Run(context_result);
+  }
 
  private:
   base::RepeatingCallback<void(const gfx::Size&)> on_swap_;
+  base::RepeatingCallback<void(gpu::ContextResult)>
+      on_context_creation_failure_;
 };
 
 class CompositorDependencies {
@@ -1372,9 +1382,12 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&root_params->compositor_frame_sink_client);
   root_params->display_private = mojo::MakeRequest(&display_private_);
-  display_client_ =
-      std::make_unique<AndroidHostDisplayClient>(base::BindRepeating(
-          &CompositorImpl::DidSwapBuffers, weak_factory_.GetWeakPtr()));
+  display_client_ = std::make_unique<AndroidHostDisplayClient>(
+      base::BindRepeating(&CompositorImpl::DidSwapBuffers,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &CompositorImpl::OnFatalOrSurfaceContextCreationFailure,
+          weak_factory_.GetWeakPtr()));
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
@@ -1418,6 +1431,12 @@ viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
     return CompositorDependencies::Get().surface_id_allocator.GenerateId();
 
   return viz::LocalSurfaceId();
+}
+
+void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
+    gpu::ContextResult context_result) {
+  LOG_IF(FATAL, context_result == gpu::ContextResult::kFatalFailure)
+      << "Fatal error making Gpu context";
 }
 
 }  // namespace content
