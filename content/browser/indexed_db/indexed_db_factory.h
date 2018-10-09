@@ -23,10 +23,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 
 class IndexedDBBackingStore;
@@ -43,21 +39,17 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
                                bool forced_close) = 0;
 
-  virtual void GetDatabaseNames(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      const url::Origin& origin,
-      const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter) = 0;
+  virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                const url::Origin& origin,
+                                const base::FilePath& data_directory) = 0;
   virtual void Open(
       const base::string16& name,
       std::unique_ptr<IndexedDBPendingConnection> connection,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const url::Origin& origin,
       const base::FilePath& data_directory) = 0;
 
   virtual void DeleteDatabase(
       const base::string16& name,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       const url::Origin& origin,
       const base::FilePath& data_directory,
@@ -117,7 +109,6 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* status) = 0;
@@ -125,7 +116,6 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,

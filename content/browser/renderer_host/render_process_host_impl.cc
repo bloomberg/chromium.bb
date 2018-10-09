@@ -1573,7 +1573,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       permission_service_context_(new PermissionServiceContext(this)),
       indexed_db_factory_(new IndexedDBDispatcherHost(
           id_,
-          storage_partition_impl_->GetURLRequestContext(),
           storage_partition_impl_->GetIndexedDBContext(),
           ChromeBlobStorageContext::GetFor(browser_context_))),
       service_worker_dispatcher_host_(new ServiceWorkerDispatcherHost(

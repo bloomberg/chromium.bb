@@ -27,7 +27,6 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "net/url_request/url_request_test_util.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -174,9 +173,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             quota_manager_->proxy())),
         host_(new IndexedDBDispatcherHost(
             kFakeProcessId,
-            base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                base::CreateSingleThreadTaskRunnerWithTraits(
-                    {BrowserThread::IO})),
             context_impl_,
             ChromeBlobStorageContext::GetFor(&browser_context_))) {
     quota_manager_->SetQuota(ToOrigin(kOrigin),
