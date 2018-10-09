@@ -102,8 +102,8 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
 
     const extensions::URLPatternSet& web_extent = (*extension)->web_extent();
     // Add patterns from web extent.
-    for (extensions::URLPatternSet::const_iterator pattern = web_extent.begin();
-         pattern != web_extent.end(); ++pattern) {
+    for (auto pattern = web_extent.begin(); pattern != web_extent.end();
+         ++pattern) {
       std::string url_pattern = pattern->GetAsString();
       site_settings::AddExceptionForHostedApp(
           url_pattern, *extension->get(), exceptions);

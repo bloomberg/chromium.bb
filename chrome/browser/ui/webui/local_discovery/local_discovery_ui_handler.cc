@@ -216,7 +216,7 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   bool rv = args->GetString(0, &device);
   DCHECK(rv);
 
-  DeviceDescriptionMap::iterator it = device_descriptions_.find(device);
+  auto it = device_descriptions_.find(device);
   if (it == device_descriptions_.end()) {
     OnSetupError();
     return;
@@ -437,7 +437,7 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
   // block the printer's announcement.
   privet_lister_->DiscoverNewDevices();
 
-  DeviceDescriptionMap::iterator it = device_descriptions_.find(service_name);
+  auto it = device_descriptions_.find(service_name);
 
   if (it == device_descriptions_.end()) {
     // TODO(noamsml): Handle the case where a printer's record is not present at
