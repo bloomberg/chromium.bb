@@ -171,11 +171,14 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             100)) /* parse_blocked_on_script_load_duration */,
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
+        base::Optional<base::TimeDelta>(
+            base::TimeDelta::FromMilliseconds(5000)) /* page_end_time */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
         kTotalPageSizeBytes /* total_page_size_bytes */,
         kCachedFraction /* cached_fraction */, app_background_occurred,
         opt_out_occurred, kRendererMemory,
-        crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID);
+        crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID,
+        PageloadMetrics_PageEndReason_END_NONE);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -303,6 +306,9 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
                 pageload_metrics.parse_blocked_on_script_load_duration()));
   EXPECT_EQ(timing().parse_stop.value(), protobuf_parser::DurationToTimeDelta(
                                              pageload_metrics.parse_stop()));
+  EXPECT_EQ(
+      timing().page_end_time.value(),
+      protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
@@ -353,6 +359,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
       pageload_metrics.effective_connection_type());
   EXPECT_EQ(PageloadMetrics_ConnectionType_CONNECTION_UNKNOWN,
             pageload_metrics.connection_type());
+  EXPECT_EQ(PageloadMetrics_PageEndReason_END_NONE,
+            pageload_metrics.page_end_reason());
   EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   EXPECT_EQ(std::string(), pageload_metrics.holdback_group());
   EXPECT_EQ(PageloadMetrics_RendererCrashType_NO_CRASH,
@@ -467,6 +475,9 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
                   pageload_metrics.parse_blocked_on_script_load_duration()));
     EXPECT_EQ(timing().parse_stop.value(), protobuf_parser::DurationToTimeDelta(
                                                pageload_metrics.parse_stop()));
+    EXPECT_EQ(
+        timing().page_end_time.value(),
+        protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
@@ -515,6 +526,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
         pageload_metrics.effective_connection_type());
     EXPECT_EQ(PageloadMetrics_ConnectionType_CONNECTION_UNKNOWN,
               pageload_metrics.connection_type());
+    EXPECT_EQ(PageloadMetrics_PageEndReason_END_NONE,
+              pageload_metrics.page_end_reason());
     EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   }
 

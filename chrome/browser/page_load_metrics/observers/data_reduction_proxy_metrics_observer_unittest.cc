@@ -264,6 +264,7 @@ class DataReductionProxyMetricsObserverTest
     EXPECT_TRUE(pingback_client_->send_pingback_called());
     EXPECT_EQ(timing_.navigation_start,
               pingback_client_->timing()->navigation_start);
+    EXPECT_GT(pingback_client_->timing()->page_end_time, base::TimeDelta());
     ExpectEqualOrUnset(timing_.paint_timing->first_contentful_paint,
                        pingback_client_->timing()->first_contentful_paint);
     ExpectEqualOrUnset(
