@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/fcm_sync_invalidation_listener.h"
+#include "components/invalidation/impl/fcm_invalidation_listener.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,9 +17,9 @@
 
 namespace syncer {
 
-FCMSyncInvalidationListener::Delegate::~Delegate() {}
+FCMInvalidationListener::Delegate::~Delegate() {}
 
-FCMSyncInvalidationListener::FCMSyncInvalidationListener(
+FCMInvalidationListener::FCMInvalidationListener(
     std::unique_ptr<FCMSyncNetworkChannel> network_channel)
     : network_channel_(std::move(network_channel)),
       delegate_(nullptr),
@@ -29,13 +29,13 @@ FCMSyncInvalidationListener::FCMSyncInvalidationListener(
   network_channel_->AddObserver(this);
 }
 
-FCMSyncInvalidationListener::~FCMSyncInvalidationListener() {
+FCMInvalidationListener::~FCMInvalidationListener() {
   network_channel_->RemoveObserver(this);
   Stop();
   DCHECK(!delegate_);
 }
 
-void FCMSyncInvalidationListener::Start(
+void FCMInvalidationListener::Start(
     CreateInvalidationClientCallback create_invalidation_client_callback,
     Delegate* delegate,
     std::unique_ptr<PerUserTopicRegistrationManager>
@@ -51,8 +51,7 @@ void FCMSyncInvalidationListener::Start(
   invalidation_client_->Start();
 }
 
-void FCMSyncInvalidationListener::UpdateRegisteredTopics(
-    const TopicSet& topics) {
+void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
   registered_topics_ = topics;
   if (ticl_state_ == INVALIDATIONS_ENABLED &&
       per_user_topic_registration_manager_ && !token_.empty()) {
@@ -60,19 +59,18 @@ void FCMSyncInvalidationListener::UpdateRegisteredTopics(
   }
 }
 
-void FCMSyncInvalidationListener::Ready(InvalidationClient* client) {
+void FCMInvalidationListener::Ready(InvalidationClient* client) {
   DCHECK_EQ(client, invalidation_client_.get());
   ticl_state_ = INVALIDATIONS_ENABLED;
   EmitStateChange();
   DoRegistrationUpdate();
 }
 
-void FCMSyncInvalidationListener::Invalidate(
-    InvalidationClient* client,
-    const std::string& payload,
-    const std::string& private_topic_name,
-    const std::string& public_topic_name,
-    int64_t version) {
+void FCMInvalidationListener::Invalidate(InvalidationClient* client,
+                                         const std::string& payload,
+                                         const std::string& private_topic_name,
+                                         const std::string& public_topic_name,
+                                         int64_t version) {
   DCHECK_EQ(client, invalidation_client_.get());
 
   TopicInvalidationMap invalidations;
@@ -86,7 +84,7 @@ void FCMSyncInvalidationListener::Invalidate(
   DispatchInvalidations(invalidations);
 }
 
-void FCMSyncInvalidationListener::DispatchInvalidations(
+void FCMInvalidationListener::DispatchInvalidations(
     const TopicInvalidationMap& invalidations) {
   TopicInvalidationMap to_save = invalidations;
   TopicInvalidationMap to_emit =
@@ -96,7 +94,7 @@ void FCMSyncInvalidationListener::DispatchInvalidations(
   EmitSavedInvalidations(to_emit);
 }
 
-void FCMSyncInvalidationListener::SaveInvalidations(
+void FCMInvalidationListener::SaveInvalidations(
     const TopicInvalidationMap& to_save) {
   ObjectIdSet objects_to_save = ConvertTopicsToIds(to_save.GetTopics());
   for (ObjectIdSet::const_iterator it = objects_to_save.begin();
@@ -112,21 +110,20 @@ void FCMSyncInvalidationListener::SaveInvalidations(
   }
 }
 
-void FCMSyncInvalidationListener::EmitSavedInvalidations(
+void FCMInvalidationListener::EmitSavedInvalidations(
     const TopicInvalidationMap& to_emit) {
   delegate_->OnInvalidate(to_emit);
 }
 
-void FCMSyncInvalidationListener::InformTokenRecieved(
-    InvalidationClient* client,
-    const std::string& token) {
+void FCMInvalidationListener::InformTokenRecieved(InvalidationClient* client,
+                                                  const std::string& token) {
   DCHECK_EQ(client, invalidation_client_.get());
   token_ = token;
   DoRegistrationUpdate();
 }
 
-void FCMSyncInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
-                                              const syncer::AckHandle& handle) {
+void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
+                                          const syncer::AckHandle& handle) {
   UnackedInvalidationsMap::iterator lookup =
       unacked_invalidations_map_.find(id);
   if (lookup == unacked_invalidations_map_.end()) {
@@ -136,8 +133,8 @@ void FCMSyncInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
   lookup->second.Acknowledge(handle);
 }
 
-void FCMSyncInvalidationListener::Drop(const invalidation::ObjectId& id,
-                                       const syncer::AckHandle& handle) {
+void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
+                                   const syncer::AckHandle& handle) {
   UnackedInvalidationsMap::iterator lookup =
       unacked_invalidations_map_.find(id);
   if (lookup == unacked_invalidations_map_.end()) {
@@ -147,7 +144,7 @@ void FCMSyncInvalidationListener::Drop(const invalidation::ObjectId& id,
   lookup->second.Drop(handle);
 }
 
-void FCMSyncInvalidationListener::DoRegistrationUpdate() {
+void FCMInvalidationListener::DoRegistrationUpdate() {
   per_user_topic_registration_manager_->UpdateRegisteredTopics(
       registered_topics_, token_);
 
@@ -171,20 +168,19 @@ void FCMSyncInvalidationListener::DoRegistrationUpdate() {
       object_id_invalidation_map));
 }
 
-void FCMSyncInvalidationListener::StopForTest() {
+void FCMInvalidationListener::StopForTest() {
   Stop();
 }
 
-TopicSet FCMSyncInvalidationListener::GetRegisteredIdsForTest() const {
+TopicSet FCMInvalidationListener::GetRegisteredIdsForTest() const {
   return registered_topics_;
 }
 
-base::WeakPtr<FCMSyncInvalidationListener>
-FCMSyncInvalidationListener::AsWeakPtr() {
+base::WeakPtr<FCMInvalidationListener> FCMInvalidationListener::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void FCMSyncInvalidationListener::Stop() {
+void FCMInvalidationListener::Stop() {
   if (!invalidation_client_) {
     return;
   }
@@ -199,7 +195,7 @@ void FCMSyncInvalidationListener::Stop() {
   fcm_network_state_ = DEFAULT_INVALIDATION_ERROR;
 }
 
-InvalidatorState FCMSyncInvalidationListener::GetState() const {
+InvalidatorState FCMInvalidationListener::GetState() const {
   if (ticl_state_ == INVALIDATION_CREDENTIALS_REJECTED ||
       fcm_network_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
     // If either the ticl or the push client rejected our credentials,
@@ -216,11 +212,11 @@ InvalidatorState FCMSyncInvalidationListener::GetState() const {
   return TRANSIENT_INVALIDATION_ERROR;
 }
 
-void FCMSyncInvalidationListener::EmitStateChange() {
+void FCMInvalidationListener::EmitStateChange() {
   delegate_->OnInvalidatorStateChange(GetState());
 }
 
-void FCMSyncInvalidationListener::OnFCMSyncNetworkChannelStateChanged(
+void FCMInvalidationListener::OnFCMSyncNetworkChannelStateChanged(
     InvalidatorState invalidator_state) {
   fcm_network_state_ = invalidator_state;
   EmitStateChange();

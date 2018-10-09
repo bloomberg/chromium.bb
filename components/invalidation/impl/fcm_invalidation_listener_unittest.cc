@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
-#include "components/invalidation/impl/fcm_sync_invalidation_listener.h"
+#include "components/invalidation/impl/fcm_invalidation_listener.h"
 #include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/push_client_channel.h"
@@ -55,9 +55,9 @@ class FakeInvalidationClient : public InvalidationClient {
 
 // Fake delegate that keeps track of invalidation counts, payloads,
 // and state.
-class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
+class FakeDelegate : public FCMInvalidationListener::Delegate {
  public:
-  explicit FakeDelegate(FCMSyncInvalidationListener* listener)
+  explicit FakeDelegate(FCMInvalidationListener* listener)
       : state_(TRANSIENT_INVALIDATION_ERROR) {}
   ~FakeDelegate() override {}
 
@@ -141,7 +141,7 @@ class FakeDelegate : public FCMSyncInvalidationListener::Delegate {
     }
   }
 
-  // FCMSyncInvalidationListener::Delegate implementation.
+  // FCMInvalidationListener::Delegate implementation.
   void OnInvalidate(const TopicInvalidationMap& invalidation_map) override {
     TopicSet topics = invalidation_map.GetTopics();
     for (const auto& topic : topics) {
@@ -191,9 +191,9 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
   MOCK_METHOD0(Init, void());
 };
 
-class FCMSyncInvalidationListenerTest : public testing::Test {
+class FCMInvalidationListenerTest : public testing::Test {
  protected:
-  FCMSyncInvalidationListenerTest()
+  FCMInvalidationListenerTest()
       : kBookmarksTopic_("BOOKMARK"),
         kPreferencesTopic_("PREFERENCE"),
         kExtensionsTopic_("EXTENSION"),
@@ -325,7 +325,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 
   // Tests need to access these directly.
   FakeInvalidationClient* fake_invalidation_client_;
-  FCMSyncInvalidationListener listener_;
+  FCMInvalidationListener listener_;
 
  private:
   FakeDelegate fake_delegate_;
@@ -335,7 +335,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 
 // Fire an invalidation without a payload.  It should be processed,
 // the payload should remain empty, and the version should be updated.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateNoPayload) {
+TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
   RegisterAndFireInvalidate(topic, kVersion1, std::string());
@@ -349,7 +349,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateNoPayload) {
 // Fire an invalidation with an empty payload.  It should be
 // processed, the payload should remain empty, and the version should
 // be updated.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateEmptyPayload) {
+TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
   RegisterAndFireInvalidate(topic, kVersion1, std::string());
@@ -362,7 +362,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateEmptyPayload) {
 
 // Fire an invalidation with a payload.  It should be processed, and
 // both the payload and the version should be updated.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateWithPayload) {
+TEST_F(FCMInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
   RegisterAndFireInvalidate(topic, kVersion1, kPayload1);
@@ -374,7 +374,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateWithPayload) {
 }
 
 // Fire ten invalidations in a row.  All should be received.
-TEST_F(FCMSyncInvalidationListenerTest, ManyInvalidations_NoDrop) {
+TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const int kRepeatCount = 10;
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
@@ -390,7 +390,7 @@ TEST_F(FCMSyncInvalidationListenerTest, ManyInvalidations_NoDrop) {
 // Fire an invalidation for an unregistered object topic with a payload.  It
 // should still be processed, and both the payload and the version should be
 // updated.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
+TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
   const Topic kUnregisteredId = "unregistered";
   const Topic& topic = kUnregisteredId;
   TopicSet topics;
@@ -414,7 +414,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 
 // Fire ten invalidations before an object registers.  Some invalidations will
 // be dropped an replaced with an unknown version invalidation.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
+TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
   const int kRepeatCount =
       UnackedInvalidationSet::kMaxBufferedInvalidations + 1;
   const Topic kUnregisteredId("unregistered");
@@ -439,7 +439,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
 // Fire an invalidation, then fire another one with a lower version.  Both
 // should be received.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateVersion) {
+TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
   RegisterAndFireInvalidate(topic, kVersion2, kPayload2);
@@ -459,7 +459,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateVersion) {
 }
 
 // Test a simple scenario for multiple IDs.
-TEST_F(FCMSyncInvalidationListenerTest, InvalidateMultipleIds) {
+TEST_F(FCMInvalidationListenerTest, InvalidateMultipleIds) {
   RegisterAndFireInvalidate(kBookmarksTopic_, 3, std::string());
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
@@ -473,7 +473,7 @@ TEST_F(FCMSyncInvalidationListenerTest, InvalidateMultipleIds) {
 
 // Without readying the client, disable notifications, then enable
 // them.  The listener should still think notifications are disabled.
-TEST_F(FCMSyncInvalidationListenerTest, EnableNotificationsNotReady) {
+TEST_F(FCMInvalidationListenerTest, EnableNotificationsNotReady) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   DisableNotifications(TRANSIENT_INVALIDATION_ERROR);
@@ -487,7 +487,7 @@ TEST_F(FCMSyncInvalidationListenerTest, EnableNotificationsNotReady) {
 
 // Enable notifications then Ready the invalidation client.  The
 // delegate should then be ready.
-TEST_F(FCMSyncInvalidationListenerTest, EnableNotificationsThenReady) {
+TEST_F(FCMInvalidationListenerTest, EnableNotificationsThenReady) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   EnableNotifications();
@@ -501,7 +501,7 @@ TEST_F(FCMSyncInvalidationListenerTest, EnableNotificationsThenReady) {
 
 // Ready the invalidation client then enable notifications.  The
 // delegate should then be ready.
-TEST_F(FCMSyncInvalidationListenerTest, ReadyThenEnableNotifications) {
+TEST_F(FCMInvalidationListenerTest, ReadyThenEnableNotifications) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   listener_.Ready(fake_invalidation_client_);
@@ -516,7 +516,7 @@ TEST_F(FCMSyncInvalidationListenerTest, ReadyThenEnableNotifications) {
 // Enable notifications and ready the client.  Then disable
 // notifications with an auth error and re-enable notifications.  The
 // delegate should go into an auth error mode and then back out.
-TEST_F(FCMSyncInvalidationListenerTest, PushClientAuthError) {
+TEST_F(FCMInvalidationListenerTest, PushClientAuthError) {
   EnableNotifications();
   listener_.Ready(fake_invalidation_client_);
 
@@ -531,11 +531,11 @@ TEST_F(FCMSyncInvalidationListenerTest, PushClientAuthError) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
 
-// A variant of FCMSyncInvalidationListenerTest that starts with some initial
+// A variant of FCMInvalidationListenerTest that starts with some initial
 // state.  We make not attempt to abstract away the contents of this state.  The
 // tests that make use of this harness depend on its implementation details.
-class FCMSyncInvalidationListenerTest_WithInitialState
-    : public FCMSyncInvalidationListenerTest {
+class FCMInvalidationListenerTest_WithInitialState
+    : public FCMInvalidationListenerTest {
  public:
   void SetUp() override {
     UnackedInvalidationSet bm_state(ConvertTopicToId(kBookmarksTopic_));
@@ -562,7 +562,7 @@ class FCMSyncInvalidationListenerTest_WithInitialState
 
     fake_tracker_.SetSavedInvalidations(initial_state);
 
-    FCMSyncInvalidationListenerTest::SetUp();
+    FCMInvalidationListenerTest::SetUp();
   }
 
   UnackedInvalidationsMap initial_state;
