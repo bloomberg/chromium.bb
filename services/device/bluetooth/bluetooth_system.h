@@ -29,6 +29,8 @@ class BluetoothSystem : public mojom::BluetoothSystem,
   // bluez::BluetoothAdapterClient::Observer
   void AdapterAdded(const dbus::ObjectPath& object_path) override;
   void AdapterRemoved(const dbus::ObjectPath& object_path) override;
+  void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
+                              const std::string& property_name) override;
 
   // mojom::BluetoothSystem
   void GetState(GetStateCallback callback) override;
@@ -36,11 +38,17 @@ class BluetoothSystem : public mojom::BluetoothSystem,
  private:
   bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
 
+  void UpdateStateAndNotifyIfNecessary();
+
   mojom::BluetoothSystemClientPtr client_ptr_;
 
   // The ObjectPath of the adapter being used. Updated as BT adapters are
   // added and removed. nullopt if there is no adapter.
   base::Optional<dbus::ObjectPath> active_adapter_;
+
+  // State of |active_adapter_| or kUnavailable if there is no
+  // |active_adapter_|.
+  State state_ = State::kUnavailable;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystem);
 };
