@@ -67,7 +67,7 @@ void OmniboxPopupViewIOS::UpdatePopupAppearance() {
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
-  return [mediator_ isOpen];
+  return [mediator_ hasResults];
 }
 
 OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
