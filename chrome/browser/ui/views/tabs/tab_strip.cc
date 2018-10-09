@@ -1462,6 +1462,9 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 
+  current_active_width_ = TabStyle::GetStandardWidth();
+  current_inactive_width_ = current_active_width_;
+
   new_tab_button_ = new NewTabButton(this, this);
   new_tab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));

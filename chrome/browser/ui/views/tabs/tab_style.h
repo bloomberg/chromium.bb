@@ -9,10 +9,14 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/path.h"
 
+namespace gfx {
+class Canvas;
+}
+
 class Tab;
 
-// Used to generate a number of outlines for clipping, border painting,
-// interior fill, etc. for tabs.
+// Holds all of the logic for rendering tabs, including preferred sizes, paths,
+// etc.
 class TabStyle {
  public:
   // The different types of path GetPath() can return. Different paths are used
@@ -88,6 +92,9 @@ class TabStyle {
   // is no stroke, returns 0.  If |should_paint_as_active| is true, the tab is
   // treated as an active tab regardless of its true current state.
   virtual int GetStrokeThickness(bool should_paint_as_active = false) const = 0;
+
+  // Paint the tab.
+  virtual void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const = 0;
 
   // Returns the opacities of the separators.  If |for_layout| is true, returns
   // the "layout" opacities, which ignore the effects of surrounding tabs' hover
