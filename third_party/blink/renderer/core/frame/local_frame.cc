@@ -504,10 +504,23 @@ void LocalFrame::DidChangeVisibilityState() {
 void LocalFrame::DidFreeze() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
+    auto* frame_resource_coordinator = GetFrameResourceCoordinator();
+    if (frame_resource_coordinator) {
+      // Determine if there is a beforeunload handler by dispatching a
+      // beforeunload that will *not* launch a user dialog. If
+      // |proceed| is false then there is a non-empty beforeunload
+      // handler indicating potentially unsaved user state.
+      bool unused_did_allow_navigation = false;
+      bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
+          *View()->GetChromeClient(), false /* is_reload */,
+          true /* auto_cancel */, unused_did_allow_navigation);
+      frame_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+    }
+
     GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {
+    if (frame_resource_coordinator) {
       frame_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }

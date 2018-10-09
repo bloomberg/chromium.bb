@@ -63,6 +63,7 @@ interface FrameCoordinationUnit {
   SetAudibility(bool audible);
   SetNetworkAlmostIdle(bool idle);
   SetLifecycleState(LifecycleState state);
+  SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
 
   // Event signals.
   OnAlertFired();
