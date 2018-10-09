@@ -1791,12 +1791,6 @@ void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
 
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
-
-  local_frame_client_->SetVirtualTimePauser(
-      frame_ ? frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
-                   "WebLocalFrameImpl",
-                   WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant)
-             : WebScopedVirtualTimePauser());
 }
 
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,

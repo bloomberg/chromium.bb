@@ -433,7 +433,6 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     web_frame_->Client()->DidFinishSameDocumentNavigation(
         WebHistoryItem(item), commit_type, content_initiated);
   }
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
@@ -449,7 +448,6 @@ void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     web_frame_->Client()->DidStartProvisionalLoad(
         WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
   }
-  virtual_time_pauser_.PauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
@@ -486,15 +484,12 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
-
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(
@@ -1097,11 +1092,6 @@ void LocalFrameClientImpl::BubbleLogicalScrollInParentFrame(
     ScrollGranularity granularity) {
   web_frame_->Client()->BubbleLogicalScrollInParentFrame(direction,
                                                          granularity);
-}
-
-void LocalFrameClientImpl::SetVirtualTimePauser(
-    WebScopedVirtualTimePauser virtual_time_pauser) {
-  virtual_time_pauser_ = std::move(virtual_time_pauser);
 }
 
 String LocalFrameClientImpl::evaluateInInspectorOverlayForTesting(

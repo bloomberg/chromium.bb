@@ -37,7 +37,6 @@
 #include "base/memory/scoped_refptr.h"
 
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -269,8 +268,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void BubbleLogicalScrollInParentFrame(ScrollDirection direction,
                                         ScrollGranularity granularity) override;
 
-  void SetVirtualTimePauser(WebScopedVirtualTimePauser) override;
-
   String evaluateInInspectorOverlayForTesting(const String& script) override;
 
   bool HandleCurrentKeyboardEvent() override;
@@ -306,8 +303,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
-
-  mutable WebScopedVirtualTimePauser virtual_time_pauser_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,
