@@ -623,6 +623,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id);
     navigation_ui_data_ = std::move(navigation_ui_data);
 
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted, owner_,
+                       base::TimeTicks::Now()));
+
     DCHECK(network_loader_factory_info);
     network_loader_factory_ = network::SharedURLLoaderFactory::Create(
         std::move(network_loader_factory_info));
