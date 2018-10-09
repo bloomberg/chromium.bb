@@ -955,7 +955,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
             ->GetFrame()
             ->GetPage()
             ->GetVisualViewport()
-            .SetNeedsPaintPropertiesUpdate();
+            .SetNeedsPaintPropertyUpdate();
       }
     }
 

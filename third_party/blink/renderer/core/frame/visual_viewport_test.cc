@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -311,6 +312,20 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100),
                        visual_viewport.VisibleRect().Size());
 
+  // Verify the paint property nodes and GeometryMapper cache.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    WebView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(TransformationMatrix().Scale(2),
+              visual_viewport.GetPageScaleNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Translate(0, -300),
+              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
+              GeometryMapper::SourceToDestinationProjection(
+                  visual_viewport.GetScrollTranslationNode(),
+                  &TransformPaintPropertyNode::Root()));
+  }
+
   // Perform the resizing
   WebView()->Resize(IntSize(200, 100));
 
@@ -320,6 +335,20 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   EXPECT_EQ(ScrollOffset(0, 625),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
   EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 75), visual_viewport.GetScrollOffset());
+
+  // Verify the paint property nodes and GeometryMapper cache.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    WebView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(TransformationMatrix().Scale(4),
+              visual_viewport.GetPageScaleNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Translate(0, -75),
+              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
+              GeometryMapper::SourceToDestinationProjection(
+                  visual_viewport.GetScrollTranslationNode(),
+                  &TransformPaintPropertyNode::Root()));
+  }
 }
 
 // Test that the VisualViewport works as expected in case if a scaled
@@ -371,6 +400,20 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100),
                        visual_viewport.VisibleRect().Size());
 
+  // Verify the paint property nodes and GeometryMapper cache.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    WebView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(TransformationMatrix().Scale(2),
+              visual_viewport.GetPageScaleNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
+              GeometryMapper::SourceToDestinationProjection(
+                  visual_viewport.GetScrollTranslationNode(),
+                  &TransformPaintPropertyNode::Root()));
+  }
+
   WebView()->Resize(IntSize(200, 100));
 
   // After resizing the scale changes 2.0 -> 4.0
@@ -379,6 +422,20 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visual_viewport.GetScrollOffset());
+
+  // Verify the paint property nodes and GeometryMapper cache.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    WebView()->UpdateAllLifecyclePhases();
+    EXPECT_EQ(TransformationMatrix().Scale(4),
+              visual_viewport.GetPageScaleNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
+              GeometryMapper::SourceToDestinationProjection(
+                  visual_viewport.GetScrollTranslationNode(),
+                  &TransformPaintPropertyNode::Root()));
+  }
 }
 
 // Test that the container layer gets sized properly if the WebView is resized
