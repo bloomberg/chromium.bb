@@ -761,7 +761,16 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   connection->DeleteSurroundingText(1, 1);
   EXPECT_EQ(1, test_context_handler.delete_surrounding_text_call_count());
 
+  // If there is no composing text, FinishComposingText() does nothing.
   test_context_handler.Reset();
+  connection->FinishComposingText();
+  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
+
+  // If there is composing text, FinishComposingText() calls CommitText() with
+  // the text.
+  connection->SetComposingText(base::ASCIIToUTF16("composing"), 0,
+                               base::nullopt);
+  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
   connection->FinishComposingText();
   EXPECT_EQ(1, test_context_handler.commit_text_call_count());
 
