@@ -188,7 +188,8 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
 
 }  // namespace
 
-PageHandler::PageHandler(EmulationHandler* emulation_handler)
+PageHandler::PageHandler(EmulationHandler* emulation_handler,
+                         bool allow_set_download_behavior)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
       enabled_(false),
       screencast_enabled_(false),
@@ -205,6 +206,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       last_surface_size_(gfx::Size()),
       host_(nullptr),
       emulation_handler_(emulation_handler),
+      allow_set_download_behavior_(allow_set_download_behavior),
       observer_(this),
       weak_factory_(this) {
   bool create_video_consumer = true;
@@ -855,6 +857,9 @@ Response PageHandler::BringToFront() {
 
 Response PageHandler::SetDownloadBehavior(const std::string& behavior,
                                           Maybe<std::string> download_path) {
+  if (!allow_set_download_behavior_)
+    return Response::Error("Not allowed.");
+
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
     return Response::InternalError();

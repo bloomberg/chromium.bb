@@ -15,6 +15,7 @@ var unsupportedMajorProtocolVersion = "100.0";
 var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
 var DETACHED_WHILE_HANDLING = "Detached while handling command.";
+var NOT_ALLOWED = "Not allowed.";
 
 chrome.test.getConfig(config => chrome.test.runTests([
 
@@ -295,6 +296,32 @@ chrome.test.getConfig(config => chrome.test.runTests([
       }
 
       chrome.debugger.attach(debuggee, protocolVersion, onAttach);
+    });
+  },
+
+  // https://crbug.com/866426
+  function setDownloadBehavior() {
+    chrome.tabs.create({url: 'inspected.html'}, function(tab) {
+      var debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolVersion, function() {
+        chrome.test.assertNoLastError();
+        chrome.debugger.sendCommand(debuggee, 'Page.setDownloadBehavior',
+            {behavior: 'allow'}, onResponse);
+
+        function onResponse() {
+          var message;
+          try {
+            message = JSON.parse(chrome.runtime.lastError.message).message;
+          } catch (e) {
+          }
+          chrome.debugger.detach(debuggee, () => {
+            if (message === NOT_ALLOWED)
+              chrome.test.succeed();
+            else
+              chrome.test.fail('' + message + ' instead of ' + NOT_ALLOWED);
+          });
+        }
+      });
     });
   },
 
