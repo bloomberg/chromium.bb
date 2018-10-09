@@ -25,6 +25,7 @@ import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -230,6 +231,7 @@ public class DownloadNotificationService2Test {
     @SmallTest
     @UiThreadTest
     @Feature({"Download"})
+    @DisabledTest(message = "https://crbug.com/837298")
     public void testResumeAllPendingDownloads() {
         // Queue a few pending downloads.
         mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
