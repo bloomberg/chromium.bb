@@ -114,6 +114,10 @@ class ScriptTracker {
   // Scripts found to be runnable so far, in the current run of CheckScripts.
   std::vector<Script*> pending_runnable_scripts_;
 
+  // If a Check() was called while a check was in progress, run another one just
+  // afterwards, in case things have changed.
+  bool must_recheck_;
+
   // If a script is currently running, this is the script's executor. Otherwise,
   // this is nullptr.
   std::unique_ptr<ScriptExecutor> executor_;

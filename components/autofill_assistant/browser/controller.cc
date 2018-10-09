@@ -282,6 +282,10 @@ void Controller::OnRunnableScriptsChanged(
   GetUiController()->UpdateScripts(runnable_scripts);
 }
 
+void Controller::DocumentAvailableInMainFrame() {
+  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+}
+
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
   // validated_url might not be the page URL. Ignore it and always check the
