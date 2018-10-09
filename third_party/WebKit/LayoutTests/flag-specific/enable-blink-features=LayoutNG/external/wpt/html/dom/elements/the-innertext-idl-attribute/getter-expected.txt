@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 218 tests; 216 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 220 tests; 218 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -40,6 +40,8 @@ PASS Whitespace collapses across element boundaries ("<div><span>abc </span><spa
 PASS Whitespace around <input> should not be collapsed ("<div>abc <input> def")
 PASS Whitespace around inline-block should not be collapsed ("<div>abc <span style='display:inline-block'></span> def")
 PASS Trailing space at end of inline-block should be collapsed ("<div>abc <span style='display:inline-block'> def </span> ghi")
+PASS Whitespace between <input> and block should be collapsed ("<div><input> <div>abc</div>")
+PASS Whitespace between inline-block and block should be collapsed ("<div><span style='inline-block'></span> <div>abc</div>")
 PASS Soft line breaks ignored ("<div style='width:0'>abc def")
 PASS Whitespace text node preserved ("<div style='width:0'><span>abc</span> <span>def</span>")
 PASS ::first-line styles applied ("<div class='first-line-uppercase' style='width:0'>abc def")

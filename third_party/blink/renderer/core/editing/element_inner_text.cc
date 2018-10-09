@@ -640,6 +640,8 @@ void ElementInnerTextCollector::Result::EmitRequiredLineBreak(int count) {
     return;
   // 4. Remove any runs of consecutive required line break count items at the
   // start or end of results.
+  should_collapse_white_space_ = true;
+  has_collapsible_space_ = false;
   if (builder_.IsEmpty()) {
     DCHECK_EQ(required_line_break_count_, 0);
     return;
@@ -648,7 +650,6 @@ void ElementInnerTextCollector::Result::EmitRequiredLineBreak(int count) {
   // items with a string consisting of as many U+000A LINE FEED (LF) characters
   // as the maximum of the values in the required line break count items.
   required_line_break_count_ = std::max(required_line_break_count_, count);
-  should_collapse_white_space_ = true;
 }
 
 void ElementInnerTextCollector::Result::EmitTab() {
