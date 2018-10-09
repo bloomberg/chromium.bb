@@ -65,18 +65,18 @@ An archive of all packages built so far is at https://is.gd/chromeclang
 
         $ PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;auth.OAUTH_CLIENT_ID='62121018386-h08uiaftreu4dr3c4alh3l7mogskvb7i.apps.googleusercontent.com';auth.OAUTH_CLIENT_SECRET='vc1fZfV1cZC6mgDSHV-KSPOz';print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).login()"
 
-    a.  Generate a fresh Oath2 token:
+    b.  Generate a fresh Oath2 token:
 
         $ TOKEN=$(PYTHONPATH=$(dirname $(which git-cl)) python -c"import auth;print auth.get_authenticator_for_host('pinpoint',auth.make_auth_config()).get_access_token().token")
 
-    a.  Launch Pinpoint job:
+    c.  Launch Pinpoint job:
 
         $ curl -H"Authorization: Bearer $TOKEN" -F configuration=chromium-rel-win7-gpu-nvidia \
-            -F target=telemetry_perf_tests -F benchmark=speedometer2 \
+            -F target=performance_test_suite -F benchmark=speedometer2 \
             -F patch=https://chromium-review.googlesource.com/c/chromium/src/+/$(git cl issue | cut -d' ' -f3) \
             -F start_git_hash=HEAD -F end_git_hash=HEAD https://pinpoint-dot-chromeperf.appspot.com/api/new
 
-    a.  Use the URL returned by the command above to see the progress and result
+    d.  Use the URL returned by the command above to see the progress and result
         of the tryjob, checking that it doesn't regress significantly (> 10%).
         Post the URL to the codereview.
 
