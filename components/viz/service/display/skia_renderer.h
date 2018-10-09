@@ -108,7 +108,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const cc::FilterOperations* background_filters) const;
   bool IsUsingVulkan() const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
-  const SkRect& QuadVertexSkRect() const { return quad_vertex_skrect_; }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
@@ -147,7 +146,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool is_scissor_enabled_ = false;
   gfx::Rect scissor_rect_;
   SkPaint current_paint_;
-  const SkRect quad_vertex_skrect_;
 
   // Specific for overdraw.
   sk_sp<SkSurface> overdraw_surface_;
