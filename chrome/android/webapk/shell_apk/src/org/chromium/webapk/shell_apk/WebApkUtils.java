@@ -27,7 +27,9 @@ import android.widget.TextView;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains utility methods for interacting with WebAPKs.
@@ -96,13 +98,20 @@ public class WebApkUtils {
         return returnUrlBuilder.toString();
     }
 
-    /** Returns a list of ResolveInfo for all of the installed browsers. */
-    public static List<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
+    /** Returns a set of ResolveInfo for all of the installed browsers. */
+    public static Set<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
         Intent browserIntent = getQueryInstalledBrowsersIntent();
         // Note: {@link PackageManager#queryIntentActivities()} does not return ResolveInfos for
         // disabled browsers.
-        return packageManager.queryIntentActivities(
+        Set<ResolveInfo> result = new HashSet<>();
+        List<ResolveInfo> resolveInfosAll =
+                packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_ALL);
+        List<ResolveInfo> resolveInfosDefaultOnly = packageManager.queryIntentActivities(
                 browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        result.addAll(resolveInfosAll);
+        result.addAll(resolveInfosDefaultOnly);
+        return result;
     }
 
     /**
