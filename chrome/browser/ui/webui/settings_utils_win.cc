@@ -42,9 +42,10 @@ class ManageCertificatesDialog : public ui::BaseShellDialogImpl {
     }
 
     RunState run_state = BeginRun(parent);
-    run_state.dialog_thread->task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&ManageCertificatesDialog::ShowOnDialogThread,
-                              base::Unretained(this), run_state),
+    run_state.dialog_task_runner->PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ManageCertificatesDialog::ShowOnDialogThread,
+                   base::Unretained(this), run_state),
         base::Bind(&ManageCertificatesDialog::OnDialogClosed,
                    base::Unretained(this), run_state, callback));
   }
