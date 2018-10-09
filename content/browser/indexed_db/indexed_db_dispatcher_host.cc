@@ -89,10 +89,8 @@ class IndexedDBDispatcherHost::IDBSequenceHelper {
  public:
   IDBSequenceHelper(
       int ipc_process_id,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBContextImpl> indexed_db_context)
       : ipc_process_id_(ipc_process_id),
-        request_context_getter_(std::move(request_context_getter)),
         indexed_db_context_(std::move(indexed_db_context)) {}
   ~IDBSequenceHelper() {}
 
@@ -118,7 +116,6 @@ class IndexedDBDispatcherHost::IDBSequenceHelper {
 
  private:
   const int ipc_process_id_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   DISALLOW_COPY_AND_ASSIGN(IDBSequenceHelper);
@@ -126,14 +123,12 @@ class IndexedDBDispatcherHost::IDBSequenceHelper {
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<IndexedDBContextImpl> indexed_db_context,
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : indexed_db_context_(std::move(indexed_db_context)),
       blob_storage_context_(std::move(blob_storage_context)),
       ipc_process_id_(ipc_process_id),
       idb_helper_(new IDBSequenceHelper(ipc_process_id_,
-                                        std::move(request_context_getter),
                                         indexed_db_context_)),
       weak_factory_(this) {
   DCHECK(indexed_db_context_.get());
@@ -292,8 +287,8 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::GetDatabaseNamesOnIDBThread(
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
-  indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
-      callbacks, origin, indexed_db_path, request_context_getter_);
+  indexed_db_context_->GetIDBFactory()->GetDatabaseNames(callbacks, origin,
+                                                         indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
@@ -315,10 +310,8 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
       std::make_unique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, transaction_id,
           version);
-  DCHECK(request_context_getter_);
   indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
-                                             request_context_getter_, origin,
-                                             indexed_db_path);
+                                             origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::IDBSequenceHelper::DeleteDatabaseOnIDBThread(
@@ -329,10 +322,8 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::DeleteDatabaseOnIDBThread(
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
-  DCHECK(request_context_getter_);
   indexed_db_context_->GetIDBFactory()->DeleteDatabase(
-      name, request_context_getter_, callbacks, origin, indexed_db_path,
-      force_close);
+      name, callbacks, origin, indexed_db_path, force_close);
 }
 
 void IndexedDBDispatcherHost::IDBSequenceHelper::

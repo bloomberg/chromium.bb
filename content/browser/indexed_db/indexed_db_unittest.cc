@@ -173,7 +173,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
             const int child_process_id = 0;
             const int64_t host_transaction_id = 0;
             const int64_t version = 0;
-            const scoped_refptr<net::URLRequestContextGetter> request_context;
 
             IndexedDBFactory* factory = idb_context->GetIDBFactory();
 
@@ -184,14 +183,14 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                           std::make_unique<IndexedDBPendingConnection>(
                               open_callbacks, open_db_callbacks,
                               child_process_id, host_transaction_id, version),
-                          request_context, origin, idb_context->data_path());
+                          origin, idb_context->data_path());
             EXPECT_TRUE(base::DirectoryExists(test_path));
 
             factory->Open(base::ASCIIToUTF16("closeddb"),
                           std::make_unique<IndexedDBPendingConnection>(
                               closed_callbacks, closed_db_callbacks,
                               child_process_id, host_transaction_id, version),
-                          request_context, origin, idb_context->data_path());
+                          origin, idb_context->data_path());
 
             closed_callbacks->connection()->Close();
 
@@ -260,14 +259,13 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
 
             const int child_process_id = 0;
             const int64_t transaction_id = 1;
-            const scoped_refptr<net::URLRequestContextGetter> request_context;
 
             std::unique_ptr<IndexedDBPendingConnection> connection(
                 std::make_unique<IndexedDBPendingConnection>(
                     callbacks, db_callbacks, child_process_id, transaction_id,
                     IndexedDBDatabaseMetadata::DEFAULT_VERSION));
             factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
-                          request_context, Origin(kTestOrigin), temp_path);
+                          Origin(kTestOrigin), temp_path);
 
             EXPECT_TRUE(callbacks->connection());
 

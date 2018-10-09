@@ -571,7 +571,6 @@ IndexedDBBackingStore::IndexedDBBackingStore(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const FilePath& blob_path,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     std::unique_ptr<LevelDBDatabase> db,
     std::unique_ptr<LevelDBComparator> comparator,
     base::SequencedTaskRunner* task_runner)
@@ -579,7 +578,6 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
-      request_context_getter_(request_context_getter),
       task_runner_(task_runner),
       db_(std::move(db)),
       comparator_(std::move(comparator)),
@@ -622,7 +620,6 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const FilePath& path_base,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     IndexedDBDataLossInfo* data_loss_info,
     bool* disk_full,
     base::SequencedTaskRunner* task_runner,
@@ -630,8 +627,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     Status* status) {
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(
-      indexed_db_factory, origin, path_base, request_context, data_loss_info,
-      disk_full, &leveldb_factory, task_runner, clean_journal, status);
+      indexed_db_factory, origin, path_base, data_loss_info, disk_full,
+      &leveldb_factory, task_runner, clean_journal, status);
 }
 
 Status IndexedDBBackingStore::DestroyBackingStore(const FilePath& path_base,
@@ -969,7 +966,6 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const FilePath& path_base,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     IndexedDBDataLossInfo* data_loss_info,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory,
@@ -1105,8 +1101,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           base::trace_event::MemoryDumpProvider::Options());
 
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      Create(indexed_db_factory, origin, blob_path, request_context_getter,
-             std::move(db), std::move(comparator), task_runner, status);
+      Create(indexed_db_factory, origin, blob_path, std::move(db),
+             std::move(comparator), task_runner, status);
 
   if (clean_journal && backing_store.get()) {
     *status = backing_store->CleanUpBlobJournal(LiveBlobJournalKey::Encode());
@@ -1156,8 +1152,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
           base::trace_event::MemoryDumpProvider::Options());
 
   return Create(nullptr /* indexed_db_factory */, origin, FilePath(),
-                nullptr /* request_context */, std::move(db),
-                std::move(comparator), task_runner, status);
+                std::move(db), std::move(comparator), task_runner, status);
 }
 
 // static
@@ -1165,14 +1160,13 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const FilePath& blob_path,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
     std::unique_ptr<LevelDBDatabase> db,
     std::unique_ptr<LevelDBComparator> comparator,
     base::SequencedTaskRunner* task_runner,
     Status* status) {
   // TODO(jsbell): Handle comparator name changes.
   scoped_refptr<IndexedDBBackingStore> backing_store(new IndexedDBBackingStore(
-      indexed_db_factory, origin, blob_path, request_context, std::move(db),
+      indexed_db_factory, origin, blob_path, std::move(db),
       std::move(comparator), task_runner));
   *status = backing_store->SetUpMetadata();
   if (!status->ok())
