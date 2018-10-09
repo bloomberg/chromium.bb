@@ -614,7 +614,7 @@ CHAR-LIMIT guidelines:
       <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION" desc="Description of contextual suggestions, which tells the user what contextual suggestions does.">
         When you scroll up, show quick links to related pages. The URLs of pages you visit are sent to Google.
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION_TOOLBAR_BUTTON" desc="Description of contextual suggestions, which tells the user that when they tap the ‘More like this’ button they will be shown links to pages related to their current page. An icon will be inserted into the string after ‘More like this’. Please ensure ‘More like this’ in this message matches the ‘More like this’ toolbar button.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION_TOOLBAR_BUTTON" desc="Description of contextual suggestions, which tells the user that when they tap the ‘More like this’ button they will be shown links to pages related to their current page. An icon will be inserted into the string after ‘More like this’. 'More like this' should match TC ID 1418444397960583910.">
         When you tap More like this <ph name="ICON">&lt;icon&gt; &lt;/icon&gt;</ph> in the address bar, show quick links to related pages. The URLs of pages you visit are sent to Google.
       </message>
       <message name="IDS_CONTEXTUAL_SUGGESTIONS_MESSAGE" desc="Message of contextual suggestions settings, which tells the user how to opt in contextual suggestions.">
@@ -2869,25 +2869,25 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Contextual suggestions strings -->
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed. 'More like this' should match TC ID 1418444397960583910.">
         See more like this from Google
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP_ACCESSIBILITY" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time and accessibility mode is enabled. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP_ACCESSIBILITY" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time and accessibility mode is enabled. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed. 'More like this' should match TC ID 1418444397960583910.">
         See more like this from Google using the More Like This button
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_BUTTON_DESCRIPTION" desc="The content description for a toolbar button that shows contextual suggestions related to the current web page when tapped. 'More like this' should be the same as in the contextual_suggestions_in_product_help string.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_BUTTON_DESCRIPTION" desc="The content description for a toolbar button that shows contextual suggestions related to the current web page when tapped. The suggestions show up in an overlay sheet. This string is also the default title for that sheet (see IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF for screenshot). 'More like this' is the name of the feature and is used in several other related strings.">
         More like this
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_CLOSE_BUTTON_DESCRIPTION" desc="The content description for the contextual suggestions close button. Tapping the button closing the UI. 'More like this' should be the same as in the contextual_suggestions_in_product_help string.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_CLOSE_BUTTON_DESCRIPTION" desc="The content description for the contextual suggestions close button. Tapping the button closing the UI. 'More like this' should match TC ID 1418444397960583910.">
          Close more like this
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF" desc="Accessibility string read when the 'more like this' sheet is opened at half height. The sheet will occupy the bottom half the screen. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF" desc="Accessibility string read when the 'more like this' sheet is opened at half height. The sheet will occupy the bottom half the screen. 'More like this' should match TC ID 1418444397960583910.">
          More like this opened at half height
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_FULL" desc="Accessibility string read when the 'more like this' sheet is opened at full height. The sheet will occupy the entire screen. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_FULL" desc="Accessibility string read when the 'more like this' sheet is opened at full height. The sheet will occupy the entire screen. 'More like this' should match TC ID 1418444397960583910.">
          More like this opened at full height
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_CLOSED" desc="Accessibility string read when the'more like this' sheet is closed. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_CLOSED" desc="Accessibility string read when the 'more like this' sheet is closed. 'More like this' should match TC ID 1418444397960583910.">
          More like this closed
       </message>
 
