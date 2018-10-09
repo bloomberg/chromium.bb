@@ -22,7 +22,6 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
   SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
-  bool AllowHighFrequencyDispatch() const override;
 
  private:
   enum GestureState {
