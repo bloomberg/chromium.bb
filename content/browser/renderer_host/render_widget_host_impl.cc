@@ -1163,8 +1163,6 @@ void RenderWidgetHostImpl::StopInputEventAckTimeout() {
 
 void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
   current_content_source_id_ = next_source_id;
-  did_receive_first_frame_after_navigation_ = false;
-
   // Stop the flinging after navigating to a new page.
   StopFling();
 
@@ -2904,12 +2902,10 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
     // After navigation, if a frame belonging to the new page is received, stop
     // the timer that triggers clearing the graphics of the last page.
-    if (last_received_content_source_id_ >= current_content_source_id_) {
-      did_receive_first_frame_after_navigation_ = true;
-      if (new_content_rendering_timeout_ &&
-          new_content_rendering_timeout_->IsRunning()) {
-        new_content_rendering_timeout_->Stop();
-      }
+    if (last_received_content_source_id_ >= current_content_source_id_ &&
+        new_content_rendering_timeout_ &&
+        new_content_rendering_timeout_->IsRunning()) {
+      new_content_rendering_timeout_->Stop();
     }
   }
 }
@@ -2997,8 +2993,8 @@ void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
-  if (did_receive_first_frame_after_navigation_ ||
-      !new_content_rendering_timeout_) {
+  if (!new_content_rendering_timeout_ ||
+      !new_content_rendering_timeout_->IsRunning()) {
     return;
   }
   new_content_rendering_timeout_->Stop();

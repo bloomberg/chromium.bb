@@ -220,15 +220,18 @@ void DelegatedFrameHost::EmbedSurface(
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_dip_size_ = new_pending_dip_size;
 
+  viz::SurfaceId new_primary_surface_id(frame_sink_id_,
+                                        pending_local_surface_id_);
+
   if (!client_->DelegatedFrameHostIsVisible()) {
-    // If the tab is resized while hidden, reset the fallback so that the next
+    // If the tab is resized while hidden, advance the fallback so that the next
     // time user switches back to it the page is blank. This is preferred to
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (pending_surface_dip_size_ != current_frame_size_in_dip_ &&
-        HasFallbackSurface()) {
+        HasPrimarySurface()) {
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-          viz::SurfaceId());
+          new_primary_surface_id);
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
     // renderers that do not submit CompositorFrames. Next time the renderer
@@ -238,7 +241,6 @@ void DelegatedFrameHost::EmbedSurface(
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != pending_local_surface_id_) {
-    viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
 #if defined(OS_WIN) || defined(USE_X11)
     // On Windows and Linux, we would like to produce new content as soon as
     // possible or the OS will create an additional black gutter. Until we can
@@ -255,7 +257,7 @@ void DelegatedFrameHost::EmbedSurface(
 #endif
     current_frame_size_in_dip_ = pending_surface_dip_size_;
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_id, current_frame_size_in_dip_, GetGutterColor(),
+        new_primary_surface_id, current_frame_size_in_dip_, GetGutterColor(),
         deadline_policy, false /* stretch_content_to_fill_bounds */);
     if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                            switches::kDisableResizeLock)) {
@@ -358,10 +360,23 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(viz::SurfaceId(
-        frame_sink_id_, first_local_surface_id_after_navigation_));
+  if (!HasPrimarySurface())
+    return;
+
+  const viz::SurfaceId* fallback_surface_id =
+      client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+
+  // Don't update the fallback if it's already newer than the first id after
+  // navigation.
+  if (fallback_surface_id &&
+      fallback_surface_id->frame_sink_id() == frame_sink_id_ &&
+      fallback_surface_id->local_surface_id().IsSameOrNewerThan(
+          first_local_surface_id_after_navigation_)) {
+    return;
   }
+
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+      viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
