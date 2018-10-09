@@ -19,7 +19,6 @@ class Value;
 
 namespace net {
 class FileNetLogObserver;
-class TraceNetLogObserver;
 }
 
 namespace net_log {
@@ -78,9 +77,6 @@ class ChromeNetLog : public net::NetLog {
   // This observer handles writing NetLogs specified via StartWritingToFile()
   // (In Chrome this corresponds to the --log-net-log command line).
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
-
-  // This observer forwards NetLog events to the chrome://tracing system.
-  std::unique_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);
 };

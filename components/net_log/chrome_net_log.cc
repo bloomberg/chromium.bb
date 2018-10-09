@@ -17,18 +17,13 @@
 #include "components/version_info/version_info.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/log/trace_net_log_observer.h"
 
 namespace net_log {
 
-ChromeNetLog::ChromeNetLog() {
-  trace_net_log_observer_.reset(new net::TraceNetLogObserver());
-  trace_net_log_observer_->WatchForTraceStart(this);
-}
+ChromeNetLog::ChromeNetLog() {}
 
 ChromeNetLog::~ChromeNetLog() {
   ClearFileNetLogObserver();
-  trace_net_log_observer_->StopWatchForTraceStart();
 }
 
 void ChromeNetLog::StartWritingToFile(

@@ -21,6 +21,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -97,8 +98,12 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
                                         base::File::FLAG_WRITE);
           LOG_IF(ERROR, !file.IsValid())
               << "Failed opening: " << log_path.value();
+
+          // TODO(mmenke): Get capture mode from the command line.
           (*g_network_service_ptr)
-              ->StartNetLog(std::move(file), std::move(client_constants));
+              ->StartNetLog(std::move(file),
+                            network::mojom::NetLogCaptureMode::DEFAULT,
+                            std::move(client_constants));
         }
       }
 

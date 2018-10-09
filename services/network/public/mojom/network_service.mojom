@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_param.mojom";
@@ -222,6 +223,7 @@ interface NetworkService {
   // for more details). Most clients will just be adding a dictionary under
   // the key "clientInfo".
   StartNetLog(mojo_base.mojom.File file,
+              NetLogCaptureMode capture_mode,
               mojo_base.mojom.DictionaryValue constants);
 
   // Starts logging SSL key material to the |file|. This must be called before

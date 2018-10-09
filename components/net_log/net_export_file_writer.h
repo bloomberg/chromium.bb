@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "net/log/net_log_capture_mode.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace base {

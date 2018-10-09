@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/mojo_net_log.h"
+#include "services/network/net_log_exporter.h"
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -12,36 +12,16 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/net_log_capture_mode_type_converter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/network_switches.h"
 
 namespace network {
-
-MojoNetLog::MojoNetLog() = default;
-MojoNetLog::~MojoNetLog() = default;
-
-void MojoNetLog::ShutDown() {
-  if (file_net_log_observer_) {
-    file_net_log_observer_->StopObserving(nullptr /*polled_data*/,
-                                          base::OnceClosure());
-    file_net_log_observer_.reset();
-  }
-}
-
-void MojoNetLog::ObserveFileWithConstants(base::File file,
-                                          base::Value constants) {
-  // TODO(eroman): Should get capture mode from the command line.
-  net::NetLogCaptureMode capture_mode =
-      net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-
-  file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
-      std::move(file), std::make_unique<base::Value>(std::move(constants)));
-  file_net_log_observer_->StartObserving(this, capture_mode);
-}
 
 NetLogExporter::NetLogExporter(NetworkContext* network_context)
     : network_context_(network_context), state_(STATE_IDLE) {}
@@ -61,7 +41,7 @@ NetLogExporter::~NetLogExporter() {
 
 void NetLogExporter::Start(base::File destination,
                            base::Value extra_constants,
-                           NetLogExporter::CaptureMode capture_mode,
+                           mojom::NetLogCaptureMode capture_mode,
                            uint64_t max_file_size,
                            StartCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -77,18 +57,8 @@ void NetLogExporter::Start(base::File destination,
   // be carefully controlled.
   destination_ = std::move(destination);
 
-  net::NetLogCaptureMode net_capture_mode;
-  switch (capture_mode) {
-    case NetLogExporter::CaptureMode::DEFAULT:
-      net_capture_mode = net::NetLogCaptureMode::Default();
-      break;
-    case NetLogExporter::CaptureMode::INCLUDE_COOKIES_AND_CREDENTIALS:
-      net_capture_mode = net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-      break;
-    case NetLogExporter::CaptureMode::INCLUDE_SOCKET_BYTES:
-      net_capture_mode = net::NetLogCaptureMode::IncludeSocketBytes();
-      break;
-  }
+  net::NetLogCaptureMode net_capture_mode =
+      mojo::ConvertTo<net::NetLogCaptureMode>(capture_mode);
 
   state_ = STATE_WAITING_DIR;
   static_assert(kUnlimitedFileSize == net::FileNetLogObserver::kNoLimit,

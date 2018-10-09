@@ -36,6 +36,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/test/test_network_service_client.h"
@@ -763,7 +764,9 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
 
   base::File log_file(log_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  network_service_->StartNetLog(std::move(log_file), std::move(dict));
+  network_service_->StartNetLog(std::move(log_file),
+                                network::mojom::NetLogCaptureMode::DEFAULT,
+                                std::move(dict));
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);

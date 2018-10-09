@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_MOJO_NET_LOG_H_
-#define SERVICES_NETWORK_MOJO_NET_LOG_H_
+#ifndef SERVICES_NETWORK_NET_LOG_EXPORTER_H_
+#define SERVICES_NETWORK_NET_LOG_EXPORTER_H_
 
 #include <memory>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/values.h"
 #include "net/log/net_log.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace net {
@@ -19,29 +22,6 @@ class FileNetLogObserver;
 namespace network {
 
 class NetworkContext;
-
-// NetLog used by NetworkService when it owns the NetLog, rather than when a
-// pre-existing one is passed in to its constructor.
-//
-// Currently only provides --log-net-log support.
-class MojoNetLog : public net::NetLog {
- public:
-  MojoNetLog();
-  ~MojoNetLog() override;
-
-  // Finalizes the logfile created by any call to ObserveFileWithConstants().
-  // It is safe to call this multiple times.
-  void ShutDown();
-
-  // If specified by the command line, stream network events (NetLog) to a
-  // file on disk. This will last for the duration of the process.
-  void ObserveFileWithConstants(base::File file, base::Value constants);
-
- private:
-  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
-};
 
 // API implementation for exporting ongoing netlogs.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetLogExporter
@@ -55,7 +35,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetLogExporter
 
   void Start(base::File destination,
              base::Value extra_constants,
-             NetLogExporter::CaptureMode capture_mode,
+             network::mojom::NetLogCaptureMode capture_mode,
              uint64_t max_file_size,
              StartCallback callback) override;
   void Stop(base::Value polled_data, StopCallback callback) override;
@@ -106,4 +86,4 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetLogExporter
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_MOJO_NET_LOG_H_
+#endif  // SERVICES_NETWORK_NET_LOG_EXPORTER_H_
