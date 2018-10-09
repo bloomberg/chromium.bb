@@ -184,7 +184,7 @@ const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
 // are sent.
 const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
     "AutofillSendOnlyCountryInGetUploadDetails",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or Disables (mostly for hermetic testing) autofill server
 // communication. The URL of the autofill server can further be controlled via
