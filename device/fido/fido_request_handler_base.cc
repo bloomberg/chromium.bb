@@ -84,7 +84,7 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
       continue;
     }
 
-    auto discovery = FidoDiscovery::Create(transport, connector);
+    auto discovery = FidoDeviceDiscovery::Create(transport, connector);
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
       // HID transports are not configured.

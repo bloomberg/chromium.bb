@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_discovery.h"
+#include "device/fido/fido_device_discovery.h"
 
 #include <utility>
 
@@ -23,7 +23,7 @@ namespace device {
 
 namespace {
 
-std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
+std::unique_ptr<FidoDeviceDiscovery> CreateFidoDiscoveryImpl(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   switch (transport) {
@@ -52,42 +52,42 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
   return nullptr;
 }
 
-std::unique_ptr<FidoDiscovery> CreateCableDiscoveryImpl(
+std::unique_ptr<FidoDeviceDiscovery> CreateCableDiscoveryImpl(
     std::vector<CableDiscoveryData> cable_data) {
   return std::make_unique<FidoCableDiscovery>(std::move(cable_data));
 }
 
 }  // namespace
 
-FidoDiscovery::Observer::~Observer() = default;
+FidoDeviceDiscovery::Observer::~Observer() = default;
 
 // static
-FidoDiscovery::FactoryFuncPtr FidoDiscovery::g_factory_func_ =
+FidoDeviceDiscovery::FactoryFuncPtr FidoDeviceDiscovery::g_factory_func_ =
     &CreateFidoDiscoveryImpl;
 
 // static
-FidoDiscovery::CableFactoryFuncPtr FidoDiscovery::g_cable_factory_func_ =
-    &CreateCableDiscoveryImpl;
+FidoDeviceDiscovery::CableFactoryFuncPtr
+    FidoDeviceDiscovery::g_cable_factory_func_ = &CreateCableDiscoveryImpl;
 
 // static
-std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
+std::unique_ptr<FidoDeviceDiscovery> FidoDeviceDiscovery::Create(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   return (*g_factory_func_)(transport, connector);
 }
 
 //  static
-std::unique_ptr<FidoDiscovery> FidoDiscovery::CreateCable(
+std::unique_ptr<FidoDeviceDiscovery> FidoDeviceDiscovery::CreateCable(
     std::vector<CableDiscoveryData> cable_data) {
   return (*g_cable_factory_func_)(std::move(cable_data));
 }
 
-FidoDiscovery::FidoDiscovery(FidoTransportProtocol transport)
+FidoDeviceDiscovery::FidoDeviceDiscovery(FidoTransportProtocol transport)
     : FidoDiscoveryBase(transport), weak_factory_(this) {}
 
-FidoDiscovery::~FidoDiscovery() = default;
+FidoDeviceDiscovery::~FidoDeviceDiscovery() = default;
 
-void FidoDiscovery::Start() {
+void FidoDeviceDiscovery::Start() {
   DCHECK_EQ(state_, State::kIdle);
   state_ = State::kStarting;
   // TODO(hongjunchoi): Fix so that NotifiyStarted() is never called
@@ -96,7 +96,7 @@ void FidoDiscovery::Start() {
   StartInternal();
 }
 
-void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
+void FidoDeviceDiscovery::NotifyDiscoveryStarted(bool success) {
   DCHECK_EQ(state_, State::kStarting);
   if (success)
     state_ = State::kRunning;
@@ -105,14 +105,15 @@ void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
   observer()->DiscoveryStarted(this, success);
 }
 
-void FidoDiscovery::NotifyAuthenticatorAdded(FidoAuthenticator* authenticator) {
+void FidoDeviceDiscovery::NotifyAuthenticatorAdded(
+    FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
   if (!observer())
     return;
   observer()->AuthenticatorAdded(this, authenticator);
 }
 
-void FidoDiscovery::NotifyAuthenticatorRemoved(
+void FidoDeviceDiscovery::NotifyAuthenticatorRemoved(
     FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
   if (!observer())
@@ -121,7 +122,7 @@ void FidoDiscovery::NotifyAuthenticatorRemoved(
 }
 
 std::vector<FidoDeviceAuthenticator*>
-FidoDiscovery::GetAuthenticatorsForTesting() {
+FidoDeviceDiscovery::GetAuthenticatorsForTesting() {
   std::vector<FidoDeviceAuthenticator*> authenticators;
   authenticators.reserve(authenticators_.size());
   for (const auto& authenticator : authenticators_)
@@ -130,7 +131,7 @@ FidoDiscovery::GetAuthenticatorsForTesting() {
 }
 
 std::vector<const FidoDeviceAuthenticator*>
-FidoDiscovery::GetAuthenticatorsForTesting() const {
+FidoDeviceDiscovery::GetAuthenticatorsForTesting() const {
   std::vector<const FidoDeviceAuthenticator*> authenticators;
   authenticators.reserve(authenticators_.size());
   for (const auto& authenticator : authenticators_)
@@ -138,18 +139,18 @@ FidoDiscovery::GetAuthenticatorsForTesting() const {
   return authenticators;
 }
 
-FidoDeviceAuthenticator* FidoDiscovery::GetAuthenticatorForTesting(
+FidoDeviceAuthenticator* FidoDeviceDiscovery::GetAuthenticatorForTesting(
     base::StringPiece authenticator_id) {
   return GetAuthenticator(authenticator_id);
 }
 
-FidoDeviceAuthenticator* FidoDiscovery::GetAuthenticator(
+FidoDeviceAuthenticator* FidoDeviceDiscovery::GetAuthenticator(
     base::StringPiece authenticator_id) {
   auto found = authenticators_.find(authenticator_id);
   return found != authenticators_.end() ? found->second.get() : nullptr;
 }
 
-bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
+bool FidoDeviceDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   auto authenticator =
       std::make_unique<FidoDeviceAuthenticator>(std::move(device));
   const auto result =
@@ -162,7 +163,7 @@ bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   return true;
 }
 
-bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {
+bool FidoDeviceDiscovery::RemoveDevice(base::StringPiece device_id) {
   auto found = authenticators_.find(device_id);
   if (found == authenticators_.end())
     return false;
@@ -181,21 +182,21 @@ ScopedFidoDiscoveryFactory::ScopedFidoDiscoveryFactory() {
   DCHECK(!g_current_factory);
   g_current_factory = this;
   original_factory_func_ =
-      std::exchange(FidoDiscovery::g_factory_func_,
+      std::exchange(FidoDeviceDiscovery::g_factory_func_,
                     &ForwardCreateFidoDiscoveryToCurrentFactory);
   original_cable_factory_func_ =
-      std::exchange(FidoDiscovery::g_cable_factory_func_,
+      std::exchange(FidoDeviceDiscovery::g_cable_factory_func_,
                     &ForwardCreateCableDiscoveryToCurrentFactory);
 }
 
 ScopedFidoDiscoveryFactory::~ScopedFidoDiscoveryFactory() {
   g_current_factory = nullptr;
-  FidoDiscovery::g_factory_func_ = original_factory_func_;
-  FidoDiscovery::g_cable_factory_func_ = original_cable_factory_func_;
+  FidoDeviceDiscovery::g_factory_func_ = original_factory_func_;
+  FidoDeviceDiscovery::g_cable_factory_func_ = original_cable_factory_func_;
 }
 
 // static
-std::unique_ptr<FidoDiscovery>
+std::unique_ptr<FidoDeviceDiscovery>
 ScopedFidoDiscoveryFactory::ForwardCreateFidoDiscoveryToCurrentFactory(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
@@ -204,7 +205,7 @@ ScopedFidoDiscoveryFactory::ForwardCreateFidoDiscoveryToCurrentFactory(
 }
 
 // static
-std::unique_ptr<FidoDiscovery>
+std::unique_ptr<FidoDeviceDiscovery>
 ScopedFidoDiscoveryFactory::ForwardCreateCableDiscoveryToCurrentFactory(
     std::vector<CableDiscoveryData> cable_data) {
   DCHECK(g_current_factory);

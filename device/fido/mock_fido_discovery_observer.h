@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/fido/fido_discovery.h"
+#include "device/fido/fido_device_discovery.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
