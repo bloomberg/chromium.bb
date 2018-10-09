@@ -135,5 +135,12 @@ public class IncognitoToggleTabLayout extends TabLayout {
 
         mTabModelSelector.commitAllTabClosures();
         mTabModelSelector.selectModel(incognitoSelected);
+
+        final int stackAnnouncementId = incognitoSelected
+                ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                                  ? R.string.accessibility_tab_switcher_private_stack_selected
+                                  : R.string.accessibility_tab_switcher_incognito_stack_selected)
+                : R.string.accessibility_tab_switcher_standard_stack_selected;
+        announceForAccessibility(getResources().getString(stackAnnouncementId));
     }
 }
