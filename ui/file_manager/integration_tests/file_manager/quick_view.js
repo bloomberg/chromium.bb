@@ -420,7 +420,7 @@ testcase.openQuickViewPdf = function() {
   const webView = ['#quick-view', '#dialog[open] webview.content'];
 
   StepsRunner.run([
-    // Open Files app on Downloads containing ENTRIES.tallText.
+    // Open Files app on Downloads containing ENTRIES.tallPdf.
     function() {
       setupAndWaitUntilReady(
           null, RootPath.DOWNLOADS, this.next, [ENTRIES.tallPdf], []);
@@ -467,7 +467,7 @@ testcase.openQuickViewPdf = function() {
     // Check: the <webview> embed type should be PDF mime type.
     function(type) {
       chrome.test.assertEq('application/pdf', type);
-      checkIfNoErrorsOccured(this.next);
+      this.next();
     },
     function() {
       checkIfNoErrorsOccured(this.next);
