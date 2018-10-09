@@ -571,14 +571,21 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   // non-nigori type in the request requires migration, a MIGRATION_DONE
   // response will be sent.
 
-  ModelTypeSet types_to_purge =
-      Difference(ModelTypeSet::All(), downloaded_types_);
-  // Include clean_types in types_to_purge, they are part of
-  // |downloaded_types_|, but still need to be cleared.
-  DCHECK(downloaded_types_.HasAll(clean_types));
-  types_to_purge.PutAll(clean_types);
-  types_to_purge.RemoveAll(inactive_types);
-  types_to_purge.RemoveAll(unready_types);
+  ModelTypeSet types_to_purge;
+  // If we're using in-memory storage, don't clear any old data. The reason is
+  // that if a user temporarily disables Sync, we don't want to wipe (and later
+  // redownload) all their data, just because Sync restarted in transport-only
+  // mode.
+  if (last_requested_context_.storage_option ==
+      ConfigureContext::STORAGE_ON_DISK) {
+    types_to_purge = Difference(ModelTypeSet::All(), downloaded_types_);
+    // Include clean_types in types_to_purge, they are part of
+    // |downloaded_types_|, but still need to be cleared.
+    DCHECK(downloaded_types_.HasAll(clean_types));
+    types_to_purge.PutAll(clean_types);
+    types_to_purge.RemoveAll(inactive_types);
+    types_to_purge.RemoveAll(unready_types);
+  }
 
   // If a type has already been disabled and unapplied or journaled, it will
   // not be part of the |types_to_purge| set, and therefore does not need

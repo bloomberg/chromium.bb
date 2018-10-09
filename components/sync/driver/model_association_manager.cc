@@ -144,8 +144,16 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
         dtc->state() == DataTypeController::STOPPING) {
       // Note: STOP_SYNC means we'll keep the Sync data around; DISABLE_SYNC
       // means we'll clear it.
-      const ShutdownReason reason =
+      ShutdownReason reason =
           preferred_types.Has(dtc->type()) ? STOP_SYNC : DISABLE_SYNC;
+      // If we're switchingt o in-memory storage, don't clear any old data. The
+      // reason is that if a user temporarily disables Sync, we don't want to
+      // wipe (and later redownload) all their data, just because Sync restarted
+      // in transport-only mode.
+      if (storage_option_changed && configure_context_.storage_option ==
+                                        ConfigureContext::STORAGE_IN_MEMORY) {
+        reason = STOP_SYNC;
+      }
       types_to_stop[dtc] = reason;
     }
   }
