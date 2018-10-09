@@ -819,7 +819,7 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,
-    const CSSProperty& property,
+    const PropertyHandle& property,
     const CSSValue* value) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
@@ -827,10 +827,11 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    StyleBuilder::ApplyProperty(property, state, *value);
+    StyleBuilder::ApplyProperty(property.GetCSSProperty(), state, *value);
     state.GetFontBuilder().CreateFont(
         state.GetDocument().GetStyleEngine().GetFontSelector(),
         state.StyleRef());
+    CSSVariableResolver(state).ResolveVariableDefinitions();
   }
   return CSSAnimatableValueFactory::Create(property, *state.Style());
 }

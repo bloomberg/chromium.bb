@@ -819,10 +819,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (property.GetCSSProperty().IsCompositableProperty()) {
-    AnimatableValue* from = CSSAnimatableValueFactory::Create(
-        property.GetCSSProperty(), state.old_style);
-    AnimatableValue* to = CSSAnimatableValueFactory::Create(
-        property.GetCSSProperty(), state.style);
+    AnimatableValue* from =
+        CSSAnimatableValueFactory::Create(property, state.old_style);
+    AnimatableValue* to =
+        CSSAnimatableValueFactory::Create(property, state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
