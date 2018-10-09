@@ -174,9 +174,10 @@ html[dir=rtl] .bg-option-img {
 .bg-option-text {
   display: inline-block;
   line-height: normal;
+  max-width: 250px;
   overflow: hidden;
   padding-left: 16px;
-  text-align: center;
+  text-align: left;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
@@ -185,6 +186,7 @@ html[dir=rtl] .bg-option-img {
 html[dir=rtl] .bg-option-text {
   padding-left: auto;
   padding-right: 16px;
+  text-align: right;
 }
 
 #bg-sel-menu::backdrop {
