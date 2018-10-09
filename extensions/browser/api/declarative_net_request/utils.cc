@@ -198,7 +198,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   if (install_warning) {
     install_warning->key = manifest_keys::kDeclarativeNetRequestKey;
     install_warning->specific = manifest_keys::kDeclarativeRuleResourcesKey;
-    warnings->push_back(*install_warning);
+    warnings->push_back(std::move(*install_warning));
   }
 
   UMA_HISTOGRAM_TIMES(kIndexAndPersistRulesTimeHistogram, timer.Elapsed());
