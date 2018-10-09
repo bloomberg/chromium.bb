@@ -1,0 +1,102 @@
+<html>
+    <body>
+            <div id="theEdit" contenteditable="true"><br>
+                <div contenteditable="false"><span>From</span><div>To:<a> AZ </a></div></div>
+                <blockquote><br>
+                    <div contenteditable="false"><span>From</span><div>To:<a> BH </a></div></div>
+                    <blockquote>
+                        <div><span>ABC</span>
+                            <div>
+                                <ul>
+                                    <li>a</li>
+                                    <ul>
+                                        <li>b</li>
+                                        <ul>
+                                            <li>c</li>
+                                        </ul>
+                                        <li>d</li>
+                                        <ul>
+                                            <li>e</li>
+                                            <ul>
+                                                <li>f</li>
+                                                <ul>
+                                                    <li>g</li>
+                                                </ul>
+                                            </ul>
+                                            <li><span>h</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </blockquote>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+
+        <button id='theOutDentBtn'>outdent once</button>
+        <button id='theOutDentRepeatBtn'>outdent a lot of times</button>
+        <button id='theInDentBtn'>indent once</button>
+        <button id='theInDentRepeatBtn'>indent a lot of times</button>
+        <p id='theFeedback'></p>
+    </body>
+    <script type='text/javascript'>
+        function outdent() {
+                if (!document.execCommand('outdentBlock', false)) {
+                    if (!document.execCommand('outdentBB', false)) {
+                        document.execCommand('outdent', false);
+                        feedback.textContent = 'outdent';
+                    }
+                    else {
+                        feedback.textContent = 'outdentBB';
+                    }
+                }
+                else {
+                    feedback.textContent = 'outdentBlock';
+                }
+        }
+
+        function indent() {
+                if (!document.execCommand('indentBlock', false)) {
+                    if (!document.execCommand('indentBB', false)) {
+                        document.execCommand('indent', false);
+                        feedback.textContent = 'indent';
+                    }
+                    else {
+                        feedback.textContent = 'indentBB';
+                    }
+                }
+                else {
+                    feedback.textContent = 'indentBlock';
+                }
+        }
+
+        var feedback = document.getElementById('theFeedback');
+        var editBody = document.getElementById('theEdit');
+        editBody.focus();
+        document.execCommand('selectAll', false);
+        var btn = document.getElementById('theOutDentBtn');
+        btn.onclick = outdent;
+        
+        var btn = document.getElementById('theOutDentRepeatBtn');
+        btn.onclick = function(e) {
+            for (var i=0; i<10; i++) {
+                outdent();
+                document.execCommand('selectAll', false);
+                // In some cases the selection is broken after each outdent.
+            }
+        };
+
+        var btn = document.getElementById('theInDentBtn');
+        btn.onclick = indent;
+        
+        var btn = document.getElementById('theInDentRepeatBtn');
+        btn.onclick = function(e) {
+            for (var i=0; i<10; i++) {
+                indent();
+                document.execCommand('selectAll', false);
+                // In some cases the selection is broken after each outdent.
+            }
+        };
+
+    </script>
+</html>
