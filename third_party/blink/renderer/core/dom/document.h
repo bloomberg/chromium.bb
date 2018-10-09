@@ -1096,7 +1096,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // will attempt to copy over the policy
   void InitContentSecurityPolicy(
       ContentSecurityPolicy* = nullptr,
-      const ContentSecurityPolicy* policy_to_inherit = nullptr);
+      const ContentSecurityPolicy* policy_to_inherit = nullptr,
+      const ContentSecurityPolicy* previous_document_csp = nullptr);
 
   bool IsSecureTransitionTo(const KURL&) const;
 

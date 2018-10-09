@@ -6297,7 +6297,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
       AddInsecureNavigationUpgrade(to_upgrade);
   }
 
-  ContentSecurityPolicy* policy_to_inherit = nullptr;
+  const ContentSecurityPolicy* policy_to_inherit = nullptr;
 
   if (IsSandboxed(kSandboxOrigin)) {
     cookie_url_ = url_;
@@ -6355,7 +6355,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     SetContentSecurityPolicy(
         ImportsController()->Master()->GetContentSecurityPolicy());
   } else {
-    InitContentSecurityPolicy(nullptr, policy_to_inherit);
+    InitContentSecurityPolicy(nullptr, policy_to_inherit,
+                              initializer.PreviousDocumentCSP());
   }
 
   if (Settings* settings = initializer.GetSettings()) {
@@ -6418,7 +6419,8 @@ void Document::InitSecureContextState() {
 // will attempt to copy over the policy
 void Document::InitContentSecurityPolicy(
     ContentSecurityPolicy* csp,
-    const ContentSecurityPolicy* policy_to_inherit) {
+    const ContentSecurityPolicy* policy_to_inherit,
+    const ContentSecurityPolicy* previous_document_csp) {
   SetContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::Create());
 
   GetContentSecurityPolicy()->BindToExecutionContext(this);
@@ -6434,19 +6436,30 @@ void Document::InitContentSecurityPolicy(
   // 'DocumentLoader::ensureWriter' that it might make sense to combine them.
   if (policy_to_inherit) {
     GetContentSecurityPolicy()->CopyStateFrom(policy_to_inherit);
-  } else if (frame_) {
-    Frame* inherit_from = frame_->Tree().Parent() ? frame_->Tree().Parent()
-                                                  : frame_->Client()->Opener();
-    if (inherit_from && frame_ != inherit_from) {
-      DCHECK(inherit_from->GetSecurityContext() &&
-             inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
-      policy_to_inherit =
-          inherit_from->GetSecurityContext()->GetContentSecurityPolicy();
-      if (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
-          url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem")) {
-        GetContentSecurityPolicy()->CopyStateFrom(policy_to_inherit);
+  } else {
+    if (frame_) {
+      Frame* inherit_from = frame_->Tree().Parent()
+                                ? frame_->Tree().Parent()
+                                : frame_->Client()->Opener();
+      if (inherit_from && frame_ != inherit_from) {
+        DCHECK(inherit_from->GetSecurityContext() &&
+               inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
+        policy_to_inherit =
+            inherit_from->GetSecurityContext()->GetContentSecurityPolicy();
       }
     }
+
+    // If we don't have an opener or parent, inherit from the previous
+    // document CSP.
+    if (!policy_to_inherit)
+      policy_to_inherit = previous_document_csp;
+
+    // We should inherit the relevant CSP if the document is loaded using
+    // a local-scheme url.
+    if (policy_to_inherit &&
+        (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
+         url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem")))
+      GetContentSecurityPolicy()->CopyStateFrom(policy_to_inherit);
   }
   // Plugin documents inherit their parent/opener's 'plugin-types' directive
   // regardless of URL.
