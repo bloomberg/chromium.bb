@@ -16,7 +16,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
-#include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -192,7 +192,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
     discovery.Start();
     run_loop.Run();
 
-    EXPECT_THAT(discovery.GetDevices(), ::testing::IsEmpty());
+    EXPECT_THAT(discovery.GetAuthenticatorsForTesting(), ::testing::IsEmpty());
   }
 
   {
@@ -209,10 +209,10 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
 
     run_loop.Run();
 
-    const auto devices = discovery.GetDevices();
-    ASSERT_THAT(devices, ::testing::SizeIs(1u));
+    const auto authenticators = discovery.GetAuthenticatorsForTesting();
+    ASSERT_THAT(authenticators, ::testing::SizeIs(1u));
     EXPECT_EQ(FidoBleDevice::GetId(BluetoothTestBase::kTestDeviceAddress1),
-              devices[0]->GetId());
+              authenticators[0]->GetId());
   }
 }
 
@@ -288,8 +288,8 @@ TEST_F(BluetoothTest, DiscoveryDoesNotAddDuplicateDeviceOnAddressChanged) {
 
   mock_adapter->NotifyDeviceChanged(mock_device.get());
 
-  EXPECT_EQ(1u, discovery.GetDevices().size());
-  EXPECT_TRUE(discovery.GetDevice(kAuthenticatorChangedId));
+  EXPECT_EQ(1u, discovery.GetAuthenticatorsForTesting().size());
+  EXPECT_TRUE(discovery.GetAuthenticatorForTesting(kAuthenticatorChangedId));
 }
 
 TEST_F(BluetoothTest, DiscoveryNotifiesObserverWhenDeviceInPairingMode) {

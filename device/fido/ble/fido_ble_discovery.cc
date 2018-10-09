@@ -15,6 +15,7 @@
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_device_authenticator.h"
 
 namespace device {
 
@@ -74,8 +75,8 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
   }
 
   const auto device_id = FidoBleDevice::GetId(device->GetAddress());
-  auto* fido_device = GetDevice(device_id);
-  if (!fido_device) {
+  auto* authenticator = GetAuthenticator(device_id);
+  if (!authenticator) {
     VLOG(2) << "Discovered U2F service on existing BLE device: "
             << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
@@ -87,7 +88,7 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
   // and BluetoothAdapter::DeviceRemoved() is invoked instead of returning back
   // to regular "non-pairing" mode. As so, we only notify observer when
   // |fido_device| goes into pairing mode.
-  if (observer() && fido_device->IsInPairingMode())
+  if (observer() && authenticator->device()->IsInPairingMode())
     observer()->AuthenticatorPairingModeChanged(this, device_id);
 }
 
@@ -113,14 +114,14 @@ void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
                                             const std::string& old_address) {
   auto previous_device_id = FidoBleDevice::GetId(old_address);
   auto new_device_id = FidoBleDevice::GetId(device->GetAddress());
-  auto it = devices_.find(previous_device_id);
-  if (it == devices_.end())
+  auto it = authenticators_.find(previous_device_id);
+  if (it == authenticators_.end())
     return;
 
   VLOG(2) << "Discovered FIDO BLE device address change from old address : "
           << old_address << " to new address : " << device->GetAddress();
-  devices_.emplace(new_device_id, std::move(it->second));
-  devices_.erase(it);
+  authenticators_.emplace(new_device_id, std::move(it->second));
+  authenticators_.erase(it);
 
   if (observer()) {
     observer()->AuthenticatorIdChanged(this, previous_device_id,

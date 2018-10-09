@@ -163,8 +163,8 @@ class FakeFidoTask : public FidoTask {
 
 class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
  public:
-  explicit FakeFidoAuthenticator(FidoDevice* device)
-      : FidoDeviceAuthenticator(device) {}
+  explicit FakeFidoAuthenticator(std::unique_ptr<FidoDevice> device)
+      : FidoDeviceAuthenticator(std::move(device)) {}
 
   void RunFakeTask(FakeTaskCallback callback) {
     SetTaskForTesting(
@@ -506,7 +506,8 @@ TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
-  auto authenticator = std::make_unique<FakeFidoAuthenticator>(device.get());
+  auto authenticator =
+      std::make_unique<FakeFidoAuthenticator>(std::move(device));
 
   TestTransportAvailabilityObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
@@ -541,7 +542,8 @@ TEST_F(FidoRequestHandlerTest,
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
-  auto authenticator = std::make_unique<FakeFidoAuthenticator>(device.get());
+  auto authenticator =
+      std::make_unique<FakeFidoAuthenticator>(std::move(device));
 
   TestTransportAvailabilityObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(

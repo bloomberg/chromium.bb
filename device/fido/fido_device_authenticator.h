@@ -29,7 +29,7 @@ class FidoTask;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
     : public FidoAuthenticator {
  public:
-  FidoDeviceAuthenticator(FidoDevice* device);
+  FidoDeviceAuthenticator(std::unique_ptr<FidoDevice> device);
   ~FidoDeviceAuthenticator() override;
 
   // FidoAuthenticator:
@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   bool IsInPairingMode() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
-  FidoDevice* GetDeviceForTesting() { return device_; }
+  FidoDevice* device() { return device_.get(); }
 
  protected:
   void OnCtapMakeCredentialResponseReceived(
@@ -56,11 +56,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       GetAssertionCallback callback,
       base::Optional<std::vector<uint8_t>> response_data);
 
-  FidoDevice* device() { return device_; }
   void SetTaskForTesting(std::unique_ptr<FidoTask> task);
 
  private:
-  FidoDevice* const device_;
+  const std::unique_ptr<FidoDevice> device_;
   std::unique_ptr<FidoTask> task_;
   base::WeakPtrFactory<FidoDeviceAuthenticator> weak_factory_;
 

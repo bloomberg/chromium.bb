@@ -28,6 +28,7 @@ class Connector;
 namespace device {
 
 class FidoDevice;
+class FidoDeviceAuthenticator;
 
 namespace internal {
 class ScopedFidoDiscoveryFactory;
@@ -58,12 +59,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   bool is_start_requested() const { return state_ != State::kIdle; }
   bool is_running() const { return state_ == State::kRunning; }
 
-  std::vector<FidoDevice*> GetDevices();
-  std::vector<const FidoDevice*> GetDevices() const;
-
-  // TODO(martinkr): Rename to GetDeviceForTesting.
-  FidoDevice* GetDevice(base::StringPiece device_id);
-  const FidoDevice* GetDevice(base::StringPiece device_id) const;
+  std::vector<FidoDeviceAuthenticator*> GetAuthenticatorsForTesting();
+  std::vector<const FidoDeviceAuthenticator*> GetAuthenticatorsForTesting()
+      const;
+  FidoDeviceAuthenticator* GetAuthenticatorForTesting(
+      base::StringPiece authenticator_id);
 
   // FidoDiscoveryBase:
   void Start() override;
@@ -78,6 +78,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   bool AddDevice(std::unique_ptr<FidoDevice> device);
   bool RemoveDevice(base::StringPiece device_id);
 
+  FidoDeviceAuthenticator* GetAuthenticator(base::StringPiece authenticator_id);
+
   // Subclasses should implement this to actually start the discovery when it is
   // requested.
   //
@@ -85,11 +87,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   // the discovery is s tarted.
   virtual void StartInternal() = 0;
 
-  std::map<std::string,
-           std::pair<std::unique_ptr<FidoAuthenticator>,
-                     std::unique_ptr<FidoDevice>>,
-           std::less<>>
-      devices_;
+  // Map of ID to authenticator. It is a guarantee to subclasses that the ID of
+  // the authenticator equals the ID of the device.
+  std::map<std::string, std::unique_ptr<FidoDeviceAuthenticator>, std::less<>>
+      authenticators_;
 
  private:
   friend class internal::ScopedFidoDiscoveryFactory;

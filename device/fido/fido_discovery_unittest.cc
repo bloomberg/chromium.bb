@@ -112,8 +112,8 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(Return("device0"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device0)));
   EXPECT_EQ("device0", authenticator0->GetId());
-  EXPECT_EQ(device0_raw, static_cast<FidoDeviceAuthenticator*>(authenticator0)
-                             ->GetDeviceForTesting());
+  EXPECT_EQ(device0_raw,
+            static_cast<FidoDeviceAuthenticator*>(authenticator0)->device());
   device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -129,8 +129,8 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(Return("device1"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device1)));
   EXPECT_EQ("device1", authenticator1->GetId());
-  EXPECT_EQ(device1_raw, static_cast<FidoDeviceAuthenticator*>(authenticator1)
-                             ->GetDeviceForTesting());
+  EXPECT_EQ(device1_raw,
+            static_cast<FidoDeviceAuthenticator*>(authenticator1)->device());
   device1_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -141,16 +141,14 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_FALSE(discovery.AddDevice(std::move(device1_dup)));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_EQ(device0_raw, discovery.GetDevice("device0"));
-  EXPECT_EQ(device1_raw, discovery.GetDevice("device1"));
-  EXPECT_THAT(discovery.GetDevices(),
-              UnorderedElementsAre(device0_raw, device1_raw));
+  EXPECT_EQ(authenticator0, discovery.GetAuthenticatorForTesting("device0"));
+  EXPECT_EQ(authenticator1, discovery.GetAuthenticatorForTesting("device1"));
+  EXPECT_THAT(discovery.GetAuthenticatorsForTesting(),
+              UnorderedElementsAre(authenticator0, authenticator1));
 
   const FidoDiscovery& const_discovery = discovery;
-  EXPECT_EQ(device0_raw, const_discovery.GetDevice("device0"));
-  EXPECT_EQ(device1_raw, const_discovery.GetDevice("device1"));
-  EXPECT_THAT(const_discovery.GetDevices(),
-              UnorderedElementsAre(device0_raw, device1_raw));
+  EXPECT_THAT(const_discovery.GetAuthenticatorsForTesting(),
+              UnorderedElementsAre(authenticator0, authenticator1));
 
   // Trying to remove a non-present device should fail.
   EXPECT_CALL(observer, AuthenticatorRemoved(_, _)).Times(0);
