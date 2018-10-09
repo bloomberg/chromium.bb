@@ -125,6 +125,8 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
     return false;
   if (style.Zoom() != ComputedStyleInitialValues::InitialZoom())
     return false;
+  if (style.TextAutosizingMultiplier() != 1)
+    return false;
   if (style.GetWritingMode() !=
           ComputedStyleInitialValues::InitialWritingMode() ||
       style.Direction() != ComputedStyleInitialValues::InitialDirection())
