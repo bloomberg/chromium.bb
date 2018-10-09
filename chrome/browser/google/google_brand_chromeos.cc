@@ -26,6 +26,10 @@ namespace {
 const base::FilePath::CharType kRLZBrandFilePath[] =
     FILE_PATH_LITERAL("/opt/oem/etc/BRAND_CODE");
 
+bool IsBrandValid(const std::string& brand) {
+  return !brand.empty();
+}
+
 // Reads the brand code from file |kRLZBrandFilePath|.
 std::string ReadBrandFromFile() {
   std::string brand;
@@ -36,8 +40,10 @@ std::string ReadBrandFromFile() {
   return brand;
 }
 
-// Sets the brand code to |brand|.
+// For a valid |brand|, sets the brand code and runs |callback|.
 void SetBrand(const base::Closure& callback, const std::string& brand) {
+  if (!IsBrandValid(brand))
+    return;
   g_browser_process->local_state()->SetString(prefs::kRLZBrand, brand);
   callback.Run();
 }
@@ -84,7 +90,7 @@ void InitBrand(const base::Closure& callback) {
   std::string brand;
   const bool found = provider->GetMachineStatistic(
       ::chromeos::system::kRlzBrandCodeKey, &brand);
-  if (found && !brand.empty()) {
+  if (found && IsBrandValid(brand)) {
     SetBrand(callback, brand);
     return;
   }
