@@ -3995,6 +3995,11 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   // Set up alternative service for |origin1|.
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -4120,6 +4125,11 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   SendRequestAndExpectHttpResponse("hello world");
 
@@ -4194,6 +4204,11 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
   request_.url = GURL("http://mail.example.org/");
 
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 443);
   histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
@@ -4257,6 +4272,11 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
   AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   const char destination1[] = "first.example.com";
   const char destination2[] = "second.example.com";
@@ -4340,6 +4360,11 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   const char destination1[] = "first.example.com";
   const char destination2[] = "second.example.com";
@@ -4461,6 +4486,11 @@ TEST_P(QuicNetworkTransactionTest,
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   // Send two HTTP requests, responses set up alt-svc lists for the origins.
   request_.url = GURL("https://www.example.org/");
@@ -4944,6 +4974,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -5033,6 +5068,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
@@ -6937,6 +6977,12 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
 
   AddHangingSocketData();
   AddHangingSocketData();
+
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 &clock_));
 
   SendRequestAndExpectQuicResponse(origin1_);
   SendRequestAndExpectQuicResponse(origin2_);

@@ -251,7 +251,7 @@ QUIC_FLAG(
 // fix a bug where window update causes session to write data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_post_process_after_data,
-          false)
+          true)
 
 // If true, QuicSpdyClientSessionBase::OnPromiseHeaderList() will close the
 // connection if the stream id referenced indicates a static stream.
