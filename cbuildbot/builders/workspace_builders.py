@@ -26,9 +26,6 @@ class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
     """Run the stages."""
     workspace_dir = self._run.options.workspace
 
-    self._RunStage(workspace_stages.WorkspaceCleanStage,
-                   build_root=workspace_dir)
-
     self._RunStage(workspace_stages.WorkspaceSyncStage,
                    build_root=workspace_dir)
 
@@ -55,9 +52,6 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
   def RunStages(self):
     """Run the stages."""
     workspace_dir = self._run.options.workspace
-
-    self._RunStage(workspace_stages.WorkspaceCleanStage,
-                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceSyncStage,
                    build_root=workspace_dir)
@@ -96,9 +90,6 @@ class FactoryBranchBuilder(generic_builders.ManifestVersionedBuilder):
   def RunStages(self):
     """Run the stages."""
     workspace_dir = self._run.options.workspace
-
-    self._RunStage(workspace_stages.WorkspaceCleanStage,
-                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceSyncStage,
                    build_root=workspace_dir)

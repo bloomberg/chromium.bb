@@ -136,6 +136,23 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Wiping old output.')
     commands.WipeOldOutput(self._build_root)
 
+  def _CleanWorkspace(self):
+    logging.info('Cleaning up workspace checkout.')
+    assert self._run.options.workspace
+    workspace = self._run.options.workspace
+
+    logging.info('Remove Chroot.')
+    chroot_dir = os.path.join(workspace, constants.DEFAULT_CHROOT_DIR)
+    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
+
+    logging.info('Remove Chrome checkout.')
+    osutils.RmDir(os.path.join(workspace, '.cache', 'distfiles'),
+                  ignore_missing=True, sudo=True)
+
+    logging.info('Remove all workspace files except .repo and .cache.')
+    repository.ClearBuildRoot(workspace, ['.repo', '.cache'])
+
   def _GetPreviousBuildStatus(self):
     """Extract the status of the previous build from command-line arguments.
 
@@ -374,6 +391,8 @@ class CleanUpStage(generic_stages.BuilderStage):
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
+      if self._run.options.workspace:
+        tasks.append(self._CleanWorkspace)
 
       # CancelObsoleteSlaveBuilds, if there are slave builds to cancel.
       if self._run.config.slave_configs:
