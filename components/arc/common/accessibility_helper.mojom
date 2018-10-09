@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -313,7 +313,7 @@ interface AccessibilityHelperHost {
       string notification_key, AccessibilityNotificationStateType state);
 };
 
-// Next method ID: 8
+// Next method ID: 9
 interface AccessibilityHelperInstance {
   // DEPRECATED: Please use Init@7 instead.
   InitDeprecated@0(AccessibilityHelperHost host);
@@ -341,4 +341,7 @@ interface AccessibilityHelperInstance {
   // (false).
   [MinVersion=8] SetNativeChromeVoxArcSupportForFocusedWindow@6(
       bool enabled) => (bool processed);
+
+  // Requests the service to enable or disable Explore By Touch.
+  [MinVersion=11] SetExploreByTouchEnabled@8(bool enabled);
 };

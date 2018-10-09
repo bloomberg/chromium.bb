@@ -220,6 +220,7 @@ void ArcAccessibilityHelperBridge::OnConnectionReady() {
         accessibility_manager->RegisterCallback(base::BindRepeating(
             &ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged,
             base::Unretained(this)));
+    SetExploreByTouchEnabled(accessibility_manager->IsSpokenFeedbackEnabled());
   }
 
   auto* surface_manager = ArcNotificationSurfaceManager::Get();
@@ -519,6 +520,11 @@ void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
 
   UpdateFilterType();
   UpdateWindowProperties(GetActiveWindow());
+
+  if (event_details.notification_type ==
+      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    SetExploreByTouchEnabled(event_details.enabled);
+  }
 }
 
 arc::mojom::AccessibilityFilterType
@@ -573,10 +579,13 @@ void ArcAccessibilityHelperBridge::UpdateFilterType() {
   if (!wm_helper)
     return;
 
-  if (add_activation_observer)
+  if (add_activation_observer) {
     wm_helper->AddActivationObserver(this);
-  else
+    activation_observer_added_ = true;
+  } else {
+    activation_observer_added_ = false;
     wm_helper->RemoveActivationObserver(this);
+  }
 }
 
 void ArcAccessibilityHelperBridge::UpdateWindowProperties(
@@ -602,6 +611,13 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
   window->SetProperty(ash::kSearchKeyAcceleratorReservedKey, use_talkback);
   window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
                       !use_talkback);
+}
+
+void ArcAccessibilityHelperBridge::SetExploreByTouchEnabled(bool enabled) {
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->accessibility_helper(), SetExploreByTouchEnabled);
+  if (instance)
+    instance->SetExploreByTouchEnabled(enabled);
 }
 
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
