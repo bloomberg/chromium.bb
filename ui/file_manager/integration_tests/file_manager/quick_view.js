@@ -256,6 +256,57 @@ testcase.openQuickViewMtp = function() {
 };
 
 /**
+ * Tests opening Quick View on a Crostini file.
+ */
+testcase.openQuickViewCrostini = function() {
+  let appId;
+
+  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
+  const realLinuxFiles = '#directory-tree [volume-type-icon="crostini"]';
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing ENTRIES.photos.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.photos], []);
+    },
+    // Check: the fake Linux files icon should be shown.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.waitForElement(appId, fakeLinuxFiles).then(this.next);
+    },
+    // Add files to the Crostini volume.
+    function() {
+      addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET, this.next);
+    },
+    // Click the fake Linux files icon to mount the Crostini volume.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [fakeLinuxFiles], this.next);
+    },
+    // Check: the Crostini volume icon should appear.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      remoteCall.waitForElement(appId, realLinuxFiles).then(this.next);
+    },
+    // Check: the Crostini files should appear in the file list.
+    function() {
+      const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Open a Crostini file in Quick View.
+    function() {
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * text document.
  */
