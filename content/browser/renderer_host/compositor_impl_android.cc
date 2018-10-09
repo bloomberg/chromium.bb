@@ -108,6 +108,8 @@ namespace content {
 
 namespace {
 
+static const char* kBrowser = "Browser";
+
 // These functions are called based on application visibility status.
 void SendOnBackgroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
@@ -1408,6 +1410,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
           /*should_ask_for_child_region=*/false);
+  params.client_name = kBrowser;
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), nullptr, &params);

@@ -19,7 +19,9 @@
 #include "ui/display/screen.h"
 
 namespace aura {
+
 namespace {
+static const char* kExo = "Exo";
 
 class ScopedCursorHider {
  public:
@@ -158,6 +160,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
+  params.client_name = kExo;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(

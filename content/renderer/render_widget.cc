@@ -182,6 +182,8 @@ const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
 typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
 
 static const int kInvalidNextPreviousFlagsValue = -1;
+static const char* kOOPIF = "OOPIF";
+static const char* kRenderer = "Renderer";
 
 class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
  public:
@@ -977,9 +979,11 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // The |url| is not always available, fallback to a fixed string.
   if (url.is_empty())
     url = GURL("chrome://gpu/RenderWidget::RequestNewLayerTreeFrameSink");
+  const char* client_name = for_oopif_ ? kOOPIF : kRenderer;
   RenderThreadImpl::current()->RequestNewLayerTreeFrameSink(
       routing_id_, frame_swap_message_queue_, std::move(url),
-      std::move(callback), std::move(client_request), std::move(ptr));
+      std::move(callback), std::move(client_request), std::move(ptr),
+      client_name);
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
