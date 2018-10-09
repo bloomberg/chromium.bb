@@ -240,7 +240,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(CalledOnValidThread());
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
                             static_cast<int>(MODEL_TYPE_COUNT));
 #define PER_DATA_TYPE_MACRO(type_str)                                    \

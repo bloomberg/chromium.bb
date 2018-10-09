@@ -21,9 +21,10 @@
 namespace syncer {
 namespace {
 
-void ReportError(scoped_refptr<base::SequencedTaskRunner> ui_thread,
-                 const ModelErrorHandler& error_handler,
-                 const ModelError& error) {
+void ReportErrorOnModelThread(
+    scoped_refptr<base::SequencedTaskRunner> ui_thread,
+    const ModelErrorHandler& error_handler,
+    const ModelError& error) {
   ui_thread->PostTask(error.location(), base::BindOnce(error_handler, error));
 }
 
@@ -85,7 +86,7 @@ void ModelTypeController::LoadModels(
 
   DataTypeActivationRequest request;
   request.error_handler = base::BindRepeating(
-      &ReportError, base::SequencedTaskRunnerHandle::Get(),
+      &ReportErrorOnModelThread, base::SequencedTaskRunnerHandle::Get(),
       base::BindRepeating(&ModelTypeController::ReportModelError,
                           base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
   request.authenticated_account_id = configure_context.authenticated_account_id;
@@ -109,9 +110,6 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
 
   if (state_ == STOPPING) {
     DCHECK(!model_stop_callbacks_.empty());
-    // This reply to OnSyncStarting() has arrived after the type has been
-    // requested to stop.
-    RecordStartFailure(ABORTED);
 
     // We make a copy in case running the callbacks has side effects and
     // modifies the vector, although we don't expect that in practice.
@@ -145,7 +143,6 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
     state_ = MODEL_LOADED;
     DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
   } else {
-    RecordStartFailure(result);
     state_ = FAILED;
   }
 
@@ -306,36 +303,73 @@ void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
                                            const ModelError& error) {
   DCHECK(CalledOnValidThread());
 
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
-
-  // Error could arrive too late, e.g. after the datatype has been stopped.
-  // This is allowed for the delegate's convenience, so there's no constraints
-  // around when exactly DataTypeActivationRequest::error_handler is supposed to
-  // be used (it can be used at any time). This also simplifies the
-  // implementation of task-posting delegates.
-  if (state_ == NOT_RUNNING) {
-    state_ = FAILED;
-    return;
+  // TODO(crbug.com/890729): This is obviously misplaced/misnamed as we report
+  // run-time failures as well. Rename the histogram to ConfigureResult and
+  // report it only after startup (also for success).
+  if (state_ != NOT_RUNNING) {
+#define PER_DATA_TYPE_MACRO(type_str)                            \
+  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", \
+                            UNRECOVERABLE_ERROR, MAX_CONFIGURE_RESULT);
+    SYNC_DATA_TYPE_HISTOGRAM(type());
+#undef PER_DATA_TYPE_MACRO
   }
 
+  switch (state_) {
+    case MODEL_LOADED:
+    // Fall through. Before state_ is flipped to RUNNING, we treat it as a
+    // start failure. This is somewhat arbitrary choice.
+    case STOPPING:
+    // Fall through. We treat it the same as starting as this means stopping was
+    // requested while starting the data type.
+    case MODEL_STARTING:
+      RecordStartFailure();
+      break;
+    case RUNNING:
+      RecordRunFailure();
+      break;
+    case NOT_RUNNING:
+      // Error could arrive too late, e.g. after the datatype has been stopped.
+      // This is allowed for the delegate's convenience, so there's no
+      // constraints around when exactly
+      // DataTypeActivationRequest::error_handler is supposed to be used (it can
+      // be used at any time). This also simplifies the implementation of
+      // task-posting delegates.
+      state_ = FAILED;
+      return;
+    case FAILED:
+      // Do not record for the second time and exit early.
+      return;
+    case ASSOCIATING:
+      // Not possible, we do not use associating in this class.
+      NOTREACHED();
+  }
+
+  // TODO(jkrcal, mastiz): We should make it more strict and call
+  // LoadModelsDone() only if the model is actually starting as treat more cases
+  // above with an early return (as NOT_RUNNING).
   LoadModelsDone(UNRECOVERABLE_ERROR, SyncError(error.location(), error_type,
                                                 error.message(), type()));
+  DCHECK_EQ(state_, FAILED);
 }
 
-void ModelTypeController::RecordStartFailure(ConfigureResult result) const {
+void ModelTypeController::RecordStartFailure() const {
   DCHECK(CalledOnValidThread());
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
+  // This is not strongly typed because historically, ModelTypeToHistogramInt()
+  // defines quite a different order from the type() enum.
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
                             static_cast<int>(MODEL_TYPE_COUNT));
-#define PER_DATA_TYPE_MACRO(type_str)                                    \
-  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
-                            MAX_CONFIGURE_RESULT);
-  SYNC_DATA_TYPE_HISTOGRAM(type());
-#undef PER_DATA_TYPE_MACRO
+}
+
+void ModelTypeController::RecordRunFailure() const {
+  DCHECK(CalledOnValidThread());
+  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
+  // This is not strongly typed because historically, ModelTypeToHistogramInt()
+  // defines quite a different order from the type() enum.
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures2",
+                            ModelTypeToHistogramInt(type()),
+                            static_cast<int>(MODEL_TYPE_COUNT));
 }
 
 }  // namespace syncer

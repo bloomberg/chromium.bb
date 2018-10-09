@@ -341,8 +341,9 @@ const char* ModelTypeToString(ModelType model_type);
 const char* ModelTypeToHistogramSuffix(ModelType model_type);
 
 // Some histograms take an integer parameter that represents a model type.
-// The mapping from ModelType to integer is defined here. It should match the
-// mapping from integer to labels defined in histograms.xml.
+// The mapping from ModelType to integer is defined here. It defines a
+// completely different order than the ModelType enum itself. The mapping should
+// match the SyncModelTypes mapping from integer to labels defined in enums.xml.
 int ModelTypeToHistogramInt(ModelType model_type);
 
 // Returns for every model_type a positive unique integer that is stable over

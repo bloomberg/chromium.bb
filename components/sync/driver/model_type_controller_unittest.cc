@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/configure_context.h"
@@ -36,6 +37,9 @@ using testing::_;
 const ModelType kTestModelType = AUTOFILL;
 const char kCacheGuid[] = "SomeCacheGuid";
 const char kAccountId[] = "SomeAccountId";
+
+const char kStartFailuresHistogram[] = "Sync.DataTypeStartFailures2";
+const char kRunFailuresHistogram[] = "Sync.DataTypeRunFailures2";
 
 MATCHER(ErrorIsSet, "") {
   return arg.IsSet();
@@ -236,6 +240,7 @@ TEST_F(ModelTypeControllerTest, LoadModelsOnBackendThread) {
 }
 
 TEST_F(ModelTypeControllerTest, Activate) {
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(LoadModels());
   EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
   RegisterWithBackend(/*expect_downloaded=*/false);
@@ -243,13 +248,16 @@ TEST_F(ModelTypeControllerTest, Activate) {
 
   StartAssociating();
   EXPECT_EQ(DataTypeController::RUNNING, controller()->state());
+  histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
 }
 
 TEST_F(ModelTypeControllerTest, ActivateWithInitialSyncDone) {
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(LoadModels(/*initial_sync_done=*/true));
   EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
   RegisterWithBackend(/*expect_downloaded=*/true);
   EXPECT_TRUE(processor()->is_connected());
+  histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
 }
 
 TEST_F(ModelTypeControllerTest, ActivateWithError) {
@@ -265,6 +273,7 @@ TEST_F(ModelTypeControllerTest, ActivateWithError) {
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
   ASSERT_TRUE(error_handler);
 
+  base::HistogramTester histogram_tester;
   // Mimic completion for OnSyncStarting(), with an error.
   EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
   EXPECT_CALL(load_models_done, Run(_, ErrorIsSet()));
@@ -273,6 +282,9 @@ TEST_F(ModelTypeControllerTest, ActivateWithError) {
   // ModelTypeController currently uses task-posting for errors.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+  histogram_tester.ExpectBucketCount(
+      kStartFailuresHistogram, ModelTypeToHistogramInt(kTestModelType), 1);
+  histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
 }
 
 TEST_F(ModelTypeControllerTest, Stop) {
@@ -372,6 +384,7 @@ TEST_F(ModelTypeControllerTest, StopWhileStartingWithError) {
   controller()->Stop(DISABLE_SYNC, stop_completion.Get());
   EXPECT_EQ(DataTypeController::STOPPING, controller()->state());
 
+  base::HistogramTester histogram_tester;
   // Mimic completion for OnSyncStarting(), with an error.
   EXPECT_CALL(*delegate(), OnSyncStopping(_)).Times(0);
   EXPECT_CALL(stop_completion, Run());
@@ -380,6 +393,10 @@ TEST_F(ModelTypeControllerTest, StopWhileStartingWithError) {
   // ModelTypeController currently uses task-posting for errors.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+  histogram_tester.ExpectBucketCount(kStartFailuresHistogram,
+                                     ModelTypeToHistogramInt(kTestModelType),
+                                     /*count=*/1);
+  histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
 }
 
 // Test emulates a controller talking to a delegate (processor) in a backend
@@ -411,12 +428,15 @@ TEST_F(ModelTypeControllerTest, StopWhileErrorInFlight) {
   controller()->Stop(DISABLE_SYNC, base::DoNothing());
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 
+  base::HistogramTester histogram_tester;
   // In the next loop iteration, the UI thread receives the error.
   error_handler.Run(ModelError(FROM_HERE, "Test error"));
   // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
   // ModelTypeController currently uses task-posting for errors.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+  histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
+  histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
 }
 
 // Tests that StorageOption is honored when the controller has been constructed
@@ -484,6 +504,41 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
   EXPECT_CALL(delegate_on_disk, OnSyncStopping(_));
   controller.Stop(DISABLE_SYNC, base::DoNothing());
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller.state());
+}
+
+TEST_F(ModelTypeControllerTest, ReportErrorAfterLoaded) {
+  base::HistogramTester histogram_tester;
+  // Capture the callbacks.
+  ModelErrorHandler error_handler;
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        error_handler = request.error_handler;
+        start_callback = std::move(callback);
+      });
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(error_handler);
+  ASSERT_TRUE(start_callback);
+
+  // Mimic completion for OnSyncStarting().
+  std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
+  ASSERT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
+
+  StartAssociating();
+  ASSERT_EQ(DataTypeController::RUNNING, controller()->state());
+
+  // Now trigger the run-time error.
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+  histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
+  histogram_tester.ExpectBucketCount(kRunFailuresHistogram,
+                                     ModelTypeToHistogramInt(kTestModelType),
+                                     /*count=*/1);
 }
 
 }  // namespace syncer
