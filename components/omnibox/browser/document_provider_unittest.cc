@@ -20,6 +20,8 @@
 
 namespace {
 
+using testing::Return;
+
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
@@ -91,67 +93,82 @@ void DocumentProviderTest::OnProviderUpdate(bool updated_matches) {
 }
 
 TEST_F(DocumentProviderTest, CheckFeatureBehindFlag) {
-  PrefService* fake_prefs = client_->GetPrefs();
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  bool is_incognito = false;
-  bool is_authenticated = true;
-
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(omnibox::kDocumentProvider);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
-  PrefService* fake_prefs = client_->GetPrefs();
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  bool is_incognito = false;
-  bool is_authenticated = true;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
 
   // Feature should be disabled in incognito.
-  is_incognito = true;
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(true));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+}
+
+TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoConsentBit) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
+
+  // Feature starts enabled.
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+
+  // Feature should be disabled without a consent bit.
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven()).WillOnce(Return(false));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteClientSettingOff) {
-  PrefService* fake_prefs = client_->GetPrefs();
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  bool is_incognito = false;
-  bool is_authenticated = true;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
 
   // Disabling toggle in chrome://settings should be respected.
+  PrefService* fake_prefs = client_->GetPrefs();
   fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, false);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
   fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, true);
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
-  PrefService* fake_prefs = client_->GetPrefs();
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  bool is_incognito = false;
-  bool is_authenticated = true;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
 
   // Switching default search disables it.
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("t"));
   data.SetURL("https://www.notgoogle.com/?q={searchTerms}");
@@ -160,29 +177,28 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
       template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(
       new_default_provider);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
   template_url_service->SetUserSelectedDefaultSearchProvider(
       default_template_url_);
   template_url_service->Remove(new_default_provider);
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
-  PrefService* fake_prefs = client_->GetPrefs();
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  bool is_incognito = false;
-  bool is_authenticated = true;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsUnifiedConsentGiven())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
 
   // Server setting backoff flag disables it.
   provider_->backoff_for_session_ = true;
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(
-      fake_prefs, is_incognito, is_authenticated, template_url_service));
+  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
   provider_->backoff_for_session_ = false;
 }
 

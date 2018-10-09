@@ -100,24 +100,30 @@ void DocumentProvider::RegisterProfilePrefs(
 }
 
 bool DocumentProvider::IsDocumentProviderAllowed(
-    PrefService* prefs,
-    bool is_incognito,
-    bool is_authenticated,
-    const TemplateURLService* template_url_service) {
+    AutocompleteProviderClient* client) {
   // Feature must be on.
   if (!base::FeatureList::IsEnabled(omnibox::kDocumentProvider))
     return false;
 
+  // These may seem like search suggestions, so gate on that setting too.
+  if (!client->SearchSuggestEnabled())
+    return false;
+
   // Client-side toggle must be enabled.
-  if (!prefs->GetBoolean(omnibox::kDocumentSuggestEnabled))
+  if (!client->GetPrefs()->GetBoolean(omnibox::kDocumentSuggestEnabled))
     return false;
 
   // No incognito.
-  if (is_incognito)
+  if (client->IsOffTheRecord())
     return false;
 
-  // User must be signed in.
-  if (!is_authenticated)
+  // If the user opted into unity, we may proceed.
+  // Otherwise (either unity hasn't been offered or the not-yet button was
+  // clicked), we may check sync's status and proceed if active.
+  bool authenticated_and_syncing =
+      client->IsAuthenticated() &&
+      (client->IsUnifiedConsentGiven() || client->IsSyncActive());
+  if (!authenticated_and_syncing)
     return false;
 
   // We haven't received a server backoff signal.
@@ -127,6 +133,7 @@ bool DocumentProvider::IsDocumentProviderAllowed(
 
   // Google must be set as default search provider; we mix results which may
   // change placement.
+  auto* template_url_service = client->GetTemplateURLService();
   if (template_url_service == nullptr)
     return false;
   const TemplateURL* default_provider =
@@ -163,9 +170,9 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "DocumentProvider::Start");
   matches_.clear();
 
-  if (!IsDocumentProviderAllowed(client_->GetPrefs(), client_->IsOffTheRecord(),
-                                 client_->IsAuthenticated(),
-                                 client_->GetTemplateURLService())) {
+  // Perform various checks - feature is enabled, user is allowed to use the
+  // feature, we're not under backoff, etc.
+  if (!IsDocumentProviderAllowed(client_)) {
     return;
   }
 

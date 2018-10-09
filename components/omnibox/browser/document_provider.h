@@ -22,7 +22,6 @@
 
 class AutocompleteProviderListener;
 class AutocompleteProviderClient;
-class PrefService;
 
 namespace base {
 class Value;
@@ -59,6 +58,8 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteNoIncognito);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeaturePrerequisiteNoConsentBit);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteClientSettingOff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteDefaultSearch);
@@ -75,13 +76,9 @@ class DocumentProvider : public AutocompleteProvider {
 
   ~DocumentProvider() override;
 
-  // Using this provider requires the user is signed-in and has Google set as
-  // default search engine.
-  bool IsDocumentProviderAllowed(
-      PrefService* prefs,
-      bool is_incognito,
-      bool is_authenticated,
-      const TemplateURLService* template_url_service);
+  // Determines whether the profile/session/window meet the feature
+  // prerequisites.
+  bool IsDocumentProviderAllowed(AutocompleteProviderClient* client);
 
   // Determines if the input is a URL, or is the start of the user entering one.
   // We avoid queries for these cases for quality and scaling reasons.
