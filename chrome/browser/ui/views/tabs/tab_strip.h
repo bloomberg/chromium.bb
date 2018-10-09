@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 
+#include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -248,6 +250,7 @@ class TabStrip : public views::View,
       const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
           border_callback,
       gfx::Path* clip) override;
+  bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;

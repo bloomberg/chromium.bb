@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -83,6 +85,9 @@ class FakeTabController : public TabController {
       gfx::Path* clip) override {
     return true;
   }
+  bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override {
+    return true;
+  }
   int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
@@ -157,7 +162,7 @@ class TabTest : public ChromeViewsTestBase {
     return tab.title_->bounds().width();
   }
 
-  static void EndTitleAnimation(Tab& tab) { tab.title_animation_.End(); }
+  static void EndTitleAnimation(Tab* tab) { tab->title_animation_.End(); }
 
   static void LayoutTab(Tab* tab) { tab->Layout(); }
 
@@ -736,7 +741,7 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
   TabRendererData data;
   data.show_icon = false;
   tab.SetData(data);
-  EndTitleAnimation(tab);
+  EndTitleAnimation(&tab);
   EXPECT_FALSE(icon->visible());
   // Title should be placed where the favicon was.
   EXPECT_EQ(icon_x, GetTabTitle(tab)->x());

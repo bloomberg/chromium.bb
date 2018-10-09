@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -815,7 +816,7 @@ const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
 }
 
 bool TabStrip::SupportsMultipleSelection() {
-  // TODO: currently only allow single selection in touch layout mode.
+  // Currently we only allow single selection in touch layout mode.
   return touch_layout_ == nullptr;
 }
 
@@ -1078,6 +1079,51 @@ bool TabStrip::ShouldPaintTab(
       return true;  // Can happen during dragging.
 
     *clip = border_callback.Run(previous_bounds);
+    clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
+  }
+  return true;
+}
+
+bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
+  if (!MaySetClip())
+    return true;
+
+  int index = GetModelIndexOfTab(tab);
+  if (index == -1)
+    return true;  // Tab is closing, paint it all.
+
+  int active_index = IsStackingDraggedTabs() ? controller_->GetActiveIndex()
+                                             : touch_layout_->active_index();
+  if (active_index == tab_count())
+    active_index--;
+
+  const gfx::Rect& current_bounds = tab_at(index)->bounds();
+  if (index < active_index) {
+    const Tab* next_tab = tab_at(index + 1);
+    const gfx::Rect& next_bounds = next_tab->bounds();
+    if (current_bounds.x() == next_bounds.x())
+      return false;
+
+    if (current_bounds.x() > next_bounds.x())
+      return true;  // Can happen during dragging.
+
+    *clip = tab->GetTabStyle()->GetPath(
+        next_tab, TabStyle::PathType::kOutsideBorder, scale, false,
+        TabStyle::RenderUnits::kDips);
+
+    clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
+  } else if (index > active_index && index > 0) {
+    const Tab* prev_tab = tab_at(index - 1);
+    const gfx::Rect& previous_bounds = prev_tab->bounds();
+    if (current_bounds.x() == previous_bounds.x())
+      return false;
+
+    if (current_bounds.x() < previous_bounds.x())
+      return true;  // Can happen during dragging.
+
+    *clip = tab->GetTabStyle()->GetPath(
+        prev_tab, TabStyle::PathType::kOutsideBorder, scale, false,
+        TabStyle::RenderUnits::kDips);
     clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
   }
   return true;

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 
 #include <stddef.h>
+
+#include <algorithm>
 #include <limits>
 #include <utility>
 
@@ -34,6 +36,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -72,6 +75,9 @@
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
+
+// Turn this off to revert to the old behavior.
+#define USE_TAB_STYLE
 
 using base::UserMetricsAction;
 using MD = ui::MaterialDesignController;
@@ -119,6 +125,8 @@ void DrawHighlight(gfx::Canvas* canvas,
       flags);
 }
 
+#if !defined(USE_TAB_STYLE)
+
 // Scales |bounds| by scale and aligns so that adjacent tabs meet up exactly
 // during painting.
 const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds,
@@ -155,17 +163,17 @@ const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds,
 }
 
 // Offsets each path inward by |insets|, then intersects them together.
-gfx::Path OffsetAndIntersectPaths(gfx::Path& left_path,
-                                  gfx::Path& right_path,
+gfx::Path OffsetAndIntersectPaths(gfx::Path* left_path,
+                                  gfx::Path* right_path,
                                   const gfx::InsetsF& insets) {
   // This code is not prepared to deal with vertical adjustments.
   DCHECK_EQ(0, insets.top());
   DCHECK_EQ(0, insets.bottom());
 
   gfx::Path complete_path;
-  left_path.offset(insets.left(), 0);
-  right_path.offset(-insets.right(), 0);
-  Op(left_path, right_path, SkPathOp::kIntersect_SkPathOp, &complete_path);
+  left_path->offset(insets.left(), 0);
+  right_path->offset(-insets.right(), 0);
+  Op(*left_path, *right_path, SkPathOp::kIntersect_SkPathOp, &complete_path);
   return complete_path;
 }
 
@@ -269,7 +277,7 @@ gfx::Path GetInteriorPath(float scale,
   right_path.offset(-origin.x(), -origin.y());
   left_path.offset(-origin.x(), -origin.y());
 
-  return OffsetAndIntersectPaths(left_path, right_path, insets.Scale(scale));
+  return OffsetAndIntersectPaths(&left_path, &right_path, insets.Scale(scale));
 }
 
 // Returns a path corresponding to the tab's outer border for a given tab
@@ -362,6 +370,8 @@ gfx::Path GetBorderPath(float scale,
 
   return path;
 }
+
+#endif  // !defined(USE_TAB_STYLE)
 
 }  // namespace
 
@@ -483,11 +493,18 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
+#if defined(USE_TAB_STYLE)
+  *mask = GetTabStyle()->GetPath(
+      this, TabStyle::PathType::kHitTest,
+      GetWidget()->GetCompositor()->device_scale_factor(),
+      /* force_active */ false, TabStyle::RenderUnits::kDips);
+#else
   const views::Widget* widget = GetWidget();
   *mask = GetBorderPath(
       GetWidget()->GetCompositor()->device_scale_factor(), GetStrokeThickness(),
       GetBottomStrokeThickness(), true,
       widget && (widget->IsMaximized() || widget->IsFullscreen()), bounds());
+#endif
   return true;
 }
 
@@ -817,6 +834,11 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   ui::ClipRecorder clip_recorder(info.context());
   // The paint recording scale for tabs is consistent along the x and y axis.
   const float paint_recording_scale = info.paint_recording_scale_x();
+
+#if defined(USE_TAB_STYLE)
+  const gfx::Path clip_path = GetTabStyle()->GetPath(
+      this, TabStyle::PathType::kClip, paint_recording_scale);
+#else
   // When there is a separator, animate the clip to account for it, in sync with
   // the separator's fading.
   // TODO(pkasting): Consider crossfading the favicon instead of animating the
@@ -825,14 +847,21 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   constexpr float kChildClipPadding = 2.5f;
   const gfx::InsetsF padding(0, kChildClipPadding + opacities.left, 0,
                              kChildClipPadding + opacities.right);
-  clip_recorder.ClipPathWithAntiAliasing(
+  const gfx::Path clip_path =
       GetInteriorPath(paint_recording_scale, GetStrokeThickness(),
-                      GetBottomStrokeThickness(), bounds(), padding));
+                      GetBottomStrokeThickness(), bounds(), padding);
+#endif
+
+  clip_recorder.ClipPathWithAntiAliasing(clip_path);
   View::PaintChildren(info);
 }
 
 void Tab::OnPaint(gfx::Canvas* canvas) {
   gfx::Path clip;
+#if defined(USE_TAB_STYLE)
+  if (!controller_->ShouldPaintTab(this, canvas->image_scale(), &clip))
+    return;
+#else
   if (!controller_->ShouldPaintTab(
           this,
           base::BindRepeating(&GetBorderPath, canvas->image_scale(),
@@ -840,6 +869,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
                               true, false),
           &clip))
     return;
+#endif
 
   PaintTab(canvas, clip);
 }
@@ -1004,6 +1034,92 @@ gfx::Insets Tab::GetContentsInsets() const {
          gfx::Insets(
              stroke_thickness, 0,
              stroke_thickness + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP), 0);
+}
+
+Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
+  // Something should visually separate tabs from each other and any adjacent
+  // new tab button.  Normally, active and hovered tabs draw distinct shapes
+  // (via different background colors) and thus need no separators, while
+  // background tabs need separators between them.  In single-tab mode, the
+  // active tab has no visible shape and thus needs separators on any side with
+  // an adjacent new tab button.  (The other sides will be faded out below.)
+  float leading_opacity, trailing_opacity;
+  if (controller_->SingleTabMode()) {
+    leading_opacity = trailing_opacity = 1.f;
+  } else if (IsActive()) {
+    leading_opacity = trailing_opacity = 0;
+  } else {
+    // Fade out the trailing separator while this tab or the subsequent tab is
+    // hovered.  If the subsequent tab is active, don't consider its hover
+    // animation value, lest the trailing separator on this tab disappear while
+    // the subsequent tab is being dragged.
+    const float hover_value = hover_controller_.GetAnimationValue();
+    const Tab* subsequent_tab = controller_->GetAdjacentTab(this, 1);
+    const float subsequent_hover =
+        !for_layout && subsequent_tab && !subsequent_tab->IsActive()
+            ? float{subsequent_tab->hover_controller_.GetAnimationValue()}
+            : 0;
+    trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
+
+    // The leading separator need not consider the previous tab's hover value,
+    // since if there is a previous tab that's hovered and not being dragged, it
+    // will draw atop this tab.
+    leading_opacity = 1.f - hover_value;
+
+    const Tab* previous_tab = controller_->GetAdjacentTab(this, -1);
+    if (IsSelected()) {
+      // Since this tab is selected, its shape will be visible against adjacent
+      // unselected tabs, so remove the separator in those cases.
+      if (previous_tab && !previous_tab->IsSelected())
+        leading_opacity = 0;
+      if (subsequent_tab && !subsequent_tab->IsSelected())
+        trailing_opacity = 0;
+    } else if (controller_->HasVisibleBackgroundTabShapes()) {
+      // Since this tab is unselected, adjacent selected tabs will normally
+      // paint atop it, covering the separator.  But if the user drags those
+      // selected tabs away, the exposed region looks like the window frame; and
+      // since background tab shapes are visible, there should be no separator.
+      // TODO(pkasting): https://crbug.com/876599  When a tab is animating into
+      // this gap, we should adjust its separator opacities as well.
+      if (previous_tab && previous_tab->IsSelected())
+        leading_opacity = 0;
+      if (subsequent_tab && subsequent_tab->IsSelected())
+        trailing_opacity = 0;
+    }
+  }
+
+  // For the first or last tab in the strip, fade the leading or trailing
+  // separator based on the NTB position and how close to the target bounds this
+  // tab is.  In the steady state, this hides separators on the opposite end of
+  // the strip from the NTB; it fades out the separators as tabs animate into
+  // these positions, after they pass by the other tabs; and it snaps the
+  // separators to full visibility immediately when animating away from these
+  // positions, which seems desirable.
+  const NewTabButtonPosition ntb_position =
+      controller_->GetNewTabButtonPosition();
+  const gfx::Rect target_bounds =
+      controller_->GetTabAnimationTargetBounds(this);
+  const int tab_width = std::max(width(), target_bounds.width());
+  const float target_opacity =
+      float{std::min(std::abs(x() - target_bounds.x()), tab_width)} / tab_width;
+  // If the tab shapes are visible, never draw end separators.
+  const bool always_hide_separators_on_ends =
+      controller_->HasVisibleBackgroundTabShapes();
+  if (controller_->IsFirstVisibleTab(this) &&
+      (ntb_position != LEADING || always_hide_separators_on_ends))
+    leading_opacity = target_opacity;
+  if (controller_->IsLastVisibleTab(this) &&
+      (ntb_position != AFTER_TABS || always_hide_separators_on_ends))
+    trailing_opacity = target_opacity;
+
+  // Return the opacities in physical order, rather than logical.
+  if (base::i18n::IsRTL())
+    std::swap(leading_opacity, trailing_opacity);
+  return {leading_opacity, trailing_opacity};
+}
+
+const TabStyle* Tab::GetTabStyle() const {
+  return TabStyle::GetInstance();
 }
 
 // static
@@ -1185,23 +1301,38 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   const bool paint_hover_effect = !active && hover_controller_.ShouldDraw();
   const float scale = canvas->image_scale();
   const float stroke_thickness = GetStrokeThickness(active);
+#if !defined(USE_TAB_STYLE)
   const float bottom_offset = GetBottomStrokeThickness(active);
+#endif
   const auto paint_fill = [&](gfx::Canvas* canvas) {
+#if defined(USE_TAB_STYLE)
+    const gfx::Path fill_path =
+        GetTabStyle()->GetPath(this, TabStyle::PathType::kFill, scale, active);
+#else
     // When there's a border, we want the stroke to cover up the edge of the
     // fill path (https://crbug.com/873003), so set the fill path halfway
     // between the inner path and the border paths.  When there's no stroke,
     // |stroke_thickness| is 0 and the fill, inner, and stroke paths are all
     // identical.
-    gfx::Path fill_path =
+    const gfx::Path fill_path =
         GetInteriorPath(scale, stroke_thickness / 2, bottom_offset, bounds());
+#endif
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_inset);
   };
   const auto paint_stroke = [&](gfx::Canvas* canvas) {
+#if defined(USE_TAB_STYLE)
+    const TabStyle* tab_style = GetTabStyle();
+    gfx::Path interior_path = tab_style->GetPath(
+        this, TabStyle::PathType::kInsideBorder, scale, active);
+    gfx::Path outer_path = tab_style->GetPath(
+        this, TabStyle::PathType::kOutsideBorder, scale, active);
+#else
     gfx::Path interior_path =
         GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
     gfx::Path outer_path = GetBorderPath(scale, stroke_thickness, bottom_offset,
                                          false, false, bounds());
+#endif
     PaintTabBackgroundStroke(canvas, interior_path, outer_path, active,
                              stroke_color);
   };
@@ -1332,22 +1463,28 @@ void Tab::PaintSeparators(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
 
+#if defined(USE_TAB_STYLE)
+  TabStyle::SeparatorBounds separator_bounds =
+      GetTabStyle()->GetSeparatorBounds(this, scale);
+#else
+  TabStyle::SeparatorBounds separator_bounds;
   const gfx::RectF aligned_bounds =
       ScaleAndAlignBounds(bounds(), scale, GetStrokeThickness());
   const int corner_radius = GetCornerRadius();
   const float separator_height = GetTabSeparatorHeight() * scale;
-  gfx::RectF leading_separator_bounds(
+  separator_bounds.leading = gfx::RectF(
       aligned_bounds.x() + corner_radius * scale,
       aligned_bounds.y() + (aligned_bounds.height() - separator_height) / 2,
       kSeparatorThickness * scale, separator_height);
-  gfx::RectF trailing_separator_bounds = leading_separator_bounds;
-  trailing_separator_bounds.set_x(
+  separator_bounds.trailing = separator_bounds.leading;
+  separator_bounds.trailing.set_x(
       aligned_bounds.right() - (corner_radius + kSeparatorThickness) * scale);
 
   gfx::PointF origin(bounds().origin());
   origin.Scale(scale);
-  leading_separator_bounds.Offset(-origin.x(), -origin.y());
-  trailing_separator_bounds.Offset(-origin.x(), -origin.y());
+  separator_bounds.leading.Offset(-origin.x(), -origin.y());
+  separator_bounds.trailing.Offset(-origin.x(), -origin.y());
+#endif
 
   const SkColor separator_base_color = controller_->GetTabSeparatorColor();
   const auto separator_color = [separator_base_color](float opacity) {
@@ -1359,9 +1496,9 @@ void Tab::PaintSeparators(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(separator_color(separator_opacities.left));
-  canvas->DrawRect(leading_separator_bounds, flags);
+  canvas->DrawRect(separator_bounds.leading, flags);
   flags.setColor(separator_color(separator_opacities.right));
-  canvas->DrawRect(trailing_separator_bounds, flags);
+  canvas->DrawRect(separator_bounds.trailing, flags);
 }
 
 void Tab::UpdateIconVisibility() {
@@ -1475,88 +1612,6 @@ void Tab::UpdateIconVisibility() {
 bool Tab::ShouldRenderAsNormalTab() const {
   return !data().pinned ||
       (width() >= (GetPinnedWidth() + kPinnedTabExtraWidthToRenderAsNormal));
-}
-
-Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
-  // Something should visually separate tabs from each other and any adjacent
-  // new tab button.  Normally, active and hovered tabs draw distinct shapes
-  // (via different background colors) and thus need no separators, while
-  // background tabs need separators between them.  In single-tab mode, the
-  // active tab has no visible shape and thus needs separators on any side with
-  // an adjacent new tab button.  (The other sides will be faded out below.)
-  float leading_opacity, trailing_opacity;
-  if (controller_->SingleTabMode()) {
-    leading_opacity = trailing_opacity = 1.f;
-  } else if (IsActive()) {
-    leading_opacity = trailing_opacity = 0;
-  } else {
-    // Fade out the trailing separator while this tab or the subsequent tab is
-    // hovered.  If the subsequent tab is active, don't consider its hover
-    // animation value, lest the trailing separator on this tab disappear while
-    // the subsequent tab is being dragged.
-    const float hover_value = hover_controller_.GetAnimationValue();
-    const Tab* subsequent_tab = controller_->GetAdjacentTab(this, 1);
-    const float subsequent_hover =
-        !for_layout && subsequent_tab && !subsequent_tab->IsActive()
-            ? float{subsequent_tab->hover_controller_.GetAnimationValue()}
-            : 0;
-    trailing_opacity = 1.f - std::max(hover_value, subsequent_hover);
-
-    // The leading separator need not consider the previous tab's hover value,
-    // since if there is a previous tab that's hovered and not being dragged, it
-    // will draw atop this tab.
-    leading_opacity = 1.f - hover_value;
-
-    const Tab* previous_tab = controller_->GetAdjacentTab(this, -1);
-    if (IsSelected()) {
-      // Since this tab is selected, its shape will be visible against adjacent
-      // unselected tabs, so remove the separator in those cases.
-      if (previous_tab && !previous_tab->IsSelected())
-        leading_opacity = 0;
-      if (subsequent_tab && !subsequent_tab->IsSelected())
-        trailing_opacity = 0;
-    } else if (controller_->HasVisibleBackgroundTabShapes()) {
-      // Since this tab is unselected, adjacent selected tabs will normally
-      // paint atop it, covering the separator.  But if the user drags those
-      // selected tabs away, the exposed region looks like the window frame; and
-      // since background tab shapes are visible, there should be no separator.
-      // TODO(pkasting): https://crbug.com/876599  When a tab is animating into
-      // this gap, we should adjust its separator opacities as well.
-      if (previous_tab && previous_tab->IsSelected())
-        leading_opacity = 0;
-      if (subsequent_tab && subsequent_tab->IsSelected())
-        trailing_opacity = 0;
-    }
-  }
-
-  // For the first or last tab in the strip, fade the leading or trailing
-  // separator based on the NTB position and how close to the target bounds this
-  // tab is.  In the steady state, this hides separators on the opposite end of
-  // the strip from the NTB; it fades out the separators as tabs animate into
-  // these positions, after they pass by the other tabs; and it snaps the
-  // separators to full visibility immediately when animating away from these
-  // positions, which seems desirable.
-  const NewTabButtonPosition ntb_position =
-      controller_->GetNewTabButtonPosition();
-  const gfx::Rect target_bounds =
-      controller_->GetTabAnimationTargetBounds(this);
-  const int tab_width = std::max(width(), target_bounds.width());
-  const float target_opacity =
-      float{std::min(std::abs(x() - target_bounds.x()), tab_width)} / tab_width;
-  // If the tab shapes are visible, never draw end separators.
-  const bool always_hide_separators_on_ends =
-      controller_->HasVisibleBackgroundTabShapes();
-  if (controller_->IsFirstVisibleTab(this) &&
-      (ntb_position != LEADING || always_hide_separators_on_ends))
-    leading_opacity = target_opacity;
-  if (controller_->IsLastVisibleTab(this) &&
-      (ntb_position != AFTER_TABS || always_hide_separators_on_ends))
-    trailing_opacity = target_opacity;
-
-  // Return the opacities in physical order, rather than logical.
-  if (base::i18n::IsRTL())
-    std::swap(leading_opacity, trailing_opacity);
-  return {leading_opacity, trailing_opacity};
 }
 
 float Tab::GetHoverOpacity() const {
