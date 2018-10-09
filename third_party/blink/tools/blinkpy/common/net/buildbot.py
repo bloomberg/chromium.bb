@@ -73,7 +73,8 @@ class BuildBot(object):
             assert str(build_number).isdigit(), 'expected numeric build number, got %s' % build_number
             url_base = self.builder_results_url_base(builder_name)
             if step_name:
-                return '%s/%s/%s/layout-test-results' % (url_base, build_number, step_name)
+                return '%s/%s/%s/layout-test-results' % (
+                    url_base, build_number, urllib.quote(step_name))
             return '%s/%s/layout-test-results' % (url_base, build_number)
         return self.accumulated_results_url_base(builder_name)
 
@@ -97,7 +98,7 @@ class BuildBot(object):
         """
         url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
         return NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file(url_base, 'retry_summary.json'))
+            lambda: self.fetch_file('%s/%s' % (url_base, 'retry_summary.json')))
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
