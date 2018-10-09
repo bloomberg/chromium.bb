@@ -148,6 +148,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   // apps experiments end.
   html_source->AddResourcePath("shared/chooser_shared_css.html",
                                IDR_NUX_CHOOSER_SHARED_CSS);
+  html_source->AddResourcePath(
+      "shared/i18n_setup.html",
+      IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML);
 
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
