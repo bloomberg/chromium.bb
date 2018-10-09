@@ -2128,11 +2128,6 @@ jumbo_split_static_library("ui") {
       "cocoa/web_contents_modal_dialog_host_cocoa.mm",
       "cocoa/window_size_autosaver.h",
       "cocoa/window_size_autosaver.mm",
-
-      # TODO(estade): this class should be folded into
-      # manage_passwords_decoration.mm
-      "passwords/manage_passwords_icon.cc",
-      "passwords/manage_passwords_icon.h",
       "views/apps/chrome_app_window_client_views_mac.mm",
       "views/certificate_viewer_mac_views.mm",
       "views/dropdown_bar_host_mac.mm",
