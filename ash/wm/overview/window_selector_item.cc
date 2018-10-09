@@ -651,10 +651,12 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
-  // and UpdateHeaderLayout.
+  // and UpdateHeaderLayout. Do not apply the shadow for new selector item.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
     SetShadowBounds(
-        base::make_optional(transform_window_.GetTransformedBounds()));
+        window_grid_->IsNewSelectorItemWindow(GetWindow())
+            ? base::nullopt
+            : base::make_optional(transform_window_.GetTransformedBounds()));
   }
 
   UpdateBackdropBounds();
@@ -1027,7 +1029,8 @@ gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
                                        OverviewAnimationType animation_type) {
-  DCHECK(root_window_ == GetWindow()->GetRootWindow());
+  aura::Window* window = GetWindow();
+  DCHECK(root_window_ == window->GetRootWindow());
   gfx::Rect screen_rect = GetTargetBoundsInScreen();
 
   // Avoid division by zero by ensuring screen bounds is not empty.
@@ -1040,6 +1043,13 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   gfx::Rect selector_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, title_height);
+  // Do not set transform for new selector item, set bounds instead.
+  if (window_grid_->IsNewSelectorItemWindow(window)) {
+    window->layer()->SetBounds(selector_item_bounds);
+    transform_window_.GetOverviewWindow()->SetTransform(gfx::Transform());
+    return;
+  }
+
   gfx::Transform transform = ScopedTransformOverviewWindow::GetTransformForRect(
       screen_rect, selector_item_bounds);
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
