@@ -1066,9 +1066,6 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
     auth_error = GenerateAuthError(data, net_error);
     consumer_->OnOAuthMultiloginFailure(auth_error);
   }
-  UMA_HISTOGRAM_ENUMERATION("Gaia.AuthFetcher.Multilogin.AuthErrors",
-                            auth_error.state(),
-                            GoogleServiceAuthError::NUM_STATES);
 }
 
 void GaiaAuthFetcher::OnURLLoadComplete(
