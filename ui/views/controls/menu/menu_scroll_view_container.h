@@ -12,6 +12,7 @@
 
 namespace views {
 
+class FootnoteContainerView;
 class SubmenuView;
 
 // MenuScrollViewContainer contains the SubmenuView (through a MenuScrollView)
@@ -31,6 +32,8 @@ class MenuScrollViewContainer : public View {
   // Offsets the Arrow from the default location.
   void SetBubbleArrowOffset(int offset);
 
+  void SetFootnoteView(View* view);
+
   // View overrides.
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -43,6 +46,9 @@ class MenuScrollViewContainer : public View {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
+  // Create a default border or bubble border, as appropriate.
+  void CreateBorder();
+
   // Create the default border.
   void CreateDefaultBorder();
 
@@ -50,6 +56,8 @@ class MenuScrollViewContainer : public View {
   void CreateBubbleBorder();
 
   BubbleBorder::Arrow BubbleBorderTypeFromAnchor(MenuAnchorPosition anchor);
+
+  bool HasVisibleFootnote();
 
   class MenuScrollView;
 
@@ -64,10 +72,13 @@ class MenuScrollViewContainer : public View {
   SubmenuView* content_view_;
 
   // If set the currently set border is a bubble border.
-  BubbleBorder::Arrow arrow_;
+  BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
 
   // Weak reference to the currently set border.
-  BubbleBorder* bubble_border_;
+  BubbleBorder* bubble_border_ = nullptr;
+
+  // A view to contain the footnote view, if it exists.
+  FootnoteContainerView* footnote_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollViewContainer);
 };
