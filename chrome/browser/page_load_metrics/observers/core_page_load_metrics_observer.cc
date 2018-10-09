@@ -84,8 +84,8 @@ const char kHistogramFirstContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint";
 const char kBackgroundHistogramFirstContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.Background";
-const char kHistogramFirstContenfulPaintInitiatingProcess[] =
-    "PageLoad.Internal.PaintTiming.NavigationToFirstContenfulPaint."
+const char kHistogramFirstContentfulPaintInitiatingProcess[] =
+    "PageLoad.Internal.PaintTiming.NavigationToFirstContentfulPaint."
     "InitiatingProcess";
 const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
@@ -396,7 +396,7 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                         timing.paint_timing->first_contentful_paint.value() -
                             timing.parse_timing->parse_start.value());
     UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramFirstContenfulPaintInitiatingProcess,
+        internal::kHistogramFirstContentfulPaintInitiatingProcess,
         info.user_initiated_info.browser_initiated
             ? content::PROCESS_TYPE_BROWSER
             : content::PROCESS_TYPE_RENDERER,
