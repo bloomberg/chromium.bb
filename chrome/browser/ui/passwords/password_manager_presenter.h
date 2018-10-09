@@ -39,14 +39,14 @@ class PasswordManagerPresenter
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
   ~PasswordManagerPresenter() override;
 
+  void Initialize();
+
   // PasswordStore::Observer implementation.
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
   // Repopulates the password and exception entries.
   void UpdatePasswordLists();
-
-  void Initialize();
 
   // Gets the password entry at |index|.
   const autofill::PasswordForm* GetPassword(size_t index);
@@ -83,6 +83,16 @@ class PasswordManagerPresenter
 
  private:
   friend class PasswordManagerPresenterTest;
+
+  // Simple two state enum to indicate whether we should operate on saved
+  // passwords or saved exceptions.
+  enum class EntryKind { kPassword, kException };
+
+  // Attempts to remove the entry corresponding to |index| from the list
+  // corresponding to |entry_kind|. This will also remove the corresponding
+  // entry from the duplicate maps. Returns whether removing the entry
+  // succeeded.
+  bool TryRemovePasswordEntry(EntryKind entry_kind, size_t index);
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
