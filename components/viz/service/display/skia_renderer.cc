@@ -497,9 +497,11 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   if (!current_canvas_)
     return;
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  if (draw_region)
+  if (draw_region || is_scissor_enabled_) {
     auto_canvas_restore.emplace(current_canvas_, true /* do_save */);
-
+    if (is_scissor_enabled_)
+      current_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_));
+  }
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
