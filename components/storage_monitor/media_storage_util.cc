@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -44,7 +43,6 @@ base::FilePath::StringType FindRemovableStorageLocationById(
 
 void FilterAttachedDevicesOnBackgroundSequence(
     MediaStorageUtil::DeviceIdSet* devices) {
-  base::AssertBlockingAllowed();
   MediaStorageUtil::DeviceIdSet missing_devices;
 
   for (auto it = devices->begin(); it != devices->end(); ++it) {
@@ -74,7 +72,6 @@ void FilterAttachedDevicesOnBackgroundSequence(
 
 // static
 bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
-  base::AssertBlockingAllowed();
   base::FilePath::StringType dcim_dir(kDCIMDirectoryName);
   if (!base::DirectoryExists(mount_point.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.
