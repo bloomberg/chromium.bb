@@ -5254,3 +5254,6 @@ crbug.com/893112 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSend
 
 # Sheriff 2018-10-08
 crbug.com/893015 virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Failure Pass ]
+
+# Sheriff 2018-10-09
+crbug.com/893508 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
