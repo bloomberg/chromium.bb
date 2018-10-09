@@ -1724,10 +1724,13 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     mojom::RequestContextType context = resource_request.GetRequestContext();
     // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
     // correctly.
-    if (context == mojom::RequestContextType::UNSPECIFIED ||
-        !origin_context->Url().ProtocolIs("https") ||
-        !ShouldAutoupgrade(
+    if (context != mojom::RequestContextType::UNSPECIFIED &&
+        origin_context->Url().ProtocolIs("https") &&
+        resource_request.Url().ProtocolIs("http") &&
+        ShouldAutoupgrade(
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
+      resource_request.SetIsAutomaticUpgrade(true);
+    } else {
       return;
     }
   }
