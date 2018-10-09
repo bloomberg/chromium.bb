@@ -269,7 +269,8 @@ class CORE_EXPORT VisualViewport final
 
   CompositorElementId GetCompositorOverscrollElasticityElementId() const;
 
-  void SetNeedsPaintPropertiesUpdate();
+  void SetNeedsPaintPropertyUpdate() { needs_paint_property_update_ = true; }
+  bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
  private:
   explicit VisualViewport(Page&);

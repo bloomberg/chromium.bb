@@ -116,7 +116,7 @@ void FullscreenElementChanged(Document& document,
     // Update paint properties on the visual viewport since
     // user-input-scrollable bits will change based on fullscreen state.
     if (Page* page = frame->GetPage())
-      page->GetVisualViewport().SetNeedsPaintPropertiesUpdate();
+      page->GetVisualViewport().SetNeedsPaintPropertyUpdate();
   }
 }
 

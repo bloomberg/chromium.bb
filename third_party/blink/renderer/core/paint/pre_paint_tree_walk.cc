@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
@@ -271,6 +272,12 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
+  if ((RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+       RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) &&
+      frame_view.GetFrame().IsLocalRoot() &&
+      frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate())
+    return true;
+
   return frame_view.GetLayoutView() &&
          NeedsTreeBuilderContextUpdate(*frame_view.GetLayoutView(), context);
 }

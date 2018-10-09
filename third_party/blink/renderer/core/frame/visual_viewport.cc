@@ -253,10 +253,6 @@ void VisualViewport::Trace(blink::Visitor* visitor) {
   ScrollableArea::Trace(visitor);
 }
 
-void VisualViewport::SetNeedsPaintPropertiesUpdate() {
-  needs_paint_property_update_ = true;
-}
-
 void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
   if (!MainFrame())
     return;
