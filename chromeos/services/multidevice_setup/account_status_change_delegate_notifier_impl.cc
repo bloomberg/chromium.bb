@@ -171,10 +171,12 @@ void AccountStatusChangeDelegateNotifierImpl::
   if (verified_host_device_id_from_most_recent_update_)
     return;
 
-  // If the observer has been notified of this event before, the user is not
-  // new.
+  // If the observer has been notified of a potential verified host in the past,
+  // they are not considered a new user.
   if (pref_service_->GetInt64(kNewUserPotentialHostExistsPrefName) !=
-      kTimestampNotSet) {
+          kTimestampNotSet ||
+      pref_service_->GetInt64(kExistingUserChromebookAddedPrefName) !=
+          kTimestampNotSet) {
     return;
   }
 
