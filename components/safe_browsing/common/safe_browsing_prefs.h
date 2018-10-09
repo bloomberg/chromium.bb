@@ -142,23 +142,6 @@ enum PasswordProtectionTrigger {
   PASSWORD_PROTECTION_TRIGGER_MAX,
 };
 
-// Determines which opt-in text should be used based on the currently active
-// preference. Will return either |extended_reporting_pref| if the legacy
-// Extended Reporting pref is active, or |scout_pref| if the Scout pref is
-// active. Used for Android.
-std::string ChooseOptInTextPreference(
-    const PrefService& prefs,
-    const std::string& extended_reporting_pref,
-    const std::string& scout_pref);
-
-// Determines which opt-in text should be used based on the currently active
-// preference. Will return either |extended_reporting_resource| if the legacy
-// Extended Reporting pref is active, or |scout_resource| if the Scout pref is
-// active.
-int ChooseOptInTextResource(const PrefService& prefs,
-                            int extended_reporting_resource,
-                            int scout_resource);
-
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).
 bool ExtendedReportingPrefExists(const PrefService& prefs);
