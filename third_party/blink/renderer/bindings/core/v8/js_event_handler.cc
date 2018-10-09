@@ -13,6 +13,13 @@
 
 namespace blink {
 
+v8::Local<v8::Value> JSEventHandler::GetEffectiveFunction(EventTarget& target) {
+  v8::Local<v8::Value> v8_listener = GetListenerObject(target);
+  if (!v8_listener.IsEmpty() && v8_listener->IsFunction())
+    return GetBoundFunction(v8_listener.As<v8::Function>());
+  return v8::Undefined(GetIsolate());
+}
+
 void JSEventHandler::SetCompiledHandler(
     ScriptState* script_state,
     v8::Local<v8::Function> listener,
