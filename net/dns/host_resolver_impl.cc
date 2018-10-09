@@ -2180,8 +2180,9 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
       num_dns_failures_ < kMaximumDnsFailures) {
     DnsConfig dns_config;
     NetworkChangeNotifier::GetDnsConfig(&dns_config);
-    dns_config.dns_over_https_servers = dns_over_https_servers_;
-    dns_client_->SetConfig(dns_config);
+    DnsConfig overridden_config =
+        dns_config_overrides_.ApplyOverrides(dns_config);
+    dns_client_->SetConfig(overridden_config);
     num_dns_failures_ = 0;
     if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
@@ -2331,34 +2332,29 @@ bool HostResolverImpl::GetNoIPv6OnWifi() {
   return assume_ipv6_failure_on_wifi_;
 }
 
+void HostResolverImpl::SetDnsConfigOverrides(
+    const DnsConfigOverrides& overrides) {
+  if (dns_config_overrides_ == overrides)
+    return;
+
+  dns_config_overrides_ = overrides;
+  if (dns_client_.get() && dns_client_->GetConfig())
+    UpdateDNSConfig(true);
+}
+
 void HostResolverImpl::SetRequestContext(URLRequestContext* context) {
   if (context != url_request_context_) {
     url_request_context_ = context;
   }
 }
 
-void HostResolverImpl::AddDnsOverHttpsServer(std::string uri_template,
-                                             bool use_post) {
-  dns_over_https_servers_.emplace_back(uri_template, use_post);
-  if (dns_client_.get() && dns_client_->GetConfig())
-    UpdateDNSConfig(true);
-}
-
-void HostResolverImpl::ClearDnsOverHttpsServers() {
-  if (dns_over_https_servers_.size() == 0)
-    return;
-
-  dns_over_https_servers_.clear();
-
-  if (dns_client_.get() && dns_client_->GetConfig())
-    UpdateDNSConfig(true);
-}
-
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
 HostResolverImpl::GetDnsOverHttpsServersForTesting() const {
-  if (dns_over_https_servers_.empty())
+  if (!dns_config_overrides_.dns_over_https_servers ||
+      dns_config_overrides_.dns_over_https_servers.value().empty()) {
     return nullptr;
-  return &dns_over_https_servers_;
+  }
+  return &dns_config_overrides_.dns_over_https_servers.value();
 }
 
 void HostResolverImpl::SetTickClockForTesting(
@@ -2880,6 +2876,9 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
 
   // TODO(szym): Remove once http://crbug.com/137914 is resolved.
   received_dns_config_ = dns_config.IsValid();
+
+  dns_config = dns_config_overrides_.ApplyOverrides(dns_config);
+
   // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
   use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
 
@@ -2892,7 +2891,6 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     // wasn't already a DnsConfig or it's the same one.
     DCHECK(config_changed || !dns_client_->GetConfig() ||
            dns_client_->GetConfig()->Equals(dns_config));
-    dns_config.dns_over_https_servers = dns_over_https_servers_;
     dns_client_->SetConfig(dns_config);
     if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);

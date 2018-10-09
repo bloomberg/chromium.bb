@@ -44,6 +44,8 @@ struct NET_EXPORT DnsConfig {
   struct NET_EXPORT DnsOverHttpsServerConfig {
     DnsOverHttpsServerConfig(const std::string& server_template, bool use_post);
 
+    bool operator==(const DnsOverHttpsServerConfig& other) const;
+
     std::string server_template;
     bool use_post;
   };

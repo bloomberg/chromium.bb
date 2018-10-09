@@ -36,7 +36,8 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
          (append_to_multi_label_name == d.append_to_multi_label_name) &&
          (ndots == d.ndots) && (timeout == d.timeout) &&
          (attempts == d.attempts) && (rotate == d.rotate) &&
-         (use_local_ipv6 == d.use_local_ipv6);
+         (use_local_ipv6 == d.use_local_ipv6) &&
+         (dns_over_https_servers == d.dns_over_https_servers);
 }
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
@@ -49,6 +50,7 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   attempts = d.attempts;
   rotate = d.rotate;
   use_local_ipv6 = d.use_local_ipv6;
+  dns_over_https_servers = d.dns_over_https_servers;
 }
 
 std::unique_ptr<base::Value> DnsConfig::ToValue() const {
@@ -90,5 +92,10 @@ DnsConfig::DnsOverHttpsServerConfig::DnsOverHttpsServerConfig(
     const std::string& server_template,
     bool use_post)
     : server_template(server_template), use_post(use_post) {}
+
+bool DnsConfig::DnsOverHttpsServerConfig::operator==(
+    const DnsOverHttpsServerConfig& other) const {
+  return server_template == other.server_template && use_post == other.use_post;
+}
 
 }  // namespace net

@@ -20,6 +20,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
@@ -173,9 +174,9 @@ class NET_EXPORT HostResolverImpl
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;
 
+  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override;
+
   void SetRequestContext(URLRequestContext* request_context) override;
-  void AddDnsOverHttpsServer(std::string uri_template, bool use_post) override;
-  void ClearDnsOverHttpsServers() override;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const override;
 
@@ -389,6 +390,10 @@ class NET_EXPORT HostResolverImpl
   // to measure performance of DnsConfigService: http://crbug.com/125599
   bool received_dns_config_;
 
+  // Overrides or adds to DNS configuration read from the system for DnsClient
+  // resolution.
+  DnsConfigOverrides dns_config_overrides_;
+
   // Number of consecutive failures of DnsTask, counted when fallback succeeds.
   unsigned num_dns_failures_;
 
@@ -414,7 +419,6 @@ class NET_EXPORT HostResolverImpl
   scoped_refptr<base::TaskRunner> proc_task_runner_;
 
   URLRequestContext* url_request_context_;
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> dns_over_https_servers_;
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;
