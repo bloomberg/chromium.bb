@@ -22,7 +22,9 @@ using ::testing::_;
 class UrlValidityCheckerImplTest : public testing::Test {
  protected:
   UrlValidityCheckerImplTest()
-      : test_shared_loader_factory_(
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         url_checker_(test_shared_loader_factory_) {
@@ -142,5 +144,17 @@ TEST_F(UrlValidityCheckerImplTest, DoesUrlResolve_OnRedirect) {
 
   url_checker()->DoesUrlResolve(kUrl, TRAFFIC_ANNOTATION_FOR_TESTS,
                                 callback.Get());
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(UrlValidityCheckerImplTest, DoesUrlResolve_OnTimeout) {
+  const GURL kUrl("https://www.foo.com");
+
+  base::MockCallback<UrlValidityChecker::UrlValidityCheckerCallback> callback;
+  EXPECT_CALL(callback, Run(false, _));
+
+  url_checker()->DoesUrlResolve(kUrl, TRAFFIC_ANNOTATION_FOR_TESTS,
+                                callback.Get());
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(20));
   scoped_task_environment_.RunUntilIdle();
 }

@@ -15,6 +15,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace net {
 struct RedirectInfo;
 }  // namespace net
@@ -42,6 +46,10 @@ class UrlValidityCheckerImpl : public UrlValidityChecker {
  private:
   struct PendingRequest;
 
+  // Called when the request times out. Calls back false and returns the request
+  // duration.
+  void OnRequestTimeout(std::list<PendingRequest>::iterator request_iter);
+
   void OnSimpleLoaderRedirect(
       std::list<PendingRequest>::iterator request_iter,
       const net::RedirectInfo& redirect_info,
@@ -64,6 +72,9 @@ class UrlValidityCheckerImpl : public UrlValidityChecker {
 
   // Test time ticks used for testing.
   base::TimeTicks time_ticks_for_testing_;
+
+  // Non-owned pointer to TickClock. Used for request timeouts.
+  const base::TickClock* const clock_;
 
   base::WeakPtrFactory<UrlValidityCheckerImpl> weak_ptr_factory_{this};
 
