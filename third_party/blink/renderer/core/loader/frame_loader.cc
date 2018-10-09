@@ -229,7 +229,11 @@ FrameLoader::FrameLoader(LocalFrame* frame)
       forced_sandbox_flags_(kSandboxNone),
       dispatching_did_clear_window_object_in_main_world_(false),
       protect_provisional_loader_(false),
-      detached_(false) {
+      detached_(false),
+      virtual_time_pauser_(
+          frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
+              "FrameLoader",
+              WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant)) {
   DCHECK(frame_);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
@@ -554,6 +558,9 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
                                        bool flush_microtask_queue) {
   if (!loader)
     return;
+
+  if (loader == provisional_document_loader_)
+    virtual_time_pauser_.UnpauseVirtualTime();
 
   FrameNavigationDisabler navigation_disabler(*frame_);
   loader->DetachFromFrame(flush_microtask_queue);
@@ -996,6 +1003,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
   probe::didStartProvisionalLoad(frame_);
+  virtual_time_pauser_.PauseVirtualTime();
   DCHECK(provisional_document_loader_);
   TakeObjectSnapshot();
 }
@@ -1090,6 +1098,7 @@ void FrameLoader::CommitNavigation(
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
   probe::didStartProvisionalLoad(frame_);
+  virtual_time_pauser_.PauseVirtualTime();
 
   provisional_document_loader_->StartLoading();
   TakeObjectSnapshot();
@@ -1273,6 +1282,7 @@ void FrameLoader::CommitProvisionalLoad() {
         .SetHasSameOriginAsPreviousDocument(
             security_origin->CanRequest(frame_->GetDocument()->Url()));
   }
+  virtual_time_pauser_.UnpauseVirtualTime();
 
   if (!PrepareForCommit())
     return;
@@ -1407,6 +1417,7 @@ void FrameLoader::Detach() {
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID("loading", "FrameLoader", this);
   detached_ = true;
+  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void FrameLoader::DetachProvisionalDocumentLoader(DocumentLoader* loader) {
