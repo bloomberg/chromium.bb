@@ -236,6 +236,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
         // On Windows, GetDragImage() is a NOTREACHED() as the Windows
         // implementation of OSExchangeData just sets the drag image on the OS
         // API.
+        // See https://crbug.com/893388.
         EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
 #endif
         run_loop->Quit();
@@ -269,15 +270,20 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
       [&run_loop](const ui::OSExchangeData& drag_data,
                   gfx::NativeView native_view,
                   ui::DragDropTypes::DragEventSource source, int operation) {
+#if !defined(OS_MACOSX)
         GURL url;
         base::string16 title;
+        // On Mac 10.11 and 10.12, this returns true, even though we set no url.
+        // See https://crbug.com/893432.
         EXPECT_FALSE(drag_data.provider().GetURLAndTitle(
             ui::OSExchangeData::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
             &url, &title));
+#endif
 #if !defined(OS_WIN)
         // On Windows, GetDragImage() is a NOTREACHED() as the Windows
         // implementation of OSExchangeData just sets the drag image on the OS
         // API.
+        // See https://crbug.com/893388.
         EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
 #endif
         run_loop->Quit();
