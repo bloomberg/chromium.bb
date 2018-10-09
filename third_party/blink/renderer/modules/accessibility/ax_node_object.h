@@ -61,8 +61,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   const AXObject* InheritsPresentationalRoleFrom() const override;
   ax::mojom::Role DetermineAccessibilityRole() override;
   virtual ax::mojom::Role NativeRoleIgnoringAria() const;
-  String AccessibilityDescriptionForElements(
-      HeapVector<Member<Element>>& elements) const;
   void AlterSliderOrSpinButtonValue(bool increase);
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
