@@ -531,7 +531,7 @@ void Tab::Layout() {
     favicon_bounds.set_size(
         gfx::Size(icon_->GetPreferredSize().width(),
                   contents_rect.height() - favicon_bounds.y()));
-    if (center_favicon_) {
+    if (center_icon_) {
       // When centering the favicon, the favicon is allowed to escape the normal
       // contents rect.
       favicon_bounds.set_x(Center(width(), gfx::kFaviconSize));
@@ -599,7 +599,13 @@ void Tab::Layout() {
         std::max(contents_rect.x(), right - image_size.width()),
         contents_rect.y() + Center(contents_rect.height(), image_size.height()),
         image_size.width(), image_size.height());
-    MaybeAdjustLeftForPinnedTab(&bounds, bounds.width());
+    if (center_icon_) {
+      // When centering the alert icon, it is allowed to escape the normal
+      // contents rect.
+      bounds.set_x(Center(width(), bounds.width()));
+    } else {
+      MaybeAdjustLeftForPinnedTab(&bounds, bounds.width());
+    }
     alert_indicator_->SetBoundsRect(bounds);
   }
   alert_indicator_->SetVisible(showing_alert_indicator_);
@@ -1510,7 +1516,7 @@ void Tab::UpdateIconVisibility() {
   // This prevents the icon and text from sliding left at the end of closing
   // a non-narrow tab.
   if (!closing_) {
-    center_favicon_ = false;
+    center_icon_ = false;
     extra_padding_before_content_ = false;
   }
 
@@ -1582,15 +1588,16 @@ void Tab::UpdateIconVisibility() {
     if (showing_close_button_ || show_on_hover)
       available_width -= close_button_width;
 
-    // If no other controls are visible, show favicon even though we
-    // don't have enough space. We'll clip the favicon in PaintChildren().
-    if (!showing_close_button_ && !showing_alert_indicator_ && !showing_icon_ &&
-        has_favicon) {
-      showing_icon_ = true;
+    // If no other controls are visible, show the alert icon or the favicon
+    // even though we don't have enough space. We'll clip the icon in
+    // PaintChildren().
+    if (!showing_close_button_ && !showing_alert_indicator_ && !showing_icon_) {
+      showing_alert_indicator_ = has_alert_icon;
+      showing_icon_ = !showing_alert_indicator_ && has_favicon;
 
       // See comments near top of function on why this conditional is here.
       if (!closing_)
-        center_favicon_ = true;
+        center_icon_ = true;
     }
   }
 

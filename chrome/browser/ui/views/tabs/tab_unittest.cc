@@ -210,11 +210,13 @@ class TabTest : public ChromeViewsTestBase {
       switch (VisibleIconCount(tab)) {
         case 1:
           EXPECT_FALSE(tab.showing_close_button_);
-          if (tab.data_.alert_state == TabAlertState::NONE ||
-              tab.center_favicon_)
+          if (tab.data_.alert_state == TabAlertState::NONE) {
             EXPECT_FALSE(tab.showing_alert_indicator_);
-          if (tab.center_favicon_)
             EXPECT_TRUE(tab.showing_icon_);
+          } else {
+            EXPECT_FALSE(tab.showing_icon_);
+            EXPECT_TRUE(tab.showing_alert_indicator_);
+          }
           break;
         case 2:
           EXPECT_TRUE(tab.showing_icon_);
@@ -233,7 +235,7 @@ class TabTest : public ChromeViewsTestBase {
     // are fully within the contents bounds.
     const gfx::Rect contents_bounds = tab.GetContentsBounds();
     if (tab.showing_icon_) {
-      if (tab.center_favicon_) {
+      if (tab.center_icon_) {
         EXPECT_LE(tab.icon_->x(), contents_bounds.x());
       } else {
         EXPECT_LE(contents_bounds.x(), tab.icon_->x());
@@ -257,7 +259,13 @@ class TabTest : public ChromeViewsTestBase {
         EXPECT_LE(tab.title_->bounds().right(),
                   GetAlertIndicatorBounds(tab).x());
       }
-      EXPECT_LE(GetAlertIndicatorBounds(tab).right(), contents_bounds.right());
+      if (tab.center_icon_) {
+        EXPECT_LE(contents_bounds.right(),
+                  GetAlertIndicatorBounds(tab).right());
+      } else {
+        EXPECT_LE(GetAlertIndicatorBounds(tab).right(),
+                  contents_bounds.right());
+      }
       EXPECT_LE(contents_bounds.y(), GetAlertIndicatorBounds(tab).y());
       EXPECT_LE(GetAlertIndicatorBounds(tab).bottom(),
                 contents_bounds.bottom());
