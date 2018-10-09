@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#include "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -29,6 +30,7 @@
 
 @property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
+@property(nonatomic, strong) ShortcutsCoordinator* shortcutsCoordinator;
 
 @end
 
@@ -76,9 +78,20 @@
                    forProtocol:@protocol(OmniboxSuggestionCommands)];
 
   _popupView->SetMediator(self.mediator);
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+    self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
+        initWithBaseViewController:self.popupViewController
+                      browserState:self.browserState];
+    [self.shortcutsCoordinator start];
+    self.popupViewController.shortcutsViewController =
+        self.shortcutsCoordinator.viewController;
+  }
 }
 
 - (void)stop {
+  [self.shortcutsCoordinator stop];
   _popupView.reset();
   [self.dispatcher
       stopDispatchingForProtocol:@protocol(OmniboxSuggestionCommands)];

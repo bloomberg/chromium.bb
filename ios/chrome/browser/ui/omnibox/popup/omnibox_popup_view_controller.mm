@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -71,6 +72,10 @@ UIColor* BackgroundColorIncognito() {
 // updating the cells to avoid defocusing the omnibox when the omnibox popup
 // changes size and table view issues a scroll event.
 @property(nonatomic, assign) BOOL forwardsScrollEvents;
+
+// The cell with shortcuts to display when no results are available (only if
+// this is enabled with |shortcutsEnabled|). Lazily instantiated.
+@property(nonatomic, strong) UITableViewCell* shortcutsCell;
 
 @end
 
@@ -217,8 +222,29 @@ UIColor* BackgroundColorIncognito() {
     return;
   }
 
+  DCHECK(!shortcutsEnabled || self.shortcutsViewController);
+
   _shortcutsEnabled = shortcutsEnabled;
   [self.tableView reloadData];
+}
+
+- (UITableViewCell*)shortcutsCell {
+  if (_shortcutsCell) {
+    return _shortcutsCell;
+  }
+
+  DCHECK(self.shortcutsEnabled);
+  DCHECK(self.shortcutsViewController);
+
+  UITableViewCell* cell = [[UITableViewCell alloc] init];
+  [self.shortcutsViewController willMoveToParentViewController:self];
+  [self addChildViewController:self.shortcutsViewController];
+  [cell.contentView addSubview:self.shortcutsViewController.view];
+  self.shortcutsViewController.view.translatesAutoresizingMaskIntoConstraints =
+      NO;
+  AddSameConstraints(self.shortcutsViewController.view, cell.contentView);
+  [self.shortcutsViewController didMoveToParentViewController:self];
+  return cell;
 }
 
 #pragma mark - AutocompleteResultConsumer
@@ -648,12 +674,7 @@ UIColor* BackgroundColorIncognito() {
 
   if (self.shortcutsEnabled && indexPath.row == 0 &&
       _currentResult.count == 0) {
-    // This is a placeholder cell.
-    UITableViewCell* cell =
-        [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                               reuseIdentifier:nil];
-    cell.textLabel.text = @"Shortcuts placeholder";
-    return cell;
+    return self.shortcutsCell;
   }
 
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
