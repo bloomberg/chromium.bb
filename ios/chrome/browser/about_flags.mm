@@ -381,6 +381,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"out-of-web-fullscreen", flag_descriptions::kOutOfWebFullscreenName,
      flag_descriptions::kOutOfWebFullscreenDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kOutOfWebFullscreen)},
+    {"toolbar-container-custom-view",
+     flag_descriptions::kToolbarContainerCustomViewName,
+     flag_descriptions::kToolbarContainerCustomViewDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerCustomViewEnabled)},
 };
 
 // Add all switches from experimental flags to |command_line|.

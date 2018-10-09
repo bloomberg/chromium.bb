@@ -216,6 +216,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_configuration_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
@@ -2575,7 +2576,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (self.secondaryToolbarCoordinator) {
       // Create the container view for the secondary toolbar and add it to the
       // hierarchy
-      UIView* container = [[ToolbarContainerView alloc] init];
+      bool useCustomView = base::FeatureList::IsEnabled(
+          toolbar_container::kToolbarContainerCustomViewEnabled);
+      UIView* container = useCustomView ? [[ToolbarContainerView alloc] init]
+                                        : [[UIView alloc] init];
       container.translatesAutoresizingMaskIntoConstraints = NO;
       [container
           addSubview:self.secondaryToolbarCoordinator.viewController.view];
