@@ -82,6 +82,7 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
     printer.AddNode(properties.Perspective());
     printer.AddNode(properties.ReplacedContentTransform());
     printer.AddNode(properties.ScrollTranslation());
+    printer.AddNode(properties.TransformIsolationNode());
   }
 };
 
@@ -103,6 +104,7 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
     printer.AddNode(properties.OverflowControlsClip());
     printer.AddNode(properties.InnerBorderRadiusClip());
     printer.AddNode(properties.OverflowClip());
+    printer.AddNode(properties.ClipIsolationNode());
   }
 };
 
@@ -124,6 +126,7 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
     printer.AddNode(properties.Mask());
     printer.AddNode(properties.ClipPath());
     printer.AddNode(properties.LinkHighlightEffect());
+    printer.AddNode(properties.EffectIsolationNode());
   }
 };
 
@@ -179,6 +182,8 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.ReplacedContentTransform(),
                "ReplacedContentTransform", object);
   SetDebugName(properties.ScrollTranslation(), "ScrollTranslation", object);
+  SetDebugName(properties.TransformIsolationNode(), "TransformIsolationNode",
+               object);
 
   SetDebugName(properties.FragmentClip(), "FragmentClip", object);
   SetDebugName(properties.ClipPathClip(), "ClipPathClip", object);
@@ -191,6 +196,7 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.InnerBorderRadiusClip(), "InnerBorderRadiusClip",
                object);
   SetDebugName(properties.OverflowClip(), "OverflowClip", object);
+  SetDebugName(properties.ClipIsolationNode(), "ClipIsolationNode", object);
 
   SetDebugName(properties.Effect(), "Effect", object);
   SetDebugName(properties.Filter(), "Filter", object);
@@ -201,6 +207,8 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.Mask(), "Mask", object);
   SetDebugName(properties.ClipPath(), "ClipPath", object);
   SetDebugName(properties.LinkHighlightEffect(), "LinkHighlightEffect", object);
+  SetDebugName(properties.EffectIsolationNode(), "EffectIsolationNode", object);
+
   SetDebugName(properties.Scroll(), "Scroll", object);
 }
 
