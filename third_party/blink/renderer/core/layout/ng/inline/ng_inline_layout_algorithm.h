@@ -110,6 +110,12 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   Vector<NGPositionedFloat> positioned_floats_;
   NGUnpositionedFloatVector unpositioned_floats_;
+
+#if DCHECK_IS_ON()
+  // True if |box_states_| is taken from |context_|, to check the |box_states_|
+  // is the same as when it is rebuilt.
+  bool is_box_states_from_context_ = false;
+#endif
 };
 
 }  // namespace blink
