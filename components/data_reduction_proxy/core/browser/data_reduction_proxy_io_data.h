@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace base {
 class Value;
@@ -151,6 +152,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Forwards proxy authentication headers to the UI thread.
   void UpdateProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
+  void OnProxyConfigUpdated();
+
   // Notifies |this| that there there is a change in the effective connection
   // type.
   void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
@@ -160,6 +163,11 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Returns the current estimate of the effective connection type.
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
+
+  // Binds to a config client that can be used to update Data Reduction Proxy
+  // settings when the network service is enabled.
+  void SetCustomProxyConfigClient(
+      network::mojom::CustomProxyConfigClientPtrInfo config_client_info);
 
   // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
@@ -332,6 +340,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Current estimate of the effective connection type.
   net::EffectiveConnectionType effective_connection_type_;
+
+  network::mojom::CustomProxyConfigClientPtr proxy_config_client_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

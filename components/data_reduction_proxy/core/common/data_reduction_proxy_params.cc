@@ -22,6 +22,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/features.h"
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -403,6 +404,13 @@ bool IsDataSaverSiteBreakdownUsingPLMEnabled() {
   return base::FeatureList::IsEnabled(
       data_reduction_proxy::features::
           kDataSaverSiteBreakdownUsingPageLoadMetrics);
+}
+
+bool IsEnabledWithNetworkService() {
+  return base::FeatureList::IsEnabled(
+             data_reduction_proxy::features::
+                 kDataReductionProxyEnabledWithNetworkService) &&
+         base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 
 base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(

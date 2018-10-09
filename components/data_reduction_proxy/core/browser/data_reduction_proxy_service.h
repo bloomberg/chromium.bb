@@ -155,6 +155,11 @@ class DataReductionProxyService
   // Sends the given |headers| to |DataReductionProxySettings|.
   void SetProxyRequestHeadersOnUI(const net::HttpRequestHeaders& headers);
 
+  // Sets a config client that can be used to update Data Reduction Proxy
+  // settings when the network service is enabled.
+  void SetCustomProxyConfigClient(
+      network::mojom::CustomProxyConfigClientPtrInfo config_client_info);
+
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
     return compression_stats_.get();
