@@ -1433,7 +1433,8 @@
     'security': {
       'filepath': 'base/json/'\
                   '|base/memory/.*shared_memory'\
-                  '|components/cbor/',
+                  '|components/cbor/'\
+                  '|AndroidManifest',
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
