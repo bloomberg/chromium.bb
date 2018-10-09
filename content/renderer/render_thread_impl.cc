@@ -1884,7 +1884,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr) {
+    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+    const char* client_name) {
   // Misconfigured bots (eg. crbug.com/780757) could run layout tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
   if (layout_test_mode() && is_gpu_compositing_disabled_) {
@@ -1916,6 +1917,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   // potentially increases it for input on the other hand.)
   if (command_line.HasSwitch(switches::kDisableFrameRateLimit))
     params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
+
+  params.client_name = client_name;
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash()) {

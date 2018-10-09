@@ -25,6 +25,10 @@
 
 namespace ui {
 
+namespace {
+static const char* kBrowser = "Browser";
+}  // namespace
+
 HostContextFactoryPrivate::HostContextFactoryPrivate(
     uint32_t client_id,
     viz::HostFrameSinkManager* host_frame_sink_manager,
@@ -117,6 +121,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
           /*should_ask_for_child_region=*/false);
+  params.client_name = kBrowser;
   compositor->SetLayerTreeFrameSink(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),

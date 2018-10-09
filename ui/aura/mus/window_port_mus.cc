@@ -28,6 +28,10 @@
 
 namespace aura {
 
+namespace {
+static const char* kMus = "Mus";
+}  // namespace
+
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
 WindowPortMus::WindowMusChangeDataImpl::~WindowMusChangeDataImpl() = default;
@@ -142,6 +146,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
+  params.client_name = kMus;
 
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(

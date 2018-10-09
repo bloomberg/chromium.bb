@@ -275,7 +275,8 @@ class CONTENT_EXPORT RenderThreadImpl
       LayerTreeFrameSinkCallback callback,
       mojom::RenderFrameMetadataObserverClientRequest
           render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr);
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      const char* client_name);
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
