@@ -59,9 +59,3 @@
 
 # Flaky. https://crbug.com/889878
 -SyntheticKeyEventTest.KeyboardEventAck
-
-
-# Flaky cause by occasional crash.
-# https://crbug.com/892097 and https://crbug.com/892098
--TouchActionBrowserTest.PanXYAtXAreaMainThreadJanky
--TouchActionBrowserTest.TouchActionNone
