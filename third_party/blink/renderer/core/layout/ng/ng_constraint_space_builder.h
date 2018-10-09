@@ -25,11 +25,23 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // NOTE: This constructor doesn't act like a copy-constructor, it uses the
   // writing_mode and icb_size from the parent constraint space, and passes
   // them to the constructor below.
-  NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space);
+  NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space)
+      : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
+                                 parent_space.InitialContainingBlockSize()) {
+    parent_percentage_resolution_size_ =
+        parent_space.PercentageResolutionSize();
+    flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+    if (parent_space.IsIntermediateLayout())
+      flags_ |= NGConstraintSpace::kIntermediateLayout;
+  }
 
   // writing_mode is the writing mode that the logical sizes passed to the
   // setters are in.
-  NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size);
+  NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size)
+      : initial_containing_block_size_(icb_size),
+        parent_writing_mode_(writing_mode) {
+    flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+  }
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
     available_size_ = available_size;
