@@ -65,6 +65,13 @@ class LoadTaobaoDesktopStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
+class LoadTaobaoDesktopStory2018(_LoadingStory):
+  NAME = 'load:search:taobao:2018'
+  URL = 'https://world.taobao.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadTaobaoMobileStory(_LoadingStory):
   NAME = 'load:search:taobao'
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
