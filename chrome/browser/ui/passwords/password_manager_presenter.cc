@@ -61,6 +61,16 @@ void RemoveDuplicates(const autofill::PasswordForm& form,
   duplicates->erase(key);
 }
 
+const autofill::PasswordForm* TryGetPasswordForm(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
+    size_t index) {
+  // |index| out of bounds might come from a compromised renderer
+  // (http://crbug.com/362054), or the user removed a password while a request
+  // to the store is in progress (i.e. |forms| is empty). Don't let it crash
+  // the browser.
+  return index < forms.size() ? forms[index].get() : nullptr;
+}
+
 class RemovePasswordOperation : public UndoOperation {
  public:
   RemovePasswordOperation(PasswordManagerPresenter* page,
@@ -160,12 +170,6 @@ void PasswordManagerPresenter::OnLoginsChanged(
   UpdatePasswordLists();
 }
 
-PasswordStore* PasswordManagerPresenter::GetPasswordStore() {
-  return PasswordStoreFactory::GetForProfile(password_view_->GetProfile(),
-                                             ServiceAccessType::EXPLICIT_ACCESS)
-      .get();
-}
-
 void PasswordManagerPresenter::UpdatePasswordLists() {
   // Reset the current lists.
   password_list_.clear();
@@ -181,82 +185,9 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
 }
 
-void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
-  if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer
-    // (http://crbug.com/362054), or the user removed a password while a request
-    // to the store is in progress (i.e. |password_list_| is empty).
-    // Don't let it crash the browser.
-    return;
-  }
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-
-  const autofill::PasswordForm& password_entry = *password_list_[index];
-  RemoveDuplicates(password_entry, &password_duplicates_, store);
-  RemoveLogin(password_entry);
-  base::RecordAction(
-      base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
-}
-
-void PasswordManagerPresenter::RemovePasswordException(size_t index) {
-  if (index >= password_exception_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer
-    // (http://crbug.com/362054), or the user removed a password exception while
-    // a request to the store is in progress (i.e. |password_exception_list_|
-    // is empty). Don't let it crash the browser.
-    return;
-  }
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-
-  const autofill::PasswordForm& password_exception_entry =
-      *password_exception_list_[index];
-  RemoveDuplicates(password_exception_entry, &password_exception_duplicates_,
-                   store);
-  RemoveLogin(password_exception_entry);
-  base::RecordAction(
-      base::UserMetricsAction("PasswordManager_RemovePasswordException"));
-}
-
-void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
-  undo_manager_.Undo();
-}
-
-void PasswordManagerPresenter::RequestShowPassword(size_t index) {
-#if !defined(OS_ANDROID)  // This is never called on Android.
-  if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer
-    // (http://crbug.com/362054), or the user requested to show a password while
-    // a request to the store is in progress (i.e. |password_list_|
-    // is empty). Don't let it crash the browser.
-    return;
-  }
-
-  syncer::SyncService* sync_service = nullptr;
-  if (ProfileSyncServiceFactory::HasProfileSyncService(
-          password_view_->GetProfile())) {
-    sync_service =
-        ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
-  }
-  if (password_manager::sync_util::IsSyncAccountCredential(
-          *password_list_[index], sync_service,
-          SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
-  }
-
-  // Call back the front end to reveal the password.
-  std::string origin_url =
-      extensions::CreateUrlCollectionFromForm(*password_list_[index]).origin;
-  password_view_->ShowPassword(index, password_list_[index]->password_value);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.AccessPasswordInSettings",
-      password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
-      password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
-#endif
+const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
+    size_t index) {
+  return TryGetPasswordForm(password_list_, index);
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>
@@ -270,36 +201,55 @@ PasswordManagerPresenter::GetAllPasswords() {
   return ret_val;
 }
 
-const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
-    size_t index) {
-  if (index >= password_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer
-    // (http://crbug.com/362054), or the user requested to get a password while
-    // a request to the store is in progress (i.e. |password_list_|
-    // is empty). Don't let it crash the browser.
-    return NULL;
-  }
-  return password_list_[index].get();
-}
-
 const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
     size_t index) {
-  if (index >= password_exception_list_.size()) {
-    // |index| out of bounds might come from a compromised renderer
-    // (http://crbug.com/362054), or the user requested to get a password
-    // exception while a request to the store is in progress (i.e.
-    // |password_exception_list_| is empty). Don't let it crash the browser.
-    return NULL;
+  return TryGetPasswordForm(password_exception_list_, index);
+}
+
+void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
+  if (TryRemovePasswordEntry(EntryKind::kPassword, index)) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
   }
-  return password_exception_list_[index].get();
 }
 
-void PasswordManagerPresenter::SetPasswordList() {
-  password_view_->SetPasswordList(password_list_);
+void PasswordManagerPresenter::RemovePasswordException(size_t index) {
+  if (TryRemovePasswordEntry(EntryKind::kException, index)) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_RemovePasswordException"));
+  }
 }
 
-void PasswordManagerPresenter::SetPasswordExceptionList() {
-  password_view_->SetPasswordExceptionList(password_exception_list_);
+void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
+  undo_manager_.Undo();
+}
+
+void PasswordManagerPresenter::RequestShowPassword(size_t index) {
+#if !defined(OS_ANDROID)  // This is never called on Android.
+  const auto* form = TryGetPasswordForm(password_list_, index);
+  if (!form)
+    return;
+
+  syncer::SyncService* sync_service = nullptr;
+  if (ProfileSyncServiceFactory::HasProfileSyncService(
+          password_view_->GetProfile())) {
+    sync_service =
+        ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
+  }
+  if (password_manager::sync_util::IsSyncAccountCredential(
+          *form, sync_service,
+          SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
+  }
+
+  // Call back the front end to reveal the password.
+  password_view_->ShowPassword(index, form->password_value);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.AccessPasswordInSettings",
+      password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
+#endif
 }
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
@@ -322,6 +272,29 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   store->RemoveLogin(form);
 }
 
+bool PasswordManagerPresenter::TryRemovePasswordEntry(EntryKind entry_kind,
+                                                      size_t index) {
+  const auto& entries = entry_kind == EntryKind::kPassword
+                            ? password_list_
+                            : password_exception_list_;
+
+  const auto* form = TryGetPasswordForm(entries, index);
+  if (!form)
+    return false;
+
+  auto& duplicates = entry_kind == EntryKind::kPassword
+                         ? password_duplicates_
+                         : password_exception_duplicates_;
+
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return false;
+
+  RemoveDuplicates(*form, &duplicates, store);
+  RemoveLogin(*form);
+  return true;
+}
+
 void PasswordManagerPresenter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   std::partition_copy(std::make_move_iterator(results.begin()),
@@ -338,4 +311,18 @@ void PasswordManagerPresenter::OnGetPasswordStoreResults(
 
   SetPasswordList();
   SetPasswordExceptionList();
+}
+
+void PasswordManagerPresenter::SetPasswordList() {
+  password_view_->SetPasswordList(password_list_);
+}
+
+void PasswordManagerPresenter::SetPasswordExceptionList() {
+  password_view_->SetPasswordExceptionList(password_exception_list_);
+}
+
+PasswordStore* PasswordManagerPresenter::GetPasswordStore() {
+  return PasswordStoreFactory::GetForProfile(password_view_->GetProfile(),
+                                             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
