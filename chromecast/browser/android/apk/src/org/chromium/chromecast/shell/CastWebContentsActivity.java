@@ -246,12 +246,6 @@ public class CastWebContentsActivity extends Activity {
                     || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
                 CastWebContentsComponent.onKeyDown(mSurfaceHelper.getInstanceId(), keyCode);
-
-                // Stop key should end the entire session.
-                if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
-                    mIsFinishingState.set("User pressed STOP key");
-                }
-
                 return true;
             }
         }
