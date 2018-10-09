@@ -163,6 +163,13 @@ class LoadFlipboardDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadFlipboardDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:flipboard:2018'
+  URL = 'https://flipboard.com/explore'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadHackerNewsDesktopStory(_LoadingStory):
   NAME = 'load:news:hackernews'
   URL = 'https://news.ycombinator.com'
