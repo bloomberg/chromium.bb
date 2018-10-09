@@ -25,6 +25,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 
@@ -1039,7 +1040,7 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
 
-  output_buffer_byte_size_ = kOutputBufferSize;
+  output_buffer_byte_size_ = GetEncodeBitstreamBufferSize();
 
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
