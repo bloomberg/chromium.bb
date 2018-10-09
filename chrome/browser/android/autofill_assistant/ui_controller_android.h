@@ -36,6 +36,10 @@ class UiControllerAndroid : public UiController, public Client {
       base::OnceCallback<void(const std::string&)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
+  void GetPaymentInformation(
+      payments::mojom::PaymentOptionsPtr payment_options,
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback)
+      override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
 
@@ -58,6 +62,15 @@ class UiControllerAndroid : public UiController, public Client {
   void OnCardSelected(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& jcaller,
                       const base::android::JavaParamRef<jstring>& jcard_guid);
+  void OnGetPaymentInformation(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jboolean jsucceed,
+      const base::android::JavaParamRef<jstring>& jcard_guid,
+      const base::android::JavaParamRef<jstring>& jaddress_guid,
+      const base::android::JavaParamRef<jstring>& jpayer_name,
+      const base::android::JavaParamRef<jstring>& jpayer_phone,
+      const base::android::JavaParamRef<jstring>& jpayer_email);
 
  private:
   // Java-side AutofillAssistantUiController object.
@@ -67,6 +80,8 @@ class UiControllerAndroid : public UiController, public Client {
   UiDelegate* ui_delegate_;
 
   base::OnceCallback<void(const std::string&)> address_or_card_callback_;
+  base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
+      get_payment_information_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

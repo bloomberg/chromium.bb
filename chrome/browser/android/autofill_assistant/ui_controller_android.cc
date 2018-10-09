@@ -149,6 +149,35 @@ void UiControllerAndroid::OnCardSelected(
   std::move(address_or_card_callback_).Run(guid);
 }
 
+void UiControllerAndroid::OnGetPaymentInformation(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean jsucceed,
+    const base::android::JavaParamRef<jstring>& jcard_guid,
+    const base::android::JavaParamRef<jstring>& jaddress_guid,
+    const base::android::JavaParamRef<jstring>& jpayer_name,
+    const base::android::JavaParamRef<jstring>& jpayer_phone,
+    const base::android::JavaParamRef<jstring>& jpayer_email) {
+  DCHECK(get_payment_information_callback_);
+
+  std::unique_ptr<PaymentInformation> payment_info =
+      std::make_unique<PaymentInformation>();
+  payment_info->succeed = jsucceed;
+  if (payment_info->succeed) {
+    base::android::ConvertJavaStringToUTF8(env, jcard_guid,
+                                           &payment_info->card_guid);
+    base::android::ConvertJavaStringToUTF8(env, jaddress_guid,
+                                           &payment_info->address_guid);
+    base::android::ConvertJavaStringToUTF8(env, jpayer_name,
+                                           &payment_info->payer_name);
+    base::android::ConvertJavaStringToUTF8(env, jpayer_phone,
+                                           &payment_info->payer_phone);
+    base::android::ConvertJavaStringToUTF8(env, jpayer_email,
+                                           &payment_info->payer_email);
+  }
+  std::move(get_payment_information_callback_).Run(std::move(payment_info));
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(!address_or_card_callback_);
@@ -165,6 +194,19 @@ void UiControllerAndroid::ChooseCard(
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onChooseCard(
       env, java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::GetPaymentInformation(
+    payments::mojom::PaymentOptionsPtr payment_options,
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback) {
+  DCHECK(!get_payment_information_callback_);
+  get_payment_information_callback_ = std::move(callback);
+  Java_AutofillAssistantUiController_onRequestPaymentInformation(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_,
+      payment_options->request_shipping, payment_options->request_payer_name,
+      payment_options->request_payer_phone,
+      payment_options->request_payer_email,
+      static_cast<int>(payment_options->shipping_type));
 }
 
 void UiControllerAndroid::HideDetails() {

@@ -546,6 +546,7 @@ public class PaymentRequestImpl
 
         setIsAnyPaymentRequestShowing(true);
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
+                /* requestShippingOption= */ mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
                 mMerchantSupportsAutofillPaymentInstruments,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
