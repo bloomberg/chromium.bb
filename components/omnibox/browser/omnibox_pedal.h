@@ -97,29 +97,4 @@ class OmniboxPedal {
   GURL url_;
 };
 
-class OmniboxPedalClearBrowsingData : public OmniboxPedal {
- public:
-  OmniboxPedalClearBrowsingData();
-};
-
-class OmniboxPedalChangeSearchEngine : public OmniboxPedal {
- public:
-  OmniboxPedalChangeSearchEngine();
-};
-
-class OmniboxPedalManagePasswords : public OmniboxPedal {
- public:
-  OmniboxPedalManagePasswords();
-};
-
-class OmniboxPedalChangeHomePage : public OmniboxPedal {
- public:
-  OmniboxPedalChangeHomePage();
-};
-
-class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
- public:
-  OmniboxPedalUpdateCreditCard();
-};
-
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_H_

@@ -120,6 +120,8 @@ jumbo_static_library("browser") {
     "omnibox_navigation_observer.h",
     "omnibox_pedal.cc",
     "omnibox_pedal.h",
+    "omnibox_pedal_implementations.cc",
+    "omnibox_pedal_implementations.h",
     "omnibox_pedal_provider.cc",
     "omnibox_pedal_provider.h",
     "omnibox_popup_model.cc",

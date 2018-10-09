@@ -5,10 +5,10 @@
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 
 #include "components/omnibox/browser/omnibox_pedal.h"
+#include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
-OmniboxPedalProvider::OmniboxPedalProvider() {
-  RegisterPedals();
-}
+OmniboxPedalProvider::OmniboxPedalProvider()
+    : pedals_(GetPedalImplementations()) {}
 
 OmniboxPedalProvider::~OmniboxPedalProvider() {}
 
@@ -23,16 +23,4 @@ OmniboxPedal* OmniboxPedalProvider::FindPedalMatch(
     }
   }
   return nullptr;
-}
-
-void OmniboxPedalProvider::Add(OmniboxPedal* pedal) {
-  pedals_.push_back(std::unique_ptr<OmniboxPedal>(pedal));
-}
-
-void OmniboxPedalProvider::RegisterPedals() {
-  Add(new OmniboxPedalClearBrowsingData());
-  Add(new OmniboxPedalChangeSearchEngine());
-  Add(new OmniboxPedalManagePasswords());
-  Add(new OmniboxPedalChangeHomePage());
-  Add(new OmniboxPedalUpdateCreditCard());
 }

@@ -17,12 +17,10 @@ class OmniboxPedalProvider {
   OmniboxPedalProvider();
   ~OmniboxPedalProvider();
 
+  // Returns the Pedal triggered by given match_text or nullptr if none trigger.
   OmniboxPedal* FindPedalMatch(const base::string16& match_text) const;
 
- private:
-  void Add(OmniboxPedal* pedal);
-  void RegisterPedals();
-
+ protected:
   std::vector<std::unique_ptr<OmniboxPedal>> pedals_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPedalProvider);
