@@ -21,6 +21,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
@@ -130,7 +131,8 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
   }
 #else
   if (!base::MessageLoopForUI::IsCurrent() ||
-      !ui::ResourceBundle::HasSharedInstance()) {
+      !ui::ResourceBundle::HasSharedInstance() ||
+      !display::Screen::GetScreen()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
                << title << " - " << message;
     std::move(callback).Run(chrome::MESSAGE_BOX_RESULT_NO);

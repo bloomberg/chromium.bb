@@ -213,11 +213,9 @@ void InProcessBrowserTest::SetUp() {
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
-#elif defined(USE_X11)
-  DCHECK(!display::Screen::GetScreen());
-  display::Screen::SetScreenInstance(
-      views::test::TestDesktopScreenX11::GetInstance());
 #endif
+
+  SetScreenInstance();
 
   // Always use a mocked password storage if OS encryption is used (which is
   // when anything sensitive gets stored, including Cookies). Without this on
@@ -371,6 +369,14 @@ void InProcessBrowserTest::AddTabAtIndex(
 
 bool InProcessBrowserTest::SetUpUserDataDirectory() {
   return true;
+}
+
+void InProcessBrowserTest::SetScreenInstance() {
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  DCHECK(!display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(
+      views::test::TestDesktopScreenX11::GetInstance());
+#endif
 }
 
 #if !defined(OS_MACOSX)

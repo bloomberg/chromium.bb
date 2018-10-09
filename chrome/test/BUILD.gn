@@ -4673,6 +4673,7 @@ if (!is_android) {
       "../browser/ui/search/local_ntp_uitest.cc",
       "../browser/ui/send_mouse_move_uitest_win.cc",
       "../browser/ui/signin_view_controller_interactive_uitest.cc",
+      "../browser/ui/startup/invalid_user_data_dir_interactive_uitest.cc",
       "../browser/ui/startup/startup_browser_creator_interactive_uitest.cc",
       "../browser/ui/tabs/window_activity_watcher_interactive_uitest.cc",
       "../browser/ui/translate/translate_bubble_test_utils.h",
