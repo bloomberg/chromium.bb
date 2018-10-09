@@ -871,6 +871,12 @@ void Layer::SetScrollOffsetFromImplSide(
 
 void Layer::UpdateScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(scrollable());
+
+  // This function updates the property tree scroll offsets but in layer list
+  // mode this should occur during the main -> cc property tree push.
+  if (layer_tree_host_->IsUsingLayerLists())
+    return;
+
   if (scroll_tree_index() == ScrollTree::kInvalidNodeId) {
     // Ensure the property trees just have not been built yet but are marked for
     // being built which will set the correct scroll offset values.
