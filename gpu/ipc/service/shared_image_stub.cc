@@ -114,6 +114,7 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
         channel_manager->gpu_preferences(),
         channel_manager->gpu_driver_bug_workarounds(),
         channel_manager->gpu_feature_info(), channel_manager->mailbox_manager(),
+        channel_manager->shared_image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this);
     return true;
   } else {

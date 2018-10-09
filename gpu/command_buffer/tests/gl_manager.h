@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gfx/geometry/size.h"
@@ -189,6 +190,7 @@ class GLManager : private GpuControl {
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+  SharedImageManager shared_image_manager_;
 
   uint64_t next_fence_sync_release_ = 1;
 

@@ -56,4 +56,10 @@ const base::Feature kDirectCompositionPreferNV12Overlays{
 const base::Feature kVaapiJpegImageDecodeAcceleration{
     "VaapiJpegImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Causes us to use the SharedImageManager, removing support for the old
+// mailbox system. Any consumers of the GPU process using the old mailbox
+// system will experience undefined results.
+const base::Feature kSharedImageManager{"SharedImageManager",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

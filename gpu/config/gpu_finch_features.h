@@ -33,6 +33,8 @@ GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 
+GPU_EXPORT extern const base::Feature kSharedImageManager;
+
 }  // namespace features
 
 #endif  // GPU_CONFIG_GPU_FEATURES_H_

@@ -115,7 +115,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       init_params.attribs.bind_generates_resource, channel_->image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
       /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
-      manager->discardable_manager());
+      manager->discardable_manager(), manager->shared_image_manager());
 
   ContextResult result;
   auto raster_decoder_context_state =
