@@ -1,0 +1,17 @@
+Tests Picture-in-Picture event listener breakpoints.
+
+
+Running: testEnterPictureInPictureEventBreakpoint
+Script execution paused.
+Call stack:
+    0) onEnterPictureInPicture (picture-in-picture-event-listener-breakpoints.js:22)
+Event target: VIDEO
+Script execution resumed.
+
+Running: testLeavePictureInPictureEventBreakpoint
+Script execution paused.
+Call stack:
+    0) onLeavePictureInPicture (picture-in-picture-event-listener-breakpoints.js:34)
+Event target: VIDEO
+Script execution resumed.
+
