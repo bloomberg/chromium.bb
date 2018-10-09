@@ -95,7 +95,8 @@ class PLATFORM_EXPORT FetchContext
   // Extend this when needed.
   enum LogSource { kJSSource, kSecuritySource, kOtherSource };
 
-  static FetchContext& NullInstance();
+  static FetchContext& NullInstance(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   virtual ~FetchContext() = default;
 
@@ -264,7 +265,7 @@ class PLATFORM_EXPORT FetchContext
   // (after Detach() is called, this will return a generic timer suitable for
   // post-detach actions like keepalive requests.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
-    return Platform::Current()->CurrentThread()->GetTaskRunner();
+    return task_runner_;
   }
 
   // TODO(altimin): This is used when creating a URLLoader, and
@@ -301,10 +302,12 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
-  FetchContext();
+  explicit FetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

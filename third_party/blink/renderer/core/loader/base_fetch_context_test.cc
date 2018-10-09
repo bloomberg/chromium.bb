@@ -43,7 +43,9 @@ namespace blink {
 class MockBaseFetchContext final : public BaseFetchContext {
  public:
   explicit MockBaseFetchContext(ExecutionContext* execution_context)
-      : execution_context_(execution_context),
+      : BaseFetchContext(
+            execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
+        execution_context_(execution_context),
         fetch_client_settings_object_(
             new FetchClientSettingsObjectImpl(*execution_context)) {}
   ~MockBaseFetchContext() override = default;

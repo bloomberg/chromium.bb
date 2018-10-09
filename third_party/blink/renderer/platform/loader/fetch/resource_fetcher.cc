@@ -1445,6 +1445,12 @@ void ResourceFetcher::ReloadImagesIfNotDeferred() {
   }
 }
 
+FetchContext& ResourceFetcher::Context() const {
+  return context_ ? *context_.Get()
+                  : FetchContext::NullInstance(
+                        Platform::Current()->CurrentThread()->GetTaskRunner());
+}
+
 void ResourceFetcher::ClearContext() {
   DCHECK(resources_from_previous_fetcher_.IsEmpty());
   scheduler_->Shutdown();

@@ -365,8 +365,10 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 }
 
 ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
-  return new ResourceLoadScheduler(context ? context
-                                           : &FetchContext::NullInstance());
+  return new ResourceLoadScheduler(
+      context ? context
+              : &FetchContext::NullInstance(
+                    Platform::Current()->CurrentThread()->GetTaskRunner()));
 }
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;

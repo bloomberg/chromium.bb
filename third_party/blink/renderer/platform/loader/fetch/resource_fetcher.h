@@ -107,9 +107,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);
 
-  FetchContext& Context() const {
-    return context_ ? *context_.Get() : FetchContext::NullInstance();
-  }
+  FetchContext& Context() const;
   void ClearContext();
 
   int BlockingRequestCount() const;
