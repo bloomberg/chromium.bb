@@ -292,31 +292,27 @@ void BridgedNativeWidgetImpl::SetWindow(
   ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
-void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
-  BridgedNativeWidgetImpl* bridged_native_widget_parent =
-      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
+void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
   // Remove from the old parent.
   if (parent_) {
     parent_->RemoveChildWindow(this);
     parent_ = nullptr;
   }
-
-  if (!new_parent)
+  if (!new_parent_id)
     return;
-
-  // Disallow creating child windows of views not currently in an NSWindow.
-  CHECK([new_parent window]);
 
   // It is only valid to have a NativeWidgetMac be the parent of another
   // NativeWidgetMac.
-  CHECK(bridged_native_widget_parent);
+  BridgedNativeWidgetImpl* new_parent =
+      BridgedNativeWidgetImpl::GetFromId(new_parent_id);
+  DCHECK(new_parent);
 
   // If the parent is another BridgedNativeWidgetImpl, just add to the
   // collection of child windows it owns and manages. Otherwise, create an
   // adapter to anchor the child widget and observe when the parent NSWindow is
   // closed.
-  parent_ = bridged_native_widget_parent;
-  bridged_native_widget_parent->child_windows_.push_back(this);
+  parent_ = new_parent;
+  parent_->child_windows_.push_back(this);
 
   // Widget::ShowInactive() could result in a Space switch when the widget has a
   // parent, and we're calling -orderWindow:relativeTo:. Use Transient
@@ -324,16 +320,16 @@ void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
   // https://crbug.com/697829
   [window_ setCollectionBehavior:[window_ collectionBehavior] |
                                  NSWindowCollectionBehaviorTransient];
+
+  // If |window_| was already visible then add it as a child window immediately.
+  // As in OnVisibilityChanged, do not set a parent for sheets.
+  if (window_visible_ && ![window_ isSheet])
+    [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
 }
 
 void BridgedNativeWidgetImpl::CreateWindow(
-    views_bridge_mac::mojom::CreateWindowParamsPtr params,
-    uint64_t parent_id) {
+    views_bridge_mac::mojom::CreateWindowParamsPtr params) {
   SetWindow(CreateNSWindow(params.get()));
-  BridgedNativeWidgetImpl* parent_bridge =
-      BridgedNativeWidgetImpl::GetFromId(parent_id);
-  if (parent_bridge)
-    SetParent(parent_bridge->ns_view());
 }
 
 void BridgedNativeWidgetImpl::InitWindow(
@@ -920,37 +916,6 @@ void BridgedNativeWidgetImpl::SortSubviews(RankMap rank) {
   if (!bridged_view_)
     return;
   [bridged_view_ sortSubviewsUsingFunction:&SubviewSorter context:&rank];
-}
-
-void BridgedNativeWidgetImpl::ReparentNativeView(NSView* native_view,
-                                                 NSView* new_parent) {
-  DCHECK([new_parent window]);
-  DCHECK([native_view isDescendantOf:bridged_view_]);
-  DCHECK(window_ && ![window_ isSheet]);
-
-  BridgedNativeWidgetImpl* parent_bridge =
-      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
-  if (native_view == bridged_view_.get() && parent_bridge != parent_) {
-    SetParent(new_parent);
-
-    // TODO(ccameron): This is likely not correct, as the window for |this|
-    // should only be added as a child window if it is visible.
-    if (!window_visible_)
-      NOTIMPLEMENTED();
-    [[new_parent window] addChildWindow:window_ ordered:NSWindowAbove];
-  }
-
-  if (!widget_is_top_level_ || native_view != bridged_view_.get()) {
-    // Make native_view be a child of new_parent by adding it as a subview.
-    // The window_ must remain visible because it controls the bounds and
-    // visibility of the ui::Layer. So just hide it by setting alpha value to
-    // zero.
-    [new_parent addSubview:native_view];
-    if (native_view == bridged_view_.get()) {
-      [window_ setAlphaValue:0];
-      [window_ setIgnoresMouseEvents:YES];
-    }
-  }
 }
 
 void BridgedNativeWidgetImpl::SetAnimationEnabled(bool animate) {

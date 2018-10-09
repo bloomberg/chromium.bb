@@ -53,9 +53,12 @@ struct BridgedNativeWidgetInitParams {
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // in another process.
 interface BridgedNativeWidget {
-  // Create and set the NSWindow for the bridge, and assign it the parent
-  // NSWindow specified by |parent_id|.
-  CreateWindow(CreateWindowParams params, uint64 parent_id);
+  // Create and set the NSWindow for the bridge.
+  CreateWindow(CreateWindowParams params);
+
+  // Set the BridgedNativeWidget indicated by |parent_id| to be the parent of
+  // this BridgedNativeWidget.
+  SetParent(uint64 parent_id);
 
   // Initialize the window's style.
   InitWindow(BridgedNativeWidgetInitParams params);
