@@ -1784,3 +1784,16 @@ TEST_F('BackgroundTest', 'ListName', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'LayoutTable', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <table><tr><td>start</td></tr></table>
+  */}, function(root) {
+    mockFeedback.expectSpeech(
+            'start',
+            'row 1 column 1',
+            'Table , 1 by 1')
+        .replay();
+  });
+});
