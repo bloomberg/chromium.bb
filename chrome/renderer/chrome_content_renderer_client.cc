@@ -1707,7 +1707,7 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
     std::string* console_message) {
   *console_message = base::StringPrintf(
       "The SSL certificate used to load resources from %s"
-      " will be distrusted in M70. Once distrusted, users will be prevented"
+      " will be distrusted very soon. Once distrusted, users will be prevented"
       " from loading these resources. See https://g.co/chrome/symantecpkicerts"
       " for more information.",
       url::Origin::Create(url).Serialize().c_str());
