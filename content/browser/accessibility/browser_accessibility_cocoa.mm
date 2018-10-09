@@ -2243,6 +2243,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return @"";
   } else if (owner_->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState) ||
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
+    // On Mac, tabs are exposed as radio buttons, and are treated as checkable.
     int value;
     const auto checkedState = static_cast<ax::mojom::CheckedState>(
         owner_->GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
