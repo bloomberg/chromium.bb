@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/paint/paint_record.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
@@ -155,8 +154,9 @@ class Tab : public gfx::AnimationDelegate,
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
 
-  // Set the background X offset used to match the image in the inactive tab
-  // to the frame image.
+  // Gets/sets the background X offset used to match the image in the inactive
+  // tab to the frame image.
+  int background_offset() const { return background_offset_; }
   void set_background_offset(int offset) { background_offset_ = offset; }
 
   // Returns true if this tab became the active tab selected in
@@ -173,6 +173,11 @@ class Tab : public gfx::AnimationDelegate,
   }
 
   bool mouse_hovered() const { return mouse_hovered_; }
+
+  // Gets the throb value for the tab. When a tab is not selected the active
+  // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
+  // tab title change and pulsing.
+  float GetThrobValue() const;
 
   // Returns the TabStyle associated with this tab.
   const TabStyle* tab_style() const { return tab_style_.get(); }
@@ -197,40 +202,6 @@ class Tab : public gfx::AnimationDelegate,
   // icon looks (rather than how wide the bounds are).
   void MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds, int visual_width) const;
 
-  // Paints with the normal tab style.  If |clip| is non-empty, the tab border
-  // should be clipped against it.
-  void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip);
-
-  // Paints the background of an inactive tab.
-  void PaintInactiveTabBackground(gfx::Canvas* canvas, const gfx::Path& clip);
-
-  // Paints a tab background using the image defined by |fill_id| at the
-  // provided offset. If |fill_id| is 0, it will fall back to using the solid
-  // color defined by the theme provider and ignore the offset.
-  void PaintTabBackground(gfx::Canvas* canvas,
-                          bool active,
-                          int fill_id,
-                          int y_inset,
-                          const gfx::Path* clip);
-
-  // Helper methods for PaintTabBackground.
-  void PaintTabBackgroundFill(gfx::Canvas* canvas,
-                              const gfx::Path& fill_path,
-                              bool active,
-                              bool hover,
-                              SkColor active_color,
-                              SkColor inactive_color,
-                              int fill_id,
-                              int y_inset);
-  void PaintTabBackgroundStroke(gfx::Canvas* canvas,
-                                const gfx::Path& fill_path,
-                                const gfx::Path& stroke_path,
-                                bool active,
-                                SkColor color);
-
-  // Paints the separator lines on the left and right edge of the tab.
-  void PaintSeparators(gfx::Canvas* canvas);
-
   // Computes which icons are visible in the tab. Should be called everytime
   // before layout is performed.
   void UpdateIconVisibility();
@@ -241,11 +212,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Returns the final hover opacity for this tab (considers tab width).
   float GetHoverOpacity() const;
-
-  // Gets the throb value for the tab. When a tab is not selected the active
-  // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
-  // tab title change and pulsing.
-  float GetThrobValue() const;
 
   // Updates the blocked attention state of the |icon_|. This only updates
   // state; it is the responsibility of the caller to request a paint.
@@ -330,61 +296,6 @@ class Tab : public gfx::AnimationDelegate,
   // different from View::IsMouseHovered() which does a naive intersection with
   // the view bounds.
   bool mouse_hovered_ = false;
-
-  class BackgroundCache {
-   public:
-    BackgroundCache();
-    ~BackgroundCache();
-
-    bool CacheKeyMatches(float scale,
-                         const gfx::Size& size,
-                         SkColor active_color,
-                         SkColor inactive_color,
-                         SkColor stroke_color,
-                         float stroke_thickness) {
-      return scale_ == scale && size_ == size &&
-             active_color_ == active_color &&
-             inactive_color_ == inactive_color &&
-             stroke_color_ == stroke_color &&
-             stroke_thickness_ == stroke_thickness;
-    }
-
-    void SetCacheKey(float scale,
-                     const gfx::Size& size,
-                     SkColor active_color,
-                     SkColor inactive_color,
-                     SkColor stroke_color,
-                     float stroke_thickness) {
-      scale_ = scale;
-      size_ = size;
-      active_color_ = active_color;
-      inactive_color_ = inactive_color;
-      stroke_color_ = stroke_color;
-      stroke_thickness_ = stroke_thickness;
-    }
-
-    // The PaintRecords being cached based on the input parameters.
-    sk_sp<cc::PaintRecord> fill_record;
-    sk_sp<cc::PaintRecord> stroke_record;
-
-   private:
-    // Parameters used to construct the PaintRecords.
-    float scale_ = 0.f;
-    gfx::Size size_;
-    SkColor active_color_ = 0;
-    SkColor inactive_color_ = 0;
-    SkColor stroke_color_ = 0;
-
-    // The stroke thickness needs to be recorded because tabs may switch between
-    // a zero and non-zero stroke thickness depending on their state.  This
-    // changes the "stroke_thickness > 0" logic in tab.cc which changes if
-    // |stroke_record| gets recorded.
-    float stroke_thickness_ = 0.f;
-  };
-
-  // Cache of the paint output for tab backgrounds.
-  BackgroundCache background_active_cache_;
-  BackgroundCache background_inactive_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };

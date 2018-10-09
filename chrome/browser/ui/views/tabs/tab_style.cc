@@ -8,13 +8,21 @@
 #include <utility>
 
 #include "base/numerics/ranges.h"
+#include "cc/paint/paint_record.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/grit/theme_resources.h"
+#include "third_party/skia/include/core/SkScalar.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/theme_provider.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -44,6 +52,73 @@ int GetSeparatorHeight() {
              : kTabSeparatorHeight;
 }
 
+void DrawHighlight(gfx::Canvas* canvas,
+                   const SkPoint& p,
+                   SkScalar radius,
+                   SkColor color) {
+  const SkColor colors[2] = {color, SkColorSetA(color, 0)};
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setShader(cc::PaintShader::MakeRadialGradient(
+      p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode));
+  canvas->sk_canvas()->drawRect(
+      SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
+      flags);
+}
+
+class BackgroundCache {
+ public:
+  BackgroundCache() = default;
+  ~BackgroundCache() = default;
+
+  bool CacheKeyMatches(float scale,
+                       const gfx::Size& size,
+                       SkColor active_color,
+                       SkColor inactive_color,
+                       SkColor stroke_color,
+                       float stroke_thickness) {
+    return scale_ == scale && size_ == size && active_color_ == active_color &&
+           inactive_color_ == inactive_color && stroke_color_ == stroke_color &&
+           stroke_thickness_ == stroke_thickness;
+  }
+
+  void SetCacheKey(float scale,
+                   const gfx::Size& size,
+                   SkColor active_color,
+                   SkColor inactive_color,
+                   SkColor stroke_color,
+                   float stroke_thickness) {
+    scale_ = scale;
+    size_ = size;
+    active_color_ = active_color;
+    inactive_color_ = inactive_color;
+    stroke_color_ = stroke_color;
+    stroke_thickness_ = stroke_thickness;
+  }
+
+  // The PaintRecords being cached based on the input parameters.
+  sk_sp<cc::PaintRecord> fill_record;
+  sk_sp<cc::PaintRecord> stroke_record;
+
+ private:
+  // Parameters used to construct the PaintRecords.
+  float scale_ = 0.f;
+  gfx::Size size_;
+  SkColor active_color_ = 0;
+  SkColor inactive_color_ = 0;
+  SkColor stroke_color_ = 0;
+
+  // The stroke thickness needs to be recorded because tabs may switch between
+  // a zero and non-zero stroke thickness depending on their state.  This
+  // changes the "stroke_thickness > 0" logic in tab.cc which changes if
+  // |stroke_record| gets recorded.
+  float stroke_thickness_ = 0.f;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundCache);
+};
+
+// TODO(dfried): pull function implementations (esp. static) out of this class
+// for readability.
 class GM2TabStyle : public TabStyle {
  public:
   explicit GM2TabStyle(const Tab* tab) : tab_(tab) {}
@@ -343,13 +418,218 @@ class GM2TabStyle : public TabStyle {
     return {leading_opacity, trailing_opacity};
   }
 
- private:
-  const Tab* const tab_;
+  void PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) const override {
+    int active_tab_fill_id = 0;
+    int active_tab_y_inset = 0;
+    if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
+      active_tab_fill_id = IDR_THEME_TOOLBAR;
+      active_tab_y_inset = GetStrokeThickness(true);
+    }
 
+    if (tab_->IsActive()) {
+      PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                         active_tab_y_inset, nullptr /* clip */);
+    } else {
+      PaintInactiveTabBackground(canvas, clip);
+
+      const float throb_value = tab_->GetThrobValue();
+      if (throb_value > 0) {
+        canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
+                               tab_->GetLocalBounds());
+        PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                           active_tab_y_inset, nullptr /* clip */);
+        canvas->Restore();
+      }
+    }
+  }
+
+ private:
   // Returns whether we shoould extend the hit test region for Fitts' Law.
   bool ShouldExtendHitTest() const {
     const views::Widget* widget = tab_->GetWidget();
     return widget->IsMaximized() || widget->IsFullscreen();
+  }
+
+  void PaintInactiveTabBackground(gfx::Canvas* canvas,
+                                  const gfx::Path& clip) const {
+    bool has_custom_image;
+    int fill_id =
+        tab_->controller()->GetBackgroundResourceId(&has_custom_image);
+    if (!has_custom_image)
+      fill_id = 0;
+
+    PaintTabBackground(canvas, false /* active */, fill_id, 0,
+                       tab_->controller()->MaySetClip() ? &clip : nullptr);
+  }
+
+  void PaintTabBackground(gfx::Canvas* canvas,
+                          bool active,
+                          int fill_id,
+                          int y_inset,
+                          const gfx::Path* clip) const {
+    // |y_inset| is only set when |fill_id| is being used.
+    DCHECK(!y_inset || fill_id);
+
+    const SkColor active_color =
+        tab_->controller()->GetTabBackgroundColor(TAB_ACTIVE);
+    const SkColor inactive_color =
+        tab_->GetThemeProvider()->GetDisplayProperty(
+            ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
+            ? tab_->controller()->GetTabBackgroundColor(TAB_INACTIVE)
+            : SK_ColorTRANSPARENT;
+    const SkColor stroke_color =
+        tab_->controller()->GetToolbarTopSeparatorColor();
+    const bool paint_hover_effect =
+        !active && tab_->hover_controller()->ShouldDraw();
+    const float scale = canvas->image_scale();
+    const float stroke_thickness = GetStrokeThickness(active);
+
+    // If there is a |fill_id| we don't try to cache. This could be improved
+    // but would require knowing then the image from the ThemeProvider had been
+    // changed, and invalidating when the tab's x-coordinate or
+    // background_offset_ changed.
+    //
+    // If |paint_hover_effect|, we don't try to cache since hover effects change
+    // on every invalidation and we would need to invalidate the cache based on
+    // the hover states.
+    //
+    // Finally, we don't cache for non-integral scale factors, since tabs draw
+    // with slightly different offsets so as to pixel-align the layout rect (see
+    // ScaleAndAlignBounds()).
+    if (fill_id || paint_hover_effect || (std::trunc(scale) != scale)) {
+      PaintTabBackgroundFill(canvas, active, paint_hover_effect, active_color,
+                             inactive_color, fill_id, y_inset);
+      if (stroke_thickness > 0) {
+        gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+        if (clip)
+          canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+        PaintBackgroundStroke(canvas, active, stroke_color);
+      }
+    } else {
+      const gfx::Size& size = tab_->size();
+      BackgroundCache& cache =
+          active ? background_active_cache_ : background_inactive_cache_;
+      if (!cache.CacheKeyMatches(scale, size, active_color, inactive_color,
+                                 stroke_color, stroke_thickness)) {
+        cc::PaintRecorder recorder;
+        {
+          gfx::Canvas cache_canvas(
+              recorder.beginRecording(size.width(), size.height()), scale);
+          PaintTabBackgroundFill(&cache_canvas, active, paint_hover_effect,
+                                 active_color, inactive_color, fill_id,
+                                 y_inset);
+          cache.fill_record = recorder.finishRecordingAsPicture();
+        }
+        if (stroke_thickness > 0) {
+          gfx::Canvas cache_canvas(
+              recorder.beginRecording(size.width(), size.height()), scale);
+          PaintBackgroundStroke(&cache_canvas, active, stroke_color);
+          cache.stroke_record = recorder.finishRecordingAsPicture();
+        }
+
+        cache.SetCacheKey(scale, size, active_color, inactive_color,
+                          stroke_color, stroke_thickness);
+      }
+
+      canvas->sk_canvas()->drawPicture(cache.fill_record);
+      if (stroke_thickness > 0) {
+        gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+        if (clip)
+          canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+        canvas->sk_canvas()->drawPicture(cache.stroke_record);
+      }
+    }
+
+    PaintSeparators(canvas);
+  }
+
+  void PaintTabBackgroundFill(gfx::Canvas* canvas,
+                              bool active,
+                              bool paint_hover_effect,
+                              SkColor active_color,
+                              SkColor inactive_color,
+                              int fill_id,
+                              int y_inset) const {
+    const gfx::Path fill_path =
+        GetPath(PathType::kFill, canvas->image_scale(), active);
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
+
+    canvas->ClipPath(fill_path, true);
+
+    // In the active case, always fill the tab with its bg color first in case
+    // the image is transparent. In the inactive case, the image is guaranteed
+    // to be opaque, so it's only necessary to fill the color when there's no
+    // image.
+    if (active || !fill_id) {
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setColor(active ? active_color : inactive_color);
+      canvas->DrawRect(gfx::ScaleToEnclosingRect(tab_->GetLocalBounds(), scale),
+                       flags);
+    }
+
+    if (fill_id) {
+      gfx::ScopedCanvas scale_scoper(canvas);
+      canvas->sk_canvas()->scale(scale, scale);
+      canvas->TileImageInt(
+          *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id),
+          tab_->GetMirroredX() + tab_->background_offset(), 0, 0, y_inset,
+          tab_->width(), tab_->height());
+    }
+
+    if (paint_hover_effect) {
+      SkPoint hover_location(
+          gfx::PointToSkPoint(tab_->hover_controller()->location()));
+      hover_location.scale(SkFloatToScalar(scale));
+      const SkScalar kMinHoverRadius = 16;
+      const SkScalar radius =
+          std::max(SkFloatToScalar(tab_->width() / 4.f), kMinHoverRadius);
+      DrawHighlight(
+          canvas, hover_location, radius * scale,
+          SkColorSetA(active_color, tab_->hover_controller()->GetAlpha()));
+    }
+  }
+
+  void PaintBackgroundStroke(gfx::Canvas* canvas,
+                             bool active,
+                             SkColor stroke_color) const {
+    gfx::Path outer_path =
+        GetPath(TabStyle::PathType::kBorder, canvas->image_scale(), active);
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    float scale = canvas->UndoDeviceScaleFactor();
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(stroke_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(GetStrokeThickness(active) * scale);
+    canvas->DrawPath(outer_path, flags);
+  }
+
+  void PaintSeparators(gfx::Canvas* canvas) const {
+    const auto separator_opacities = GetSeparatorOpacities(false);
+    if (!separator_opacities.left && !separator_opacities.right)
+      return;
+
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
+
+    TabStyle::SeparatorBounds separator_bounds = GetSeparatorBounds(scale);
+
+    const SkColor separator_base_color =
+        tab_->controller()->GetTabSeparatorColor();
+    const auto separator_color = [separator_base_color](float opacity) {
+      return SkColorSetA(separator_base_color,
+                         gfx::Tween::IntValueBetween(
+                             opacity, SK_AlphaTRANSPARENT, SK_AlphaOPAQUE));
+    };
+
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(separator_color(separator_opacities.left));
+    canvas->DrawRect(separator_bounds.leading, flags);
+    flags.setColor(separator_color(separator_opacities.right));
+    canvas->DrawRect(separator_bounds.trailing, flags);
   }
 
   // Given a tab of width |width|, returns the radius to use for the corners.
@@ -402,6 +682,12 @@ class GM2TabStyle : public TabStyle {
     aligned_bounds.Inset(-layout_insets.Scale(scale));
     return aligned_bounds;
   }
+
+  const Tab* const tab_;
+
+  // Cache of the paint output for tab backgrounds.
+  mutable BackgroundCache background_active_cache_;
+  mutable BackgroundCache background_inactive_cache_;
 };
 
 }  // namespace
