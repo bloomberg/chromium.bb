@@ -1,4 +1,4 @@
-<html> 
+<html>
     <head>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -6,7 +6,7 @@
     <body>
         <a id=test href="javascript:popup()">test</a>
         <div id="console"></div>
-        <script> 
+        <script>
             var win;
             function popup() {
                 win = window.open('about:blank','blank','height=200,width=200');
@@ -21,7 +21,9 @@
 
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("click", true, true, document.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-            test(() => document.getElementById("test").dispatchEvent(clickEvent), 'Untrusted click');
-        </script> 
-    </body> 
+            test(() => {
+                document.getElementById("test").dispatchEvent(clickEvent);
+            }, 'Untrusted click');
+        </script>
+    </body>
 </html>
