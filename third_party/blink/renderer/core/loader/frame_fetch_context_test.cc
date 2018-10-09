@@ -32,11 +32,13 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
@@ -365,6 +367,22 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     }
   }
 
+  void ExpectIsAutomaticUpgradeSet(const char* input,
+                                   const char* main_frame,
+                                   bool expected_value) {
+    const KURL input_url(input);
+    const KURL main_frame_url(main_frame);
+    ResourceRequest resource_request(input_url);
+    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
+    resource_request.SetFrameType(
+        network::mojom::RequestContextFrameType::kNone);
+
+    document->SetURL(main_frame_url);
+    fetch_context->ModifyRequestForCSP(resource_request);
+
+    EXPECT_EQ(expected_value, resource_request.IsAutomaticUpgrade());
+  }
+
   void ExpectSetRequiredCSPRequestHeader(
       const char* input,
       network::mojom::RequestContextFrameType frame_type,
@@ -491,6 +509,31 @@ TEST_F(FrameFetchContextModifyRequestTest,
                 "ftp://example.test:21/image.png");
   ExpectUpgrade("ftp://example.test:1212/image.png",
                 "ftp://example.test:1212/image.png");
+}
+
+TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
+  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "https://example.test", true);
+}
+
+TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeNotSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
+  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  // Upgrade shouldn't happen if the resource is already https.
+  ExpectIsAutomaticUpgradeSet("https://example.test/image.png",
+                              "https://example.test", false);
+  // Upgrade shouldn't happen if the site is http.
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "http://example.test", false);
+
+  document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  // Flag shouldn't be set if upgrade was due to upgrade-insecure-requests.
+  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
+                              "https://example.test", false);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {

@@ -370,6 +370,10 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   bool IsRevalidating() const { return is_revalidating_; }
   void SetIsRevalidating(bool value) { is_revalidating_ = value; }
+  void SetIsAutomaticUpgrade(bool is_automatic_upgrade) {
+    is_automatic_upgrade_ = is_automatic_upgrade;
+  }
+  bool IsAutomaticUpgrade() const { return is_automatic_upgrade_; }
 
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
@@ -451,6 +455,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   bool upgrade_if_insecure_ = false;
   bool is_revalidating_ = false;
+
+  bool is_automatic_upgrade_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
