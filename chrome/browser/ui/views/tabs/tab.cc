@@ -843,7 +843,7 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
 
 #if defined(USE_TAB_STYLE)
   const gfx::Path clip_path = GetTabStyle()->GetPath(
-      this, TabStyle::PathType::kClip, paint_recording_scale);
+      this, TabStyle::PathType::kInteriorClip, paint_recording_scale);
 #else
   // When there is a separator, animate the clip to account for it, in sync with
   // the separator's fading.
@@ -1329,18 +1329,24 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   const auto paint_stroke = [&](gfx::Canvas* canvas) {
 #if defined(USE_TAB_STYLE)
     const TabStyle* tab_style = GetTabStyle();
-    gfx::Path interior_path = tab_style->GetPath(
-        this, TabStyle::PathType::kInsideBorder, scale, active);
-    gfx::Path outer_path = tab_style->GetPath(
-        this, TabStyle::PathType::kOutsideBorder, scale, active);
+    gfx::Path outer_path =
+        tab_style->GetPath(this, TabStyle::PathType::kBorder, scale, active);
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    float scale = canvas->UndoDeviceScaleFactor();
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(stroke_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(stroke_thickness * scale);
+    canvas->DrawPath(outer_path, flags);
 #else
     gfx::Path interior_path =
         GetInteriorPath(scale, stroke_thickness, bottom_offset, bounds());
     gfx::Path outer_path = GetBorderPath(scale, stroke_thickness, bottom_offset,
                                          false, false, bounds());
-#endif
     PaintTabBackgroundStroke(canvas, interior_path, outer_path, active,
                              stroke_color);
+#endif
   };
 
   // If there is a |fill_id| we don't try to cache. This could be improved

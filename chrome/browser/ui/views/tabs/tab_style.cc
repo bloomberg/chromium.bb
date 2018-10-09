@@ -84,7 +84,7 @@ class GM2TabStyle : public TabStyle {
     gfx::RectF aligned_bounds =
         ScaleAndAlignBounds(tab->bounds(), scale, stroke_thickness);
 
-    if (path_type == PathType::kClip) {
+    if (path_type == PathType::kInteriorClip) {
       // When there is a separator, animate the clip to account for it, in sync
       // with the separator's fading.
       // TODO(pkasting): Consider crossfading the favicon instead of animating
@@ -122,21 +122,21 @@ class GM2TabStyle : public TabStyle {
 
     // Path-specific adjustments:
     const float stroke_adjustment = stroke_thickness * scale;
-    if (path_type == PathType::kInsideBorder || path_type == PathType::kClip) {
-      // Inside border runs |stroke_thickness| inside the outer stroke.
+    if (path_type == PathType::kInteriorClip) {
+      // Inside of the border runs |stroke_thickness| inside the outer edge.
       tab_left += stroke_adjustment;
       tab_right -= stroke_adjustment;
       tab_top += stroke_adjustment;
       top_radius -= stroke_adjustment;
-    } else if (path_type == PathType::kFill) {
+    } else if (path_type == PathType::kFill || path_type == PathType::kBorder) {
       tab_left += 0.5f * stroke_adjustment;
       tab_right -= 0.5f * stroke_adjustment;
       tab_top += 0.5f * stroke_adjustment;
       top_radius -= 0.5f * stroke_adjustment;
       tab_bottom -= 0.5f * stroke_adjustment;
       bottom_radius -= 0.5f * stroke_adjustment;
-    } else if (path_type == PathType::kOutsideBorder ||
-               path_type == PathType::kHitTest) {
+    } else if (path_type == PathType::kHitTest ||
+               path_type == PathType::kExteriorClip) {
       // Outside border needs to draw its bottom line a stroke width above the
       // bottom of the tab, to line up with the stroke that runs across the rest
       // of the bottom of the tab bar (when strokes are enabled).
@@ -224,7 +224,9 @@ class GM2TabStyle : public TabStyle {
     path.lineTo(right, extended_bottom);
 
     // Finish the path.
-    path.close();
+    if (path_type != PathType::kBorder) {
+      path.close();
+    }
 
     // Convert path to be relative to the tab origin.
     gfx::PointF origin(tab->origin());
