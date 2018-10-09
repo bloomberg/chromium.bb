@@ -637,33 +637,56 @@ Status ExecuteElementScreenshot(Session* session,
                                 const std::string& element_id,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
-  bool scroll = true;
-  params.GetBoolean("scroll", &scroll);
-
   Status status = session->chrome->ActivateWebView(web_view->GetId());
   if (status.IsError())
     return status;
 
-  if (scroll) {
-    WebPoint offset(0, 0);
-    WebPoint location;
-    status = ScrollElementIntoView(session, web_view, element_id, &offset,
-                                   &location);
-    if (status.IsError())
-      return status;
-  }
+  WebPoint offset(0, 0);
+  WebPoint location;
+  status =
+      ScrollElementIntoView(session, web_view, element_id, &offset, &location);
+  if (status.IsError())
+    return status;
 
-  std::string screenshot;
   std::unique_ptr<base::Value> clip;
-  ExecuteGetElementRect(session, web_view, element_id, params, &clip);
+  status = ExecuteGetElementRect(session, web_view, element_id, params, &clip);
+  if (status.IsError())
+    return status;
 
-  std::unique_ptr<base::DictionaryValue> clip_dict = base::DictionaryValue::From(std::move(clip));
+  // |location| returned by ScrollElementIntoView is relative to the current
+  // view port. However, CaptureScreenshot expects a location relative to the
+  // document origin. We make the adjustment using the scroll amount of the top
+  // level window. Scrolling of frames has already been included in |location|.
+  // Scroll information can be in either document.documentElement or
+  // document.body, depending on document compatibility mode. The parentheses
+  // around the JavaScript code below is needed because JavaScript syntax
+  // doesn't allow a statement to start with an object literal.
+  std::unique_ptr<base::Value> scroll;
+  status = web_view->EvaluateScript(
+      std::string(),
+      "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
+      "  y: document.documentElement.scrollTop || document.body.scrollTop})",
+      &scroll);
+  if (status.IsError())
+    return status;
+  int scroll_left = scroll->FindKey("x")->GetInt();
+  int scroll_top = scroll->FindKey("y")->GetInt();
+
+  std::unique_ptr<base::DictionaryValue> clip_dict =
+      base::DictionaryValue::From(std::move(clip));
   if (!clip_dict)
     return Status(kUnknownError, "Element Rect is not a dictionary");
+  // |clip_dict| already contains the right width and height of the target
+  // element, but its x and y are relative to containing frame. We replace them
+  // with the x and y relative to top-level document origin, as expected by
+  // CaptureScreenshot.
+  clip_dict->SetInteger("x", location.x + scroll_left);
+  clip_dict->SetInteger("y", location.y + scroll_top);
   clip_dict->SetDouble("scale", 1.0);
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 
+  std::string screenshot;
   status = web_view->CaptureScreenshot(&screenshot, screenshot_params);
   if (status.IsError())
     return status;
