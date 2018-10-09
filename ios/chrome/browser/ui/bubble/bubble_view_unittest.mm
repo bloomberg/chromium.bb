@@ -66,7 +66,7 @@ TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
     EXPECT_NEAR(402.0f, bubbleSize.width, 1.0f);
   }
 
-  EXPECT_NEAR(83.0f, bubbleSize.height, 1.0f);
+  EXPECT_NEAR(83.0f, bubbleSize.height, 2.0f);
 }
 
 // Test that the accessibility label matches the display text.
