@@ -6461,7 +6461,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "accessibility_unittests"
       },
@@ -6473,7 +6474,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -6485,7 +6487,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "app_shell_unittests"
       },
@@ -6497,7 +6500,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "base_unittests"
       },
@@ -6509,7 +6513,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "blink_common_unittests"
       },
@@ -6521,7 +6526,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "blink_fuzzer_unittests"
       },
@@ -6533,7 +6539,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "blink_heap_unittests"
       },
@@ -6545,7 +6552,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "blink_platform_unittests"
       },
@@ -6557,7 +6565,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "boringssl_crypto_tests"
       },
@@ -6569,7 +6578,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "boringssl_ssl_tests"
       },
@@ -6587,6 +6597,7 @@
               "pool": "Chrome-quarantine"
             }
           ],
+          "expiration": 10800,
           "shards": 10
         },
         "test": "browser_tests"
@@ -6605,6 +6616,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 15
         },
         "test": "browser_tests"
@@ -6623,6 +6635,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "browser_tests"
@@ -6635,7 +6648,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "cacheinvalidation_unittests"
       },
@@ -6647,7 +6661,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "capture_unittests"
       },
@@ -6659,7 +6674,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "cast_unittests"
       },
@@ -6671,7 +6687,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "cc_unittests"
       },
@@ -6683,7 +6700,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "chrome_app_unittests"
       },
@@ -6695,7 +6713,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "chromedriver_unittests"
       },
@@ -6707,7 +6726,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "components_browsertests"
       },
@@ -6723,7 +6743,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "components_browsertests"
       },
@@ -6735,7 +6756,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "components_unittests"
       },
@@ -6747,7 +6769,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "content_browsertests"
       },
@@ -6765,6 +6788,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 2
         },
         "test": "content_browsertests"
@@ -6782,7 +6806,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "content_browsertests"
       },
@@ -6794,7 +6819,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "content_unittests"
       },
@@ -6806,7 +6832,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "crashpad_tests"
       },
@@ -6818,7 +6845,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "cronet_tests"
       },
@@ -6830,7 +6858,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "cronet_unittests"
       },
@@ -6842,7 +6871,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "crypto_unittests"
       },
@@ -6854,7 +6884,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "device_unittests"
       },
@@ -6866,7 +6897,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "display_unittests"
       },
@@ -6878,7 +6910,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "events_unittests"
       },
@@ -6890,7 +6923,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "extensions_browsertests"
       },
@@ -6906,7 +6940,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "extensions_browsertests"
       },
@@ -6918,7 +6953,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "extensions_unittests"
       },
@@ -6930,7 +6966,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "filesystem_service_unittests"
       },
@@ -6942,7 +6979,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gcm_unit_tests"
       },
@@ -6954,7 +6992,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gfx_unittests"
       },
@@ -6966,7 +7005,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gin_unittests"
       },
@@ -6978,7 +7018,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "google_apis_unittests"
       },
@@ -6990,7 +7031,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -7002,7 +7044,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "headless_browsertests"
       },
@@ -7014,7 +7057,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "headless_unittests"
       },
@@ -7027,6 +7071,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 3
         },
         "test": "interactive_ui_tests"
@@ -7044,6 +7089,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 3
         },
         "test": "interactive_ui_tests"
@@ -7061,7 +7107,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "interactive_ui_tests"
       },
@@ -7073,7 +7120,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "ipc_tests"
       },
@@ -7085,7 +7133,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "jingle_unittests"
       },
@@ -7097,7 +7146,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "latency_unittests"
       },
@@ -7109,7 +7159,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "leveldb_service_unittests"
       },
@@ -7121,7 +7172,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "libjingle_xmpp_unittests"
       },
@@ -7133,7 +7185,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "mac_installer_unittests"
       },
@@ -7145,7 +7198,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "media_blink_unittests"
       },
@@ -7157,7 +7211,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "media_service_unittests"
       },
@@ -7169,7 +7224,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "media_unittests"
       },
@@ -7181,7 +7237,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "message_center_unittests"
       },
@@ -7193,7 +7250,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "midi_unittests"
       },
@@ -7205,7 +7263,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "mojo_unittests"
       },
@@ -7217,7 +7276,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "nacl_loader_unittests"
       },
@@ -7229,7 +7289,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "native_theme_unittests"
       },
@@ -7241,7 +7302,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "net_unittests"
       },
@@ -7253,7 +7315,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "pdf_unittests"
       },
@@ -7265,7 +7328,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "ppapi_unittests"
       },
@@ -7277,7 +7341,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "printing_unittests"
       },
@@ -7289,7 +7354,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "remoting_unittests"
       },
@@ -7301,7 +7367,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "sandbox_mac_unittests"
       },
@@ -7313,7 +7380,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "service_manager_unittests"
       },
@@ -7325,7 +7393,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "services_unittests"
       },
@@ -7337,7 +7406,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "shell_dialogs_unittests"
       },
@@ -7349,7 +7419,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "skia_unittests"
       },
@@ -7361,7 +7432,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "snapshot_unittests"
       },
@@ -7373,7 +7445,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "sql_unittests"
       },
@@ -7385,7 +7458,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "storage_unittests"
       },
@@ -7397,7 +7471,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "sync_integration_tests"
       },
@@ -7409,7 +7484,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "traffic_annotation_auditor_unittests"
       },
@@ -7421,7 +7497,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "ui_base_unittests"
       },
@@ -7433,7 +7510,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "ui_touch_selection_unittests"
       },
@@ -7445,7 +7523,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "unit_tests"
       },
@@ -7457,7 +7536,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "url_unittests"
       },
@@ -7469,7 +7549,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "views_unittests"
       },
@@ -7481,7 +7562,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "viz_unittests"
       },
@@ -7493,7 +7575,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "webkit_unit_tests"
       },
@@ -7505,7 +7588,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "wtf_unittests"
       }
@@ -7524,7 +7608,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7537,7 +7622,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7550,7 +7636,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7563,7 +7650,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7576,7 +7664,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7590,6 +7679,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -7604,6 +7694,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "hard_timeout": 960,
           "idempotent": false,
           "shards": 12
@@ -7624,6 +7715,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 4
         }
@@ -7638,7 +7730,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -7662,6 +7755,7 @@
               "os": "Mac-10.14"
             }
           ],
+          "expiration": 10800,
           "shards": 12
         }
       },
@@ -7675,7 +7769,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.14"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       }
     ]

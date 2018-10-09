@@ -1381,6 +1381,7 @@
       'mac-osxbeta-rel': {
         'mixins': [
             'intel_iris_5100',
+            'limited_capacity_bot',
             'mac_10.14',
         ],
         'test_suites': {
