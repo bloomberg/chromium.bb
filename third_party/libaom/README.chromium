@@ -3,7 +3,7 @@ Short Name: libaom
 URL: https://aomedia.googlesource.com/aom/
 Version: 0
 Date: Monday October 08 2018
-Branch: master
+Branch: m70-3538
 Commit: a5078bf8d0e7c01eab670cfc1cfe7b9fb065e931
 License: BSD
 License File: source/libaom/LICENSE
