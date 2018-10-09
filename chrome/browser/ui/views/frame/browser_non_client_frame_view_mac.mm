@@ -6,6 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -234,7 +236,9 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   canvas->DrawColor(GetFrameColor());
 
-  if (!GetThemeProvider()->UsingSystemTheme())
+  auto* theme_service =
+      ThemeServiceFactory::GetForProfile(browser_view()->browser()->profile());
+  if (!theme_service->UsingSystemTheme())
     PaintThemedFrame(canvas);
 }
 
