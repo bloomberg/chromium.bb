@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/aura/window.h"
@@ -52,7 +53,7 @@ gfx::Point TabScrubber::GetStartPoint(TabStrip* tab_strip,
 
   // Start the swipe where the tab contents start/end.  This provides a small
   // amount of slop inside the tab before a swipe will change tabs.
-  auto contents_insets = tab->GetContentsInsets();
+  auto contents_insets = tab->tab_style()->GetContentsInsets();
   int left = contents_insets.left();
   int right = contents_insets.right();
 
@@ -65,7 +66,7 @@ gfx::Point TabScrubber::GetStartPoint(TabStrip* tab_strip,
   // opposite edges of the tab, which should be at (overlap / 2).
   gfx::Rect tab_edges = tab_bounds;
   // For odd overlap values, be conservative and inset both edges rounding up.
-  tab_edges.Inset((Tab::GetOverlap() + 1) / 2, 0);
+  tab_edges.Inset((TabStyle::GetTabOverlap() + 1) / 2, 0);
   const int x = (direction == LEFT)
                     ? std::min(tab_bounds.x() + left, tab_edges.right())
                     : std::max(tab_bounds.right() - right, tab_edges.x());

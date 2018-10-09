@@ -29,6 +29,7 @@ class AlertIndicator;
 class TabCloseButton;
 class TabController;
 class TabIcon;
+class TabStyle;
 
 namespace gfx {
 class Animation;
@@ -53,10 +54,6 @@ class Tab : public gfx::AnimationDelegate,
  public:
   // The Tab's class name.
   static const char kViewClassName[];
-
-  // Thickness in DIPs of the separator painted on the left and right edges of
-  // the tab.
-  static constexpr int kSeparatorThickness = 1;
 
   // When the content's width of the tab shrinks to below this size we should
   // hide the close button on inactive tabs. Any smaller and they're too easy
@@ -171,67 +168,14 @@ class Tab : public gfx::AnimationDelegate,
   }
 
   GlowHoverController* hover_controller() { return &hover_controller_; }
+  const GlowHoverController* hover_controller() const {
+    return &hover_controller_;
+  }
 
   bool mouse_hovered() const { return mouse_hovered_; }
 
-  // Returns the thickness of the stroke drawn around the top and sides of the
-  // tab.  Only active tabs may have a stroke, and not in all cases.  If there
-  // is no stroke, returns 0.  If |should_paint_as_active| is true, the tab is
-  // treated as an active tab regardless of its true current state.
-  float GetStrokeThickness(bool should_paint_as_active = false) const;
-
-  // Returns the thickness of the stroke drawn below the tab.
-  float GetBottomStrokeThickness(bool should_paint_as_active = false) const;
-
-  // Returns the insets to use for laying out tab contents.
-  gfx::Insets GetContentsInsets() const;
-
-  // Contains values 0..1 representing the opacity of the corresponding
-  // separators.  These are physical and not logical, so "left" is the left
-  // separator in both LTR and RTL.
-  struct SeparatorOpacities {
-    float left = 0, right = 0;
-  };
-
-  // Returns the opacities of the separators.  If |for_layout| is true, returns
-  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
-  // effects and consider only the current tab's state.
-  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
-
   // Returns the TabStyle associated with this tab.
-  const class TabStyle* GetTabStyle() const;
-
-  // Returns the horizontal insets to use for laying out tab contents.
-  static gfx::Insets GetContentsHorizontalInsets();
-
-  // Returns the minimum possible width of a single unselected Tab.
-  static int GetMinimumInactiveWidth();
-
-  // Returns the minimum possible width of a selected Tab. Selected tabs must
-  // always show a close button, and thus have a larger minimum size than
-  // unselected tabs.
-  static int GetMinimumActiveWidth();
-
-  // Returns the preferred width of a single Tab, assuming space is
-  // available.
-  static int GetStandardWidth();
-
-  // Returns the width for pinned tabs. Pinned tabs always have this width.
-  static int GetPinnedWidth();
-
-  // Returns the height of the separator between tabs.
-  static int GetTabSeparatorHeight();
-
-  // Returns the radius of the outer corners of the tab shape.
-  static int GetCornerRadius();
-
-  // Returns an offset into the leading edge of the tab which delineates the
-  // "main body" of the tab from the user's perspective; dragging based on this
-  // point feels better than dragging based on the tab's actual leading edge.
-  static int GetDragInset();
-
-  // Returns the overlap between adjacent tabs.
-  static int GetOverlap();
+  const TabStyle* tab_style() const { return tab_style_.get(); }
 
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
@@ -316,6 +260,8 @@ class Tab : public gfx::AnimationDelegate,
   TabController* const controller_;
 
   TabRendererData data_;
+
+  std::unique_ptr<TabStyle> tab_style_;
 
   // True if the tab is being animated closed.
   bool closing_ = false;

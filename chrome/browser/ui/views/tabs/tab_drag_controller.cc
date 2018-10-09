@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 
-#include <math.h>
+#include <algorithm>
+#include <limits>
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -91,7 +94,7 @@ const int kMaximizedWindowInset = 10;  // DIPs.
 // Given the bounds of a dragged tab, return the X coordinate to use for
 // computing where in the strip to insert/move the tab.
 int GetDraggedX(const gfx::Rect& dragged_bounds) {
-  return dragged_bounds.x() + Tab::GetDragInset();
+  return dragged_bounds.x() + TabStyle::GetTabInternalPadding().left();
 }
 
 #if defined(OS_CHROMEOS)
@@ -873,7 +876,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   if (!attached_tabstrip_->touch_layout_.get()) {
     double ratio =
         static_cast<double>(attached_tabstrip_->current_inactive_width()) /
-        Tab::GetStandardWidth();
+        TabStyle::GetStandardWidth();
     threshold = gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.

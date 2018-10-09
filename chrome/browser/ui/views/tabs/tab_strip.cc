@@ -200,17 +200,17 @@ const TabSizeInfo& GetTabSizeInfo() {
   if (!tab_size_info.standard_size.IsEmpty())
     return tab_size_info;
 
-  tab_size_info.pinned_tab_width = Tab::GetPinnedWidth();
-  tab_size_info.min_active_width = Tab::GetMinimumActiveWidth();
-  tab_size_info.min_inactive_width = Tab::GetMinimumInactiveWidth();
+  tab_size_info.pinned_tab_width = TabStyle::GetPinnedWidth();
+  tab_size_info.min_active_width = TabStyle::GetMinimumActiveWidth();
+  tab_size_info.min_inactive_width = TabStyle::GetMinimumInactiveWidth();
   tab_size_info.standard_size =
-      gfx::Size(Tab::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
-  tab_size_info.tab_overlap = Tab::GetOverlap();
+      gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
+  tab_size_info.tab_overlap = TabStyle::GetTabOverlap();
   return tab_size_info;
 }
 
 int GetStackableTabWidth() {
-  return Tab::GetOverlap() +
+  return TabStyle::GetTabOverlap() +
          (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 136
                                                                     : 102);
 }
@@ -264,7 +264,9 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 // TabStrip, public:
 
 TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
-    : controller_(std::move(controller)) {
+    : controller_(std::move(controller)),
+      current_inactive_width_(TabStyle::GetStandardWidth()),
+      current_active_width_(TabStyle::GetStandardWidth()) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
@@ -324,8 +326,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   // tabs and the new tab button is treated as part of the window drag handle,
   // to increase draggability.  This region starts 1 DIP above the top of the
   // separator.
-  const int drag_handle_extension =
-      (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
+  const int drag_handle_extension = TabStyle::GetDragHandleExtension(height());
 
   // Disable drag handle extension when tab shapes are visible.
   bool extend_drag_handle = !controller_->IsFrameCondensed() &&
@@ -508,6 +509,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
                            int model_index,
                            bool was_active) {
   const int model_count = GetModelCount();
+  const int tab_overlap = TabStyle::GetTabOverlap();
   if (in_tab_close_ && model_count > 0 && model_index != model_count) {
     // The user closed a tab other than the last tab. Set
     // available_width_for_tabs_ so that as the user closes tabs with the mouse
@@ -535,7 +537,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
     }
 
     available_width_for_tabs_ = ideal_bounds(model_count).right() -
-                                TabStartX() - size_delta + Tab::GetOverlap();
+                                TabStartX() - size_delta + tab_overlap;
   }
 
   if (!touch_layout_)
@@ -566,13 +568,13 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
   gfx::Rect tab_bounds = tab->bounds();
   int desired_x = TabStartX();
   if (model_index > 0)
-    desired_x = ideal_bounds(model_index - 1).right() - Tab::GetOverlap();
+    desired_x = ideal_bounds(model_index - 1).right() - tab_overlap;
   tab_bounds.set_x(desired_x);
 
   // The tab should animate to the width of the overlap in order to close at the
   // same speed the surrounding tabs are moving, since at this width the
   // subsequent tab is naturally positioned at the same X coordinate.
-  tab_bounds.set_width(Tab::GetOverlap());
+  tab_bounds.set_width(tab_overlap);
 
   // Animate the tab closed.
   bounds_animator_.AnimateViewTo(tab, tab_bounds);
@@ -1043,47 +1045,6 @@ void TabStrip::OnMouseEventInTab(views::View* source,
   UpdateStackedLayoutFromMouseEvent(source, event);
 }
 
-bool TabStrip::ShouldPaintTab(
-    const Tab* tab,
-    const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>& border_callback,
-    gfx::Path* clip) {
-  if (!MaySetClip())
-    return true;
-
-  int index = GetModelIndexOfTab(tab);
-  if (index == -1)
-    return true;  // Tab is closing, paint it all.
-
-  int active_index = IsStackingDraggedTabs() ? controller_->GetActiveIndex()
-                                             : touch_layout_->active_index();
-  if (active_index == tab_count())
-    active_index--;
-
-  const gfx::Rect& current_bounds = tab_at(index)->bounds();
-  if (index < active_index) {
-    const gfx::Rect& next_bounds = tab_at(index + 1)->bounds();
-    if (current_bounds.x() == next_bounds.x())
-      return false;
-
-    if (current_bounds.x() > next_bounds.x())
-      return true;  // Can happen during dragging.
-
-    *clip = border_callback.Run(next_bounds);
-    clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
-  } else if (index > active_index && index > 0) {
-    const gfx::Rect& previous_bounds = tab_at(index - 1)->bounds();
-    if (current_bounds.x() == previous_bounds.x())
-      return false;
-
-    if (current_bounds.x() < previous_bounds.x())
-      return true;  // Can happen during dragging.
-
-    *clip = border_callback.Run(previous_bounds);
-    clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
-  }
-  return true;
-}
-
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
   if (!MaySetClip())
     return true;
@@ -1108,8 +1069,8 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
       return true;  // Can happen during dragging.
 
     *clip =
-        tab->GetTabStyle()->GetPath(next_tab, TabStyle::PathType::kExteriorClip,
-                                    scale, false, TabStyle::RenderUnits::kDips);
+        next_tab->tab_style()->GetPath(TabStyle::PathType::kExteriorClip, scale,
+                                       false, TabStyle::RenderUnits::kDips);
 
     clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
   } else if (index > active_index && index > 0) {
@@ -1122,8 +1083,8 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
       return true;  // Can happen during dragging.
 
     *clip =
-        tab->GetTabStyle()->GetPath(prev_tab, TabStyle::PathType::kExteriorClip,
-                                    scale, false, TabStyle::RenderUnits::kDips);
+        prev_tab->tab_style()->GetPath(TabStyle::PathType::kExteriorClip, scale,
+                                       false, TabStyle::RenderUnits::kDips);
     clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
   }
   return true;
@@ -1361,8 +1322,9 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
 
   // Paint a separator before a trailing new tab button.
   if (GetNewTabButtonPosition() == TRAILING) {
-    const int width = Tab::kSeparatorThickness;
-    const float separator_height = Tab::GetTabSeparatorHeight();
+    const gfx::Size separator_size = TabStyle::GetSeparatorSize();
+    const int width = separator_size.width();
+    const float separator_height = separator_size.height();
     gfx::RectF separator_bounds(
         GetMirroredXWithWidthInView(new_tab_button_bounds_.x() - width, width),
         (height() - separator_height) / 2, width, separator_height);
@@ -1388,16 +1350,16 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
   } else {
     // Otherwise the minimum width is based on the actual number of tabs.
     const int pinned_tab_count = GetPinnedTabCount();
-    needed_tab_width = pinned_tab_count * Tab::GetPinnedWidth();
+    needed_tab_width = pinned_tab_count * TabStyle::GetPinnedWidth();
     const int remaining_tab_count = tab_count() - pinned_tab_count;
-    const int min_selected_width = Tab::GetMinimumActiveWidth();
-    const int min_unselected_width = Tab::GetMinimumInactiveWidth();
+    const int min_selected_width = TabStyle::GetMinimumActiveWidth();
+    const int min_unselected_width = TabStyle::GetMinimumInactiveWidth();
     if (remaining_tab_count > 0) {
       needed_tab_width += min_selected_width +
                           ((remaining_tab_count - 1) * min_unselected_width);
     }
 
-    const int overlap = Tab::GetOverlap();
+    const int overlap = TabStyle::GetTabOverlap();
     if (tab_count() > 1)
       needed_tab_width -= (tab_count() - 1) * overlap;
 
@@ -1536,13 +1498,14 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
   // Insert the tab just after the current right edge of the previous tab, if
   // any.
   gfx::Rect bounds = ideal_bounds(model_index);
+  const int tab_overlap = TabStyle::GetTabOverlap();
   if (model_index > 0)
-    bounds.set_x(tab_at(model_index - 1)->bounds().right() - Tab::GetOverlap());
+    bounds.set_x(tab_at(model_index - 1)->bounds().right() - tab_overlap);
 
   // Start at the width of the overlap in order to animate at the same speed the
   // surrounding tabs are moving, since at this width the subsequent tab is
   // naturally positioned at the same X coordinate.
-  bounds.set_width(Tab::GetOverlap());
+  bounds.set_width(tab_overlap);
 
   // Animate in to the full width.
   tab_at(model_index)->SetBoundsRect(bounds);
@@ -1600,7 +1563,7 @@ int TabStrip::TabToFollowingNewTabButtonSpacing() const {
 
   // The new tab button contains built-in padding, and should be placed flush
   // against the trailing separator.
-  return -Tab::GetCornerRadius();
+  return -TabStyle::GetTabInternalPadding().right();
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
@@ -1621,12 +1584,12 @@ int TabStrip::GetFrameGrabWidth() const {
     // space where the outer (lower) corners are, which should be treated as
     // part of the grab area, so decrease the size of the remaining grab area by
     // that width.
-    width -= Tab::GetCornerRadius();
+    width -= TabStyle::GetTabInternalPadding().right();
 
     // The trailing NTB has a separator just before it; don't count that as part
     // of the frame grab width since it looks visually distinct.
     if (position == TRAILING)
-      width += Tab::kSeparatorThickness;
+      width += TabStyle::GetSeparatorSize().width();
   }
 
   return width;
@@ -1744,7 +1707,7 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
   DCHECK(!tabs.empty());
 
   std::vector<gfx::Rect> bounds;
-  const int overlap = Tab::GetOverlap();
+  const int overlap = TabStyle::GetTabOverlap();
   int x = 0;
   for (const Tab* tab : tabs) {
     const int width = tab->width();
@@ -1759,9 +1722,11 @@ int TabStrip::TabStartX() const {
   if (controller_->GetNewTabButtonPosition() != LEADING)
     return 0;
 
-  // The new tab button contains built-in padding, and should be placed flush
-  // against the leading separator.
-  return new_tab_button_bounds_.width() - Tab::GetCornerRadius();
+  // The new tab button should sit relatively flush against the leading edge of
+  // the following tab, which means accounting for any negative space in the tab
+  // itself.
+  return new_tab_button_bounds_.width() -
+         TabStyle::GetTabInternalPadding().left();
 }
 
 int TabStrip::TabDragAreaEndX() const {
@@ -1791,7 +1756,7 @@ int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
   for (const Tab* tab : tabs)
     width += tab->width();
   if (!tabs.empty())
-    width -= Tab::GetOverlap() * (tabs.size() - 1);
+    width -= TabStyle::GetTabOverlap() * (tabs.size() - 1);
   return width;
 }
 
@@ -2176,7 +2141,7 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   Tab* tab = tab_at(std::min(drop_index, tab_count() - 1));
   int center_x = tab->x();
   const int width = tab->width();
-  const int overlap = Tab::GetOverlap();
+  const int overlap = TabStyle::GetTabOverlap();
   if (drop_index < tab_count())
     center_x += drop_before ? (overlap / 2) : (width / 2);
   else
@@ -2421,7 +2386,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     return;
 
   if (needs_touch) {
-    const int overlap = Tab::GetOverlap();
+    const int overlap = TabStyle::GetTabOverlap();
     touch_layout_.reset(new StackedTabStripLayout(
         gfx::Size(GetStackableTabWidth(), GetLayoutConstant(TAB_HEIGHT)),
         overlap, kStackedPadding, kMaxStackedCount, &tabs_));
@@ -2453,12 +2418,13 @@ bool TabStrip::NeedsTouchLayout() const {
   if (normal_count <= 1 || normal_count == pinned_tab_count)
     return false;
 
-  const int normal_width = GetStackableTabWidth() * normal_count -
-                           Tab::GetOverlap() * (normal_count - 1);
+  const int tab_overlap = TabStyle::GetTabOverlap();
+  const int normal_width =
+      GetStackableTabWidth() * normal_count - tab_overlap * (normal_count - 1);
   const int available_width = GetTabAreaWidth();
   const int pinned_width =
       pinned_tab_count
-          ? (pinned_tab_count * Tab::GetPinnedWidth() - Tab::GetOverlap())
+          ? (pinned_tab_count * TabStyle::GetPinnedWidth() - tab_overlap)
           : 0;
   return normal_width > (available_width - pinned_width - TabStartX());
 }

@@ -245,11 +245,6 @@ class TabStrip : public views::View,
   const Tab* GetAdjacentTab(const Tab* tab, int offset) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
-  bool ShouldPaintTab(
-      const Tab* tab,
-      const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
-          border_callback,
-      gfx::Path* clip) override;
   bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
@@ -615,8 +610,8 @@ class TabStrip : public views::View,
   // Returns the current widths of each type of tab.  If the tabstrip width is
   // not evenly divisible into these widths, the initial tabs in the strip will
   // be 1 px larger.
-  int current_inactive_width_ = Tab::GetStandardWidth();
-  int current_active_width_ = Tab::GetStandardWidth();
+  int current_inactive_width_;
+  int current_active_width_;
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while
