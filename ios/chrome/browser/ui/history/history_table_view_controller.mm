@@ -83,8 +83,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Object to manage insertion of history entries into the table view model.
 @property(nonatomic, strong) HistoryEntryInserter* entryInserter;
-// Coordinator for displaying context menus for history entries.
-@property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 // The current query for visible history entries.
 @property(nonatomic, copy) NSString* currentQuery;
 // The current status message for the tableView, it might be nil.
@@ -1028,17 +1026,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   params.menu_title = [menuTitle copy];
 
-  // Present sheet/popover using controller that is added to view hierarchy.
-  // TODO(crbug.com/754642): Remove TopPresentedViewController().
-  UIViewController* topController =
-      top_view_controller::TopPresentedViewController();
+  self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
+      initWithBaseViewController:self.navigationController
+                          params:params];
 
-  self.contextMenuCoordinator =
-      [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
-                                                          params:params];
-
-  // TODO(crbug.com/606503): Refactor context menu creation code to be shared
-  // with BrowserViewController.
   // Add "Open in New Tab" option.
   NSString* openInNewTabTitle =
       l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
