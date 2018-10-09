@@ -15,18 +15,16 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
+namespace message_center {
+class MessageView;
+}  // namespace message_center
+
 namespace ash {
 
 // View containing 2 buttons that appears behind notification by swiping.
 class ASH_EXPORT NotificationSwipeControlView : public views::View,
                                                 public views::ButtonListener {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    virtual void OnSettingsButtonPressed(const ui::Event& event) = 0;
-    virtual void OnSnoozeButtonPressed(const ui::Event& event) = 0;
-  };
-
   // Physical positions to show buttons in the swipe control. This is invariant
   // across RTL/LTR languages because buttons should be shown on one side which
   // is made uncovered by the overlapping view after user's swipe action.
@@ -35,7 +33,8 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
   // String to be returned by GetClassName() method.
   static const char kViewClassName[];
 
-  NotificationSwipeControlView();
+  explicit NotificationSwipeControlView(
+      message_center::MessageView* message_view);
   ~NotificationSwipeControlView() override;
 
   // views::View
@@ -44,28 +43,30 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Update the visibility of control buttons.
+  void UpdateButtonsVisibility();
+
+  // Update the radii of background corners.
+  void UpdateCornerRadius(int top_radius, int bottom_radius);
+
+ private:
   // Change the visibility of the settings button.
   void ShowButtons(ButtonPosition button_position,
                    bool has_settings,
                    bool has_snooze);
   void HideButtons();
-  void AddObserver(Observer* observer);
 
- private:
   // Change the visibility of the settings button. True to show, false to hide.
   void ShowSettingsButton(bool show);
 
   // Change the visibility of the snooze button. True to show, false to hide.
   void ShowSnoozeButton(bool show);
 
+  message_center::MessageView* const message_view_;
+
   // Owned by views hierarchy.
   views::ImageButton* settings_button_ = nullptr;
   views::ImageButton* snooze_button_ = nullptr;
-
-  base::ObserverList<Observer,
-                     false /* check_empty */,
-                     false /* allow_reentrancy */>
-      button_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationSwipeControlView);
 };

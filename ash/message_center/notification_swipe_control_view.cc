@@ -10,6 +10,9 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/notification_background_painter.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
@@ -19,7 +22,9 @@ namespace ash {
 const char NotificationSwipeControlView::kViewClassName[] =
     "NotificationSwipeControlView";
 
-NotificationSwipeControlView::NotificationSwipeControlView() {
+NotificationSwipeControlView::NotificationSwipeControlView(
+    message_center::MessageView* message_view)
+    : message_view_(message_view) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(message_center::kSwipeControlButtonVerticalMargin,
@@ -55,6 +60,32 @@ void NotificationSwipeControlView::HideButtons() {
   ShowSettingsButton(false);
   ShowSnoozeButton(false);
   Layout();
+}
+
+void NotificationSwipeControlView::UpdateButtonsVisibility() {
+  float gesture_amount = message_view_->GetSlideAmount();
+  if (gesture_amount == 0) {
+    HideButtons();
+    return;
+  }
+
+  NotificationSwipeControlView::ButtonPosition button_position =
+      gesture_amount < 0 ? NotificationSwipeControlView::ButtonPosition::RIGHT
+                         : NotificationSwipeControlView::ButtonPosition::LEFT;
+  message_center::NotificationControlButtonsView* buttons =
+      message_view_->GetControlButtonsView();
+  bool has_settings_button = buttons->settings_button();
+  bool has_snooze_button = buttons->snooze_button();
+  ShowButtons(button_position, has_settings_button, has_snooze_button);
+}
+
+void NotificationSwipeControlView::UpdateCornerRadius(int top_radius,
+                                                      int bottom_radius) {
+  SetBackground(views::CreateBackgroundFromPainter(
+      std::make_unique<message_center::NotificationBackgroundPainter>(
+          top_radius, bottom_radius,
+          message_center::kSwipeControlBackgroundColor)));
+  SchedulePaint();
 }
 
 void NotificationSwipeControlView::ShowSettingsButton(bool show) {
@@ -124,19 +155,12 @@ const char* NotificationSwipeControlView::GetClassName() const {
 void NotificationSwipeControlView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   DCHECK(sender);
-  if (sender == settings_button_) {
-    for (Observer& observer : button_observers_)
-      observer.OnSettingsButtonPressed(event);
-  } else if (sender == snooze_button_) {
-    for (Observer& observer : button_observers_)
-      observer.OnSnoozeButtonPressed(event);
-  }
-}
-
-void NotificationSwipeControlView::AddObserver(
-    NotificationSwipeControlView::Observer* observer) {
-  DCHECK(observer);
-  button_observers_.AddObserver(observer);
+  message_view_->CloseSwipeControl();
+  if (sender == settings_button_)
+    message_view_->OnSettingsButtonPressed(event);
+  else if (sender == snooze_button_)
+    message_view_->OnSnoozeButtonPressed(event);
+  HideButtons();
 }
 
 }  // namespace ash

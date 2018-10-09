@@ -9,7 +9,6 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_background_painter.h"
-#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -19,19 +18,17 @@ namespace ash {
 SlidableMessageView::SlidableMessageView(
     message_center::MessageView* message_view)
     : message_view_(message_view),
-      control_view_(new NotificationSwipeControlView()) {
+      control_view_(new NotificationSwipeControlView(message_view)) {
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   // Draw on its own layer to allow bound animation.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  SetBackground(views::CreateSolidBackground(
-      message_center::kSwipeControlBackgroundColor));
+  control_view_->UpdateCornerRadius(0, 0);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   AddChildView(control_view_);
-  control_view_->AddObserver(this);
 
   message_view_->AddSlideObserver(this);
   AddChildView(message_view);
@@ -40,31 +37,7 @@ SlidableMessageView::SlidableMessageView(
 SlidableMessageView::~SlidableMessageView() = default;
 
 void SlidableMessageView::OnSlideChanged(const std::string& notification_id) {
-  float gesture_amount = message_view_->GetSlideAmount();
-  if (gesture_amount == 0) {
-    control_view_->HideButtons();
-  } else {
-    NotificationSwipeControlView::ButtonPosition button_position =
-        gesture_amount < 0 ? NotificationSwipeControlView::ButtonPosition::RIGHT
-                           : NotificationSwipeControlView::ButtonPosition::LEFT;
-    message_center::NotificationControlButtonsView* buttons =
-        message_view_->GetControlButtonsView();
-    bool has_settings_button = buttons->settings_button();
-    bool has_snooze_button = buttons->snooze_button();
-    control_view_->ShowButtons(button_position, has_settings_button,
-                               has_snooze_button);
-  }
-}
-
-void SlidableMessageView::OnSettingsButtonPressed(const ui::Event& event) {
-  message_view_->CloseSwipeControl();
-  message_view_->OnSettingsButtonPressed(event);
-  control_view_->HideButtons();
-}
-
-void SlidableMessageView::OnSnoozeButtonPressed(const ui::Event& event) {
-  message_view_->OnSnoozeButtonPressed(event);
-  control_view_->HideButtons();
+  control_view_->UpdateButtonsVisibility();
 }
 
 void SlidableMessageView::CloseSwipeControl() {
@@ -96,11 +69,7 @@ int SlidableMessageView::GetHeightForWidth(int width) const {
 
 void SlidableMessageView::UpdateCornerRadius(int top_radius,
                                              int bottom_radius) {
-  SetBackground(views::CreateBackgroundFromPainter(
-      std::make_unique<message_center::NotificationBackgroundPainter>(
-          top_radius, bottom_radius,
-          message_center::kSwipeControlBackgroundColor)));
-  SchedulePaint();
+  control_view_->UpdateCornerRadius(top_radius, bottom_radius);
 }
 
 // static
