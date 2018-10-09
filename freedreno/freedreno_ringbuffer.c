@@ -71,9 +71,19 @@ fd_ringbuffer_new_object(struct fd_pipe *pipe, uint32_t size)
 
 drm_public void fd_ringbuffer_del(struct fd_ringbuffer *ring)
 {
-	if (!(ring->flags & FD_RINGBUFFER_OBJECT))
-		fd_ringbuffer_reset(ring);
+	if (!atomic_dec_and_test(&ring->refcnt))
+		return;
+
+	fd_ringbuffer_reset(ring);
 	ring->funcs->destroy(ring);
+}
+
+drm_public struct fd_ringbuffer *
+fd_ringbuffer_ref(struct fd_ringbuffer *ring)
+{
+	STATIC_ASSERT(sizeof(ring->refcnt) <= sizeof(ring->__pad));
+	atomic_inc(&ring->refcnt);
+	return ring;
 }
 
 /* ringbuffers which are IB targets should set the toplevel rb (ie.

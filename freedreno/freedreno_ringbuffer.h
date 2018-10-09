@@ -53,6 +53,19 @@ struct fd_ringbuffer {
 	void *user;
 
 	uint32_t flags;
+
+	/* This is a bit gross, but we can't use atomic_t in exported
+	 * headers.  OTOH, we don't need the refcnt to be publicly
+	 * visible.  The only reason that this struct is exported is
+	 * because fd_ringbuffer_emit needs to be something that can
+	 * be inlined for performance reasons.
+	 */
+	union {
+#ifdef HAS_ATOMIC_OPS
+		atomic_t refcnt;
+#endif
+		uint64_t __pad;
+	};
 };
 
 struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
@@ -60,6 +73,7 @@ struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 struct fd_ringbuffer * fd_ringbuffer_new_object(struct fd_pipe *pipe,
 		uint32_t size);
 
+struct fd_ringbuffer *fd_ringbuffer_ref(struct fd_ringbuffer *ring);
 void fd_ringbuffer_del(struct fd_ringbuffer *ring);
 void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *parent);

@@ -216,6 +216,8 @@ drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 	}
 
 	ring = &kgsl_ring->base;
+	atomic_set(&ring->refcnt, 1);
+
 	ring->funcs = &funcs;
 	ring->size = size;
 

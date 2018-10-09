@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
+#include "xf86atomic.h"
 #include "freedreno_ringbuffer.h"
 #include "msm_priv.h"
 
@@ -49,8 +50,6 @@ struct msm_cmd {
 
 struct msm_ringbuffer {
 	struct fd_ringbuffer base;
-
-	atomic_t refcnt;
 
 	/* submit ioctl related tables:
 	 * Note that bos and cmds are tracked by the parent ringbuffer, since
@@ -96,9 +95,6 @@ static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
 {
 	return (struct msm_ringbuffer *)x;
 }
-
-static void msm_ringbuffer_unref(struct fd_ringbuffer *ring);
-static void msm_ringbuffer_ref(struct fd_ringbuffer *ring);
 
 #define INIT_SIZE 0x1000
 
@@ -454,7 +450,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		if (msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT) {
 			/* we could have dropped last reference: */
 			msm_ring->cmds[i] = NULL;
-			msm_ringbuffer_unref(msm_cmd->ring);
+			fd_ringbuffer_del(msm_cmd->ring);
 			free(U642VOID(cmd->relocs));
 		}
 	}
@@ -568,7 +564,7 @@ static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 	 * destroyed after emitted but before flush, so we must hold a ref:
 	 */
 	if (added_cmd && (target->flags & FD_RINGBUFFER_OBJECT)) {
-		msm_ringbuffer_ref(target);
+		fd_ringbuffer_ref(target);
 	}
 
 	return size;
@@ -579,12 +575,9 @@ static uint32_t msm_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
 	return to_msm_ringbuffer(ring)->cmd_count;
 }
 
-static void msm_ringbuffer_unref(struct fd_ringbuffer *ring)
+static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-
-	if (!atomic_dec_and_test(&msm_ring->refcnt))
-		return;
 
 	flush_reset(ring);
 	delete_cmds(msm_ring);
@@ -596,12 +589,6 @@ static void msm_ringbuffer_unref(struct fd_ringbuffer *ring)
 	free(msm_ring);
 }
 
-static void msm_ringbuffer_ref(struct fd_ringbuffer *ring)
-{
-	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	atomic_inc(&msm_ring->refcnt);
-}
-
 static const struct fd_ringbuffer_funcs funcs = {
 		.hostptr = msm_ringbuffer_hostptr,
 		.flush = msm_ringbuffer_flush,
@@ -610,7 +597,7 @@ static const struct fd_ringbuffer_funcs funcs = {
 		.emit_reloc = msm_ringbuffer_emit_reloc,
 		.emit_reloc_ring = msm_ringbuffer_emit_reloc_ring,
 		.cmd_count = msm_ringbuffer_cmd_count,
-		.destroy = msm_ringbuffer_unref,
+		.destroy = msm_ringbuffer_destroy,
 };
 
 drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
@@ -633,9 +620,10 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 
 	list_inithead(&msm_ring->cmd_list);
 	msm_ring->seqno = ++to_msm_device(pipe->dev)->ring_cnt;
-	atomic_set(&msm_ring->refcnt, 1);
 
 	ring = &msm_ring->base;
+	atomic_set(&ring->refcnt, 1);
+
 	ring->funcs = &funcs;
 	ring->size = size;
 	ring->pipe = pipe;   /* needed in ring_cmd_new() */
