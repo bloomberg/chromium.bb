@@ -396,4 +396,19 @@ void TestWindowTree::ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                                           ws::Id window_id) {}
 void TestWindowTree::StopObservingTopmostWindow() {}
 
+void TestWindowTree::CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) {
+  last_not_cancelled_window_id_ = not_cancelled_window_id;
+}
+
+void TestWindowTree::CancelActiveTouches(ws::Id window_id) {
+  last_cancelled_window_id_ = window_id;
+}
+void TestWindowTree::TransferGestureEventsTo(ws::Id current_id,
+                                             ws::Id new_id,
+                                             bool should_cancel) {
+  last_transfer_current_ = current_id;
+  last_transfer_new_ = new_id;
+  last_transfer_should_cancel_ = should_cancel;
+}
+
 }  // namespace aura

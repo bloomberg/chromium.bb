@@ -47,6 +47,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -2036,6 +2037,67 @@ void WindowTree::StopObservingTopmostWindow() {
     return;
   }
   topmost_window_observer_.reset();
+}
+
+void WindowTree::CancelActiveTouchesExcept(Id not_cancelled_window_id) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "CancelActiveTouchesExcept failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "CancelActiveTouchesExcept not_cancelled_window_id="
+           << MakeClientWindowId(not_cancelled_window_id).ToString();
+  aura::Window* not_cancelled_window = nullptr;
+  if (not_cancelled_window_id != kInvalidTransportId) {
+    not_cancelled_window = GetWindowByTransportId(not_cancelled_window_id);
+    if (!not_cancelled_window || !IsClientCreatedWindow(not_cancelled_window)) {
+      DVLOG(1) << "CancelActiveTouchesExcept failed (invalid window)";
+      return;
+    }
+  }
+  window_service_->env()->gesture_recognizer()->CancelActiveTouchesExcept(
+      not_cancelled_window);
+}
+
+void WindowTree::CancelActiveTouches(Id window_id) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "CancelActiveTouches failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "CancelActiveTouches window_id="
+           << MakeClientWindowId(window_id).ToString();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window || !IsClientCreatedWindow(window)) {
+    DVLOG(1) << "CancelActiveTouches failed (invalid window)";
+    return;
+  }
+  window_service_->env()->gesture_recognizer()->CancelActiveTouches(window);
+}
+
+void WindowTree::TransferGestureEventsTo(Id current_id,
+                                         Id new_id,
+                                         bool should_cancel) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "TransferGestureEventsTo failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "TransferGestureEventsTo current_id="
+           << MakeClientWindowId(current_id).ToString()
+           << " new_id=" << MakeClientWindowId(new_id)
+           << " should_cancel=" << should_cancel;
+  aura::Window* current_window = GetWindowByTransportId(current_id);
+  aura::Window* new_window = GetWindowByTransportId(new_id);
+  if (!current_window || !IsClientCreatedWindow(current_window)) {
+    DVLOG(1) << "TransferGestureEventsTo failed (invalid current_window)";
+    return;
+  }
+  if (!new_window || !IsClientCreatedWindow(new_window)) {
+    DVLOG(1) << "TransferGestureEventsTo failed (invalid new_window)";
+    return;
+  }
+  window_service_->env()->gesture_recognizer()->TransferEventsTo(
+      current_window, new_window,
+      should_cancel ? ui::TransferTouchesBehavior::kCancel
+                    : ui::TransferTouchesBehavior::kDontCancel);
 }
 
 }  // namespace ws

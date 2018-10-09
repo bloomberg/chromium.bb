@@ -385,6 +385,22 @@ interface WindowTree {
   // Called by the client to request stopping the ongoing session of observing
   // the topmost window under the cursor.
   StopObservingTopmostWindow();
+
+  // Called by the client to cancel active touch events. not_cancelled_window_id
+  // is a window ID, and that window is excluded from cancelling. When
+  // not_cancelled_window_id is invalid, active touch events should be cancelled
+  // on all windows.
+  CancelActiveTouchesExcept(uint64 not_cancelled_window_id);
+
+  // Called by the client to cancel active touches on |window_id|.
+  CancelActiveTouches(uint64 window_id);
+
+  // Called by the client to transfer the gesture stream from the window of
+  // |current_id| to the window of |new_id|. If |should_cancel| is set, then
+  // cancel events are also dispatched to |current_id|. Both |current_id| and
+  // |new_id| need to be valid window ID created by the client. This operation
+  // is not allowed for embedded clients.
+  TransferGestureEventsTo(uint64 current_id, uint64 new_id, bool should_cancel);
 };
 
 // Changes to windows are not sent to the connection that originated the

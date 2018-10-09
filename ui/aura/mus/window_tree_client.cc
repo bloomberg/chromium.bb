@@ -38,6 +38,7 @@
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/gesture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/mus_context_factory.h"
@@ -535,6 +536,7 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   drag_drop_controller_ = std::make_unique<DragDropControllerMus>(this, tree_);
   capture_synchronizer_ = std::make_unique<CaptureSynchronizer>(this, tree_);
   focus_synchronizer_ = std::make_unique<FocusSynchronizer>(this, tree_);
+  gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
 }
 
 void WindowTreeClient::OnConnectionLost() {
