@@ -420,11 +420,18 @@ class SignedExchangeAcceptHeaderBrowserTest
  protected:
   void SetUp() override {
     std::vector<base::Feature> enable_features;
-    if (GetParam().sxg_enabled)
+    std::vector<base::Feature> disable_features;
+    if (GetParam().sxg_enabled) {
       enable_features.push_back(features::kSignedHTTPExchange);
-    if (GetParam().sxg_origin_trial_enabled)
+    } else {
+      disable_features.push_back(features::kSignedHTTPExchange);
+    }
+    if (GetParam().sxg_origin_trial_enabled) {
       enable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
-    feature_list_.InitWithFeatures(enable_features, {});
+    } else {
+      disable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
+    }
+    feature_list_.InitWithFeatures(enable_features, disable_features);
 
     enabled_https_server_.ServeFilesFromSourceDirectory("content/test/data");
     enabled_https_server_.RegisterRequestHandler(
