@@ -149,6 +149,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
                            bool is_webui) override;
   bool MayAttachToBrowser() override;
   bool MayDiscoverTargets() override;
+  bool MayAffectLocalFiles() override;
 
  private:
   using PendingRequests =
@@ -383,6 +384,10 @@ bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
 }
 
 bool ExtensionDevToolsClientHost::MayDiscoverTargets() {
+  return false;
+}
+
+bool ExtensionDevToolsClientHost::MayAffectLocalFiles() {
   return false;
 }
 
