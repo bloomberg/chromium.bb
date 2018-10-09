@@ -47,6 +47,10 @@ class StopButton : public views::LabelButton {
     SetEnabled(enabled);
     // Make it possible to navigate to this button by pressing the tab key.
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    // Remove the outlines drawn when the button is in focus.
+    SetInstallFocusRingOnFocus(false);
+    SetFocusPainter(nullptr);
+
     SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON_ACCESSIBLE_NAME,
         sink.friendly_name, sink.status_text));
