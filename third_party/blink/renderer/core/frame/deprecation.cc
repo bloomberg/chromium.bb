@@ -592,8 +592,8 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay:
       return {
           "TextToSpeech_DisallowedByAutoplay", kM71,
-          String::Format("speechSynthesis.speak() without user activation is"
-                         "no longer allowed since %s. See"
+          String::Format("speechSynthesis.speak() without user activation is "
+                         "no longer allowed since %s. See "
                          "https://www.chromestatus.com/feature/"
                          "5687444770914304 for more details",
                          MilestoneString(kM71))};
