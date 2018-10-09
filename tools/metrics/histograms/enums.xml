@@ -40688,6 +40688,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Subframe navigation"/>
   <int value="3" label="Server Unavailable"/>
   <int value="4" label="Infobar hasn't been seen by the user and needs to be"/>
+  <int value="5" label="Network was not slow"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

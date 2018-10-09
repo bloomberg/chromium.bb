@@ -181,6 +181,13 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   if (manager_->IsServerUnavailable())
     ineligible_reasons.push_back(IneligibleReason::kServerUnavailable);
 
+  if (g_browser_process->network_quality_tracker()
+          ->GetEffectiveConnectionType() >
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
+    ineligible_reasons.push_back(IneligibleReason::kNetworkNotSlow);
+  }
+
   // Record UMA.
   for (IneligibleReason reason : ineligible_reasons) {
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
