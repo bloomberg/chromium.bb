@@ -361,7 +361,7 @@ class LocalNTPCustomBackgroundsThemeTest
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
-                       RemoveAttributeAfterThemeApplied) {
+                       KeepGearIconAfterThemeApplied) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -397,15 +397,28 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   observer.WaitForThemeApplied(true);
   ASSERT_FALSE(observer.IsUsingDefaultTheme());
 
-  // Check that the custom background attribution is cleared after
-  // a theme was applied.
+  // Check that the custom background attribution is maintained and the
+  // user continues to have the option to select a custom background.
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "document.querySelector('#edit-bg-default-wallpapers').hidden", &result));
+  EXPECT_FALSE(result);
+
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "$('custom-bg-attr').hasChildNodes()", &result));
-  EXPECT_FALSE(result);
+  EXPECT_TRUE(result);
+
+  // Check that the custom background element maintains the correct attribution.
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "document.querySelector('.attr1').innerText === 'attr1' && "
+      "document.querySelector('.attr2').innerText === 'attr2'",
+      &result));
+  EXPECT_TRUE(result);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
-                       RemoveBackgroundImageAfterThemeApplied) {
+                       KeepBackgroundImageAfterThemeApplied) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -442,11 +455,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   observer.WaitForThemeApplied(true);
   ASSERT_FALSE(observer.IsUsingDefaultTheme());
 
-  // Check that the custom background image is hidden after a theme was
-  // applied.
+  // Check that the custom background image persists after theme
+  // is set.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "$('custom-bg').style.opacity === '0'", &result));
-  EXPECT_TRUE(result);
+      active_tab,
+      "$('custom-bg').style.backgroundImage === 'linear-gradient(rgba(0, 0, 0, "
+      "0), rgba(0, 0, 0, 0.3)), "
+      "url(\"chrome-search://local-ntp/background1.jpg\")'",
+      &result));
+  ASSERT_TRUE(result);
 }
-
 }  // namespace

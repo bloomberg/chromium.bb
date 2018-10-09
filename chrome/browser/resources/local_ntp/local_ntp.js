@@ -412,8 +412,8 @@ function renderTheme() {
 
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
-    // disabled and/or a theme is installed.
-    customBackgrounds.setMenuVisibility(!info.usingDefaultTheme);
+    // disabled.
+    customBackgrounds.setMenuVisibility();
   }
 }
 

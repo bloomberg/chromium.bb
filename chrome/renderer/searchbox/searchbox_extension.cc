@@ -336,10 +336,13 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     }
   }
 
+  // Assume that a custom background has not been configured and then
+  // override based on the condition below.
+  builder.Set("customBackgroundConfigured", false);
+
   // If a custom background has been set provide the relevant information to the
   // page.
-  if (theme_info.using_default_theme &&
-      !theme_info.custom_background_url.is_empty()) {
+  if (!theme_info.custom_background_url.is_empty()) {
     builder.Set("alternateLogo", true);
     RGBAColor whiteTextRgba = RGBAColor{255, 255, 255, 255};
     builder.Set("textColorRgba",
@@ -352,8 +355,6 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
                 theme_info.custom_background_attribution_line_1);
     builder.Set("attribution2",
                 theme_info.custom_background_attribution_line_2);
-  } else {
-    builder.Set("customBackgroundConfigured", false);
   }
 
   return builder.Build();
