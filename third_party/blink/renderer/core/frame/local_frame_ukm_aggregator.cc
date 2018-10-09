@@ -58,21 +58,21 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
 
   // Set up sub-strings for the bucketed UMA metrics
   Vector<String> threshold_substrings;
-  if (!bucket_thresholds_.size()) {
+  if (!bucket_thresholds().size()) {
     threshold_substrings.push_back(".All");
   } else {
     threshold_substrings.push_back(
         String::Format(".LessThan%lums",
-                       (unsigned long)bucket_thresholds_[0].InMilliseconds()));
-    for (wtf_size_t i = 1; i < bucket_thresholds_.size(); ++i) {
+                       (unsigned long)bucket_thresholds()[0].InMilliseconds()));
+    for (wtf_size_t i = 1; i < bucket_thresholds().size(); ++i) {
       threshold_substrings.push_back(String::Format(
           ".%lumsTo%lums",
-          (unsigned long)bucket_thresholds_[i - 1].InMilliseconds(),
-          (unsigned long)bucket_thresholds_[i].InMilliseconds()));
+          (unsigned long)bucket_thresholds()[i - 1].InMilliseconds(),
+          (unsigned long)bucket_thresholds()[i].InMilliseconds()));
     }
     threshold_substrings.push_back(String::Format(
         ".MoreThan%lums",
-        (unsigned long)bucket_thresholds_[bucket_thresholds_.size() - 1]
+        (unsigned long)bucket_thresholds()[bucket_thresholds().size() - 1]
             .InMilliseconds()));
   }
 
@@ -80,7 +80,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   absolute_metric_records_.ReserveInitialCapacity(kCount);
   ratio_metric_records_.ReserveInitialCapacity(kCount);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    const auto& metric_name = metric_strings_[i];
+    const auto& metric_name = metric_strings()[i];
 
     // Absolute records report the absolute time for each metric, both
     // average and worst case. They have an associated UMA too that we
@@ -222,9 +222,9 @@ void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
     // Send ratio UMA data only when flushed to reduce overhead from metrics.
     // Find which bucket we're in for UMA data. We need to do this separately
     // for each metric because not every metric records on every frame.
-    size_t bucket_index = bucket_thresholds_.size();
+    size_t bucket_index = bucket_thresholds().size();
     for (size_t i = 0; i < bucket_index; ++i) {
-      if (average_frame_duration < bucket_thresholds_[i].InMicroseconds()) {
+      if (average_frame_duration < bucket_thresholds()[i].InMicroseconds()) {
         bucket_index = i;
       }
     }

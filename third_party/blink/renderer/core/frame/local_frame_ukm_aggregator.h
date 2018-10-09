@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -103,7 +103,7 @@ class CustomCountHistogram;
 //
 // If the source_id/recorder changes then a new
 // UkmHierarchicalTimeAggregator has to be created.
-class LocalFrameUkmAggregator {
+class CORE_EXPORT LocalFrameUkmAggregator {
  public:
   // Changing these values requires changing the names of metrics specified
   // below. For every metric name added here, add an entry in the
@@ -120,22 +120,32 @@ class LocalFrameUkmAggregator {
   };
 
  private:
+  friend class LocalFrameUkmAggregatorTest;
+
   // Add an entry in this arrray every time a new metric is added.
-  const String metric_strings_[kCount] = {
-      "Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
-      "PrePaint",    "StyleAndLayout",    "ForcedStyleAndLayout"};
+  static const Vector<String>& metric_strings() {
+    // Leaky construction to avoid exit-time destruction.
+    static const Vector<String>* strings = new Vector<String>{
+        "Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
+        "PrePaint",    "StyleAndLayout",    "ForcedStyleAndLayout"};
+    return *strings;
+  }
 
   // Modify this array if the UMA ratio metrics should be bucketed in a
   // different way.
-  const Vector<TimeDelta> bucket_thresholds_ = {TimeDelta::FromMilliseconds(1),
-                                                TimeDelta::FromMilliseconds(5)};
+  static const Vector<TimeDelta>& bucket_thresholds() {
+    // Leaky construction to avoid exit-time destruction.
+    static const Vector<TimeDelta>* thresholds = new Vector<TimeDelta>{
+        TimeDelta::FromMilliseconds(1), TimeDelta::FromMilliseconds(5)};
+    return *thresholds;
+  }
 
  public:
   // This class will start a timer upon creation, which will end when the
   // object is destroyed. Upon destruction it will record a sample into the
   // aggregator that created the scoped timer. It will also record an event
   // into the histogram counter.
-  class ScopedUkmHierarchicalTimer {
+  class CORE_EXPORT ScopedUkmHierarchicalTimer {
    public:
     ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&);
     ~ScopedUkmHierarchicalTimer();
