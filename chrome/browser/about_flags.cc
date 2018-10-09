@@ -4193,6 +4193,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"cct-module", flag_descriptions::kCCTModuleName,
      flag_descriptions::kCCTModuleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},
+    {"cct-module-cache", flag_descriptions::kCCTModuleCacheName,
+     flag_descriptions::kCCTModuleCacheDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleCache)},
 #endif
 
     {"enable-css-fragment-identifiers",
