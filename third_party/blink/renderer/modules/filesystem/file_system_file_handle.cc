@@ -18,24 +18,6 @@ namespace blink {
 
 namespace {
 
-class CreateWriterCallbacks
-    : public WebCallbacks<mojom::blink::FileWriterPtr, base::File::Error> {
- public:
-  explicit CreateWriterCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  void OnSuccess(mojom::blink::FileWriterPtr writer) override {
-    resolver_->Resolve(new FileSystemWriter(std::move(writer)));
-  }
-
-  void OnError(base::File::Error error) override {
-    resolver_->Reject(FileError::CreateDOMException(error));
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
 class OnDidCreateSnapshotFilePromise
     : public SnapshotFileCallback::OnDidCreateSnapshotFileCallback {
  public:
@@ -61,8 +43,19 @@ ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   FileSystemDispatcher::From(ExecutionContext::From(script_state))
-      .CreateFileWriter(filesystem()->CreateFileSystemURL(this),
-                        std::make_unique<CreateWriterCallbacks>(resolver));
+      .GetFileSystemManager()
+      .CreateWriter(
+          filesystem()->CreateFileSystemURL(this),
+          WTF::Bind(
+              [](ScriptPromiseResolver* resolver, base::File::Error result,
+                 mojom::blink::FileWriterPtr writer) {
+                if (result == base::File::FILE_OK) {
+                  resolver->Resolve(new FileSystemWriter(std::move(writer)));
+                } else {
+                  resolver->Reject(FileError::CreateDOMException(result));
+                }
+              },
+              WrapPersistent(resolver)));
   return result;
 }
 

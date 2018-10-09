@@ -45,11 +45,9 @@ namespace blink {
 
 class AsyncFileSystemCallbacks;
 class CallbackWrapper;
-class ChooseFileSystemEntriesOptions;
 class FileSystemClient;
 class ExecutionContext;
 class KURL;
-class ScriptPromiseResolver;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                               public Supplement<LocalFrame>,
@@ -76,9 +74,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                          long long size,
                          std::unique_ptr<AsyncFileSystemCallbacks>,
                          SynchronousType sync_type);
-
-  void ChooseEntry(ScriptPromiseResolver*,
-                   const ChooseFileSystemEntriesOptions& options);
 
   FileSystemClient& Client() const { return *client_; }
 

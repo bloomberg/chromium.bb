@@ -39,6 +39,8 @@ class FileSystemDispatcher
   static FileSystemDispatcher& From(ExecutionContext* context);
   virtual ~FileSystemDispatcher();
 
+  mojom::blink::FileSystemManager& GetFileSystemManager();
+
   void OpenFileSystem(const KURL& url,
                       mojom::blink::FileSystemType type,
                       std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
@@ -136,25 +138,11 @@ class FileSystemDispatcher
       const KURL& file_path,
       std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
 
-  using CreateFileWriterCallbacks =
-      WebCallbacks<mojom::blink::FileWriterPtr, base::File::Error>;
-  void CreateFileWriter(const KURL& file_path,
-                        std::unique_ptr<CreateFileWriterCallbacks>);
-
-  using ChooseEntryCallbacks =
-      WebCallbacks<Vector<mojom::blink::FileSystemEntryPtr>, base::File::Error>;
-  void ChooseEntry(mojom::blink::ChooseFileSystemEntryType,
-                   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr>,
-                   bool include_accepts_all,
-                   std::unique_ptr<ChooseEntryCallbacks> callbacks);
-
  private:
   class WriteListener;
   class ReadDirectoryListener;
 
   explicit FileSystemDispatcher(ExecutionContext& context);
-
-  mojom::blink::FileSystemManager& GetFileSystemManager();
 
   void DidOpenFileSystem(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
                          const String& name,

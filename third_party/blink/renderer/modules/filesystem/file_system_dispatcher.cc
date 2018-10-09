@@ -89,6 +89,21 @@ FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
 
 FileSystemDispatcher::~FileSystemDispatcher() = default;
 
+mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
+  if (!file_system_manager_ptr_) {
+    mojom::blink::FileSystemManagerRequest request =
+        mojo::MakeRequest(&file_system_manager_ptr_);
+    // Document::GetInterfaceProvider() can return null if the frame is
+    // detached.
+    if (GetSupplementable()->GetInterfaceProvider()) {
+      GetSupplementable()->GetInterfaceProvider()->GetInterface(
+          std::move(request));
+    }
+  }
+  DCHECK(file_system_manager_ptr_);
+  return *file_system_manager_ptr_;
+}
+
 void FileSystemDispatcher::OpenFileSystem(
     const KURL& origin_url,
     mojom::blink::FileSystemType type,
@@ -416,58 +431,6 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
   DidCreateSnapshotFile(std::move(callbacks), std::move(file_info),
                         std::move(platform_path), error_code,
                         std::move(listener));
-}
-
-void FileSystemDispatcher::CreateFileWriter(
-    const KURL& file_path,
-    std::unique_ptr<CreateFileWriterCallbacks> callbacks) {
-  GetFileSystemManager().CreateWriter(
-      file_path,
-      WTF::Bind(
-          [](std::unique_ptr<CreateFileWriterCallbacks> callbacks,
-             base::File::Error result, mojom::blink::FileWriterPtr writer) {
-            if (result != base::File::FILE_OK) {
-              callbacks->OnError(result);
-            } else {
-              callbacks->OnSuccess(std::move(writer));
-            }
-          },
-          std::move(callbacks)));
-}
-
-void FileSystemDispatcher::ChooseEntry(
-    mojom::blink::ChooseFileSystemEntryType type,
-    Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-    bool include_accepts_all,
-    std::unique_ptr<ChooseEntryCallbacks> callbacks) {
-  GetFileSystemManager().ChooseEntry(
-      type, std::move(accepts), include_accepts_all,
-      WTF::Bind(
-          [](std::unique_ptr<ChooseEntryCallbacks> callbacks,
-             base::File::Error result,
-             Vector<mojom::blink::FileSystemEntryPtr> entries) {
-            if (result != base::File::FILE_OK) {
-              callbacks->OnError(result);
-            } else {
-              callbacks->OnSuccess(std::move(entries));
-            }
-          },
-          std::move(callbacks)));
-}
-
-mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
-  if (!file_system_manager_ptr_) {
-    mojom::blink::FileSystemManagerRequest request =
-        mojo::MakeRequest(&file_system_manager_ptr_);
-    // Document::GetInterfaceProvider() can return null if the frame is
-    // detached.
-    if (GetSupplementable()->GetInterfaceProvider()) {
-      GetSupplementable()->GetInterfaceProvider()->GetInterface(
-          std::move(request));
-    }
-  }
-  DCHECK(file_system_manager_ptr_);
-  return *file_system_manager_ptr_;
 }
 
 void FileSystemDispatcher::DidOpenFileSystem(
