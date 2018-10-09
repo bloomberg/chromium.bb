@@ -1474,12 +1474,22 @@ void ThreadState::IncrementalMarkingStep() {
           << "IncrementalMarking: Step "
           << "Reason: " << GcReasonString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
-  bool complete = MarkPhaseAdvanceMarking(
+  const bool complete = MarkPhaseAdvanceMarking(
       CurrentTimeTicks() + next_incremental_marking_step_duration_);
-  if (complete && !IsUnifiedGCMarkingInProgress())
-    ScheduleIncrementalMarkingFinalize();
-  else
+  if (complete) {
+    if (IsUnifiedGCMarkingInProgress()) {
+      // If there are no more objects to mark for unified garbage collections
+      // just bail out of helping incrementally using tasks. V8 will drive
+      // further marking if new objects are discovered. Otherwise, just process
+      // the rest in the atomic pause.
+      DCHECK(IsUnifiedGCMarkingInProgress());
+      SetGCState(kNoGCScheduled);
+    } else {
+      ScheduleIncrementalMarkingFinalize();
+    }
+  } else {
     ScheduleIncrementalMarkingStep();
+  }
   DCHECK(IsMarkingInProgress());
 }
 
