@@ -176,10 +176,12 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
 
     TileDataEnc *const this_tile =
         &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
-    thread_data->td->tctx = &this_tile->tctx;
-    thread_data->td->mb.e_mbd.tile_ctx = thread_data->td->tctx;
-    thread_data->td->mb.backup_tile_ctx = &this_tile->backup_tctx;
-    av1_encode_tile(cpi, thread_data->td, tile_row, tile_col);
+    ThreadData *td = thread_data->td;
+
+    td->mb.e_mbd.tile_ctx = td->tctx;
+    td->mb.backup_tile_ctx = &this_tile->backup_tctx;
+    memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
+    av1_encode_tile(cpi, td, tile_row, tile_col);
   }
 
   return 1;
@@ -301,6 +303,10 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
       // Main thread acts as a worker and uses the thread data in cpi.
       thread_data->td = &cpi->td;
     }
+    if (cpi->row_mt == 1)
+      CHECK_MEM_ERROR(
+          cm, thread_data->td->tctx,
+          (FRAME_CONTEXT *)aom_memalign(16, sizeof(*thread_data->td->tctx)));
     winterface->sync(worker);
   }
 }
