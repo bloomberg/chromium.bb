@@ -36,6 +36,7 @@ import threading
 import time
 
 from blinkpy.common import exit_codes
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.path_finder import get_chromium_src_dir
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.profiler import SingleFileOutputProfiler
@@ -103,8 +104,7 @@ DEVICE_SOURCE_ROOT_DIR = '/data/local/tmp/'
 # 1. as a virtual path in file urls that will be bridged to HTTP.
 # 2. pointing to some files that are pushed to the device for tests that
 # don't work on file-over-http (e.g. blob protocol tests).
-DEVICE_WEBKIT_BASE_DIR = DEVICE_SOURCE_ROOT_DIR + 'third_party/WebKit/'
-DEVICE_LAYOUT_TESTS_DIR = DEVICE_WEBKIT_BASE_DIR + 'LayoutTests/'
+DEVICE_LAYOUT_TESTS_DIR = DEVICE_SOURCE_ROOT_DIR + RELATIVE_WEB_TESTS
 
 KPTR_RESTRICT_PATH = '/proc/sys/kernel/kptr_restrict'
 

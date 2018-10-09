@@ -39,6 +39,7 @@ from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.host import Host
 from blinkpy.common.host_mock import MockHost
+from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.common.system.system_host import SystemHost
 
@@ -487,7 +488,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(tests_run, ['passes/text.html'])
 
     def test_single_file_with_prefix(self):
-        tests_run = get_tests_run(['LayoutTests/passes/text.html'])
+        tests_run = get_tests_run([WEB_TESTS_LAST_COMPONENT + '/passes/text.html'])
         self.assertEqual(['passes/text.html'], tests_run)
 
     def test_stderr_is_saved(self):
@@ -517,7 +518,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_test_list_with_prefix(self):
         host = MockHost()
         filename = '/tmp/foo.txt'
-        host.filesystem.write_text_file(filename, 'LayoutTests/passes/text.html')
+        host.filesystem.write_text_file(filename, WEB_TESTS_LAST_COMPONENT + '/passes/text.html')
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
 

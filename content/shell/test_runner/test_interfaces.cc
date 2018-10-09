@@ -98,8 +98,14 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
                                              bool initial_configuration) {
   std::string spec = GURL(test_url).spec();
   size_t path_start = spec.rfind("LayoutTests/");
-  if (path_start != std::string::npos)
+  if (path_start != std::string::npos) {
     spec = spec.substr(path_start);
+  } else {
+    path_start = spec.rfind("web_tests/");
+    if (path_start != std::string::npos)
+      spec = spec.substr(path_start);
+  }
+
   bool is_devtools_test = spec.find("/devtools/") != std::string::npos;
   if (is_devtools_test) {
     test_runner_->SetDumpConsoleMessages(false);

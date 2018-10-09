@@ -95,6 +95,18 @@ def add_blink_tools_dir_to_sys_path():
         sys.path.append(path)
 
 
+def _does_blink_web_tests_exist():
+    return os.path.exists(os.path.join(get_chromium_src_dir(), 'third_party',
+                                       'blink', 'web_tests'))
+
+
+TESTS_IN_BLINK = _does_blink_web_tests_exist()
+# LayoutTests / web_tests path relative to the repository root.
+# Path separators are always '/', and this contains the trailing '/'.
+RELATIVE_WEB_TESTS = ('third_party/blink/web_tests/' if TESTS_IN_BLINK
+                      else 'third_party/WebKit/LayoutTests/')
+WEB_TESTS_LAST_COMPONENT = 'web_tests' if TESTS_IN_BLINK else 'LayoutTests'
+
 class PathFinder(object):
 
     def __init__(self, filesystem, sys_path=None, env_path=None):
@@ -107,7 +119,10 @@ class PathFinder(object):
     def chromium_base(self):
         return self._filesystem.dirname(self._filesystem.dirname(self._blink_base()))
 
+    # TODO(tkent): Rename this to web_tests_dir().
     def layout_tests_dir(self):
+        if TESTS_IN_BLINK:
+            return self.path_from_chromium_base('third_party', 'blink', 'web_tests')
         return self.path_from_chromium_base('third_party', 'WebKit', 'LayoutTests')
 
     def perf_tests_dir(self):

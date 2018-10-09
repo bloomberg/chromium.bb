@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -97,10 +98,18 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
     if (!base::PathExists(local_file)) {
       base::FilePath base_path;
       base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
-      local_file = base_path.Append(FILE_PATH_LITERAL("third_party"))
-                       .Append(FILE_PATH_LITERAL("WebKit"))
-                       .Append(FILE_PATH_LITERAL("LayoutTests"))
-                       .Append(local_file);
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kTestsInBlink)) {
+        local_file = base_path.Append(FILE_PATH_LITERAL("third_party"))
+                         .Append(FILE_PATH_LITERAL("blink"))
+                         .Append(FILE_PATH_LITERAL("web_tests"))
+                         .Append(local_file);
+      } else {
+        local_file = base_path.Append(FILE_PATH_LITERAL("third_party"))
+                         .Append(FILE_PATH_LITERAL("WebKit"))
+                         .Append(FILE_PATH_LITERAL("LayoutTests"))
+                         .Append(local_file);
+      }
     }
     test_url = net::FilePathToFileURL(base::MakeAbsoluteFilePath(local_file));
   }
