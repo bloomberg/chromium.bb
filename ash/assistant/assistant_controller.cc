@@ -217,6 +217,10 @@ void AssistantController::OnDeepLinkReceived(
       // will be included in the screenshot anyway.
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
+    case DeepLinkType::kTaskManager:
+      // Open task manager window.
+      Shell::Get()->new_window_controller()->ShowTaskManager();
+      break;
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
