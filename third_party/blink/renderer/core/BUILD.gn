@@ -1876,6 +1876,7 @@ jumbo_source_set("unit_tests") {
     "frame/frame_test_helpers.h",
     "frame/history_test.cc",
     "frame/local_frame_test.cc",
+    "frame/local_frame_ukm_aggregator_test.cc",
     "frame/local_frame_view_test.cc",
     "frame/mhtml_archive_test.cc",
     "frame/mhtml_loading_test.cc",
