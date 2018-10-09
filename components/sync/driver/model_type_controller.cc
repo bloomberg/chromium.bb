@@ -72,7 +72,7 @@ void ModelTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!model_load_callback.is_null());
+  DCHECK(model_load_callback);
   DCHECK_EQ(NOT_RUNNING, state_);
 
   auto it = delegate_map_.find(configure_context.storage_option);
@@ -146,7 +146,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
     state_ = FAILED;
   }
 
-  if (!model_load_callback_.is_null()) {
+  if (model_load_callback_) {
     model_load_callback_.Run(type(), error);
   }
 }
@@ -162,7 +162,7 @@ void ModelTypeController::OnProcessorStarted(
 }
 
 void ModelTypeController::RegisterWithBackend(
-    base::Callback<void(bool)> set_downloaded,
+    base::OnceCallback<void(bool)> set_downloaded,
     ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   if (activated_)
@@ -171,8 +171,8 @@ void ModelTypeController::RegisterWithBackend(
   DCHECK(activation_response_);
   DCHECK_EQ(MODEL_LOADED, state_);
   // Inform the DataTypeManager whether our initial download is complete.
-  set_downloaded.Run(
-      activation_response_->model_type_state.initial_sync_done());
+  std::move(set_downloaded)
+      .Run(activation_response_->model_type_state.initial_sync_done());
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
   // created and connected with ModelTypeProcessor.
   configurer->ActivateNonBlockingDataType(type(),
@@ -180,10 +180,9 @@ void ModelTypeController::RegisterWithBackend(
   activated_ = true;
 }
 
-void ModelTypeController::StartAssociating(
-    const StartCallback& start_callback) {
+void ModelTypeController::StartAssociating(StartCallback start_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!start_callback.is_null());
+  DCHECK(start_callback);
   DCHECK_EQ(MODEL_LOADED, state_);
 
   state_ = RUNNING;
@@ -191,7 +190,7 @@ void ModelTypeController::StartAssociating(
 
   // There is no association, just call back promptly.
   SyncMergeResult merge_result(type());
-  start_callback.Run(OK, merge_result, merge_result);
+  std::move(start_callback).Run(OK, merge_result, merge_result);
 }
 
 void ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
@@ -257,7 +256,7 @@ void ModelTypeController::Stop(ShutdownReason shutdown_reason,
       break;
 
     case MODEL_STARTING:
-      DCHECK(!model_load_callback_.is_null());
+      DCHECK(model_load_callback_);
       DCHECK(model_stop_callbacks_.empty());
       DLOG(WARNING) << "Deferring stop for " << ModelTypeToString(type())
                     << " because it's still starting";
@@ -283,15 +282,14 @@ DataTypeController::State ModelTypeController::state() const {
   return state_;
 }
 
-void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
+void ModelTypeController::GetAllNodes(AllNodesCallback callback) {
   DCHECK(delegate_);
-  delegate_->GetAllNodesForDebugging(callback);
+  delegate_->GetAllNodesForDebugging(std::move(callback));
 }
 
-void ModelTypeController::GetStatusCounters(
-    const StatusCountersCallback& callback) {
+void ModelTypeController::GetStatusCounters(StatusCountersCallback callback) {
   DCHECK(delegate_);
-  delegate_->GetStatusCountersForDebugging(callback);
+  delegate_->GetStatusCountersForDebugging(std::move(callback));
 }
 
 void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {

@@ -45,7 +45,7 @@ class FrontendDataTypeController : public DirectoryDataTypeController {
   // DataTypeController interface.
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  void StartAssociating(const StartCallback& start_callback) override;
+  void StartAssociating(StartCallback start_callback) override;
   void Stop(ShutdownReason shutdown_reason) override;
   State state() const override;
 

@@ -53,9 +53,9 @@ void AsyncDirectoryTypeController::LoadModels(
   model_load_callback_ = model_load_callback;
 
   if (state() != NOT_RUNNING) {
-    model_load_callback.Run(type(),
-                            SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                                      "Model already running", type()));
+    model_load_callback_.Run(type(),
+                             SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                                       "Model already running", type()));
     return;
   }
 
@@ -102,7 +102,7 @@ bool AsyncDirectoryTypeController::PostTaskOnModelThread(
 }
 
 void AsyncDirectoryTypeController::StartAssociating(
-    const StartCallback& start_callback) {
+    StartCallback start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
@@ -113,7 +113,7 @@ void AsyncDirectoryTypeController::StartAssociating(
   DCHECK(sync_client_->GetSyncService());
   user_share_ = sync_client_->GetSyncService()->GetUserShare();
 
-  start_callback_ = start_callback;
+  start_callback_ = std::move(start_callback);
   if (!StartAssociationAsync()) {
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                     "Failed to post StartAssociation", type());
@@ -202,7 +202,8 @@ void AsyncDirectoryTypeController::StartDone(
     RecordStartFailure(start_result);
   }
 
-  start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
+  std::move(start_callback_)
+      .Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void AsyncDirectoryTypeController::RecordStartFailure(ConfigureResult result) {
@@ -220,7 +221,7 @@ void AsyncDirectoryTypeController::RecordStartFailure(ConfigureResult result) {
 
 void AsyncDirectoryTypeController::DisableImpl(const SyncError& error) {
   DCHECK(CalledOnValidThread());
-  if (!model_load_callback_.is_null()) {
+  if (model_load_callback_) {
     model_load_callback_.Run(type(), error);
   }
 }
