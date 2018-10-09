@@ -642,6 +642,7 @@ if (rtc_include_tests) {
       "../../rtc_base:rtc_base_approved",
       "../../rtc_base/system:file_wrapper",
       "../../system_wrappers",
+      "../../system_wrappers:field_trial_default",
       "../../system_wrappers:metrics_default",
       "../../test:fileutils",
       "../../test:test_support",
@@ -662,6 +663,7 @@ if (rtc_include_tests) {
       "../..:webrtc_common",
       "../../rtc_base/system:file_wrapper",
       "../../system_wrappers",
+      "../../system_wrappers:field_trial_default",
       "../../system_wrappers:metrics_default",
     ]
   }
