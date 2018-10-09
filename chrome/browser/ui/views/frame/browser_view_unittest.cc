@@ -25,6 +25,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/webview/webview.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/recently_audible_helper.h"
+#endif
+
 namespace {
 
 // Tab strip bounds depend on the window frame sizes.
@@ -256,6 +260,38 @@ TEST_F(BrowserViewTest, AccessibleWindowTitle) {
           version_info::Channel::CANARY,
           TestingProfile::Builder().BuildIncognito(profile)));
 }
+
+#if defined(OS_MACOSX)
+// Tests that audio playing state is reflected in the "Window" menu on Mac.
+TEST_F(BrowserViewTest, TitleAudioIndicators) {
+  base::string16 playing_icon = base::WideToUTF16(L"\U0001F50A");
+  base::string16 muted_icon = base::WideToUTF16(L"\U0001F507");
+
+  AddTab(browser_view()->browser(), GURL("about:blank"));
+  content::WebContents* contents = browser_view()->GetActiveWebContents();
+  RecentlyAudibleHelper* audible_helper =
+      RecentlyAudibleHelper::FromWebContents(contents);
+
+  audible_helper->SetNotRecentlyAudibleForTesting();
+  EXPECT_EQ(browser_view()->GetWindowTitle().find(playing_icon),
+            base::string16::npos);
+  EXPECT_EQ(browser_view()->GetWindowTitle().find(muted_icon),
+            base::string16::npos);
+
+  audible_helper->SetCurrentlyAudibleForTesting();
+  EXPECT_NE(browser_view()->GetWindowTitle().find(playing_icon),
+            base::string16::npos);
+  EXPECT_EQ(browser_view()->GetWindowTitle().find(muted_icon),
+            base::string16::npos);
+
+  audible_helper->SetRecentlyAudibleForTesting();
+  contents->SetAudioMuted(true);
+  EXPECT_EQ(browser_view()->GetWindowTitle().find(playing_icon),
+            base::string16::npos);
+  EXPECT_NE(browser_view()->GetWindowTitle().find(muted_icon),
+            base::string16::npos);
+}
+#endif
 
 class BrowserViewHostedAppTest : public TestWithBrowserView {
  public:
