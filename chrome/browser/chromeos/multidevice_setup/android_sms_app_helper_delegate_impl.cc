@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -52,8 +53,7 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp(
   pending_app_manager_->Install(
       web_app::PendingAppManager::AppInfo(
           chromeos::android_sms::GetAndroidMessagesURLWithParams(),
-          web_app::PendingAppManager::LaunchContainer::kWindow,
-          web_app::PendingAppManager::InstallSource::kInternal,
+          web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal,
           web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
           true),  // override_previous_user_uninstall
       base::BindOnce(&AndroidSmsAppHelperDelegateImpl::OnAppInstalled,

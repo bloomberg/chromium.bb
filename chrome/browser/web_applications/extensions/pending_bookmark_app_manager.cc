@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/install_result_code.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -124,7 +125,7 @@ void PendingBookmarkAppManager::UninstallApps(
 }
 
 std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
-    InstallSource install_source) const {
+    web_app::InstallSource install_source) const {
   return web_app::ExtensionIdsMap::GetInstalledAppUrls(profile_,
                                                        install_source);
 }

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/common/pref_names.h"
@@ -87,24 +88,22 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
            launch_container->GetString() == kLaunchContainerWindowValue ||
            launch_container->GetString() == kLaunchContainerTabValue);
 
-    PendingAppManager::LaunchContainer container;
+    LaunchContainer container;
     if (!launch_container)
-      container = PendingAppManager::LaunchContainer::kDefault;
+      container = LaunchContainer::kDefault;
     else if (launch_container->GetString() == kLaunchContainerWindowValue)
-      container = PendingAppManager::LaunchContainer::kWindow;
+      container = LaunchContainer::kWindow;
     else
-      container = PendingAppManager::LaunchContainer::kTab;
+      container = LaunchContainer::kTab;
 
     // There is a separate policy to create shortcuts/pin apps to shelf.
-    apps_to_install.emplace_back(
-        GURL(url.GetString()), container,
-        web_app::PendingAppManager::InstallSource::kExternalPolicy,
-        false /* create_shortcuts */);
+    apps_to_install.emplace_back(GURL(url.GetString()), container,
+                                 web_app::InstallSource::kExternalPolicy,
+                                 false /* create_shortcuts */);
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(apps_to_install),
-      PendingAppManager::InstallSource::kExternalPolicy);
+      std::move(apps_to_install), InstallSource::kExternalPolicy);
 }
 
 }  // namespace web_app

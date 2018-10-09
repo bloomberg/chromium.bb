@@ -13,6 +13,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
@@ -107,12 +108,12 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
                                 WebappInstallSource::MENU_BROWSER_TAB);
 
   switch (app_info_.launch_container) {
-    case web_app::PendingAppManager::LaunchContainer::kDefault:
+    case web_app::LaunchContainer::kDefault:
       break;
-    case web_app::PendingAppManager::LaunchContainer::kTab:
+    case web_app::LaunchContainer::kTab:
       helper_->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
       break;
-    case web_app::PendingAppManager::LaunchContainer::kWindow:
+    case web_app::LaunchContainer::kWindow:
       helper_->set_forced_launch_type(LAUNCH_TYPE_WINDOW);
       break;
   }
@@ -120,14 +121,14 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   switch (app_info_.install_source) {
     // TODO(nigeltao/ortuno): should these two cases lead to different
     // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-    case web_app::PendingAppManager::InstallSource::kInternal:
-    case web_app::PendingAppManager::InstallSource::kExternalDefault:
+    case web_app::InstallSource::kInternal:
+    case web_app::InstallSource::kExternalDefault:
       helper_->set_is_default_app();
       break;
-    case web_app::PendingAppManager::InstallSource::kExternalPolicy:
+    case web_app::InstallSource::kExternalPolicy:
       helper_->set_is_policy_installed_app();
       break;
-    case web_app::PendingAppManager::InstallSource::kSystemInstalled:
+    case web_app::InstallSource::kSystemInstalled:
       helper_->set_is_system_app();
       break;
   }

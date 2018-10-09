@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -49,13 +50,13 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   static const web_app::PendingAppManager::AppInfo test_app_infos[] = {
       web_app::PendingAppManager::AppInfo(
           GURL("https://www.chromestatus.com/features"),
-          web_app::PendingAppManager::LaunchContainer::kTab,
-          web_app::PendingAppManager::InstallSource::kExternalDefault,
+          web_app::LaunchContainer::kTab,
+          web_app::InstallSource::kExternalDefault,
           /* create_shortcuts */ true),
       web_app::PendingAppManager::AppInfo(
           GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
-          web_app::PendingAppManager::LaunchContainer::kWindow,
-          web_app::PendingAppManager::InstallSource::kExternalDefault,
+          web_app::LaunchContainer::kWindow,
+          web_app::InstallSource::kExternalDefault,
           /* create_shortcuts */ false),
   };
   for (const auto& app_info : test_app_infos) {

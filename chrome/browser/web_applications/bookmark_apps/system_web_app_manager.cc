@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/common/chrome_features.h"
@@ -56,26 +57,21 @@ void SystemWebAppManager::StartAppInstallation() {
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(apps_to_install),
-      PendingAppManager::InstallSource::kSystemInstalled);
+      std::move(apps_to_install), InstallSource::kSystemInstalled);
 }
 
 std::vector<PendingAppManager::AppInfo>
 SystemWebAppManager::CreateSystemWebApps() {
-  std::vector<web_app::PendingAppManager::AppInfo> app_infos;
+  std::vector<PendingAppManager::AppInfo> app_infos;
 
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
   app_infos.emplace_back(
-      GURL(chrome::kChromeUIDiscoverURL),
-      web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kSystemInstalled,
-      false /* create_shortcuts */);
+      GURL(chrome::kChromeUIDiscoverURL), LaunchContainer::kWindow,
+      InstallSource::kSystemInstalled, false /* create_shortcuts */);
   app_infos.emplace_back(
-      GURL(chrome::kChromeUISettingsURL),
-      web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kSystemInstalled,
-      false /* create_shortcuts */);
+      GURL(chrome::kChromeUISettingsURL), LaunchContainer::kWindow,
+      InstallSource::kSystemInstalled, false /* create_shortcuts */);
 #endif  // OS_CHROMEOS
 
   return app_infos;

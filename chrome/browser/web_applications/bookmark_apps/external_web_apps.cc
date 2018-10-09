@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -136,26 +137,24 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       continue;
     }
 
-    web_app::PendingAppManager::LaunchContainer launch_container =
-        web_app::PendingAppManager::LaunchContainer::kTab;
+    auto launch_container = web_app::LaunchContainer::kTab;
     std::string launch_container_str;
     if (!dict_value->GetString(kLaunchContainer, &launch_container_str)) {
       VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
     if (launch_container_str == kLaunchContainerTab) {
-      launch_container = web_app::PendingAppManager::LaunchContainer::kTab;
+      launch_container = web_app::LaunchContainer::kTab;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      launch_container = web_app::PendingAppManager::LaunchContainer::kWindow;
+      launch_container = web_app::LaunchContainer::kWindow;
     } else {
       VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
 
-    app_infos.emplace_back(
-        std::move(app_url), launch_container,
-        web_app::PendingAppManager::InstallSource::kExternalDefault,
-        create_shortcuts);
+    app_infos.emplace_back(std::move(app_url), launch_container,
+                           web_app::InstallSource::kExternalDefault,
+                           create_shortcuts);
   }
 
   return app_infos;
