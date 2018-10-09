@@ -1726,7 +1726,6 @@ void MediaControlsImpl::OnVolumeChange() {
   // Update visibility of volume controls.
   // TODO(mlamouri): it should not be part of the volumechange handling because
   // it is using audio availability as input.
-  BatchedControlUpdate batch(this);
   if (volume_slider_) {
     volume_slider_->SetVolume(MediaElement().muted() ? 0
                                                      : MediaElement().volume());
@@ -1742,6 +1741,12 @@ void MediaControlsImpl::OnVolumeChange() {
     mute_button_->SetIsWanted(MediaElement().HasAudio());
     mute_button_->removeAttribute(HTMLNames::disabledAttr);
   }
+
+  // On modern media controls, if the volume slider is being used we don't want
+  // to update controls visiblity, since this can shift the position of the
+  // volume slider and make it unusable.
+  if (!IsModern() || !volume_slider_ || !volume_slider_->IsHovered())
+    BatchedControlUpdate batch(this);
 }
 
 void MediaControlsImpl::OnFocusIn() {

@@ -630,3 +630,14 @@ function enableImmersiveMode(t) {
     internals.settings.setImmersiveModeEnabled(oldImmersive);
   });
 }
+
+function setPreferHiddenVolumeControlsForTest(t, preferHidden) {
+  if (!window.internals)
+    return;
+
+  const oldSetting = internals.settings.preferHiddenVolumeControls;
+  internals.settings.setPreferHiddenVolumeControls(preferHidden);
+  t.add_cleanup(() => {
+    internals.settings.setPreferHiddenVolumeControls(oldSetting);
+  });
+}
