@@ -144,8 +144,6 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
 
   if (!IsStyleCacheable(style))
     return false;
-  if (style.StyleType() != kPseudoIdNone && parent_style.Unique())
-    return false;
   // The cache assumes static knowledge about which properties are inherited.
   // Without a flat tree parent, StyleBuilder::ApplyProperty will not
   // SetHasExplicitlyInheritedProperties on the parent style.
