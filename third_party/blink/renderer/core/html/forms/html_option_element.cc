@@ -268,12 +268,12 @@ void HTMLOptionElement::SetDirty(bool value) {
 }
 
 void HTMLOptionElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLElement::ChildrenChanged(change);
   if (HTMLDataListElement* data_list = OwnerDataListElement())
     data_list->OptionElementChildrenChanged();
   else if (HTMLSelectElement* select = OwnerSelectElement())
     select->OptionElementChildrenChanged(*this);
   UpdateLabel();
-  HTMLElement::ChildrenChanged(change);
 }
 
 HTMLDataListElement* HTMLOptionElement::OwnerDataListElement() const {
