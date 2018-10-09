@@ -120,6 +120,13 @@ class LoadVkStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
+class LoadVkDesktopStory2018(_LoadingStory):
+  NAME = 'load:social:vk:2018'
+  URL = 'https://vk.com/sbeatles'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadInstagramDesktopStory(_LoadingStory):
   NAME = 'load:social:instagram'
   URL = 'https://www.instagram.com/selenagomez/'
