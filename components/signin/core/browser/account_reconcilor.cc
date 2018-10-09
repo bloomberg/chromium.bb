@@ -437,10 +437,13 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
   DCHECK(base::FeatureList::IsEnabled(kUseMultiloginEndpoint));
 
   signin::MultiloginMode mode;
-  if (delegate_->ShouldUpdateAccountsOrderInCookies())
+  if (delegate_->ShouldUpdateAccountsOrderInCookies()) {
+    // UPDATE mode can happen only if sync is enabled.
+    DCHECK(!primary_account.empty());
     mode = signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER;
-  else
+  } else {
     mode = signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER;
+  }
 
   std::vector<std::string> accounts_to_send;
   if (delegate_->ReorderChromeAccountsForReconcileIfNeeded(
@@ -450,12 +453,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
   }
 
-  VLOG(1) << "AccountReconcilor::FinishReconcileWithMultiloginEndpoint "
-          << "in mode: "
-          << (mode == signin::MultiloginMode::
-                          MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER
-                  ? "UPDATE"
-                  : "PRESERVE");
+  signin_metrics::RecordAccountsPerProfile(chrome_accounts.size());
   // TODO (valeriyas): Write correct first gaia account to cache for desktop.
   if (!is_reconcile_started_)
     delegate_->OnReconcileFinished(primary_account, reconcile_is_noop_);

@@ -348,6 +348,10 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                                     bool is_first_reconcile,
                                     int pre_count_gaia_cookies);
 
+// Logs to UMA histograms how many accounts are in the browser for this
+// profile.
+void RecordAccountsPerProfile(int total_number_accounts);
+
 // Logs duration of a single execution of AccountReconciler to UMA histograms.
 // |duration| - How long execution of AccountReconciler took.
 // |successful| - True if AccountReconciler was successful.
