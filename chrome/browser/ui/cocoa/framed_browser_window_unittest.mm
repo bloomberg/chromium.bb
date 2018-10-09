@@ -9,7 +9,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

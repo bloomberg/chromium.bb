@@ -48,13 +48,6 @@ jumbo_split_static_library("ui") {
     cocoa_browser_sources = [
       "cocoa/browser_dialogs_views_mac.cc",
       "cocoa/browser_dialogs_views_mac.h",
-      "cocoa/browser_window_cocoa.h",
-      "cocoa/browser_window_cocoa.mm",
-      "cocoa/browser_window_controller.h",
-      "cocoa/browser_window_controller.mm",
-      "cocoa/browser_window_controller_private.h",
-      "cocoa/browser_window_controller_private.mm",
-      "cocoa/browser_window_factory_cocoa.mm",
       "cocoa/browser_window_layout.h",
       "cocoa/browser_window_layout.mm",
       "cocoa/browser_window_utils.h",
