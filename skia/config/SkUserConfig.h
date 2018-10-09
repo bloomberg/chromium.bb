@@ -162,6 +162,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
 #endif
 
+#define SK_LEGACY_4F_XFERMODES
+
 #ifndef SK_SUPPORT_LEGACY_AAA_CHOICE
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
