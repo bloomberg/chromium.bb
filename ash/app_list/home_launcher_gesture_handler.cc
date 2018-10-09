@@ -369,10 +369,12 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 
   if (is_final_state_show) {
     ScopedAnimationDisabler disable(window_);
+    window_->Hide();
     wm::GetWindowState(window_)->Minimize();
 
     if (window2_) {
       ScopedAnimationDisabler disable(window2_);
+      window2_->Hide();
       wm::GetWindowState(window2_)->Minimize();
     }
 
@@ -381,6 +383,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     std::reverse(hidden_windows_.begin(), hidden_windows_.end());
     for (auto* window : hidden_windows_) {
       ScopedAnimationDisabler disable(window);
+      window->Hide();
       wm::GetWindowState(window)->Minimize();
     }
   } else {
