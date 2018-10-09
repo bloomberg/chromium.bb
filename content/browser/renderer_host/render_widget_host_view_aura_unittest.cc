@@ -3643,15 +3643,15 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Make [0] hidden, it should stop waiting.
   views[0]->Hide();
 
-  // Make [1] hidden, resize it. It should drop its frame.
+  // Make [1] hidden, resize it. It should advance its fallback.
   views[1]->Hide();
-  // TODO(samans): Fix this expectation once https://crbug.com/878372 is fixed.
-  EXPECT_FALSE(views[1]->HasFallbackSurface());
   gfx::Size size2(200, 200);
   views[1]->SetSize(size2);
-  EXPECT_FALSE(views[1]->HasFallbackSurface());
   // Show it, it should block until we give it a frame.
   views[1]->Show();
+  ASSERT_TRUE(views[1]->window_->layer()->GetFallbackSurfaceId());
+  EXPECT_EQ(*views[1]->window_->layer()->GetFallbackSurfaceId(),
+            *views[1]->window_->layer()->GetPrimarySurfaceId());
   views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id1, 1.f, frame_size));
 
@@ -5919,13 +5919,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
       viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
-  // TODO(samans): Fix these expectations once https://crbug.com/878372 is
-  // fixed.
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
   view_->Hide();
   view_->SetSize(gfx::Size(54, 32));
   view_->Show();
-  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
+  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
+  EXPECT_EQ(*view_->window_->layer()->GetFallbackSurfaceId(),
+            *view_->window_->layer()->GetPrimarySurfaceId());
 }
 
 // If a tab is hidden and shown without being resized in the meantime, the
@@ -5942,14 +5941,15 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       gfx::Rect());
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
-  // TODO(samans): Fix these expectations once https://crbug.com/878372 is
-  // fixed.
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
+  // Force fallback being set.
+  view_->DidNavigate();
+  view_->ResetFallbackToFirstNavigationSurface();
+  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
+  viz::SurfaceId fallback = *view_->window_->layer()->GetFallbackSurfaceId();
   view_->Hide();
   view_->Show();
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId());
+  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
+  EXPECT_EQ(fallback, *view_->window_->layer()->GetPrimarySurfaceId());
 }
 
 // Check that TakeFallbackContentFrom() copies the fallback SurfaceId and

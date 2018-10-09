@@ -204,6 +204,16 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
 void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
   if (!content_layer_)
     return;
+  // Don't update the fallback if it's already newer than the first id after
+  // navigation.
+  if (content_layer_->fallback_surface_id() &&
+      content_layer_->fallback_surface_id()->frame_sink_id() ==
+          frame_sink_id_ &&
+      content_layer_->fallback_surface_id()
+          ->local_surface_id()
+          .IsSameOrNewerThan(first_local_surface_id_after_navigation_)) {
+    return;
+  }
   content_layer_->SetFallbackSurfaceId(
       viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
@@ -293,16 +303,18 @@ void DelegatedFrameHostAndroid::EmbedSurface(
 
   viz::SurfaceId current_primary_surface_id =
       content_layer_->primary_surface_id();
+  viz::SurfaceId new_primary_surface_id(frame_sink_id_,
+                                        pending_local_surface_id_);
 
   if (!frame_evictor_->visible()) {
-    // If the tab is resized while hidden, reset the fallback so that the next
+    // If the tab is resized while hidden, advance the fallback so that the next
     // time user switches back to it the page is blank. This is preferred to
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (pending_surface_size_in_pixels_ != content_layer_->bounds() &&
         content_layer_->fallback_surface_id() &&
         content_layer_->fallback_surface_id()->is_valid()) {
-      content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
+      content_layer_->SetFallbackSurfaceId(new_primary_surface_id);
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
     // renderers that do not submit CompositorFrames. Next time the renderer
@@ -326,9 +338,8 @@ void DelegatedFrameHostAndroid::EmbedSurface(
         deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
       }
     }
-    viz::SurfaceId primary_surface_id(frame_sink_id_,
-                                      pending_local_surface_id_);
-    content_layer_->SetPrimarySurfaceId(primary_surface_id, deadline_policy);
+    content_layer_->SetPrimarySurfaceId(new_primary_surface_id,
+                                        deadline_policy);
     content_layer_->SetBounds(new_pending_size_in_pixels);
   }
 }

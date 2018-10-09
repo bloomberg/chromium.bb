@@ -1158,8 +1158,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<FlingSchedulerBase> fling_scheduler_;
 
-  bool did_receive_first_frame_after_navigation_ = true;
-
   bool sent_autoscroll_scroll_begin_ = false;
   gfx::PointF autoscroll_start_position_;
 
