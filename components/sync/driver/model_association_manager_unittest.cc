@@ -46,7 +46,7 @@ FakeDataTypeController* GetController(
 
 ACTION_P(VerifyResult, expected_result) {
   EXPECT_EQ(arg0.status, expected_result.status);
-  EXPECT_EQ(expected_result.requested_types, arg0.requested_types);
+  EXPECT_EQ(arg0.requested_types, expected_result.requested_types);
 }
 
 class SyncModelAssociationManagerTest : public testing::Test {
@@ -621,11 +621,183 @@ TEST_F(SyncModelAssociationManagerTest, KeepsMetadataForPreferredDataType) {
   model_association_manager.Initialize(desired_types, preferred_types,
                                        ConfigureContext());
 
-  EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::RUNNING);
-  EXPECT_EQ(GetController(controllers_, APPS)->state(),
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
             DataTypeController::NOT_RUNNING);
   EXPECT_EQ(0, GetController(controllers_, APPS)->clear_metadata_call_count());
+}
+
+// Test that Initialize stops controllers with CLEAR_METADATA for
+// no-longer-preferred types.
+TEST_F(SyncModelAssociationManagerTest, ClearsMetadataForNotPreferredDataType) {
+  // Associate model with two data types.
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  ModelTypeSet preferred_types(BOOKMARKS, APPS);
+  ModelTypeSet desired_types = preferred_types;
+
+  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK,
+                                                   desired_types);
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(expected_result));
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       ConfigureContext());
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+  GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::RUNNING);
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  // Disable one data type.
+  preferred_types.Remove(APPS);
+  desired_types.Remove(APPS);
+
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       ConfigureContext());
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(1, GetController(controllers_, APPS)->clear_metadata_call_count());
+}
+
+TEST_F(SyncModelAssociationManagerTest,
+       SwitchFromOnDiskToInMemoryRestartsTypes) {
+  // Associate model with two data types.
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  ModelTypeSet preferred_types(BOOKMARKS, APPS);
+  ModelTypeSet desired_types = preferred_types;
+
+  ConfigureContext configure_context;
+  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(DataTypeManager::ConfigureResult(
+          DataTypeManager::OK, desired_types)));
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       configure_context);
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+  GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::RUNNING);
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  // Switch to in-memory storage.
+  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  desired_types.Remove(APPS);
+  preferred_types.Remove(APPS);
+
+  // Data types should get restarted.
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(DataTypeManager::ConfigureResult(
+          DataTypeManager::OK, desired_types)));
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       configure_context);
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::NOT_RUNNING);
+  // Since we switched to in-memory storage, the metadata for the now-disabled
+  // type should NOT get cleared.
+  EXPECT_EQ(0, GetController(controllers_, APPS)->clear_metadata_call_count());
+}
+
+TEST_F(SyncModelAssociationManagerTest,
+       SwitchFromInMemoryToOnDiskRestartsTypes) {
+  // Associate model with two data types.
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  ModelTypeSet preferred_types(BOOKMARKS, APPS);
+  ModelTypeSet desired_types = preferred_types;
+
+  ConfigureContext configure_context;
+  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(DataTypeManager::ConfigureResult(
+          DataTypeManager::OK, desired_types)));
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       configure_context);
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+  GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::RUNNING);
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  // Switch to on-disk storage.
+  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  desired_types.Remove(APPS);
+  preferred_types.Remove(APPS);
+
+  // Data types should get restarted.
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(DataTypeManager::ConfigureResult(
+          DataTypeManager::OK, desired_types)));
+
+  model_association_manager.Initialize(desired_types, preferred_types,
+                                       configure_context);
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::NOT_RUNNING);
+  // The metadata for the now-disabled type should get cleared.
+  EXPECT_EQ(1, GetController(controllers_, APPS)->clear_metadata_call_count());
 }
 
 }  // namespace syncer
