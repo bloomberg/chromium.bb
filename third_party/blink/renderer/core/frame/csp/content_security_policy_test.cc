@@ -1415,4 +1415,35 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
   EXPECT_FALSE(csp->AllowTrustedTypePolicy("'three'"));
 }
 
+TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
+  KURL example_url("http://example.com");
+  KURL not_example_url("http://not-example.com");
+
+  // Directive name is case insensitive.
+  csp = ContentSecurityPolicy::Create();
+  csp->DidReceiveHeader("sCrIpt-sRc http://example.com",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  csp->BindToExecutionContext(execution_context.Get());
+
+  EXPECT_TRUE(csp->AllowScriptFromSource(
+      example_url, String(), IntegrityMetadataSet(), kParserInserted));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      not_example_url, String(), IntegrityMetadataSet(), kParserInserted));
+
+  // Duplicate directive that is in a different case pattern is
+  // correctly treated as a duplicate directive and ignored.
+  csp = ContentSecurityPolicy::Create();
+  csp->DidReceiveHeader(
+      "SCRipt-SRC http://example.com; script-src http://not-example.com;",
+      kContentSecurityPolicyHeaderTypeEnforce,
+      kContentSecurityPolicyHeaderSourceHTTP);
+  csp->BindToExecutionContext(execution_context.Get());
+
+  EXPECT_TRUE(csp->AllowScriptFromSource(
+      example_url, String(), IntegrityMetadataSet(), kParserInserted));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      not_example_url, String(), IntegrityMetadataSet(), kParserInserted));
+}
+
 }  // namespace blink
