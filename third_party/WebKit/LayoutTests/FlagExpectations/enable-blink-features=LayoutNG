@@ -86,7 +86,6 @@ crbug.com/591099 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-conte
 crbug.com/591099 external/wpt/css/css-text/white-space/pre-wrap-002.html [ Pass ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-004.html [ Pass ]
-crbug.com/591099 external/wpt/css/css-transforms/transform-transformed-tr-percent-height-child.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-transitions/properties-value-003.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-transitions/properties-value-implicit-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-010.html [ Pass ]
