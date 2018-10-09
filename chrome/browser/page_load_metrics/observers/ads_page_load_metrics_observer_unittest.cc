@@ -22,8 +22,10 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
+#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -36,6 +38,7 @@
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/host_port_pair.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 using content::TestNavigationThrottle;
@@ -270,6 +273,25 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
         nullptr, /* data_reduction_proxy_data */
         content::RESOURCE_TYPE_SUB_FRAME, 0, nullptr /* load_timing_info */);
     tester_->SimulateLoadedResource(request);
+  }
+
+  void ResourceDataUpdate(int resource_size_in_kbyte,
+                          std::string mime_type,
+                          bool is_ad_resource) {
+    std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+    page_load_metrics::mojom::ResourceDataUpdatePtr resource =
+        page_load_metrics::mojom::ResourceDataUpdate::New();
+    resource->received_data_length = resource_size_in_kbyte;
+    resource->delta_bytes = resource_size_in_kbyte;
+    resource->reported_as_ad_resource = is_ad_resource;
+    resource->is_complete = true;
+    resource->mime_type = mime_type;
+    resources.push_back(std::move(resource));
+    tester_->SimulateResourceDataUseUpdate(resources);
+  }
+
+  void TimingUpdate(const page_load_metrics::mojom::PageLoadTiming& timing) {
+    tester_->SimulateTimingUpdate(timing);
   }
 
   page_load_metrics::PageLoadMetricsObserverTester* tester() {
@@ -705,4 +727,54 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   TestHistograms(histogram_tester(), std::vector<ExpectedFrameBytes>(),
                  0u /* non_ad_cached_kb */, 0u /* non_ad_uncached_kb */,
                  AdType::SUBRESOURCE_FILTER);
+}
+
+// UKM metrics for ad page load are recorded correctly.
+TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  NavigateMainFrame(kNonAdUrl);
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::Now();
+  timing.response_start = base::TimeDelta::FromSeconds(0);
+  timing.interactive_timing->interactive = base::TimeDelta::FromSeconds(0);
+  PopulateRequiredTimingFields(&timing);
+  TimingUpdate(timing);
+  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
+                     "application/javascript" /* mime_type */,
+                     false /* is_ad_resource */);
+  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
+                     "application/javascript" /* mime_type */,
+                     true /* is_ad_resource */);
+  ResourceDataUpdate(10 << 10 /* resource_size_in_kbyte */,
+                     "video/webm" /* mime_type */, true /* is_ad_resource */);
+  NavigateMainFrame(kNonAdUrl);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdPageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kTotalBytesName),
+            30);
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdBytesName),
+            20);
+  EXPECT_EQ(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdJavascriptBytesName),
+      10);
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
+            10);
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
+      0);
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(),
+          ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName),
+      0);
 }

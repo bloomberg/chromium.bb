@@ -22,11 +22,14 @@
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -376,6 +379,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        RecordedMimeMetrics) {
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "chrome/test/data/ad_tagging");
   content::SetupCrossSiteRedirector(embedded_test_server());
@@ -385,9 +389,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
+  ui_test_utils::NavigateToURL(browser(), url);
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createFrame('multiple_mimes.html', 'test');"));
   waiter->AddMinimumAdResourceExpectation(8);
@@ -405,4 +408,29 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Image", 1);
   histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Video", 1);
   histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Mime.Other", 1);
+
+  // Verify UKM Metrics recorded.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdPageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntrySourceHasUrl(entries.front(), url);
+  EXPECT_GT(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdBytesName),
+            0);
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
+      0);
+
+  // TTI is not reached by this page and thus should not have this recorded.
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entries.front(),
+      ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName));
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kAdJavascriptBytesName),
+      0);
+  EXPECT_GT(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
+            0);
 }
