@@ -90,7 +90,8 @@ const GestureSourceType = {
 // TODO(bokan): This isn't really instant but high enough that it works for
 // current purposes. This should be replaced with the Infinity value and
 // the synthetic gesture code modified to guarantee the single update behavior.
-const SPEED_INSTANT = 200000;
+// https://crbug.com/893608
+const SPEED_INSTANT = 400000;
 
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible) {
   return new Promise((resolve, reject) => {
