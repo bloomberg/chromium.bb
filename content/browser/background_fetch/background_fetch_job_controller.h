@@ -94,11 +94,6 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Returns the number of requests that comprise the whole job.
   int total_downloads() const { return total_downloads_; }
 
-  // If |failure_reason_| is none, overwrites it with |failure_reason|, and
-  // returns the new value.
-  blink::mojom::BackgroundFetchFailureReason MergeFailureReason(
-      blink::mojom::BackgroundFetchFailureReason failure_reason);
-
   base::WeakPtr<BackgroundFetchJobController> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -119,7 +114,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
   TakeOutstandingRequests() override;
   void Abort(
-      blink::mojom::BackgroundFetchFailureReason failure_reason) override;
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort) override;
 
  private:
   // Performs mixed content checks on the |request| for Background Fetch.
@@ -172,7 +167,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   int completed_downloads_ = 0;
 
   // The reason background fetch was aborted.
-  blink::mojom::BackgroundFetchFailureReason failure_reason_ =
+  blink::mojom::BackgroundFetchFailureReason reason_to_abort_ =
       blink::mojom::BackgroundFetchFailureReason::NONE;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;

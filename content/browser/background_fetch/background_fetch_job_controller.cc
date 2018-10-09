@@ -13,8 +13,6 @@
 
 namespace content {
 
-using blink::mojom::BackgroundFetchFailureReason;
-
 BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDelegateProxy* delegate_proxy,
     BackgroundFetchScheduler* scheduler,
@@ -199,7 +197,7 @@ BackgroundFetchJobController::NewRegistration(
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
       0 /* upload_total */, 0 /* uploaded */, total_downloads_size_,
-      complete_requests_downloaded_bytes_cache_, result, failure_reason_);
+      complete_requests_downloaded_bytes_cache_, result, reason_to_abort_);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
@@ -207,8 +205,8 @@ uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
 }
 
 void BackgroundFetchJobController::Abort(
-    BackgroundFetchFailureReason failure_reason) {
-  failure_reason_ = failure_reason;
+    blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
+  reason_to_abort_ = reason_to_abort;
 
   // Stop propagating any in-flight events to the scheduler.
   active_request_finished_callback_.Reset();
@@ -216,14 +214,7 @@ void BackgroundFetchJobController::Abort(
   // Cancel any in-flight downloads and UI through the BGFetchDelegate.
   delegate_proxy_->Abort(registration_id().unique_id());
 
-  Finish(failure_reason_);
-}
-
-BackgroundFetchFailureReason BackgroundFetchJobController::MergeFailureReason(
-    BackgroundFetchFailureReason failure_reason) {
-  if (failure_reason_ == BackgroundFetchFailureReason::NONE)
-    failure_reason_ = failure_reason;
-  return failure_reason_;
+  Finish(reason_to_abort);
 }
 
 }  // namespace content
