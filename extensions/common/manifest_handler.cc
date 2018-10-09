@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/manifest_permission.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
@@ -87,7 +86,6 @@ bool ManifestHandler::ParseExtension(Extension* extension,
 bool ManifestHandler::ValidateExtension(const Extension* extension,
                                         std::string* error,
                                         std::vector<InstallWarning>* warnings) {
-  base::AssertBlockingAllowed();
   return ManifestHandlerRegistry::Get()->ValidateExtension(extension, error,
                                                            warnings);
 }

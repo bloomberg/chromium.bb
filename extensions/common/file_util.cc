@@ -25,7 +25,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -405,9 +404,7 @@ bool CheckForWindowsReservedFilenames(const base::FilePath& extension_dir,
 base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
   // We do file IO in this function, but only when the current profile's
   // Temp directory has never been used before, or in a rare error case.
-  // Developers are not likely to see these situations often, so do an
-  // explicit thread check.
-  base::AssertBlockingAllowed();
+  // Developers are not likely to see these situations often.
 
   // Create the temp directory as a sub-directory of the Extensions directory.
   // This guarantees it is on the same file system as the extension's eventual
