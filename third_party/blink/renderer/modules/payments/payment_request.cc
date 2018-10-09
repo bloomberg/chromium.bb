@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -539,6 +540,10 @@ void CountPaymentRequestNetworkNameInSupportedMethod(
 bool IsValidMethodFormat(const String& identifier) {
   KURL url(NullURL(), identifier);
   if (url.IsValid()) {
+    // Allow localhost payment method for test.
+    if (SecurityOrigin::Create(url)->IsLocalhost())
+      return true;
+
     // URL PMI validation rules:
     // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
     return url.Protocol() == "https" && url.User().IsEmpty() &&
