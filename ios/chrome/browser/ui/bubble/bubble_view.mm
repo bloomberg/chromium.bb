@@ -29,8 +29,6 @@ const CGFloat kBubbleCornerRadius = 13.0f;
 // The maximum label width preserves readability, ensuring that long labels do
 // not span across wide screens.
 const CGFloat kMaxLabelWidth = 359.0f;
-// Font size for the bubble's display text.
-const CGFloat kFontSize = 15.0f;
 
 // Margin between the bubble view's bounds and its content. This margin is on
 // all sides of the bubble.
@@ -165,7 +163,7 @@ const CGFloat kControlPointEnd = 0.514375;
   DCHECK(text.length);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   [label setText:text];
-  [label setFont:[UIFont systemFontOfSize:kFontSize]];
+  [label setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
   [label setTextColor:[UIColor whiteColor]];
   [label setTextAlignment:NSTextAlignmentCenter];
   [label setNumberOfLines:0];
