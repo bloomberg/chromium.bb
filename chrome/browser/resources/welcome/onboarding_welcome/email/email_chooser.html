@@ -48,7 +48,9 @@
       <button active$="[[getSelected_(item, selectedEmailProvider_)]]"
           on-click="onEmailClick_" on-pointerdown="onEmailPointerDown_"
           on-keyup="onEmailKeyUp_" class="option">
-        <div class$="[[item.icon]] option-icon"></div>
+        <div class="option-icon-shadow">
+          <div class$="[[item.icon]] option-icon"></div>
+        </div>
         <div class="option-name">[[item.name]]</div>
         <iron-icon icon="cr:check"></iron-icon>
       </button>
