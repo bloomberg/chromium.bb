@@ -100,9 +100,9 @@ bool ShouldHandleAsSignedHTTPExchange(
     return false;
   std::unique_ptr<blink::TrialTokenValidator> validator =
       std::make_unique<blink::TrialTokenValidator>();
-  return validator->RequestEnablesFeature(request_url, head.headers.get(),
-                                          features::kSignedHTTPExchange.name,
-                                          base::Time::Now());
+  return validator->RequestEnablesFeature(
+      request_url, head.headers.get(),
+      features::kSignedHTTPExchangeOriginTrial.name, base::Time::Now());
 }
 
 base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
