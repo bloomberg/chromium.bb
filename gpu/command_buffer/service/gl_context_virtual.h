@@ -50,7 +50,6 @@ class GPU_GLES2_EXPORT GLContextVirtual : public gl::GLContext {
 #if defined(OS_MACOSX)
   uint64_t BackpressureFenceCreate() override;
   void BackpressureFenceWait(uint64_t fence) override;
-  void FlushForDriverCrashWorkaround() override;
 #endif
 
  protected:

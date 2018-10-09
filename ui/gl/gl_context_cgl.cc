@@ -229,8 +229,8 @@ constexpr uint64_t kInvalidFenceId = 0;
 uint64_t GLContextCGL::BackpressureFenceCreate() {
   TRACE_EVENT0("gpu", "GLContextCGL::BackpressureFenceCreate");
 
-  // This flush will trigger a crash if FlushForDriverCrashWorkaround is not
-  // called sufficiently frequently.
+  // This flush may trigger a crash due to driver instability.
+  // https://crbug.com/863817
   glFlush();
 
   if (gl::GLFence::IsSupported()) {
@@ -285,12 +285,6 @@ void GLContextCGL::BackpressureFenceWait(uint64_t fence_id) {
   // remove them.
   while (backpressure_fences_.begin()->first < fence_id)
     backpressure_fences_.erase(backpressure_fences_.begin());
-}
-
-void GLContextCGL::FlushForDriverCrashWorkaround() {
-  if (!context_ || CGLGetCurrentContext() != context_)
-    return;
-  glFlush();
 }
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
