@@ -785,6 +785,11 @@ void PaintLayerScrollableArea::DeregisterForAnimation() {
 
 bool PaintLayerScrollableArea::UserInputScrollable(
     ScrollbarOrientation orientation) const {
+  if (orientation == kVerticalScrollbar &&
+      GetLayoutBox()->GetDocument().IsVerticalScrollEnforced()) {
+    return false;
+  }
+
   if (GetLayoutBox()->IsIntrinsicallyScrollable(orientation))
     return true;
 
