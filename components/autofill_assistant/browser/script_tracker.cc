@@ -18,6 +18,7 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
     : delegate_(delegate),
       listener_(listener),
       running_checks_(false),
+      must_recheck_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
@@ -35,8 +36,10 @@ void ScriptTracker::SetAndCheckScripts(
 }
 
 void ScriptTracker::CheckScripts() {
-  if (running_checks_)
+  if (running_checks_) {
+    must_recheck_ = true;
     return;
+  }
   running_checks_ = true;
 
   RunPreconditionChecksSequentially(available_scripts_.begin());
@@ -94,6 +97,10 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   running_checks_ = false;
   if (runnables_changed) {
     listener_->OnRunnableScriptsChanged(runnable_scripts_);
+  }
+  if (must_recheck_) {
+    must_recheck_ = false;
+    CheckScripts();
   }
 }
 

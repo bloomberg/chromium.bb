@@ -92,6 +92,7 @@ class Controller : public ScriptExecutorDelegate,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void WebContentsDestroyed() override;
+  void DocumentAvailableInMainFrame() override;
 
   // Overrides content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,

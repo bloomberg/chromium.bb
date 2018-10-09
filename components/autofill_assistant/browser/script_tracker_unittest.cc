@@ -269,4 +269,32 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   ASSERT_THAT(runnable_script_paths(), ElementsAre("script path"));
 }
 
+TEST_F(ScriptTrackerTest, DuplicateCheckCalls) {
+  SupportsScriptResponseProto scripts;
+  AddScript(&scripts, "runnable name", "runnable path", "exists");
+
+  base::OnceCallback<void(bool)> captured_callback;
+  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
+      .WillOnce(CaptureOnceCallback<1>(&captured_callback))
+      .WillOnce(RunOnceCallback<1>(false));
+  SetAndCheckScripts(scripts);
+
+  // At this point, since the callback hasn't been run, there's still a check in
+  // progress. The three calls to CheckScripts will trigger one call to
+  // CheckScript right after first_call has run.
+  for (int i = 0; i < 3; i++) {
+    tracker_.CheckScripts();
+  }
+
+  EXPECT_THAT(runnable_scripts(), IsEmpty());
+  ASSERT_TRUE(captured_callback);
+  std::move(captured_callback).Run(true);
+
+  // The second check is run right away, after the first check, say that the
+  // element doesn't exist anymore, and we end up again with an empty
+  // runnable_scripts.
+  EXPECT_THAT(runnable_scripts(), IsEmpty());
+  EXPECT_EQ(2, runnable_scripts_changed_);
+}
+
 }  // namespace autofill_assistant
