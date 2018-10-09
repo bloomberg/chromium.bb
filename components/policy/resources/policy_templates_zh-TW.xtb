@@ -568,9 +568,6 @@
       如果未設定這項政策，或是將這項政策設為「不要針對成人內容篩選網站」，網站將不會經過篩選。
 
       如果將這項政策設為「針對成人內容篩選頂層網站」，被判定為含有色情內容的網站就會遭到篩除。</translation>
-<translation id="2485721741875148980">如果將這項政策設為 true，使用者必須以自己的設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 false。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章。
-
-      如果將這項政策設為 false 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
 <translation id="2486371469462493753">不強制要求列出的網址符合憑證透明化規定。
 
       這項政策可讓指定的網址中的主機名稱不依憑證透明化規定公開憑證。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續使用，但系統會因此而不容易偵測到這些主機誤用憑證的情形。
@@ -838,6 +835,7 @@
 
           如未設定這項政策，則使用者可自行選擇 Proxy 設定。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
+<translation id="3211426942294667684">瀏覽器登入設定</translation>
 <translation id="3213821784736959823">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
 
       如果你將這項政策設為 True，系統就會使用內建 DNS 用戶端 (如果可用)。
@@ -1093,6 +1091,15 @@
       如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將使用一般的預設目錄 (依平台區分)。
 
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
+<translation id="3904459740090265495">這項政策可控制瀏覽器的登入行為。你可以指定使用者是否能用個人帳戶登入 <ph name="PRODUCT_NAME" /> 並使用帳戶相關服務 (例如 Chrome 同步功能)。
+
+      如果將這項政策設為「禁止登入瀏覽器」，使用者便無法登入瀏覽器及使用帳戶提供的服務。在這種情況下，瀏覽器層級的功能 (例如 Chrome 同步功能) 是無法使用的。將這項政策設為「禁止登入瀏覽器」之後，原先已登入瀏覽器的使用者會在下次執行 Chrome 時被登出，不過，他們的本機設定檔資料 (例如書籤、密碼等) 仍會保留在裝置上。使用者仍然可以登入並使用 Gmail 之類的 Google 網路服務。
+
+      如果將這項政策設為「允許登入瀏覽器」，使用者便能登入瀏覽器，而且當他們登入 Gmail 之類的 Google 網路服務時，也會自動登入瀏覽器。在登入瀏覽器的狀態下，瀏覽器會保留使用者的帳戶資料。不過，Chrome 同步功能不會預設開啟，使用者必須另外選擇啟用這項功能。啟用這項政策後，使用者將無法關閉允許登入瀏覽器的設定。如要管理能否使用 Chrome 同步功能，請使用「SyncDisabled」政策。
+
+      如果將這項政策設為「強制登入瀏覽器」，使用者便會看到帳戶選項對話方塊，而且必須選擇要登入哪個帳戶使用瀏覽器。這樣可確保系統在所有受管理的帳戶中套用並強制執行相關政策。根據預設，這會開啟帳戶的 Chrome 同步功能 (除非網域管理員已停用同步功能，或是另外設定了「SyncDisabled」政策)。BrowserGuestModeEnabled 的預設值將設為 False。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章：https://support.google.com/chrome/a/answer/7572556.
+
+      如果未設定這項政策，使用者則可以決定是否要啟用瀏覽器登入選項，並視情況使用。</translation>
 <translation id="3907986150060929099">為公開工作階段設定建議的語言代碼</translation>
 <translation id="3911737181201537215">這項政策對 Android 應用程式執行的登入作業沒有影響。</translation>
 <translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
@@ -1137,6 +1144,7 @@
 
       請注意，如果將 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，系統會忽略這項政策並一律停用 Google 定位服務。</translation>
 <translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
+<translation id="408076456549153854">允許登入瀏覽器</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
 <translation id="4088983553732356374">可讓您設定是否允許網站設定本機資料。您可以允許所有網站都能設定本機資料，也可以禁止所有網站設定本機資料。
 
@@ -1444,6 +1452,7 @@
 <translation id="4962262530309732070">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法讓使用者從使用者管理工具建立新設定檔。</translation>
+<translation id="4970855112942626932">禁止登入瀏覽器</translation>
 <translation id="4971529314808359013">允許您以清單列出網址模式，指定 <ph name="PRODUCT_NAME" /> 應自動選取用戶端憑證的網站 (如果網站要求憑證的話)。
 
           這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須是 { "pattern": "$URL_PATTERN", "filter" : $FILTER } (其中的 $URL_PATTERN 是內容設定模式，$FILTER 則限定瀏覽器自動選取的用戶端憑證)。無論是否設定篩選條件，瀏覽器只會選取符合伺服器憑證要求的憑證。如果 $FILTER 的格式為 { "ISSUER": { "CN": "$ISSUER_CN" } }，則瀏覽器只會選取 CommonName 為 $ISSUER_CN 的憑證所核發的用戶端憑證。如果 $FILTER 是空白的字典 {}，那麼瀏覽器在選擇客戶端憑證時就不會受到額外限制。
@@ -1539,11 +1548,6 @@
 
       如果未設定這項政策，或是將這項政策設為空白字串或無效的通訊埠範圍，WebRTC 即可使用任何可用的本機 UDP 通訊埠。</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
-<translation id="5302612588919538756">這項政策已不適用，請考慮改用 SyncDisabled。
-
-      允許使用者登入 <ph name="PRODUCT_NAME" />。
-
-      如果設定這項政策，您可以設定是否允許使用者登入 <ph name="PRODUCT_NAME" />。如果將這項政策設為「False」，將會導致使用 chrome.identity API 的應用程式和擴充功能無法運作，因此建議您改用 SyncDisabled。</translation>
 <translation id="5304269353650269372">指定裝置處於電池供電環境時，要在於使用者停止輸入多少時間長度後顯示警告對話方塊。
 
           如果設定這項政策，使用者必須在指定的時間長度內保持閒置，<ph name="PRODUCT_OS_NAME" /> 才會顯示警告對話方塊，將系統即將採取的閒置動作告知使用者。
@@ -1831,6 +1835,7 @@
 
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
 <translation id="6083631234867522991">Windows (Windows 用戶端)：</translation>
+<translation id="6091233616732024397">強制使用者登入才能使用瀏覽器</translation>
 <translation id="6093156968240188330">允許遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
 <translation id="6095999036251797924">指定時間長度，如果系統在 AC 電源或電池供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
@@ -1898,6 +1903,11 @@
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
 <translation id="6376659517206731212">可強制實行</translation>
+<translation id="6377355597423503887">這項政策已被淘汰，請考慮改用 BrowserSignin。
+
+      允許使用者登入 <ph name="PRODUCT_NAME" />。
+
+      如果設定這項政策，你可以設定是否允許使用者登入 <ph name="PRODUCT_NAME" />。將這項政策設為「False」後，將會導致使用 chrome.identity API 的應用程式和擴充功能無法運作，因此建議你改用 SyncDisabled。</translation>
 <translation id="6378076389057087301">指定會影響電源管理的音訊活動</translation>
 <translation id="637934607141010488">回報最近登入的裝置使用者清單。
 
@@ -2804,6 +2814,11 @@
 <translation id="8548832052135586762">設定僅限彩色列印、僅限單色列印，或是不限制色彩模式。如未設定這項政策，系統會視為未設限制。</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
+<translation id="857369585509260201">這項政策已被淘汰，請考慮改用 BrowserSignin。
+
+      如果將這項政策設為 True，使用者必須以自己的設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 False。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定無法再使用。詳情請參閱說明中心文章。
+
+      如果將這項政策設為 False 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
 <translation id="8586528890725660268">指定哪些印表機是禁止使用的。
 
       只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_BLACKLIST" /> 的情況下，這項政策才有作用。

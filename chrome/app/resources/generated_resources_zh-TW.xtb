@@ -1049,7 +1049,6 @@
 <translation id="2558896001721082624">一律在系統選單中顯示協助工具選項</translation>
 <translation id="2562685439590298522">文件</translation>
 <translation id="2562743677925229011">未登入「<ph name="SHORT_PRODUCT_NAME" />」</translation>
-<translation id="2563856802393254086">恭喜你！你的「<ph name="NAME" />」數據服務已啟用，隨時可供使用。</translation>
 <translation id="2564520396658920462">透過 AppleScript 執行 JavaScript 的功能已關閉。如要開啟，請在選單列中依序前往 [檢視] &gt; [開發人員] &gt; [允許 Apple 事件的 JavaScript]。詳情請見：https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">進階拼字檢查功能</translation>
 <translation id="2566124945717127842">Powerwash 會將你的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置重設並恢復為原廠設定。</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2667463864537187133">管理拼字檢查</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">這個網頁所含的功能目前與 VR 不相容。正在結束 VR 模式...</translation>
-<translation id="2670531586141364277">必須連上網路才能啟用「<ph name="NAME" />」。</translation>
 <translation id="2671451824761031126">現在可以使用你的書籤和設定了</translation>
 <translation id="2672142220933875349">crx 檔案損毀，無法解除封裝。</translation>
 <translation id="2672394958563893062">發生錯誤，按一下即可重新從頭播放。</translation>
@@ -1169,7 +1167,6 @@
 <translation id="2724841811573117416">WebRTC 記錄</translation>
 <translation id="2725200716980197196">網路連線已恢復</translation>
 <translation id="2726934403674109201">(共 <ph name="COUNT" /> 個項目)</translation>
-<translation id="2727176303594781056">網路啟用錯誤</translation>
 <translation id="2727633948226935816">不要再提醒我</translation>
 <translation id="2727712005121231835">實際大小</translation>
 <translation id="273093730430620027">這個網頁正在存取你的攝影機。</translation>
@@ -1326,7 +1323,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (擴充功能已提供)</translation>
 <translation id="2961695502793809356">按一下到下一頁，按住可查看記錄</translation>
 <translation id="2963151496262057773">下列外掛程式無回應：<ph name="PLUGIN_NAME" /> 您要停止執行嗎？</translation>
-<translation id="2966449113954629791">你可能已用盡行動數據配額。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
 <translation id="2966937470348689686">管理 Android 偏好設定</translation>
 <translation id="2971213274238188218">調低亮度鍵</translation>
 <translation id="2972557485845626008">韌體</translation>

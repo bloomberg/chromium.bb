@@ -591,9 +591,6 @@
       Kapag hindi naka-configure o nakatakda sa "Huwag mag-filter ng mga site para sa pang-adult na content" ang patakarang ito, hindi mafi-filter ang mga site.
 
       Kapag nakatakda ang patakarang ito sa "Mag-filter ng mga nangungunang site para sa pang-adult na content," ifi-filter ang mga site na itinuturing na pornographic.</translation>
-<translation id="2485721741875148980">Kung nakatakda sa true ang patakarang ito, kailangang mag-sign in ng user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago magamit ang browser. Itatakda rin sa false ang default na value ng BrowserGuestModeEnabled. Tandaan na ila-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang pakatarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center.
-
-      Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring gamitin ng user ang browser nang hindi nagsa-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate sa mga nakalistang URL.
 
       Pinapayagan ng patakarang ito na hindi ihayag ang mga certificate para sa mga hostname sa mga natukoy na URL sa pamamagitan ng Transparency ng Certificate. Nagbibigay-daan ito sa mga certificate, na maaaring maituring na hindi mapagkakatiwalaan dahil hindi maayos na naihayag sa publiko, upang patuloy na magamit, ngunit mas nagiging mahirap na matukoy ang mga certificate na hindi nagamit nang maayos para sa mga host na iyon.
@@ -872,6 +869,7 @@
 
           Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3205825995289802549">I-maximize ang unang window ng browser sa unang pagtakbo</translation>
+<translation id="3211426942294667684">Mga setting ng pag-sign in sa browser</translation>
 <translation id="3213821784736959823">Kinokontrol kung gagamitin ang built-in na DNS client sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa true ang patakarang ito, gagamitin ang built-in na DNS client, kung available.
@@ -1135,6 +1133,15 @@
       Kung hindi mo itatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang karaniwang default na directory nito (partikular sa platform).
 
       Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga magagamit na variable.</translation>
+<translation id="3904459740090265495">Kinokontrol ng patakarang ito ang gawi sa pag-sign in ng browser. Nagbibigay-daan ito sa iyong tukuyin kung ang user ay maaaring mag-sign in sa <ph name="PRODUCT_NAME" /> gamit ang kanyang account at gumamit ng mga serbisyong nauugnay sa account tulad ng Chrome sync.
+
+      Kung itatakda ang patakaran sa "I-disable ang pag-sign in sa browser," ang user ay hindi maaaring mag-sign in sa browser at gumamit ng mga serbisyong nakabatay sa account. Sa ganitong sitwasyon, hindi magagamit at hindi magiging available ang mga feature sa antas ng browser tulad ng Chrome sync. Kung naka-sign in ang user at nakatakda ang patakaran sa "Naka-disable," masa-sign out siya sa susunod na magpatakbo siya ng Chrome ngunit mapapanatili ang kanyang lokal na data ng profile tulad ng mga bookmark, password, etc. Magagawa pa rin ng user na mag-sign in sa at gumamit ng mga serbisyo sa web ng Google tulad ng Gmail.
+
+      Kung itatakda ang patakaran sa "I-enable ang pag-sign in sa browser," papayagan ang user na mag-sign in sa browser at awtomatiko siyang masa-sign in sa browser kapag nag-sign in sa mga serbisyo sa web ng Google tulad ng Gmail. Ang pagiging naka-sign in sa browser ay nangangahulugang pananatilihin ng browser ang impormasyon ng account ng user. Gayunpaman, hindi ito nangangahulugang mao-on bilang default ang Chrome sync; dapat ay hiwalay na mag-opt in ang user para magamit ang feature na ito. Kapag na-enable ang patakarang ito, mapipigilan ang user na i-off ang setting na nagbibigay-daan sa pag-sign in sa browser. Para makontrol ang availability ng Chrome sync, gamitin ang patakarang "SyncDisabled."
+
+      Kung itatakda ang patakaran sa "Pwersahin ang pag-sign in sa browser," papakitaan ng dialog sa pagpili ng account ang user at kailangan niyang pumili at mag-sign in sa isang account para magamit ang browser. Tinitiyak nitong malalapat at mapapatupad ang mga patakarang nauugnay sa account para sa mga pinamamahalaang account. Bilang default, ino-on nito ang Chrome sync para sa account, maliban sa sitwasyon kung saan ang pag-sync ay na-disable ng admin ng domain o sa pamamagitan ng patakarang "SyncDisabled." Itatakda sa false ang default na value ng BrowserGuestModeEnabled. Tandaang mala-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang patakarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center: https://support.google.com/chrome/a/answer/7572556.
+
+      Kung hindi itatakda ang patakarang ito, maaaring magpasya ang user kung gusto niyang i-enable ang opsyon sa pag-sign in sa browser at gamitin ito sa paraang naaangkop para sa kanya.</translation>
 <translation id="3907986150060929099">Itakda ang mga inirerekumendang lokal para sa isang pampublikong session</translation>
 <translation id="3911737181201537215">Walang epekto ang patakarang ito sa pag-log na ginawa ng Android.</translation>
 <translation id="391531815696899618">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag nakatakda sa True. Sa sitwasyong iyon, walang data na maa-upload sa Google Drive.
@@ -1181,6 +1188,7 @@
 
       Tandaang babalewalain ang patakarang ito at idi-disable ang mga serbisyo ng lokasyon ng Google anumang oras kapag nakatakda sa <ph name="BLOCK_GEOLOCATION_SETTING" /> ang patakarang <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />.</translation>
 <translation id="408029843066770167">Payagan ang mga query sa isang serbisyo ng oras ng Google</translation>
+<translation id="408076456549153854">I-enable ang pag-sign in sa browser</translation>
 <translation id="4088589230932595924">Pinuwersa ang mode na incognito</translation>
 <translation id="4088983553732356374">Nagbibigay-daan sa iyong itakda kung maaari bang magtakda ng lokal na data ang mga website. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagtatakda ng lokal na data.
 
@@ -1496,6 +1504,7 @@
 <translation id="4962262530309732070">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
 
       Kung nakatakda sa false ang patakarang ito, hindi papayagan ng <ph name="PRODUCT_NAME" /> ang paggawa ng mga bagong profile mula sa user manager.</translation>
+<translation id="4970855112942626932">I-disable ang pag-sign in sa browser</translation>
 <translation id="4971529314808359013">Pinapayagan kang tukuyin ang isang listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatiko dapat na pumili ang <ph name="PRODUCT_NAME" /> ng client certificate, kung kailangan ng site ng isang certificate.
 
           Ang value ay dapat na isang array ng stringified na mga diksyunaryong JSON. Ang bawat diksyunaryo ay dapat na mayroong anyong { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kung saan ang $URL_PATTERN ay isang pattern ng setting ng content. Nililimitahan ng $FILTER kung aling mga client certificate ang awtomatikong pipiliin ng browser. Anuman ang filter, ang mga certificate na tumutugma sa kahilingan sa certificate ng server ang pipiliin. Kung ang $FILTER ay may anyong { "ISSUER": { "CN": "$ISSUER_CN" } }, mga client certificate na ibinigay ng isang certificate na may CommonName $ISSUER_CN lang ang pipiliin. Kung ang $FILTER ay ang walang lamang diksyunaryo na {}, hindi na nililimitahan ang pagpili ng mga client certificate.
@@ -1605,11 +1614,6 @@
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
-<translation id="5302612588919538756">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang SyncDisabled.
-
-      Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.
-
-      Kung itatakda mo ang patakarang ito, magagawa mong i-configure kung maaari bang mag-sign in ang isang user sa <ph name="PRODUCT_NAME" />. Kapag itinakda ang patakarang ito sa 'False,' hindi gagana ang mga app at extension na gumagamit ng chrome.identity API, kaya mainam kung SyncDisabled na lang ang gagamitin mo.</translation>
 <translation id="5304269353650269372">Tinutukoy ang haba ng panahon nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng baterya.
 
           Kapag naitakda ang patakarang ito, tinutukoy nito ang haba ng panahon na dapat manatiling idle ang user bago magpakita ang <ph name="PRODUCT_OS_NAME" /> ng dialog ng babala na nagsasabi sa user na gagawin na ang pagkilos kapag idle.
@@ -1910,6 +1914,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
 <translation id="6083631234867522991">Windows (mga Windows client):</translation>
+<translation id="6091233616732024397">Pwersahin ang mga user na mag-sign in para magamit ang browser</translation>
 <translation id="6093156968240188330">Binibigyang-daan ang mga remote na user na makipag-ugnayan sa mga elevated window sa mga session ng remote na tulong</translation>
 <translation id="6095999036251797924">Tinutukoy kung gaano katagal dapat na walang input mula sa user bago ma-lock ang screen kapag AC power o baterya ang ginagamit
 
@@ -1983,6 +1988,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6368011194414932347">I-configure ang URL ng home page</translation>
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>
 <translation id="6376659517206731212">Maaaring Mandatoryo</translation>
+<translation id="6377355597423503887">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang BrowserSignin.
+
+      Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.
+
+      Kung itatakda mo ang patakarang ito, mako-configure mo kung papayagan ang isang user na mag-sign in sa <ph name="PRODUCT_NAME" />. Kapag itinakda ang patakarang ito sa 'False,' hindi gagana ang mga app at extension na gumagamit ng chrome.identity API, kaya mainam kung SyncDisabled na lang ang gagamitin mo.</translation>
 <translation id="6378076389057087301">Tukuyin kung nakakaapekto ang aktibidad ng audio sa pamamahala ng power</translation>
 <translation id="637934607141010488">Iulat ang listahan ng mga user ng device na kamakailang nag-log in.
 
@@ -2928,6 +2938,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8548832052135586762">Itinatakda ang pag-print sa may kulay lang, monochrome lang, o walang paghihigpit sa color mode. Itinuturing na walang paghihigpit ang hindi nakatakdang patakaran.</translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
+<translation id="857369585509260201">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang BrowserSignin.
+
+      Kung itatakda ang patakarang ito sa true, kailangang mag-sign in ang user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago gamitin ang browser. Gayundin, itatakda sa false ang default na value ng BrowserGuestModeEnabled. Tandaang mala-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang patakarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center.
+
+      Kung itatakda sa false o hindi iko-configure ang patakarang ito, magagamit ng user ang browser nang hindi nagsa-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
 
       Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_BLACKLIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.

@@ -581,9 +581,6 @@
       Jos käytäntöä ei ole määritetty tai sen arvoksi on asetettu Älä suodata vain aikuisille suunnattua sisältöä sivustoilta, sivustoja ei suodateta.
 
       Jos käytännön arvoksi on määritetty Suodata vain aikuisille suunnattua sisältöä ylimmän tason sivustoilta, pornografisiksi luokitellut sivustot suodatetaan.</translation>
-<translation id="2485721741875148980">Jos tämän käytännön arvoksi on määritetty tosi, käyttäjän on kirjauduttava kohteeseen <ph name="PRODUCT_NAME" /> omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään epätosi. Aiemmin luodut profiilit, joihin ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on päällä. Lue lisää ohjekeskuksen artikkelista.
-
-      Jos tämän käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, selainta voi käyttää ilman <ph name="PRODUCT_NAME" /> ‑kirjautumista.</translation>
 <translation id="2486371469462493753">Poistaa Certificate Transparency ‑noudattamisvaatimukset luettelon URL-osoitteilta.
 
       Tähän käytäntöön listattujen URL-osoitteiden isäntänimien ei tarvitse luovuttaa tietoja Certificate Transparency ‑menettelyllä. Tämän seurauksena myös sellaisia varmenteita, jotka estettäisiin puutteellisten tietojen vuoksi, voidaan jatkossa käyttää. Samalla näiden isäntänimien vilpillisesti myönnettyjen varmenteiden tunnistaminen vaikeutuu.
@@ -851,6 +848,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
           Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3205825995289802549">Suurenna ensimmäinen selainikkuna käynnistyksen yhteydessä</translation>
+<translation id="3211426942294667684">Selaimen kirjautumisasetukset</translation>
 <translation id="3213821784736959823">Hallinnoi, käytetäänkö tuotteessa <ph name="PRODUCT_NAME" /> sisäänrakennettua DNS-asiakassovellusta.
 
 Jos tämän käytännön arvo on true, sisäänrakennettua DNS-asiakassovellusta käytetään sen ollessa saatavilla.
@@ -1108,6 +1106,16 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos et ota tätä käytäntöä käyttöön, <ph name="PRODUCT_NAME" /> käyttää tavallista oletushakemistoaan (käyttöympäristökohtainen).
 
       Osoitteessa https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables on lista käytettävissä olevista muuttujista.</translation>
+<translation id="3904459740090265495">Tällä käytännöllä hallitaan selaimen kirjautumiskäyttäytymistä. Sillä voit valita, voiko käyttäjä suorittaa <ph name="PRODUCT_NAME" /> ‑kirjautumisen tilillään ja käyttää tähän liittyviä palveluita, kuten Chromen synkronointia.
+
+      Jos käytännön arvo on Estä kirjautuminen selaimelle, käyttäjä ei voi kirjautua selaimelle tai käyttää tilipohjaisia palveluita. Tällöin selaintason palvelut kuten Chromen synkronointi eivät ole käytettävissä. Jos käyttäjä oli kirjautuneena, kun käytännön arvoksi valittiin Estä, hänet kirjataan ulos seuraavalla Chromen suorituskerralla. Paikallinen profiilidata, esimerkiksi kirjanmerkit ja salasanat, säilytetään silti. Käyttäjä voi kirjautua Googlen verkkopalveluihin (esim. Gmail) ja käyttää niitä.
+
+      Jos käytännön arvo on Salli kirjautuminen selaimelle, käyttäjä voi kirjautua selaimelle, ja hänet kirjataan automaattisesti selaimelle Gmailiin tai muihin Googlen verkkopalveluihin kirjautumisen yhteydessä. Kun käyttäjä on kirjautunut selaimelle, se tallentaa hänen tilitietonsa. Chromen synkronointi ei kuitenkaan ole käytössä oletuksena, vaan käyttäjän on otettava tämä ominaisuus käyttöön erikseen. Tämän käytännön voimaantulo estää käyttäjää kytkemästä päälle asetusta, joka sallii selaimelle kirjautumisen. Voit päättää Chromen synkronoinnin saatavuudesta SyncDisabled-käytännöllä.
+
+      Jos käytännön arvo on Pakota kirjautumaan selaimelle, käyttäjälle näytetään tilinvalintaikkuna, ja hänen täytyy valita tili ja kirjautua sisään käyttääkseen selainta. Näin varmistetaan, että tilin käytäntöjä noudatetaan hallinnoiduilla tileillä. Samalla Chromen synkronointi otetaan oletuksena käyttöön tilillä, paitsi jos synkronointi on verkkotunnuksen 
+ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-käytännön arvoksi asetetaan Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lisätietoja on artikkelissa https://support.google.com/chrome/a/answer/7572556.
+
+      Jos tälle käytännölle ei määritetä arvoa, käyttäjä voi valita, otetaan selaimelle kirjautuminen käyttöön, ja käyttää ominaisuutta haluamallaan tavalla.</translation>
 <translation id="3907986150060929099">Asettaa julkisten käyttökertojen suositellut kielet</translation>
 <translation id="3911737181201537215">Tällä käytännöllä ei ole vaikutusta Androidin tekemään lokikirjaukseen.</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
@@ -1152,6 +1160,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Huomaa, että tämä käytäntö ohitetaan ja Googlen sijaintipalvelut ovat aina poissa käytöstä, kun käytännön <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> arvoksi on asetettu <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Salli kyselyt Googlen aikapalveluun</translation>
+<translation id="408076456549153854">Salli kirjautuminen selaimelle</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
 
@@ -1459,6 +1468,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 
       Jos tämän käytännön arvoksi on määritetty epätosi, <ph name="PRODUCT_NAME" /> ei salli käyttäjien hallinnan luovan uusia profiileja.</translation>
+<translation id="4970855112942626932">Estä kirjautuminen selaimelle</translation>
 <translation id="4971529314808359013">Antaa käyttäjän määrittää listan URL-osoitemalleista, joita vastaaville sivustoille <ph name="PRODUCT_NAME" /> valitsee automaattisesti asiakasvarmenteen sivuston pyytäessä varmennetta.
 
           Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.
@@ -1554,11 +1564,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Jos käytäntöä ei määritetä tai sen arvo on tyhjä merkkijono tai virheellinen porttiväli, WebRTC voi käyttää kaikkia käytettävissä olevia paikallisia UDP-portteja.</translation>
 <translation id="5290940294294002042">Määritä laajennukset, jotka käyttäjä voi ottaa käyttöön tai poistaa käytöstä</translation>
-<translation id="5302612588919538756">Tämä käytäntö on vanhentunut, ja sen sijaan tulee harkita käytäntöä SyncDisabled.
-
-      Määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjän kirjautumisen.
-
-      Tällä käytännöllä voit määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjien kirjautumisen. Jos käytännön arvo on Epätosi, chrome.identity-sovellusliittymää käyttävät sovellukset ja laajennukset eivät toimi, joten sen tilalla suositellaan käytäntöä SyncDisabled.</translation>
 <translation id="5304269353650269372">Määrittää käyttämättömyysajan, jonka jälkeen näytetään varoitus käytettäessä akkuvirtaa.
 
           Kun käytäntö on asetettu, se määrittää, kuinka kauan laitteen on oltava käyttämättömänä ennen kuin <ph name="PRODUCT_OS_NAME" /> näyttää varoituksen suoritettavasta toiminnosta.
@@ -1844,6 +1849,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
 <translation id="6083631234867522991">Windows (Windows-asiakkaat):</translation>
+<translation id="6091233616732024397">Pakota käyttäjät kirjautumaan selaimelle</translation>
 <translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
@@ -1911,6 +1917,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6368011194414932347">Määritä etusivun URL-osoite</translation>
 <translation id="6368403635025849609">Salli JavaScript näissä sivustoissa</translation>
 <translation id="6376659517206731212">Voidaan asettaa pakolliseksi</translation>
+<translation id="6377355597423503887">Tämä käytäntö on vanhentunut, harkitse sen sijaan BrowserSignin-käytännön käyttöä.
+
+      Sallii käyttäjälle <ph name="PRODUCT_NAME" /> ‑kirjautumisen.
+
+      Tällä käytännöllä voit määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjän kirjautumisen. Jos käytännön arvo on Epätosi, chrome.identity-sovellusliittymää käyttävät sovellukset ja laajennukset eivät toimi, joten sen tilalla suositellaan käytäntöä SyncDisabled.</translation>
 <translation id="6378076389057087301">Määritä, vaikuttaako äänitoiminta virranhallintaan</translation>
 <translation id="637934607141010488">Raporttiluettelo viime aikoina sisäänkirjautuneista laitteen käyttäjistä.
 
@@ -2827,6 +2838,11 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8548832052135586762">Määrittää tulostusasetukseksi vain väritulostuksen, vain mustavalkotulostuksen tai rajoittamattoman. Määrittämätön käytäntö tulkitaan rajoituksen puuttumiseksi.</translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
+<translation id="857369585509260201">Tämä käytäntö on vanhentunut, harkitse sen sijaan BrowserSignin-käytännön käyttöä.
+
+Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritettava <ph name="PRODUCT_NAME" /> ‑kirjautuminen omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lue lisää ohjekeskuksen artikkelista.
+
+      Jos tämän käytännön arvoksi on määritetty Epätosi tai sitä ei ole määritetty, selainta voi käyttää ilman <ph name="PRODUCT_NAME" /> ‑kirjautumista.</translation>
 <translation id="8586528890725660268">Määritä tulostimet, joita käyttäjä ei voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_BLACKLIST" /> on valittuna asetuksen <ph name="BULK_PRINTERS_ACCESS_MODE" /> arvoksi.

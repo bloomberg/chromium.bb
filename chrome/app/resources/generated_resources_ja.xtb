@@ -1049,7 +1049,6 @@
 <translation id="2558896001721082624">システム メニューにユーザー補助オプションを常に表示する</translation>
 <translation id="2562685439590298522">ドキュメント</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> にログインしていません</translation>
-<translation id="2563856802393254086">「<ph name="NAME" />」データ サービスが有効になり、使用できるようになりました。</translation>
 <translation id="2564520396658920462">AppleScript からの JavaScript の実行がオフになっています。オンにするには、メニューバーから [表示] &gt; [デベロッパー] &gt; [Apple Events からの JavaScript を許可] を選択してください。詳しくは、https://support.google.com/chrome/?p=applescript をご覧ください。</translation>
 <translation id="2564653188463346023">拡張スペルチェック</translation>
 <translation id="2566124945717127842">お使いの <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスを出荷時の状態にリセットするために、Powerwash を実行します。</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2667463864537187133">スペルチェックの管理</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> が Chrome タブを共有しています。</translation>
 <translation id="2670429602441959756">このページには VR でまだご利用いただけない機能が含まれています。VR モードを終了します...</translation>
-<translation id="2670531586141364277">「<ph name="NAME" />」を有効にするにはネットワークに接続する必要があります。</translation>
 <translation id="2671451824761031126">ブックマークと設定をインポートしました</translation>
 <translation id="2672142220933875349">不正な crx ファイルです。解凍できませんでした。</translation>
 <translation id="2672394958563893062">エラーが発生しました。クリックすると最初から再生します。</translation>
@@ -1169,7 +1167,6 @@
 <translation id="2724841811573117416">WebRTC ログ</translation>
 <translation id="2725200716980197196">ネットワーク接続を復元しました</translation>
 <translation id="2726934403674109201">（合計 <ph name="COUNT" /> 個）</translation>
-<translation id="2727176303594781056">ネットワーク有効化エラー</translation>
 <translation id="2727633948226935816">今後表示しない</translation>
 <translation id="2727712005121231835">実際のサイズ</translation>
 <translation id="273093730430620027">このページはカメラにアクセスしています。</translation>
@@ -1326,7 +1323,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
 <translation id="2963151496262057773">プラグイン（<ph name="PLUGIN_NAME" />）は応答していません。強制終了しますか？</translation>
-<translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME" /> の有効化ポータルにアクセスしてください。</translation>
 <translation id="2966937470348689686">Android 設定を管理</translation>
 <translation id="2971213274238188218">暗くする</translation>
 <translation id="2972557485845626008">ファームウェア</translation>

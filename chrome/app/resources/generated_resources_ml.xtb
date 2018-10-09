@@ -1046,7 +1046,6 @@
 <translation id="2558896001721082624">സിസ്റ്റം മെനുവിൽ ഉപയോഗസഹായി ഓപ്‌ഷനുകൾ എല്ലായ്പ്പോഴും കാണിക്കുക</translation>
 <translation id="2562685439590298522">ഡോക്‌സ്</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />-ലേക്ക് പ്രവേശിച്ചിട്ടില്ല</translation>
-<translation id="2563856802393254086">അഭിനന്ദനങ്ങൾ! നിങ്ങളുടെ '<ph name="NAME" />' ഡാറ്റ സേവനം സജീവമായി, ഇത് പ്രവർത്തിക്കാൻ തയ്യാറാണ്.</translation>
 <translation id="2564520396658920462">AppleScript-ലൂടെ JavaScript നടപ്പിലാക്കുന്നത് ഓഫാക്കിയിരിക്കുന്നു. അത് ഓണാക്കാൻ, മെനു ബാറിൽ നിന്നും കാഴ്‌ച &gt; ഡെവലപ്പർ &gt; Apple Events-ൽ നിന്ന് JavaScript അനുവദിക്കൽ, എന്നതിലേക്ക് പോവുക. കൂടുതൽ വിവരങ്ങൾക്ക്: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">മെച്ചപ്പെടുത്തിയ അക്ഷരത്തെറ്റ് പരിശോധന</translation>
 <translation id="2566124945717127842">നിങ്ങളുടെ <ph name="IDS_SHORT_PRODUCT_NAME" /> ഉപകരണം പുതിയതുപോലാക്കാൻ പുനഃസജ്ജമാക്കുന്നതിന് പവർവാഷുചെയ്യുക.</translation>
@@ -1127,7 +1126,6 @@
 <translation id="2667463864537187133">അക്ഷരത്തെറ്റ് പരിശോധന മാനേജ് ചെയ്യുക</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />, ഒരു Chrome ടാബ് പങ്കിടുന്നു.</translation>
 <translation id="2670429602441959756">ഈ പേജിൽ VR-ന് അനുയോജ്യമല്ലാത്ത ഫീച്ചറുകൾ അടങ്ങിയിരിക്കുന്നു. പുറത്തുകടക്കുന്നു...</translation>
-<translation id="2670531586141364277">'<ph name="NAME" />' സജീവമാക്കുന്നതിന് ഒരു നെറ്റ്‌വർക്ക് കണക്ഷൻ ആവശ്യമാണ്.</translation>
 <translation id="2671451824761031126">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകളും ക്രമീകരണവും തയ്യാറാണ്</translation>
 <translation id="2672142220933875349">crx ഫയൽ മോശമാണ്, അൺപാക്കുചെയ്യൽ പരാജയപ്പെട്ടു.</translation>
 <translation id="2672394958563893062">ഒരു പിശക് സംഭവിച്ചു. തുടക്കത്തിൽ നിന്ന് പുനരാരംഭിക്കുന്നതിന് ക്ലിക്കുചെയ്യുക.</translation>
@@ -1166,7 +1164,6 @@
 <translation id="2724841811573117416">WebRTC ലോഗുകൾ</translation>
 <translation id="2725200716980197196">നെറ്റ്‌വർക്ക് കണക്‌റ്റിവിറ്റി പുനഃസ്‌ഥാപിച്ചു</translation>
 <translation id="2726934403674109201">(ആകെ <ph name="COUNT" />)</translation>
-<translation id="2727176303594781056">നെറ്റ്‌വർക്ക് സജീവമാക്കുന്നതിൽ പിശക്</translation>
 <translation id="2727633948226935816">എന്നെ വീണ്ടും ഓർമ്മപ്പെടുത്തരുത്</translation>
 <translation id="2727712005121231835">യഥാര്‍ത്ഥ വലിപ്പം</translation>
 <translation id="273093730430620027">ഈ പേജ് നിങ്ങളുടെ ക്യാമറ ആക്‌സസ്സുചെയ്യുന്നു.</translation>
@@ -1323,7 +1320,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (വിപുലീകരണം നൽകി)</translation>
 <translation id="2961695502793809356">മുന്നോട്ട് പോകാൻ ക്ലിക്കുചെയ്യുക, ചരിത്രം കാണാന്‍ ഹോള്‍ഡ് ചെയ്യുക</translation>
 <translation id="2963151496262057773">ഇനിപ്പറയുന്ന പ്ലഗിൻ പ്രതികരിക്കാത്തതാണ്: <ph name="PLUGIN_NAME" />അത് നിർത്തണോ?</translation>
-<translation id="2966449113954629791">നിങ്ങളുടെ മൊബൈൽ ഡാറ്റ അലവൻസ് പരമാവധി ഉപയോഗിച്ചിരിക്കാനിടയുണ്ട്. കൂടുതൽ ഡാറ്റ വാങ്ങാൻ <ph name="NAME" /> സജീവമാക്കൽ പോർട്ടൽ സന്ദർശിക്കുക.</translation>
 <translation id="2966937470348689686">Android മുൻഗണനകൾ മാനേജുചെയ്യുക</translation>
 <translation id="2971213274238188218">തെളിച്ചം കുറയ്‌ക്കുക</translation>
 <translation id="2972557485845626008">ഫേംവെയര്‍</translation>

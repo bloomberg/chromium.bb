@@ -1049,7 +1049,6 @@
 <translation id="2558896001721082624">Πάντα εμφάνιση επιλογών προσβασιμότητας στο μενού συστήματος</translation>
 <translation id="2562685439590298522">Έγγραφα</translation>
 <translation id="2562743677925229011">Δεν είστε συνδεδεμένος στο <ph name="SHORT_PRODUCT_NAME" /></translation>
-<translation id="2563856802393254086">Συγχαρητήρια! Η υπηρεσία δεδομένων "<ph name="NAME" />" έχει ενεργοποιηθεί και είναι έτοιμη για χρήση.</translation>
 <translation id="2564520396658920462">Η εκτέλεση JavaScript μέσω του AppleScript είναι απενεργοποιημένη. Για να την ενεργοποιήσετε, από τη γραμμή μενού, μεταβείτε στο μενού Προβολή &gt; Προγραμματιστής &gt; Να επιτρέπεται η JavaScript από τα Apple Events. Για περισσότερες πληροφορίες: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Ενισχυμένος ορθογραφικός έλεγχος</translation>
 <translation id="2566124945717127842">Το Powerwash θα επαναφέρει τη συσκευή σας <ph name="IDS_SHORT_PRODUCT_NAME" /> και θα την κάνει σαν καινούρια.</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2667463864537187133">Διαχείριση ορθογραφικού ελέγχου</translation>
 <translation id="2670102641511624474">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome.</translation>
 <translation id="2670429602441959756">Αυτή η σελίδα περιέχει λειτουργίες που δεν υποστηρίζονται ακόμη στο VR. Έξοδος...</translation>
-<translation id="2670531586141364277">Η ενεργοποίηση του "<ph name="NAME" />" απαιτεί σύνδεση δικτύου.</translation>
 <translation id="2671451824761031126">Οι σελιδοδείκτες και οι ρυθμίσεις σας είναι έτοιμα</translation>
 <translation id="2672142220933875349">Κατεστραμμένο αρχείο crx, η αποσυσκευασία απέτυχε.</translation>
 <translation id="2672394958563893062">Παρουσιάστηκε σφάλμα. Κάντε κλικ για επανεκκίνηση από την αρχή.</translation>
@@ -1169,7 +1167,6 @@
 <translation id="2724841811573117416">Αρχεία καταγραφής WebRTC</translation>
 <translation id="2725200716980197196">Αποκαταστάθηκε η συνδεσιμότητα δικτύου</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> συνολικά)</translation>
-<translation id="2727176303594781056">Σφάλμα ενεργοποίησης δικτύου</translation>
 <translation id="2727633948226935816">Να μην μου ξαναγίνει υπενθύμιση</translation>
 <translation id="2727712005121231835">Πραγματικό Μέγεθος</translation>
 <translation id="273093730430620027">Αυτή η σελίδα έχει πρόσβαση στην κάμερά σας.</translation>
@@ -1326,7 +1323,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (παρέχεται επέκταση)</translation>
 <translation id="2961695502793809356">Κάντε κλικ για να πάτε μπροστά, κρατήστε το κουμπί πατημένο για να δείτε το ιστορικό</translation>
 <translation id="2963151496262057773">Η ακόλουθη προσθήκη δεν ανταποκρίνεται: <ph name="PLUGIN_NAME" />Θέλετε να την τερματίσετε;</translation>
-<translation id="2966449113954629791">Ενδέχεται να έχετε εξαντλήσει τα διαθέσιμα δεδομένα κινητής τηλεφωνίας. Επισκεφτείτε την πύλη ενεργοποίησης <ph name="NAME" />, για να αγοράσετε περισσότερα δεδομένα.</translation>
 <translation id="2966937470348689686">Διαχείριση προτιμήσεων Android</translation>
 <translation id="2971213274238188218">μείωση φωτεινότητας</translation>
 <translation id="2972557485845626008">Υλικολογισμικό</translation>

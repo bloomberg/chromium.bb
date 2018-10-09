@@ -619,7 +619,7 @@
 <translation id="1887850431809612466">हार्डवेअर पुनरावृत्ती</translation>
 <translation id="1889984860246851556">प्रॉक्सी सेटिंग्ज उघडा</translation>
 <translation id="1890674179660343635">&lt;span&gt;आयडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
-<translation id="189210018541388520">पूर्ण स्क्रीन उघडा</translation>
+<translation id="189210018541388520">फुल स्क्रीन उघडा</translation>
 <translation id="189358972401248634">इतर भाषा</translation>
 <translation id="1894591787927543791">Google Pay वापरण्यासाठी कार्ड सेव्ह करा</translation>
 <translation id="1895658205118569222">बंद करा</translation>
@@ -1048,7 +1048,6 @@
 <translation id="2558896001721082624">सिस्टम मेनूमध्ये नेहमी अॅक्सेसिबिलिटी पर्याय दाखवा</translation>
 <translation id="2562685439590298522">दस्तऐवज</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> मध्‍ये साइन इन नाही</translation>
-<translation id="2563856802393254086">अभिनंदन! तुमची '<ph name="NAME" />' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  तयार आहे.</translation>
 <translation id="2564520396658920462">AppleScript द्वारे JavaScript एक्झिक्युट करणे बंद केले आहे. ते सुरू करण्यासाठी, मेनू बारवरून, पहा &gt; डेव्हलपर &gt; Apple इव्‍हेंटवरून JavaScript चालवू द्या यावर जा. अधिक माहितीसाठी: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">वर्धित केलेले स्पेल चेक</translation>
 <translation id="2566124945717127842">आपला <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस अगदी नवीन सारखे रीसेट करण्यासाठी Powerwash करा.</translation>
@@ -1129,7 +1128,6 @@
 <translation id="2667463864537187133">शब्दलेखन तपासणी व्यवस्थापित करा</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> Chrome टॅब सामायिक करीत आहे.</translation>
 <translation id="2670429602441959756">या पेजमध्ये अद्याप VR मध्ये समर्थित नसलेले वैशिष्ट्ये सामावलेली आहेत. बाहेर पडत आहे...</translation>
-<translation id="2670531586141364277">'<ph name="NAME" />' च्या सक्रियणास नेटवर्क कनेक्शन आवश्यक आहे.</translation>
 <translation id="2671451824761031126">आपले बुकमार्क आणि सेटिंग्ज तयार आहेत</translation>
 <translation id="2672142220933875349">खराब crx फाईल, पॅकिंग रद्द करणे अयशस्वी.</translation>
 <translation id="2672394958563893062">एरर आली. सुरवातीपासून रीस्टार्ट करण्यासाठी क्लिक करा.</translation>
@@ -1168,7 +1166,6 @@
 <translation id="2724841811573117416">WebRTC लॉग</translation>
 <translation id="2725200716980197196">नेटवर्क कनेक्टिव्हिटी पुनर्संचयित</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> एकूण)</translation>
-<translation id="2727176303594781056">नेटवर्क अ‍ॅक्टिव्हेशन एरर</translation>
 <translation id="2727633948226935816">मला पुन्‍हा स्‍मरण करून देऊ नका</translation>
 <translation id="2727712005121231835">वास्तविक आकार</translation>
 <translation id="273093730430620027">हे पृष्ठ आपल्या कॅमेर्‍यावर प्रवेश करत आहे.</translation>
@@ -1325,7 +1322,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (विस्तार प्रदान केला)</translation>
 <translation id="2961695502793809356">पुढे जाण्यासाठी क्लिक करा, इतिहास पहाण्यासाठी होल्ड करा</translation>
 <translation id="2963151496262057773">खालील प्लगिन असंवादी आहे: <ph name="PLUGIN_NAME" />आपण हे थांबवू इच्छिता?</translation>
-<translation id="2966449113954629791">आपण तुमची मोबाईल डेटा सूट वापरली असू शकते. अधिक डेटा विकत घेण्यासाठी <ph name="NAME" /> सक्रियकरण पोर्टलला भेट द्या.</translation>
 <translation id="2966937470348689686">Android प्राधान्ये व्यवस्थापित करा</translation>
 <translation id="2971213274238188218">चकाकी कमी करा</translation>
 <translation id="2972557485845626008">फर्मवेयर</translation>
@@ -3339,7 +3335,7 @@
 <translation id="6019169947004469866">क्रॉप करा</translation>
 <translation id="6020431688553761150">या संसाधनावर प्रवेश करण्यासाठी सर्व्हरने आपल्याला अधिकृत केले नाही.</translation>
 <translation id="602251597322198729">ही साइट एकाधिक फाइल्स डाउनलोड करण्याचा प्रयत्न करीत आहे. आपण यास परवानगी देऊ इच्छिता काय?</translation>
-<translation id="6022526133015258832">पूर्ण स्क्रीन उघडा</translation>
+<translation id="6022526133015258832">फुल स्क्रीन उघडा</translation>
 <translation id="6022705094403139349">तुमची सिक्युरिटी की पेअर करण्यासाठी तयार आहात का?</translation>
 <translation id="6023643151125006053">हे डिव्हाइस (SN: <ph name="SERIAL_NUMBER" />) <ph name="SAML_DOMAIN" /> अॅडमिनिस्ट्रेटरने लॉक केले होते.</translation>
 <translation id="6025215716629925253">स्टॅक ट्रेस</translation>
@@ -4988,7 +4984,7 @@
 <translation id="8521475323816527629">तुमच्या अ‍ॅप्सवर पटकन जा</translation>
 <translation id="8523493869875972733">बदल राहू द्या</translation>
 <translation id="8523849605371521713">धोरणाने जोडले</translation>
-<translation id="8525306231823319788">पूर्ण स्क्रीन</translation>
+<translation id="8525306231823319788">फुल स्क्रीन</translation>
 <translation id="8528074251912154910">भाषा जोडा</translation>
 <translation id="8528962588711550376">साइन इन करत आहे.</translation>
 <translation id="8529026713753283969">तुम्हाला या फोनवर सूचना मिळेल त्यामुळे फोन जवळपास ठेवा.</translation>
@@ -5320,7 +5316,7 @@
 <translation id="9023009238991294202">या डिव्हाइसचे इतर वापरकर्ते हे नेटवर्क वापरू शकतात.</translation>
 <translation id="9024127637873500333">&amp;नवीन टॅबमध्ये उघडा</translation>
 <translation id="9024158959543687197">शेअर माउंट करताना एरर आली. फाइल शेअर URL तपासा आणि पुन्हा प्रयत्न करा.</translation>
-<translation id="9024331582947483881">पूर्ण स्क्रीन</translation>
+<translation id="9024331582947483881">फुल स्क्रीन</translation>
 <translation id="9025098623496448965">ठीक, मला परत साइन इन स्क्रीनवर न्या</translation>
 <translation id="9026731007018893674">डाउनलोड करा</translation>
 <translation id="9026852570893462412">या प्रक्रियेला काही मिनिटे लागू शकतात. व्हर्च्युअल मशीन डाउनलोड करत अाहे.</translation>

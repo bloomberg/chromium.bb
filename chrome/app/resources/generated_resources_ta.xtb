@@ -1049,7 +1049,6 @@
 <translation id="2558896001721082624">சாதன மெனுவில் அணுகல்தன்மை விருப்பத்தேர்வுகளை எப்போதும் காட்டு</translation>
 <translation id="2562685439590298522">டாக்ஸ்</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> இல் உள்நுழைந்திருக்கவில்லை</translation>
-<translation id="2563856802393254086">வாழ்த்துகள்! உங்கள் '<ph name="NAME" />' டேட்டா சேவை செயல்படுத்தப்பட்டது, அது பயன்படுத்துவதற்கு தயாராக உள்ளது.</translation>
 <translation id="2564520396658920462">AppleScript மூலம் JavaScriptஐ இயக்குவது முடக்கப்பட்டுள்ளது. அதை இயக்க, மெனுப் பட்டியிலிருந்து காட்டு &gt; டெவெலப்பர் &gt; Apple Events இலிருந்து JavaScriptஐ அனுமதி என்பதைக் கிளிக் செய்யவும். கூடுதல் தகவலை இதில் அறியலாம்: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">மேம்படுத்தப்பட்ட எழுத்துப் பிழை சரிபார்ப்பான்</translation>
 <translation id="2566124945717127842">பவர்வாஷ், உங்கள் <ph name="IDS_SHORT_PRODUCT_NAME" /> சாதனத்தைப் புதியதைப் போன்று மீட்டமைக்கும்.</translation>
@@ -1131,7 +1130,6 @@
 <translation id="2667463864537187133">எழுத்துப் பிழை சரிபார்ப்பானை நிர்வகி</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> Chrome தாவலைப் பகிர்கிறது.</translation>
 <translation id="2670429602441959756">VR இல் இன்னும் ஆதரிக்கப்படாத அம்சங்கள், இந்தப் பக்கத்தில் உள்ளன. வெளியேறுகிறது...</translation>
-<translation id="2670531586141364277">'<ph name="NAME" />' இயக்கப் படுவதற்கு நெட்வொர்க் இணைப்பு அவசியம்.</translation>
 <translation id="2671451824761031126">உங்கள் புத்தகக்குறிகளும் அமைப்புகளும் தயாராக உள்ளன</translation>
 <translation id="2672142220933875349">தவறான crx கோப்பு, அசல் நிலைக்கு மாற்றுவது தோல்வி.</translation>
 <translation id="2672394958563893062">பிழை ஏற்பட்டது. ஆரம்பத்திலிருந்து மீண்டும் தொடங்க கிளிக் செய்க.</translation>
@@ -1170,7 +1168,6 @@
 <translation id="2724841811573117416">WebRTC பதிவுகள்</translation>
 <translation id="2725200716980197196">நெட்வொர்க் இணைப்பு மீட்டெடுக்கப்பட்டது</translation>
 <translation id="2726934403674109201">(மொத்தம் <ph name="COUNT" />)</translation>
-<translation id="2727176303594781056">நெட்வொர்க் செயலாக்கப் பிழை</translation>
 <translation id="2727633948226935816">மீண்டும் நினைவுபடுத்தாதே</translation>
 <translation id="2727712005121231835">உண்மை அளவு</translation>
 <translation id="273093730430620027">இந்தப் பக்கம் உங்கள் கேமராவை அணுகுகிறது.</translation>
@@ -1327,7 +1324,6 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (நீட்டிப்பு வழங்கப்பட்டது)</translation>
 <translation id="2961695502793809356">அடுத்தப் பக்கத்திற்கு செல்ல கிளிக் செய்க, வரலாற்றைக் காண அழுத்திக்கொண்டே இருங்கள்</translation>
 <translation id="2963151496262057773">பின்வரும் செருகுநிரல் பதிலளிக்கவில்லை: <ph name="PLUGIN_NAME" />நிறுத்தவா?</translation>
-<translation id="2966449113954629791">அனுமதிக்கப்பட்ட மொபைல் டேட்டா முடிந்திருக்கலாம். கூடுதல் தரவை வாங்க, <ph name="NAME" /> செயல்பாட்டுப் போர்ட்டலுக்குச் செல்லவும்.</translation>
 <translation id="2966937470348689686">Android விருப்பத்தேர்வுகளை நிர்வகி</translation>
 <translation id="2971213274238188218">ஒளிர்வைக் குறை</translation>
 <translation id="2972557485845626008">நிலைபொருள்</translation>

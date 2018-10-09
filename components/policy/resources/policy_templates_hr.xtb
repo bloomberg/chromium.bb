@@ -571,9 +571,6 @@
       Kada se to pravilo ne konfigurira ili se postavi na "Nemoj filtrirati web-lokacije na temelju sadržaja za odrasle", web-lokacije neće se filtrirati.
 
       Kada se to pravilo postavi na "Filtriraj vršne web-lokacije na temelju sadržaja za odrasle", filtrirat će se web-lokacije klasificirane kao pornografske.</translation>
-<translation id="2485721741875148980">Ako se to pravilo postavi na točno, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na netočno. Napominjemo da će nakon omogućivanja ovog pravila postojeći nepotpisani profili biti zaključani i neće im biti moguće pristupiti. Više informacija možete pronaći u centru za pomoć.
-
-      Ako se to pravilo postavi na netočno ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za navedene URL-ove.
 
       To pravilo omogućuje da se certifikati za nazive hostova na navedenim URL-ovima ne otkrivaju putem Transparentnosti certifikata. Tako se omogućuje nastavak upotrebe certifikata koji se inače ne bi smatrali pouzdanima jer nisu pravilno javno otkriveni, ali se otežava otkrivanje zloupotrijebljenih certifikata za te hostove.
@@ -841,6 +838,7 @@
 
           Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3205825995289802549">Maksimiziraj prvi prozor preglednika pri prvom pokretanju</translation>
+<translation id="3211426942294667684">Postavke prijave putem preglednika</translation>
 <translation id="3213821784736959823">Kontrolira primjenjuje li se ugrađeni DNS klijent u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako je to pravilo postavljeno na točno, primijenit će se ugrađeni DNS klijent ako je dostupan.
@@ -1095,6 +1093,15 @@
       Ako ne postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljava svoj uobičajeni zadani direktorij (ovisno o platformi).
 
       Popis varijabli koje se mogu upotrebljavati potražite na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">To pravilo upravlja ponašanjem prijave putem preglednika. Omogućuje vam da odredite može li se korisnik prijaviti na preglednik <ph name="PRODUCT_NAME" /> svojim računom i upotrebljavati usluge povezane s računom kao što je Chrome sinkronizacija.
+
+      Ako se to pravilo postavi na "Onemogući prijavu putem preglednika", korisnik se ne može prijaviti na preglednik i upotrebljavati usluge na temelju računa. U tom se slučaju značajke na razini preglednika kao što je Chrome sinkronizacija ne mogu upotrebljavati i neće biti dostupne. Ako je korisnik bio prijavljen i pravilo se postavi na "Onemogućeno", korisnik će se odjaviti sljedeći put kad pokrene Chrome, no zadržat će se lokalni podaci profila kao što su oznake, zaporke itd. Korisnik će se i dalje moći prijaviti na Googleove web-usluge kao što je Gmail i moći će ih upotrebljavati.
+
+      Ako se to pravilo postavi na "Omogući prijavu putem preglednika", korisnik se može prijaviti na preglednik i automatski se prijavljuje na preglednik kad se prijavi na Googleove web-usluge kao što je Gmail. Biti prijavljen na preglednik znači da će preglednik spremati podatke o korisnikovom računu. No to ne znači da će Chrome sinkronizacija biti uključena prema zadanim postavkama; da bi upotrebljavao tu značajku, korisnik se mora uključiti zasebno. Ako se to pravilo omogući, korisnik neće moći isključiti postavku koja omogućuje prijavu na preglednik. Da biste kontrolirali dostupnost Chrome sinkronizacije, upotrijebite pravilo "SyncDisabled".
+
+      Ako se pravilo postavi na "Nametni prijavu putem preglednika", korisniku se prikazuje dijaloški okvir za odabir računa i on mora odabrati račun i prijaviti se da bi upotrebljavao preglednik. Na taj se način za upravljane račune osigurava primjena i provedba pravila povezanih s računom. Prema zadanim postavkama time se uključuje Chrome sinkronizacija za račun, osim kad je sinkronizaciju onemogućio administrator domene ili kad je onemogućena putem pravila "SyncDisabled". Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False. Postojeći neprijavljeni profili bit će zaključani i neće biti dostupni nakon što se to pravilo omogući. Više informacija potražite u članku centra za pomoć: https://support.google.com/chrome/a/answer/7572556.
+
+      Ako se to pravilo ne postavi, korisnik može odlučiti hoće li omogućiti opciju prijave putem preglednika i može je upotrebljavati kako želi.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="3911737181201537215">To pravilo nema utjecaja na Androidovo bilježenje u zapisnike.</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
@@ -1139,6 +1146,7 @@
 
       Napominjemo da se to pravilo zanemaruje i da su Googleove usluge lokacije uvijek onemogućene kada je pravilo <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> postavljeno na <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Dopusti upute Googleovoj usluzi za vrijeme</translation>
+<translation id="408076456549153854">Omogući prijavu putem preglednika</translation>
 <translation id="4088589230932595924">Anoniman način rada prisilno je uključen</translation>
 <translation id="4088983553732356374">Omogućuje vam da odredite je li web-lokacijama dopušteno postavljanje lokalnih podataka. Postavljanje lokalnih podataka može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
 
@@ -1448,6 +1456,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="4962262530309732070">Ako se pravilo postavi na točno ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
 
       Ako se pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
+<translation id="4970855112942626932">Onemogući prijavu putem preglednika</translation>
 <translation id="4971529314808359013">Omogućuje vam da navedete popis uzoraka URL-ova koji određuju web-lokacije za koje <ph name="PRODUCT_NAME" /> treba automatski odabrati klijentski certifikat, ako web-lokacija zahtijeva certifikat.
 
           Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.
@@ -1547,11 +1556,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako se pravilo ne postavi ili se postavi na prazni niz ili nevažeći raspon priključaka, WebRTC može upotrebljavati bilo koji dostupni lokalni UDP priključak.</translation>
 <translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
-<translation id="5302612588919538756">To je pravilo obustavljeno i umjesto njega možete upotrijebiti "SyncDisabled".
-
-      Korisniku omogućuje prijavu u <ph name="PRODUCT_NAME" />.
-
-      Ako postavite to pravilo, možete konfigurirati dopuštenje za prijavu korisnika u <ph name="PRODUCT_NAME" />. Ako pravilo postavite na "False", aplikacije i proširenja koje upotrebljavaju API chrome.identity prestat će funkcionirati, pa je zato bolje upotrijebiti pravilo "SyncDisabled".</translation>
 <translation id="5304269353650269372">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja kada uređaj nije priključen na struju.
 
           Kada je postavljeno, ovo pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će biti poduzeta radnja u vezi s neaktivnošću.
@@ -1839,6 +1843,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako se pravilo ne konfigurira, popis uklonjivih USB uređaja ostaje prazan.</translation>
 <translation id="6083631234867522991">Windows (Windows klijenti):</translation>
+<translation id="6091233616732024397">Nametni korisnicima prijavu radi upotrebe preglednika</translation>
 <translation id="6093156968240188330">Dopusti udaljenim korisnicima da interakciju s privilegiranim prozorima u sesijama daljinske pomoći</translation>
 <translation id="6095999036251797924">Navodi koliko vremena treba proteći od posljednjeg korisničkog unosa da bi se zaslon zaključao dok radi na izmjeničnom napajanju ili bateriji.
 
@@ -1906,6 +1911,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6368011194414932347">Konfiguriraj URL početne stranice</translation>
 <translation id="6368403635025849609">Omogući JavaScript na ovim web-lokacijama</translation>
 <translation id="6376659517206731212">Može biti obavezno</translation>
+<translation id="6377355597423503887">To je pravilo obustavljeno i umjesto njega možete upotrijebiti BrowserSignin.
+
+      Korisniku omogućuje prijavu na preglednik <ph name="PRODUCT_NAME" />.
+
+      Ako postavite to pravilo, možete konfigurirati je li korisniku dopuštena prijava na <ph name="PRODUCT_NAME" />. Ako pravilo postavite na "False", aplikacije i proširenja koje upotrebljavaju API chrome.identity prestat će funkcionirati, pa je zato bolje upotrijebiti pravilo SyncDisabled.</translation>
 <translation id="6378076389057087301">Odredi utječe li zvučna aktivnost na upravljanje napajanjem</translation>
 <translation id="637934607141010488">Generira popis korisnika uređaja koji su se nedavno prijavili.
 
@@ -2739,7 +2749,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Ako onemogućite tu postavku, na stranicama će se tražiti metaoznake.
 
           Ako se to pravilo ne postavi, na stranicama će se tražiti metaoznake.</translation>
-<translation id="8300455783946254851">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> prilikom upotrebe mobilne veze kada je postavljeno na točno. U tom slučaju podaci se sinkroniziraju s Google diskom prilikom povezanosti putem Wi-Fi-ja ili Etherneta.
+<translation id="8300455783946254851">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> prilikom upotrebe mobilne veze kada je postavljeno na točno. U tom slučaju podaci se sinkroniziraju s Google diskom prilikom povezanosti putem Wi-Fija ili Etherneta.
 
           Ako nije postavljeno ili je postavljeno na netočno, korisnici će moći prenositi datoteke na Google disk mobilnim vezama.</translation>
 <translation id="8300992833374611099">Kontroliraj gdje se mogu upotrebljavati Alati za razvojne programere</translation>
@@ -2814,6 +2824,11 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8548832052135586762">Postavlja ispis na samo u boji, samo jednobojni ili određuje da nema ograničenja načina boje. Ako se pravilo ne postavi, smatra se da nema ograničenja.</translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
+<translation id="857369585509260201">To je pravilo obustavljeno i umjesto njega možete upotrijebiti BrowserSignin.
+
+      Ako se to pravilo postavi na True, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati taj preglednik. Zadana vrijednost za BrowserGuestModeEnabled postavit će se na False. Napominjemo da će nakon omogućivanja tog pravila postojeći neprijavljeni profili biti zaključani i neće im biti moguće pristupiti. Više informacija možete pronaći u članku centra za pomoć.
+
+      Ako se to pravilo postavi na False ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Određuje pisače koje korisnik ne može upotrebljavati.
 
       To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_BLACKLIST" /> odabrano za <ph name="BULK_PRINTERS_ACCESS_MODE" />.

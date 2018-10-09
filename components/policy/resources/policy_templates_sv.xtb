@@ -594,9 +594,6 @@
       När principen är inställd på Filtrera inte bort webbplatser med barnförbjudet innehåll, eller inte har konfigurerats, filtreras inga webbplatser bort.
 
       När principen är inställd på Filtrera bort webbplatser på toppnivå med barnförbjudet innehåll filtreras webbplatser som klassats som porr bort.</translation>
-<translation id="2485721741875148980">Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
-
-      Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2486371469462493753">Inaktiverar kraven för certifikattransparens på webbadresserna i listan.
 
       Principen gör så att certifikaten för värdnamnen i de angivna webbadresserna inte lämnas ut via Certifikattransparens. Detta gör det möjligt att fortsätta använda certifikat som annars skulle vara opålitliga eftersom de inte lämnades ut ordentligt. Men det blir svårare att upptäcka felaktigt utfärdade certifikat för dessa värdar.
@@ -876,6 +873,7 @@
 
           Om du inte anger den här principen kan användarna själva välja proxyinställningar.</translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
+<translation id="3211426942294667684">Inloggningsinställningar för webbläsare</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
       Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
@@ -1145,6 +1143,15 @@
       Om principen inte anges används standardkatalogen för nedladdning (för den aktuella plattformen) i <ph name="PRODUCT_NAME" />.
 
       En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">Den här principen styr webbläsarens inloggningsfunktion. Med den kan du ange om användaren kan logga in i <ph name="PRODUCT_NAME" /> med sitt konto och använda kontorelaterade tjänster som Chrome Sync.
+
+      Om principen är inställt på Inaktivera inloggning i webbläsaren kan användaren inte logga in i webbläsaren och använda kontobaserade tjänster. Då går det inte att använda funktioner på webbläsarnivå, till exempel Chrome Sync. Om användaren var inloggad när principen ställdes in på Inaktiverad loggas han eller hon ut nästa gång de kör Chrome, men användarens data i den lokala profilen sparas, till exempel bokmärken och lösenord. Användaren kan fortfarande logga in i och använda Googles webbtjänster, till exempel Gmail.
+
+      Om principen är inställd på Aktivera inloggning i webbläsare kan användaren logga in i webbläsaren och loggas in automatiskt i webbläsaren när han eller hon är inloggad i Googles webbtjänster, till exempel Gmail. När användaren är inloggad i webbläsaren lagras hans eller hennes kontouppgifter i webbläsaren. Det innebär däremot inte att Chrome Sync aktiveras som standard, användaren måste välja att aktivera funktionen separat. Om den här principen aktiveras förhindras användare från att inaktivera inställningen som tillåter inloggning i webbläsare. Om du vill styra tillgängligheten för funktionen Chrome Sync använder du principen SyncDisabled.
+
+      Om principen är inställd på Tvinga inloggning i webbläsare visas en dialogruta där användaren måste välja och logga in på ett konto om han eller hon vill använda webbläsaren. På så vis tillämpas och verkställs alltid principer för hanterade konton. Chrome Sync aktiveras som standard för kontot, förutom när synkronisering har inaktiverats av domänens administratör eller med principen SyncDisabled. Standardvärdet för BrowserGuestModeEnabled ställs in på Falskt. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. Du hittar mer information i den här artikeln i hjälpcentret: https://support.google.com/chrome/a/answer/7572556.
+
+      Om principen inte är inställd på något värde kan användare välja om han eller hon vill aktivera inloggning i webbläsare och använda den på det sätt han eller hon vill.</translation>
 <translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
 <translation id="3911737181201537215">Den här principen har ingen inverkan på loggningen i Android.</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
@@ -1191,6 +1198,7 @@
 
       Observera att den här principen ignoreras och Googles platstjänster alltid är inaktiverade om principen <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> är inställd på <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Tillåt sökfrågor till en tidstjänst från Google</translation>
+<translation id="408076456549153854">Aktivera inloggning i webbläsare</translation>
 <translation id="4088589230932595924">Tvingat inkognitoläge</translation>
 <translation id="4088983553732356374">Innebär att du kan ange om webbplatser ska få ange lokal data. Att ange lokal data kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
 
@@ -1506,6 +1514,7 @@
 <translation id="4962262530309732070">Om den här principen är inställd på sant eller inte har konfigurerats tillåts Lägg till person i användarhanteraren av <ph name="PRODUCT_NAME" />.
 
       Om principen är inställd på falskt tillåter <ph name="PRODUCT_NAME" /> inte att nya profiler skapas i profilhanteraren.</translation>
+<translation id="4970855112942626932">Inaktivera inloggning i webbläsare</translation>
 <translation id="4971529314808359013">Med den här principen kan du ange en lista med webbadressmönster som anger för vilka webbplatser <ph name="PRODUCT_NAME" /> ska välja ett klientcertifikat automatiskt, om webbplatsen kräver ett certifikat.
 
           Värdet måste vara JSON-ordlistor i strängformat i en matris. Varje ordlista måste ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, där $URL_PATTERN är ett innehållsinställningsmönster. $FILTER begränsar vilka klientcertifikat webbläsaren automatiskt väljer mellan. Oavsett vilket filter som används väljs bara certifikat som matchar serverns certifikatbegäran. Om $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } } är det dessutom endast klientcertifikat som har skapats av ett certifikat med CommonName $ISSUER_CN som väljs. Om $FILTER är en tom ordlista {} begränsas inte valet av klientcertifikat ytterligare.
@@ -1619,11 +1628,6 @@
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
-<translation id="5302612588919538756">Den här principen har fasats ut. Använd SyncDisabled i stället.
-
-      Tillåter att användaren loggar in i <ph name="PRODUCT_NAME" />.
-
-      Om du ställer in den här principen kan du konfigurera om en användare ska ha tillåtelse att logga in i <ph name="PRODUCT_NAME" />. Om principen är inställd på falskt hindras appar och tillägg som använder API:et chrome.identity från att fungera. Du kan därför använda SyncDisabled i stället.</translation>
 <translation id="5304269353650269372">Anger hur lång tid det tar innan ett varningsmeddelande visas när användaren inte gjort någon åtgärd vid batteridrift.
 
           När policyn har angetts anges hur lång tid användaren måste vara inaktiv innan ett varningsmeddelande visas i <ph name="PRODUCT_OS_NAME" /> där användaren får reda på att enheten snart inaktiveras.
@@ -1924,6 +1928,7 @@
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="6091233616732024397">Tvinga användare att logga in i webbläsaren</translation>
 <translation id="6093156968240188330">Tillåt att fjärranvändare kan interagera med fönster som öppnats med adminbehörighet i fjärrhjälpsessioner</translation>
 <translation id="6095999036251797924">Anger efter hur lång tid skärmen släcks när användaren är inaktiv och enheten drivs med batteri eller ström.
 
@@ -1997,6 +2002,11 @@
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
 <translation id="6376659517206731212">Kan vara obligatorisk</translation>
+<translation id="6377355597423503887">Den här principen har fasats ut. Använd BrowserSignin i stället.
+
+      Tillåter att användaren loggar in i <ph name="PRODUCT_NAME" />.
+
+      Om du ställer in den här principen kan du konfigurera om en användare ska ha tillåtelse att logga in i <ph name="PRODUCT_NAME" />. Om principen är inställd på falskt hindras appar och tillägg som använder API:et chrome.identity från att fungera. Du kan därför använda SyncDisabled i stället.</translation>
 <translation id="6378076389057087301">Ange om ljudaktiviteter påverkar energihanteringen</translation>
 <translation id="637934607141010488">Rapportera en lista över enhetsanvändare som nyligen har loggat in.
 
@@ -2939,6 +2949,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8548832052135586762">Ställer in utskrift endast i färg, endast i svartvitt eller utan begränsning vad gäller färg. Om principen har lämnats utan inställning används ingen begränsning.</translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
+<translation id="857369585509260201">Den här principen har fasats ut. Använd BrowserSignin i stället.
+
+      Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
+
+      Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Anger skrivare som inte får användas.
 
       Den här principen används bara när <ph name="BULK_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_BLACKLIST" />.

@@ -1049,7 +1049,6 @@
 <translation id="2558896001721082624">Mostrar siempre opciones de accesibilidad en el menú del sistema</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">No has iniciado sesión en <ph name="SHORT_PRODUCT_NAME" />.</translation>
-<translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME" /> se ha activado y está listo para que lo uses.</translation>
 <translation id="2564520396658920462">La ejecución de JavaScript a través de AppleScript está desactivada. Para activarla, en la barra de menú, accede a Ver &gt; Opciones para desarrolladores &gt; Permitir JavaScript desde Eventos de Apple. Puedes consultar más información en la página https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Revisión ortográfica mejorada</translation>
 <translation id="2566124945717127842">Haz un Powerwash y restablece el estado de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
@@ -1130,7 +1129,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2667463864537187133">Administrar la revisión ortográfica</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> está compartiendo una pestaña de Chrome.</translation>
 <translation id="2670429602441959756">Esta página contiene funciones que aún no se admiten en RV. Saliendo...</translation>
-<translation id="2670531586141364277">La activación de <ph name="NAME" /> requiere una conexión de red.</translation>
 <translation id="2671451824761031126">Tu configuración y tus marcadores están listos</translation>
 <translation id="2672142220933875349">El archivo crx no es válido y no se ha podido descomprimir.</translation>
 <translation id="2672394958563893062">Se ha producido un error. Haz clic para reiniciar la reproducción desde el principio.</translation>
@@ -1169,7 +1167,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2724841811573117416">Registros de WebRTC</translation>
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> en total)</translation>
-<translation id="2727176303594781056">No se ha podido activar la red</translation>
 <translation id="2727633948226935816">No volver a recordármelo</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
 <translation id="273093730430620027">Esta página está accediendo a la cámara</translation>
@@ -1326,7 +1323,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensión proporcionada)</translation>
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
 <translation id="2963151496262057773">El complemento <ph name="PLUGIN_NAME" /> no responde. ¿Quieres detenerlo?</translation>
-<translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="2966937470348689686">Gestionar las preferencias de Android</translation>
 <translation id="2971213274238188218">disminuir brillo</translation>
 <translation id="2972557485845626008">Firmware</translation>

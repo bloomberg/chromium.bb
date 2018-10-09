@@ -584,9 +584,6 @@
       Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “Nefiltrēt vietnes ar pieaugušajiem paredzētu saturu”, vietnes netiks filtrētas.
 
       Ja šai politika ir iestatīta vērtība “Filtrēt augšējā līmeņa vietnes ar pieaugušajiem paredzētu saturu”, tiks filtrētas vietnes, kurās ir pornogrāfiska rakstura saturs.</translation>
-<translation id="2485721741875148980">Ja šai politikai ir iestatīta vērtība “true”, lietotājam pirms pārlūka <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās, izmantojot savu profilu. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība “false”. Ņemiet vērā, ka pēc šīs politikas iespējošanas neparakstītie profili tiek bloķēti un nav pieejami. Plašāku informāciju skatiet palīdzības centra rakstā.
-
-      Ja šai politikai ir iestatīta vērtība “false” vai politika nav konfigurēta, lietotājs var lietot pārlūku <ph name="PRODUCT_NAME" /> bez pierakstīšanās.</translation>
 <translation id="2486371469462493753">Atspējo Certificate Transparency prasību piemērošanu norādītajiem vietrāžiem URL.
 
       Ar šo politiku tiek atļauts, ka saimniekdatoru nosaukumu sertifikāti norādītajos vietrāžos URL netiek atklāti, izmantojot Certificate Transparency. Tādējādi tiek atļauti sertifikāti, kas citādi būtu neuzticami, jo tie tika nepareizi publiski atklāti, lai turpinātu lietošanu, taču šādi ir grūtāk noteikt nepareizi izdotus sertifikātus šiem saimniekdatoriem.
@@ -866,6 +863,7 @@
 
           Ja šīs politikas nav iestatītas, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3205825995289802549">Pirmā pārlūka loga maksimizēšana pirmajā palaišanas reizē</translation>
+<translation id="3211426942294667684">Pārlūkprogrammas pierakstīšanās iestatījumi</translation>
 <translation id="3213821784736959823">Tiek noteikts, vai pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots iebūvētais DNS klients.
 
       Ja šai politikai ir iestatīta vērtība Patiess, tiks izmantots iebūvētais DNS klients (ja iespējams).
@@ -1129,6 +1127,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja neiestatīsiet šo politiku, produktā <ph name="PRODUCT_NAME" /> tiks izmantots ierastais noklusējuma direktorijs (atkarīgs no konkrētas platformas).
 
       Pieejamo mainīgo sarakstu skatiet vietnē https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">Šī politika nosaka pārlūkprogrammas pierakstīšanās darbību. Varat norādīt, vai lietotājs var pierakstīties pārlūkprogrammā <ph name="PRODUCT_NAME" /> ar savu kontu un izmantot ar kontu saistītus pakalpojumus, piemēram, Chrome sinhronizāciju.
+
+      Ja šai politikai ir iestatīta vērtība “Atspējot pierakstīšanos pārlūkprogrammā”, tad lietotājs nevar pierakstīties pārlūkprogrammā un izmantot ar kontu saistītus pakalpojumus. Šādā gadījumā tādas pārlūkprogrammas līmeņa funkcijas kā Chrome sinhronizācija nav pieejamas – lietotājs nevar tās izmantot. Ja politikas atspējošanas brīdī lietotājs ir pierakstījies, nākamajā Chrome palaišanas reizē lietotājs tiek izrakstīts no pārlūkprogrammas, taču vietējie profila dati, piemēram, grāmatzīmes, paroles u.c., tiek saglabāti. Lietotājs arī turpmāk var pierakstīties Google tīmekļa pakalpojumos, piemēram, Gmail, un lietot tos.
+
+      Ja politikai ir iestatīta vērtība “Iespējot pierakstīšanos pārlūkprogrammā”, tad lietotājam ir atļauts pierakstīties pārlūkprogrammā, turklāt lietotājs tiek automātiski pierakstīts pārlūkprogrammā, pierakstoties tādos Google tīmekļa pakalpojumos kā Gmail. Pierakstīšanās pārlūkprogrammā nozīmē, ka pārlūkprogrammā tiek glabāta lietotāja konta informācija. Tomēr tas nenozīmē, ka pēc noklusējuma tiktu ieslēgta Chrome sinhronizācija, – lai lietotu šo funkciju, lietotājam tā jāizvēlas atsevišķi. Ja šī politika ir ieslēgta, lietotājs nevar izslēgt iestatījumu, ar kuru tiek atļauta pierakstīšanās pārlūkprogrammā. Lai kontrolētu Chrome sinhronizācijas pieejamību, izmantojiet politiku SyncDisabled.
+
+      Ja politikai ir iestatīta vērtība “Likt lietotājiem pierakstīties, lai lietotu pārlūkprogrammu”, lietotājam tiek rādīts konta izvēles dialoglodziņš un, lai lietotu pārlūkprogrammu, ir jāizvēlas konts un jāpierakstās. Pārvaldītiem kontiem šis iestatījums nodrošina ar kontu saistīto politiku lietošanu un piemērošanu. Pēc noklusējuma ar šo iestatījumu kontam tiek ieslēgta Chrome sinhronizācija, izņemot gadījumus, kad sinhronizāciju ir atspējojis domēna administrators vai kad tā ir atspējota, izmantojot politiku SyncDisabled. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība “false”. Ņemiet vērā, ka pēc šīs politikas iespējošanas neparakstītie profili tiek bloķēti un nav pieejami. Plašāku informāciju skatiet šajā palīdzības centra rakstā: https://support.google.com/chrome/a/answer/7572556.
+
+      Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai iespējot pierakstīšanos pārlūkprogrammā, un izmantot šo iespēju pēc vēlēšanās.</translation>
 <translation id="3907986150060929099">Ieteikto lokalizāciju iestatīšana publiskai sesijai</translation>
 <translation id="3911737181201537215">Šī politika neietekmē datu reģistrēšanu Android lietotnēs.</translation>
 <translation id="391531815696899618">Tiek atspējota Google diska sinhronizēšana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, ja ir iestatīta vērtība Patiesa. Šajā gadījumā Google diskā netiek augšupielādēti dati.
@@ -1175,6 +1182,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ņemiet vērā — ja politikai <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ir iestatīta vērtība <ph name="BLOCK_GEOLOCATION_SETTING" />, šī politika tiks ignorēta un Google atrašanās vietu pakalpojumi vienmēr būs atspējoti.</translation>
 <translation id="408029843066770167">Atļaut vaicājumus Google laika pakalpojumam</translation>
+<translation id="408076456549153854">Iespējot pierakstīšanos pārlūkprogrammā</translation>
 <translation id="4088589230932595924">Inkognito režīms piespiedu kārtā</translation>
 <translation id="4088983553732356374">Izmantojot šo politiku, varat norādīt, vai vietnes var iestatīt lokālos datus. Lokālo datu iestatīšana var būt vai nu atļauta visām vietnēm, vai arī liegta visām vietnēm.
 
@@ -1489,6 +1497,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4962262530309732070">Ja šai politikai ir iestatīta vērtība “True” vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārvaldniekā ir iespējota funkcija Pievienot personu.
 
       Ja šai politikai ir iestatīta vērtība “False”, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārvaldniekā nevar izveidot jaunus profilus.</translation>
+<translation id="4970855112942626932">Atspējot pierakstīšanos pārlūkprogrammā</translation>
 <translation id="4971529314808359013">Ļauj norādīt tādu URL šablonu sarakstu, kas norāda vietnes, kurām pārlūkā <ph name="PRODUCT_NAME" /> ir automātiski jāatlasa klienta sertifikāts, ja vietne pieprasa sertifikātu.
 
           Vērtībai ir jābūt virknētai JSON vārdnīcu masīvam. Katrai vārdnīcai ir jābūt šādā formā: { "pattern": "$URL_PATTERN", "filter" : $FILTER } (kur $URL_PATTERN ir satura iestatījuma raksts). $FILTER ierobežo, no kura klienta pārlūkprogrammā tiks automātiski atlasīti sertifikāti. Neatkarīgi no filtra tiks atlasīti tikai sertifikāti, kas atbilst servera sertifikāta pieprasījumam. Ja $FILTER ir formā { "ISSUER": { "CN": "$ISSUER_CN" } }, papildus tiek atlasīti tikai klienta sertifikāti, kas izsniegti, izmantojot sertifikātu ar nosaukumu CommonName $ISSUER_CN. Ja $FILTER ir tukšā vārdnīca {}, klienta sertifikātu atlasīšana nav papildus ierobežota.
@@ -1602,11 +1611,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja politika nav iestatīta vai tā ir iestatīta uz tukšu virkni vai nederīgu portu diapazonu, saskarnei WebRTC ir atļauts izmantot jebkuru pieejamu lokālo UDP portu.</translation>
 <translation id="5290940294294002042">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot</translation>
-<translation id="5302612588919538756">Šī politika ir novecojusi. Tās vietā varat lietot politiku SyncDisabled.
-
-      Ļauj lietotājam pierakstīties pārlūkā <ph name="PRODUCT_NAME" />.
-
-      Iestatot šo politiku, varat konfigurēt, vai lietotājam ir atļauts pierakstīties pārlūkā <ph name="PRODUCT_NAME" />. Ja šai politikai ir iestatīta vērtība Nepatiesa, nedarbosies lietotnes un paplašinājumi, kuros tiek izmantota chrome.identity saskarne API, tāpēc ieteicams tās vietā izmantot politiku SyncDisabled.</translation>
 <translation id="5304269353650269372">Tiek norādīts, pēc cik ilga laika kopš lietotāja pēdējās aktivitātes parādīt brīdinājuma dialoglodziņu, ja ierīce darbojas ar akumulatora jaudu.
 
           Ja šai politikai ir iestatīta vērtība, tā norāda, cik ilgu laiku lietotājam ir jābūt dīkstāvē, lai operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiktu parādīts brīdinājuma dialoglodziņš, kurā teikts, ka tiks veikta dīkstāves darbība.
@@ -1908,6 +1912,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika netiek konfigurēta, atvienojamo USB ierīču saraksts ir tukšs.</translation>
 <translation id="6083631234867522991">Windows (Windows klientiem):</translation>
+<translation id="6091233616732024397">Likt lietotājiem pierakstīties, lai lietotu pārlūkprogrammu</translation>
 <translation id="6093156968240188330">Atļaut attālajiem lietotājiem veikt darbības ar privileģētajiem logiem attālās palīdzības sesijās</translation>
 <translation id="6095999036251797924">Norāda lietotāja neaktivitātes laiku, pēc kura ekrāns tiek bloķēts, kad ierīce darbojas ar maiņstrāvas barošanu vai akumulatoru.
 
@@ -1977,6 +1982,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6368011194414932347">Konfigurē sākumlapas URL</translation>
 <translation id="6368403635025849609">Atļauj izmantot JavaScript šajās vietnēs</translation>
 <translation id="6376659517206731212">Var būt obligāta</translation>
+<translation id="6377355597423503887">Šī politika ir novecojusi. Tās vietā varat lietot politiku BrowserSignin.
+
+      Ļauj lietotājam pierakstīties pārlūkā <ph name="PRODUCT_NAME" />.
+
+      Iestatot šo politiku, varat konfigurēt, vai lietotājam ir atļauts pierakstīties pārlūkā <ph name="PRODUCT_NAME" />. Ja šai politikai ir iestatīta vērtība "False", nedarbosies lietotnes un paplašinājumi, kuros tiek izmantota chrome.identity saskarne API, tāpēc ieteicams tās vietā izmantot politiku SyncDisabled.</translation>
 <translation id="6378076389057087301">Audio darbības ietekmes uz jaudas pārvaldību norādīšana</translation>
 <translation id="637934607141010488">Parāda sarakstu ar ierīces lietotājiem, kuri nesen ir pieteikušies ierīcē.
 
@@ -2920,6 +2930,11 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8548832052135586762">Iestata tikai krāsainas drukāšanas, tikai vienkrāsainas vai ierobežojumu bez režīma. Ja politika nav iestatīta, tiek uzskatīts, ka ierobežojuma nav.</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
+<translation id="857369585509260201">Šī politika ir novecojusi. Tās vietā varat lietot politiku BrowserSignin.
+
+      Ja šai politikai ir iestatīta vērtība “true”, lietotājam pirms pārlūka <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās, izmantojot savu profilu. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība “false”. Ņemiet vērā, ka pēc šīs politikas iespējošanas neparakstītie profili tiek bloķēti un nav pieejami. Plašāku informāciju skatiet palīdzības centra rakstā.
+
+      Ja šai politikai ir iestatīta vērtība “false” vai politika nav konfigurēta, lietotājs var lietot pārlūku, nepierakstoties pakalpojumā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Norāda printerus, ko lietotājs nevar izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.

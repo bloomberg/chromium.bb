@@ -65,7 +65,7 @@
 <translation id="1314614906530272393">चुना गया सत्र मौजूद नहीं है.</translation>
 <translation id="1323433172918577554">और दिखाएं</translation>
 <translation id="132390688737681464">पतों की जानकारी सेव करें और फ़ॉर्म में भरें</translation>
-<translation id="1333989956347591814">आपकी गतिविधि <ph name="BEGIN_EMPHASIS" />अभी भी इन्हें दिखाई दे सकती है<ph name="END_EMPHASIS" />:
+<translation id="1333989956347591814">आपकी गतिविधि इन्हें <ph name="BEGIN_EMPHASIS" />अभी भी दिखाई दे सकती है<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />जिन वेबसाइट पर आप जाते हैं
           <ph name="LIST_ITEM" />आपका नियोक्ता या स्कूल
@@ -999,7 +999,7 @@
 <translation id="7818867226424560206">नीति प्रबंधन</translation>
 <translation id="782886543891417279">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) आपको उसके लॉगिन पेज पर जाने की ज़रूरत पड़ सकती है.</translation>
 <translation id="7835178595033117206">बुकमार्क हटाया गया</translation>
-<translation id="785549533363645510">हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकते हैं.</translation>
+<translation id="785549533363645510">हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकतीं हैं.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छोड़ें?</translation>
 <translation id="7878176543348854470">डेबिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
