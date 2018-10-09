@@ -16,6 +16,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
@@ -75,6 +77,8 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
          base::StartsWith(url.path_piece(), "/safeframe",
                           base::CompareCase::SENSITIVE);
 }
+
+using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 }  // namespace
 
@@ -155,8 +159,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   }
 
   // Determine who the parent frame's ad ancestor is.  If we don't know who it
-  // is (UMA suggested 1.8% of the time in September 2018), return, such as with
-  // a frame from a previous navigation.
+  // is, return, such as with a frame from a previous navigation.
   content::RenderFrameHost* parent_frame_host =
       ad_host ? ad_host->GetParent() : nullptr;
   const auto& parent_id_and_data =
@@ -222,8 +225,11 @@ AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
-  if (extra_info.did_commit)
-    RecordHistograms();
+  if (extra_info.did_commit) {
+    if (timing.response_start)
+      time_commit_ = timing.navigation_start + *timing.response_start;
+    RecordHistograms(extra_info.source_id);
+  }
 
   return STOP_OBSERVING;
 }
@@ -236,7 +242,9 @@ void AdsPageLoadMetricsObserver::OnLoadedResource(
 void AdsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordHistograms();
+  if (info.did_commit && timing.response_start)
+    time_commit_ = timing.navigation_start + *timing.response_start;
+  RecordHistograms(info.source_id);
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -257,6 +265,15 @@ void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
       load_policy != subresource_filter::LoadPolicy::DISALLOW) {
     unfinished_subresource_ad_frames_.insert(
         navigation_handle->GetFrameTreeNodeId());
+  }
+}
+
+void AdsPageLoadMetricsObserver::OnPageInteractive(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (timing.interactive_timing->interactive) {
+    time_interactive_ =
+        timing.navigation_start + *timing.interactive_timing->interactive;
   }
 }
 
@@ -340,6 +357,31 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
   }
 }
 
+AdsPageLoadMetricsObserver::ResourceMimeType
+AdsPageLoadMetricsObserver::GetResourceMimeType(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  if (blink::IsSupportedImageMimeType(resource->mime_type))
+    return ResourceMimeType::kImage;
+  if (blink::IsSupportedJavascriptMimeType(resource->mime_type))
+    return ResourceMimeType::kJavascript;
+
+  std::string top_level_type;
+  std::string subtype;
+  // Categorize invalid mime types as "Other".
+  if (!net::ParseMimeTypeWithoutParameter(resource->mime_type, &top_level_type,
+                                          &subtype)) {
+    return ResourceMimeType::kOther;
+  }
+  if (top_level_type.compare("video") == 0)
+    return ResourceMimeType::kVideo;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("css") == 0)
+    return ResourceMimeType::kCss;
+  else if (top_level_type.compare("text") == 0 && subtype.compare("html") == 0)
+    return ResourceMimeType::kHtml;
+  else
+    return ResourceMimeType::kOther;
+}
+
 void AdsPageLoadMetricsObserver::UpdateResource(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   auto it = page_resources_.find(resource->request_id);
@@ -361,6 +403,15 @@ void AdsPageLoadMetricsObserver::UpdateResource(
       page_main_frame_ad_resource_bytes_ +=
           resource->delta_bytes + unaccounted_ad_bytes;
     }
+    if (!time_interactive_.is_null()) {
+      page_ad_resource_bytes_since_interactive_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+    ResourceMimeType mime_type = GetResourceMimeType(resource);
+    if (mime_type == ResourceMimeType::kVideo)
+      page_ad_video_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (mime_type == ResourceMimeType::kJavascript)
+      page_ad_javascript_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
   }
 
   // Update resource map.
@@ -383,39 +434,25 @@ void AdsPageLoadMetricsObserver::UpdateResource(
 
 void AdsPageLoadMetricsObserver::RecordResourceMimeHistograms(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  if (blink::IsSupportedImageMimeType(resource->mime_type)) {
+  ResourceMimeType mime_type = GetResourceMimeType(resource);
+  if (mime_type == ResourceMimeType::kImage) {
     PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Image",
                          resource->received_data_length);
-  } else if (blink::IsSupportedJavascriptMimeType(resource->mime_type)) {
+  } else if (mime_type == ResourceMimeType::kJavascript) {
     PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.JS",
                          resource->received_data_length);
-  } else {
-    std::string top_level_type;
-    std::string subtype;
-
-    if (!net::ParseMimeTypeWithoutParameter(resource->mime_type,
-                                            &top_level_type, &subtype)) {
-      // Log invalid mime types as "Other".
-      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
-                           resource->received_data_length);
-      return;
-    }
-
-    if (top_level_type.compare("video") == 0) {
-      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Video",
-                           resource->received_data_length);
-    } else if (top_level_type.compare("text") == 0 &&
-               subtype.compare("css") == 0) {
-      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.CSS",
-                           resource->received_data_length);
-    } else if (top_level_type.compare("text") == 0 &&
-               subtype.compare("html") == 0) {
-      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.HTML",
-                           resource->received_data_length);
-    } else {
-      PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
-                           resource->received_data_length);
-    }
+  } else if (mime_type == ResourceMimeType::kVideo) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Video",
+                         resource->received_data_length);
+  } else if (mime_type == ResourceMimeType::kCss) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.CSS",
+                         resource->received_data_length);
+  } else if (mime_type == ResourceMimeType::kHtml) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.HTML",
+                         resource->received_data_length);
+  } else if (mime_type == ResourceMimeType::kOther) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
+                         resource->received_data_length);
   }
 }
 
@@ -440,7 +477,8 @@ void AdsPageLoadMetricsObserver::RecordResourceHistograms(
     RecordResourceMimeHistograms(resource);
 }
 
-void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms() {
+void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
+    ukm::SourceId source_id) {
   // Only records histograms on pages that have some ad bytes.
   if (page_ad_resource_bytes_ == 0)
     return;
@@ -455,13 +493,40 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms() {
     unfinished_bytes += kv.second->received_data_length;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Unfinished",
                        unfinished_bytes);
+
+  auto* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm::builders::AdPageLoad builder(source_id);
+  builder.SetTotalBytes(page_resource_bytes_ >> 10)
+      .SetAdBytes(page_ad_resource_bytes_ >> 10)
+      .SetAdJavascriptBytes(page_ad_javascript_bytes_ >> 10)
+      .SetAdVideoBytes(page_ad_video_bytes_ >> 10);
+  base::Time current_time = base::Time::Now();
+  if (!time_commit_.is_null()) {
+    int time_since_commit = (current_time - time_commit_).InMicroseconds();
+    if (time_since_commit > 0) {
+      int ad_kbps_from_commit =
+          (page_ad_resource_bytes_ >> 10) * 1000 * 1000 / time_since_commit;
+      builder.SetAdBytesPerSecond(ad_kbps_from_commit);
+    }
+  }
+  if (!time_interactive_.is_null()) {
+    int time_since_interactive =
+        (current_time - time_interactive_).InMicroseconds();
+    if (time_since_interactive > 0) {
+      int ad_kbps_since_interactive =
+          (page_ad_resource_bytes_since_interactive_ >> 10) * 1000 * 1000 /
+          time_since_interactive;
+      builder.SetAdBytesPerSecondAfterInteractive(ad_kbps_since_interactive);
+    }
+  }
+  builder.Record(ukm_recorder->Get());
 }
 
-void AdsPageLoadMetricsObserver::RecordHistograms() {
+void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordHistogramsForType(AD_TYPE_GOOGLE);
   RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
   RecordHistogramsForType(AD_TYPE_ALL);
-  RecordPageResourceTotalHistograms();
+  RecordPageResourceTotalHistograms(source_id);
   for (auto const& kv : page_resources_)
     RecordResourceHistograms(kv.second);
 }
