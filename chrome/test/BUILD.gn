@@ -1923,6 +1923,7 @@ test("browser_tests") {
         "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.mm",
         "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
         "../browser/spellchecker/spell_check_host_chrome_impl_mac_browsertest.cc",
+        "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
         "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.h",
         "../browser/ui/cocoa/applescript/bookmark_applescript_utils_test.mm",
         "../browser/ui/cocoa/applescript/bookmark_folder_applescript_browsertest.mm",
@@ -1930,10 +1931,22 @@ test("browser_tests") {
         "../browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm",
         "../browser/ui/cocoa/applescript/tab_applescript_browsertest.mm",
         "../browser/ui/cocoa/applescript/window_applescript_test.mm",
+        "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
+        "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
         "../browser/ui/cocoa/browser_window_mac_browsertest.mm",
         "../browser/ui/cocoa/certificate_viewer_mac_browsertest.mm",
+        "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
+        "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
+        "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
+        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
+
+        # TODO(crbug/845389): Re-Enable the following, which were temporarily
+        # omitted from the build, but are still in use.
+        # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
+        # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
       ]
       sources -= [
         # TODO(groby): This test depends on hunspell and we cannot run it on
@@ -1954,26 +1967,6 @@ test("browser_tests") {
           "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
         ]
       }
-
-      # The browser window can be views or Cocoa on Mac, but this is chosen at
-      # runtime. This block captures tests that only run with a Cocoa browser.
-      # Note some tests are for obsolete Cocoa _secondary_ UI and can be removed
-      # before the browser window transitions completely.
-      sources += [
-        "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
-        "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
-        "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
-
-        ## TODO(crbug/845389): Re-Enable the following, which were temporarily
-        ## omitted from the build, but still in use by the Cocoa browser.
-        # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
-        # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
-      ]
     }
     if (is_win) {
       sources += [
