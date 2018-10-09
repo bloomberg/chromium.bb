@@ -264,7 +264,7 @@ const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
 // Controls whether the PaymentsCustomerData is used to make requests to
 // Google Payments.
 const base::Feature kAutofillUsePaymentsCustomerData{
-    "AutofillUsePaymentsCustomerData", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillUsePaymentsCustomerData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether password generation is offered automatically on fields
 // perceived as eligible for generation.
