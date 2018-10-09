@@ -4004,7 +4004,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
               MaybeCreateThrottleFor(handle);
       if (bookmark_app_experimental_throttle)
         throttles.push_back(std::move(bookmark_app_experimental_throttle));
-    } else {
+    } else if (!base::FeatureList::IsEnabled(
+                   features::kDesktopPWAsStayInWindow)) {
+      // Only add the bookmark app navigation throttle if the stay in
+      // window flag is not set, as the navigation throttle controls
+      // opening out of scope links in the browser.
       auto bookmark_app_throttle =
           extensions::BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
               handle);

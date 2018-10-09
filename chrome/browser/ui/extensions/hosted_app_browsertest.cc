@@ -238,8 +238,6 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
   return model->IsEnabledAt(index) ? kEnabled : kDisabled;
 }
 
-}  // namespace
-
 class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
  public:
   explicit TestAppBannerManagerDesktop(WebContents* web_contents)
@@ -295,6 +293,8 @@ class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
 
   DISALLOW_COPY_AND_ASSIGN(TestAppBannerManagerDesktop);
 };
+
+}  // namespace
 
 // Parameters are {app_type, desktop_pwa_flag}. |app_type| controls whether it
 // is a Hosted or Bookmark app. |desktop_pwa_flag| enables the
@@ -401,6 +401,8 @@ class HostedAppTest
     WebApplicationInfo web_app_info;
     web_app_info.app_url = app_url;
     web_app_info.scope = app_url.GetWithoutFilename();
+    web_app_info.open_as_window = true;
+
     app_ = InstallBookmarkApp(web_app_info);
 
     ui_test_utils::UrlLoadObserver url_observer(
@@ -871,6 +873,64 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PopOutDisabledInIncognito) {
   ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
       IDC_OPEN_IN_PWA_WINDOW, &model, &index));
   EXPECT_FALSE(model->IsEnabledAt(index));
+}
+
+// Tests that desktop PWAs open links in the browser.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       DesktopPWAsOpenLinksInAppWhenFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAsStayInWindow);
+
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+  ASSERT_TRUE(base::FeatureList::IsEnabled(features::kDesktopPWAsStayInWindow));
+  ASSERT_TRUE(
+      extensions::util::GetInstalledPwaForUrl(profile(), GetSecureAppURL()));
+
+  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
+
+  ASSERT_TRUE(app_browser_->hosted_app_controller());
+
+  NavigateAndCheckForLocationBar(app_browser_, GURL(kExampleURL), true);
+}
+
+// Tests that desktop PWAs open links in the browser.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       DesktopPWAsOpenLinksInBrowserWhenFeatureDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kDesktopPWAsStayInWindow);
+
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+  ASSERT_FALSE(
+      base::FeatureList::IsEnabled(features::kDesktopPWAsStayInWindow));
+  ASSERT_TRUE(
+      extensions::util::GetInstalledPwaForUrl(profile(), GetSecureAppURL()));
+
+  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
+
+  ASSERT_TRUE(app_browser_->hosted_app_controller());
+
+  TestAppActionOpensForegroundTab(
+      base::BindOnce(
+          [](Browser* browser, content::WebContents* app_contents,
+             const GURL& target_url) {
+            content::TestNavigationObserver observer(target_url);
+            observer.StartWatchingNewWebContents();
+
+            std::string script = base::StringPrintf("window.location = '%s';",
+                                                    target_url.spec().c_str());
+            ASSERT_TRUE(content::ExecuteScript(app_contents, script));
+
+            observer.WaitForNavigationFinished();
+          },
+          app_browser_, app_browser_->tab_strip_model()->GetActiveWebContents(),
+          GURL(kExampleURL)),
+      GURL(kExampleURL));
 }
 
 // Tests that PWA menus have an uninstall option.
