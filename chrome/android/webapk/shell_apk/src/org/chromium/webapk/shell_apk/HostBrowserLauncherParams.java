@@ -49,7 +49,7 @@ public class HostBrowserLauncherParams {
             startUrl = computeStartUrlForShareTarget(context, callingActivityComponentName, intent);
             source = WebApkConstants.SHORTCUT_SOURCE_SHARE;
             forceNavigation = true;
-        } else if (doesUrlUseHttpOrHttpsScheme(intent.getDataString())) {
+        } else if (!TextUtils.isEmpty(intent.getDataString())) {
             startUrl = intent.getDataString();
             source = intent.getIntExtra(
                     WebApkConstants.EXTRA_SOURCE, WebApkConstants.SHORTCUT_SOURCE_EXTERNAL_INTENT);
@@ -63,6 +63,9 @@ public class HostBrowserLauncherParams {
         if (startUrl == null) return null;
 
         startUrl = WebApkUtils.rewriteIntentUrlIfNecessary(startUrl, metadata);
+
+        // Ignore deep links which came with non HTTP/HTTPS schemes and which were not rewritten.
+        if (!doesUrlUseHttpOrHttpsScheme(startUrl)) return null;
 
         return new HostBrowserLauncherParams(hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,

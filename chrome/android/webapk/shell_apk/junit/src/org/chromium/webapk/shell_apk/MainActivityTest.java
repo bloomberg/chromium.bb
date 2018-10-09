@@ -52,11 +52,11 @@ public final class MainActivityTest {
      */
     @Test
     public void testIntentUrlOutOfScopeBecauseOfScheme() {
-        final String intentStartUrl = "http://www.google.com/search_results?q=eh#cr=countryCA";
+        final String intentStartUrl = "geo:0,0?q=Kenora";
         final String manifestStartUrl = "https://www.google.com/index.html";
         final String manifestScope = "https://www.google.com/";
         final String expectedStartUrl =
-                "https://www.google.com/index.html?originalUrl=http%3A%2F%2Fwww.google.com%2Fsearch_results%3Fq%3Deh%23cr%3DcountryCA";
+                "https://www.google.com/index.html?originalUrl=geo%3A0%2C0%3Fq%3DKenora";
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
