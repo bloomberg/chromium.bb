@@ -11,9 +11,21 @@
 #include "build/build_config.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if defined(USE_OZONE)
+#include "base/run_loop.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 static int RunHelper(base::TestSuite* test_suite) {
 #if defined(USE_OZONE)
   base::MessageLoopForUI main_loop;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  params.using_mojo = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+  std::vector<gl::GLImplementation> allowed_impls =
+      gl::init::GetAllowedGLImplementations();
+  DCHECK(!allowed_impls.empty());
 #else
   base::MessageLoopForIO message_loop;
 #endif
