@@ -1444,7 +1444,7 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * @param {!DirectoryEntry} directoryEntry Directory to be opened.
+   * @param {DirectoryEntry} directoryEntry Directory to be opened.
    * @param {Entry=} opt_selectionEntry Entry to be selected.
    * @param {string=} opt_suggestedName Suggested name for a non-existing\
    *     selection.
@@ -1453,10 +1453,16 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
-    this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
-      if (opt_selectionEntry)
-        this.directoryModel_.selectEntry(opt_selectionEntry);
-    }.bind(this));
+    if (directoryEntry) {
+      this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+        if (opt_selectionEntry)
+          this.directoryModel_.selectEntry(opt_selectionEntry);
+
+        this.ui_.addLoadedAttribute();
+      }.bind(this));
+    } else {
+      this.ui_.addLoadedAttribute();
+    }
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       // In the FULL_PAGE mode if the restored URL points to a file we might
