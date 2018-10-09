@@ -198,6 +198,12 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   if (immersive_runtime) {
     // Listen to changes for this device.
     immersive_runtime->OnRendererDeviceAdded(device);
+
+    // If we don't have display info for the immersive device, get display info
+    // from a different device.
+    if (!immersive_runtime->GetVRDisplayInfo()) {
+      immersive_runtime = nullptr;
+    }
   }
 
   // Get an AR device if there is one.
