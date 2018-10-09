@@ -829,7 +829,7 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
       continue;
     }
 
-    flex_algorithm.emplace_back(ConstructFlexItem(*child, layout_type));
+    ConstructAndAppendFlexItem(&flex_algorithm, *child, layout_type);
   }
 
   LayoutUnit cross_axis_offset = FlowAwareContentInsetBefore();
@@ -977,6 +977,7 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 
 DISABLE_CFI_PERF
 MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
+    const FlexLayoutAlgorithm& algorithm,
     const LayoutBox& child) const {
   MinMaxSize sizes{LayoutUnit(), LayoutUnit::Max()};
 
@@ -996,14 +997,7 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     // computeMainAxisExtentForChild can return -1 when the child has a
     // percentage min size, but we have an indefinite size in that axis.
     sizes.min_size = std::max(LayoutUnit(), sizes.min_size);
-  } else if (min.IsAuto() && !child.ShouldApplySizeContainment() &&
-             MainAxisOverflowForChild(child) == EOverflow::kVisible &&
-             !(IsColumnFlow() && child.IsFlexibleBox())) {
-    // TODO(cbiesinger): For now, we do not handle min-height: auto for nested
-    // column flexboxes. We need to implement
-    // https://drafts.csswg.org/css-flexbox/#intrinsic-sizes before that
-    // produces reasonable results. Tracking bug: https://crbug.com/581553
-    // css-flexbox section 4.5
+  } else if (algorithm.ShouldApplyMinSizeAutoForChild(child)) {
     LayoutUnit content_size =
         ComputeMainAxisExtentForChild(child, kMinSize, Length(kMinContent));
     DCHECK_GE(content_size, LayoutUnit());
@@ -1121,8 +1115,10 @@ LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 }
 
 DISABLE_CFI_PERF
-FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
-                                              ChildLayoutType layout_type) {
+void LayoutFlexibleBox::ConstructAndAppendFlexItem(
+    FlexLayoutAlgorithm* algorithm,
+    LayoutBox& child,
+    ChildLayoutType layout_type) {
   if (layout_type != kNeverLayout && ChildHasIntrinsicMainAxisSize(child)) {
     // If this condition is true, then ComputeMainAxisExtentForChild will call
     // child.IntrinsicContentLogicalHeight() and
@@ -1142,7 +1138,7 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
     }
   }
 
-  MinMaxSize sizes = ComputeMinAndMaxSizesForChild(child);
+  MinMaxSize sizes = ComputeMinAndMaxSizesForChild(*algorithm, child);
 
   LayoutUnit border_and_padding = IsHorizontalFlow()
                                       ? child.BorderAndPaddingWidth()
@@ -1151,8 +1147,8 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
       ComputeInnerFlexBaseSizeForChild(child, border_and_padding, layout_type);
   LayoutUnit margin =
       IsHorizontalFlow() ? child.MarginWidth() : child.MarginHeight();
-  return FlexItem(&child, child_inner_flex_base_size, sizes, border_and_padding,
-                  margin);
+  algorithm->emplace_back(&child, child_inner_flex_base_size, sizes,
+                          border_and_padding, margin);
 }
 
 static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
@@ -1343,13 +1339,6 @@ bool LayoutFlexibleBox::ChildHasIntrinsicMainAxisSize(
       result = true;
   }
   return result;
-}
-
-EOverflow LayoutFlexibleBox::MainAxisOverflowForChild(
-    const LayoutBox& child) const {
-  if (IsHorizontalFlow())
-    return child.StyleRef().OverflowX();
-  return child.StyleRef().OverflowY();
 }
 
 EOverflow LayoutFlexibleBox::CrossAxisOverflowForChild(
