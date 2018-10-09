@@ -206,7 +206,7 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 }
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
-       OldTimestampInPreferencesPreventsNewUserFlow) {
+       NewUserFlowBlockedByOldNewUserTimestamp) {
   BuildAccountStatusChangeDelegateNotifier();
   int64_t earlier_test_time_millis = kTestTimeMillis / 2;
   SetNewUserPotentialHostExistsTimestamp(earlier_test_time_millis);
@@ -217,6 +217,20 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
   EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
   // Timestamp was not overwritten by clock.
   EXPECT_EQ(earlier_test_time_millis, GetNewUserPotentialHostExistsTimestamp());
+}
+
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NewUserFlowBlockedByOldChromebookAddedTimestamp) {
+  BuildAccountStatusChangeDelegateNotifier();
+  int64_t earlier_test_time_millis = kTestTimeMillis / 2;
+  SetExistingUserChromebookAddedTimestamp(earlier_test_time_millis);
+  SetAccountStatusChangeDelegatePtr();
+
+  SetHostWithStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
+                    base::nullopt /* host_device */);
+  EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
+  // Timestamp was not overwritten by clock.
+  EXPECT_EQ(0u, GetNewUserPotentialHostExistsTimestamp());
 }
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
