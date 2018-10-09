@@ -135,6 +135,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {
         this.offlineAdUi_.disabled = true;
+        this.offlineAdUi_.loading = true;
         chrome.send('oauthEnrollAdCompleteLogin', [
           e.detail.machine_name, e.detail.distinguished_name,
           e.detail.encryption_types, e.detail.username, e.detail.password
@@ -403,6 +404,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-active-directory-join-error-card').submitButton.focus();
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
+        this.offlineAdUi_.loading = false;
         this.offlineAdUi_.focus();
       }
 

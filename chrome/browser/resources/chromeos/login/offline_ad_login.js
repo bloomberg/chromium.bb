@@ -40,6 +40,10 @@ Polymer({
      */
     disabled: {type: Boolean, value: false, observer: 'disabledObserver_'},
     /**
+     * Whether the loading UI shown.
+     */
+    loading: {type: Boolean, value: false},
+    /**
      * Whether the screen is for domain join.
      */
     isDomainJoin: {type: Boolean, value: false},
@@ -167,12 +171,6 @@ Polymer({
    */
   errorStateLocked_: false,
 
-  /** @private */
-  realmChanged_: function() {
-    this.adWelcomeMessage =
-        loadTimeData.getStringF('adAuthWelcomeMessage', this.realm);
-  },
-
   /** @override */
   ready: function() {
     if (!this.isDomainJoin)
@@ -290,12 +288,19 @@ Polymer({
   },
 
   /** @private */
+  onBackButton_: function() {
+    this.$.passwordInput.value = '';
+    this.fire('cancel');
+  },
+
+  /** @private */
   onMoreOptionsClicked_: function() {
     this.disabled = true;
     this.fire('dialogShown');
     this.storedOrgUnit_ = this.$.orgUnitInput.value;
     this.storedEncryption_ = this.$.encryptionList.value;
     this.$.moreOptionsDlg.showModal();
+    this.$.orgUnitInput.focus();
   },
 
   /** @private */
@@ -320,6 +325,7 @@ Polymer({
     }
     this.fire('dialogHidden');
     this.disabled = false;
+    this.focus();
   },
 
   /** @private */

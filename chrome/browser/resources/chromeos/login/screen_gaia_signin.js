@@ -304,6 +304,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             this.screenMode = ScreenMode.DEFAULT;
             this.loadGaiaAuthHost_(false /* doSamlRedirect */);
           }.bind(this));
+
+      $('offline-ad-auth').addEventListener('cancel', function() {
+        this.cancel();
+      }.bind(this));
     },
 
     /**
