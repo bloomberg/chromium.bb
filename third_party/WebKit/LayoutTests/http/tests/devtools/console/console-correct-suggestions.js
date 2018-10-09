@@ -36,6 +36,11 @@
     }
     var thePrefix = true;
     var thePrefixAndTheSuffix = true;
+    class ClassWithMethod {
+        method(){}
+    }
+    const objWithMethod = new ClassWithMethod();
+    objWithMethod.methodWithSuffix = true;
   `);
 
   var consoleEditor;
@@ -44,8 +49,9 @@
    * @param {string} text
    * @param {!Array<string>} expected
    * @param {boolean=} force
+   * @param {boolean=} reportDefault
    */
-  async function testCompletions(text, expected, force) {
+  async function testCompletions(text, expected, force, reportDefault) {
     var cursorPosition = text.indexOf('|');
 
     if (cursorPosition < 0)
@@ -85,6 +91,14 @@
       } else {
         TestRunner.addResult('Not Found: ' + expected[i]);
       }
+    }
+
+    if (reportDefault) {
+        const defaultSuggestion = suggestions.reduce((a, b) => (a.priority || 0) >= (b.priority || 0) ? a : b);
+        if (defaultSuggestion.title)
+            TestRunner.addResult(`Default suggestion: ${defaultSuggestion.text}, displayed as ${defaultSuggestion.title}`);
+        else
+            TestRunner.addResult(`Default suggestion: ${defaultSuggestion.text}`);
     }
 
     if (await TestRunner.evaluateInPagePromise('cantTouchThis') !== false) {
@@ -205,5 +219,6 @@
     () => testCompletions(
         'shouldNot|FindThisFunction()', ['shouldNotFindThisFunction']),
     () => testCompletions('thePrefix', ['thePrefix', 'thePrefixAndTheSuffix']),
+    () => testCompletions('objWithMethod.method', ['method', 'methodWithSuffix'], false, true),
   ]).then(TestRunner.completeTest);
 })();
