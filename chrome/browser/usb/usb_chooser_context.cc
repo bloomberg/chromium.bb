@@ -87,7 +87,10 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()),
       client_binding_(this),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  usb_policy_allowed_devices_.reset(
+      new UsbPolicyAllowedDevices(profile->GetPrefs()));
+}
 
 void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
@@ -206,6 +209,11 @@ bool UsbChooserContext::HasDevicePermission(
     const device::mojom::UsbDeviceInfo& device_info) {
   if (UsbBlocklist::Get().IsExcluded(device_info))
     return false;
+
+  if (usb_policy_allowed_devices_->IsDeviceAllowed(
+          requesting_origin, embedding_origin, device_info)) {
+    return true;
+  }
 
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return false;
