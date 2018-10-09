@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   // factory as one of the first steps. Here, the request should not have been
   // serviced at all, so the fake request should still be pending on the fake
   // factory.
-  auto hid_discovery = ::device::FidoDiscovery::Create(
+  auto hid_discovery = ::device::FidoDeviceDiscovery::Create(
       ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
   ASSERT_TRUE(!!hid_discovery);
 

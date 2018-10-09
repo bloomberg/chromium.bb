@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fido_discovery.h"
+#include "device/fido/fido_device_discovery.h"
 
 #include <utility>
 
@@ -27,18 +27,18 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::UnorderedElementsAre;
 
-// A minimal implementation of FidoDiscovery that is no longer abstract.
-class ConcreteFidoDiscovery : public FidoDiscovery {
+// A minimal implementation of FidoDeviceDiscovery that is no longer abstract.
+class ConcreteFidoDiscovery : public FidoDeviceDiscovery {
  public:
   explicit ConcreteFidoDiscovery(FidoTransportProtocol transport)
-      : FidoDiscovery(transport) {}
+      : FidoDeviceDiscovery(transport) {}
   ~ConcreteFidoDiscovery() override = default;
 
   MOCK_METHOD0(StartInternal, void());
 
-  using FidoDiscovery::AddDevice;
-  using FidoDiscovery::NotifyDiscoveryStarted;
-  using FidoDiscovery::RemoveDevice;
+  using FidoDeviceDiscovery::AddDevice;
+  using FidoDeviceDiscovery::NotifyDiscoveryStarted;
+  using FidoDeviceDiscovery::RemoveDevice;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConcreteFidoDiscovery);
@@ -146,7 +146,7 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_THAT(discovery.GetAuthenticatorsForTesting(),
               UnorderedElementsAre(authenticator0, authenticator1));
 
-  const FidoDiscovery& const_discovery = discovery;
+  const FidoDeviceDiscovery& const_discovery = discovery;
   EXPECT_THAT(const_discovery.GetAuthenticatorsForTesting(),
               UnorderedElementsAre(authenticator0, authenticator1));
 

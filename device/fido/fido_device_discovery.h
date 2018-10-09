@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FIDO_DISCOVERY_H_
-#define DEVICE_FIDO_FIDO_DISCOVERY_H_
+#ifndef DEVICE_FIDO_FIDO_DEVICE_DISCOVERY_H_
+#define DEVICE_FIDO_FIDO_DEVICE_DISCOVERY_H_
 
 #include <functional>
 #include <map>
@@ -34,7 +34,8 @@ namespace internal {
 class ScopedFidoDiscoveryFactory;
 }
 
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceDiscovery
+    : public FidoDiscoveryBase {
  public:
   enum class State {
     kIdle,
@@ -48,13 +49,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   //
   // FidoTransportProtocol::kUsbHumanInterfaceDevice requires specifying a valid
   // |connector| on Desktop, and is not valid on Android.
-  static std::unique_ptr<FidoDiscovery> Create(
+  static std::unique_ptr<FidoDeviceDiscovery> Create(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector);
-  static std::unique_ptr<FidoDiscovery> CreateCable(
+  static std::unique_ptr<FidoDeviceDiscovery> CreateCable(
       std::vector<CableDiscoveryData> cable_data);
 
-  ~FidoDiscovery() override;
+  ~FidoDeviceDiscovery() override;
 
   bool is_start_requested() const { return state_ != State::kIdle; }
   bool is_running() const { return state_ == State::kRunning; }
@@ -69,7 +70,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   void Start() override;
 
  protected:
-  FidoDiscovery(FidoTransportProtocol transport);
+  FidoDeviceDiscovery(FidoTransportProtocol transport);
 
   void NotifyDiscoveryStarted(bool success);
   void NotifyAuthenticatorAdded(FidoAuthenticator* authenticator);
@@ -102,14 +103,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery : public FidoDiscoveryBase {
   static CableFactoryFuncPtr g_cable_factory_func_;
 
   State state_ = State::kIdle;
-  base::WeakPtrFactory<FidoDiscovery> weak_factory_;
+  base::WeakPtrFactory<FidoDeviceDiscovery> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FidoDiscovery);
+  DISALLOW_COPY_AND_ASSIGN(FidoDeviceDiscovery);
 };
 
 namespace internal {
 
-// Base class for a scoped override of FidoDiscovery::Create, used in unit
+// Base class for a scoped override of FidoDeviceDiscovery::Create, used in unit
 // tests, layout tests, and when running with the Web Authn Testing API enabled.
 //
 // While there is a subclass instance in scope, calls to the factory method will
@@ -130,24 +131,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
     last_cable_data_ = std::move(cable_data);
   }
 
-  virtual std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
+  virtual std::unique_ptr<FidoDeviceDiscovery> CreateFidoDiscovery(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector) = 0;
 
  private:
-  static std::unique_ptr<FidoDiscovery>
+  static std::unique_ptr<FidoDeviceDiscovery>
   ForwardCreateFidoDiscoveryToCurrentFactory(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector);
 
-  static std::unique_ptr<FidoDiscovery>
+  static std::unique_ptr<FidoDeviceDiscovery>
   ForwardCreateCableDiscoveryToCurrentFactory(
       std::vector<CableDiscoveryData> cable_data);
 
   static ScopedFidoDiscoveryFactory* g_current_factory;
 
-  FidoDiscovery::FactoryFuncPtr original_factory_func_;
-  FidoDiscovery::CableFactoryFuncPtr original_cable_factory_func_;
+  FidoDeviceDiscovery::FactoryFuncPtr original_factory_func_;
+  FidoDeviceDiscovery::CableFactoryFuncPtr original_cable_factory_func_;
   std::vector<CableDiscoveryData> last_cable_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFidoDiscoveryFactory);
@@ -156,4 +157,4 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
 }  // namespace internal
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FIDO_DISCOVERY_H_
+#endif  // DEVICE_FIDO_FIDO_DEVICE_DISCOVERY_H_

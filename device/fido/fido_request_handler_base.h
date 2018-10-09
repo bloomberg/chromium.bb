@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "device/fido/fido_device_authenticator.h"
-#include "device/fido/fido_discovery.h"
+#include "device/fido/fido_device_discovery.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
@@ -223,8 +223,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
-  // TODO(martinkr): Inject platform authenticators through FidoDiscovery and
-  // hold ownership there.
+  // TODO(martinkr): Inject platform authenticators through a new
+  // FidoDiscoveryBase specialization and hold ownership there.
   std::unique_ptr<FidoAuthenticator> platform_authenticator_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;

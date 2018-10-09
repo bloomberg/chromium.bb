@@ -27,7 +27,7 @@ namespace device {
 // Devices are instantiated with an unknown protocol version. Users should call
 // |DiscoverSupportedProtocolAndDeviceInfo| to determine a device's
 // capabilities and initialize the instance accordingly. Instances returned by
-// |FidoDiscovery| are already fully initialized.
+// |FidoDeviceDiscovery| are not fully initialized.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
   using WinkCallback = base::OnceClosure;
