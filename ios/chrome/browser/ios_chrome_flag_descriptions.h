@@ -212,11 +212,6 @@ extern const char kSSOWithWKWebViewDescription[];
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
 
-// Title and description for the flag to enable the custom toolbar container
-// view fix for crbug.com/889884.
-extern const char kToolbarContainerCustomViewName[];
-extern const char kToolbarContainerCustomViewDescription[];
-
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];

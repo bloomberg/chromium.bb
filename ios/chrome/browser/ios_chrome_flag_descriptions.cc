@@ -257,11 +257,6 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
-const char kToolbarContainerCustomViewName[] =
-    "Use custom toolbar container view.";
-const char kToolbarContainerCustomViewDescription[] =
-    "Use the custom toolbar container view fix for crbug.com/889884.";
-
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "
