@@ -909,6 +909,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // NSURLErrorCancelled code should be cancelled.
 - (BOOL)shouldCancelLoadForCancelledError:(NSError*)error;
 
+// Returns YES if response should be rendered in WKWebView.
+- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse;
+
+// Creates DownloadTask for the given navigation response. Headers are passed
+// as argument to avoid extra NSDictionary -> net::HttpResponseHeaders
+// conversion.
+- (void)createDownloadTaskForResponse:(WKNavigationResponse*)WKResponse
+                          HTTPHeaders:(net::HttpResponseHeaders*)headers;
+
 // This method should be called on receiving WKNavigationDelegate callbacks. It
 // will log a metric if the callback occurs after the reciever has already been
 // closed.
@@ -3206,6 +3215,66 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
+- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse {
+  if (!WKResponse.canShowMIMEType) {
+    return NO;
+  }
+
+  BOOL mainFrame = WKResponse.forMainFrame;
+  if (!_webStateImpl->ShouldAllowResponse(WKResponse.response, mainFrame)) {
+    return NO;
+  }
+
+  GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
+  if (responseURL.SchemeIs(url::kDataScheme) && mainFrame) {
+    // Block rendering data URLs for renderer-initiated navigations in main
+    // frame to prevent abusive behavior (crbug.com/890558).
+    web::NavigationContext* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+    if (context->IsRendererInitiated()) {
+      return NO;
+    }
+  }
+
+  return YES;
+}
+
+- (void)createDownloadTaskForResponse:(WKNavigationResponse*)WKResponse
+                          HTTPHeaders:(net::HttpResponseHeaders*)headers {
+  const GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
+  const int64_t contentLength = WKResponse.response.expectedContentLength;
+  const std::string MIMEType =
+      base::SysNSStringToUTF8(WKResponse.response.MIMEType);
+
+  std::string contentDisposition;
+  if (headers) {
+    headers->GetNormalizedHeader("content-disposition", &contentDisposition);
+  }
+
+  ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  if (WKResponse.forMainFrame) {
+    web::NavigationContextImpl* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+    context->SetIsDownload(true);
+    // Navigation callbacks can only be called for the main frame.
+    _webStateImpl->OnNavigationFinished(context);
+    transition = context->GetPageTransition();
+    bool transitionIsLink = ui::PageTransitionTypeIncludingQualifiersIs(
+        transition, ui::PAGE_TRANSITION_LINK);
+    if (transitionIsLink && !context->HasUserGesture()) {
+      // Link click is not possible without user gesture, so this transition
+      // was incorrectly classified and should be "client redirect" instead.
+      // TODO(crbug.com/549301): Remove this workaround when transition
+      // detection is fixed.
+      transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+    }
+  }
+  web::DownloadController::FromBrowserState(_webStateImpl->GetBrowserState())
+      ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString, responseURL,
+                           contentDisposition, contentLength, MIMEType,
+                           transition);
+}
+
 #pragma mark -
 #pragma mark WebUI
 
@@ -4438,14 +4507,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webView:(WKWebView*)webView
-    decidePolicyForNavigationResponse:(WKNavigationResponse*)navigationResponse
+    decidePolicyForNavigationResponse:(WKNavigationResponse*)WKResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
   [self didReceiveWebViewNavigationDelegateCallback];
 
-  GURL responseURL = net::GURLWithNSURL(navigationResponse.response.URL);
-
   // If this is a placeholder navigation, pass through.
+  GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
   if ((web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
        base::FeatureList::IsEnabled(web::features::kWebErrorPages)) &&
       IsPlaceholderUrl(responseURL)) {
@@ -4453,81 +4521,37 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  scoped_refptr<net::HttpResponseHeaders> HTTPHeaders;
-  if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
-    // Create HTTP headers from the response.
-    // TODO(crbug.com/546157): Due to the limited interface of
-    // NSHTTPURLResponse, some data in the HttpResponseHeaders generated here is
-    // inexact.  Once UIWebView is no longer supported, update WebState's
-    // implementation so that the Content-Language and the MIME type can be set
-    // without using this imperfect conversion.
-    HTTPHeaders = net::CreateHeadersFromNSHTTPURLResponse(
-        static_cast<NSHTTPURLResponse*>(navigationResponse.response));
-    self.webStateImpl->OnHttpResponseHeadersReceived(
-        HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  if ([WKResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
+    headers = net::CreateHeadersFromNSHTTPURLResponse(
+        static_cast<NSHTTPURLResponse*>(WKResponse.response));
+    // TODO(crbug.com/551677): remove |OnHttpResponseHeadersReceived| and attach
+    // headers to web::NavigationContext.
+    _webStateImpl->OnHttpResponseHeadersReceived(headers.get(), responseURL);
   }
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationResponse:navigationResponse];
+  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
 
-  NSString* MIMEType = navigationResponse.response.MIMEType;
-  BOOL allowNavigation = navigationResponse.canShowMIMEType;
-  if (allowNavigation) {
-    allowNavigation = self.webStateImpl->ShouldAllowResponse(
-        navigationResponse.response, navigationResponse.forMainFrame);
-    if (allowNavigation && responseURL.SchemeIs(url::kDataScheme) &&
-        navigationResponse.forMainFrame) {
-      // Block rendering data URLs for renderer-initiated navigations in main
-      // frame to prevent abusive behavior (crbug.com/890558). Data URLs
-      // downloads are still allowed.
-      web::NavigationContextImpl* context =
-          [self contextForPendingMainFrameNavigationWithURL:responseURL];
-      allowNavigation = !context->IsRendererInitiated();
-    }
-    if (!allowNavigation && navigationResponse.isForMainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
-    }
-  } else {
+  BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
+  if (!WKResponse.canShowMIMEType) {
+    DCHECK(!shouldRenderResponse);
     if (web::UrlHasWebScheme(responseURL)) {
-      std::string contentDisposition;
-      if (HTTPHeaders) {
-        HTTPHeaders->GetNormalizedHeader("content-disposition",
-                                         &contentDisposition);
-      }
-      int64_t contentLength = navigationResponse.response.expectedContentLength;
-      web::BrowserState* browserState = self.webState->GetBrowserState();
-      ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-      if (navigationResponse.forMainFrame) {
-        web::NavigationContextImpl* context =
-            [self contextForPendingMainFrameNavigationWithURL:responseURL];
-        context->SetIsDownload(true);
-        // Navigation callbacks can only be called for the main frame.
-        _webStateImpl->OnNavigationFinished(context);
-        transition = context->GetPageTransition();
-        if (!context->HasUserGesture() &&
-            ui::PageTransitionTypeIncludingQualifiersIs(
-                transition, ui::PAGE_TRANSITION_LINK)) {
-          // Link click is not possible without user gesture, so this transition
-          // was incorrectly classified and should be "client redirect" instead.
-          // TODO(crbug.com/549301): Remove this workaround when transition
-          // detection is fixed.
-          transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-        }
-      }
-      web::DownloadController::FromBrowserState(browserState)
-          ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
-                               responseURL, contentDisposition, contentLength,
-                               base::SysNSStringToUTF8(MIMEType), transition);
+      [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
+    } else {
+      // DownloadTask only supports web schemes, so do nothing.
     }
     // Discard the pending item to ensure that the current URL is not different
     // from what is displayed on the view.
     [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
     _webStateImpl->SetIsLoading(false);
+  } else if (!shouldRenderResponse && WKResponse.forMainFrame) {
+    [_pendingNavigationInfo setCancelled:YES];
   }
 
-  handler(allowNavigation ? WKNavigationResponsePolicyAllow
-                          : WKNavigationResponsePolicyCancel);
+  handler(shouldRenderResponse ? WKNavigationResponsePolicyAllow
+                               : WKNavigationResponsePolicyCancel);
 }
 
 - (void)webView:(WKWebView*)webView
