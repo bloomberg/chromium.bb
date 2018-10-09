@@ -525,9 +525,9 @@ int PlatformFontWin::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
-  CR_DEFINE_STATIC_LOCAL(const FontRenderParams, params,
-      (gfx::GetFontRenderParams(FontRenderParamsQuery(), NULL)));
-  return params;
+  static const base::NoDestructor<FontRenderParams> params(
+      gfx::GetFontRenderParams(FontRenderParamsQuery(), nullptr));
+  return *params;
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {

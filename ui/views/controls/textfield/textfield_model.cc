@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -268,9 +269,9 @@ gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
 // NSTextKillRingSize, a text system default. However to keep things simple,
 // the default kill ring size of 1 (i.e. a single buffer) is assumed.
 base::string16* GetKillBuffer() {
-  CR_DEFINE_STATIC_LOCAL(base::string16, kill_buffer, ());
+  static base::NoDestructor<base::string16> kill_buffer;
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  return &kill_buffer;
+  return kill_buffer.get();
 }
 
 // Helper method to set the kill buffer.

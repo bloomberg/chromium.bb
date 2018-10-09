@@ -88,15 +88,15 @@ NativeThemeAura::~NativeThemeAura() {}
 
 // static
 NativeThemeAura* NativeThemeAura::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, (false));
-  return &s_native_theme;
+  static base::NoDestructor<NativeThemeAura> s_native_theme(false);
+  return s_native_theme.get();
 }
 
 // static
 NativeThemeAura* NativeThemeAura::web_instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme_for_web,
-                         (IsOverlayScrollbarEnabled()));
-  return &s_native_theme_for_web;
+  static base::NoDestructor<NativeThemeAura> s_native_theme_for_web(
+      IsOverlayScrollbarEnabled());
+  return s_native_theme_for_web.get();
 }
 
 // This implementation returns hardcoded colors.

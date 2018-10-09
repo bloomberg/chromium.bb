@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -557,8 +558,8 @@ Clipboard::FormatType Clipboard::GetFormatType(
 
 // static
 const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeURIList);
+  return *type;
 }
 
 // static
@@ -568,14 +569,14 @@ const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetMozUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeMozillaURL));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeMozillaURL);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeText);
+  return *type;
 }
 
 // static
@@ -585,8 +586,8 @@ const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeFilename);
+  return *type;
 }
 
 // static
@@ -596,38 +597,38 @@ const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeHTML);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeRTF);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePNG));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypePNG);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeWebkitSmartPaste);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypeWebCustomData);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-  return type;
+  static base::NoDestructor<FormatType> type(kMimeTypePepperCustomData);
+  return *type;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

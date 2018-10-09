@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -29,8 +30,8 @@ namespace {
 
 // static
 gfx::ImageSkiaRep& NullImageRep() {
-  CR_DEFINE_STATIC_LOCAL(ImageSkiaRep, null_image_rep, ());
-  return null_image_rep;
+  static base::NoDestructor<ImageSkiaRep> null_image_rep;
+  return *null_image_rep;
 }
 
 std::vector<float>* g_supported_scales = NULL;
