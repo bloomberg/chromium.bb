@@ -198,16 +198,13 @@ function $(id) {
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
- * their respective features and if the user has a theme installed.
- * @param {boolean} hasTheme True if the user has a theme installed.
+ * their respective features.
  */
-customBackgrounds.setMenuVisibility = function(hasTheme) {
+customBackgrounds.setMenuVisibility = function() {
   // Hide the settings menu if:
   // - Custom links and custom backgrounds are not enabled.
-  // - Custom links is not enabled and a theme is installed.
-  if ((!configData.isCustomLinksEnabled &&
-       !configData.isCustomBackgroundsEnabled) ||
-      (!configData.isCustomLinksEnabled && hasTheme)) {
+  if (!configData.isCustomLinksEnabled &&
+      !configData.isCustomBackgroundsEnabled) {
     $(customBackgrounds.IDS.EDIT_BG).hidden = true;
     return;
   }
@@ -222,7 +219,7 @@ customBackgrounds.setMenuVisibility = function(hasTheme) {
 
   // Custom backgrounds is disabled or a theme is installed, hide all custom
   // background options.
-  if (!configData.isCustomBackgroundsEnabled || hasTheme) {
+  if (!configData.isCustomBackgroundsEnabled) {
     $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = true;
     $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
     $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
