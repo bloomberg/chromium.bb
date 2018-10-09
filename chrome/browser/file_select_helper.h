@@ -62,6 +62,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
  private:
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
   friend class base::DeleteHelper<FileSelectHelper>;
+  friend class FileSelectHelperContactsAndroid;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
 

@@ -500,6 +500,8 @@ jumbo_split_static_library("browser") {
     "feature_engagement/tracker_factory.h",
     "file_select_helper.cc",
     "file_select_helper.h",
+    "file_select_helper_contacts_android.cc",
+    "file_select_helper_contacts_android.h",
     "file_select_helper_mac.mm",
     "flag_descriptions.cc",
     "flag_descriptions.h",

@@ -438,7 +438,7 @@ public class SelectFileDialog
                 break;
 
             case CONTACTS_SELECTED:
-                onFileNotSelected();
+                nativeOnContactsSelected(mNativeSelectFileDialog, contacts);
                 break;
 
             case SELECT_ALL:
@@ -820,4 +820,5 @@ public class SelectFileDialog
     private native void nativeOnMultipleFilesSelected(long nativeSelectFileDialogImpl,
             String[] filePathArray, String[] displayNameArray);
     private native void nativeOnFileNotSelected(long nativeSelectFileDialogImpl);
+    private native void nativeOnContactsSelected(long nativeSelectFileDialogImpl, String contacts);
 }

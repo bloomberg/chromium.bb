@@ -40,6 +40,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/file_select_helper_contacts_android.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "content/public/browser/site_instance.h"
@@ -61,6 +65,11 @@ using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {
+
+#if defined(OS_ANDROID)
+// The MIME type for selecting contacts.
+constexpr char kContactsMimeType[] = "text/json+contacts";
+#endif
 
 // Converts a list of FilePaths to a list of ui::SelectedFileInfo.
 std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
@@ -421,7 +430,21 @@ void FileSelectHelper::RunFileChooser(
     const FileChooserParams& params) {
   Profile* profile = Profile::FromBrowserContext(
       render_frame_host->GetProcess()->GetBrowserContext());
-  // FileSelectHelper will keep itself alive until it sends the result message.
+
+#if defined(OS_ANDROID)
+  if (params.accept_types.size() == 1 &&
+      params.accept_types[0].compare(base::ASCIIToUTF16(kContactsMimeType)) ==
+          0) {
+    scoped_refptr<FileSelectHelperContactsAndroid> file_select_helper_android(
+        new FileSelectHelperContactsAndroid(profile));
+    file_select_helper_android->RunFileChooser(
+        render_frame_host, std::move(listener), params.Clone());
+    return;
+  }
+#endif
+
+  // FileSelectHelper will keep itself alive until it sends the result
+  // message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
   file_select_helper->RunFileChooser(render_frame_host, std::move(listener),
@@ -434,7 +457,8 @@ void FileSelectHelper::EnumerateDirectory(
     std::unique_ptr<content::FileSelectListener> listener,
     const base::FilePath& path) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  // FileSelectHelper will keep itself alive until it sends the result message.
+  // FileSelectHelper will keep itself alive until it sends the result
+  // message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
   file_select_helper->EnumerateDirectory(std::move(listener), path);
