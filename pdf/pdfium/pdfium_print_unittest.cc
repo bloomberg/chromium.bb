@@ -4,6 +4,8 @@
 
 #include "pdf/pdfium/pdfium_print.h"
 
+#include <memory>
+
 #include "base/stl_util.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_engine_exports.h"
@@ -67,14 +69,12 @@ TEST_F(PDFiumPrintTest, GetPageNumbersFromPrintPageNumberRange) {
 }
 
 TEST_F(PDFiumPrintTest, Basic) {
-  SetDocumentForTest(FILE_PATH_LITERAL("hello_world2.pdf"));
-  pp::URLLoader dummy_loader;
   TestClient client;
-  PDFiumEngine engine(&client, true);
-  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
-  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
 
-  PDFiumPrint print(&engine);
+  PDFiumPrint print(engine.get());
 
   constexpr PP_PrintSettings_Dev print_settings = {kUSLetterRect,
                                                    kUSLetterRect,

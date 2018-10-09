@@ -57,12 +57,10 @@ class FindTextTestClient : public TestClient {
 using FindTextTest = PDFiumTestBase;
 
 TEST_F(FindTextTest, FindText) {
-  SetDocumentForTest(FILE_PATH_LITERAL("hello_world2.pdf"));
-  pp::URLLoader dummy_loader;
   FindTextTestClient client;
-  PDFiumEngine engine(&client, true);
-  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
-  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
 
   {
     InSequence sequence;
@@ -74,16 +72,14 @@ TEST_F(FindTextTest, FindText) {
     EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(10, true));
   }
 
-  engine.StartFind("o", /*case_sensitive=*/true);
+  engine->StartFind("o", /*case_sensitive=*/true);
 }
 
 TEST_F(FindTextTest, FindHyphenatedText) {
-  SetDocumentForTest(FILE_PATH_LITERAL("spanner.pdf"));
-  pp::URLLoader dummy_loader;
   FindTextTestClient client;
-  PDFiumEngine engine(&client, true);
-  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
-  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("spanner.pdf"));
+  ASSERT_TRUE(engine);
 
   {
     InSequence sequence;
@@ -95,16 +91,14 @@ TEST_F(FindTextTest, FindHyphenatedText) {
     EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(6, true));
   }
 
-  engine.StartFind("application", /*case_sensitive=*/true);
+  engine->StartFind("application", /*case_sensitive=*/true);
 }
 
 TEST_F(FindTextTest, FindLineBreakText) {
-  SetDocumentForTest(FILE_PATH_LITERAL("spanner.pdf"));
-  pp::URLLoader dummy_loader;
   FindTextTestClient client;
-  PDFiumEngine engine(&client, true);
-  ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
-  ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("spanner.pdf"));
+  ASSERT_TRUE(engine);
 
   {
     InSequence sequence;
@@ -114,7 +108,7 @@ TEST_F(FindTextTest, FindLineBreakText) {
     EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, true));
   }
 
-  engine.StartFind("is the first system", /*case_sensitive=*/true);
+  engine->StartFind("is the first system", /*case_sensitive=*/true);
 }
 
 }  // namespace chrome_pdf
