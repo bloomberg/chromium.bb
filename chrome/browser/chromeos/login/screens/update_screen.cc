@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -106,9 +107,9 @@ void StartUpdateCallback(UpdateScreen* screen,
 
 // static
 UpdateScreen::InstanceSet& UpdateScreen::GetInstanceSet() {
-  CR_DEFINE_STATIC_LOCAL(std::set<UpdateScreen*>, instance_set, ());
+  static base::NoDestructor<std::set<UpdateScreen*>> instance_set;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);  // not threadsafe.
-  return instance_set;
+  return *instance_set;
 }
 
 // static

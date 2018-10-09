@@ -407,8 +407,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
 // static
 NativeThemeGtk* NativeThemeGtk::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
-  return &s_native_theme;
+  static base::NoDestructor<NativeThemeGtk> s_native_theme;
+  return s_native_theme.get();
 }
 
 NativeThemeGtk::NativeThemeGtk() {

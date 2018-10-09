@@ -168,8 +168,8 @@ class WindowActivityWatcher::BrowserWatcher : public TabStripModelObserver {
 
 // static
 WindowActivityWatcher* WindowActivityWatcher::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(WindowActivityWatcher, instance, ());
-  return &instance;
+  static base::NoDestructor<WindowActivityWatcher> instance;
+  return instance.get();
 }
 
 // static

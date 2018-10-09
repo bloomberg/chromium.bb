@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
@@ -503,8 +504,8 @@ void TabActivityWatcher::ResetForTesting() {
 
 // static
 TabActivityWatcher* TabActivityWatcher::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(TabActivityWatcher, instance, ());
-  return &instance;
+  static base::NoDestructor<TabActivityWatcher> instance;
+  return instance.get();
 }
 
 // When a WillCloseAllTabs is invoked, all MRU index of that tab_strip_model
