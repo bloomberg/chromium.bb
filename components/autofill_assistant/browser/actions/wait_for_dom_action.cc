@@ -45,7 +45,7 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
 
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
-    check_rounds = std::min(
+    check_rounds = std::max(
         1,
         static_cast<int>(std::ceil(timeout_ms / kCheckPeriodInMilliseconds)));
 
