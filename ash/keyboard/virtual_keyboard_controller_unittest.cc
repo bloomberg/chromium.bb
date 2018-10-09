@@ -50,6 +50,20 @@ class VirtualKeyboardControllerTest : public AshTestBase {
     ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
   }
 
+  void TearDown() override {
+    // Ensure keyboard is reset for the next test.
+    keyboard::SetAccessibilityKeyboardEnabled(false);
+    keyboard::SetKeyboardEnabledFromShelf(false);
+    keyboard::SetTouchKeyboardEnabled(false);
+    keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_AUTO);
+
+    // Ensure inputs devices are reset for the next test.
+    ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+    ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
+
+    AshTestBase::TearDown();
+  }
+
   display::Display GetPrimaryDisplay() {
     return display::Screen::GetScreen()->GetPrimaryDisplay();
   }
@@ -223,17 +237,13 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
   ~VirtualKeyboardControllerAutoTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
-    // Set the current list of devices to empty so that they don't interfere
-    // with the test.
-    ws::InputDeviceClientTestApi().SetKeyboardDevices({});
-    ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
+    VirtualKeyboardControllerTest::SetUp();
     Shell::Get()->system_tray_notifier()->AddVirtualKeyboardObserver(this);
   }
 
   void TearDown() override {
     Shell::Get()->system_tray_notifier()->RemoveVirtualKeyboardObserver(this);
-    AshTestBase::TearDown();
+    VirtualKeyboardControllerTest::TearDown();
   }
 
   void OnKeyboardSuppressionChanged(bool suppressed) override {
