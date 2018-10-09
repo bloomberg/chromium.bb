@@ -205,6 +205,8 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mojo/type_converters.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -6289,6 +6291,52 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
             std::make_unique<base::Value>(3));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
+  const GURL kTestUrl("https://foo.com:443");
+  scoped_refptr<device::UsbDevice> device =
+      base::MakeRefCounted<device::MockUsbDevice>(0, 0, "Google", "Gizmo",
+                                                  "123ABC");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+
+  // Expect the default permission value to be empty.
+  auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
+  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+
+  // Update policy to add an entry to the permission value to allow |kTestUrl|
+  // to access the device described by |device_info|.
+  PolicyMap policies;
+
+  base::Value device_value(base::Value::Type::DICTIONARY);
+  device_value.SetKey("vendor_id", base::Value(0));
+  device_value.SetKey("product_id", base::Value(0));
+
+  base::Value devices_value(base::Value::Type::LIST);
+  devices_value.GetList().push_back(std::move(device_value));
+
+  base::Value url_patterns_value(base::Value::Type::LIST);
+  url_patterns_value.GetList().emplace_back(base::Value("https://[*.]foo.com"));
+
+  base::Value entry(base::Value::Type::DICTIONARY);
+  entry.SetKey("devices", std::move(devices_value));
+  entry.SetKey("url_patterns", std::move(url_patterns_value));
+
+  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
+  policy_value->GetList().push_back(std::move(entry));
+
+  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
+            std::move(policy_value));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+
+  // Remove the policy to ensure that it can be dynamically updated.
+  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
+            std::make_unique<base::Value>(base::Value::Type::LIST));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
 }
 
 // Similar to PolicyTest but sets the WebAppInstallForceList policy before the

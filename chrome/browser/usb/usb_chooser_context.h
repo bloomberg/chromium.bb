@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/usb/usb_policy_allowed_devices.h"
 #include "device/usb/mojo/device_manager_impl.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -87,6 +88,8 @@ class UsbChooserContext : public ChooserContextBase,
   bool is_incognito_;
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   std::map<std::string, base::DictionaryValue> ephemeral_dicts_;
+
+  std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;
 
   // TODO(donna.wu@intel.com): Have the Device Service own this instance in the
   // near future.

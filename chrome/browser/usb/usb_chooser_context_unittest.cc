@@ -4,12 +4,15 @@
 
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
@@ -337,4 +340,207 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin, *device_info));
   EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin,
                                          *ephemeral_device_info));
+}
+
+namespace {
+
+constexpr char kPolicySetting[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
+        "url_patterns": ["https://product.vendor.com"]
+      }, {
+        "devices": [{ "vendor_id": 1234 }],
+        "url_patterns": ["https://vendor.com"]
+      }, {
+        "devices": [{}],
+        "url_patterns": ["https://[*.]anydevice.com"]
+      }, {
+        "devices": [{ "vendor_id": 2468, "product_id": 1357 }],
+        "url_patterns": ["https://gadget.com,https://cool.com"]
+      }
+    ])";
+
+const GURL kPolicyOrigins[] = {
+    GURL("https://product.vendor.com"), GURL("https://vendor.com"),
+    GURL("https://anydevice.com"),      GURL("https://sub.anydevice.com"),
+    GURL("https://gadget.com"),         GURL("https://cool.com")};
+
+void ExpectNoPermissions(UsbChooserContext* store,
+                         const device::mojom::UsbDeviceInfo& device_info) {
+  for (const auto& kRequestingOrigin : kPolicyOrigins) {
+    for (const auto& kEmbeddingOrigin : kPolicyOrigins) {
+      EXPECT_FALSE(store->HasDevicePermission(kRequestingOrigin,
+                                              kEmbeddingOrigin, device_info));
+    }
+  }
+}
+
+void ExpectCorrectPermissions(
+    UsbChooserContext* store,
+    const std::vector<GURL>& kValidRequestingOrigins,
+    const std::vector<GURL>& kInvalidRequestingOrigins,
+    const device::mojom::UsbDeviceInfo& device_info) {
+  // Ensure that only |kValidRequestingOrigin| as the requesting origin has
+  // permission to access the device described by |device_info|.
+  for (const auto& kEmbeddingOrigin : kPolicyOrigins) {
+    for (const auto& kValidRequestingOrigin : kValidRequestingOrigins) {
+      EXPECT_TRUE(store->HasDevicePermission(kValidRequestingOrigin,
+                                             kEmbeddingOrigin, device_info));
+    }
+
+    for (const auto& kInvalidRequestingOrigin : kInvalidRequestingOrigins) {
+      EXPECT_FALSE(store->HasDevicePermission(kInvalidRequestingOrigin,
+                                              kEmbeddingOrigin, device_info));
+    }
+  }
+}
+
+}  // namespace
+
+TEST_F(UsbChooserContextTest,
+       UsbAllowDevicesForUrlsPermissionForSpecificDevice) {
+  const std::vector<GURL> kValidRequestingOrigins = {
+      GURL("https://product.vendor.com"), GURL("https://vendor.com"),
+      GURL("https://sub.anydevice.com"), GURL("https://anydevice.com")};
+  const std::vector<GURL> kInvalidRequestingOrigins = {
+      GURL("https://gadget.com"), GURL("https://cool.com")};
+
+  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+
+  scoped_refptr<UsbDevice> specific_device =
+      base::MakeRefCounted<MockUsbDevice>(1234, 5678, "Google", "Gizmo",
+                                          "ABC123");
+
+  auto specific_device_info =
+      device::mojom::UsbDeviceInfo::From(*specific_device);
+  DCHECK(specific_device_info);
+
+  ExpectNoPermissions(store, *specific_device_info);
+
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  ExpectCorrectPermissions(store, kValidRequestingOrigins,
+                           kInvalidRequestingOrigins, *specific_device_info);
+}
+
+TEST_F(UsbChooserContextTest,
+       UsbAllowDevicesForUrlsPermissionForVendorRelatedDevice) {
+  const std::vector<GURL> kValidRequestingOrigins = {
+      GURL("https://vendor.com"), GURL("https://sub.anydevice.com"),
+      GURL("https://anydevice.com")};
+  const std::vector<GURL> kInvalidRequestingOrigins = {
+      GURL("https://product.vendor.com"), GURL("https://gadget.com"),
+      GURL("https://cool.com")};
+
+  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+
+  scoped_refptr<UsbDevice> vendor_related_device =
+      base::MakeRefCounted<MockUsbDevice>(1234, 8765, "Google", "Widget",
+                                          "XYZ987");
+
+  auto vendor_related_device_info =
+      device::mojom::UsbDeviceInfo::From(*vendor_related_device);
+  DCHECK(vendor_related_device_info);
+
+  ExpectNoPermissions(store, *vendor_related_device_info);
+
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  ExpectCorrectPermissions(store, kValidRequestingOrigins,
+                           kInvalidRequestingOrigins,
+                           *vendor_related_device_info);
+}
+
+TEST_F(UsbChooserContextTest,
+       UsbAllowDevicesForUrlsPermissionForUnrelatedDevice) {
+  const std::vector<GURL> kValidRequestingOrigins = {
+      GURL("https://sub.anydevice.com"), GURL("https://anydevice.com")};
+  const std::vector<GURL> kInvalidRequestingOrigins = {
+      GURL("https://product.vendor.com"), GURL("https://vendor.com"),
+      GURL("https://cool.com")};
+  const GURL kGadgetOrigin("https://gadget.com");
+  const GURL& kCoolOrigin = kInvalidRequestingOrigins[2];
+
+  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+
+  scoped_refptr<UsbDevice> unrelated_device =
+      base::MakeRefCounted<MockUsbDevice>(2468, 1357, "Cool", "Gadget",
+                                          "4W350M3");
+
+  auto unrelated_device_info =
+      device::mojom::UsbDeviceInfo::From(*unrelated_device);
+  DCHECK(unrelated_device_info);
+
+  ExpectNoPermissions(store, *unrelated_device_info);
+
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  EXPECT_TRUE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
+                                         *unrelated_device_info));
+  for (const auto& kEmbeddingOrigin : kPolicyOrigins) {
+    if (kEmbeddingOrigin != kCoolOrigin) {
+      EXPECT_FALSE(store->HasDevicePermission(kGadgetOrigin, kEmbeddingOrigin,
+                                              *unrelated_device_info));
+    }
+  }
+  ExpectCorrectPermissions(store, kValidRequestingOrigins,
+                           kInvalidRequestingOrigins, *unrelated_device_info);
+}
+
+TEST_F(UsbChooserContextTest,
+       UsbAllowDevicesForUrlsPermissionOverrulesUsbGuardPermission) {
+  const GURL kProductVendorOrigin("https://product.vendor.com");
+  const GURL kGadgetOrigin("https://gadget.com");
+  const GURL kCoolOrigin("https://cool.com");
+
+  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+
+  scoped_refptr<UsbDevice> specific_device =
+      base::MakeRefCounted<MockUsbDevice>(1234, 5678, "Google", "Gizmo",
+                                          "ABC123");
+  scoped_refptr<UsbDevice> unrelated_device =
+      base::MakeRefCounted<MockUsbDevice>(2468, 1357, "Cool", "Gadget",
+                                          "4W350M3");
+
+  auto specific_device_info =
+      device::mojom::UsbDeviceInfo::From(*specific_device);
+  auto unrelated_device_info =
+      device::mojom::UsbDeviceInfo::From(*unrelated_device);
+  DCHECK(specific_device_info);
+  DCHECK(unrelated_device_info);
+
+  ExpectNoPermissions(store, *specific_device_info);
+  ExpectNoPermissions(store, *unrelated_device_info);
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetContentSettingDefaultScope(kProductVendorOrigin, kProductVendorOrigin,
+                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(kGadgetOrigin, kCoolOrigin,
+                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(store->HasDevicePermission(
+      kProductVendorOrigin, kProductVendorOrigin, *specific_device_info));
+  EXPECT_FALSE(store->HasDevicePermission(
+      kProductVendorOrigin, kProductVendorOrigin, *unrelated_device_info));
+  EXPECT_FALSE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
+                                          *specific_device_info));
+  EXPECT_FALSE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
+                                          *unrelated_device_info));
+
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  EXPECT_TRUE(store->HasDevicePermission(
+      kProductVendorOrigin, kProductVendorOrigin, *specific_device_info));
+  EXPECT_FALSE(store->HasDevicePermission(
+      kProductVendorOrigin, kProductVendorOrigin, *unrelated_device_info));
+  EXPECT_FALSE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
+                                          *specific_device_info));
+  EXPECT_TRUE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
+                                         *unrelated_device_info));
 }
