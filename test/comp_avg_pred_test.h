@@ -520,7 +520,7 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
     const int num_loops = 1000000000 / (in_w + in_h);
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
-    int subpel_search = 2;  // set to 1 to test 4-tap filter.
+    int subpel_search = USE_8_TAPS;  // set to USE_4_TAPS to test 4-tap filter.
     for (int i = 0; i < num_loops; ++i)
       aom_highbd_jnt_comp_avg_upsampled_pred_c(
           NULL, NULL, 0, 0, NULL, CONVERT_TO_BYTEPTR(output),

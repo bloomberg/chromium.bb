@@ -678,7 +678,7 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
   }
 
   const InterpFilterParams *filter = av1_get_filter(subpel_search);
-  int filter_taps = SUBPEL_TAPS;
+  int filter_taps = (subpel_search <= USE_4_TAPS) ? 4 : SUBPEL_TAPS;
   if (!subpel_x_q3 && !subpel_y_q3) {
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
     uint16_t *comp_pred = CONVERT_TO_SHORTPTR(comp_pred8);
@@ -727,11 +727,23 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
     const int16_t *const kernel_y =
         av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
     const uint8_t *ref_start = ref8 - ref_stride * ((filter_taps >> 1) - 1);
-    uint16_t *temp_start_horiz = temp;
+    uint16_t *temp_start_horiz = (subpel_search <= USE_4_TAPS)
+                                     ? temp + (filter_taps >> 1) * MAX_SB_SIZE
+                                     : temp;
     uint16_t *temp_start_vert = temp + MAX_SB_SIZE * ((filter->taps >> 1) - 1);
     const int intermediate_height =
         (((height - 1) * 8 + subpel_y_q3) >> 3) + filter_taps;
     assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+    // TODO(Sachin): Remove the memset below when we have
+    // 4 tap simd for avx2.
+    if (subpel_search <= USE_4_TAPS) {
+      memset(temp_start_vert - 3 * MAX_SB_SIZE, 0, width * sizeof(uint16_t));
+      memset(temp_start_vert - 2 * MAX_SB_SIZE, 0, width * sizeof(uint16_t));
+      memset(temp_start_vert + (height + 2) * MAX_SB_SIZE, 0,
+             width * sizeof(uint16_t));
+      memset(temp_start_vert + (height + 3) * MAX_SB_SIZE, 0,
+             width * sizeof(uint16_t));
+    }
     aom_highbd_convolve8_horiz(
         ref_start, ref_stride, CONVERT_TO_BYTEPTR(temp_start_horiz),
         MAX_SB_SIZE, kernel_x, 16, NULL, -1, width, intermediate_height, bd);
