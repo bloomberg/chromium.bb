@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.display.DisplayUtil;
 
 /**
  * Simple wrapper around CustomTabActivity to be used when launching a payment handler tab, which
@@ -51,7 +52,8 @@ public class PaymentHandlerActivity extends CustomTabActivity {
     }
 
     private void updateHeight() {
-        int displayHeightInPixels = getWindowAndroid().getDisplay().getDisplayHeight();
+        int displayHeightInPixels = DisplayUtil.dpToPx(
+                getWindowAndroid().getDisplay(), getResources().getConfiguration().screenHeightDp);
         int heightInPhysicalPixels = (int) (displayHeightInPixels * BOTTOM_SHEET_HEIGHT_RATIO);
         int minimumHeightInPhysicalPixels = getResources().getDimensionPixelSize(
                 R.dimen.payments_handler_window_minimum_height);
