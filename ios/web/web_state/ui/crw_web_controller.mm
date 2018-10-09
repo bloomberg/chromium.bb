@@ -4476,6 +4476,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (allowNavigation) {
     allowNavigation = self.webStateImpl->ShouldAllowResponse(
         navigationResponse.response, navigationResponse.forMainFrame);
+    if (allowNavigation && responseURL.SchemeIs(url::kDataScheme) &&
+        navigationResponse.forMainFrame) {
+      // Block rendering data URLs for renderer-initiated navigations in main
+      // frame to prevent abusive behavior (crbug.com/890558). Data URLs
+      // downloads are still allowed.
+      web::NavigationContextImpl* context =
+          [self contextForPendingMainFrameNavigationWithURL:responseURL];
+      allowNavigation = !context->IsRendererInitiated();
+    }
     if (!allowNavigation && navigationResponse.isForMainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
