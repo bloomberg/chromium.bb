@@ -20,7 +20,6 @@
 using offline_pages::TaskQueue;
 
 namespace explore_sites {
-class Catalog;
 
 class ExploreSitesServiceImpl : public ExploreSitesService,
                                 public TaskQueue::Delegate {
@@ -56,15 +55,13 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // TaskQueue::Delegate implementation:
   void OnTaskQueueIsIdle() override;
 
-  void AddUpdatedCatalog(std::string version_token,
-                         std::unique_ptr<Catalog> catalog_proto,
-                         BooleanCallback callback);
-
   // Callback returning from the UpdateCatalogFromNetwork operation.  It
   // passes along the call back to the bridge and eventually back to Java land.
-  void OnCatalogFetched(BooleanCallback callback,
-                        ExploreSitesRequestStatus status,
+  void OnCatalogFetched(ExploreSitesRequestStatus status,
                         std::unique_ptr<std::string> serialized_protobuf);
+
+  void NotifyCatalogUpdated(std::vector<BooleanCallback> callbacks,
+                            bool success);
 
   // Wrappers to call ImageHelper::Compose[Site|Category]Image.
   void ComposeSiteImage(BitmapCallback callback, EncodedImageList images);
@@ -85,6 +82,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   scoped_refptr<network ::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<ExploreSitesFetcher> explore_sites_fetcher_;
   std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter_;
+  std::vector<BooleanCallback> update_catalog_callbacks_;
   base::WeakPtrFactory<ExploreSitesServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesServiceImpl);

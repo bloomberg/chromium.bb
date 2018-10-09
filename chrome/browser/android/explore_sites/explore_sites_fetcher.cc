@@ -128,19 +128,6 @@ std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(
       loader_factory, std::move(callback)));
 }
 
-std::unique_ptr<ExploreSitesFetcher>
-ExploreSitesFetcher::CreateForGetCategories(
-    bool is_immediate_fetch,
-    const std::string& catalog_version,
-    const std::string& accept_languages,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    Callback callback) {
-  GURL url = GetCategoriesURL();
-  return base::WrapUnique(new ExploreSitesFetcher(
-      is_immediate_fetch, url, catalog_version, accept_languages,
-      loader_factory, std::move(callback)));
-}
-
 ExploreSitesFetcher::ExploreSitesFetcher(
     bool is_immediate_fetch,
     const GURL& url,
@@ -148,12 +135,8 @@ ExploreSitesFetcher::ExploreSitesFetcher(
     const std::string& accept_languages,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     Callback callback)
-    : accept_languages_(accept_languages),
-      backoff_entry_(is_immediate_fetch ? &kImmediateFetchBackoffPolicy
-                                        : &kBackgroundFetchBackoffPolicy),
-      max_failure_count_(is_immediate_fetch
-                             ? kMaxFailureCountForImmediateFetch
-                             : kMaxFailureCountForBackgroundFetch),
+    : is_immediate_fetch_(is_immediate_fetch),
+      accept_languages_(accept_languages),
       device_delegate_(std::make_unique<DeviceDelegate>()),
       callback_(std::move(callback)),
       url_loader_factory_(loader_factory),
@@ -169,6 +152,8 @@ ExploreSitesFetcher::ExploreSitesFetcher(
       net::AppendOrReplaceQueryParameter(url, "country_code", GetCountry());
   request_url_ = net::AppendOrReplaceQueryParameter(
       request_url_, "version_token", catalog_version);
+
+  UpdateBackoffEntry();
 }
 
 ExploreSitesFetcher::~ExploreSitesFetcher() {}
@@ -219,6 +204,16 @@ void ExploreSitesFetcher::SetDeviceDelegateForTest(
   device_delegate_ = std::move(device_delegate);
 }
 
+void ExploreSitesFetcher::RestartAsImmediateFetchIfNotYet() {
+  if (is_immediate_fetch_)
+    return;
+  is_immediate_fetch_ = true;
+
+  UpdateBackoffEntry();
+  url_loader_.reset();
+  Start();
+}
+
 void ExploreSitesFetcher::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   ExploreSitesRequestStatus status = HandleResponseCode();
@@ -262,9 +257,9 @@ ExploreSitesRequestStatus ExploreSitesFetcher::HandleResponseCode() {
 }
 
 void ExploreSitesFetcher::RetryWithBackoff() {
-  backoff_entry_.InformOfRequest(false);
+  backoff_entry_->InformOfRequest(false);
 
-  if (backoff_entry_.failure_count() >= max_failure_count_) {
+  if (backoff_entry_->failure_count() >= max_failure_count_) {
     std::move(callback_).Run(ExploreSitesRequestStatus::kFailure,
                              std::unique_ptr<std::string>());
     return;
@@ -273,7 +268,15 @@ void ExploreSitesFetcher::RetryWithBackoff() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ExploreSitesFetcher::Start, weak_factory_.GetWeakPtr()),
-      backoff_entry_.GetTimeUntilRelease());
+      backoff_entry_->GetTimeUntilRelease());
+}
+
+void ExploreSitesFetcher::UpdateBackoffEntry() {
+  backoff_entry_ = std::make_unique<net::BackoffEntry>(
+      is_immediate_fetch_ ? &kImmediateFetchBackoffPolicy
+                          : &kBackgroundFetchBackoffPolicy);
+  max_failure_count_ = is_immediate_fetch_ ? kMaxFailureCountForImmediateFetch
+                                           : kMaxFailureCountForBackgroundFetch;
 }
 
 }  // namespace explore_sites

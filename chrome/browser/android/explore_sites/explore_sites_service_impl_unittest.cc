@@ -44,7 +44,11 @@ class ExploreSitesServiceImplTest : public testing::Test {
     test_data_ = CreateTestDataProto();
   }
 
-  void UpdateCatalogDoneCallback(bool success) { success_ = success; }
+  void UpdateCatalogDoneCallback(bool success) {
+    success_ = success;
+    callback_count_++;
+  }
+
   void CatalogCallback(
       GetCatalogStatus status,
       std::unique_ptr<std::vector<ExploreSitesCategory>> categories) {
@@ -54,7 +58,8 @@ class ExploreSitesServiceImplTest : public testing::Test {
     }
   }
 
-  bool success() { return success_; }
+  bool success() const { return success_; }
+  int callback_count() const { return callback_count_; }
 
   GetCatalogStatus database_status() { return database_status_; }
   std::vector<ExploreSitesCategory>* database_categories() {
@@ -69,15 +74,14 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   std::string CreateTestDataProto();
 
-  ExploreSitesRequestStatus SimulateFetcherData(
-      const std::string& response_data);
+  void SimulateFetcherData(const std::string& response_data);
 
  private:
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index);
+  network::TestURLLoaderFactory::PendingRequest* GetLastPendingRequest();
 
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;
+  int callback_count_;
   GetCatalogStatus database_status_;
   std::unique_ptr<std::vector<ExploreSitesCategory>> database_categories_;
   std::string test_data_;
@@ -93,6 +97,7 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
 ExploreSitesServiceImplTest::ExploreSitesServiceImplTest()
     : success_(false),
+      callback_count_(0),
       test_shared_url_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)),
@@ -102,22 +107,19 @@ ExploreSitesServiceImplTest::ExploreSitesServiceImplTest()
 
 // Called by tests - response_data is the data we want to go back as the
 // response from the network.
-ExploreSitesRequestStatus ExploreSitesServiceImplTest::SimulateFetcherData(
+void ExploreSitesServiceImplTest::SimulateFetcherData(
     const std::string& response_data) {
   DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest(0)->request.url.spec(), response_data);
-  return ExploreSitesRequestStatus::kSuccess;
+      GetLastPendingRequest()->request.url.spec(), response_data, net::HTTP_OK,
+      network::TestURLLoaderFactory::kMostRecentMatch);
 }
 
 // Helper to check the next request for the network.
 network::TestURLLoaderFactory::PendingRequest*
-ExploreSitesServiceImplTest::GetPendingRequest(size_t index) {
-  if (index >= test_url_loader_factory_.pending_requests()->size())
-    return nullptr;
+ExploreSitesServiceImplTest::GetLastPendingRequest() {
   network::TestURLLoaderFactory::PendingRequest* request =
-      &(*test_url_loader_factory_.pending_requests())[index];
-  DCHECK(request);
+      &(test_url_loader_factory_.pending_requests()->back());
   return request;
 }
 
@@ -153,7 +155,6 @@ std::string ExploreSitesServiceImplTest::CreateTestDataProto() {
 }
 
 TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
-  std::string output_data;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
 
@@ -200,6 +201,35 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   EXPECT_TRUE(site2Url == kSite1Url || site2Url == kSite2Url);
   EXPECT_TRUE(site1Name == kSite1Name || site1Name == kSite2Name);
   EXPECT_TRUE(site2Name == kSite1Name || site2Name == kSite2Name);
+}
+
+TEST_F(ExploreSitesServiceImplTest, MultipleUpdateCatalogFromNetwork) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      false /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetcherData(test_data());
+
+  // Wait for callback to get called.
+  PumpLoop();
+
+  EXPECT_TRUE(success());
+  EXPECT_EQ(3, callback_count());
 }
 
 }  // namespace explore_sites
