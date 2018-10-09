@@ -1704,6 +1704,14 @@ void RenderWidget::SetToolTipText(const blink::WebString& text,
 }
 
 void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
+  // This path is for the renderer to change the on-screen position/size of
+  // the widget by changing its window rect. This is not possible for
+  // RenderWidgets whose position/size are controlled by layout from another
+  // frame tree (ie. child local root frames, informed by |for_oopif_|), as
+  // the window rect can only be set by the browser.
+  if (for_oopif_)
+    return;
+
   WebRect window_rect = rect_in_screen;
   EmulatedToScreenRectIfNeeded(&window_rect);
 
