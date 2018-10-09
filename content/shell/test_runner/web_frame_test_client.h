@@ -60,13 +60,12 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                    blink::WebLocalFrameClient::CrossOriginRedirects
                        cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,
-                               blink::WebURLRequest& request) override;
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
+  void DidStartLoading() override;
   void DidStopLoading() override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
