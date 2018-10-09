@@ -44,7 +44,7 @@ public abstract class ListItem {
     }
 
     /** A {@link ListItem} that involves a {@link Date}. */
-    public static class DateListItem extends ListItem {
+    private abstract static class DateListItem extends ListItem {
         public final Date date;
 
         /**
@@ -74,7 +74,9 @@ public abstract class ListItem {
     /** A {@link ListItem} representing a section header. */
     public static class SectionHeaderListItem extends DateListItem {
         public final int filter;
-        public boolean isFirstSectionOfDay;
+        public boolean showDate;
+        public boolean showTitle;
+        public boolean showMenu;
         public List<OfflineItem> items;
 
         /**

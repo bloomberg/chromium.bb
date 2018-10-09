@@ -8,7 +8,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -70,32 +69,28 @@ public class ListUtils {
             return separator.isDateDivider() ? ViewType.SEPARATOR_DATE : ViewType.SEPARATOR_SECTION;
         }
 
-        if (item instanceof DateListItem) {
-            if (item instanceof OfflineItemListItem) {
-                OfflineItemListItem offlineItem = (OfflineItemListItem) item;
+        if (item instanceof OfflineItemListItem) {
+            OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
-                if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
+            if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
 
-                boolean inProgress = offlineItem.item.state == OfflineItemState.IN_PROGRESS
-                        || offlineItem.item.state == OfflineItemState.PAUSED
-                        || offlineItem.item.state == OfflineItemState.INTERRUPTED
-                        || offlineItem.item.state == OfflineItemState.PENDING
-                        || offlineItem.item.state == OfflineItemState.FAILED;
+            boolean inProgress = offlineItem.item.state == OfflineItemState.IN_PROGRESS
+                    || offlineItem.item.state == OfflineItemState.PAUSED
+                    || offlineItem.item.state == OfflineItemState.INTERRUPTED
+                    || offlineItem.item.state == OfflineItemState.PENDING
+                    || offlineItem.item.state == OfflineItemState.FAILED;
 
-                switch (offlineItem.item.filter) {
-                    case OfflineItemFilter.FILTER_VIDEO:
-                        return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
-                    case OfflineItemFilter.FILTER_IMAGE:
-                        return inProgress ? ViewType.IN_PROGRESS_IMAGE : ViewType.IMAGE;
-                    // case OfflineItemFilter.FILTER_PAGE:
-                    // case OfflineItemFilter.FILTER_AUDIO:
-                    // case OfflineItemFilter.FILTER_OTHER:
-                    // case OfflineItemFilter.FILTER_DOCUMENT:
-                    default:
-                        return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
-                }
-            } else {
-                return ViewType.DATE;
+            switch (offlineItem.item.filter) {
+                case OfflineItemFilter.FILTER_VIDEO:
+                    return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
+                case OfflineItemFilter.FILTER_IMAGE:
+                    return inProgress ? ViewType.IN_PROGRESS_IMAGE : ViewType.IMAGE;
+                // case OfflineItemFilter.FILTER_PAGE:
+                // case OfflineItemFilter.FILTER_AUDIO:
+                // case OfflineItemFilter.FILTER_OTHER:
+                // case OfflineItemFilter.FILTER_DOCUMENT:
+                default:
+                    return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
             }
         }
 

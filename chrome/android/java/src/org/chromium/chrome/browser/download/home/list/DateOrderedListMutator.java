@@ -8,7 +8,6 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
-import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SeparatorViewListItem;
@@ -146,21 +145,18 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
             DateGroup dateGroup = mDateGroups.get(date);
             int sectionIndex = 0;
 
-            // Add an item for the date header.
-            if (!mHideAllHeaders) {
-                listItems.add(new DateListItem(CalendarUtils.getStartOfDay(date.getTime())));
-            }
-
             // For each section.
             for (Integer filter : dateGroup.sections.keySet()) {
                 Section section = dateGroup.sections.get(filter);
 
                 // Add a section header.
-                if (!mHideSectionHeaders && !mHideAllHeaders) {
+                if (!mHideAllHeaders) {
                     SectionHeaderListItem sectionHeaderItem =
                             new SectionHeaderListItem(filter, date.getTime());
+                    sectionHeaderItem.showDate = sectionIndex == 0;
+                    sectionHeaderItem.showTitle = !mHideSectionHeaders;
+                    sectionHeaderItem.showMenu = filter == OfflineItemFilter.FILTER_IMAGE;
                     sectionHeaderItem.items = new ArrayList<>(section.items.values());
-                    sectionHeaderItem.isFirstSectionOfDay = sectionIndex == 0;
                     listItems.add(sectionHeaderItem);
                 }
 
