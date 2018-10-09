@@ -139,6 +139,9 @@ std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
   const std::string domain_and_registry =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // eTLD+1 can be empty for private domains.
+  if (domain_and_registry.empty())
+    return std::string();
 
   url_formatter::IDNConversionResult result =
       url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
@@ -162,6 +165,10 @@ std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
         net::registry_controlled_domains::GetDomainAndRegistry(
             detail.origin,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    // eTLD+1 can be empty for private domains.
+    if (engaged_domain_and_registry.empty())
+      continue;
+
     if (domain_and_registry == engaged_domain_and_registry)
       return std::string();
 
