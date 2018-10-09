@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,13 +29,16 @@ class OmniboxPedalTest : public testing::Test {
 };
 
 TEST_F(OmniboxPedalTest, PedalExecutes) {
+  OmniboxPedalProvider provider;
   base::TimeTicks match_selection_timestamp;
   OmniboxPedal::ExecutionContext context(
       *omnibox_client_, *omnibox_edit_controller_, match_selection_timestamp);
   {
-    OmniboxPedalClearBrowsingData pedal;
-    EXPECT_TRUE(pedal.IsTriggerMatch(base::ASCIIToUTF16("clear history")));
-    pedal.Execute(context);
+    const base::string16 trigger = base::ASCIIToUTF16("clear history");
+    const OmniboxPedal* pedal = provider.FindPedalMatch(trigger);
+    EXPECT_NE(pedal, nullptr) << "Pedal not registered or not triggered.";
+    EXPECT_TRUE(pedal->IsTriggerMatch(trigger));
+    pedal->Execute(context);
     const GURL& url = omnibox_edit_controller_->destination_url();
     EXPECT_EQ(url, GURL("chrome://settings/clearBrowserData"));
   }
