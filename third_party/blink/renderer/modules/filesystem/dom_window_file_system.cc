@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/filesystem/dom_window_file_system.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -32,8 +34,11 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/choose_file_system_entries_options.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -133,10 +138,69 @@ static_assert(
         static_cast<int>(mojom::blink::FileSystemType::kPersistent),
     "DOMWindowFileSystem::kPersistent should match FileSystemTypePersistent");
 
+namespace {
+
+mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
+                                                           bool multiple) {
+  if (input == "openFile") {
+    return multiple
+               ? mojom::blink::ChooseFileSystemEntryType::kOpenMultipleFiles
+               : mojom::blink::ChooseFileSystemEntryType::kOpenFile;
+  }
+  if (input == "saveFile")
+    return mojom::blink::ChooseFileSystemEntryType::kSaveFile;
+  if (input == "openDirectory")
+    return mojom::blink::ChooseFileSystemEntryType::kOpenDirectory;
+  NOTREACHED();
+  return mojom::blink::ChooseFileSystemEntryType::kOpenFile;
+}
+
+Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
+    const HeapVector<ChooseFileSystemEntriesOptionsAccepts>& accepts) {
+  Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> result;
+  result.ReserveInitialCapacity(accepts.size());
+  for (const auto& a : accepts) {
+    result.emplace_back(
+        blink::mojom::blink::ChooseFileSystemEntryAcceptsOption::New(
+            a.hasDescription() ? a.description() : g_empty_string,
+            a.hasMimeTypes() ? a.mimeTypes() : Vector<String>(),
+            a.hasExtensions() ? a.extensions() : Vector<String>()));
+  }
+  return result;
+}
+
+ScriptPromise CreateFileHandle(ScriptState* script_state,
+                               const mojom::blink::FileSystemEntryPtr& entry,
+                               bool is_directory) {
+  auto* new_resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise result = new_resolver->Promise();
+  auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
+      ExecutionContext::From(script_state), entry->file_system_id);
+  // TODO(mek): Try to create handle directly rather than having to do more
+  // IPCs to get the actual entries.
+  if (is_directory) {
+    fs->GetDirectory(fs->root(), entry->base_name, FileSystemFlags(),
+                     new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
+                     new PromiseErrorCallback(new_resolver));
+  } else {
+    fs->GetFile(fs->root(), entry->base_name, FileSystemFlags(),
+                new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
+                new PromiseErrorCallback(new_resolver));
+  }
+  return result;
+}
+
+}  // namespace
+
 ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
     LocalDOMWindow& window,
     const ChooseFileSystemEntriesOptions& options) {
+  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kAbortError));
+  }
+
   if (!window.IsCurrentlyDisplayedInFrame()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
@@ -156,9 +220,44 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
             "Must be handling a user gesture to show a file picker."));
   }
 
+  Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;
+  if (options.hasAccepts())
+    accepts = ConvertAccepts(options.accepts());
+
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  LocalFileSystem::From(*document)->ChooseEntry(resolver, options);
+  FileSystemDispatcher::From(document).GetFileSystemManager().ChooseEntry(
+      ConvertChooserType(options.type(), options.multiple()),
+      std::move(accepts), !options.excludeAcceptAllOption(),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver,
+             const ChooseFileSystemEntriesOptions& options,
+             base::File::Error result,
+             Vector<mojom::blink::FileSystemEntryPtr> entries) {
+            if (result != base::File::FILE_OK) {
+              resolver->Reject(FileError::CreateDOMException(result));
+              return;
+            }
+            bool is_directory = options.type() == "openDirectory";
+            ScriptState* script_state = resolver->GetScriptState();
+            ScriptState::Scope scope(script_state);
+            if (options.multiple()) {
+              Vector<ScriptPromise> result;
+              result.ReserveInitialCapacity(entries.size());
+              for (const auto& entry : entries) {
+                result.emplace_back(
+                    CreateFileHandle(script_state, entry, is_directory));
+              }
+              resolver->Resolve(
+                  ScriptPromise::All(script_state, result).GetScriptValue());
+            } else {
+              DCHECK_EQ(1u, entries.size());
+              resolver->Resolve(
+                  CreateFileHandle(script_state, entries[0], is_directory)
+                      .GetScriptValue());
+            }
+          },
+          WrapPersistent(resolver), options));
   return result;
 }
 
