@@ -17,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
+#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -431,7 +432,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
 
   WebRuntimeFeatures::EnableIsolatedCodeCache(
-      base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
+      base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
 
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
     WebRuntimeFeatures::EnableSignedHTTPExchange(true);

@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -96,7 +97,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
+  if (!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
     // Only store Javascript (not WebAssembly) code in the single-keyed cache.
     if (cache_type == blink::mojom::CodeCacheType::kJavascript) {
       base::PostTaskWithTraits(
