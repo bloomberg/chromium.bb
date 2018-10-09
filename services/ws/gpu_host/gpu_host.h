@@ -46,39 +46,23 @@ class GpuHostDelegate;
 
 // GpuHost sets up connection from clients to the real service implementation in
 // the GPU process.
-class GpuHost {
+class GpuHost : public viz::GpuHostImpl::Delegate {
  public:
-  GpuHost() = default;
-  virtual ~GpuHost() = default;
-
-  virtual void Add(mojom::GpuRequest request) = 0;
-  virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
-  virtual void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) = 0;
-
-#if defined(OS_CHROMEOS)
-  virtual void AddArc(mojom::ArcRequest request) = 0;
-#endif  // defined(OS_CHROMEOS)
-};
-
-class DefaultGpuHost : public GpuHost, public viz::GpuHostImpl::Delegate {
- public:
-  DefaultGpuHost(GpuHostDelegate* delegate,
-                 service_manager::Connector* connector,
-                 discardable_memory::DiscardableSharedMemoryManager*
-                     discardable_shared_memory_manager);
-  ~DefaultGpuHost() override;
+  GpuHost(GpuHostDelegate* delegate,
+          service_manager::Connector* connector,
+          discardable_memory::DiscardableSharedMemoryManager*
+              discardable_shared_memory_manager);
+  ~GpuHost() override;
 
   void CreateFrameSinkManager(viz::mojom::FrameSinkManagerRequest request,
                               viz::mojom::FrameSinkManagerClientPtrInfo client);
 
   void Shutdown();
 
-  // GpuHost:
-  void Add(mojom::GpuRequest request) override;
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
-  void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override;
+  void Add(mojom::GpuRequest request);
+
 #if defined(OS_CHROMEOS)
-  void AddArc(mojom::ArcRequest request) override;
+  void AddArc(mojom::ArcRequest request);
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -141,7 +125,7 @@ class DefaultGpuHost : public GpuHost, public viz::GpuHostImpl::Delegate {
   mojo::StrongBindingSet<mojom::Arc> arc_bindings_;
 #endif  // defined(OS_CHROMEOS)
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultGpuHost);
+  DISALLOW_COPY_AND_ASSIGN(GpuHost);
 };
 
 }  // namespace gpu_host

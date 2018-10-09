@@ -118,7 +118,7 @@ void AshService::InitForMash() {
   discardable_shared_memory_manager_ =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
-  gpu_host_ = std::make_unique<ws::gpu_host::DefaultGpuHost>(
+  gpu_host_ = std::make_unique<ws::gpu_host::GpuHost>(
       this, context()->connector(), discardable_shared_memory_manager_.get());
 
   host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();

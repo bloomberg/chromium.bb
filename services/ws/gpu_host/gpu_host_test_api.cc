@@ -13,8 +13,7 @@
 namespace ws {
 namespace gpu_host {
 
-GpuHostTestApi::GpuHostTestApi(DefaultGpuHost* gpu_host)
-    : gpu_host_(gpu_host) {}
+GpuHostTestApi::GpuHostTestApi(GpuHost* gpu_host) : gpu_host_(gpu_host) {}
 
 GpuHostTestApi::~GpuHostTestApi() = default;
 

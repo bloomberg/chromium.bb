@@ -14,18 +14,18 @@ class GpuClient;
 
 namespace ws {
 namespace gpu_host {
-class DefaultGpuHost;
+class GpuHost;
 
 class GpuHostTestApi {
  public:
-  GpuHostTestApi(DefaultGpuHost* gpu_host);
+  GpuHostTestApi(GpuHost* gpu_host);
   ~GpuHostTestApi();
 
   void SetGpuService(viz::mojom::GpuServicePtr gpu_service);
   base::WeakPtr<viz::GpuClient> GetLastGpuClient();
 
  private:
-  DefaultGpuHost* gpu_host_;
+  GpuHost* gpu_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuHostTestApi);
 };
