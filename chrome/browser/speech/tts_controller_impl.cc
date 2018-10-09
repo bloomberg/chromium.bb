@@ -622,20 +622,18 @@ void TtsControllerImpl::VoicesChanged() {
   if (!platform_impl_)
     return;
 
-  for (auto iter = voices_changed_delegates_.begin();
-       iter != voices_changed_delegates_.end(); ++iter) {
-    (*iter)->OnVoicesChanged();
-  }
+  for (auto& delegate : voices_changed_delegates_)
+    delegate.OnVoicesChanged();
 }
 
 void TtsControllerImpl::AddVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.insert(delegate);
+  voices_changed_delegates_.AddObserver(delegate);
 }
 
 void TtsControllerImpl::RemoveVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.erase(delegate);
+  voices_changed_delegates_.RemoveObserver(delegate);
 }
 
 void TtsControllerImpl::RemoveUtteranceEventDelegate(
