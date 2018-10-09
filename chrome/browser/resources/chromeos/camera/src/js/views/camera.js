@@ -505,6 +505,7 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
     }, 100);
     this.stream_ = stream;
     this.options_.updateStreamOptions(constraints, stream);
+    document.body.classList.remove('mode-switching');
     document.body.classList.add('capturing');
     this.updateControls_();
     onSuccess();

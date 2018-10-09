@@ -231,14 +231,26 @@ camera.views.camera.Options.prototype.updateControls = function(
 };
 
 /**
+ * Switches mode to either video-recording or photo-taking.
+ * @param {boolean} record True for record-mode, false otherwise.
+ * @private
+ */
+camera.views.camera.Options.prototype.switchMode_ = function(record) {
+  document.body.classList.toggle('record-mode', record);
+  document.body.classList.add('mode-switching');
+  // TODO(yuli): Use Promise requesting new streams to better handle transitions
+  // for switching modes and devices.
+  this.onNewStreamNeeded_();
+};
+
+/**
  * Handles clicking on the video-recording switch.
  * @param {Event} event Click event.
  * @private
  */
 camera.views.camera.Options.prototype.onSwitchRecordVideoClicked_ = function(
     event) {
-  document.body.classList.add('record-mode');
-  this.onNewStreamNeeded_();
+  this.switchMode_(true);
 };
 
 /**
@@ -248,8 +260,7 @@ camera.views.camera.Options.prototype.onSwitchRecordVideoClicked_ = function(
  */
 camera.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(
     event) {
-  document.body.classList.remove('record-mode');
-  this.onNewStreamNeeded_();
+  this.switchMode_(false);
 };
 
 /**
