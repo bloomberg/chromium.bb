@@ -298,8 +298,8 @@ template <typename CharacterType,
           BreakSpaceType break_space>
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
-    const CharacterType* str,
-    int len) const {
+    const CharacterType* str) const {
+  int len = static_cast<int>(string_.length());
   DCHECK_GE(pos, 0);
   DCHECK_GE(static_cast<unsigned>(pos), start_offset_);
   int next_break = -1;
@@ -379,35 +379,30 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
 template <typename CharacterType, LineBreakType lineBreakType>
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
-    const CharacterType* str,
-    int len) const {
+    const CharacterType* str) const {
   switch (break_space_) {
     case BreakSpaceType::kBeforeEverySpace:
       return NextBreakablePosition<CharacterType, lineBreakType,
-                                   BreakSpaceType::kBeforeEverySpace>(pos, str,
-                                                                      len);
+                                   BreakSpaceType::kBeforeEverySpace>(pos, str);
     case BreakSpaceType::kBeforeSpaceRun:
       return NextBreakablePosition<CharacterType, lineBreakType,
-                                   BreakSpaceType::kBeforeSpaceRun>(pos, str,
-                                                                    len);
+                                   BreakSpaceType::kBeforeSpaceRun>(pos, str);
   }
   NOTREACHED();
   return NextBreakablePosition<CharacterType, lineBreakType,
-                               BreakSpaceType::kBeforeEverySpace>(pos, str,
-                                                                  len);
+                               BreakSpaceType::kBeforeEverySpace>(pos, str);
 }
 
 template <LineBreakType lineBreakType>
-inline int LazyLineBreakIterator::NextBreakablePosition(int pos,
-                                                        int len) const {
+inline int LazyLineBreakIterator::NextBreakablePosition(int pos) const {
   if (UNLIKELY(string_.IsNull()))
     return 0;
   if (string_.Is8Bit()) {
-    return NextBreakablePosition<LChar, lineBreakType>(
-        pos, string_.Characters8(), len);
+    return NextBreakablePosition<LChar, lineBreakType>(pos,
+                                                       string_.Characters8());
   }
-  return NextBreakablePosition<UChar, lineBreakType>(
-      pos, string_.Characters16(), len);
+  return NextBreakablePosition<UChar, lineBreakType>(pos,
+                                                     string_.Characters16());
 }
 
 int LazyLineBreakIterator::NextBreakablePositionBreakCharacter(int pos) const {
@@ -420,16 +415,16 @@ int LazyLineBreakIterator::NextBreakablePositionBreakCharacter(int pos) const {
   return next != kTextBreakDone ? next + start_offset_ : string_.length();
 }
 
-int LazyLineBreakIterator::NextBreakablePosition(int pos,
-                                                 LineBreakType line_break_type,
-                                                 int len) const {
+int LazyLineBreakIterator::NextBreakablePosition(
+    int pos,
+    LineBreakType line_break_type) const {
   switch (line_break_type) {
     case LineBreakType::kNormal:
-      return NextBreakablePosition<LineBreakType::kNormal>(pos, len);
+      return NextBreakablePosition<LineBreakType::kNormal>(pos);
     case LineBreakType::kBreakAll:
-      return NextBreakablePosition<LineBreakType::kBreakAll>(pos, len);
+      return NextBreakablePosition<LineBreakType::kBreakAll>(pos);
     case LineBreakType::kKeepAll:
-      return NextBreakablePosition<LineBreakType::kKeepAll>(pos, len);
+      return NextBreakablePosition<LineBreakType::kKeepAll>(pos);
     case LineBreakType::kBreakCharacter:
       return NextBreakablePositionBreakCharacter(pos);
   }
@@ -437,15 +432,9 @@ int LazyLineBreakIterator::NextBreakablePosition(int pos,
   return NextBreakablePosition(pos, LineBreakType::kNormal);
 }
 
-int LazyLineBreakIterator::NextBreakablePosition(
-    int pos,
-    LineBreakType line_break_type) const {
-  return NextBreakablePosition(pos, line_break_type,
-                               static_cast<int>(string_.length()));
-}
-
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
-  int next_break = NextBreakablePosition(offset, break_type_);
+  int next_break = -1;
+  IsBreakable(offset, next_break);
   DCHECK_GE(next_break, 0);
   return next_break;
 }
@@ -453,7 +442,10 @@ unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset,
                                                      unsigned len) const {
   DCHECK_LE(len, string_.length());
-  int next_break = NextBreakablePosition(offset, break_type_, len);
+  // TODO(kojii): |len| is not utilized for perf benefit as
+  // |NextBreakablePosition| does not accept it due to a revert in
+  // crbug.com/883963.
+  int next_break = NextBreakablePosition(offset, break_type_);
   DCHECK_GE(next_break, 0);
   return next_break;
 }
@@ -461,20 +453,9 @@ unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset,
 unsigned LazyLineBreakIterator::PreviousBreakOpportunity(unsigned offset,
                                                          unsigned min) const {
   unsigned pos = std::min(offset, string_.length());
-  // +2 to ensure at least one code point is included.
-  unsigned end = std::min(pos + 2, string_.length());
-  while (pos > min) {
-    int next_break = NextBreakablePosition(pos, break_type_, end);
-    DCHECK_GE(next_break, 0);
-    if (static_cast<unsigned>(next_break) == pos)
-      return next_break;
-
-    // There's no break opportunities at |pos| or after.
-    end = pos;
-    if (string_.Is8Bit())
-      --pos;
-    else
-      U16_BACK_1(string_.Characters16(), 0, pos);
+  for (; pos > min; pos--) {
+    if (IsBreakable(pos))
+      return pos;
   }
   return min;
 }
