@@ -333,7 +333,7 @@ void WebRtcLogUploader::InitURLLoaderFactoryIfNeeded() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!shutting_down_);
 
-  if (!url_loader_factory_.is_bound())
+  if (url_loader_factory_.is_bound())
     return;
 
   // Clone UI thread URLLoaderFactory for use on the IO thread.
