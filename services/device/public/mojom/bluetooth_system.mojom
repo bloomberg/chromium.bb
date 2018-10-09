@@ -40,4 +40,5 @@ interface BluetoothSystem {
 // Interface used by clients of BluetoothSystem to get notified of events
 // like Bluetooth State changes.
 interface BluetoothSystemClient {
+  OnStateChanged(BluetoothSystem.State new_state);
 };
