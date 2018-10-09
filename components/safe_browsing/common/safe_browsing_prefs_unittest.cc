@@ -159,28 +159,6 @@ TEST_F(SafeBrowsingPrefsTest, MAYBE_GetExtendedReportingPrefName_Exhaustive) {
 
 // TODO(crbug.com/881476) disabled for flaky crashes.
 #if defined(OS_WIN)
-#define MAYBE_ChooseOptInText DISABLED_ChooseOptInText
-#else
-#define MAYBE_ChooseOptInText ChooseOptInText
-#endif
-TEST_F(SafeBrowsingPrefsTest, MAYBE_ChooseOptInText) {
-  // Ensure that Scout resources are always chosen.
-  const int kSberResource = 100;
-  const int kScoutResource = 500;
-
-  // By default, Scout opt-in is used
-  EXPECT_EQ(kScoutResource,
-            ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
-
-  // Enabling Scout still uses the Scout opt-in text.
-  ResetExperiments(/*can_show_scout=*/true);
-  ResetPrefs(/*scout=*/false, /*scout_group=*/true);
-  EXPECT_EQ(kScoutResource,
-            ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
-}
-
-// TODO(crbug.com/881476) disabled for flaky crashes.
-#if defined(OS_WIN)
 #define MAYBE_GetSafeBrowsingExtendedReportingLevel \
   DISABLED_GetSafeBrowsingExtendedReportingLevel
 #else

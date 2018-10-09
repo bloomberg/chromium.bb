@@ -168,21 +168,6 @@ namespace safe_browsing {
 const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-std::string ChooseOptInTextPreference(
-    const PrefService& prefs,
-    const std::string& extended_reporting_pref,
-    const std::string& scout_pref) {
-  // TODO(lpz): Delete this method and update callers
-  return scout_pref;
-}
-
-int ChooseOptInTextResource(const PrefService& prefs,
-                            int extended_reporting_resource,
-                            int scout_resource) {
-  // TODO(lpz): Delete this method and update callers
-  return scout_resource;
-}
-
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
   return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
 }
