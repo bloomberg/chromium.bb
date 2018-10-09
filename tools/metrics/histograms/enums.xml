@@ -51189,14 +51189,15 @@ Full version information for the fingerprint enum values:
   <int value="2" label="SuccessAlreadyPresenting"/>
   <int value="3" label="VRDisplayCannotPresent"/>
   <int value="4" label="PresentationNotSupportedByDisplay"/>
-  <int value="5" label="VRDisplayNotFound"/>
+  <int value="5" label="VRDisplayNotFound (obsolete)"/>
   <int value="6" label="NotInitiatedByUserGesture"/>
   <int value="7" label="InvalidNumberOfLayers"/>
   <int value="8" label="InvalidLayerSource"/>
   <int value="9" label="LayerSourceMissingWebGLContext"/>
   <int value="10" label="InvalidLayerBounds"/>
-  <int value="11" label="ServiceInactive"/>
-  <int value="12" label="RequestDenied"/>
+  <int value="11" label="ServiceInactive (obsolete)"/>
+  <int value="12" label="RequestDenied (obsolete)"/>
+  <int value="13" label="FullscreenNotEnabled (obsolete in M59)"/>
 </enum>
 
 <enum name="VRPresentationStartAction">
