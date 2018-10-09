@@ -93,7 +93,7 @@ void SpeechRecognition::ResultRetrieved(
   auto* it = std::stable_partition(
       results.begin(), results.end(),
       [](const auto& result) { return !result->is_provisional; });
-  size_t provisional_count = results.end() - it;
+  wtf_size_t provisional_count = static_cast<wtf_size_t>(results.end() - it);
 
   // Add the new results to the previous final results.
   HeapVector<Member<SpeechRecognitionResult>> aggregated_results =
