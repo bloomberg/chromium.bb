@@ -56,8 +56,9 @@ class ColorCorrectionTestUtils {
       const void* expected_pixels,
       int num_pixels,
       PixelFormat pixel_format,
-      PixelsAlphaMultiply alpha_multiplied,
-      UnpremulRoundTripTolerance premul_unpremul_tolerance);
+      PixelsAlphaMultiply alpha_multiplied = kAlphaUnmultiplied,
+      UnpremulRoundTripTolerance premul_unpremul_tolerance =
+          kUnpremulRoundTripTolerance);
 
   static bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
       void* src_data,

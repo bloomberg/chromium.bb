@@ -125,6 +125,7 @@ PaintImage BitmapImage::CreatePaintImage() {
           .set_paint_image_generator(std::move(generator))
           .set_repetition_count(GetRepetitionCountWithPolicyOverride(
               RepetitionCount(), animation_policy_))
+          .set_is_high_bit_depth(decoder_->ImageIsHighBitDepth())
           .set_completion_state(completion_state)
           .set_reset_animation_sequence_id(reset_animation_sequence_id_);
 
