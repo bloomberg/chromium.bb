@@ -704,6 +704,12 @@
              "--enable-display-compositor-pixel-dump"]
   },
   {
+    "prefix": "video-surface-layer",
+    "base": "http/tests/devtools/sources/debugger-breakpoints",
+    "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-display-compositor-pixel-dump"]
+  },
+  {
     "prefix": "user-activation-v2",
     "base": "fast/dom/Window",
     "args": ["--enable-features=UserActivationV2"]

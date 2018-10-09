@@ -1403,6 +1403,7 @@ crbug.com/874695 virtual/user-activation-v2/fullscreen/full-screen-restrictions.
 crbug.com/874695 virtual/user-activation-v2/fullscreen/model/fully-exit-fullscreen-nested-iframe.html [ Slow ]
 crbug.com/874695 virtual/user-activation-v2/fullscreen/rendering/overflow.html [ Slow ]
 crbug.com/874695 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Slow ]
+crbug.com/874695 virtual/video-surface-layer/http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Slow ]
 crbug.com/874695 virtual/video-surface-layer/media/audio-controls-do-not-fade-out.html [ Slow ]
 crbug.com/874695 virtual/video-surface-layer/media/autoplay-muted.html [ Slow ]
 crbug.com/874695 virtual/video-surface-layer/media/autoplay-when-visible.html [ Slow ]
