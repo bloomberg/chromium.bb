@@ -10,10 +10,6 @@
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "load_library_perf_tests",
@@ -55,10 +51,6 @@
         ],
         "isolate_name": "telemetry_perf_tests_without_chrome",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "telemetry_perf_tests_without_chrome",
@@ -103,10 +95,6 @@
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_webview_test_suite",
@@ -153,10 +141,6 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -202,10 +186,6 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -252,10 +232,6 @@
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_webview_test_suite",
@@ -302,10 +278,6 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "blink_perf.layout_ng",
@@ -337,10 +309,6 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
