@@ -125,7 +125,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host_) {
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
-    if (!layer_tree_host_->IsUsingLayerLists() && inputs_.element_id) {
+    if (inputs_.element_id) {
       layer_tree_host_->UnregisterElement(inputs_.element_id,
                                           ElementListType::ACTIVE);
     }
@@ -135,9 +135,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host) {
     host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
-    if (!host->IsUsingLayerLists() && inputs_.element_id) {
+    if (inputs_.element_id)
       host->RegisterElement(inputs_.element_id, ElementListType::ACTIVE, this);
-    }
     if (!host->IsUsingLayerLists())
       property_tree_indices_invalid = true;
   }

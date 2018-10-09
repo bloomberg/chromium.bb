@@ -137,8 +137,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                    const cc::ElementId&)> scroll_callback);
 
-  void UnregisterAllElementIds();
-
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
   void CollectPendingLayers(const PaintArtifact&,
