@@ -59,7 +59,6 @@ schema_sources_ = [
   "sessions.json",
   "settings_private.idl",
   "signed_in_devices.idl",
-  "streams_private.idl",
   "sync_file_system.idl",
   "system_indicator.idl",
   "system_private.json",

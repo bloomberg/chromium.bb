@@ -17320,7 +17320,7 @@ Called by update_net_error_codes.py.-->
   <int value="131" label="kSocket"/>
   <int value="132" label="kStartupPages"/>
   <int value="133" label="kStorage"/>
-  <int value="134" label="kStreamsPrivate"/>
+  <int value="134" label="kDeleted_StreamsPrivate"/>
   <int value="135" label="kSyncFileSystem"/>
   <int value="136" label="kSystemPrivate"/>
   <int value="137" label="kSystemDisplay"/>

@@ -175,7 +175,7 @@ class APIPermission {
     kSocket = 131,
     kStartupPages = 132,
     kStorage = 133,
-    kStreamsPrivate = 134,
+    kDeleted_StreamsPrivate = 134,
     kSyncFileSystem = 135,
     kSystemPrivate = 136,
     kSystemDisplay = 137,

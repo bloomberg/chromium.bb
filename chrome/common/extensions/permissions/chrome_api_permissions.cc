@@ -147,8 +147,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebstorePrivate, "webstorePrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kStreamsPrivate, "streamsPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kEnterprisePlatformKeysPrivate,
      "enterprise.platformKeysPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
