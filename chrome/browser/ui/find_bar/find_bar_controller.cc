@@ -243,7 +243,6 @@ void FindBarController::UpdateFindBarForCurrentResult() {
   FindTabHelper* find_tab_helper =
       FindTabHelper::FromWebContents(web_contents_);
   const FindNotificationDetails& find_result = find_tab_helper->find_result();
-
   // Avoid bug 894389: When a new search starts (and finds something) it reports
   // an interim match count result of 1 before the scoping effort starts. This
   // is to provide feedback as early as possible that we will find something.
@@ -252,11 +251,13 @@ void FindBarController::UpdateFindBarForCurrentResult() {
   // the scoping effort starts updating the match count. We avoid this flash by
   // ignoring interim results of 1 if we already have a positive number.
   if (find_result.number_of_matches() > -1) {
-    if (last_reported_matchcount_ > 0 &&
-        find_result.number_of_matches() == 1 &&
-        !find_result.final_update())
+    if (last_reported_matchcount_ > 0 && find_result.number_of_matches() == 1 &&
+        !find_result.final_update() &&
+        last_reported_ordinal_ == find_result.active_match_ordinal()) {
       return;  // Don't let interim result override match count.
+    }
     last_reported_matchcount_ = find_result.number_of_matches();
+    last_reported_ordinal_ = find_result.active_match_ordinal();
   }
 
   find_bar_->UpdateUIForFindResult(find_result, find_tab_helper->find_text());

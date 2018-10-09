@@ -5606,6 +5606,61 @@ TEST_F(WebFrameTest, FindInPageStopFindActionKeepSelectionInAnotherDocument) {
   // Pass if not crash. See http://crbug.com/719880 for details.
 }
 
+TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
+  const WebString search_pattern = WebString::FromUTF8("bar");
+  const char* html = "foo bar foo foo bar";
+  FrameTestHelpers::TestWebFrameClient frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize(&frame_client);
+
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  FrameTestHelpers::LoadHTMLString(frame, html,
+                                   URLTestHelpers::ToKURL(base_url_));
+  web_view_helper.Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->SetFocus(true);
+  RunPendingTasks();
+
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(frame);
+  const int kFindIdentifier = 12345;
+
+  auto options = mojom::blink::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  options->find_next = false;
+  options->forward = true;
+  // First run.
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               options->Clone());
+  RunPendingTasks();
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(1, find_in_page_client.ActiveIndex());
+
+  options->force = true;
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               options->Clone());
+  RunPendingTasks();
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(1, find_in_page_client.ActiveIndex());
+
+  options->find_next = true;
+  options->force = false;
+
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               options->Clone());
+  RunPendingTasks();
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(2, find_in_page_client.ActiveIndex());
+
+  options->find_next = false;
+  options->force = true;
+
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               options->Clone());
+  RunPendingTasks();
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(2, find_in_page_client.ActiveIndex());
+}
+
 static WebPoint TopLeft(const WebRect& rect) {
   return WebPoint(rect.x, rect.y);
 }

@@ -153,11 +153,17 @@ bool TextFinder::Find(int identifier,
                       const WebFindOptions& options,
                       bool wrap_within_frame,
                       bool* active_now) {
-  if (!options.find_next)
+  if (!options.find_next) {
+    // This find-in-page is redone due to the frame finishing loading.
+    // If we can, just reuse the old active match;
+    if (options.force && active_match_) {
+      should_locate_active_rect_ = true;
+      return true;
+    }
     UnmarkAllTextMatches();
-  else
+  } else {
     SetMarkerActive(active_match_.Get(), false);
-
+  }
   if (active_match_ &&
       &active_match_->OwnerDocument() != OwnerFrame().GetFrame()->GetDocument())
     active_match_ = nullptr;
@@ -230,7 +236,7 @@ bool TextFinder::Find(int identifier,
     // Find-next due to DOM alteration (that couldn't be set as active), so
     // we set the flag to ask the scoping effort to find the active rect for
     // us and report it back to the UI.
-    locating_active_rect_ = true;
+    should_locate_active_rect_ = true;
   } else {
     if (!was_active_frame) {
       if (options.forward)
@@ -490,7 +496,7 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
     // as the active rect.
     IntRect result_bounds = result_range->BoundingBox();
     IntRect active_selection_rect;
-    if (locating_active_rect_) {
+    if (should_locate_active_rect_) {
       active_selection_rect =
           active_match_.Get() ? active_match_->BoundingBox() : result_bounds;
     }
@@ -500,14 +506,14 @@ void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
     // find this rect during scoping it means we have found the active
     // tickmark.
     bool found_active_match = false;
-    if (locating_active_rect_ && (active_selection_rect == result_bounds)) {
+    if (should_locate_active_rect_ && active_selection_rect == result_bounds) {
       // We have found the active tickmark frame.
       current_active_match_frame_ = true;
       found_active_match = true;
       // We also know which tickmark is active now.
       active_match_index_ = total_match_count_ + match_count - 1;
       // To stop looking for the active tickmark, we set this flag.
-      locating_active_rect_ = false;
+      should_locate_active_rect_ = false;
 
       // Notify browser of new location for the selected rectangle.
       ReportFindInPageSelection(
@@ -820,7 +826,7 @@ TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
       find_request_identifier_(-1),
       next_invalidate_after_(0),
       find_match_markers_version_(0),
-      locating_active_rect_(false),
+      should_locate_active_rect_(false),
       scoping_in_progress_(false),
       last_find_request_completed_with_no_matches_(false),
       find_match_rects_are_valid_(false) {}
