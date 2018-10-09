@@ -2701,36 +2701,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Test that prerenders abort when navigating to a stream.
-// See chrome/browser/extensions/api/streams_private/streams_private_apitest.cc
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Streams not used with network service.
-
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("streams_private/handle_mime_type"));
-  ASSERT_TRUE(extension);
-  EXPECT_EQ(std::string(extension_misc::kMimeHandlerPrivateTestExtensionId),
-            extension->id());
-  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
-  ASSERT_TRUE(handler);
-  EXPECT_TRUE(handler->CanHandleMIMEType("application/msword"));
-
-  PrerenderTestURL("/prerender/document.doc", FINAL_STATUS_DOWNLOAD, 0);
-
-  // Sanity-check that the extension would have picked up the stream in a normal
-  // navigation had prerender not intercepted it.
-  // The extension streams_private/handle_mime_type reports success if it has
-  // handled the application/msword type.
-  // Note: NavigateToDestURL() cannot be used because of the assertion shecking
-  //     for non-null PrerenderContents.
-  extensions::ResultCatcher catcher;
-  ui_test_utils::NavigateToURL(current_browser(), dest_url());
-  EXPECT_TRUE(catcher.GetNextResult());
-}
-
 // Checks that non-http/https/chrome-extension subresource cancels the
 // prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,

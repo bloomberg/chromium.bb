@@ -14,6 +14,7 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "extensions/common/extension.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
@@ -82,14 +83,12 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->url_loader_client = std::move(original_client);
   transferrable_loader->head = std::move(deep_copied_response->head);
 
-  int64_t expected_content_size = response_head->content_length;
   bool embedded = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
-          expected_content_size, extension_id, view_id, embedded,
-          frame_tree_node_id_, -1 /* render_process_id */,
-          -1 /* render_frame_id */, nullptr /* stream */,
-          std::move(transferrable_loader), response_url));
+          extension_id, view_id, embedded, frame_tree_node_id_,
+          -1 /* render_process_id */, -1 /* render_frame_id */,
+          nullptr /* stream */, std::move(transferrable_loader), response_url));
 }

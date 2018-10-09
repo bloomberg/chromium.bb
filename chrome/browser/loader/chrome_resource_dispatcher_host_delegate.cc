@@ -98,6 +98,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/user_script.h"
 #endif
@@ -521,9 +522,9 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
-          request->GetExpectedContentSize(), ix->second.extension_id,
-          ix->second.view_id, embedded, info->GetFrameTreeNodeId(),
-          info->GetChildID(), info->GetRenderFrameID(), std::move(stream),
+          ix->second.extension_id, ix->second.view_id, embedded,
+          info->GetFrameTreeNodeId(), info->GetChildID(),
+          info->GetRenderFrameID(), std::move(stream),
           nullptr /* transferrable_loader */, GURL()));
   stream_target_info_.erase(request);
 #endif
