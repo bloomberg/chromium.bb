@@ -4092,7 +4092,7 @@
     Smart Lock phone changed. Enter your password to update Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Turn off Smart Lock in Settings.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
-    Enter your password to turn on Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Turn off Smart Lock in Settings.
+    Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Turn off Smart Lock in Settings.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's lock screen when Smart Lock signin attempt fails.">
     Smart Lock couldn’t verify your account. Type your password to enter.
