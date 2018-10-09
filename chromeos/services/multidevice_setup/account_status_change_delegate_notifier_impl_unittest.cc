@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
-#include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -53,8 +53,8 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
     fake_delegate_ = std::make_unique<FakeAccountStatusChangeDelegate>();
     fake_host_status_provider_ = std::make_unique<FakeHostStatusProvider>();
     test_clock_ = std::make_unique<base::SimpleTestClock>();
-    fake_setup_flow_completion_recorder_ =
-        std::make_unique<FakeSetupFlowCompletionRecorder>();
+    fake_host_device_timestamp_manager_ =
+        std::make_unique<FakeHostDeviceTimestampManager>();
     test_clock_->SetNow(base::Time::FromJavaTime(kTestTimeMillis));
   }
 
@@ -62,7 +62,7 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
     delegate_notifier_ =
         AccountStatusChangeDelegateNotifierImpl::Factory::Get()->BuildInstance(
             fake_host_status_provider_.get(), test_pref_service_.get(),
-            fake_setup_flow_completion_recorder_.get(), test_clock_.get());
+            fake_host_device_timestamp_manager_.get(), test_clock_.get());
   }
 
   // Following HostStatusWithDevice contract, this sets the device to null when
@@ -130,8 +130,8 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
   std::unique_ptr<FakeHostStatusProvider> fake_host_status_provider_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
-  std::unique_ptr<FakeSetupFlowCompletionRecorder>
-      fake_setup_flow_completion_recorder_;
+  std::unique_ptr<FakeHostDeviceTimestampManager>
+      fake_host_device_timestamp_manager_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
 
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;

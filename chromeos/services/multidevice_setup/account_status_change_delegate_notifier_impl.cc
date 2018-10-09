@@ -11,8 +11,8 @@
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
-#include "chromeos/services/multidevice_setup/setup_flow_completion_recorder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -53,10 +53,10 @@ std::unique_ptr<AccountStatusChangeDelegateNotifier>
 AccountStatusChangeDelegateNotifierImpl::Factory::BuildInstance(
     HostStatusProvider* host_status_provider,
     PrefService* pref_service,
-    SetupFlowCompletionRecorder* setup_flow_completion_recorder,
+    HostDeviceTimestampManager* host_device_timestamp_manager,
     base::Clock* clock) {
   return base::WrapUnique(new AccountStatusChangeDelegateNotifierImpl(
-      host_status_provider, pref_service, setup_flow_completion_recorder,
+      host_status_provider, pref_service, host_device_timestamp_manager,
       clock));
 }
 
@@ -112,11 +112,11 @@ AccountStatusChangeDelegateNotifierImpl::
     AccountStatusChangeDelegateNotifierImpl(
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
-        SetupFlowCompletionRecorder* setup_flow_completion_recorder,
+        HostDeviceTimestampManager* host_device_timestamp_manager,
         base::Clock* clock)
     : host_status_provider_(host_status_provider),
       pref_service_(pref_service),
-      setup_flow_completion_recorder_(setup_flow_completion_recorder),
+      host_device_timestamp_manager_(host_device_timestamp_manager),
       clock_(clock) {
   verified_host_device_id_from_most_recent_update_ =
       LoadHostDeviceIdFromEndOfPreviousSession();

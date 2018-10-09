@@ -40,7 +40,7 @@ class HostBackendDelegate;
 class HostStatusProvider;
 class HostVerifier;
 class EligibleHostDevicesProvider;
-class SetupFlowCompletionRecorder;
+class HostDeviceTimestampManager;
 
 // Concrete MultiDeviceSetup implementation.
 class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
@@ -130,7 +130,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   std::unique_ptr<HostVerifier> host_verifier_;
   std::unique_ptr<HostStatusProvider> host_status_provider_;
   std::unique_ptr<FeatureStateManager> feature_state_manager_;
-  std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
+  std::unique_ptr<HostDeviceTimestampManager> host_device_timestamp_manager_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
   std::unique_ptr<DeviceReenroller> device_reenroller_;
   std::unique_ptr<AndroidSmsAppInstallingStatusObserver>

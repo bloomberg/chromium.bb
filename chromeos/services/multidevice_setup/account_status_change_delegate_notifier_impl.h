@@ -24,7 +24,7 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-class SetupFlowCompletionRecorder;
+class HostDeviceTimestampManager;
 
 // Concrete AccountStatusChangeDelegateNotifier implementation, which uses
 // HostStatusProvider to check for account changes and PrefStore to track
@@ -41,7 +41,7 @@ class AccountStatusChangeDelegateNotifierImpl
     virtual std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
-        SetupFlowCompletionRecorder* setup_flow_completion_recorder,
+        HostDeviceTimestampManager* host_device_timestamp_manager,
         base::Clock* clock);
 
    private:
@@ -68,7 +68,7 @@ class AccountStatusChangeDelegateNotifierImpl
   AccountStatusChangeDelegateNotifierImpl(
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
-      SetupFlowCompletionRecorder* setup_flow_completion_recorder,
+      HostDeviceTimestampManager* host_device_timestamp_manager,
       base::Clock* clock);
 
   // AccountStatusChangeDelegateNotifier:
@@ -100,7 +100,7 @@ class AccountStatusChangeDelegateNotifierImpl
   mojom::AccountStatusChangeDelegatePtr delegate_ptr_;
   HostStatusProvider* host_status_provider_;
   PrefService* pref_service_;
-  SetupFlowCompletionRecorder* setup_flow_completion_recorder_;
+  HostDeviceTimestampManager* host_device_timestamp_manager_;
   base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountStatusChangeDelegateNotifierImpl);

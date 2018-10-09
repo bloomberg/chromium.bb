@@ -14,12 +14,12 @@
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
+#include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/auth_token_validator.h"
-#include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
 namespace chromeos {
 
@@ -99,15 +99,16 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               host_status_provider_.get(),
               device_sync_client,
               std::move(android_sms_pairing_state_tracker))),
-      setup_flow_completion_recorder_(
-          SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
+      host_device_timestamp_manager_(
+          HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
+              host_status_provider_.get(),
               pref_service,
               base::DefaultClock::GetInstance())),
       delegate_notifier_(
           AccountStatusChangeDelegateNotifierImpl::Factory::Get()
               ->BuildInstance(host_status_provider_.get(),
                               pref_service,
-                              setup_flow_completion_recorder_.get(),
+                              host_device_timestamp_manager_.get(),
                               base::DefaultClock::GetInstance())),
       device_reenroller_(DeviceReenroller::Factory::Get()->BuildInstance(
           device_sync_client,

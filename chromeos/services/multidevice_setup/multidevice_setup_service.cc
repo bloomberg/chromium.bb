@@ -8,6 +8,7 @@
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
+#include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
@@ -23,6 +24,7 @@ namespace multidevice_setup {
 // static
 void MultiDeviceSetupService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
+  HostDeviceTimestampManagerImpl::RegisterPrefs(registry);
   AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(registry);
   HostBackendDelegateImpl::RegisterPrefs(registry);
   HostVerifierImpl::RegisterPrefs(registry);
