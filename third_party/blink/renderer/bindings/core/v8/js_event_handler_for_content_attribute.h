@@ -32,6 +32,7 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
 
   // blink::JSBasedEventListener overrides:
   v8::Local<v8::Value> GetListenerObject(EventTarget&) override;
+  std::unique_ptr<SourceLocation> GetSourceLocation(EventTarget&) override;
 
   const String& Code() const override { return code_; }
 
