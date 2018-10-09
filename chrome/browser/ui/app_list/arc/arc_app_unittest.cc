@@ -2318,6 +2318,28 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
   icon_loader.reset();
 }
 
+// Validates that default app icon can be loaded for non-default dips, that do
+// not exist in Chrome image.
+TEST_P(ArcAppLauncherForDefaulAppTest, AppIconNonDefaultDip) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ASSERT_FALSE(fake_default_apps().empty());
+  const arc::mojom::AppInfo& app = fake_default_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  // Icon can be only fetched after app is registered in the system.
+  arc_test()->WaitForDefaultApps();
+
+  FakeAppIconLoaderDelegate icon_delegate;
+  // 17 should never be a default dip size.
+  std::unique_ptr<ArcAppIconLoader> icon_loader =
+      std::make_unique<ArcAppIconLoader>(profile(), 17, &icon_delegate);
+  icon_loader->FetchImage(app_id);
+  icon_delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  icon_loader.reset();
+}
+
 TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);

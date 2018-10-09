@@ -4146,9 +4146,12 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   // Wait for real app icon image is decoded and set for shelf item.
   shelf_controller->GetLastItemImage();
-  // Should have only one update that guarantees default icon was not set in
+  // Should have only one update for newly created window with no-icon set plus
+  // update for each scale factor. That guarantees default icon was not set in
   // between.
-  EXPECT_EQ(update_count_before_launch + 1, shelf_controller->updated_count());
+  EXPECT_EQ(
+      update_count_before_launch + 1 + ui::GetSupportedScaleFactors().size(),
+      shelf_controller->updated_count());
 }
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
