@@ -205,77 +205,81 @@ class GM2TabStyle : public TabStyle {
 
     gfx::Path path;
 
-    // We will go clockwise from the lower left. We start in the overlap
-    // region, preventing a gap between toolbar and tabstrip.
-    // TODO(dfried): verify that the we actually want to start the stroke for
-    // the exterior path outside the region; we might end up rendering an
-    // extraneous descending pixel on displays with odd scaling and nonzero
-    // stroke width.
-
-    // Start with the left side of the shape.
-
-    // Draw everything left of the bottom-left corner of the tab.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┏━╯         ╰─┐
-    path.moveTo(left, extended_bottom);
-    path.lineTo(left, tab_bottom);
-    path.lineTo(left + corner_gap, tab_bottom);
-
-    // Draw the bottom-left arc.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┌─╝         ╰─┐
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
-
-    // Draw the ascender and top arc, if present.
-    if (extend_to_top) {
-      //   ┎─────────╮
-      //   ┃ Content │
-      // ┌─╯         ╰─┐
-      path.lineTo(tab_left, tab_top);
+    if (path_type == PathType::kInteriorClip) {
+      // Clip path is a simple rectangle.
+      path.addRect(tab_left, tab_top, tab_right, tab_bottom);
     } else {
-      //   ╔─────────╮
-      //   ┃ Content │
-      // ┌─╯         ╰─┐
-      path.lineTo(tab_left, tab_top + top_radius);
-      path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCW_Direction, tab_left + top_radius, tab_top);
+      // We will go clockwise from the lower left. We start in the overlap
+      // region, preventing a gap between toolbar and tabstrip.
+      // TODO(dfried): verify that the we actually want to start the stroke for
+      // the exterior path outside the region; we might end up rendering an
+      // extraneous descending pixel on displays with odd scaling and nonzero
+      // stroke width.
+
+      // Start with the left side of the shape.
+
+      // Draw everything left of the bottom-left corner of the tab.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┏━╯         ╰─┐
+      path.moveTo(left, extended_bottom);
+      path.lineTo(left, tab_bottom);
+      path.lineTo(left + corner_gap, tab_bottom);
+
+      // Draw the bottom-left arc.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┌─╝         ╰─┐
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+
+      // Draw the ascender and top arc, if present.
+      if (extend_to_top) {
+        //   ┎─────────╮
+        //   ┃ Content │
+        // ┌─╯         ╰─┐
+        path.lineTo(tab_left, tab_top);
+      } else {
+        //   ╔─────────╮
+        //   ┃ Content │
+        // ┌─╯         ╰─┐
+        path.lineTo(tab_left, tab_top + top_radius);
+        path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCW_Direction, tab_left + top_radius, tab_top);
+      }
+
+      // Draw the top crossbar and top-right curve, if present.
+      if (extend_to_top) {
+        //   ┌━━━━━━━━━┑
+        //   │ Content │
+        // ┌─╯         ╰─┐
+        path.lineTo(tab_right, tab_top);
+
+      } else {
+        //   ╭━━━━━━━━━╗
+        //   │ Content │
+        // ┌─╯         ╰─┐
+        path.lineTo(tab_right - top_radius, tab_top);
+        path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCW_Direction, tab_right, tab_top + top_radius);
+      }
+
+      // Draw the descender and bottom-right arc.
+      //   ╭─────────╮
+      //   │ Content ┃
+      // ┌─╯         ╚─┐
+      path.lineTo(tab_right, tab_bottom - bottom_radius);
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+
+      // Draw everything right of the bottom-right corner of the tab.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┌─╯         ╰━┓
+      path.lineTo(right, tab_bottom);
+      path.lineTo(right, extended_bottom);
     }
 
-    // Draw the top crossbar and top-right curve, if present.
-    if (extend_to_top) {
-      //   ┌━━━━━━━━━┑
-      //   │ Content │
-      // ┌─╯         ╰─┐
-      path.lineTo(tab_right, tab_top);
-
-    } else {
-      //   ╭━━━━━━━━━╗
-      //   │ Content │
-      // ┌─╯         ╰─┐
-      path.lineTo(tab_right - top_radius, tab_top);
-      path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCW_Direction, tab_right, tab_top + top_radius);
-    }
-
-    // Draw the descender and bottom-right arc.
-    //   ╭─────────╮
-    //   │ Content ┃
-    // ┌─╯         ╚─┐
-    path.lineTo(tab_right, tab_bottom - bottom_radius);
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
-
-    // Draw everything right of the bottom-right corner of the tab.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┌─╯         ╰━┓
-    path.lineTo(right, tab_bottom);
-    path.lineTo(right, extended_bottom);
-
-    // Finish the path.
     if (path_type != PathType::kBorder)
       path.close();
 
