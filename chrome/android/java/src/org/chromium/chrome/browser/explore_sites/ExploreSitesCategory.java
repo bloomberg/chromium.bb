@@ -69,8 +69,9 @@ public class ExploreSitesCategory {
 
     /**
      * Creates an explore sites category data structure.
-     * @param categoryId The integer category ID, corresponding to the enum value from the Catalog
-     *   proto, or -1 if this represents the More button.
+     * @param categoryId The integer category ID, corresponding to the row in the DB this reflects.
+     * @param categoryType The integer category type, corresponding to the enum value from the
+     *         Catalog proto, or -1 if this represents the More button.
      * @param title The string to display as the caption for this tile.
      */
     public ExploreSitesCategory(int categoryId, @CategoryType int categoryType, String title) {
@@ -85,6 +86,10 @@ public class ExploreSitesCategory {
     }
     public @CategoryType int getType() {
         return mCategoryType;
+    }
+
+    public boolean isPlaceholder() {
+        return mCategoryId == -1;
     }
 
     public String getTitle() {
