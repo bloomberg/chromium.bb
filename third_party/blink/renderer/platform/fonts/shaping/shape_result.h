@@ -248,7 +248,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Computes the list of fonts along with the number of glyphs for each font.
   struct RunFontData {
     SimpleFontData* font_data_;
-    size_t glyph_count_;
+    wtf_size_t glyph_count_;
   };
   void GetRunFontData(Vector<RunFontData>* font_data) const;
 

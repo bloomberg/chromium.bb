@@ -823,7 +823,7 @@ void ShapeResult::ApplySpacingImpl(
       continue;
     unsigned run_start_index = run->start_index_ + text_start_offset;
     float total_space_for_run = 0;
-    for (size_t i = 0; i < run->glyph_data_.size(); i++) {
+    for (wtf_size_t i = 0; i < run->glyph_data_.size(); i++) {
       HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
 
       // Skip if it's not a grapheme cluster boundary.
@@ -1196,14 +1196,14 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
   // start index. For RTL, we place the run before the next run with a lower
   // character index. Otherwise, for both directions, at the end.
   if (HB_DIRECTION_IS_FORWARD(run->direction_)) {
-    for (size_t pos = 0; pos < runs_.size(); ++pos) {
+    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
       if (runs_.at(pos)->start_index_ > run->start_index_) {
         runs_.insert(pos, std::move(run));
         break;
       }
     }
   } else {
-    for (size_t pos = 0; pos < runs_.size(); ++pos) {
+    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
       if (runs_.at(pos)->start_index_ < run->start_index_) {
         runs_.insert(pos, std::move(run));
         break;

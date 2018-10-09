@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 namespace OpenType {
@@ -135,7 +136,7 @@ static void CopyOpenTypeTable(sk_sp<SkTypeface> typeface,
                               SkFontTableTag tag,
                               Vector<char>& destination) {
   const size_t table_size = typeface->getTableSize(tag);
-  destination.resize(table_size);
+  destination.resize(SafeCast<wtf_size_t>(table_size));
   if (table_size) {
     typeface->getTableData(tag, 0, table_size, destination.data());
   }
@@ -217,16 +218,16 @@ void OpenTypeVerticalData::LoadMetrics(sk_sp<SkTypeface> typeface) {
   if (HasVORG())
     return;
 
-  size_t size_extra =
+  wtf_size_t size_extra =
       buffer.size() - sizeof(OpenType::VmtxTable::Entry) * count_vmtx_entries;
   if (size_extra % sizeof(OpenType::Int16)) {
     DLOG(ERROR) << "vmtx has incorrect tsb count";
     return;
   }
-  size_t count_top_side_bearings =
+  wtf_size_t count_top_side_bearings =
       count_vmtx_entries + size_extra / sizeof(OpenType::Int16);
   top_side_bearings_.resize(count_top_side_bearings);
-  size_t i;
+  wtf_size_t i;
   for (i = 0; i < count_vmtx_entries; ++i)
     top_side_bearings_[i] = vmtx->entries[i].top_side_bearing;
   if (i < count_top_side_bearings) {
@@ -247,7 +248,7 @@ void OpenTypeVerticalData::SetScaleAndFallbackMetrics(float size_per_unit,
 }
 
 float OpenTypeVerticalData::AdvanceHeight(Glyph glyph) const {
-  size_t count_heights = advance_heights_.size();
+  wtf_size_t count_heights = advance_heights_.size();
   if (count_heights) {
     uint16_t advance_f_unit =
         advance_heights_[glyph < count_heights ? glyph : count_heights - 1];
@@ -264,10 +265,10 @@ void OpenTypeVerticalData::GetVerticalTranslationsForGlyphs(
     const Glyph* glyphs,
     size_t count,
     float* out_xy_array) const {
-  size_t count_widths = advance_widths_.size();
+  wtf_size_t count_widths = advance_widths_.size();
   DCHECK_GT(count_widths, 0u);
   bool use_vorg = HasVORG();
-  size_t count_top_side_bearings = top_side_bearings_.size();
+  wtf_size_t count_top_side_bearings = top_side_bearings_.size();
   float default_vert_origin_y = std::numeric_limits<float>::quiet_NaN();
   for (float *end = &(out_xy_array[count * 2]); out_xy_array != end;
        ++glyphs, out_xy_array += 2) {
