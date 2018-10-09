@@ -113,9 +113,9 @@
       keywords: ["not-inside-link", "inside-unvisited-link", "inside-visited-link"],
       inherited: true,
     },
-    // Style can not be shared.
+    // Style has content property with attr() values.
     {
-      name: "Unique",
+      name: "HasAttrContent",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_copy: true,

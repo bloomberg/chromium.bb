@@ -120,8 +120,10 @@ void MatchedPropertiesCache::ClearViewportDependent() {
 }
 
 bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
-  // unique() styles are not cacheable.
-  if (style.Unique())
+  // Content property with attr() values depend on the attribute value of the
+  // originating element, thus we cannot cache based on the matched properties
+  // because the value of content is retrieved from the attribute at apply time.
+  if (style.HasAttrContent())
     return false;
   if (style.Zoom() != ComputedStyleInitialValues::InitialZoom())
     return false;
