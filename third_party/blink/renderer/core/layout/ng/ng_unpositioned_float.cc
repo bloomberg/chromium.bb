@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 
@@ -17,17 +16,5 @@ NGUnpositionedFloat::NGUnpositionedFloat(NGBlockNode node,
     : node(node), token(token) {}
 
 NGUnpositionedFloat::~NGUnpositionedFloat() = default;
-
-bool NGUnpositionedFloat::IsLeft() const {
-  return node.Style().Floating() == EFloat::kLeft;
-}
-
-bool NGUnpositionedFloat::IsRight() const {
-  return node.Style().Floating() == EFloat::kRight;
-}
-
-EClear NGUnpositionedFloat::ClearType() const {
-  return node.Style().Clear();
-}
 
 }  // namespace blink

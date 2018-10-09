@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 
 namespace blink {
@@ -35,9 +36,9 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   scoped_refptr<NGLayoutResult> layout_result;
   NGBoxStrut margins;
 
-  bool IsLeft() const;
-  bool IsRight() const;
-  EClear ClearType() const;
+  bool IsLeft() const { return node.Style().Floating() == EFloat::kLeft; }
+  bool IsRight() const { return node.Style().Floating() == EFloat::kRight; }
+  EClear ClearType() const { return node.Style().Clear(); }
 };
 
 }  // namespace blink

@@ -8,24 +8,6 @@
 
 namespace blink {
 
-NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
-    const NGConstraintSpace& parent_space)
-    : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
-                               parent_space.InitialContainingBlockSize()) {
-  parent_percentage_resolution_size_ = parent_space.PercentageResolutionSize();
-
-  flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
-  if (parent_space.IsIntermediateLayout())
-    flags_ |= NGConstraintSpace::kIntermediateLayout;
-}
-
-NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
-                                                   NGPhysicalSize icb_size)
-    : initial_containing_block_size_(icb_size),
-      parent_writing_mode_(writing_mode) {
-  flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
-}
-
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
     const NGBaselineRequest& request) {
   for (const auto& existing : baseline_requests_) {

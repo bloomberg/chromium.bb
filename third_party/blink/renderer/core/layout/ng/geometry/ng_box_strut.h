@@ -43,7 +43,7 @@ struct CORE_EXPORT NGBoxStrut {
 
   NGLogicalOffset StartOffset() const { return {inline_start, block_start}; }
 
-  bool IsEmpty() const;
+  bool IsEmpty() const { return *this == NGBoxStrut(); }
 
   NGPhysicalBoxStrut ConvertToPhysical(WritingMode, TextDirection) const;
 
@@ -77,8 +77,12 @@ struct CORE_EXPORT NGBoxStrut {
     return result;
   }
 
-  bool operator==(const NGBoxStrut& other) const;
-  bool operator!=(const NGBoxStrut& other) const;
+  bool operator==(const NGBoxStrut& other) const {
+    return std::tie(other.inline_start, other.inline_end, other.block_start,
+                    other.block_end) ==
+           std::tie(inline_start, inline_end, block_start, block_end);
+  }
+  bool operator!=(const NGBoxStrut& other) const { return !(*this == other); }
 
   String ToString() const;
 
@@ -112,7 +116,11 @@ struct CORE_EXPORT NGLineBoxStrut {
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return line_over + line_under; }
 
-  bool operator==(const NGLineBoxStrut& other) const;
+  bool operator==(const NGLineBoxStrut& other) const {
+    return inline_start == other.inline_start &&
+           inline_end == other.inline_end && line_over == other.line_over &&
+           line_under == other.line_under;
+  }
 
   LayoutUnit inline_start;
   LayoutUnit inline_end;
@@ -122,7 +130,16 @@ struct CORE_EXPORT NGLineBoxStrut {
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLineBoxStrut&);
 
-struct NGPixelSnappedPhysicalBoxStrut;
+// Struct to store pixel snapped physical dimensions.
+struct CORE_EXPORT NGPixelSnappedPhysicalBoxStrut {
+  NGPixelSnappedPhysicalBoxStrut() = default;
+  NGPixelSnappedPhysicalBoxStrut(int top, int right, int bottom, int left)
+      : top(top), right(right), bottom(bottom), left(left) {}
+  int top;
+  int right;
+  int bottom;
+  int left;
+};
 
 // Struct to store physical dimensions, independent of writing mode and
 // direction.
@@ -141,9 +158,16 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
 
   // Converts physical dimensions to line-relative logical ones per
   // https://drafts.csswg.org/css-writing-modes-3/#line-directions
-  NGLineBoxStrut ConvertToLineLogical(WritingMode, TextDirection) const;
+  NGLineBoxStrut ConvertToLineLogical(WritingMode writing_mode,
+                                      TextDirection direction) const {
+    return NGLineBoxStrut(ConvertToLogical(writing_mode, direction),
+                          IsFlippedLinesWritingMode(writing_mode));
+  }
 
-  NGPixelSnappedPhysicalBoxStrut SnapToDevicePixels() const;
+  NGPixelSnappedPhysicalBoxStrut SnapToDevicePixels() const {
+    return NGPixelSnappedPhysicalBoxStrut(top.Round(), right.Round(),
+                                          bottom.Round(), left.Round());
+  }
 
   LayoutUnit HorizontalSum() const { return left + right; }
   LayoutUnit VerticalSum() const { return top + bottom; }
@@ -154,17 +178,6 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
   LayoutUnit right;
   LayoutUnit bottom;
   LayoutUnit left;
-};
-
-// Struct to store pixel snapped physical dimensions.
-struct CORE_EXPORT NGPixelSnappedPhysicalBoxStrut {
-  NGPixelSnappedPhysicalBoxStrut() = default;
-  NGPixelSnappedPhysicalBoxStrut(int top, int right, int bottom, int left)
-      : top(top), right(right), bottom(bottom), left(left) {}
-  int top;
-  int right;
-  int bottom;
-  int left;
 };
 
 }  // namespace blink
