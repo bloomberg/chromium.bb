@@ -22,7 +22,7 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   ~FrontendDataTypeControllerMock() override;
 
   // DataTypeController mocks.
-  MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
+  MOCK_METHOD1(StartAssociating, void(StartCallback start_callback));
   MOCK_METHOD2(LoadModels,
                void(const ConfigureContext& configure_context,
                     const ModelLoadCallback& model_load_callback));
