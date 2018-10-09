@@ -333,6 +333,11 @@ SkColor LocationBarView::GetSecurityChipColor(
                          state);
 }
 
+SkColor LocationBarView::GetIconInkDropColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+}
+
 void LocationBarView::SetStarToggled(bool on) {
   if (star_view_)
     star_view_->SetToggled(on);
@@ -749,6 +754,10 @@ WebContents* LocationBarView::GetWebContents() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public ContentSettingImageView::Delegate implementation:
 
+SkColor LocationBarView::GetContentSettingInkDropColor() const {
+  return GetIconInkDropColor();
+}
+
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
   return GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents();
 }
@@ -760,6 +769,11 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public PageActionIconView::Delegate implementation:
+
+SkColor LocationBarView::GetPageActionInkDropColor() const {
+  return GetIconInkDropColor();
+}
+
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
 }

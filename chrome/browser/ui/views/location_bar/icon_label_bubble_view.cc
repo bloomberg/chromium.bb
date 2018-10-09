@@ -357,16 +357,6 @@ IconLabelBubbleView::CreateInkDropHighlight() const {
   return highlight;
 }
 
-SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
-  const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Opacity of the ink drop is set elsewhere, so just use full opacity here.
-    return ink_color_opaque;
-  }
-  return color_utils::DeriveDefaultIconColor(ink_color_opaque);
-}
-
 std::unique_ptr<views::InkDropMask> IconLabelBubbleView::CreateInkDropMask()
     const {
   if (!LocationBarView::IsRounded())

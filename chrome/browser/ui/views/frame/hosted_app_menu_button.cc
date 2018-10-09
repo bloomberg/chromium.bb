@@ -49,9 +49,11 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
 
 HostedAppMenuButton::~HostedAppMenuButton() {}
 
-void HostedAppMenuButton::SetIconColor(SkColor color) {
+void HostedAppMenuButton::SetColors(SkColor icon_color,
+                                    SkColor ink_drop_color) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kBrowserToolsIcon, color));
+           gfx::CreateVectorIcon(kBrowserToolsIcon, icon_color));
+  ink_drop_color_ = ink_drop_color;
 }
 
 void HostedAppMenuButton::StartHighlightAnimation() {
@@ -78,6 +80,10 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
   // Add UMA for how many times the hosted app menu button are clicked.
   base::RecordAction(
       base::UserMetricsAction("HostedAppMenuButtonButton_Clicked"));
+}
+
+SkColor HostedAppMenuButton::GetInkDropBaseColor() const {
+  return ink_drop_color_;
 }
 
 void HostedAppMenuButton::FadeHighlightOff() {

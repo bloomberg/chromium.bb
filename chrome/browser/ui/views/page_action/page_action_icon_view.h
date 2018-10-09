@@ -37,6 +37,9 @@ class PageActionIconView : public IconLabelBubbleView {
  public:
   class Delegate {
    public:
+    // Gets the color to use for the ink highlight.
+    virtual SkColor GetPageActionInkDropColor() const = 0;
+
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
   };
 
@@ -73,8 +76,6 @@ class PageActionIconView : public IconLabelBubbleView {
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const override;
 
-  SkColor GetTextColor() const override;
-
   // Enables or disables the associated command.
   // Returns true if the command is enabled.
   bool SetCommandEnabled(bool enabled) const;
@@ -89,6 +90,7 @@ class PageActionIconView : public IconLabelBubbleView {
   virtual void OnPressed(bool activated) {}
 
   // views::IconLabelBubbleView:
+  SkColor GetTextColor() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
@@ -106,8 +108,8 @@ class PageActionIconView : public IconLabelBubbleView {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
