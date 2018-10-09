@@ -61,15 +61,16 @@ gfx::Insets GetInkDropInsets(BaseInkDropHostView* host_view,
 // shared primitive. That way they would be significantly easier to keep in
 // sync. This method at least reuses GetInkDropInsets.
 template <class BaseInkDropHostView>
-SkPath CreateToolbarFocusRingPath(BaseInkDropHostView* host_view,
-                                  const gfx::Insets& margin_insets) {
+std::unique_ptr<gfx::Path> CreateToolbarFocusRingPath(
+    BaseInkDropHostView* host_view,
+    const gfx::Insets& margin_insets) {
   gfx::Rect rect(host_view->size());
   rect.Inset(GetInkDropInsets(host_view, margin_insets));
 
-  SkPath path;
-  path.addRoundRect(gfx::RectToSkRect(rect),
-                    host_view->ink_drop_large_corner_radius(),
-                    host_view->ink_drop_large_corner_radius());
+  auto path = std::make_unique<gfx::Path>();
+  path->addRoundRect(gfx::RectToSkRect(rect),
+                     host_view->ink_drop_large_corner_radius(),
+                     host_view->ink_drop_large_corner_radius());
   return path;
 }
 

@@ -25,6 +25,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -116,10 +117,11 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (focus_ring()) {
-    focus_ring()->SetPath(CreateToolbarFocusRingPath(
-        this, gfx::Insets(0, leading_margin_, 0, 0)));
-  }
+  SetProperty(
+      views::kHighlightPathKey,
+      CreateToolbarFocusRingPath(this, gfx::Insets(0, leading_margin_, 0, 0))
+          .release());
+
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
 }
@@ -241,11 +243,6 @@ std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
 
   return CreateToolbarInkDropHighlight<LabelButton>(
       this, GetMirroredRect(GetContentsBounds()).CenterPoint());
-}
-
-std::unique_ptr<views::InkDropMask> ToolbarButton::CreateInkDropMask() const {
-  return CreateToolbarInkDropMask<LabelButton>(
-      this, gfx::Insets(0, leading_margin_, 0, 0));
 }
 
 SkColor ToolbarButton::GetInkDropBaseColor() const {
