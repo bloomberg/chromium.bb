@@ -32,10 +32,10 @@ android_resources("shared_stream_publicapi_menumeasurer_resources") {
       "com.google.android.libraries.feed.sharedstream.publicapi.menumeasurer"
 }
 
-android_resources("basicstream_internal_actions_resources") {
-  resource_dirs = [ "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/actions/res/" ]
+android_resources("sharedstream_contextmenumanager_resources") {
+  resource_dirs = [ "src/src/main/java/com/google/android/libraries/feed/sharedstream/contextmenumanager/res" ]
   custom_package =
-      "com.google.android.libraries.feed.basicstream.internal.actions"
+      "com.google.android.libraries.feed.sharedstream.contextmenumanager"
 }
 
 android_library("feed_lib_java") {
@@ -43,12 +43,12 @@ android_library("feed_lib_java") {
   java_files = feed_lib_java_sources
 
   deps = [
-    ":basicstream_internal_actions_resources",
     ":basicstream_internal_viewholders_resources",
     ":basicstream_resources",
     ":feed_lib_proto_java",
     ":piet_resources",
     ":shared_stream_publicapi_menumeasurer_resources",
+    ":sharedstream_contextmenumanager_resources",
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/android_deps:android_support_cardview_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
