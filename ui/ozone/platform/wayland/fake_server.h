@@ -453,6 +453,12 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
     return resource ? T::FromResource(resource) : nullptr;
   }
 
+  void CreateAndInitializeOutput() {
+    auto output = std::make_unique<MockOutput>();
+    output->Initialize(display());
+    globals_.push_back(std::move(output));
+  }
+
   MockDataDeviceManager* data_device_manager() { return &data_device_manager_; }
   MockSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
@@ -460,6 +466,8 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
   MockTextInputManagerV1* text_input_manager_v1() {
     return &zwp_text_input_manager_v1_;
   }
+
+  wl_display* display() const { return display_.get(); }
 
  private:
   void DoPause();
@@ -485,6 +493,8 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
   MockXdgShell xdg_shell_;
   MockXdgShellV6 zxdg_shell_v6_;
   MockTextInputManagerV1 zwp_text_input_manager_v1_;
+
+  std::vector<std::unique_ptr<Global>> globals_;
 
   base::MessagePumpLibevent::FdWatchController controller_;
 

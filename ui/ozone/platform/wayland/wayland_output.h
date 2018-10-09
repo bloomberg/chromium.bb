@@ -27,14 +27,14 @@ class WaylandOutput {
                                        int32_t scale_factor) = 0;
   };
 
-  WaylandOutput(const int64_t output_id, wl_output* output);
+  WaylandOutput(const uint32_t output_id, wl_output* output);
   ~WaylandOutput();
 
   void Initialize(Delegate* delegate);
 
   void TriggerDelegateNotification() const;
 
-  int64_t output_id() const { return output_id_; }
+  uint32_t output_id() const { return output_id_; }
 
   // Tells if the output has already received physical screen dimensions in the
   // global compositor space.
@@ -65,7 +65,7 @@ class WaylandOutput {
                                 struct wl_output* wl_output,
                                 int32_t factor);
 
-  const int64_t output_id_ = 0;
+  const uint32_t output_id_ = 0;
   wl::Object<wl_output> output_;
   float device_scale_factor_;
   gfx::Rect rect_in_physical_pixels_;
