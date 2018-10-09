@@ -72,8 +72,13 @@ interface XRRuntime {
 
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.
-  ListenToDeviceChanges(XRRuntimeEventListener listener) =>
-      (VRDisplayInfo display_info);
+  ListenToDeviceChanges(associated XRRuntimeEventListener listener) =>
+      (VRDisplayInfo? display_info);
+
+  // Ensure that the runtime has installed all prerequisites, and is ready to
+  // start. May result in updated display info being sent to registered
+  // listeners. RequestSession will fail if this hasn't been called.
+  EnsureInitialized() => ();
 
   SetListeningForActivate(bool listen_for_activation);
 };

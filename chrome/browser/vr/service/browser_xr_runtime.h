@@ -10,7 +10,7 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 class WebContents;
@@ -56,6 +56,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
     return display_info_.Clone();
   }
+  void InitializeAndGetDisplayInfo(
+      device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback callback);
 
   // Methods called to support metrics/overlays on Windows.
   void AddObserver(BrowserXRRuntimeObserver* observer) {
@@ -85,6 +87,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr immersive_session_controller);
   void OnImmersiveSessionError();
+  void OnInitialized();
 
   device::mojom::XRRuntimePtr runtime_;
   device::mojom::XRSessionControllerPtr immersive_session_controller_;
@@ -95,7 +98,9 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   XRDeviceImpl* listening_for_activation_renderer_device_ = nullptr;
   XRDeviceImpl* presenting_renderer_device_ = nullptr;
 
-  mojo::Binding<device::mojom::XRRuntimeEventListener> binding_;
+  mojo::AssociatedBinding<device::mojom::XRRuntimeEventListener> binding_;
+  std::vector<device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback>
+      pending_initialization_callbacks_;
 
   base::ObserverList<BrowserXRRuntimeObserver> observers_;
 
