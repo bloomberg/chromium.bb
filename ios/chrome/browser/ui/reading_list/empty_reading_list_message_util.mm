@@ -25,7 +25,7 @@ NSString* const kOpenShareMarker = @"SHARE_OPENING_ICON";
 NSString* const kReadLaterTextMarker = @"READ_LATER_TEXT";
 
 // Background view constants.
-const CGFloat kLineHeight = 24;
+const CGFloat kLineSpacing = 4;
 
 // Returns the font to use for the message text.
 UIFont* GetMessageFont() {
@@ -45,7 +45,7 @@ NSMutableDictionary* GetMessageAttributes() {
   // If the line wrapping occurs that one of the icons is the first character on
   // a new line, the default line spacing will result in uneven line heights.
   // Manually setting the line spacing here prevents that from occurring.
-  paragraph_style.lineSpacing = kLineHeight - font.lineHeight;
+  paragraph_style.lineSpacing = kLineSpacing;
   attributes[NSParagraphStyleAttributeName] = paragraph_style;
   return attributes;
 }
