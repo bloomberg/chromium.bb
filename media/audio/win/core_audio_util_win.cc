@@ -180,15 +180,6 @@ std::ostream& operator<<(std::ostream& os, const WAVEFORMATPCMEX& format) {
   return os;
 }
 
-bool LoadAudiosesDll() {
-  static const wchar_t* const kAudiosesDLL =
-      L"%WINDIR%\\system32\\audioses.dll";
-
-  wchar_t path[MAX_PATH] = {0};
-  ExpandEnvironmentStringsW(kAudiosesDLL, path, arraysize(path));
-  return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
-}
-
 std::string GetDeviceID(IMMDevice* device) {
   ScopedCoMem<WCHAR> device_id_com;
   std::string device_id;
@@ -286,18 +277,7 @@ bool IsSupportedInternal() {
     return false;
   }
 
-  // The audio core APIs are implemented in the Mmdevapi.dll and
-  // Audioses.dll system components. Dependency Walker shows that it is
-  // enough to verify possibility to load the Audioses DLL since it depends
-  // on Mmdevapi.dll. See http://crbug.com/166397 why this extra step is
-  // required to guarantee Core Audio support.
-  if (!LoadAudiosesDll())
-    return false;
-
-  // Being able to load the Audioses.dll does not seem to be sufficient for
-  // all devices to guarantee Core Audio support. To be 100%, we also verify
-  // that it is possible to a create the IMMDeviceEnumerator interface. If
-  // this works as well we should be home free.
+  // Verify that it is possible to a create the IMMDeviceEnumerator interface.
   ComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumeratorInternal(false,
                                      base::BindRepeating(&LogUMAEmptyCb));
