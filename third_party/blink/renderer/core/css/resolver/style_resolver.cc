@@ -764,11 +764,10 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
             state.Style()->TextAutosizingMultiplier()) {
       // Preserve the text autosizing multiplier on style recalc. Autosizer will
       // update it during layout if needed.
-      // NOTE: this must occur before applyMatchedProperties for correct
+      // NOTE: this must occur before ApplyMatchedProperties for correct
       // computation of font-relative lengths.
       state.Style()->SetTextAutosizingMultiplier(
           element->GetComputedStyle()->TextAutosizingMultiplier());
-      state.Style()->SetUnique();
     }
 
     if (state.HasDirAutoAttribute())
