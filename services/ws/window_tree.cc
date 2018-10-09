@@ -191,14 +191,13 @@ void WindowTree::SendEventToClient(aura::Window* window,
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnWillSendEventToClient(client_id_, event_id);
 
+  std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
   // Translate the root location for located events. Event's root location
   // should be in the coordinate of the root window, however the root for the
   // target window in the client can be different from the one in the server,
   // thus the root location needs to be converted from the original coordinate
   // to the one used in the client. See also 'WindowTreeTest.EventLocation' test
   // case.
-  std::unique_ptr<ui::Event> event_to_send =
-      PointerWatcher::CreateEventForClient(event);
   if (event.IsLocatedEvent()) {
     ClientRoot* client_root = FindClientRootContaining(window);
     // The |client_root| may have been removed on shutdown.

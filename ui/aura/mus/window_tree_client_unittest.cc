@@ -947,13 +947,13 @@ TEST_F(WindowTreeClientTest, InputEventPointerEvent) {
   const gfx::Point event_location(2, 3);
   const uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event(
-      ui::ET_POINTER_MOVED, event_location, gfx::Point(), ui::EF_NONE, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      base::TimeTicks());
+  ui::MouseEvent mouse_event(
+      ui::ET_MOUSE_MOVED, event_location, event_location, ui::EventTimeForNow(),
+      ui::EF_NONE, ui::EF_NONE,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
   window_tree_client()->OnWindowInputEvent(event_id, server_id(&child),
                                            window_tree_host.display_id(),
-                                           ui::Event::Clone(pointer_event), 0);
+                                           ui::Event::Clone(mouse_event), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -983,13 +983,13 @@ TEST_F(WindowTreeClientTest, InputEventPen) {
   const gfx::Point event_location(2, 3);
   const uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event(
-      ui::ET_POINTER_DOWN, event_location, gfx::Point(), ui::EF_NONE, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0),
-      ui::EventTimeForNow());
+  ui::MouseEvent mouse_event(
+      ui::ET_MOUSE_PRESSED, event_location, event_location,
+      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0));
   window_tree_client()->OnWindowInputEvent(event_id, server_id(&child),
                                            window_tree_host.display_id(),
-                                           ui::Event::Clone(pointer_event), 0);
+                                           ui::Event::Clone(mouse_event), 0);
 
   // Pen event was handled.
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
@@ -1283,14 +1283,13 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
   const gfx::Point event_location(2, 3);
   uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, event_location, event_location,
-      ui::EF_LEFT_MOUSE_BUTTON, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      ui::EventTimeForNow());
+  ui::MouseEvent mouse_event_down(
+      ui::ET_MOUSE_PRESSED, event_location, event_location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child), window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_down), 0);
+      ui::Event::Clone(mouse_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -1303,14 +1302,13 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
   const gfx::Point event_location1(4, 5);
   event_id = 2;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_up(
-      ui::ET_POINTER_UP, event_location1, event_location,
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      ui::EventTimeForNow());
-  window_tree_client()->OnWindowInputEvent(
-      event_id, kInvalidServerId, window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_up), 0);
+  ui::MouseEvent mouse_event_up(
+      ui::ET_MOUSE_RELEASED, event_location1, event_location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
+  window_tree_client()->OnWindowInputEvent(event_id, kInvalidServerId,
+                                           window_tree_host.display_id(),
+                                           ui::Event::Clone(mouse_event_up), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
@@ -1347,13 +1345,12 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
   const gfx::Point event_location(2, 3);
   uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, event_location, gfx::Point(), 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
-      ui::EventTimeForNow());
+  ui::TouchEvent touch_event_down(
+      ui::ET_TOUCH_PRESSED, event_location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child), window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_down), 0);
+      ui::Event::Clone(touch_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -1363,13 +1360,12 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
 
   event_id = 2;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_up(
-      ui::ET_POINTER_UP, event_location, gfx::Point(), 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
-      ui::EventTimeForNow());
-  window_tree_client()->OnWindowInputEvent(
-      event_id, kInvalidServerId, window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_up), 0);
+  ui::TouchEvent touch_event_up(
+      ui::ET_TOUCH_RELEASED, event_location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  window_tree_client()->OnWindowInputEvent(event_id, kInvalidServerId,
+                                           window_tree_host.display_id(),
+                                           ui::Event::Clone(touch_event_up), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
@@ -1480,12 +1476,12 @@ TEST_F(WindowTreeClientPointerObserverTest,
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
 
   // Simulate the server dispatching an event that also matched the observer.
-  std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 0,
+  ui::TouchEvent touch_event_down(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
-      base::TimeTicks::Now()));
-  window_tree_client()->OnWindowInputEvent(1, server_id(top_level), 0,
-                                           std::move(pointer_event_down), true);
+      ui::EF_CONTROL_DOWN);
+  window_tree_client()->OnWindowInputEvent(
+      1, server_id(top_level), 0, ui::Event::Clone(touch_event_down), true);
 
   // Delegate sensed the event.
   const ui::Event* last_event = last_event_observed();
