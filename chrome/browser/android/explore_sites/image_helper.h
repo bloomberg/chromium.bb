@@ -32,6 +32,7 @@ class ImageHelper {
       BitmapCallback callback,
       EncodedImageList images,
       std::unique_ptr<service_manager::Connector> connector = nullptr);
+
   // Compose a category icon containing [1 - 4] site icons and return via
   // |callback|.
   void ComposeCategoryImage(

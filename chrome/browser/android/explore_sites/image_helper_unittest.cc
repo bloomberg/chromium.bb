@@ -35,14 +35,12 @@ std::vector<unsigned char> kInvalidWebpBytes{
 };
 
 const int kIconSize = 48;
-const int kPaddingScale = 8;
-const int kCompositeSize = kIconSize + (kIconSize / kPaddingScale);
 
 // Bounds for icon size of 48.
-const int kLowerBoundCenter = 14;
-const int kUpperBoundCenter = 39;
-const int kLowerBoundCorner = 24;
-const int kUpperBoundCorner = 29;
+const int kLowerBoundCenter = 11;
+const int kUpperBoundCenter = 36;
+const int kLowerBoundCorner = 21;
+const int kUpperBoundCorner = 26;
 
 class ExploreSitesImageHelperTest : public testing::Test {
  public:
@@ -57,7 +55,6 @@ class ExploreSitesImageHelperTest : public testing::Test {
   ~ExploreSitesImageHelperTest() override{};
 
   EncodedImageList GetEncodedImageList(int num_icons);
-
   BitmapCallback StoreBitmap() {
     return base::BindLambdaForTesting([&](std::unique_ptr<SkBitmap> bitmap) {
       last_bitmap_list.push_back(std::move(bitmap));
@@ -144,8 +141,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_One) {
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
   EXPECT_FALSE(last_bitmap_list[0]->isNull());
-  EXPECT_EQ(last_bitmap_list[0]->width(), kCompositeSize);
-  EXPECT_EQ(last_bitmap_list[0]->height(), kCompositeSize);
+  EXPECT_EQ(last_bitmap_list[0]->width(), kIconSize);
+  EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // One square in the center. If inside the bounds, the color should be 0.
   // If outside of the bounds the color should be kGoogleGrey100.
@@ -171,8 +168,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Two) {
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
   EXPECT_FALSE(last_bitmap_list[0]->isNull());
-  EXPECT_EQ(last_bitmap_list[0]->width(), kCompositeSize);
-  EXPECT_EQ(last_bitmap_list[0]->height(), kCompositeSize);
+  EXPECT_EQ(last_bitmap_list[0]->width(), kIconSize);
+  EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // Two squares, side by side. If inside the bounds, the color should be 0.
   // If outside of the bounds the color should be kGoogleGrey100.
@@ -197,8 +194,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Three) {
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
   EXPECT_FALSE(last_bitmap_list[0]->isNull());
-  EXPECT_EQ(last_bitmap_list[0]->width(), kCompositeSize);
-  EXPECT_EQ(last_bitmap_list[0]->height(), kCompositeSize);
+  EXPECT_EQ(last_bitmap_list[0]->width(), kIconSize);
+  EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // Three squares, two on top and one on bottom. If inside the bounds, the
   // color should be 0. If outside of the bounds the color should be
@@ -226,8 +223,8 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Four) {
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
   EXPECT_FALSE(last_bitmap_list[0]->isNull());
-  EXPECT_EQ(last_bitmap_list[0]->width(), kCompositeSize);
-  EXPECT_EQ(last_bitmap_list[0]->height(), kCompositeSize);
+  EXPECT_EQ(last_bitmap_list[0]->width(), kIconSize);
+  EXPECT_EQ(last_bitmap_list[0]->height(), kIconSize);
 
   // Four squares in each corner. If inside the bounds, the color should be 0.
   // If outside of the bounds the color should be kGoogleGrey100.
