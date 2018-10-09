@@ -127,6 +127,13 @@ class LoadInstagramDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadInstagramDesktopStory2018(_LoadingStory):
+  NAME = 'load:social:instagram:2018'
+  URL = 'https://www.instagram.com/selenagomez/'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
   URL = 'https://uk.pinterest.com/categories/popular/'
