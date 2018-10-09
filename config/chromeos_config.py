@@ -324,16 +324,6 @@ class HWTestList(object):
                                           **default_dict)]
     return suite_list
 
-  def AsanTest(self, **kwargs):
-    """Return a list of HWTESTConfigs which run asan tests."""
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
-                        priority=constants.HWTEST_DEFAULT_PRIORITY)
-    default_dict.update(kwargs)
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **default_dict)]
-
   def ToolchainTestFull(self, machine_pool, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
     default_dict = dict(pool=machine_pool, async=False,
