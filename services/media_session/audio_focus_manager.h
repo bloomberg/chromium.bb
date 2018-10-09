@@ -17,12 +17,17 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace media_session {
 
 class AudioFocusManager : public mojom::AudioFocusManager,
                           public mojom::AudioFocusManagerDebug {
  public:
-  using RequestId = uint64_t;
+  // TODO(beccahughes): Remove this.
+  using RequestId = base::UnguessableToken;
 
   // Returns Chromium's internal AudioFocusManager.
   static AudioFocusManager* GetInstance();
@@ -38,7 +43,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void SetSourceName(const std::string& name) override;
 
   // mojom::AudioFocusManagerDebug.
-  void GetDebugInfoForRequest(uint64_t request_id,
+  void GetDebugInfoForRequest(const RequestId& request_id,
                               GetDebugInfoForRequestCallback callback) override;
 
   // Bind to a mojom::AudioFocusManagerRequest.

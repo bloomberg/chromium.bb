@@ -28,6 +28,7 @@
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,6 +36,8 @@
 namespace {
 const int kTestComponentID = 0;
 const char kTestDeviceID[] = "test-device-id";
+
+using media_session::mojom::AudioFocusRequestStatePtr;
 
 // This class encapsulates a MediaInternals reference. It also has some useful
 // methods to receive a callback, deserialize its associated data and expect
@@ -327,7 +330,9 @@ class MediaInternalsAudioFocusTest : public testing::Test,
     browser_context_.reset(new TestBrowserContext());
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    run_loop_ = std::make_unique<base::RunLoop>();
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr_);
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
   }
@@ -394,6 +399,20 @@ class MediaInternalsAudioFocusTest : public testing::Test,
     run_loop_->Run();
   }
 
+  std::string GetRequestIdForTopFocusRequest() {
+    std::string result;
+
+    audio_focus_ptr_->GetFocusRequests(base::BindOnce(
+        [](std::string* out, std::vector<AudioFocusRequestStatePtr> requests) {
+          DCHECK(!requests.empty());
+          *out = requests.back()->request_id.value().ToString();
+        },
+        &result));
+
+    audio_focus_ptr_.FlushForTesting();
+    return result;
+  }
+
   MediaInternals::UpdateCallback update_cb_;
 
  private:
@@ -403,6 +422,8 @@ class MediaInternalsAudioFocusTest : public testing::Test,
   base::Lock lock_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TestBrowserContext> browser_context_;
+
+  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 };
 
 TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
@@ -413,10 +434,13 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   media_session1->RequestSystemAudioFocus(AudioFocusType::kGain);
   WaitForCallbackCount(1);
 
+  // Get the |request_id| for the top session.
+  std::string request_id1 = GetRequestIdForTopFocusRequest();
+
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session;
-    expected_session.SetKey("id", base::Value(0));
+    expected_session.SetKey("id", base::Value(request_id1));
     expected_session.SetKey("name", GetAddressAsValue(media_session1));
     expected_session.SetKey("owner", base::Value(kTestTitle1));
     expected_session.SetKey("state", base::Value("Active"));
@@ -434,16 +458,20 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
       AudioFocusType::kGainTransientMayDuck);
   WaitForCallbackCount(2);
 
+  // Get the |request_id| for the top session.
+  std::string request_id2 = GetRequestIdForTopFocusRequest();
+  DCHECK_NE(request_id1, request_id2);
+
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session1;
-    expected_session1.SetKey("id", base::Value(1));
+    expected_session1.SetKey("id", base::Value(request_id2));
     expected_session1.SetKey("name", GetAddressAsValue(media_session2));
     expected_session1.SetKey("owner", base::Value(kTestTitle2));
     expected_session1.SetKey("state", base::Value("Active"));
 
     base::DictionaryValue expected_session2;
-    expected_session2.SetKey("id", base::Value(0));
+    expected_session2.SetKey("id", base::Value(request_id1));
     expected_session2.SetKey("name", GetAddressAsValue(media_session1));
     expected_session2.SetKey("owner", base::Value(kTestTitle1));
     expected_session2.SetKey("state", base::Value("Active Ducked"));
@@ -461,7 +489,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   // Check JSON is what we expect.
   {
     base::DictionaryValue expected_session;
-    expected_session.SetKey("id", base::Value(0));
+    expected_session.SetKey("id", base::Value(request_id1));
     expected_session.SetKey("name", GetAddressAsValue(media_session1));
     expected_session.SetKey("owner", base::Value(kTestTitle1));
     expected_session.SetKey("state", base::Value("Active"));

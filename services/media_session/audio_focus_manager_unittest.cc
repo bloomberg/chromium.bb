@@ -30,8 +30,6 @@ class AudioFocusManagerTest;
 
 namespace {
 
-const AudioFocusManager::RequestId kNoFocusedSession = -1;
-
 const char kExampleDebugInfoName[] = "name";
 const char kExampleDebugInfoOwner[] = "owner";
 const char kExampleDebugInfoState[] = "state";
@@ -181,9 +179,9 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     for (auto iter = audio_focus_requests.rbegin();
          iter != audio_focus_requests.rend(); ++iter) {
       if ((*iter)->audio_focus_type == mojom::AudioFocusType::kGain)
-        return (*iter)->request_id;
+        return (*iter)->request_id.value();
     }
-    return kNoFocusedSession;
+    return base::UnguessableToken::Null();
   }
 
   int GetTransientCount() {
@@ -357,15 +355,15 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   AudioFocusManager::RequestId GetRequestIdForSession(
       MockMediaSession* session) {
     DCHECK(session->HasAudioFocusRequest());
-    AudioFocusManager::RequestId id = kNoFocusedSession;
+    AudioFocusManager::RequestId id = base::UnguessableToken::Null();
 
-    session->audio_focus_request()->GetRequestId(
-        base::BindOnce([](AudioFocusManager::RequestId* id,
-                          uint64_t received_id) { *id = received_id; },
-                       &id));
+    session->audio_focus_request()->GetRequestId(base::BindOnce(
+        [](AudioFocusManager::RequestId* id,
+           const base::UnguessableToken& received_id) { *id = received_id; },
+        &id));
 
     session->FlushForTesting();
-    EXPECT_NE(kNoFocusedSession, id);
+    EXPECT_NE(base::UnguessableToken::Null(), id);
     return id;
   }
 
@@ -413,7 +411,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
   MockMediaSession media_session_2;
   MockMediaSession media_session_3;
 
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kInactive,
             GetState(&media_session_1));
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kInactive,
@@ -445,7 +443,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
 TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_Duplicate) {
   MockMediaSession media_session;
 
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
 
   AudioFocusManager::RequestId request_id =
       RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
@@ -460,7 +458,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_FromTransient) {
 
   AudioFocusManager::RequestId request_id =
       RequestAudioFocus(&media_session, mojom::AudioFocusType::kGainTransient);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_EQ(1, GetTransientCount());
 
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
@@ -473,7 +471,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_FromTransientMayDuck) {
 
   AudioFocusManager::RequestId request_id = RequestAudioFocus(
       &media_session, mojom::AudioFocusType::kGainTransientMayDuck);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_EQ(1, GetTransientMaybeDuckCount());
 
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
@@ -491,7 +489,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusTransient_FromGain) {
   EXPECT_EQ(0, GetTransientCount());
 
   RequestAudioFocus(&media_session, mojom::AudioFocusType::kGainTransient);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_EQ(1, GetTransientCount());
   EXPECT_NE(mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session));
@@ -508,7 +506,7 @@ TEST_P(AudioFocusManagerTest, RequestAudioFocusTransientMayDuck_FromGain) {
 
   RequestAudioFocus(&media_session,
                     mojom::AudioFocusType::kGainTransientMayDuck);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_EQ(1, GetTransientMaybeDuckCount());
   EXPECT_NE(mojom::MediaSessionInfo::SessionState::kDucking,
             GetState(&media_session));
@@ -568,7 +566,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesFocusedEntry) {
   EXPECT_EQ(request_id, GetAudioFocusedSession());
 
   AbandonAudioFocus(&media_session);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
 }
 
 TEST_P(AudioFocusManagerTest, AbandonAudioFocus_MultipleCalls) {
@@ -583,7 +581,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_MultipleCalls) {
   std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
   AbandonAudioFocus(&media_session);
 
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
   EXPECT_TRUE(observer->focus_lost_session_.is_null());
 }
 
@@ -782,7 +780,7 @@ TEST_P(AudioFocusManagerTest, MediaSessionDestroyed_ReleasesFocus) {
   MockMediaSession media_session;
   RequestAudioFocus(&media_session,
                     mojom::AudioFocusType::kGainTransientMayDuck);
-  EXPECT_EQ(kNoFocusedSession, GetAudioFocusedSession());
+  EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
 }
 
 TEST_P(AudioFocusManagerTest, MediaSessionDestroyed_ReleasesTransient) {
@@ -912,7 +910,8 @@ TEST_P(AudioFocusManagerTest, GetDebugInfo) {
 }
 
 TEST_P(AudioFocusManagerTest, GetDebugInfo_BadRequestId) {
-  mojom::MediaSessionDebugInfoPtr debug_info = GetDebugInfo(kNoFocusedSession);
+  mojom::MediaSessionDebugInfoPtr debug_info =
+      GetDebugInfo(base::UnguessableToken::Create());
   EXPECT_TRUE(debug_info->name.empty());
 }
 

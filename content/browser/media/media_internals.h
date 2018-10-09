@@ -133,7 +133,7 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   // Called when we receive audio focus debug info to display for a single
   // audio focus request.
   void DidGetAudioFocusDebugInfo(
-      int id,
+      const std::string& id,
       media_session::mojom::MediaSessionDebugInfoPtr info);
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
