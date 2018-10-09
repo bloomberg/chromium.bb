@@ -213,6 +213,9 @@
         "load:social:instagram": {
             "DEFAULT": "system_health_desktop_001.wprgo"
         },
+        "load:social:instagram:2018": {
+            "DEFAULT": "system_health_desktop_341437d15c.wprgo"
+        },
         "load:social:pinterest": {
             "DEFAULT": "system_health_desktop_001.wprgo"
         },
