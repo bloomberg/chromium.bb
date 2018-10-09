@@ -345,15 +345,15 @@ body:not(.record-mode) #toggle-mic {
   background-image: url(../images/camera_mode_photo.svg);
   width:  40px;
   height: 40px;
-  visibility: visible;
+  visibility: hidden;
 }
 
 body.record-mode #camera-mode {
   background-image: url(../images/camera_mode_recording.svg);
 }
 
-body.capturing #camera-mode {
-  visibility: hidden;
+body.mode-switching:not(.capturing) #camera-mode {
+  visibility: visible;
 }
 
 #timer-tick-msg {
@@ -845,6 +845,6 @@ body.dialog #dialog #dialog-popup {
   visibility: hidden;
 }
 
-body.initialize #spinner {
+body:not(.mode-switching):not(.capturing) #spinner {
   visibility: visible;
 }
