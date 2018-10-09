@@ -64,6 +64,15 @@ class IgnorableEditingAbortState final {
     }                                  \
   } while (false)
 
+#define ABORT_EDITING_COMMAND_AND_RETURN_FALSE_IF(expr) \
+  do {                                                  \
+    if (expr) {                                         \
+      editing_state->Abort();                           \
+      return false;                                     \
+    }                                                   \
+  } while (false)
+
+
 #if DCHECK_IS_ON()
 // This class is inspired by |NoExceptionStateAssertionChecker|.
 class NoEditingAbortChecker final {
