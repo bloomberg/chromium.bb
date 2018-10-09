@@ -81,7 +81,6 @@ TEST_F(SingleSampleMetricsTest, DefaultSingleSampleMetricWithValue) {
   // Verify only the last sample sent to SetSample() is recorded.
   tester.ExpectUniqueSample(kMetricName, kLastSample, 1);
 
-#if 0  // TODO(crbug.com/836238): Temporarily disabled for field crash test.
   // Verify construction implicitly by requesting a histogram with the same
   // parameters; this test relies on the fact that histogram objects are unique
   // per name. Different parameters will result in a Dummy histogram returned.
@@ -91,7 +90,6 @@ TEST_F(SingleSampleMetricsTest, DefaultSingleSampleMetricWithValue) {
   EXPECT_NE(DummyHistogram::GetInstance(),
             Histogram::FactoryGet(kMetricName, kMin, kMax, kBucketCount,
                                   HistogramBase::kUmaTargetedHistogramFlag));
-#endif
 }
 
 TEST_F(SingleSampleMetricsTest, MultipleMetricsAreDistinct) {
