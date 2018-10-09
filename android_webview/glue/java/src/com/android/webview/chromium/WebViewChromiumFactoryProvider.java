@@ -47,6 +47,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.base.process_launcher.ChildProcessService;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
@@ -336,9 +337,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
-    private static @SplitApkWorkaround.Result int sSplitApkWorkaroundResult =
-            SplitApkWorkaround.Result.NOT_RUN;
-
     public static boolean preloadInZygote() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -346,7 +344,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // of applying the workaround - don't actually change anything, but do the reflection
             // to check for compatibility issues. The result will be logged to UMA later, because
             // we can't do very much in the restricted environment of the WebView zygote process.
-            sSplitApkWorkaroundResult = SplitApkWorkaround.apply(/* dryRun */ true);
+            ChildProcessService.setSplitApkWorkaroundResult(
+                    SplitApkWorkaround.apply(/* dryRun */ true));
         }
 
         for (String library : NativeLibraries.LIBRARIES) {

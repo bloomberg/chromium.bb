@@ -4,11 +4,10 @@
 
 package com.android.webview.chromium;
 
-import android.support.annotation.IntDef;
-
 import dalvik.system.BaseDexClassLoader;
 
 import org.chromium.base.Log;
+import org.chromium.base.process_launcher.ChildProcessService.SplitApkWorkaroundResult;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -23,17 +22,6 @@ import java.util.Map;
 public class SplitApkWorkaround {
     private static final String TAG = "SplitApkWorkaround";
 
-    @IntDef({Result.NOT_RUN, Result.NO_ENTRIES, Result.ONE_ENTRY, Result.MULTIPLE_ENTRIES,
-            Result.TOPLEVEL_EXCEPTION, Result.LOOP_EXCEPTION})
-    @interface Result {
-        int NOT_RUN = 0;
-        int NO_ENTRIES = 1;
-        int ONE_ENTRY = 2;
-        int MULTIPLE_ENTRIES = 3;
-        int TOPLEVEL_EXCEPTION = 4;
-        int LOOP_EXCEPTION = 5;
-    }
-
     /**
      * There is a framework bug in O that causes an incorrect classloader cache entry to be created
      * when the WebView provider is installed as multiple split APKs.
@@ -46,7 +34,7 @@ public class SplitApkWorkaround {
      * @return a value from Result describing what happened.
      */
     @SuppressWarnings("unchecked")
-    public static @Result int apply(boolean dryRun) {
+    public static @SplitApkWorkaroundResult int apply(boolean dryRun) {
         int matchingEntries = 0;
         int exceptionEntries = 0;
         try {
@@ -132,7 +120,7 @@ public class SplitApkWorkaround {
             // If we got an exception at this point we assume that we failed to fix it, since we
             // didn't get as far as iterating over the cache entries.
             Log.w(TAG, "Caught exception while attempting to fix classloader cache", e);
-            return Result.TOPLEVEL_EXCEPTION;
+            return SplitApkWorkaroundResult.TOPLEVEL_EXCEPTION;
         }
 
         // If we found at least one matching entry, then don't worry about exceptions that happened
@@ -140,16 +128,16 @@ public class SplitApkWorkaround {
         // exception was probably not relevant. Distinguish one vs multiple entries, though,
         // because multiple matches is unexpected (only one case in the code is supposed to create
         // this situation).
-        if (matchingEntries == 1) return Result.ONE_ENTRY;
-        if (matchingEntries > 1) return Result.MULTIPLE_ENTRIES;
+        if (matchingEntries == 1) return SplitApkWorkaroundResult.ONE_ENTRY;
+        if (matchingEntries > 1) return SplitApkWorkaroundResult.MULTIPLE_ENTRIES;
 
         // If we didn't find any matching entries, but did get an exception during the loop, then
         // report this, as we might have taken the exception while trying to access the entry we
         // needed to fix.
-        if (exceptionEntries > 0) return Result.LOOP_EXCEPTION;
+        if (exceptionEntries > 0) return SplitApkWorkaroundResult.LOOP_EXCEPTION;
 
         // Otherwise, we just didn't find any entries at all, which is probably fine; not all
         // configurations actually trigger the bug.
-        return Result.NO_ENTRIES;
+        return SplitApkWorkaroundResult.NO_ENTRIES;
     }
 }
