@@ -349,10 +349,10 @@ class Tab : public gfx::AnimationDelegate,
   // The offset used to paint the inactive background image.
   int background_offset_;
 
-  // For narrow tabs, we show the favicon even if it won't completely fit.
-  // In this case, we need to center the favicon within the tab; it will be
-  // clipped to fit.
-  bool center_favicon_ = false;
+  // For narrow tabs, we show the alert icon or, if there is no alert icon, the
+  // favicon even if it won't completely fit. In this case, we need to center
+  // the icon within the tab; it will be clipped to fit.
+  bool center_icon_ = false;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
