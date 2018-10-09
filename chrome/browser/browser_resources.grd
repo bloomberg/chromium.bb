@@ -260,8 +260,6 @@
             <include name="IDR_MD_BOOKMARKS_DEBOUNCER_JS" file="resources\md_bookmarks\debouncer.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML" file="resources\md_bookmarks\dialog_focus_manager.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS" file="resources\md_bookmarks\dialog_focus_manager.js" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_DND_CHIP_HTML" file="resources\md_bookmarks\dnd_chip.html" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_DND_CHIP_JS" file="resources\md_bookmarks\dnd_chip.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DND_MANAGER_HTML" file="resources\md_bookmarks\dnd_manager.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_DND_MANAGER_JS" file="resources\md_bookmarks\dnd_manager.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\md_bookmarks\edit_dialog.html" type="BINDATA" />

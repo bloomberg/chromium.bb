@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -565,8 +566,13 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   if (params->is_from_touch)
     source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
 
-  chrome::DragBookmarks(
-      GetProfile(), nodes, web_contents->GetNativeView(), source);
+  chrome::DragBookmarks(GetProfile(),
+                        {
+                            std::move(nodes), params->drag_node_index,
+                            platform_util::GetViewForWindow(
+                                web_contents->GetTopLevelNativeWindow()),
+                            source,
+                        });
 
   return true;
 }
