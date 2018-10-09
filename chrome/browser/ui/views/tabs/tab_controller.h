@@ -30,7 +30,6 @@ class View;
 // Controller for tabs.
 class TabController {
  public:
-
   virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns true if multiple selection is supported.
@@ -126,6 +125,7 @@ class TabController {
       const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
           border_callback,
       gfx::Path* clip) = 0;
+  virtual bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) = 0;
 
   // Returns the thickness of the stroke around the active tab in DIP.  Returns
   // 0 if there is no stroke.

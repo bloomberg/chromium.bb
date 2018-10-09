@@ -186,6 +186,21 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the insets to use for laying out tab contents.
   gfx::Insets GetContentsInsets() const;
 
+  // Contains values 0..1 representing the opacity of the corresponding
+  // separators.  These are physical and not logical, so "left" is the left
+  // separator in both LTR and RTL.
+  struct SeparatorOpacities {
+    float left = 0, right = 0;
+  };
+
+  // Returns the opacities of the separators.  If |for_layout| is true, returns
+  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
+  // effects and consider only the current tab's state.
+  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
+
+  // Returns the TabStyle associated with this tab.
+  const class TabStyle* GetTabStyle() const;
+
   // Returns the horizontal insets to use for laying out tab contents.
   static gfx::Insets GetContentsHorizontalInsets();
 
@@ -233,13 +248,6 @@ class Tab : public gfx::AnimationDelegate,
                            TabCloseButtonVisibilityWhenNotStacked);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
 
-  // Contains values 0..1 representing the opacity of the corresponding
-  // separators.  These are physical and not logical, so "left" is the left
-  // separator in both LTR and RTL.
-  struct SeparatorOpacities {
-    float left = 0, right = 0;
-  };
-
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
   // icon looks (rather than how wide the bounds are).
@@ -286,11 +294,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns whether the tab should be rendered as a normal tab as opposed to a
   // pinned tab.
   bool ShouldRenderAsNormalTab() const;
-
-  // Returns the opacities of the separators.  If |for_layout| is true, returns
-  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
-  // effects and consider only the current tab's state.
-  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
 
   // Returns the final hover opacity for this tab (considers tab width).
   float GetHoverOpacity() const;
