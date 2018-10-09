@@ -90,8 +90,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testHoverOverElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2575
-    'ChromeDriverTest.testTakeElementScreenshotInIframe',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
