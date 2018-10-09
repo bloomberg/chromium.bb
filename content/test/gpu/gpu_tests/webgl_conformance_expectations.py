@@ -726,6 +726,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'nvidia'], bug=830901)
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['android', 'nvidia'], bug=891456)
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['android', 'nvidia'], bug=891456)
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', ['android', 'nvidia'],
         bug=891456)
