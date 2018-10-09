@@ -17,6 +17,7 @@ namespace test {
 
 namespace {
 
+// MenuDelegate mock to control the CreateFootnoteView() method.
 class MockMenuDelegate : public MenuDelegate {
  public:
   MockMenuDelegate() = default;
@@ -27,6 +28,7 @@ class MockMenuDelegate : public MenuDelegate {
   }
   int create_footnote_view_count() { return create_footnote_view_count_; }
 
+  // MenuDelegate:
   View* CreateFootnoteView() override {
     create_footnote_view_count_++;
     return create_footnote_view_value_;
@@ -49,6 +51,7 @@ class MenuFootnoteTest : public ViewsTestBase {
   MenuFootnoteTest();
   ~MenuFootnoteTest() override;
 
+  // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
 
@@ -65,20 +68,13 @@ class MenuFootnoteTest : public ViewsTestBase {
     menu_runner_ = std::make_unique<MenuRunner>(menu_item_view_, 0);
   }
 
-  MenuItemView* menu_item_view() { return menu_item_view_; }
-  MenuItemView* item_with_submenu() { return item_with_submenu_; }
-  MockMenuDelegate* menu_delegate() { return menu_delegate_.get(); }
-  MenuRunner* menu_runner() { return menu_runner_.get(); }
-  Widget* owner() { return owner_.get(); }
-
-  // ViewsTestBase:
   void TearDown() override {
     if (owner_)
       owner_->CloseNow();
     ViewsTestBase::TearDown();
   }
 
- private:
+ protected:
   // Owned by menu_runner_.
   MenuItemView* menu_item_view_ = nullptr;
 
@@ -89,6 +85,7 @@ class MenuFootnoteTest : public ViewsTestBase {
   std::unique_ptr<MenuRunner> menu_runner_;
   std::unique_ptr<Widget> owner_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MenuFootnoteTest);
 };
 
@@ -98,23 +95,23 @@ MenuFootnoteTest::~MenuFootnoteTest() = default;
 
 TEST_F(MenuFootnoteTest, TopLevelContainerShowsFootnote) {
   View* footnote = new View();
-  menu_delegate()->set_create_footnote_view_value(footnote);
-  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                           ui::MENU_SOURCE_NONE);
-  EXPECT_EQ(1, menu_delegate()->create_footnote_view_count());
-  EXPECT_TRUE(menu_item_view()->GetSubmenu()->Contains(footnote));
+  menu_delegate_->set_create_footnote_view_value(footnote);
+  menu_runner_->RunMenuAt(owner_.get(), nullptr, gfx::Rect(),
+                          MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+  EXPECT_EQ(1, menu_delegate_->create_footnote_view_count());
+  EXPECT_TRUE(menu_item_view_->GetSubmenu()->Contains(footnote));
 }
 
 TEST_F(MenuFootnoteTest, SubmenuDoesNotShowFootnote) {
   View* footnote = new View();
-  menu_delegate()->set_create_footnote_view_value(footnote);
-  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                           ui::MENU_SOURCE_NONE);
+  menu_delegate_->set_create_footnote_view_value(footnote);
+  menu_runner_->RunMenuAt(owner_.get(), nullptr, gfx::Rect(),
+                          MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
   // Trigger the code that would create a footnote, then check that the footnote
   // was not created.
-  item_with_submenu()->GetSubmenu()->GetScrollViewContainer();
-  EXPECT_FALSE(item_with_submenu()->GetSubmenu()->Contains(footnote));
-  EXPECT_EQ(1, menu_delegate()->create_footnote_view_count());
+  item_with_submenu_->GetSubmenu()->GetScrollViewContainer();
+  EXPECT_FALSE(item_with_submenu_->GetSubmenu()->Contains(footnote));
+  EXPECT_EQ(1, menu_delegate_->create_footnote_view_count());
 }
 
 }  // namespace test
