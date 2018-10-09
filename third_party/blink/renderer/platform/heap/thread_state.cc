@@ -1058,7 +1058,8 @@ void ThreadState::CompleteSweep() {
     ScriptForbiddenScope script_forbidden;
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep);
+        Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep,
+        "forced", current_gc_data_.reason == BlinkGC::GCReason::kForcedGC);
     Heap().CompleteSweep();
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
@@ -1642,7 +1643,8 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
                                  BlinkGC::GCReason reason) {
   {
     ThreadHeapStatsCollector::DevToolsScope stats1(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase);
+        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase,
+        "forced", reason == BlinkGC::GCReason::kForcedGC);
     {
       AtomicPauseScope atomic_pause_scope(this);
       ThreadHeapStatsCollector::EnabledScope stats2(
