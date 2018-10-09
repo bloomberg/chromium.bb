@@ -10,6 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/new_selector_item_view.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_grid.h"
@@ -45,9 +46,6 @@ bool immediate_close_for_tests = false;
 
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
-
-// The amount of rounding on window edges in overview mode.
-constexpr int kOverviewWindowRoundingDp = 4;
 
 aura::Window* GetTransientRoot(aura::Window* window) {
   while (window && ::wm::GetTransientParent(window))
@@ -135,10 +133,10 @@ class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate,
     // transformed, so reverse the transform so the final scaled round matches
     // |kOverviewWindowRoundingDp|.
     const gfx::Vector2dF scale = window_->transform().Scale2d();
-    const SkScalar r_x =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.x()));
-    const SkScalar r_y =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.y()));
+    const SkScalar r_x = SkIntToScalar(
+        std::round(NewSelectorItemView::kOverviewWindowRoundingDp / scale.x()));
+    const SkScalar r_y = SkIntToScalar(
+        std::round(NewSelectorItemView::kOverviewWindowRoundingDp / scale.y()));
 
     SkPath path;
     SkScalar radii[8] = {r_x, r_y, r_x, r_y, r_x, r_y, r_x, r_y};
@@ -549,8 +547,14 @@ void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());
   layer->SetMaskLayer(mask_->layer());
-  selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
-  selector_item_->EnableBackdropIfNeeded();
+  // Do not apply the shadow for the new selector item in overview.
+  if (selector_item_->window_grid()->IsNewSelectorItemWindow(window_)) {
+    selector_item_->SetShadowBounds(base::nullopt);
+  } else {
+    selector_item_->SetShadowBounds(
+        base::make_optional(GetTransformedBounds()));
+    selector_item_->EnableBackdropIfNeeded();
+  }
 }
 
 }  // namespace ash
