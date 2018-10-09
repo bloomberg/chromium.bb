@@ -101,7 +101,6 @@ class BrowserAppMenuButton : public AppMenuButton,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   AppMenuIconController::Severity severity_ =
       AppMenuIconController::Severity::NONE;

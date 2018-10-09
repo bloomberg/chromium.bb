@@ -39,6 +39,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
+#include "ui/views/view_properties.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/keyboard/keyboard_controller.h"
@@ -290,10 +291,10 @@ BrowserAppMenuButton::CreateDefaultBorder() const {
 
 void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  if (focus_ring()) {
-    focus_ring()->SetPath(CreateToolbarFocusRingPath(
-        this, gfx::Insets(0, 0, 0, margin_trailing_)));
-  }
+  SetProperty(
+      views::kHighlightPathKey,
+      CreateToolbarFocusRingPath(this, gfx::Insets(0, 0, 0, margin_trailing_))
+          .release());
   AppMenuButton::OnBoundsChanged(previous_bounds);
 }
 
@@ -376,10 +377,4 @@ std::unique_ptr<views::InkDropHighlight>
 BrowserAppMenuButton::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight<MenuButton>(
       this, GetMirroredRect(GetContentsBounds()).CenterPoint());
-}
-
-std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
-    const {
-  return CreateToolbarInkDropMask<MenuButton>(
-      this, gfx::Insets(0, 0, 0, margin_trailing_));
 }
