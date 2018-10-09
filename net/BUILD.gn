@@ -2681,6 +2681,10 @@ static_library("test_support") {
     "data/",
   ]
 
+  if (is_mac) {
+    libs = [ "Security.framework" ]
+  }
+
   if (is_ios) {
     deps += [ ":test_support_bundle_data" ]
   } else {
