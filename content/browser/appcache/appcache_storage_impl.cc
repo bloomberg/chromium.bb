@@ -779,15 +779,14 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     return;
   }
 
-  // Check if new usage exceeds the maximum cache size.
-  if (new_origin_usage_ > max_appcache_origin_cache_size_) {
-    would_exceed_quota_ = true;
-    success_ = false;
-    return;
-  }
-
-  // Check when not using quota management.
+  // Use a user defined value or a simple hard-coded value when not using quota
+  // management.
   if (space_available_ == -1) {
+    if (new_origin_usage_ > max_appcache_origin_cache_size_) {
+      would_exceed_quota_ = true;
+      success_ = false;
+      return;
+    }
     success_ = transaction.Commit();
     return;
   }
