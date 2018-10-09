@@ -5,18 +5,35 @@
 #include "components/search/url_validity_checker_impl.h"
 
 #include "base/bind.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 
+namespace {
+
+// Request timeout duration.
+constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
+
+}  // namespace
+
 // Stores the pending request and associated metadata. Deleted once the request
 // finishes.
 struct UrlValidityCheckerImpl::PendingRequest {
-  PendingRequest() = default;
+  PendingRequest(const GURL& url,
+                 const base::TimeTicks& time_created,
+                 const base::TickClock* clock,
+                 UrlValidityCheckerCallback callback)
+      : url(url),
+        time_created(time_created),
+        timeout_timer(clock),
+        callback(std::move(callback)) {}
 
   GURL url;
   base::TimeTicks time_created;
+  base::OneShotTimer timeout_timer;
   UrlValidityCheckerCallback callback;
   std::unique_ptr<network::SimpleURLLoader> loader;
 
@@ -25,7 +42,8 @@ struct UrlValidityCheckerImpl::PendingRequest {
 
 UrlValidityCheckerImpl::UrlValidityCheckerImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory) {}
+    : url_loader_factory_(url_loader_factory),
+      clock_(base::DefaultTickClock::GetInstance()) {}
 
 UrlValidityCheckerImpl::~UrlValidityCheckerImpl() = default;
 
@@ -38,10 +56,8 @@ void UrlValidityCheckerImpl::DoesUrlResolve(
   resource_request->method = "HEAD";
   resource_request->allow_credentials = false;
 
-  auto request_iter = pending_requests_.emplace(pending_requests_.begin());
-  request_iter->url = url;
-  request_iter->time_created = NowTicks();
-  request_iter->callback = std::move(callback);
+  auto request_iter = pending_requests_.emplace(
+      pending_requests_.begin(), url, NowTicks(), clock_, std::move(callback));
   request_iter->loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   // Don't follow redirects to prevent leaking URL data to HTTP sites.
@@ -53,6 +69,10 @@ void UrlValidityCheckerImpl::DoesUrlResolve(
       base::BindOnce(&UrlValidityCheckerImpl::OnSimpleLoaderComplete,
                      weak_ptr_factory_.GetWeakPtr(), request_iter),
       /*max_body_size=*/1);
+  request_iter->timeout_timer.Start(
+      FROM_HERE, kRequestTimeout,
+      base::BindOnce(&UrlValidityCheckerImpl::OnSimpleLoaderHandler,
+                     weak_ptr_factory_.GetWeakPtr(), request_iter, false));
 }
 
 void UrlValidityCheckerImpl::OnSimpleLoaderRedirect(
