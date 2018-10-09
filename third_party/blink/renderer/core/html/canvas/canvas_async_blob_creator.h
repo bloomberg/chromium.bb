@@ -128,7 +128,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   ImageEncodingMimeType mime_type_;
   const ImageEncodeOptions encode_options_;
   ToBlobFunctionType function_type_;
-  sk_sp<SkData> png_16bit_data_helper_;
+  sk_sp<SkData> png_data_helper_;
 
   // Chrome metrics use
   TimeTicks start_time_;
