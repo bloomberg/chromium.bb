@@ -421,7 +421,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         params.attribs.bind_generates_resource, task_executor_->image_manager(),
         params.image_factory, nullptr /* progress_reporter */,
         task_executor_->gpu_feature_info(),
-        task_executor_->discardable_manager());
+        task_executor_->discardable_manager(),
+        task_executor_->shared_image_manager());
   }
 
 #if defined(OS_MACOSX)
@@ -1342,8 +1343,8 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
   if (!shared_image_factory_) {
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         GetGpuPreferences(), context_group_->feature_info()->workarounds(),
-        GetGpuFeatureInfo(), context_group_->mailbox_manager(), image_factory_,
-        nullptr);
+        GetGpuFeatureInfo(), context_group_->mailbox_manager(),
+        context_group_->shared_image_manager(), image_factory_, nullptr);
   }
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage)) {

@@ -103,7 +103,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         init_params.attribs.bind_generates_resource, channel_->image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
         manager->watchdog() /* progress_reporter */,
-        manager->gpu_feature_info(), manager->discardable_manager());
+        manager->gpu_feature_info(), manager->discardable_manager(),
+        manager->shared_image_manager());
   }
 
 #if defined(OS_MACOSX)

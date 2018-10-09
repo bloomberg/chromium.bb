@@ -34,6 +34,7 @@ class ImageFactory;
 struct GpuPreferences;
 class MailboxManager;
 class TransferBufferManager;
+class SharedImageManager;
 class ServiceDiscardableManager;
 class DecoderContext;
 
@@ -72,7 +73,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
                gpu::ImageFactory* image_factory,
                gl::ProgressReporter* progress_reporter,
                const GpuFeatureInfo& gpu_feature_info,
-               ServiceDiscardableManager* discardable_manager);
+               ServiceDiscardableManager* discardable_manager,
+               SharedImageManager* shared_image_manager);
 
   // This should only be called by a DecoderContext. This must be paired with a
   // call to destroy if it succeeds.
@@ -206,6 +208,10 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return discardable_manager_;
   }
 
+  SharedImageManager* shared_image_manager() const {
+    return shared_image_manager_;
+  }
+
   uint32_t GetMemRepresented() const;
 
   // Loses all the context associated with this group.
@@ -323,6 +329,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   GpuFeatureInfo gpu_feature_info_;
 
   ServiceDiscardableManager* discardable_manager_;
+
+  SharedImageManager* shared_image_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

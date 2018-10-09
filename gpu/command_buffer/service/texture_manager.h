@@ -35,7 +35,8 @@ class ProgressReporter;
 namespace gpu {
 class DecoderContext;
 class ServiceDiscardableManager;
-class SharedImageFactory;
+class SharedImageBackingGLTexture;
+class SharedImageBackingFactoryGLTexture;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -335,7 +336,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
  private:
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
-  friend class gpu::SharedImageFactory;
+  friend class gpu::SharedImageBackingGLTexture;
+  friend class gpu::SharedImageBackingFactoryGLTexture;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
