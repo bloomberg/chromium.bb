@@ -7169,7 +7169,7 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, PostJune2016) {
   ui_test_utils::NavigateToURL(browser(), url);
   console_observer.Wait();
   EXPECT_TRUE(
-      base::MatchPattern(console_observer.message(), "*distrusted in M70*"));
+      base::MatchPattern(console_observer.message(), "*distrusted very soon*"));
 }
 
 // Tests that the Symantec console message is logged for subresources, but caps
