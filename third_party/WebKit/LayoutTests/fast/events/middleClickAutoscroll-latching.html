@@ -17,6 +17,8 @@
 <script>
 setAnimationRequiresRaster();
 var testBubble = async_test("Tests that middleClickAutoscroll finds the correct ancestor layoutobject when starting in an unscrollable direction.")
+var testIFrame = async_test("Tests that middleClickAutoscroll finds the correct ancestor layoutobject when starting in an iframe, and the latching is correctly implemented.")
+
 testBubble.step(function() {
   if (!window.eventSender)
     return;
@@ -47,16 +49,11 @@ testBubble.step(function() {
         assert_equals(div.scrollLeft, 0);
         eventSender.mouseUp(1);
         testBubble.done();
-        // TODO(crbug.com/888571): This call to testIFrame doesn't get hit after
-        // testBubble.done() gets called.
-        testIFrame();
       }
     }
   };
 });
 
-function testIFrame() {
-var testIFrame = async_test("Tests that middleClickAutoscroll finds the correct ancestor layoutobject when starting in an iframe, and the latching is correctly implemented.")
 testIFrame.step(function() {
   if (!window.eventSender)
     return;
@@ -79,5 +76,4 @@ testIFrame.step(function() {
     testIFrame.done();
   };
 });
-}
 </script>
