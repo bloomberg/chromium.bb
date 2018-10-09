@@ -543,7 +543,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -557,7 +557,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 140, 140],
-      revision=4,
+      revision=5,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
