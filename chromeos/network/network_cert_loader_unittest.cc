@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/cert_loader.h"
+#include "chromeos/network/network_cert_loader.h"
 
 #include <stddef.h>
 
@@ -36,7 +36,7 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   }
 
   net::CertificateList GetAllServerAndAuthorityCertificates() const override {
-    // CertLoader does not call this.
+    // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
   }
@@ -46,13 +46,13 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   }
 
   net::CertificateList GetWebTrustedCertificates() const override {
-    // CertLoader does not call this.
+    // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
   }
 
   net::CertificateList GetCertificatesWithoutWebTrust() const override {
-    // CertLoader does not call this.
+    // NetworkCertLoader does not call this.
     NOTREACHED();
     return net::CertificateList();
   }
@@ -63,7 +63,7 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   }
 
   void NotifyObservers() {
-    // CertLoader does not use these parameters - it calls
+    // NetworkCertLoader does not use these parameters - it calls
     // |GetAllAuthorityCertificates| explicitly.
     net::CertificateList all_server_and_authority_certs;
     net::CertificateList trust_anchors;
@@ -135,26 +135,25 @@ const TestClientCertWithKey TEST_CLIENT_CERT_1 = {"client_1.pem",
 const TestClientCertWithKey TEST_CLIENT_CERT_2 = {"client_2.pem",
                                                   "client_2.pk8"};
 
-class CertLoaderTest : public testing::Test,
-                       public CertLoader::Observer {
+class NetworkCertLoaderTest : public testing::Test,
+                              public NetworkCertLoader::Observer {
  public:
-  CertLoaderTest()
-      : cert_loader_(nullptr),
-        certificates_loaded_events_count_(0U) {}
+  NetworkCertLoaderTest()
+      : cert_loader_(nullptr), certificates_loaded_events_count_(0U) {}
 
-  ~CertLoaderTest() override = default;
+  ~NetworkCertLoaderTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(primary_db_.is_open());
 
-    CertLoader::Initialize();
-    cert_loader_ = CertLoader::Get();
+    NetworkCertLoader::Initialize();
+    cert_loader_ = NetworkCertLoader::Get();
     cert_loader_->AddObserver(this);
   }
 
   void TearDown() override {
     cert_loader_->RemoveObserver(this);
-    CertLoader::Shutdown();
+    NetworkCertLoader::Shutdown();
   }
 
  protected:
@@ -177,7 +176,7 @@ class CertLoaderTest : public testing::Test,
     GetAndResetCertificatesLoadedEventsCount();
   }
 
-  // CertLoader::Observer:
+  // NetworkCertLoader::Observer:
   // The test keeps count of times the observer method was called.
   void OnCertificatesLoaded(
       const net::ScopedCERTCertificateList& cert_list) override {
@@ -214,9 +213,8 @@ class CertLoaderTest : public testing::Test,
     ASSERT_EQ(1U, imported_certs->size());
 
     net::NSSCertDatabase::ImportCertFailureList failed;
-    ASSERT_TRUE(database->ImportCACerts(*imported_certs,
-                                        net::NSSCertDatabase::TRUST_DEFAULT,
-                                        &failed));
+    ASSERT_TRUE(database->ImportCACerts(
+        *imported_certs, net::NSSCertDatabase::TRUST_DEFAULT, &failed));
     ASSERT_TRUE(failed.empty());
   }
 
@@ -261,11 +259,11 @@ class CertLoaderTest : public testing::Test,
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  CertLoader* cert_loader_;
+  NetworkCertLoader* cert_loader_;
 
-  // The user is primary as the one whose certificates CertLoader handles, it
-  // has nothing to do with crypto::InitializeNSSForChromeOSUser is_primary_user
-  // parameter (which is irrelevant for these tests).
+  // The user is primary as the one whose certificates NetworkCertLoader
+  // handles, it has nothing to do with crypto::InitializeNSSForChromeOSUser
+  // is_primary_user parameter (which is irrelevant for these tests).
   crypto::ScopedTestNSSDB primary_db_;
   std::unique_ptr<TestNSSCertDatabase> primary_certdb_;
 
@@ -282,7 +280,7 @@ class CertLoaderTest : public testing::Test,
 
 }  // namespace
 
-TEST_F(CertLoaderTest, BasicOnlyUserDB) {
+TEST_F(NetworkCertLoaderTest, BasicOnlyUserDB) {
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
@@ -309,7 +307,7 @@ TEST_F(CertLoaderTest, BasicOnlyUserDB) {
   EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
 }
 
-TEST_F(CertLoaderTest, BasicOnlySystemDB) {
+TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
@@ -334,9 +332,9 @@ TEST_F(CertLoaderTest, BasicOnlySystemDB) {
   EXPECT_FALSE(cert_loader_->all_certs().empty());
 }
 
-// Tests the CertLoader with a system DB and then with an additional user DB
-// which does not have access to the system token.
-TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
+// Tests the NetworkCertLoader with a system DB and then with an additional user
+// DB which does not have access to the system token.
+TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   CreateCertDatabase(&system_db_, &system_certdb_);
   net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
@@ -396,9 +394,9 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
                                       cert_loader_->all_certs()));
 }
 
-// Tests the CertLoader with a system DB and then with an additional user DB
-// which has access to the system token.
-TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
+// Tests the NetworkCertLoader with a system DB and then with an additional user
+// DB which has access to the system token.
+TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   CreateCertDatabase(&system_db_, &system_certdb_);
   net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
@@ -459,7 +457,7 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
                     user_token_cert.get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
+TEST_F(NetworkCertLoaderTest, UpdateCertListOnNewCert) {
   StartCertLoaderWithPrimaryDB();
 
   net::ScopedCERTCertificateList certs;
@@ -481,7 +479,7 @@ TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
   EXPECT_FALSE(cert_loader_->IsCertificateHardwareBacked(certs[0].get()));
 }
 
-TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
+TEST_F(NetworkCertLoaderTest, NoUpdateOnSecondaryDbChanges) {
   crypto::ScopedTestNSSDB secondary_db;
   std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
@@ -497,7 +495,7 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
       IsCertInCertificateList(certs[0].get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
+TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   StartCertLoaderWithPrimaryDB();
 
   net::ScopedCERTCertificate cert(
@@ -511,7 +509,7 @@ TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
+TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
   StartCertLoaderWithPrimaryDBAndSystemToken();
 
   EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
@@ -529,7 +527,7 @@ TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
       cert.get(), cert_loader_->system_token_client_certs()));
 }
 
-TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
+TEST_F(NetworkCertLoaderTest, NoUpdateOnNewClientCertInSecondaryDb) {
   crypto::ScopedTestNSSDB secondary_db;
   std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
@@ -545,7 +543,7 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
   EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
+TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
   StartCertLoaderWithPrimaryDB();
 
   net::ScopedCERTCertificate cert(
@@ -566,7 +564,7 @@ TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
   ASSERT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
+TEST_F(NetworkCertLoaderTest, UpdatedOnCACertTrustChange) {
   StartCertLoaderWithPrimaryDB();
 
   net::ScopedCERTCertificateList certs;
@@ -589,7 +587,7 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
-TEST_F(CertLoaderTest, UpdateSinglePolicyCertificateProvider) {
+TEST_F(NetworkCertLoaderTest, UpdateSinglePolicyCertificateProvider) {
   // Load a CA cert for testing.
   scoped_refptr<net::X509Certificate> cert = net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "websocket_cacert.pem");
@@ -615,7 +613,7 @@ TEST_F(CertLoaderTest, UpdateSinglePolicyCertificateProvider) {
   EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 }
 
-TEST_F(CertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
+TEST_F(NetworkCertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
   // Load a CA cert for device and user policy.
   scoped_refptr<net::X509Certificate> device_policy_cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(),
@@ -657,7 +655,7 @@ TEST_F(CertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
-TEST_F(CertLoaderTest,
+TEST_F(NetworkCertLoaderTest,
        NoUpdateDueToPolicyCertificateProviderBeforeCertDbLoaded) {
   // Load a CA cert for testing.
   scoped_refptr<net::X509Certificate> cert = net::ImportCertFromFile(
@@ -667,7 +665,7 @@ TEST_F(CertLoaderTest,
   FakePolicyCertificateProvider device_policy_certs_provider;
 
   // Setting the cert provider does not trigger an update yet, because the
-  // CertLoader has not been set to use a system or user NSS Database.
+  // NetworkCertLoader has not been set to use a system or user NSS Database.
   cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
 
@@ -677,7 +675,7 @@ TEST_F(CertLoaderTest,
   device_policy_certs_provider.NotifyObservers();
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
 
-  // After starting the CertLoader, the policy-provided cert is there.
+  // After starting the NetworkCertLoader, the policy-provided cert is there.
   StartCertLoaderWithPrimaryDB();
   EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 

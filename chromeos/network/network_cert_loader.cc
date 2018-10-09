@@ -1,14 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/cert_loader.h"
+#include "chromeos/network/network_cert_loader.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,9 +25,9 @@ namespace chromeos {
 
 // Caches certificates from a NSSCertDatabase. Handles reloading of certificates
 // on update notifications and provides status flags (loading / loaded).
-// CertLoader can use multiple CertCaches to combine certificates from multiple
-// sources.
-class CertLoader::CertCache : public net::CertDatabase::Observer {
+// NetworkCertLoader can use multiple CertCaches to combine certificates from
+// multiple sources.
+class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
  public:
   explicit CertCache(base::RepeatingClosure certificates_updated_callback)
       : certificates_updated_callback_(certificates_updated_callback),
@@ -76,7 +77,7 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
   // Trigger a certificate load. If a certificate loading task is already in
   // progress, will start a reload once the current task is finished.
   void LoadCertificates() {
-    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     VLOG(1) << "LoadCertificates: " << certificates_update_running_;
 
     if (certificates_update_running_) {
@@ -90,14 +91,14 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
     if (nss_database_) {
       has_system_certificates_ =
           static_cast<bool>(nss_database_->GetSystemSlot());
-      nss_database_->ListCerts(base::Bind(&CertCache::UpdateCertificates,
-                                          weak_factory_.GetWeakPtr()));
+      nss_database_->ListCerts(base::AdaptCallbackForRepeating(base::BindOnce(
+          &CertCache::UpdateCertificates, weak_factory_.GetWeakPtr())));
     }
   }
 
   // Called if a certificate load task is finished.
   void UpdateCertificates(net::ScopedCERTCertificateList cert_list) {
-    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(certificates_update_running_);
     VLOG(1) << "UpdateCertificates: " << cert_list.size();
 
@@ -132,7 +133,7 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
   // Cached Certificates loaded from the database.
   net::ScopedCERTCertificateList cert_list_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<CertCache> weak_factory_;
 
@@ -206,60 +207,63 @@ void AddPolicyProvidedAuthorities(
 
 }  // namespace
 
-static CertLoader* g_cert_loader = nullptr;
+static NetworkCertLoader* g_cert_loader = nullptr;
 static bool g_force_hardware_backed_for_test = false;
 
 // static
-void CertLoader::Initialize() {
+void NetworkCertLoader::Initialize() {
   CHECK(!g_cert_loader);
-  g_cert_loader = new CertLoader();
+  g_cert_loader = new NetworkCertLoader();
 }
 
 // static
-void CertLoader::Shutdown() {
+void NetworkCertLoader::Shutdown() {
   CHECK(g_cert_loader);
   delete g_cert_loader;
   g_cert_loader = nullptr;
 }
 
 // static
-CertLoader* CertLoader::Get() {
-  CHECK(g_cert_loader) << "CertLoader::Get() called before Initialize()";
+NetworkCertLoader* NetworkCertLoader::Get() {
+  CHECK(g_cert_loader) << "NetworkCertLoader::Get() called before Initialize()";
   return g_cert_loader;
 }
 
 // static
-bool CertLoader::IsInitialized() {
+bool NetworkCertLoader::IsInitialized() {
   return g_cert_loader;
 }
 
-CertLoader::CertLoader() : weak_factory_(this) {
-  system_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
-      &CertLoader::OnCertCacheOrPolicyCertsUpdated, base::Unretained(this)));
-  user_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
-      &CertLoader::OnCertCacheOrPolicyCertsUpdated, base::Unretained(this)));
+NetworkCertLoader::NetworkCertLoader() : weak_factory_(this) {
+  system_cert_cache_ = std::make_unique<CertCache>(
+      base::BindRepeating(&NetworkCertLoader::OnCertCacheOrPolicyCertsUpdated,
+                          base::Unretained(this)));
+  user_cert_cache_ = std::make_unique<CertCache>(
+      base::BindRepeating(&NetworkCertLoader::OnCertCacheOrPolicyCertsUpdated,
+                          base::Unretained(this)));
 }
 
-CertLoader::~CertLoader() {
+NetworkCertLoader::~NetworkCertLoader() {
   DCHECK(policy_certificate_providers_.empty());
 }
 
-void CertLoader::SetSystemNSSDB(net::NSSCertDatabase* system_slot_database) {
+void NetworkCertLoader::SetSystemNSSDB(
+    net::NSSCertDatabase* system_slot_database) {
   system_cert_cache_->SetNSSDB(system_slot_database);
 }
 
-void CertLoader::SetUserNSSDB(net::NSSCertDatabase* user_database) {
+void NetworkCertLoader::SetUserNSSDB(net::NSSCertDatabase* user_database) {
   user_cert_cache_->SetNSSDB(user_database);
 }
 
-void CertLoader::AddPolicyCertificateProvider(
+void NetworkCertLoader::AddPolicyCertificateProvider(
     PolicyCertificateProvider* policy_certificate_provider) {
   policy_certificate_provider->AddPolicyProvidedCertsObserver(this);
   policy_certificate_providers_.push_back(policy_certificate_provider);
   OnCertCacheOrPolicyCertsUpdated();
 }
 
-void CertLoader::RemovePolicyCertificateProvider(
+void NetworkCertLoader::RemovePolicyCertificateProvider(
     PolicyCertificateProvider* policy_certificate_provider) {
   auto iter = std::find(policy_certificate_providers_.begin(),
                         policy_certificate_providers_.end(),
@@ -270,38 +274,38 @@ void CertLoader::RemovePolicyCertificateProvider(
   OnCertCacheOrPolicyCertsUpdated();
 }
 
-void CertLoader::AddObserver(CertLoader::Observer* observer) {
+void NetworkCertLoader::AddObserver(NetworkCertLoader::Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
+void NetworkCertLoader::RemoveObserver(NetworkCertLoader::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
 // static
-bool CertLoader::IsCertificateHardwareBacked(CERTCertificate* cert) {
+bool NetworkCertLoader::IsCertificateHardwareBacked(CERTCertificate* cert) {
   if (g_force_hardware_backed_for_test)
     return true;
   PK11SlotInfo* slot = cert->slot;
   return slot && PK11_IsHW(slot);
 }
 
-bool CertLoader::initial_load_of_any_database_running() const {
+bool NetworkCertLoader::initial_load_of_any_database_running() const {
   return system_cert_cache_->initial_load_running() ||
          user_cert_cache_->initial_load_running();
 }
 
-bool CertLoader::initial_load_finished() const {
+bool NetworkCertLoader::initial_load_finished() const {
   return system_cert_cache_->initial_load_finished() ||
          user_cert_cache_->initial_load_finished();
 }
 
-bool CertLoader::user_cert_database_load_finished() const {
+bool NetworkCertLoader::user_cert_database_load_finished() const {
   return user_cert_cache_->initial_load_finished();
 }
 
 // static
-void CertLoader::ForceHardwareBackedForTesting() {
+void NetworkCertLoader::ForceHardwareBackedForTesting() {
   g_force_hardware_backed_for_test = true;
 }
 
@@ -314,8 +318,8 @@ void CertLoader::ForceHardwareBackedForTesting() {
 // is shared between a certificate and its associated private and public
 // keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
 // but that always returns NULL on Chrome OS for me.
-std::string CertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
-                                                  int* slot_id) {
+std::string NetworkCertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
+                                                         int* slot_id) {
   DCHECK(slot_id);
 
   SECKEYPrivateKey* priv_key = PK11_FindKeyByAnyCert(cert, nullptr /* wincx */);
@@ -336,15 +340,15 @@ std::string CertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
   return pkcs11_id;
 }
 
-void CertLoader::OnCertCacheOrPolicyCertsUpdated() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void NetworkCertLoader::OnCertCacheOrPolicyCertsUpdated() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "OnCertCacheOrPolicyCertsUpdated";
 
   // Only trigger a notification to observers if one of the |CertCache|s has
   // already loaded certificates. Don't trigger notifications if policy-provided
   // certificates change before that.
   // TODO(https://crbug.com/888451): When we handle client and authority
-  // certificates separately in CertLoader, we could fire different
+  // certificates separately in NetworkCertLoader, we could fire different
   // notifications for policy-provided cert changes instead of holding back
   // notifications. Note that it is possible that only |system_cert_cache_| has
   // loaded certificates (e.g. on the ChromeOS sign-in screen), and it is also
@@ -372,7 +376,7 @@ void CertLoader::OnCertCacheOrPolicyCertsUpdated() {
                        net::x509_util::DupCERTCertificateList(
                            user_cert_cache_->cert_list()),
                        std::move(system_slot)),
-        base::BindOnce(&CertLoader::UpdateCertificates,
+        base::BindOnce(&NetworkCertLoader::UpdateCertificates,
                        weak_factory_.GetWeakPtr(),
                        net::x509_util::DupCERTCertificateList(
                            user_cert_cache_->cert_list())));
@@ -390,10 +394,10 @@ void CertLoader::OnCertCacheOrPolicyCertsUpdated() {
   }
 }
 
-void CertLoader::UpdateCertificates(
+void NetworkCertLoader::UpdateCertificates(
     net::ScopedCERTCertificateList all_certs,
     net::ScopedCERTCertificateList system_token_client_certs) {
-  CHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "UpdateCertificates: " << all_certs.size() << " ("
           << system_token_client_certs.size()
@@ -406,7 +410,8 @@ void CertLoader::UpdateCertificates(
   // Add policy-provided certificates.
   // TODO(https://crbug.com/888451): Instead of putting authorities and client
   // certs into |all_certs_| and then filtering in NetworkCertificateHandler, we
-  // should separate the two categories here in |CertLoader| already (pmarko@).
+  // should separate the two categories here in |NetworkCertLoader| already
+  // (pmarko@).
   for (const PolicyCertificateProvider* policy_certificate_provider :
        policy_certificate_providers_) {
     AddPolicyProvidedAuthorities(policy_certificate_provider, &all_certs_);
@@ -415,15 +420,15 @@ void CertLoader::UpdateCertificates(
   NotifyCertificatesLoaded();
 }
 
-void CertLoader::NotifyCertificatesLoaded() {
+void NetworkCertLoader::NotifyCertificatesLoaded() {
   for (auto& observer : observers_)
     observer.OnCertificatesLoaded(all_certs_);
 }
 
-void CertLoader::OnPolicyProvidedCertsChanged(
+void NetworkCertLoader::OnPolicyProvidedCertsChanged(
     const net::CertificateList& all_server_and_authority_certs,
     const net::CertificateList& trust_anchors) {
-  CHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   OnCertCacheOrPolicyCertsUpdated();
 }
 

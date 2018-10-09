@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -29,9 +29,9 @@
 namespace policy {
 
 UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {
-  // CertLoader may be not initialized in tests.
-  if (chromeos::CertLoader::IsInitialized())
-    chromeos::CertLoader::Get()->RemovePolicyCertificateProvider(this);
+  // NetworkCertLoader may be not initialized in tests.
+  if (chromeos::NetworkCertLoader::IsInitialized())
+    chromeos::NetworkCertLoader::Get()->RemovePolicyCertificateProvider(this);
 }
 
 // static
@@ -78,13 +78,13 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
 
-  // Make sure that the |CertLoader| which makes certificates available to the
-  // chromeos network code gets policy-pushed certificates from the primary
-  // profile. This assumes that a |UserNetworkConfigurationUpdater| is only
-  // created for the primary profile.
-  // CertLoader may be not initialized in tests.
-  if (chromeos::CertLoader::IsInitialized())
-    chromeos::CertLoader::Get()->AddPolicyCertificateProvider(this);
+  // Make sure that the |NetworkCertLoader| which makes certificates available
+  // to the chromeos network code gets policy-pushed certificates from the
+  // primary profile. This assumes that a |UserNetworkConfigurationUpdater| is
+  // only created for the primary profile. NetworkCertLoader may be not
+  // initialized in tests.
+  if (chromeos::NetworkCertLoader::IsInitialized())
+    chromeos::NetworkCertLoader::Get()->AddPolicyCertificateProvider(this);
 }
 
 void UserNetworkConfigurationUpdater::ImportClientCertificates() {

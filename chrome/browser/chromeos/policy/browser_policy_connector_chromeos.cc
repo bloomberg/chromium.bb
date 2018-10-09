@@ -41,13 +41,13 @@
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -193,9 +193,9 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()->network_device_handler(),
           chromeos::CrosSettings::Get(),
           DeviceNetworkConfigurationUpdater::DeviceAssetIDFetcher());
-  // CertLoader may be not initialized in tests.
-  if (chromeos::CertLoader::IsInitialized()) {
-    chromeos::CertLoader::Get()->AddPolicyCertificateProvider(
+  // NetworkCertLoader may be not initialized in tests.
+  if (chromeos::NetworkCertLoader::IsInitialized()) {
+    chromeos::NetworkCertLoader::Get()->AddPolicyCertificateProvider(
         device_network_configuration_updater_.get());
   }
 
@@ -220,9 +220,9 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
-  // CertLoader may be not initialized in tests.
-  if (chromeos::CertLoader::IsInitialized()) {
-    chromeos::CertLoader::Get()->RemovePolicyCertificateProvider(
+  // NetworkCertLoader may be not initialized in tests.
+  if (chromeos::NetworkCertLoader::IsInitialized()) {
+    chromeos::NetworkCertLoader::Get()->RemovePolicyCertificateProvider(
         device_network_configuration_updater_.get());
   }
   device_network_configuration_updater_.reset();

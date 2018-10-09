@@ -118,7 +118,6 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
@@ -135,6 +134,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login_event_recorder.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
@@ -356,7 +356,7 @@ class DBusServices {
 
     LoginState::Initialize();
     TPMTokenLoader::Initialize();
-    CertLoader::Initialize();
+    NetworkCertLoader::Initialize();
 
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
@@ -383,7 +383,7 @@ class DBusServices {
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     LoginState::Shutdown();
-    CertLoader::Shutdown();
+    NetworkCertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
@@ -416,10 +416,10 @@ class DBusServices {
 };
 
 // Initializes a global NSSCertDatabase for the system token and starts
-// CertLoader with that database. Note that this is triggered from
+// NetworkCertLoader with that database. Note that this is triggered from
 // PreMainMessageLoopRun, which is executed after PostMainMessageLoopStart,
-// where CertLoader is initialized. We can thus assume that CertLoader is
-// initialized.
+// where NetworkCertLoader is initialized. We can thus assume that
+// NetworkCertLoader is initialized.
 class SystemTokenCertDBInitializer {
  public:
   SystemTokenCertDBInitializer() : weak_ptr_factory_(this) {}
@@ -482,7 +482,7 @@ class SystemTokenCertDBInitializer {
   }
 
   // Initializes the global system token NSSCertDatabase with |system_slot|.
-  // Also starts CertLoader with the system token database.
+  // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot) {
     // Currently, NSSCertDatabase requires a public slot to be set, so we use
     // the system slot there. We also want GetSystemSlot() to return the system
@@ -503,8 +503,8 @@ class SystemTokenCertDBInitializer {
     system_token_cert_database_ = std::move(database);
 
     VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
-               "database to CertLoader.";
-    CertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
+               "database to NetworkCertLoader.";
+    NetworkCertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
   }
 
   // Global NSSCertDatabase which sees the system token.
@@ -1192,7 +1192,7 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   ShutdownDBus();
 
   // Reset SystemTokenCertDBInitializer after DBus services because it should
-  // outlive CertLoader.
+  // outlive NetworkCertLoader.
   system_token_certdb_initializer_.reset();
 
   ChromeBrowserMainPartsLinux::PostDestroyThreads();

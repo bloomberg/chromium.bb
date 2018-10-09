@@ -98,7 +98,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -106,6 +105,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/login/auth/stub_authenticator.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -273,12 +273,12 @@ base::FilePath GetRlzDisabledFlagPath() {
 #endif
 
 // Callback to GetNSSCertDatabaseForProfile. It passes the user-specific NSS
-// database to CertLoader. It must be called for primary user only.
+// database to NetworkCertLoader. It must be called for primary user only.
 void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
-  if (!CertLoader::IsInitialized())
+  if (!NetworkCertLoader::IsInitialized())
     return;
 
-  CertLoader::Get()->SetUserNSSDB(database);
+  NetworkCertLoader::Get()->SetUserNSSDB(database);
 }
 
 // Returns new CommandLine with per-user flags.
@@ -1702,7 +1702,8 @@ void UserSessionManager::InitRlzImpl(Profile* profile,
 void UserSessionManager::InitializeCerts(Profile* profile) {
   // Now that the user profile has been initialized
   // |GetNSSCertDatabaseForProfile| is safe to be used.
-  if (CertLoader::IsInitialized() && base::SysInfo::IsRunningOnChromeOS()) {
+  if (NetworkCertLoader::IsInitialized() &&
+      base::SysInfo::IsRunningOnChromeOS()) {
     GetNSSCertDatabaseForProfile(profile,
                                  base::Bind(&OnGetNSSCertDatabaseForUser));
   }
