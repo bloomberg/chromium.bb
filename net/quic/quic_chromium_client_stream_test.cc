@@ -176,6 +176,7 @@ class QuicChromiumClientStreamTest
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
     session_.ActivateStream(base::WrapUnique(stream_));
     handle_ = stream_->CreateHandle();
+    helper_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
   }
 
   void InitializeHeaders() {
