@@ -100,12 +100,9 @@ class CORE_EXPORT WorkletGlobalScope
   // Partial implementation of the "set up a worklet environment settings
   // object" algorithm:
   // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  WorkletGlobalScope(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      v8::Isolate*,
-      WorkerReportingProxy&,
-      scoped_refptr<base::SingleThreadTaskRunner> document_loading_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> worklet_loading_task_runner);
+  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                     v8::Isolate*,
+                     WorkerReportingProxy&);
 
   void BindContentSecurityPolicyToExecutionContext() override;
 
