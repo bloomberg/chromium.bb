@@ -47,6 +47,7 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   v8::Local<v8::Value> GetListenerObject(EventTarget&) override {
     return event_handler_->CallbackObject();
   }
+  v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) override;
 
  protected:
   JSEventHandler(ScriptState* script_state,

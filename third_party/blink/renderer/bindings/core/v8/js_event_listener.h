@@ -43,6 +43,7 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   v8::Local<v8::Value> GetListenerObject(EventTarget&) override {
     return event_listener_->CallbackObject();
   }
+  v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) override;
 
  protected:
   // blink::JSBasedEventListener overrides:

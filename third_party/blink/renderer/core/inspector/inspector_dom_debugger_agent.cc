@@ -122,7 +122,10 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
           v8_event_listener->GetListenerObject(*target);
       if (handler.IsEmpty() || !handler->IsObject())
         continue;
-      bool use_capture = listeners->at(k).Capture();
+      v8::Local<v8::Value> effective_function =
+          v8_event_listener->GetEffectiveFunction(*target);
+      if (!effective_function->IsFunction())
+        continue;
       DOMNodeId backend_node_id = 0;
       if (target_node) {
         backend_node_id = DOMNodeIds::IdForNode(target_node);
@@ -131,8 +134,9 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
             target_node);
       }
       event_information->push_back(V8EventListenerInfo(
-          type, use_capture, listeners->at(k).Passive(),
-          listeners->at(k).Once(), handler.As<v8::Object>(), backend_node_id));
+          type, listeners->at(k).Capture(), listeners->at(k).Passive(),
+          listeners->at(k).Once(), handler.As<v8::Object>(),
+          effective_function.As<v8::Function>(), backend_node_id));
     }
   }
 }
@@ -450,13 +454,7 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
   if (info.handler.IsEmpty())
     return nullptr;
 
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::Local<v8::Function> function =
-      JSBasedEventListener::EventListenerEffectiveFunction(isolate,
-                                                           info.handler);
-  if (function.IsEmpty())
-    return nullptr;
-
+  v8::Local<v8::Function> function = info.effective_function;
   std::unique_ptr<protocol::DOMDebugger::EventListener> value =
       protocol::DOMDebugger::EventListener::create()
           .setType(info.event_type)

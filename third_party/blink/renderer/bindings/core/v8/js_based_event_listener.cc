@@ -29,35 +29,6 @@ JSBasedEventListener::~JSBasedEventListener() {
   }
 }
 
-// static
-v8::Local<v8::Function> JSBasedEventListener::EventListenerEffectiveFunction(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> handler) {
-  v8::Local<v8::Function> function;
-  if (handler->IsFunction()) {
-    function = handler.As<v8::Function>();
-  } else if (handler->IsObject()) {
-    v8::Local<v8::Value> property;
-    // Try the "handleEvent" method (EventListener interface).
-    if (handler
-            ->Get(isolate->GetCurrentContext(),
-                  V8AtomicString(isolate, "handleEvent"))
-            .ToLocal(&property) &&
-        property->IsFunction())
-      function = property.As<v8::Function>();
-    // Fall back to the "constructor" property.
-    else if (handler
-                 ->Get(isolate->GetCurrentContext(),
-                       V8AtomicString(isolate, "constructor"))
-                 .ToLocal(&property) &&
-             property->IsFunction())
-      function = property.As<v8::Function>();
-  }
-  if (!function.IsEmpty())
-    return GetBoundFunction(function);
-  return v8::Local<v8::Function>();
-}
-
 bool JSBasedEventListener::BelongsToTheCurrentWorld(
     ExecutionContext* execution_context) const {
   v8::Isolate* isolate = GetIsolate();

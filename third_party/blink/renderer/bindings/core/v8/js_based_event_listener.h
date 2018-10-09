@@ -32,10 +32,6 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
         Cast(const_cast<const EventListener*>(listener)));
   }
 
-  static v8::Local<v8::Function> EventListenerEffectiveFunction(
-      v8::Isolate* isolate,
-      v8::Local<v8::Object> handler);
-
   // TODO(bindings): consider to remove this (and use GetListenerObject()
   // instead) because this method is used in mostly only generated classes.
   static v8::Local<v8::Value> GetListenerOrNull(v8::Isolate* isolate,
@@ -54,12 +50,19 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
   // See: https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
   void handleEvent(ExecutionContext*, Event*) final;
 
-  // This may cause JS in the content attribute to get compiled, potentially
-  // unsuccessfully. In that case, this function returns v8::Null with firing
-  // error event instead of throwing an exception.
+  // |GetListenerObject()| and |GetEffectiveFunction()| may cause JS in the
+  // content attribute to get compiled, potentially unsuccessfully.
+  //
+  // Implements "get the current value of the event handler".
   // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // Returns v8::Null with firing error event instead of throwing an exception
+  // on failing to compile the uncompiled script body in eventHandler's value.
   // Also, this can return empty because of crbug.com/881688 .
   virtual v8::Local<v8::Value> GetListenerObject(EventTarget&) = 0;
+
+  // Returns v8::Function that handles invoked event or v8::Undefined without
+  // throwing any exception.
+  virtual v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) = 0;
 
   // Only DevTools is allowed to use this method.
   DOMWrapperWorld& GetWorldForInspector() const { return GetWorld(); }

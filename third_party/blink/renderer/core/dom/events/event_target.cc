@@ -142,15 +142,15 @@ void ReportBlockedEvent(EventTarget& target,
     v8::Isolate* isolate = ToIsolate(target.GetExecutionContext());
     v8::HandleScope handle_scope(isolate);
 
-    v8::Local<v8::Value> handler = listener->GetListenerObject(target);
+    // TODO(yukiy): create a method that returns SourceLocation of effective
+    // function in JSBasedEventListener.
+    v8::Local<v8::Value> handler = listener->GetEffectiveFunction(target);
     PerformanceMonitor::ReportGenericViolation(
         target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
         message_text, delayed,
-        (handler.IsEmpty() || !handler->IsObject())
-            ? nullptr
-            : SourceLocation::FromFunction(
-                  JSBasedEventListener::EventListenerEffectiveFunction(
-                      isolate, handler.As<v8::Object>())));
+        handler->IsFunction()
+            ? SourceLocation::FromFunction(handler.As<v8::Function>())
+            : nullptr);
   }
 
   registered_listener->SetBlockedEventWarningEmitted();
