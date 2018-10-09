@@ -35,6 +35,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
 
   // ExploreSitesService implementation.
   void GetCatalog(CatalogCallback callback) override;
+
   void GetCategoryImage(int category_id,
                         int pixel_size,
                         BitmapCallback callback) override;

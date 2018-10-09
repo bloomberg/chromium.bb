@@ -176,11 +176,12 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
 
   DVLOG(1) << "pixel_size_: " << pixel_size_;
   int icon_padding_pixel_size = pixel_size_ / kIconPaddingScale;
-  int size = pixel_size_ + icon_padding_pixel_size;
-  DVLOG(1) << "size: " << size;
+
+  // Offset to write icons out of frame due to padding.
+  int icon_write_offset = icon_padding_pixel_size / 2;
 
   SkBitmap composite_bitmap;
-  SkImageInfo image_info = bitmaps_[0].info().makeWH(size, size);
+  SkImageInfo image_info = bitmaps_[0].info().makeWH(pixel_size_, pixel_size_);
   composite_bitmap.setInfo(image_info);
   composite_bitmap.allocPixels();
   composite_bitmap.eraseColor(gfx::kGoogleGrey100);  // Set background to grey.
@@ -195,9 +196,10 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
       if (scaledBitmap.empty()) {
         return nullptr;
       }
-      composite_bitmap.writePixels(scaledBitmap.pixmap(),
-                                   (icon_size + icon_padding_pixel_size) / 2,
-                                   (icon_size + icon_padding_pixel_size) / 2);
+      composite_bitmap.writePixels(
+          scaledBitmap.pixmap(),
+          ((icon_size + icon_padding_pixel_size) / 2) - icon_write_offset,
+          ((icon_size + icon_padding_pixel_size) / 2) - icon_write_offset);
       break;
     }
     case 2: {
@@ -207,9 +209,10 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
         if (scaledBitmap.empty()) {
           return nullptr;
         }
-        composite_bitmap.writePixels(scaledBitmap.pixmap(),
-                                     i * (icon_size + icon_padding_pixel_size),
-                                     (icon_size + icon_padding_pixel_size) / 2);
+        composite_bitmap.writePixels(
+            scaledBitmap.pixmap(),
+            (i * (icon_size + icon_padding_pixel_size)) - icon_write_offset,
+            ((icon_size + icon_padding_pixel_size) / 2) - icon_write_offset);
       }
       break;
     }
@@ -222,18 +225,20 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
         }
         switch (i) {
           case 0:
-            composite_bitmap.writePixels(scaledBitmap.pixmap(), 0, 0);
+            composite_bitmap.writePixels(
+                scaledBitmap.pixmap(), -icon_write_offset, -icon_write_offset);
             break;
           case 1:
-            composite_bitmap.writePixels(scaledBitmap.pixmap(),
-                                         (icon_size + icon_padding_pixel_size),
-                                         0);
+            composite_bitmap.writePixels(
+                scaledBitmap.pixmap(),
+                (icon_size + icon_padding_pixel_size) - icon_write_offset,
+                -icon_write_offset);
             break;
           default:
             composite_bitmap.writePixels(
                 scaledBitmap.pixmap(),
-                (icon_size + icon_padding_pixel_size) / 2,
-                (icon_size + icon_padding_pixel_size));
+                ((icon_size + icon_padding_pixel_size) / 2) - icon_write_offset,
+                (icon_size + icon_padding_pixel_size) - icon_write_offset);
             break;
         }
       }
@@ -249,8 +254,9 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
             return nullptr;
           }
           composite_bitmap.writePixels(
-              scaledBitmap.pixmap(), j * (icon_size + icon_padding_pixel_size),
-              i * (icon_size + icon_padding_pixel_size));
+              scaledBitmap.pixmap(),
+              (j * (icon_size + icon_padding_pixel_size)) - icon_write_offset,
+              (i * (icon_size + icon_padding_pixel_size)) - icon_write_offset);
         }
       }
       break;
