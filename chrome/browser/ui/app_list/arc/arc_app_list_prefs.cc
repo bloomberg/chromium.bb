@@ -174,6 +174,22 @@ bool AreAppStatesChanged(const ArcAppListPrefs::AppInfo& info1,
          info1.launchable != info2.launchable;
 }
 
+// We have only fixed icon dimensions for default apps, 32, 48 and 64. If
+// requested dimension does not exist, use bigger one that can be downsized.
+// In case requested dimension is bigger than 64, use largest possible size that
+// can be upsized.
+ArcAppIconDescriptor MapDefaultAppIconDescriptor(
+    const ArcAppIconDescriptor& descriptor) {
+  int default_app_dip_size;
+  if (descriptor.dip_size <= 32)
+    default_app_dip_size = 32;
+  else if (descriptor.dip_size <= 48)
+    default_app_dip_size = 48;
+  else
+    default_app_dip_size = 64;
+  return ArcAppIconDescriptor(default_app_dip_size, descriptor.scale_factor);
+}
+
 // Whether skip install_time for comparing two |AppInfo|.
 bool ignore_compare_app_info_install_time = false;
 
@@ -379,7 +395,8 @@ base::FilePath ArcAppListPrefs::MaybeGetIconPathForDefaultApp(
   if (!default_app || default_app->app_path.empty())
     return base::FilePath();
 
-  return default_app->app_path.AppendASCII(descriptor.GetName());
+  return default_app->app_path.AppendASCII(
+      MapDefaultAppIconDescriptor(descriptor).GetName());
 }
 
 base::FilePath ArcAppListPrefs::GetIconPath(
