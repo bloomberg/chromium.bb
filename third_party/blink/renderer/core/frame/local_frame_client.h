@@ -192,7 +192,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // from an insecure source.  Note that the insecure content can spread to
   // other frames in the same origin.
   virtual void DidRunInsecureContent(const SecurityOrigin*, const KURL&) = 0;
-  virtual void DidDetectXSS(const KURL&, bool did_block_entire_page) = 0;
   virtual void DidDispatchPingLoader(const KURL&) = 0;
 
   // The frame displayed content with certificate errors with given URL.

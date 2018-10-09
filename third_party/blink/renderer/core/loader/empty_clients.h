@@ -314,7 +314,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidDisplayInsecureContent() override {}
   void DidContainInsecureFormAction() override {}
   void DidRunInsecureContent(const SecurityOrigin*, const KURL&) override {}
-  void DidDetectXSS(const KURL&, bool) override {}
   void DidDispatchPingLoader(const KURL&) override {}
   void DidDisplayContentWithCertificateErrors() override {}
   void DidRunContentWithCertificateErrors() override {}

@@ -446,6 +446,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // The frame's document finished loading.
   // This method may not execute JavaScript code.
+  // TODO(dgozman): rename this to DidFireDOMContentLoadedEvent.
   virtual void DidFinishDocumentLoad() {}
 
   // Like |didFinishDocumentLoad|, except this method may run JavaScript
@@ -622,9 +623,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // spread to other frames in the same origin.
   virtual void DidRunInsecureContent(const WebSecurityOrigin&,
                                      const WebURL& insecure_url) {}
-
-  // A reflected XSS was encountered in the page and suppressed.
-  virtual void DidDetectXSS(const WebURL&, bool did_block_entire_page) {}
 
   // A PingLoader was created, and a request dispatched to a URL.
   virtual void DidDispatchPingLoader(const WebURL&) {}

@@ -139,7 +139,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidContainInsecureFormAction() override;
   void DidRunInsecureContent(const SecurityOrigin*,
                              const KURL& insecure_url) override;
-  void DidDetectXSS(const KURL&, bool did_block_entire_page) override;
   void DidDispatchPingLoader(const KURL&) override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;

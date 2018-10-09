@@ -69,23 +69,11 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
                                blink::WebURLRequest& request) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error,
-                              blink::WebHistoryCommitType commit_type) override;
-  void DidCommitProvisionalLoad(
-      const blink::WebHistoryItem& item,
-      blink::WebHistoryCommitType commit_type,
-      blink::WebGlobalObjectReusePolicy global_object_reuse_policy) override;
-  void DidFinishSameDocumentNavigation(const blink::WebHistoryItem& item,
-                                       blink::WebHistoryCommitType commit_type,
-                                       bool content_initiated) override;
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
-  void DidFinishDocumentLoad() override;
-  void DidHandleOnloadEvents() override;
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
-  void DidFinishLoad() override;
   void DidStopLoading() override;
   void DidChangeSelection(bool is_selection_empty) override;
   void DidChangeContents() override;
@@ -98,8 +86,6 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
   bool RunModalBeforeUnloadDialog(bool is_reload) override;
   void ShowContextMenu(
       const blink::WebContextMenuData& context_menu_data) override;
-  void DidDetectXSS(const blink::WebURL& insecure_url,
-                    bool did_block_entire_page) override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
