@@ -826,7 +826,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // This is the |fallback_callback| passed to
   // NavigationLoaderInterceptor::MaybeCreateLoader. It allows an interceptor
   // to initially elect to handle a request, and later decide to fallback to
-  // the default behavior. This is needed for service worker network fallback.
+  // the default behavior. This is needed for service worker network fallback
+  // and signed exchange (SXG) fallback redirect.
   void FallbackToNonInterceptedRequest(bool reset_subresource_loader_params) {
     if (reset_subresource_loader_params)
       subresource_loader_params_.reset();
@@ -835,21 +836,35 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Cancel state on ResourceDispatcherHostImpl so it doesn't complain about
     // reusing the request_id after redirects. Otherwise the following sequence
     // can happen:
-    // RDHI Start(request_id) -> Redirect -> SW interception -> SW fallback to
-    // network -> RDHI Start(request_id).
+    // case 1. RDHI Start(request_id) -> Redirect -> SW interception -> SW
+    //         fallback to network -> RDHI Start(request_id).
+    // case 2. RDHI Start(request_id) -> SXG interception -> SXG fallback to
+    //         network -> RDHI Start(request_id).
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       DCHECK(ResourceDispatcherHostImpl::Get());
       ResourceDispatcherHostImpl::Get()->CancelRequest(
           global_request_id_.child_id, global_request_id_.request_id);
     }
 
-    // |url_loader_| is using the factory for the interceptor that decided to
-    // fallback, so restart it with the non-interceptor factory.
-    DCHECK(url_loader_);
     uint32_t options = network::mojom::kURLLoadOptionNone;
     scoped_refptr<network::SharedURLLoaderFactory> factory =
         PrepareForNonInterceptedRequest(&options);
-    url_loader_->RestartWithFactory(std::move(factory), options);
+    if (url_loader_) {
+      // |url_loader_| is using the factory for the interceptor that decided to
+      // fallback, so restart it with the non-interceptor factory.
+      url_loader_->RestartWithFactory(std::move(factory), options);
+    } else {
+      // In SXG cases we don't have |url_loader_| because it was reset when the
+      // SXG interceptor intercepted the response in
+      // MaybeCreateLoaderForResponse.
+      DCHECK(response_loader_binding_);
+      response_loader_binding_.Close();
+      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+          std::move(factory), CreateURLLoaderThrottles(), frame_tree_node_id_,
+          global_request_id_.request_id, options, resource_request_.get(),
+          this /* client */, kNavigationUrlLoaderTrafficAnnotation,
+          base::ThreadTaskRunnerHandle::Get());
+    }
   }
 
   scoped_refptr<network::SharedURLLoaderFactory>

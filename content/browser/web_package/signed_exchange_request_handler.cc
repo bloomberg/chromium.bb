@@ -66,7 +66,8 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
   }
   if (signed_exchange_loader_->HasRedirectedToFallbackURL()) {
     signed_exchange_loader_ = nullptr;
-    std::move(callback).Run({});
+    std::move(fallback_callback)
+        .Run(false /* reset_subresource_loader_params */);
     return;
   }
 
