@@ -1520,7 +1520,11 @@ var getDoodleTargetUrl = function() {
 
 
 var showLogoOrDoodle = function(fromCache) {
-  if (targetDoodle.metadata !== null) {
+  const cachedInteractiveOffline = fromCache &&
+      targetDoodle.metadata !== null &&
+      targetDoodle.metadata.type == LOGO_TYPE.INTERACTIVE &&
+      !window.navigator.onLine;
+  if (targetDoodle.metadata !== null && !cachedInteractiveOffline) {
     applyDoodleMetadata();
     if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
       $(IDS.LOGO_DOODLE_BUTTON).classList.remove(CLASSES.SHOW_LOGO);
