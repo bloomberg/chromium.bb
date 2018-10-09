@@ -230,12 +230,19 @@ void Display::InitializeRenderer() {
       mode, output_surface_->context_provider(), bitmap_manager_);
 
   if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
-    // Check the compositing mode, because SkiaRenderer only works with GPU
-    // compositing.
-    DCHECK(output_surface_);
-    renderer_ = std::make_unique<SkiaRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        skia_output_surface_);
+    // Default to use DDL if skia_output_surface is not null.
+    if (skia_output_surface_) {
+      renderer_ = std::make_unique<SkiaRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          skia_output_surface_, SkiaRenderer::DrawMode::DDL);
+    } else {
+      // GPU compositing with GL.
+      DCHECK(output_surface_);
+      DCHECK(output_surface_->context_provider());
+      renderer_ = std::make_unique<SkiaRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::GL);
+    }
   } else if (output_surface_->context_provider()) {
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
                                              resource_provider_.get(),
@@ -244,7 +251,7 @@ void Display::InitializeRenderer() {
   } else if (output_surface_->vulkan_context_provider()) {
     renderer_ = std::make_unique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get(),
-        nullptr /* skia_output_surface */);
+        nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::VULKAN);
 #endif
   } else {
     auto renderer = std::make_unique<SoftwareRenderer>(
