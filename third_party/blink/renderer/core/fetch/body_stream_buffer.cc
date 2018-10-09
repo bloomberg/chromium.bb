@@ -383,24 +383,30 @@ bool BodyStreamBuffer::IsStreamDisturbedForDCheck() {
 }
 
 void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
-  CHECK(!ExecutionContext::From(script_state_)->IsContextDestroyed());
   if (stream_broken_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Body stream has suffered a fatal error and cannot be disturbed");
     return;
   }
-  // Speculative fix for https://crbug.com/882599. Stop the stream from being
-  // garbage collected while this function is executing.
-  // TODO(ricea): Remove this when a better solution is found or if it doesn't
-  // work.
-  v8::Local<v8::Value> stream_handle =
-      stream_.NewLocal(script_state_->GetIsolate());
-  CHECK(!stream_handle.IsEmpty());
+
+  if (stream_.IsEmpty()) {
+    stream_broken_ = true;
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Body stream has been lost and cannot be disturbed");
+    return;
+  }
 
   base::Optional<bool> is_readable = IsStreamReadable(exception_state);
   if (exception_state.HadException())
     return;
+
+  // This IsEmpty() CHECK and the other ones in this method are temporary to
+  // help diagnose https://crbug.com/882599.
+  // TODO(ricea): Remove these checks before M71 becomes stable.
+  CHECK(!stream_.IsEmpty());
+
   DCHECK(is_readable.has_value());
   if (is_readable.value()) {
     // Note that the stream cannot be "draining", because it doesn't have
@@ -410,15 +416,24 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
   DCHECK(!stream_broken_);
 
   ScriptState::Scope scope(script_state_);
+
+  CHECK(!stream_.IsEmpty());
+
   const base::Optional<bool> is_locked = IsStreamLocked(exception_state);
   if (exception_state.HadException() || is_locked.value())
     return;
+
+  CHECK(!stream_.IsEmpty());
+
   ScriptValue reader = ReadableStreamOperations::GetReader(
       script_state_, Stream(), exception_state);
   if (exception_state.HadException()) {
     stream_broken_ = true;
     return;
   }
+
+  CHECK(!stream_.IsEmpty());
+
   ReadableStreamOperations::DefaultReaderRead(script_state_, reader);
 }
 
