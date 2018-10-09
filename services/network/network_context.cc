@@ -71,7 +71,7 @@
 #include "services/network/host_resolver.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
-#include "services/network/mojo_net_log.h"
+#include "services/network/net_log_exporter.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
@@ -1101,8 +1101,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         network_service_->network_quality_estimator());
   }
 
-  scoped_refptr<network::SessionCleanupCookieStore>
-      session_cleanup_cookie_store;
+  scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
   scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
@@ -1138,7 +1137,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
             crypto_delegate));
 
     session_cleanup_cookie_store =
-        base::MakeRefCounted<network::SessionCleanupCookieStore>(sqlite_store);
+        base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store);
 
     std::unique_ptr<net::CookieMonster> cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),

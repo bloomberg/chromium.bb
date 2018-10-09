@@ -60,7 +60,6 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -81,11 +80,12 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/cookie_manager.h"
-#include "services/network/mojo_net_log.h"
+#include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -2414,8 +2414,8 @@ TEST_F(NetworkContextTest, CreateNetLogExporter) {
 
   net::TestCompletionCallback cb;
   net_log_exporter->Start(std::move(out_file), std::move(dict_start),
-                          mojom::NetLogExporter_CaptureMode::DEFAULT,
-                          100 * 1024, cb.callback());
+                          mojom::NetLogCaptureMode::DEFAULT, 100 * 1024,
+                          cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
 
   base::Value dict_late(base::Value::Type::DICTIONARY);
@@ -2458,7 +2458,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   net::TestCompletionCallback cb;
   net_log_exporter->Start(
       std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogExporter::CaptureMode::DEFAULT,
+      mojom::NetLogCaptureMode::DEFAULT,
       mojom::NetLogExporter::kUnlimitedFileSize, cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
 
@@ -2498,7 +2498,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
 
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogExporter_CaptureMode::DEFAULT, 100 * 1024, cb.callback());
+      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
 
   // Can't start twice.
@@ -2510,7 +2510,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
 
   net_log_exporter->Start(
       std::move(temp_file2), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogExporter_CaptureMode::DEFAULT, 100 * 1024, cb.callback());
+      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, cb.callback());
   EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
 
   base::DeleteFile(temp_path, false);
@@ -2552,10 +2552,9 @@ TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
                        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(temp_file.IsValid());
 
-  net_log_exporter->Start(std::move(temp_file),
-                          base::Value(base::Value::Type::DICTIONARY),
-                          mojom::NetLogExporter_CaptureMode::DEFAULT, 100,
-                          base::BindOnce([](int) {}));
+  net_log_exporter->Start(
+      std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
+      mojom::NetLogCaptureMode::DEFAULT, 100, base::BindOnce([](int) {}));
   net_log_exporter = nullptr;
   block_mktemp.Signal();
 
