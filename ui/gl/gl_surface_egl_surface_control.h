@@ -29,6 +29,14 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
               bool has_alpha) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  void SwapBuffersAsync(
+      const SwapCompletionCallback& completion_callback,
+      const PresentationCallback& presentation_callback) override;
+  gfx::SwapResult CommitOverlayPlanes(
+      const PresentationCallback& callback) override;
+  void CommitOverlayPlanesAsync(
+      const SwapCompletionCallback& completion_callback,
+      const PresentationCallback& presentation_callback) override;
   gfx::Size GetSize() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
@@ -41,6 +49,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
   bool IsSurfaceless() const override;
   void* GetHandle() override;
 
+  bool SupportsAsyncSwap() override;
   bool SupportsPlaneGpuFences() const override;
   bool SupportsPresentationCallback() override;
   bool SupportsSwapBuffersWithBounds() override;
@@ -59,13 +68,26 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
     int z_order = 0;
     gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_INVALID;
-    base::android::ScopedHardwareBufferHandle hardware_buffer;
+    AHardwareBuffer* hardware_buffer = nullptr;
     gfx::Rect bounds_rect;
     gfx::Rect crop_rect;
     bool opaque = true;
 
     gl::SurfaceComposer::Surface surface;
   };
+
+  using ResourceRefs =
+      std::vector<std::unique_ptr<GLImage::ScopedHardwareBuffer>>;
+
+  void CommitPendingTransaction(
+      const SwapCompletionCallback& completion_callback,
+      const PresentationCallback& callback);
+
+  static void OnTransactionAck(
+      const gfx::PresentationFeedback& feedback,
+      const PresentationCallback& present_callback,
+      const SwapCompletionCallback& completion_callback,
+      ResourceRefs resources);
 
   // Holds the surface state changes made since the last call to SwapBuffers.
   base::Optional<gl::SurfaceComposer::Transaction> pending_transaction_;
@@ -79,6 +101,17 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
   // frame are destroyed.
   std::vector<SurfaceState> surface_list_;
   size_t pending_surfaces_count_ = 0u;
+
+  // Resources in the pending frame, for which updates are being
+  // collected in |pending_transaction_|. These are resources for which the
+  // pending transaction has a ref but they have not been applied and
+  // transferred to the framework.
+  ResourceRefs pending_frame_resources_;
+
+  // Resources in the current frame sent to the framework. The
+  // framework is assumed to retain ownership of these resources until the next
+  // frame update.
+  ResourceRefs current_frame_resources_;
 
   std::unique_ptr<gl::SurfaceComposer> surface_composer_;
 };

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
@@ -53,6 +54,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
  public:
   MediaCodecVideoDecoder(
       const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
       DeviceInfo* device_info,
       CodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
@@ -250,6 +252,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
 
   // The current overlay info, which possibly specifies an overlay to render to.
   OverlayInfo overlay_info_;
+
+  // Set to true if the display compositor swap is done using SurfaceControl.
+  const bool is_surface_control_enabled_;
 
   // The helper which manages our surface chooser for us.
   SurfaceChooserHelper surface_chooser_helper_;

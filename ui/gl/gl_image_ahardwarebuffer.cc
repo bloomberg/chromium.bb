@@ -55,15 +55,11 @@ void GLImageAHardwareBuffer::OnMemoryDump(
     uint64_t process_tracing_id,
     const std::string& dump_name) {}
 
-GLImage::Type GLImageAHardwareBuffer::GetType() const {
-  return Type::A_HARDWARE_BUFFER;
-}
-
-// static
-GLImageAHardwareBuffer* GLImageAHardwareBuffer::FromGLImage(GLImage* image) {
-  if (image->GetType() != Type::A_HARDWARE_BUFFER)
-    return nullptr;
-  return static_cast<GLImageAHardwareBuffer*>(image);
+std::unique_ptr<GLImage::ScopedHardwareBuffer>
+GLImageAHardwareBuffer::GetAHardwareBuffer() {
+  return std::make_unique<ScopedHardwareBuffer>(
+      base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
+      base::ScopedFD());
 }
 
 }  // namespace gl

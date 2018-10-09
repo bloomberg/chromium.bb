@@ -283,7 +283,8 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
           std::move(surface_chooser),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kForceVideoOverlays),
-          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively),
+          false /* always_use_texture_owner */),
       device_info_(device_info),
       force_defer_surface_creation_for_testing_(false),
       force_allow_software_decoding_for_testing_(false),
