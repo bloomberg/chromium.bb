@@ -509,6 +509,12 @@ const char kEnableDesktopPWAsLinkCapturingDescription[] =
     "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
     "#enable-desktop-pwas.";
 
+const char kDesktopPWAsStayInWindowName[] =
+    "Desktop PWAs out-of-scope links open in the app window";
+const char kDesktopPWAsStayInWindowDescription[] =
+    "Links to sites in a different scope will open in a custom "
+    "tab (inside the PWA window) as opposed to in the browser.";
+
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

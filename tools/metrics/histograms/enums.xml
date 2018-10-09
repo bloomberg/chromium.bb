@@ -29309,6 +29309,7 @@ from previous Chrome versions.
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
+  <int value="-721245076" label="DesktopPWAsStayInWindow:disabled"/>
   <int value="-719819631" label="TranslateUI:disabled"/>
   <int value="-719147284" label="ExperimentalProductivityFeatures:disabled"/>
   <int value="-718884399" label="NewTabPageUIMd:enabled"/>
@@ -29607,6 +29608,7 @@ from previous Chrome versions.
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
+  <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-88273414" label="ContentSuggestionsShowSummary:enabled"/>

@@ -2349,6 +2349,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-system-webapps", flag_descriptions::kEnableSystemWebAppsName,
      flag_descriptions::kEnableSystemWebAppsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemWebApps)},
+    {"enable-desktop-pwas-stay-in-window",
+     flag_descriptions::kDesktopPWAsStayInWindowName,
+     flag_descriptions::kDesktopPWAsStayInWindowDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsStayInWindow)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(
