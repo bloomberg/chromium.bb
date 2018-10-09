@@ -58,7 +58,8 @@ class ModelTypeController : public DataTypeController {
                         const ModelError& error);
 
  private:
-  void RecordStartFailure(ConfigureResult result) const;
+  void RecordStartFailure() const;
+  void RecordRunFailure() const;
 
   // If the DataType controller is waiting for models to load, once the models
   // are loaded this function should be called to let the base class
