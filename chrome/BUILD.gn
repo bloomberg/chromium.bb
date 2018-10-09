@@ -1836,7 +1836,7 @@ if (is_linux) {
         ":swiftshader_gles_symbols",
       ]
     }
-    extract_symbols("chrome") {
+    extract_symbols("chrome_symbols") {
       binary = "$root_out_dir/chrome"
 
       if (current_cpu == "x86") {
@@ -1850,7 +1850,7 @@ if (is_linux) {
         ":chrome",
       ]
     }
-    extract_symbols("swiftshader_egl") {
+    extract_symbols("swiftshader_egl_symbols") {
       binary = "$root_out_dir/swiftshader/libEGL.so"
 
       if (current_cpu == "x86") {
@@ -1864,7 +1864,7 @@ if (is_linux) {
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
       ]
     }
-    extract_symbols("swiftshader_gles") {
+    extract_symbols("swiftshader_gles_symbols") {
       binary = "$root_out_dir/swiftshader/libGLESv2.so"
 
       if (current_cpu == "x86") {
