@@ -70,9 +70,8 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
   // platform again.
   const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& platform_voices =
       platform_speech_synthesizer_->GetVoiceList();
-  size_t voice_count = platform_voices.size();
-  for (size_t k = 0; k < voice_count; k++)
-    voice_list_.push_back(SpeechSynthesisVoice::Create(platform_voices[k]));
+  for (auto voice : platform_voices)
+    voice_list_.push_back(SpeechSynthesisVoice::Create(voice));
 
   return voice_list_;
 }
@@ -153,7 +152,7 @@ void SpeechSynthesis::resume() {
 
 void SpeechSynthesis::FireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
-                                unsigned long char_index,
+                                uint32_t char_index,
                                 const String& name) {
   double millis;
   if (!GetElapsedTimeMillis(&millis))
