@@ -1829,7 +1829,14 @@ if (enable_resource_whitelist_generation) {
 
 if (is_linux) {
   if (is_official_build) {
-    extract_symbols("linux") {
+    group("linux_symbols") {
+      deps = [
+        ":chrome_symbols",
+        ":swiftshader_egl_symbols",
+        ":swiftshader_gles_symbols",
+      ]
+    }
+    extract_symbols("chrome") {
       binary = "$root_out_dir/chrome"
 
       if (current_cpu == "x86") {
@@ -1841,6 +1848,34 @@ if (is_linux) {
 
       deps = [
         ":chrome",
+      ]
+    }
+    extract_symbols("swiftshader_egl") {
+      binary = "$root_out_dir/swiftshader/libEGL.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+      ]
+    }
+    extract_symbols("swiftshader_gles") {
+      binary = "$root_out_dir/swiftshader/libGLESv2.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
   }
