@@ -29,7 +29,6 @@
 #include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/vulkan/buildflags.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -179,17 +178,35 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
                            DisplayResourceProvider* resource_provider,
-                           SkiaOutputSurface* skia_output_surface)
+                           SkiaOutputSurface* skia_output_surface,
+                           DrawMode mode)
     : DirectRenderer(settings, output_surface, resource_provider),
-      skia_output_surface_(skia_output_surface),
+      draw_mode_(mode),
       quad_vertex_skrect_(gfx::RectFToSkRect(QuadVertexRect())),
+      skia_output_surface_(skia_output_surface),
       lock_set_for_external_use_(resource_provider) {
-  if (auto* context_provider = output_surface_->context_provider()) {
-    const auto& context_caps = context_provider->ContextCapabilities();
-    use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
-    if (context_caps.sync_query) {
-      sync_queries_ =
-          base::Optional<SyncQueryCollection>(context_provider->ContextGL());
+  switch (draw_mode_) {
+    case DrawMode::GL: {
+      DCHECK(output_surface_);
+      context_provider_ = output_surface_->context_provider();
+      const auto& context_caps = context_provider_->ContextCapabilities();
+      use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
+      if (context_caps.sync_query) {
+        sync_queries_ =
+            base::Optional<SyncQueryCollection>(context_provider_->ContextGL());
+      }
+      break;
+    }
+    case DrawMode::VULKAN: {
+      DCHECK(output_surface_);
+#if BUILDFLAG(ENABLE_VULKAN)
+      vulkan_context_provider_ = output_surface_->vulkan_context_provider();
+#endif
+      break;
+    }
+    case DrawMode::DDL: {
+      DCHECK(skia_output_surface_);
+      break;
     }
   }
 }
@@ -197,20 +214,21 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
-  if (IsUsingVulkan())
+  if (draw_mode_ != DrawMode::GL)
     return false;
+
+  DCHECK(context_provider_);
   if (use_swap_with_bounds_)
     return false;
-  auto* context_provider = output_surface_->context_provider();
-  return context_provider
-             ? context_provider->ContextCapabilities().post_sub_buffer
-             : false;
+
+  return context_provider_->ContextCapabilities().post_sub_buffer;
 }
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-  if (IsUsingVulkan() || is_using_ddl())
+  if (draw_mode_ != DrawMode::GL)
     return;
+
   // Copied from GLRenderer.
   scoped_refptr<ResourceFence> read_lock_fence;
   if (sync_queries_) {
@@ -218,7 +236,7 @@ void SkiaRenderer::BeginDrawingFrame() {
   } else {
     read_lock_fence =
         base::MakeRefCounted<DisplayResourceProvider::SynchronousFence>(
-            output_surface_->context_provider()->ContextGL());
+            context_provider_->ContextGL());
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
@@ -277,12 +295,14 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
     output_frame.sub_buffer_rect = swap_buffer_rect_;
   }
 
-  if (is_using_ddl()) {
-    skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
-  } else {
-    // TODO(penghuang): remove it when SkiaRenderer and SkDDL are always used.
+  switch (draw_mode_) {
+    case DrawMode::DDL: {
+      skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
+      break;
+    }
+    case DrawMode::VULKAN: {
 #if BUILDFLAG(ENABLE_VULKAN)
-    if (IsUsingVulkan()) {
+      // TODO(penghuang): remove it when SkiaRenderer and SkDDL are always used.
       auto backend = root_surface_->getBackendRenderTarget(
           SkSurface::kFlushRead_BackendHandleAccess);
       GrVkImageInfo vk_image_info;
@@ -291,9 +311,12 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
       auto* vulkan_surface = output_surface_->GetVulkanSurface();
       auto* swap_chain = vulkan_surface->GetSwapChain();
       swap_chain->SetCurrentImageLayout(vk_image_info.fImageLayout);
-    }
 #endif
-    output_surface_->SwapBuffers(std::move(output_frame));
+      break;
+    }
+    case DrawMode::GL: {
+      output_surface_->SwapBuffers(std::move(output_frame));
+    }
   }
 
   swap_buffer_rect_ = gfx::Rect();
@@ -323,12 +346,13 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
-  if (is_using_ddl()) {
-    root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
-    DCHECK(root_canvas_);
-  } else {
-    auto* gr_context = GetGrContext();
-    if (IsUsingVulkan()) {
+  switch (draw_mode_) {
+    case DrawMode::DDL: {
+      root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
+      DCHECK(root_canvas_);
+      break;
+    }
+    case DrawMode::VULKAN: {
 #if BUILDFLAG(ENABLE_VULKAN)
       auto* vulkan_surface = output_surface_->GetVulkanSurface();
       auto* swap_chain = vulkan_surface->GetSwapChain();
@@ -345,33 +369,42 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
           current_frame()->device_viewport_size.width(),
           current_frame()->device_viewport_size.height(), 0, 0, vk_image_info);
       root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-          gr_context, render_target, kTopLeft_GrSurfaceOrigin,
+          GetGrContext(), render_target, kTopLeft_GrSurfaceOrigin,
           kBGRA_8888_SkColorType, nullptr, &surface_props);
       DCHECK(root_surface_);
       root_canvas_ = root_surface_->getCanvas();
 #else
       NOTREACHED();
 #endif
-    } else if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
-               gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
-                   current_frame()->device_viewport_size) {
-      // Either no SkSurface setup yet, or new GrContext, need to create new
-      // surface.
-      GrGLFramebufferInfo framebuffer_info;
-      framebuffer_info.fFBOID = 0;
-      framebuffer_info.fFormat = GL_RGB8_OES;
-      GrBackendRenderTarget render_target(
-          current_frame()->device_viewport_size.width(),
-          current_frame()->device_viewport_size.height(), 0, 8,
-          framebuffer_info);
+      break;
+    }
+    case DrawMode::GL: {
+      auto* gr_context = GetGrContext();
+      if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
+          gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
+              current_frame()->device_viewport_size) {
+        // Either no SkSurface setup yet, or new GrContext, need to create new
+        // surface.
+        GrGLFramebufferInfo framebuffer_info;
+        framebuffer_info.fFBOID = 0;
+        framebuffer_info.fFormat = GL_RGB8_OES;
+        GrBackendRenderTarget render_target(
+            current_frame()->device_viewport_size.width(),
+            current_frame()->device_viewport_size.height(), 0, 8,
+            framebuffer_info);
 
-      root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-          gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
-          kRGB_888x_SkColorType, nullptr, &surface_props);
-      DCHECK(root_surface_);
-      root_canvas_ = root_surface_->getCanvas();
+        root_surface_ = SkSurface::MakeFromBackendRenderTarget(
+            gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
+            kRGB_888x_SkColorType, nullptr, &surface_props);
+        DCHECK(root_surface_);
+        root_canvas_ = root_surface_->getCanvas();
+      }
+      break;
     }
   }
+
+  current_canvas_ = root_canvas_;
+  current_surface_ = root_surface_.get();
 
   if (settings_->show_overdraw_feedback) {
     const auto& size = current_frame()->device_viewport_size;
@@ -384,9 +417,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     nway_canvas_->addCanvas(root_canvas_);
     current_canvas_ = nway_canvas_.get();
     current_surface_ = overdraw_surface_.get();
-  } else {
-    current_canvas_ = root_canvas_;
-    current_surface_ = root_surface_.get();
   }
 }
 
@@ -396,14 +426,19 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
   // should be backing ready.
   RenderPassBacking& backing = iter->second;
-  if (is_using_ddl()) {
-    non_root_surface_ = nullptr;
-    current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
-        render_pass_id, backing.size, backing.format, backing.mipmap);
-  } else {
-    non_root_surface_ = backing.render_pass_surface;
-    current_surface_ = non_root_surface_.get();
-    current_canvas_ = non_root_surface_->getCanvas();
+  switch (draw_mode_) {
+    case DrawMode::DDL: {
+      non_root_surface_ = nullptr;
+      current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
+          render_pass_id, backing.size, backing.format, backing.mipmap);
+      break;
+    }
+    case DrawMode::GL:  // Fallthrough
+    case DrawMode::VULKAN: {
+      non_root_surface_ = backing.render_pass_surface;
+      current_surface_ = non_root_surface_.get();
+      current_canvas_ = non_root_surface_->getCanvas();
+    }
   }
 }
 
@@ -538,12 +573,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
-      if (is_using_ddl()) {
-        DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad));
-      } else {
-        DrawUnsupportedQuad(quad);
-        NOTIMPLEMENTED();
-      }
+      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::INVALID:
     case DrawQuad::STREAM_VIDEO_CONTENT:
@@ -687,6 +717,11 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
 }
 
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad) {
+  if (draw_mode_ != DrawMode::DDL) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   DCHECK(resource_provider_);
   ScopedYUVSkImageBuilder builder(this, quad);
   const SkImage* image = builder.sk_image();
@@ -773,7 +808,7 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
 
 const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
     const RenderPass* pass) {
-  return DirectRenderer::CanPassBeDrawnDirectly(pass, IsUsingVulkan(),
+  return DirectRenderer::CanPassBeDrawnDirectly(pass, is_using_vulkan(),
                                                 resource_provider_);
 }
 
@@ -792,11 +827,19 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     // there should be backing ready.
     RenderPassBacking& backing = iter->second;
 
-    sk_sp<SkImage> content_image =
-        is_using_ddl() ? skia_output_surface_->MakePromiseSkImageFromRenderPass(
-                             quad->render_pass_id, backing.size, backing.format,
-                             backing.mipmap)
-                       : backing.render_pass_surface->makeImageSnapshot();
+    sk_sp<SkImage> content_image;
+    switch (draw_mode_) {
+      case DrawMode::DDL: {
+        content_image = skia_output_surface_->MakePromiseSkImageFromRenderPass(
+            quad->render_pass_id, backing.size, backing.format, backing.mipmap);
+        break;
+      }
+      case DrawMode::GL:  // Fallthrough
+      case DrawMode::VULKAN: {
+        content_image = backing.render_pass_surface->makeImageSnapshot();
+      }
+    }
+
     DrawRenderPassQuadInternal(quad, content_image);
   }
 }
@@ -940,28 +983,36 @@ void SkiaRenderer::CopyDrawnRenderPass(
     return;
   }
 
-  if (is_using_ddl()) {
-    // Root framebuffer uses id 0 in SkiaOutputSurface.
-    RenderPassId render_pass_id = 0;
-    // If we are in child render pass and we don't have overdraw, copy the
-    // current render pass.
-    if (root_canvas_ != current_canvas_ &&
-        current_canvas_ != nway_canvas_.get()) {
-      render_pass_id = current_frame()->current_render_pass->id;
+  switch (draw_mode_) {
+    case DrawMode::DDL: {
+      if (settings_->show_overdraw_feedback) {
+        // TODO(crbug.com/889122): Overdraw currently requires calling flush on
+        // canvas on SkiaRenderer's thread.
+        return;
+      }
+      // Root framebuffer uses id 0 in SkiaOutputSurface.
+      RenderPassId render_pass_id = 0;
+      // If we are in child render pass and we don't have overdraw, copy the
+      // current render pass.
+      if (root_canvas_ != current_canvas_)
+        render_pass_id = current_frame()->current_render_pass->id;
+      skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
+                                       std::move(request));
+      break;
     }
-    skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
-                                     std::move(request));
-    return;
+    case DrawMode::GL:  // Fallthrough
+    case DrawMode::VULKAN: {
+      sk_sp<SkImage> copy_image =
+          current_surface_->makeImageSnapshot()->makeSubset(
+              RectToSkIRect(window_copy_rect));
+
+      // Send copy request by copying into a bitmap.
+      SkBitmap bitmap;
+      copy_image->asLegacyBitmap(&bitmap);
+      request->SendResult(
+          std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+    }
   }
-
-  sk_sp<SkImage> copy_image = current_surface_->makeImageSnapshot()->makeSubset(
-      RectToSkIRect(window_copy_rect));
-
-  // Send copy request by copying into a bitmap.
-  SkBitmap bitmap;
-  copy_image->asLegacyBitmap(&bitmap);
-  request->SendResult(
-      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
 void SkiaRenderer::SetEnableDCLayers(bool enable) {
@@ -977,13 +1028,19 @@ void SkiaRenderer::DidChangeVisibility() {
 }
 
 void SkiaRenderer::FinishDrawingQuadList() {
-  if (is_using_ddl()) {
-    gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
-    promise_images_.clear();
-    yuv_promise_images_.clear();
-    lock_set_for_external_use_.UnlockResources(sync_token);
-  } else {
-    current_canvas_->flush();
+  switch (draw_mode_) {
+    case DrawMode::DDL: {
+      gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
+      promise_images_.clear();
+      yuv_promise_images_.clear();
+      lock_set_for_external_use_.UnlockResources(sync_token);
+      break;
+    }
+    case DrawMode::GL:  // Fallthrough
+    case DrawMode::VULKAN: {
+      current_canvas_->flush();
+      break;
+    }
   }
 }
 
@@ -1005,21 +1062,20 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
   return true;
 }
 
-bool SkiaRenderer::IsUsingVulkan() const {
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (output_surface_->vulkan_context_provider())
-    return output_surface_->vulkan_context_provider()->GetGrContext();
-#endif
-  return false;
-}
-
 GrContext* SkiaRenderer::GetGrContext() {
-  DCHECK(!is_using_ddl());
+  switch (draw_mode_) {
+    case DrawMode::DDL:
+      return nullptr;
+    case DrawMode::VULKAN:
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (output_surface_->vulkan_context_provider())
-    return output_surface_->vulkan_context_provider()->GetGrContext();
+      return vulkan_context_provider_->GetGrContext();
+#else
+      NOTREACHED();
+      return nullptr;
 #endif
-  return output_surface_->context_provider()->GrContext();
+    case DrawMode::GL:
+      return context_provider_->GrContext();
+  }
 }
 
 void SkiaRenderer::UpdateRenderPassTextures(
@@ -1065,20 +1121,21 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   // TODO(penghuang): check supported format correctly.
   gpu::Capabilities caps;
   caps.texture_format_bgra8888 = true;
-  GrContext* gr_context = nullptr;
-  if (!is_using_ddl()) {
-    if (IsUsingVulkan()) {
+  GrContext* gr_context = GetGrContext();
+  switch (draw_mode_) {
+    case DrawMode::DDL:
+      break;
+    case DrawMode::VULKAN: {
       // TODO(penghuang): check supported format correctly.
       caps.texture_format_bgra8888 = true;
-    } else {
-      ContextProvider* context_provider = output_surface_->context_provider();
-      if (context_provider) {
-        caps.texture_format_bgra8888 =
-            context_provider->ContextCapabilities().texture_format_bgra8888;
-      }
+      break;
     }
-    gr_context = GetGrContext();
+    case DrawMode::GL: {
+      caps.texture_format_bgra8888 =
+          context_provider_->ContextCapabilities().texture_format_bgra8888;
+    }
   }
+
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,
       RenderPassBacking(gr_context, caps, requirements.size,
