@@ -152,6 +152,8 @@ void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
   web_contents_->Focus();
 }
 
+void CastWebViewDefault::SetContext(base::Value context) {}
+
 void CastWebViewDefault::GrantScreenAccess() {
   window_->GrantScreenAccess();
 }

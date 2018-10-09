@@ -69,6 +69,8 @@ void CastWebViewExtension::InitializeWindow(
   web_contents()->Focus();
 }
 
+void CastWebViewExtension::SetContext(base::Value context) {}
+
 void CastWebViewExtension::GrantScreenAccess() {
   window_->GrantScreenAccess();
 }
