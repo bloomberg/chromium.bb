@@ -147,9 +147,6 @@
         "load:news:flipboard": {
             "DEFAULT": "system_health_desktop_020.wprgo"
         },
-        "load:news:flipboard:2018": {
-            "DEFAULT": "system_health_desktop_840fd11364.wprgo"
-        },
         "load:news:hackernews": {
             "DEFAULT": "system_health_desktop_008.wprgo"
         },
