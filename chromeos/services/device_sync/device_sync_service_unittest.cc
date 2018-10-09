@@ -282,7 +282,7 @@ class FakeRemoteDeviceProviderFactory
       const std::string& user_private_key) override {
     EXPECT_EQ(fake_cryptauth_device_manager_factory_->instance(),
               device_manager);
-    EXPECT_EQ(identity_manager_->GetPrimaryAccountInfo().account_id, user_id);
+    EXPECT_EQ(identity_manager_->GetPrimaryAccountId(), user_id);
     EXPECT_EQ(fake_cryptauth_enrollment_manager_factory_->instance()
                   ->GetUserPrivateKey(),
               user_private_key);

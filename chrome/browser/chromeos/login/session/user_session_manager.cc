@@ -1231,8 +1231,7 @@ void UserSessionManager::InitProfilePreferences(
     identity_manager->SetPrimaryAccountSynchronously(
         gaia_id, user_context.GetAccountId().GetUserEmail(),
         /*refresh_token=*/std::string());
-    std::string account_id =
-        identity_manager->GetPrimaryAccountInfo().account_id;
+    std::string account_id = identity_manager->GetPrimaryAccountId();
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
