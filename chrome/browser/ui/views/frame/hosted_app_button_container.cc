@@ -80,11 +80,10 @@ constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
 const base::TimeDelta HostedAppButtonContainer::kOriginTotalDuration =
     kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
 
-class HostedAppButtonContainer::ContentSettingsContainer
-    : public views::View,
-      public ContentSettingImageView::Delegate {
+class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
  public:
-  explicit ContentSettingsContainer(BrowserView* browser_view);
+  explicit ContentSettingsContainer(
+      ContentSettingImageView::Delegate* delegate);
   ~ContentSettingsContainer() override = default;
 
   void UpdateContentSettingViewsVisibility() {
@@ -132,25 +131,8 @@ class HostedAppButtonContainer::ContentSettingsContainer
     PreferredSizeChanged();
   }
 
-  // ContentSettingsImageView::Delegate:
-  content::WebContents* GetContentSettingWebContents() override {
-    return browser_view_->GetActiveWebContents();
-  }
-  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
-      override {
-    return browser_view_->browser()->content_setting_bubble_model_delegate();
-  }
-  void OnContentSettingImageBubbleShown(
-      ContentSettingImageModel::ImageType type) const override {
-    UMA_HISTOGRAM_ENUMERATION(
-        "HostedAppFrame.ContentSettings.ImagePressed", type,
-        ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
-  }
-
   // Owned by the views hierarchy.
   std::vector<ContentSettingImageView*> content_setting_views_;
-
-  BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
 };
@@ -165,12 +147,7 @@ HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
 }
 
 HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
-    BrowserView* browser_view)
-    : browser_view_(browser_view) {
-  DCHECK(
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view->browser()));
-
+    ContentSettingImageView::Delegate* delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -183,7 +160,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
     auto image_view = std::make_unique<ContentSettingImageView>(
-        std::move(model), this,
+        std::move(model), delegate,
         views::NativeWidgetAura::GetWindowTitleFontList());
     // Padding around content setting icons.
     constexpr int kContentSettingIconInteriorPadding = 4;
@@ -205,7 +182,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
       active_color_(active_color),
       inactive_color_(inactive_color),
       hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
-      content_settings_container_(new ContentSettingsContainer(browser_view)),
+      content_settings_container_(new ContentSettingsContainer(this)),
       page_action_icon_container_view_(new PageActionIconContainerView(
           {PageActionIconType::kFind, PageActionIconType::kZoom},
           GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
@@ -220,6 +197,9 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
+  DCHECK(
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view_->browser()));
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,
@@ -314,12 +294,20 @@ void HostedAppButtonContainer::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
+SkColor HostedAppButtonContainer::GetIconColor() const {
+  return paint_as_active_ ? active_color_ : inactive_color_;
+}
+
+SkColor HostedAppButtonContainer::GetIconInkDropColor() const {
+  return color_utils::IsDark(GetIconColor()) ? SK_ColorBLACK : SK_ColorWHITE;
+}
+
 void HostedAppButtonContainer::UpdateChildrenColor() {
-  SkColor color = paint_as_active_ ? active_color_ : inactive_color_;
-  hosted_app_origin_text_->SetTextColor(color);
-  content_settings_container_->SetIconColor(color);
-  page_action_icon_container_view_->SetIconColor(color);
-  app_menu_button_->SetIconColor(color);
+  SkColor icon_color = GetIconColor();
+  hosted_app_origin_text_->SetTextColor(icon_color);
+  content_settings_container_->SetIconColor(icon_color);
+  page_action_icon_container_view_->SetIconColor(icon_color);
+  app_menu_button_->SetColors(icon_color, GetIconInkDropColor());
 }
 
 gfx::Size HostedAppButtonContainer::CalculatePreferredSize() const {
@@ -371,9 +359,33 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
                                                       main_bar);
 }
 
+SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
+  return GetIconInkDropColor();
+}
+
 content::WebContents*
 HostedAppButtonContainer::GetWebContentsForPageActionIconView() {
   return browser_view_->GetActiveWebContents();
+}
+
+SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
+  return GetIconInkDropColor();
+}
+
+content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
+  return browser_view_->GetActiveWebContents();
+}
+
+ContentSettingBubbleModelDelegate*
+HostedAppButtonContainer::GetContentSettingBubbleModelDelegate() {
+  return browser_view_->browser()->content_setting_bubble_model_delegate();
+}
+
+void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
+    ContentSettingImageModel::ImageType type) const {
+  UMA_HISTOGRAM_ENUMERATION(
+      "HostedAppFrame.ContentSettings.ImagePressed", type,
+      ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
 }
 
 BrowserActionsContainer*

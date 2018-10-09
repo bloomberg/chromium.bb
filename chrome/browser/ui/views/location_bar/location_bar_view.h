@@ -137,6 +137,9 @@ class LocationBarView : public LocationBar,
   SkColor GetSecurityChipColor(
       security_state::SecurityLevel security_level) const;
 
+  // Returns the color to use for icon ink highlights.
+  SkColor GetIconInkDropColor() const;
+
   // Returns the cached theme color tint for the location bar and results.
   OmniboxTint tint() const { return tint_; }
 
@@ -239,6 +242,7 @@ class LocationBarView : public LocationBar,
   content::WebContents* GetWebContents() override;
 
   // ContentSettingImageView::Delegate:
+  SkColor GetContentSettingInkDropColor() const override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -373,6 +377,7 @@ class LocationBarView : public LocationBar,
                            const gfx::Point& p) override;
 
   // PageActionIconView::Delegate:
+  SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
   // gfx::AnimationDelegate:

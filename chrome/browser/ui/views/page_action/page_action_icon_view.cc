@@ -68,12 +68,6 @@ bool PageActionIconView::IsBubbleShowing() const {
   return GetBubble() != nullptr;
 }
 
-SkColor PageActionIconView::GetTextColor() const {
-  // Returns the color of the label shown during animation.
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-}
-
 bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
@@ -82,6 +76,12 @@ bool PageActionIconView::SetCommandEnabled(bool enabled) const {
 
 bool PageActionIconView::Update() {
   return false;
+}
+
+SkColor PageActionIconView::GetTextColor() const {
+  // Returns the color of the label shown during animation.
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor);
 }
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -205,22 +205,16 @@ PageActionIconView::CreateInkDropHighlight() const {
   return highlight;
 }
 
-SkColor PageActionIconView::GetInkDropBaseColor() const {
-  const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Opacity of the ink drop is set elsewhere, so just use full opacity here.
-    return ink_color_opaque;
-  }
-  return color_utils::DeriveDefaultIconColor(ink_color_opaque);
-}
-
 std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
     const {
   if (!LocationBarView::IsRounded())
     return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        height() / 2.f);
+}
+
+SkColor PageActionIconView::GetInkDropBaseColor() const {
+  return delegate_->GetPageActionInkDropColor();
 }
 
 void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {

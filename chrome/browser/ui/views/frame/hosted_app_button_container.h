@@ -40,6 +40,7 @@ class Widget;
 class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
                                  public PageActionIconView::Delegate,
+                                 public ContentSettingImageView::Delegate,
                                  public ToolbarButtonProvider,
                                  public ImmersiveModeController::Observer,
                                  public views::WidgetObserver {
@@ -103,6 +104,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
 
+  SkColor GetIconColor() const;
+  SkColor GetIconInkDropColor() const;
   void UpdateChildrenColor();
 
   // views::View:
@@ -120,7 +123,16 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
       ToolbarActionsBar* main_bar) const override;
 
   // PageActionIconView::Delegate:
+  SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
+
+  // ContentSettingImageView::Delegate:
+  SkColor GetContentSettingInkDropColor() const override;
+  content::WebContents* GetContentSettingWebContents() override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
+  void OnContentSettingImageBubbleShown(
+      ContentSettingImageModel::ImageType type) const override;
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;

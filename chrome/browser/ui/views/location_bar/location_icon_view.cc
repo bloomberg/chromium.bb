@@ -96,6 +96,10 @@ bool LocationIconView::ShowBubble(const ui::Event& event) {
   return location_bar_->ShowPageInfoDialog(contents);
 }
 
+SkColor LocationIconView::GetInkDropBaseColor() const {
+  return location_bar_->GetIconInkDropColor();
+}
+
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty()) {
     node_data->role = ax::mojom::Role::kImage;
