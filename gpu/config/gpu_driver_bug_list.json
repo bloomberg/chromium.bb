@@ -3011,6 +3011,19 @@
       "features": [
         "disable_direct_composition"
       ]
+    },
+    {
+      "id": 279,
+      "description": "WindowServer crashes on VMWare bots using CA renderer",
+      "cr_bugs": [828031],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x15ad",
+      "multi_gpu_category": "any",
+      "features": [
+        "disable_overlay_ca_layers"
+      ]
     }
   ]
 }
