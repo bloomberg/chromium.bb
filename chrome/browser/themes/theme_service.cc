@@ -277,7 +277,6 @@ ThemeService::ThemeService()
 
 ThemeService::~ThemeService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  FreePlatformCaches();
 }
 
 void ThemeService::Init(Profile* profile) {
@@ -580,9 +579,6 @@ void ThemeService::ClearAllThemeData() {
 
   SwapThemeSupplier(nullptr);
 
-  // Clear our image cache.
-  FreePlatformCaches();
-
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
   SaveThemeID(kDefaultThemeID);
 
@@ -649,21 +645,11 @@ void ThemeService::NotifyThemeChanged() {
   service->Notify(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                   content::Source<ThemeService>(this),
                   content::NotificationService::NoDetails());
-#if defined(OS_MACOSX)
-  NotifyPlatformThemeChanged();
-#endif  // OS_MACOSX
-
   // Notify sync that theme has changed.
   if (theme_syncable_service_.get()) {
     theme_syncable_service_->OnThemeChange();
   }
 }
-
-#if defined(USE_AURA)
-void ThemeService::FreePlatformCaches() {
-  // Views (Skia) has no platform image cache to clear.
-}
-#endif
 
 bool ThemeService::ShouldUseNativeFrame() const {
   return false;
@@ -950,7 +936,6 @@ void ThemeService::OnThemeBuiltFromExtension(
   SwapThemeSupplier(pack);
 
   // Clear our image cache.
-  FreePlatformCaches();
   SaveThemeID(extension->id());
   NotifyThemeChanged();
 

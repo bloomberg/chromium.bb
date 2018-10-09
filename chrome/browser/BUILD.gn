@@ -3036,7 +3036,6 @@ jumbo_split_static_library("browser") {
       "themes/theme_service.h",
       "themes/theme_service_factory.cc",
       "themes/theme_service_factory.h",
-      "themes/theme_service_mac.mm",
       "themes/theme_syncable_service.cc",
       "themes/theme_syncable_service.h",
       "upgrade_detector/upgrade_detector.cc",
