@@ -687,12 +687,8 @@ bool ResourceLoader::WillFollowRedirect(
 }
 
 void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
-  // TODO(mythria): HttpCache still sends the metadata when available. Just
-  // ignore it here. We have to modify HttpCache to not fetch metadata when
-  // this feature is enabled.
-  if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled()) {
-    resource_->SetSerializedCachedMetadata(data, length);
-  }
+  DCHECK(!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
+  resource_->SetSerializedCachedMetadata(data, length);
 }
 
 blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {

@@ -51,6 +51,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/completion_callback.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context.h"
@@ -690,7 +691,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->cookie_store_context_->Initialize(
       partition->service_worker_context_, base::DoNothing());
 
-  if (base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
+  if (base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
     // TODO(crbug.com/867552): Currently we misuse GetCachePath to check if
     // code caching is enabled. Fix this by having a better API.
 

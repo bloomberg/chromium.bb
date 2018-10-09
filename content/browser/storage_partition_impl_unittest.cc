@@ -28,6 +28,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
+#include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -1335,7 +1336,7 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
 
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
   // Run this test only when the IsolatedCodeCache feature is enabled
-  if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache))
+  if (!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache))
     return;
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -1375,8 +1376,8 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 
 TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
+  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -1394,8 +1395,8 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
 
 TEST_F(StoragePartitionImplTest, ClearCodeCacheIncognito) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
+  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
 
   browser_context()->set_is_off_the_record(true);
 

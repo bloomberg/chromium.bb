@@ -179,10 +179,6 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use the requester origin as a second key to enfore site isolation policy for
-// code caches.
-const base::Feature kIsolatedCodeCache{"IsolatedCodeCache",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via

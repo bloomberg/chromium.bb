@@ -126,6 +126,8 @@ component("net") {
     "base/datagram_buffer.h",
     "base/escape.cc",
     "base/escape.h",
+    "base/features.cc",
+    "base/features.h",
     "base/hash_value.cc",
     "base/hash_value.h",
     "base/host_port_pair.cc",
