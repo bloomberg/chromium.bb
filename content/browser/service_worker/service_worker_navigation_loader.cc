@@ -287,6 +287,8 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
   response_head_.load_timing.send_start = now;
   response_head_.load_timing.send_end = now;
 
+  devtools_attached_ = version->embedded_worker()->devtools_attached();
+
   // Note that we don't record worker preparation time in S13nServiceWorker
   // path for now. If we want to measure worker preparation time we can
   // calculate it from response_head_.service_worker_ready_time and
@@ -528,6 +530,10 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
   // metrics only when TimeTicks are consistent across processes.
   if (!base::TimeTicks::IsHighResolution() ||
       !base::TimeTicks::IsConsistentAcrossProcesses())
+    return;
+
+  // Don't record metrics when DevTools is attached to reduce noise.
+  if (devtools_attached_)
     return;
 
   // Time between the request is made and the request is routed to this loader.

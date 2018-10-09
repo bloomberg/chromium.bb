@@ -186,6 +186,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   bool did_navigation_preload_ = false;
   network::ResourceResponseHead response_head_;
 
+  bool devtools_attached_ = false;
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
   base::TimeTicks completion_time_;
 
