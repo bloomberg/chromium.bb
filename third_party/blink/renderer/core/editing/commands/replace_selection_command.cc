@@ -1788,7 +1788,13 @@ void ReplaceSelectionCommand::CompleteHTMLReplacement(
 
     if (match_style_) {
       DCHECK(insertion_style_);
+      // Since |ApplyStyle()| changes contents of anchor node of |start| and
+      // |end|, we should relocate them.
+      Range* const range = Range::Create(GetDocument(), start, end);
       ApplyStyle(insertion_style_.Get(), start, end, editing_state);
+      start = range->StartPosition();
+      end = range->EndPosition();
+      range->Dispose();
       if (editing_state->IsAborted())
         return;
     }
