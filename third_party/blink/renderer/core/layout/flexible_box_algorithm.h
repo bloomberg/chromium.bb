@@ -283,9 +283,12 @@ class FlexLayoutAlgorithm {
   FlexLine* ComputeNextFlexLine(LayoutUnit container_logical_width);
 
   bool IsHorizontalFlow() const;
+  bool IsColumnFlow() const;
   static bool IsHorizontalFlow(const ComputedStyle&);
   bool IsLeftToRightFlow() const;
   TransformedWritingMode GetTransformedWritingMode() const;
+
+  bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
@@ -305,6 +308,7 @@ class FlexLayoutAlgorithm {
       unsigned number_of_items);
 
  private:
+  EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
