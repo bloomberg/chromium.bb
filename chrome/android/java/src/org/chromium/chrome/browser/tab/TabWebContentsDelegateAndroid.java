@@ -20,6 +20,7 @@ import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
@@ -132,6 +133,12 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         if (mFindResultListener != null) {
             mFindResultListener.onFindResult(result);
         }
+    }
+
+    @Override
+    public boolean addMessageToConsole(int level, String message, int lineNumber, String sourceId) {
+        // Only output console.log messages on debug variants of Android OS. crbug/869804
+        return !BuildInfo.isDebugAndroid();
     }
 
     @CalledByNative
