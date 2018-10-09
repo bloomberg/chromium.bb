@@ -376,6 +376,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClosingLastIncognitoTabName,
      flag_descriptions::kClosingLastIncognitoTabDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kClosingLastIncognitoTab)},
+    {"omnibox-tab-switch-suggestions",
+     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
+     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
 };
 
 // Add all switches from experimental flags to |command_line|.

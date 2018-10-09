@@ -55,7 +55,7 @@ const base::Feature kOmniboxTailSuggestions{
 
 // Feature used to force on the experiment of showing a button for suggestions
 // whose URL is open in another tab, with the ability to switch to that tab,
-// currently only used on desktop platforms.
+// currently only used on desktop and iOS platforms.
 const base::Feature kOmniboxTabSwitchSuggestions{
   "OmniboxTabSwitchSuggestions",
 #if defined(OS_IOS) || defined(OS_ANDROID)
@@ -752,10 +752,14 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
+#if defined(OS_IOS)
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
+#else  // defined(OS_IOS)
   return (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) &&
           ui::MaterialDesignController::is_mode_initialized() &&
           ui::MaterialDesignController::IsRefreshUi()) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
+#endif
 }
 
 OmniboxFieldTrial::PedalSuggestionMode
