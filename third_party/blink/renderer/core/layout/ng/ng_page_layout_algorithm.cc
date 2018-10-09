@@ -18,7 +18,7 @@ namespace blink {
 
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
-                                             NGBreakToken* break_token)
+                                             const NGBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
 scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
@@ -36,7 +36,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   container_builder_.SetInlineSize(border_box_size.inline_size);
 
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
-  scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
+  scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
   NGLogicalOffset page_progression;

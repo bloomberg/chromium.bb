@@ -56,7 +56,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @param break_token The break token from which the layout should start.
   NGBlockLayoutAlgorithm(NGBlockNode node,
                          const NGConstraintSpace& space,
-                         NGBlockBreakToken* break_token = nullptr);
+                         const NGBlockBreakToken* break_token = nullptr);
 
   ~NGBlockLayoutAlgorithm() override;
 
@@ -127,7 +127,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
                    NGBlockNode,
-                   NGBlockBreakToken*);
+                   const NGBlockBreakToken*);
 
   // This uses the NGLayoutOpporunityIterator to position the fragment.
   //
@@ -148,15 +148,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // block offset has now been resolved.
   bool HandleNewFormattingContext(
       NGLayoutInputNode child,
-      NGBreakToken* child_break_token,
+      const NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
-      scoped_refptr<NGBreakToken>* previous_inline_break_token);
+      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
   std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
   LayoutNewFormattingContext(NGLayoutInputNode child,
-                             NGBreakToken* child_break_token,
+                             const NGBreakToken* child_break_token,
                              const NGInflowChildData&,
                              NGBfcOffset origin_offset,
                              bool abort_if_cleared);
@@ -164,10 +164,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved. (Same as HandleNewFormattingContext).
-  bool HandleInflow(NGLayoutInputNode child,
-                    NGBreakToken* child_break_token,
-                    NGPreviousInflowPosition*,
-                    scoped_refptr<NGBreakToken>* previous_inline_break_token);
+  bool HandleInflow(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      NGPreviousInflowPosition*,
+      scoped_refptr<const NGBreakToken>* previous_inline_break_token);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.

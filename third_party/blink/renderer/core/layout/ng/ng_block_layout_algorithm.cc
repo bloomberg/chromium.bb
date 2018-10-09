@@ -160,9 +160,10 @@ void StopMarginCollapsing(EMarginCollapse collapse_value,
 
 }  // namespace
 
-NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
-                                               const NGConstraintSpace& space,
-                                               NGBlockBreakToken* break_token)
+NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
+    NGBlockNode node,
+    const NGConstraintSpace& space,
+    const NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
       is_resuming_(break_token && !break_token->IsBreakBefore()),
       exclusion_space_(space.ExclusionSpace()) {}
@@ -503,13 +504,13 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   TextAutosizer::NGLayoutScope text_autosizer_layout_scope(
       Node(), border_box_size.inline_size);
 
-  scoped_refptr<NGBreakToken> previous_inline_break_token;
+  scoped_refptr<const NGBreakToken> previous_inline_break_token;
 
   NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
   for (auto entry = child_iterator.NextChild();
        NGLayoutInputNode child = entry.node;
        entry = child_iterator.NextChild(previous_inline_break_token.get())) {
-    NGBreakToken* child_break_token = entry.token;
+    const NGBreakToken* child_break_token = entry.token;
 
     if (child.IsOutOfFlowPositioned()) {
       DCHECK(!child_break_token);
@@ -733,7 +734,7 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
 void NGBlockLayoutAlgorithm::HandleFloat(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child,
-    NGBlockBreakToken* child_break_token) {
+    const NGBlockBreakToken* child_break_token) {
   AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
                        NGUnpositionedFloat(child, child_break_token));
 
@@ -758,9 +759,9 @@ void NGBlockLayoutAlgorithm::HandleFloat(
 
 bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     NGLayoutInputNode child,
-    NGBreakToken* child_break_token,
+    const NGBreakToken* child_break_token,
     NGPreviousInflowPosition* previous_inflow_position,
-    scoped_refptr<NGBreakToken>* previous_inline_break_token) {
+    scoped_refptr<const NGBreakToken>* previous_inline_break_token) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
@@ -984,7 +985,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 std::pair<scoped_refptr<NGLayoutResult>, NGLayoutOpportunity>
 NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     NGLayoutInputNode child,
-    NGBreakToken* child_break_token,
+    const NGBreakToken* child_break_token,
     const NGInflowChildData& child_data,
     NGBfcOffset origin_offset,
     bool abort_if_cleared) {
@@ -1080,9 +1081,9 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
 
 bool NGBlockLayoutAlgorithm::HandleInflow(
     NGLayoutInputNode child,
-    NGBreakToken* child_break_token,
+    const NGBreakToken* child_break_token,
     NGPreviousInflowPosition* previous_inflow_position,
-    scoped_refptr<NGBreakToken>* previous_inline_break_token) {
+    scoped_refptr<const NGBreakToken>* previous_inline_break_token) {
   DCHECK(child);
   DCHECK(!child.IsFloating());
   DCHECK(!child.IsOutOfFlowPositioned());
@@ -1763,7 +1764,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
   if (space_left <= LayoutUnit())
     return SoftBreak;
 
-  const auto* token = physical_fragment.BreakToken();
+  const NGBreakToken* token = physical_fragment.BreakToken();
   if (!token || token->IsFinished())
     return NoBreak;
   if (token && token->IsBlockType() &&

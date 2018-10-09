@@ -677,7 +677,8 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
 
 // Clear associated fragments for all LayoutObjects. They are associated when
 // NGPaintFragment is constructed.
-void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
+void NGInlineNode::ClearAssociatedFragments(
+    const NGInlineBreakToken* break_token) {
   if (!IsPrepareLayoutFinished())
     return;
 
@@ -700,12 +701,13 @@ void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
 
 scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
-    NGBreakToken* break_token,
+    const NGBreakToken* break_token,
     NGInlineChildLayoutContext* context) {
   bool needs_clear_fragments = IsPrepareLayoutFinished();
   PrepareLayoutIfNeeded();
 
-  NGInlineBreakToken* inline_break_token = ToNGInlineBreakToken(break_token);
+  const NGInlineBreakToken* inline_break_token =
+      ToNGInlineBreakToken(break_token);
   if (needs_clear_fragments && !constraint_space.IsIntermediateLayout()) {
     ClearAssociatedFragments(inline_break_token);
   }

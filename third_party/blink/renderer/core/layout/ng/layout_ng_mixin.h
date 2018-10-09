@@ -59,8 +59,9 @@ class LayoutNGMixin : public Base {
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
-  scoped_refptr<NGLayoutResult> CachedLayoutResult(const NGConstraintSpace&,
-                                                   NGBreakToken*) const final;
+  scoped_refptr<NGLayoutResult> CachedLayoutResult(
+      const NGConstraintSpace&,
+      const NGBreakToken*) const final;
 
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              const NGBreakToken*,

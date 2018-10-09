@@ -12,7 +12,7 @@ namespace blink {
 // Define the constructor and destructor here, so that we can forward-declare
 // more in the header file.
 NGUnpositionedFloat::NGUnpositionedFloat(NGBlockNode node,
-                                         NGBlockBreakToken* token)
+                                         const NGBlockBreakToken* token)
     : node(node), token(token) {}
 
 NGUnpositionedFloat::~NGUnpositionedFloat() = default;

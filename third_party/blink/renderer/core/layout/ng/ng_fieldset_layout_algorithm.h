@@ -23,7 +23,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
  public:
   NGFieldsetLayoutAlgorithm(NGBlockNode node,
                             const NGConstraintSpace& space,
-                            NGBreakToken* break_token = nullptr);
+                            const NGBreakToken* break_token = nullptr);
 
   scoped_refptr<NGLayoutResult> Layout() override;
 
