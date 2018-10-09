@@ -37,6 +37,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/apps/platform_apps/api/media_galleries.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/media_gallery_util/public/cpp/safe_media_metadata_parser.h"
@@ -60,7 +61,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_sniffer.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -152,18 +152,18 @@ base::ListValue* ConstructFileSystemList(
   if (!rfh)
     return NULL;
 
-  extensions::MediaGalleriesPermission::CheckParam read_param(
-      extensions::MediaGalleriesPermission::kReadPermission);
+  MediaGalleriesPermission::CheckParam read_param(
+      MediaGalleriesPermission::kReadPermission);
   const extensions::PermissionsData* permissions_data =
       extension->permissions_data();
   bool has_read_permission = permissions_data->CheckAPIPermissionWithParam(
       extensions::APIPermission::kMediaGalleries, &read_param);
-  extensions::MediaGalleriesPermission::CheckParam copy_to_param(
-      extensions::MediaGalleriesPermission::kCopyToPermission);
+  MediaGalleriesPermission::CheckParam copy_to_param(
+      MediaGalleriesPermission::kCopyToPermission);
   bool has_copy_to_permission = permissions_data->CheckAPIPermissionWithParam(
       extensions::APIPermission::kMediaGalleries, &copy_to_param);
-  extensions::MediaGalleriesPermission::CheckParam delete_param(
-      extensions::MediaGalleriesPermission::kDeletePermission);
+  MediaGalleriesPermission::CheckParam delete_param(
+      MediaGalleriesPermission::kDeletePermission);
   bool has_delete_permission = permissions_data->CheckAPIPermissionWithParam(
       extensions::APIPermission::kMediaGalleries, &delete_param);
 

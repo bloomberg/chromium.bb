@@ -27,6 +27,7 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -42,7 +43,6 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -326,8 +326,8 @@ std::unique_ptr<base::DictionaryValue> CreateGalleryPrefInfoDictionary(
 }
 
 bool HasAutoDetectedGalleryPermission(const extensions::Extension& extension) {
-  extensions::MediaGalleriesPermission::CheckParam param(
-      extensions::MediaGalleriesPermission::kAllAutoDetectedPermission);
+  chrome_apps::MediaGalleriesPermission::CheckParam param(
+      chrome_apps::MediaGalleriesPermission::kAllAutoDetectedPermission);
   return extension.permissions_data()->CheckAPIPermissionWithParam(
       extensions::APIPermission::kMediaGalleries, &param);
 }

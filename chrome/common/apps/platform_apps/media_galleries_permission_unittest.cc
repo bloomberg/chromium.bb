@@ -7,20 +7,21 @@
 #include <memory>
 
 #include "base/values.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission_data.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
-#include "extensions/common/permissions/media_galleries_permission_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SocketPermissionRequest;
 using extensions::SocketPermissionData;
 
-namespace extensions {
+namespace chrome_apps {
 
 namespace {
 
-void CheckFromValue(APIPermission* permission, base::ListValue* value,
+void CheckFromValue(extensions::APIPermission* permission,
+                    base::ListValue* value,
                     bool success_expected) {
   std::string error;
   std::vector<std::string> unhandled;
@@ -30,10 +31,11 @@ void CheckFromValue(APIPermission* permission, base::ListValue* value,
 }
 
 TEST(MediaGalleriesPermissionTest, GoodValues) {
-  const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission(
+  std::unique_ptr<extensions::APIPermission> permission(
       permission_info->CreateAPIPermission());
 
   // access_type + all_detected
@@ -87,10 +89,11 @@ TEST(MediaGalleriesPermissionTest, GoodValues) {
 }
 
 TEST(MediaGalleriesPermissionTest, BadValues) {
-  const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission(
+  std::unique_ptr<extensions::APIPermission> permission(
       permission_info->CreateAPIPermission());
 
   // copyTo and delete without read
@@ -133,10 +136,11 @@ TEST(MediaGalleriesPermissionTest, BadValues) {
 TEST(MediaGalleriesPermissionTest, UnknownValues) {
   std::string error;
   std::vector<std::string> unhandled;
-  const APIPermissionInfo* permission_info =
-      PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission(
+  std::unique_ptr<extensions::APIPermission> permission(
       permission_info->CreateAPIPermission());
 
   // A good one and an unknown one.
@@ -168,12 +172,13 @@ TEST(MediaGalleriesPermissionTest, UnknownValues) {
 }
 
 TEST(MediaGalleriesPermissionTest, Equal) {
-  const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission1(
+  std::unique_ptr<extensions::APIPermission> permission1(
       permission_info->CreateAPIPermission());
-  std::unique_ptr<APIPermission> permission2(
+  std::unique_ptr<extensions::APIPermission> permission2(
       permission_info->CreateAPIPermission());
 
   std::unique_ptr<base::ListValue> value(new base::ListValue());
@@ -220,12 +225,13 @@ TEST(MediaGalleriesPermissionTest, Equal) {
 }
 
 TEST(MediaGalleriesPermissionTest, NotEqual) {
-  const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission1(
+  std::unique_ptr<extensions::APIPermission> permission1(
       permission_info->CreateAPIPermission());
-  std::unique_ptr<APIPermission> permission2(
+  std::unique_ptr<extensions::APIPermission> permission2(
       permission_info->CreateAPIPermission());
 
   std::unique_ptr<base::ListValue> value(new base::ListValue());
@@ -243,12 +249,13 @@ TEST(MediaGalleriesPermissionTest, NotEqual) {
 }
 
 TEST(MediaGalleriesPermissionTest, ToFromValue) {
-  const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
+  const extensions::APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(
+          extensions::APIPermission::kMediaGalleries);
 
-  std::unique_ptr<APIPermission> permission1(
+  std::unique_ptr<extensions::APIPermission> permission1(
       permission_info->CreateAPIPermission());
-  std::unique_ptr<APIPermission> permission2(
+  std::unique_ptr<extensions::APIPermission> permission2(
       permission_info->CreateAPIPermission());
 
   std::unique_ptr<base::ListValue> value(new base::ListValue());
@@ -294,4 +301,4 @@ TEST(MediaGalleriesPermissionTest, ToFromValue) {
 
 }  // namespace
 
-}  // namespace extensions
+}  // namespace chrome_apps

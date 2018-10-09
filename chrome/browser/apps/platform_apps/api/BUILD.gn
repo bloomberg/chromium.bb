@@ -45,6 +45,7 @@ source_set("api") {
     "//chrome/browser/apps/platform_apps/api/music_manager_private",
     "//chrome/browser/extensions",
     "//chrome/common",
+    "//chrome/common/apps/platform_apps",
     "//chrome/common/apps/platform_apps/api",
     "//chrome/services/media_gallery_util/public/cpp",
     "//components/storage_monitor",

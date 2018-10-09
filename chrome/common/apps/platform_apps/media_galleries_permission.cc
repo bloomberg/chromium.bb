@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/permissions/media_galleries_permission.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 
 #include <stddef.h>
 
@@ -12,16 +12,17 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/permissions/permissions_info.h"
-#include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace extensions {
+namespace chrome_apps {
 
 namespace {
 
 // copyTo permission requires delete permission as a prerequisite.
 // delete permission requires read permission as a prerequisite.
-bool IsValidPermissionSet(bool has_read, bool has_copy_to, bool has_delete,
+bool IsValidPermissionSet(bool has_read,
+                          bool has_copy_to,
+                          bool has_delete,
                           std::string* error) {
   if (has_copy_to) {
     if (has_read && has_delete)
@@ -49,13 +50,11 @@ const char MediaGalleriesPermission::kCopyToPermission[] = "copyTo";
 const char MediaGalleriesPermission::kDeletePermission[] = "delete";
 
 MediaGalleriesPermission::MediaGalleriesPermission(
-    const APIPermissionInfo* info)
-  : SetDisjunctionPermission<MediaGalleriesPermissionData,
-                             MediaGalleriesPermission>(info) {
-}
+    const extensions::APIPermissionInfo* info)
+    : SetDisjunctionPermission<MediaGalleriesPermissionData,
+                               MediaGalleriesPermission>(info) {}
 
-MediaGalleriesPermission::~MediaGalleriesPermission() {
-}
+MediaGalleriesPermission::~MediaGalleriesPermission() {}
 
 bool MediaGalleriesPermission::FromValue(
     const base::Value* value,
@@ -64,14 +63,12 @@ bool MediaGalleriesPermission::FromValue(
   size_t unhandled_permissions_count = 0;
   if (unhandled_permissions)
     unhandled_permissions_count = unhandled_permissions->size();
-  bool parsed_ok =
-      SetDisjunctionPermission<MediaGalleriesPermissionData,
-                               MediaGalleriesPermission>::FromValue(
-                                   value, error, unhandled_permissions);
+  bool parsed_ok = SetDisjunctionPermission<
+      MediaGalleriesPermissionData,
+      MediaGalleriesPermission>::FromValue(value, error, unhandled_permissions);
   if (unhandled_permissions) {
     for (size_t i = unhandled_permissions_count;
-         i < unhandled_permissions->size();
-         i++) {
+         i < unhandled_permissions->size(); i++) {
       (*unhandled_permissions)[i] =
           "{\"mediaGalleries\": [" + (*unhandled_permissions)[i] + "]}";
     }
@@ -83,7 +80,8 @@ bool MediaGalleriesPermission::FromValue(
   bool has_copy_to = false;
   bool has_delete = false;
   for (std::set<MediaGalleriesPermissionData>::const_iterator it =
-      data_set_.begin(); it != data_set_.end(); ++it) {
+           data_set_.begin();
+       it != data_set_.end(); ++it) {
     if (it->permission() == kAllAutoDetectedPermission) {
       continue;
     }
@@ -110,8 +108,8 @@ bool MediaGalleriesPermission::FromValue(
   return IsValidPermissionSet(has_read, has_copy_to, has_delete, error);
 }
 
-PermissionIDSet MediaGalleriesPermission::GetPermissions() const {
-  PermissionIDSet result;
+extensions::PermissionIDSet MediaGalleriesPermission::GetPermissions() const {
+  extensions::PermissionIDSet result;
 
   bool has_all_auto_detected = false;
   bool has_read = false;
@@ -144,18 +142,18 @@ PermissionIDSet MediaGalleriesPermission::GetPermissions() const {
 
   // Separate PermissionMessage IDs for read, copyTo, and delete. Otherwise an
   // extension can silently gain new access capabilities.
-  result.insert(APIPermission::kMediaGalleriesAllGalleriesRead);
+  result.insert(extensions::APIPermission::kMediaGalleriesAllGalleriesRead);
 
   // For copyTo and delete, the proper combined permission message will be
   // derived in ChromePermissionMessageProvider::GetWarningMessages(), such
   // that the user get 1 entry for all media galleries access permissions,
   // rather than several separate entries.
   if (has_copy_to)
-    result.insert(APIPermission::kMediaGalleriesAllGalleriesCopyTo);
+    result.insert(extensions::APIPermission::kMediaGalleriesAllGalleriesCopyTo);
   if (has_delete)
-    result.insert(APIPermission::kMediaGalleriesAllGalleriesDelete);
+    result.insert(extensions::APIPermission::kMediaGalleriesAllGalleriesDelete);
 
   return result;
 }
 
-}  // namespace extensions
+}  // namespace chrome_apps

@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,7 +38,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -137,12 +137,12 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
     std::vector<std::string> all_permissions;
     all_permissions.push_back(
-        extensions::MediaGalleriesPermission::kReadPermission);
+        chrome_apps::MediaGalleriesPermission::kReadPermission);
     all_permissions.push_back(
-        extensions::MediaGalleriesPermission::kAllAutoDetectedPermission);
+        chrome_apps::MediaGalleriesPermission::kAllAutoDetectedPermission);
     std::vector<std::string> read_permissions;
     read_permissions.push_back(
-        extensions::MediaGalleriesPermission::kReadPermission);
+        chrome_apps::MediaGalleriesPermission::kReadPermission);
 
     all_permission_extension =
         AddMediaGalleriesApp("all", all_permissions, profile_.get());

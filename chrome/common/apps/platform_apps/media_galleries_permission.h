@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
-#define EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#ifndef CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_H_
+#define CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_H_
 
+#include "chrome/common/apps/platform_apps/chrome_apps_messages.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission_data.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/media_galleries_permission_data.h"
 #include "extensions/common/permissions/set_disjunction_permission.h"
 
-namespace extensions {
+namespace chrome_apps {
 
 // Media Galleries permissions are as follows:
 //   <media-galleries-permission-pattern>
@@ -27,16 +28,16 @@ namespace extensions {
 //   "mediaGalleries",
 // TODO(devlin): Move this class to chrome/common/apps/platform_apps.
 class MediaGalleriesPermission
-  : public SetDisjunctionPermission<MediaGalleriesPermissionData,
-                                    MediaGalleriesPermission> {
+    : public extensions::SetDisjunctionPermission<MediaGalleriesPermissionData,
+                                                  MediaGalleriesPermission> {
  public:
-  struct CheckParam : public APIPermission::CheckParam {
+  struct CheckParam : public extensions::APIPermission::CheckParam {
     explicit CheckParam(const std::string& permission)
-      : permission(permission) {}
+        : permission(permission) {}
     const std::string permission;
   };
 
-  explicit MediaGalleriesPermission(const APIPermissionInfo* info);
+  explicit MediaGalleriesPermission(const extensions::APIPermissionInfo* info);
   ~MediaGalleriesPermission() override;
 
   // SetDisjunctionPermission overrides.
@@ -46,8 +47,8 @@ class MediaGalleriesPermission
                  std::string* error,
                  std::vector<std::string>* unhandled_permissions) override;
 
-  // APIPermission overrides.
-  PermissionIDSet GetPermissions() const override;
+  // extensions::APIPermission overrides.
+  extensions::PermissionIDSet GetPermissions() const override;
 
   // Permission strings.
   static const char kAllAutoDetectedPermission[];
@@ -57,6 +58,6 @@ class MediaGalleriesPermission
   static const char kDeletePermission[];
 };
 
-}  // namespace extensions
+}  // namespace chrome_apps
 
-#endif  // EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#endif  // CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_H_

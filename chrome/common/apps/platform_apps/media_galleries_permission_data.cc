@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/permissions/media_galleries_permission_data.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission_data.h"
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 
-namespace extensions {
+namespace chrome_apps {
 
-MediaGalleriesPermissionData::MediaGalleriesPermissionData() {
-}
+MediaGalleriesPermissionData::MediaGalleriesPermissionData() {}
 
 bool MediaGalleriesPermissionData::Check(
-    const APIPermission::CheckParam* param) const {
+    const extensions::APIPermission::CheckParam* param) const {
   if (!param)
     return false;
 
@@ -24,7 +23,7 @@ bool MediaGalleriesPermissionData::Check(
 }
 
 std::unique_ptr<base::Value> MediaGalleriesPermissionData::ToValue() const {
-  return std::unique_ptr<base::Value>(new base::Value(permission_));
+  return std::make_unique<base::Value>(permission_);
 }
 
 bool MediaGalleriesPermissionData::FromValue(const base::Value* value) {
@@ -58,4 +57,4 @@ bool MediaGalleriesPermissionData::operator==(
   return permission_ == rhs.permission_;
 }
 
-}  // namespace extensions
+}  // namespace chrome_apps
