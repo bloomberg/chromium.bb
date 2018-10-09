@@ -62,7 +62,8 @@ V8GCForContextDispose::V8GCForContextDispose()
     : pseudo_idle_timer_(
           Platform::Current()->MainThread()->Scheduler()->V8TaskRunner(),
           this,
-          &V8GCForContextDispose::PseudoIdleTimerFired) {
+          &V8GCForContextDispose::PseudoIdleTimerFired),
+      force_page_navigation_gc_(false) {
   Reset();
 }
 
