@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_EQ(4u, entries.size());
+  EXPECT_EQ(5u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1149,6 +1149,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   EXPECT_THAT(
       ukm_features,
       UnorderedElementsAre(
+          static_cast<int64_t>(WebFeature::kPageVisits),
           static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
           static_cast<int64_t>(WebFeature::kNavigatorVibrate),
           static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
@@ -1177,7 +1178,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_EQ(7u, entries.size());
+  EXPECT_EQ(8u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1188,6 +1189,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   }
   EXPECT_THAT(ukm_features,
               UnorderedElementsAre(
+                  static_cast<int64_t>(WebFeature::kPageVisits),
                   static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
                   static_cast<int64_t>(WebFeature::kNavigatorVibrate),
                   static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe),
