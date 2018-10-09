@@ -109,7 +109,7 @@ class TestWindowService : public service_manager::Service,
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
-  std::unique_ptr<gpu_host::DefaultGpuHost> gpu_host_;
+  std::unique_ptr<gpu_host::GpuHost> gpu_host_;
 
   // For drag and drop code to convert to/from screen coordinates.
   wm::DefaultScreenPositionClient screen_position_client_;
