@@ -298,7 +298,7 @@ TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterTap) {
   EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _)).Times(0);
 
-  SimulateUserInteraction(blink::WebInputEvent::kGestureTap);
+  SimulateUserInteraction(blink::WebInputEvent::kTouchStart);
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
