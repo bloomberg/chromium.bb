@@ -1108,6 +1108,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/AutofillContact.java",
   "java/src/org/chromium/chrome/browser/payments/AutofillPaymentApp.java",
   "java/src/org/chromium/chrome/browser/payments/AutofillPaymentInstrument.java",
+  "java/src/org/chromium/chrome/browser/payments/AutofillAssistantPaymentRequest.java",
   "java/src/org/chromium/chrome/browser/payments/BasicCardUtils.java",
   "java/src/org/chromium/chrome/browser/payments/CardEditor.java",
   "java/src/org/chromium/chrome/browser/payments/ContactEditor.java",

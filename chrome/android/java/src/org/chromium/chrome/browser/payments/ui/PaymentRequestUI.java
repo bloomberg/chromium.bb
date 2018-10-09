@@ -270,6 +270,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Context mContext;
     private final Client mClient;
     private final boolean mRequestShipping;
+    private final boolean mRequestShippingOption;
     private final boolean mRequestContactDetails;
     private final boolean mShowDataSource;
 
@@ -317,31 +318,35 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /**
      * Builds the UI for PaymentRequest.
      *
-     * @param activity        The activity on top of which the UI should be displayed.
-     * @param client          The consumer of the PaymentRequest UI.
-     * @param requestShipping Whether the UI should show the shipping address and option selection.
-     * @param requestContact  Whether the UI should show the payer name, email address and
-     *                        phone number selection.
-     * @param canAddCards     Whether the UI should show the [+ADD CARD] button. This can be false,
-     *                        for example, when the merchant does not accept credit cards, so
-     *                        there's no point in adding cards within PaymentRequest UI.
-     * @param showDataSource  Whether the UI should describe the source of Autofill data.
-     * @param title           The title to show at the top of the UI. This can be, for example, the
-     *                        &lt;title&gt; of the merchant website. If the string is too long for
-     *                        UI, it elides at the end.
-     * @param origin          The origin (https://tools.ietf.org/html/rfc6454) to show under the
-     *                        title. For example, "https://shop.momandpop.com". If the origin is too
-     *                        long for the UI, it should elide according to:
+     * @param activity              The activity on top of which the UI should be displayed.
+     * @param client                The consumer of the PaymentRequest UI.
+     * @param requestShipping       Whether the UI should show the shipping address selection.
+     * @param requestShippingOption Whether the UI should show the shipping option selection.
+     * @param requestContact        Whether the UI should show the payer name, email address and
+     *                              phone number selection.
+     * @param canAddCards           Whether the UI should show the [+ADD CARD] button. This can be
+     *                              false, for example, when the merchant does not accept credit
+     *                              cards, so there's no point in adding cards within PaymentRequest
+     *                              UI.
+     * @param showDataSource        Whether the UI should describe the source of Autofill data.
+     * @param title                 The title to show at the top of the UI. This can be, for
+     *                              example, the &lt;title&gt; of the merchant website. If the
+     *                              string is too long for UI, it elides at the end.
+     * @param origin                The origin (https://tools.ietf.org/html/rfc6454) to show under
+     *                              the title. For example, "https://shop.momandpop.com". If the
+     *                              origin is too long for the UI, it should elide according to:
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
      * @param securityLevel   The security level of the page that invoked PaymentRequest.
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
      */
     public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            boolean requestContact, boolean canAddCards, boolean showDataSource, String title,
-            String origin, int securityLevel, ShippingStrings shippingStrings) {
+            boolean requestShippingOption, boolean requestContact, boolean canAddCards,
+            boolean showDataSource, String title, String origin, int securityLevel,
+            ShippingStrings shippingStrings) {
         mContext = activity;
         mClient = client;
         mRequestShipping = requestShipping;
+        mRequestShippingOption = requestShippingOption;
         mRequestContactDetails = requestContact;
         mShowDataSource = showDataSource;
         mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
@@ -370,6 +375,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 updateOrderSummarySection(result.getShoppingCart());
                 if (mRequestShipping) {
                     updateSection(DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
+                }
+                if (mRequestShippingOption) {
                     updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
                 }
                 if (mRequestContactDetails) {
@@ -418,14 +425,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 if (mRequestShipping) {
                     updateSection(DataType.SHIPPING_ADDRESSES, result.getShippingAddresses());
-                    updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
+                }
 
-                    // Let the summary display a CHOOSE/ADD button for the first subsection that
-                    // needs it.
-                    PaymentRequestSection section =
-                            mShippingAddressSection.getEditButtonState() == EDIT_BUTTON_GONE
-                            ? mShippingOptionSection
-                            : mShippingAddressSection;
+                if (mRequestShippingOption) {
+                    updateSection(DataType.SHIPPING_OPTIONS, result.getShippingOptions());
                 }
 
                 if (mRequestContactDetails) {
@@ -659,7 +662,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     // Only show shipping option section once there are shipping options.
     private void showShippingOptionSectionIfNecessary() {
-        if (!mRequestShipping || mShippingOptionsSectionInformation.isEmpty()
+        if (!mRequestShippingOption || mShippingOptionsSectionInformation.isEmpty()
                 || mPaymentContainerLayout.indexOfChild(mShippingOptionSection) != -1) {
             return;
         }
@@ -915,15 +918,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                            && mContactDetailsSectionInformation.getSelectedItem() != null);
         boolean shippingInfoOk = !mRequestShipping
                 || (mShippingAddressSectionInformation != null
-                           && mShippingAddressSectionInformation.getSelectedItem() != null
-                           && mShippingOptionsSectionInformation != null
+                           && mShippingAddressSectionInformation.getSelectedItem() != null);
+        boolean shippingOptionInfoOk = !mRequestShippingOption
+                || (mShippingOptionsSectionInformation != null
                            && mShippingOptionsSectionInformation.getSelectedItem() != null);
-        mPayButton.setEnabled(contactInfoOk && shippingInfoOk
+        mPayButton.setEnabled(contactInfoOk && shippingInfoOk && shippingOptionInfoOk
                 && mPaymentMethodSectionInformation != null
                 && mPaymentMethodSectionInformation.getSelectedItem() != null
-                && !mIsClientCheckingSelection
-                && !mIsEditingPaymentItem
-                && !mIsClosing);
+                && !mIsClientCheckingSelection && !mIsEditingPaymentItem && !mIsClosing);
         mReadyToPayNotifierForTest.run();
     }
 

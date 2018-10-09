@@ -60,6 +60,7 @@ jumbo_static_library("browser") {
     "script_tracker.h",
     "service.cc",
     "service.h",
+    "ui_controller.cc",
     "ui_controller.h",
     "ui_delegate.h",
     "web_controller.cc",

@@ -11,10 +11,23 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
+#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
 struct ScriptHandle;
 class DetailsProto;
+
+struct PaymentInformation {
+  PaymentInformation();
+  ~PaymentInformation();
+
+  bool succeed;
+  std::string card_guid;
+  std::string address_guid;
+  std::string payer_name;
+  std::string payer_phone;
+  std::string payer_email;
+};
 
 // Controller to control autofill assistant UI.
 class UiController {
@@ -56,6 +69,13 @@ class UiController {
   // after synchronization with the server).
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Get payment information (through similar to payment request UX) to fill
+  // forms.
+  virtual void GetPaymentInformation(
+      payments::mojom::PaymentOptionsPtr payment_options,
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
+          callback) = 0;
 
   // Hide contextual information.
   virtual void HideDetails() = 0;

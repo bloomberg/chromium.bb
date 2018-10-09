@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.payments.AutofillAssistantPaymentRequest;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -17,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,8 +43,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Special parameter that enables the feature. */
     private static final String PARAMETER_ENABLED = "ENABLED";
 
+    private final WebContents mWebContents;
     private final long mUiControllerAndroid;
     private final AutofillAssistantUiDelegate mUiDelegate;
+
+    private AutofillAssistantPaymentRequest mAutofillAssistantPaymentRequest;
 
     /**
      * Returns true if all conditions are satisfied to construct an AutofillAssistantUiController.
@@ -68,9 +74,10 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         parameters.remove(PARAMETER_ENABLED);
 
         Tab activityTab = activity.getActivityTab();
-        mUiControllerAndroid = nativeInit(activityTab.getWebContents(),
-                parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]));
+        mWebContents = activityTab.getWebContents();
+        mUiControllerAndroid =
+                nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
+                        parameters.values().toArray(new String[parameters.size()]));
 
         // Shut down Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
@@ -96,7 +103,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 // selected Tab.
             }
         });
-
     }
 
     @Override
@@ -184,6 +190,35 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
+    private void onRequestPaymentInformation(boolean requestShipping, boolean requestPayerName,
+            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType) {
+        PaymentOptions paymentOtions = new PaymentOptions();
+        paymentOtions.requestShipping = requestShipping;
+        paymentOtions.requestPayerName = requestPayerName;
+        paymentOtions.requestPayerPhone = requestPayerPhone;
+        paymentOtions.requestPayerEmail = requestPayerEmail;
+        paymentOtions.shippingType = shippingType;
+        mAutofillAssistantPaymentRequest =
+                new AutofillAssistantPaymentRequest(mWebContents, paymentOtions);
+        mAutofillAssistantPaymentRequest.show(
+                new Callback<AutofillAssistantPaymentRequest.SelectedPaymentInformation>() {
+                    @Override
+                    public void onResult(AutofillAssistantPaymentRequest.SelectedPaymentInformation
+                                                 selectedPaymentInformation) {
+                        nativeOnGetPaymentInformation(mUiControllerAndroid,
+                                selectedPaymentInformation.succeed,
+                                selectedPaymentInformation.cardGuid,
+                                selectedPaymentInformation.addressGuid,
+                                selectedPaymentInformation.payerName,
+                                selectedPaymentInformation.payerPhone,
+                                selectedPaymentInformation.payerEmail);
+                        mAutofillAssistantPaymentRequest.close();
+                        mAutofillAssistantPaymentRequest = null;
+                    }
+                });
+    }
+
+    @CalledByNative
     private void onHideDetails() {
         mUiDelegate.hideDetails();
     }
@@ -206,4 +241,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
+    private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
+            boolean succeed, String cardGuid, String addressGuid, String payerName,
+            String payerPhone, String payerEmail);
 }
