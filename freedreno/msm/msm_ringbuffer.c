@@ -106,8 +106,7 @@ static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static void ring_cmd_del(struct msm_cmd *cmd)
 {
-	if (cmd->ring_bo)
-		fd_bo_del(cmd->ring_bo);
+	fd_bo_del(cmd->ring_bo);
 	list_del(&cmd->list);
 	to_msm_ringbuffer(cmd->ring)->cmd_count--;
 	free(cmd->relocs);
@@ -455,14 +454,6 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		if (msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT) {
 			/* we could have dropped last reference: */
 			msm_ring->cmds[i] = NULL;
-
-			/* need to drop ring_bo ref prior to unref'ing the ring,
-			 * because ring_bo_del assumes it is dropping the *last*
-			 * reference:
-			 */
-			fd_bo_del(msm_ring->bos[cmd->submit_idx]);
-			msm_ring->bos[cmd->submit_idx] = NULL;
-
 			msm_ringbuffer_unref(msm_cmd->ring);
 			free(U642VOID(cmd->relocs));
 		}
