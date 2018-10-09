@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
 bool HasVisibleLocationBarForBrowser(Browser* browser) {

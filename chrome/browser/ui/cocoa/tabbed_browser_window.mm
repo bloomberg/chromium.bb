@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/tabbed_browser_window.h"
 
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #include "ui/views/widget/util_mac.h"
 

@@ -4121,8 +4121,6 @@ test("unit_tests") {
       cocoa_test_sources = [
         "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/browser_window_cocoa_unittest.mm",
-        "../browser/ui/cocoa/browser_window_controller_unittest.mm",
         "../browser/ui/cocoa/browser_window_utils_unittest.mm",
         "../browser/ui/cocoa/chrome_browser_window_unittest.mm",
         "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",

@@ -15,10 +15,10 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
+#include "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/grit/theme_resources.h"
@@ -80,13 +80,6 @@
 
 - (BOOL)_isTitleHidden {
   return shouldHideTitle_;
-}
-
-- (BOOL)makeFirstResponder:(NSResponder*)responder {
-  BrowserWindowController* bwc =
-      [BrowserWindowController browserWindowControllerForWindow:self];
-  [bwc firstResponderUpdated:responder];
-  return [super makeFirstResponder:responder];
 }
 
 // This method is called whenever a window is moved in order to ensure it fits
@@ -182,16 +175,6 @@
   }
 
   return themed;
-}
-
-- (NSTouchBar*)makeTouchBar {
-  if (@available(macOS 10.12.2, *)) {
-    BrowserWindowController* bwc =
-        [BrowserWindowController browserWindowControllerForWindow:self];
-    return [[bwc browserWindowTouchBarController] makeTouchBar];
-  } else {
-    return nil;
-  }
 }
 
 - (NSColor*)titleColor {

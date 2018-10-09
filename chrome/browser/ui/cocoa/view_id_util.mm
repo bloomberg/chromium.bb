@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 namespace {
 
