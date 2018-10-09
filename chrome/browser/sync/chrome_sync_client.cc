@@ -480,27 +480,17 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       }
       return base::WeakPtr<syncer::SyncableService>();
     case syncer::AUTOFILL_WALLET_DATA: {
-      // TODO(feuunk): This doesn't allow switching which database to use at
-      // runtime. This should be fixed as part of the USS migration for
-      // payments.
-      auto service = account_web_data_service_ ? account_web_data_service_
-                                               : profile_web_data_service_;
-      if (service) {
+      if (profile_web_data_service_) {
         return autofill::AutofillWalletSyncableService::FromWebDataService(
-                   service.get())
+                   profile_web_data_service_.get())
             ->AsWeakPtr();
       }
       return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::AUTOFILL_WALLET_METADATA: {
-      // TODO(feuunk): This doesn't allow switching which database to use at
-      // runtime. This should be fixed as part of the USS migration for
-      // payments.
-      auto service = account_web_data_service_ ? account_web_data_service_
-                                               : profile_web_data_service_;
-      if (service) {
+      if (profile_web_data_service_) {
         return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(service.get())
+            FromWebDataService(profile_web_data_service_.get())
                 ->AsWeakPtr();
       }
       return base::WeakPtr<syncer::SyncableService>();
