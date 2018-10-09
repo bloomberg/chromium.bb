@@ -21,7 +21,20 @@ std::string GetRlzBrandCode(
   };
   static const base::NoDestructor<
       base::flat_map<std::string, BrandCodeValueEntry>>
-      kBrandCodeMap({{"NPEC", {"BMGD", "YETH", "XAWJ"}}});
+      kBrandCodeMap({{"NPEC", {"BMGD", "YETH", "XAWJ"}},
+                     {"VHUH", {"JYDF", "SFJY", "JMBU"}},
+                     {"FWVK", {"MUTD", "GWKK", "SQSC"}},
+                     {"HOMH", {"BXHI", "WXYD", "VRZY"}},
+                     {"BDIW", {"UDUG", "TRYQ", "PWFV"}},
+                     {"FQPJ", {"ZTQG", "ZNEO", "LYMZ"}},
+                     {"NOMD", {"GZLV", "UNZR", "FVOP"}},
+                     {"MCDN", {"BAOV", "GLVV", "XHGO"}},
+                     {"TKER", {"KOSM", "IUCL", "LIIM"}},
+                     {"PGQF", {"USPJ", "SFKO", "KNBH"}},
+                     {"GJZV", {"BUSA", "GIOS", "UYOM"}},
+                     {"FSGY", {"PJQC", "RHZW", "POVI"}},
+                     {"IHZG", {"MLLN", "EZTK", "GJEJ"}},
+                     {"PXDO", {"ZXCF", "TQWC", "HOAL"}}});
 
   const auto it = kBrandCodeMap->find(static_brand_code);
   if (it == kBrandCodeMap->end())
