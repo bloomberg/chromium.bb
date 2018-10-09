@@ -394,9 +394,8 @@ bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
          media_format_map_.end();
 }
 
-void MimeUtil::SplitCodecsToVector(const std::string& codecs,
-                                   std::vector<std::string>* codecs_out,
-                                   bool strip) {
+void MimeUtil::SplitCodecs(const std::string& codecs,
+                           std::vector<std::string>* codecs_out) {
   *codecs_out =
       base::SplitString(base::TrimString(codecs, "\"", base::TRIM_ALL), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -404,12 +403,11 @@ void MimeUtil::SplitCodecsToVector(const std::string& codecs,
   // Convert empty or all-whitespace input to 0 results.
   if (codecs_out->size() == 1 && (*codecs_out)[0].empty())
     codecs_out->clear();
+}
 
-  if (!strip)
-    return;
-
+void MimeUtil::StripCodecs(std::vector<std::string>* codecs) {
   // Strip everything past the first '.'
-  for (auto it = codecs_out->begin(); it != codecs_out->end(); ++it) {
+  for (auto it = codecs->begin(); it != codecs->end(); ++it) {
     size_t found = it->find_first_of('.');
     if (found != std::string::npos)
       it->resize(found);

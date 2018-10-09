@@ -545,7 +545,7 @@ void SourceBufferState::InitializeParser(const std::string& expected_codecs) {
   expected_video_codecs_.clear();
 
   std::vector<std::string> expected_codecs_parsed;
-  SplitCodecsToVector(expected_codecs, &expected_codecs_parsed, false);
+  SplitCodecs(expected_codecs, &expected_codecs_parsed);
 
   std::vector<AudioCodec> expected_acodecs;
   std::vector<VideoCodec> expected_vcodecs;

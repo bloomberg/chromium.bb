@@ -66,7 +66,7 @@ std::unique_ptr<media::StreamParser> CreateParserForTypeAndCodecs(
     const std::string& codecs,
     media::MediaLog* media_log) {
   std::vector<std::string> parsed_codec_ids;
-  media::SplitCodecsToVector(codecs, &parsed_codec_ids, false);
+  media::SplitCodecs(codecs, &parsed_codec_ids);
   return media::StreamParserFactory::Create(content_type, parsed_codec_ids,
                                             media_log);
 }
