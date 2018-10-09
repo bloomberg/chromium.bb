@@ -34,6 +34,7 @@
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mock_mdns_client.h"
@@ -5541,7 +5542,10 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAfterConfig) {
 
   resolver_->SetDnsClientEnabled(true);
   std::string server("https://dnsserver.example.net/dns-query{?dns}");
-  resolver_->AddDnsOverHttpsServer(server, true);
+  DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace(
+      {DnsConfig::DnsOverHttpsServerConfig(server, true)});
+  resolver_->SetDnsConfigOverrides(overrides);
   base::DictionaryValue* config;
 
   auto value = resolver_->GetDnsConfigAsValue();
@@ -5571,7 +5575,10 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeConfig) {
   CreateSerialResolver();  // To guarantee order of resolutions.
   resolver_->SetDnsClientEnabled(true);
   std::string server("https://dnsserver.example.net/dns-query{?dns}");
-  resolver_->AddDnsOverHttpsServer(server, true);
+  DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace(
+      {DnsConfig::DnsOverHttpsServerConfig(server, true)});
+  resolver_->SetDnsConfigOverrides(overrides);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5604,7 +5611,10 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeClient) {
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   std::string server("https://dnsserver.example.net/dns-query{?dns}");
-  resolver_->AddDnsOverHttpsServer(server, true);
+  DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace(
+      {DnsConfig::DnsOverHttpsServerConfig(server, true)});
+  resolver_->SetDnsConfigOverrides(overrides);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5639,7 +5649,10 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   std::string server("https://dns.example.com/");
-  resolver_->AddDnsOverHttpsServer(server, true);
+  DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace(
+      {DnsConfig::DnsOverHttpsServerConfig(server, true)});
+  resolver_->SetDnsConfigOverrides(overrides);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5668,7 +5681,7 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
   EXPECT_TRUE(server_method->GetString("server_template", &server_template));
   EXPECT_EQ(server_template, server);
 
-  resolver_->ClearDnsOverHttpsServers();
+  resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
   value = resolver_->GetDnsConfigAsValue();
   EXPECT_TRUE(value);
   if (!value)
@@ -5679,6 +5692,185 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
   if (!doh_servers)
     return;
   EXPECT_EQ(doh_servers->GetSize(), 0u);
+}
+
+TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // Confirm pre-override state.
+  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+
+  DnsConfigOverrides overrides;
+  const std::vector<IPEndPoint> nameservers = {
+      CreateExpected("192.168.0.1", 92)};
+  overrides.nameservers = nameservers;
+  const std::vector<std::string> search = {"str"};
+  overrides.search = search;
+  const DnsHosts hosts = {
+      {DnsHostsKey("host", ADDRESS_FAMILY_IPV4), IPAddress(192, 168, 1, 1)}};
+  overrides.hosts = hosts;
+  overrides.append_to_multi_label_name = false;
+  overrides.randomize_ports = true;
+  const int ndots = 5;
+  overrides.ndots = ndots;
+  const base::TimeDelta timeout = base::TimeDelta::FromSeconds(10);
+  overrides.timeout = timeout;
+  const int attempts = 20;
+  overrides.attempts = attempts;
+  overrides.rotate = true;
+  overrides.use_local_ipv6 = true;
+  const std::vector<DnsConfig::DnsOverHttpsServerConfig>
+      dns_over_https_servers = {
+          DnsConfig::DnsOverHttpsServerConfig("dns.example.com", true)};
+  overrides.dns_over_https_servers = dns_over_https_servers;
+
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  EXPECT_EQ(nameservers, overridden_config->nameservers);
+  EXPECT_EQ(search, overridden_config->search);
+  EXPECT_EQ(hosts, overridden_config->hosts);
+  EXPECT_FALSE(overridden_config->append_to_multi_label_name);
+  EXPECT_TRUE(overridden_config->randomize_ports);
+  EXPECT_EQ(ndots, overridden_config->ndots);
+  EXPECT_EQ(timeout, overridden_config->timeout);
+  EXPECT_EQ(attempts, overridden_config->attempts);
+  EXPECT_TRUE(overridden_config->rotate);
+  EXPECT_TRUE(overridden_config->use_local_ipv6);
+  EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_PartialOverride) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // Confirm pre-override state.
+  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+
+  DnsConfigOverrides overrides;
+  const std::vector<IPEndPoint> nameservers = {
+      CreateExpected("192.168.0.2", 192)};
+  overrides.nameservers = nameservers;
+  overrides.rotate = true;
+
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  EXPECT_EQ(nameservers, overridden_config->nameservers);
+  EXPECT_EQ(original_config.search, overridden_config->search);
+  EXPECT_EQ(original_config.hosts, overridden_config->hosts);
+  EXPECT_TRUE(overridden_config->append_to_multi_label_name);
+  EXPECT_FALSE(overridden_config->randomize_ports);
+  EXPECT_EQ(original_config.ndots, overridden_config->ndots);
+  EXPECT_EQ(original_config.timeout, overridden_config->timeout);
+  EXPECT_EQ(original_config.attempts, overridden_config->attempts);
+  EXPECT_TRUE(overridden_config->rotate);
+  EXPECT_FALSE(overridden_config->use_local_ipv6);
+  EXPECT_EQ(original_config.dns_over_https_servers,
+            overridden_config->dns_over_https_servers);
+}
+
+// Test that overridden configs are reapplied over a changed underlying system
+// config.
+TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_NewConfig) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // Confirm pre-override state.
+  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+
+  DnsConfigOverrides overrides;
+  const std::vector<IPEndPoint> nameservers = {
+      CreateExpected("192.168.0.2", 192)};
+  overrides.nameservers = nameservers;
+
+  resolver_->SetDnsConfigOverrides(overrides);
+  ASSERT_EQ(nameservers, dns_client_->GetConfig()->nameservers);
+
+  DnsConfig new_config = original_config;
+  new_config.attempts = 103;
+  ASSERT_NE(nameservers, new_config.nameservers);
+  ChangeDnsConfig(new_config);
+
+  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  EXPECT_EQ(nameservers, overridden_config->nameservers);
+  EXPECT_EQ(new_config.attempts, overridden_config->attempts);
+}
+
+TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_ClearOverrides) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  DnsConfigOverrides overrides;
+  overrides.attempts = 245;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ASSERT_FALSE(original_config.Equals(*dns_client_->GetConfig()));
+
+  resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
+  EXPECT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+}
+
+// Test that in-progress queries are cancelled on applying new DNS config
+// overrides, same as receiving a new DnsConfig from the system.
+TEST_F(HostResolverImplDnsTest, CancelQueriesOnSettingOverrides) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  DnsConfigOverrides overrides;
+  overrides.attempts = 123;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NETWORK_CHANGED));
+}
+
+// Queries should not be cancelled if equal overrides are set.
+TEST_F(HostResolverImplDnsTest, CancelQueriesOnSettingOverrides_SameOverrides) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.attempts = 123;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  EXPECT_THAT(response.result_error(), IsOk());
+}
+
+// Test that in-progress queries are cancelled on clearing DNS config overrides,
+// same as receiving a new DnsConfig from the system.
+TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.attempts = 123;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NETWORK_CHANGED));
+}
+
+// Queries should not be cancelled on clearing overrides if there were not any
+// overrides.
+TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides_NoOverrides) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
+
+  EXPECT_THAT(response.result_error(), IsOk());
 }
 
 }  // namespace net

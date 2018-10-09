@@ -25,6 +25,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
+#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -325,19 +326,25 @@ void NetworkService::ConfigureStubHostResolver(
   host_resolver_->SetDnsClientEnabled(stub_resolver_enabled);
 
   // Configure DNS over HTTPS.
-  host_resolver_->ClearDnsOverHttpsServers();
-  if (!dns_over_https_servers)
+  if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
+    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
     return;
+  }
 
   for (auto* network_context : network_contexts_) {
     if (!network_context->IsPrimaryNetworkContext())
       continue;
 
     host_resolver_->SetRequestContext(network_context->url_request_context());
+
+    net::DnsConfigOverrides overrides;
+    overrides.dns_over_https_servers.emplace();
     for (const auto& doh_server : *dns_over_https_servers) {
-      host_resolver_->AddDnsOverHttpsServer(doh_server->server_template,
-                                            doh_server->use_post);
+      overrides.dns_over_https_servers.value().emplace_back(
+          doh_server->server_template, doh_server->use_post);
     }
+    host_resolver_->SetDnsConfigOverrides(overrides);
+
     return;
   }
 
@@ -514,9 +521,10 @@ void NetworkService::DestroyNetworkContexts() {
   // If DNS over HTTPS is enabled, the HostResolver is currently using the
   // primary NetworkContext to do DNS lookups, so need to tell the HostResolver
   // to stop using DNS over HTTPS before destroying the primary NetworkContext.
-  // The ClearDnsOverHttpsServers() call will will fail any in-progress DNS
-  // lookups, but only if DNS over HTTPS is currently enabled.
-  host_resolver_->ClearDnsOverHttpsServers();
+  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
+  // lookups, but only if there are current config overrides (which there will
+  // be if DNS over HTTPS is currently enabled).
+  host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
   host_resolver_->SetRequestContext(nullptr);
 
   DCHECK_LE(owned_network_contexts_.size(), 1u);

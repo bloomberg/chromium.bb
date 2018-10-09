@@ -30,6 +30,7 @@ namespace net {
 
 class AddressList;
 class DnsClient;
+struct DnsConfigOverrides;
 class HostResolverImpl;
 class NetLog;
 class NetLogWithSource;
@@ -330,9 +331,11 @@ class NET_EXPORT HostResolver {
   virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
   virtual bool GetNoIPv6OnWifi();
 
+  // Sets overriding configuration that will replace or add to configuration
+  // read from the system for DnsClient resolution.
+  virtual void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
+
   virtual void SetRequestContext(URLRequestContext* request_context) {}
-  virtual void AddDnsOverHttpsServer(std::string spec, bool use_post) {}
-  virtual void ClearDnsOverHttpsServers() {}
 
   // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
   // DNS over HTTPS is not enabled.
