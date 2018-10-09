@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
@@ -113,16 +114,22 @@ void StrikeDatabase::OnAddStrike(StrikesCallback callback,
   SetStrikeData(
       key, data,
       base::BindRepeating(&StrikeDatabase::OnAddStrikeComplete,
-                          base::Unretained(this), callback, num_strikes));
+                          base::Unretained(this), callback, num_strikes, key));
 }
 
 void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
                                          int num_strikes,
+                                         std::string key,
                                          bool success) {
-  if (success)
+  if (success) {
     callback.Run(num_strikes);
-  else
+    if (GetPrefixFromKey(key) == kKeyPrefixForCreditCardSave) {
+      base::UmaHistogramCounts1000(
+          "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", num_strikes);
+    }
+  } else {
     callback.Run(0);
+  }
 }
 
 void StrikeDatabase::OnClearAllStrikesForKey(ClearStrikesCallback callback,
@@ -137,6 +144,10 @@ std::string StrikeDatabase::CreateKey(const std::string& type_prefix,
 
 std::string StrikeDatabase::GetKeyPrefixForCreditCardSave() {
   return kKeyPrefixForCreditCardSave;
+}
+
+std::string StrikeDatabase::GetPrefixFromKey(const std::string& key) {
+  return key.substr(0, key.find(kKeyDeliminator));
 }
 
 }  // namespace autofill

@@ -9,6 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
@@ -78,6 +79,7 @@ class StrikeDatabaseTest : public ::testing::Test {
   }
 
  protected:
+  base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestStrikeDatabase db_;
 
@@ -90,6 +92,7 @@ class StrikeDatabaseTest : public ::testing::Test {
     return file_path;
   }
 
+  base::HistogramTester histogram_tester_;
   int num_strikes_;
   std::unique_ptr<StrikeData> strike_data_;
 };
@@ -172,6 +175,34 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
 TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
   const std::string last_four = "1234";
   EXPECT_EQ("creditCardSave__1234", db_.GetKeyForCreditCardSave(last_four));
+}
+
+TEST_F(StrikeDatabaseTest, GetPrefixFromKey) {
+  const std::string key = "creditCardSave__1234";
+  EXPECT_EQ("creditCardSave", db_.GetPrefixFromKey(key));
+}
+
+TEST_F(StrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
+  const std::string last_four1 = "1234";
+  const std::string last_four2 = "9876";
+  const std::string key1 = "NotACreditCard";
+  // 1st strike added for |last_four1|.
+  AddStrike(db_.GetKeyForCreditCardSave(last_four1));
+  // 2nd strike added for |last_four1|.
+  AddStrike(db_.GetKeyForCreditCardSave(last_four1));
+  // 1st strike added for |last_four2|.
+  AddStrike(db_.GetKeyForCreditCardSave(last_four2));
+  // Shouldn't be counted in histogram since key doesn't have prefix for credit
+  // cards.
+  AddStrike(key1);
+  std::vector<base::Bucket> buckets = GetHistogramTester()->GetAllSamples(
+      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave");
+  // There should be two buckets, one for 1st strike, one for 2nd strike count.
+  ASSERT_EQ(2U, buckets.size());
+  // Both |last_four1| and |last_four2| have 1st strikes recorded.
+  EXPECT_EQ(2, buckets[0].count);
+  // Only |last_four1| has 2nd strike recorded.
+  EXPECT_EQ(1, buckets[1].count);
 }
 
 }  // namespace autofill

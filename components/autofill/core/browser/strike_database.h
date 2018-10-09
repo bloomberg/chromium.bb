@@ -20,6 +20,17 @@ class StrikeData;
 // the user. Projects can earn strikes in a number of ways; for instance, if a
 // user ignores or declines a prompt, or if a user accepts a prompt but the task
 // fails.
+
+// Here's how to create a new project type:
+// 1) The keys used for this database are in form
+// <ProjectTypePrefixName>__<SomeIdentifierSuffix>. In strike_database.cc, add a
+// char[] variable called kKeyPrefixFor<ProjectType>.
+// 2) In strike_database.h/cc, create the functions
+//   GetKeyFor<ProjectType>(const std::string& identifier) and
+//   GetKeyPrefixFor<ProjectType>().
+// 3) Add new project type to the if block in
+// StrikeDatabase::OnAddStrikeComplete(~).
+
 class StrikeDatabase : public KeyedService {
  public:
   using ClearStrikesCallback = base::RepeatingCallback<void(bool success)>;
@@ -60,6 +71,9 @@ class StrikeDatabase : public KeyedService {
   std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>> db_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseTest, GetPrefixFromKey);
+  friend class StrikeDatabaseTest;
+
   void OnDatabaseInit(bool success);
 
   // Passes success status and StrikeData entry for |key| to |inner_callback|.
@@ -86,6 +100,7 @@ class StrikeDatabase : public KeyedService {
 
   void OnAddStrikeComplete(StrikesCallback outer_callback,
                            int num_strikes,
+                           std::string key,
                            bool success);
 
   void OnClearAllStrikesForKey(ClearStrikesCallback outer_callback,
@@ -96,6 +111,8 @@ class StrikeDatabase : public KeyedService {
                         const std::string& identifier_suffix);
 
   std::string GetKeyPrefixForCreditCardSave();
+
+  std::string GetPrefixFromKey(const std::string& key);
 
   base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_;
 };
