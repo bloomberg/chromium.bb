@@ -239,13 +239,15 @@ void Controller::OnDestroy() {
 
 void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
   switch (type) {
-    case blink::WebInputEvent::kGestureLongTap:
-    case blink::WebInputEvent::kGestureTap:
+    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::kGestureTapDown:
       // Disable autostart after interaction with the web page.
       allow_autostart_ = false;
 
-      if (!script_tracker_->running())
+      if (!script_tracker_->running()) {
         script_tracker_->CheckScripts();
+        StartPeriodicScriptChecks();
+      }
       break;
 
     default:
