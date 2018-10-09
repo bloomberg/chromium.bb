@@ -53,7 +53,6 @@ namespace views {
 class ImageButton;
 class Label;
 class MdTextButton;
-class ViewHierarchyChangedDetails;
 }
 
 // Represents a single download item on the download shelf. Encompasses an icon,
@@ -104,9 +103,6 @@ class DownloadItemView : public views::InkDropHostView,
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnThemeChanged() override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
 
   // view::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -135,6 +131,8 @@ class DownloadItemView : public views::InkDropHostView,
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadItemViewDangerousDownloadLabelTest,
