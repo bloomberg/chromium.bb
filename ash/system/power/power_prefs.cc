@@ -70,7 +70,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0,
                                 PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 1800000,
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 510000,
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000,
                                 PrefRegistry::PUBLIC);
