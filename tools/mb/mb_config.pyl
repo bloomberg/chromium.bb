@@ -699,6 +699,10 @@
       'win_chrome_official': 'official_goma_x86',
     },
 
+    'tryserver.chrome.win': {
+      'win_chrome_official': 'official_goma_x86',
+    },
+
     'tryserver.v8': {
       'v8_linux_blink_rel': 'release_trybot',
       'v8_linux_chromium_gn_rel': 'release_trybot',
