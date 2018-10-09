@@ -239,8 +239,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_ZipFiles DISABLED_ZipFiles
 #else
-// ZipFiles tests are flaking consistently: http://crbug.com/891116
-#define MAYBE_ZipFiles DISABLED_ZipFiles
+#define MAYBE_ZipFiles ZipFiles
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_ZipFiles, /* zip_files.js */
@@ -624,12 +623,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("showGridViewDrive"),
                       TestCase("showGridViewDrive").EnableDriveFs()));
 
-// TODO(crbug.com/891119): Flaky on Chrome OS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_Providers DISABLED_Providers
-#else
-#define MAYBE_Providers Providers
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers, /* providers.js */
     FilesAppBrowserTest,
