@@ -235,6 +235,16 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           property_namespace = CompositorElementIdNamespace::kEffectFilter;
           break;
         }
+        case CSSPropertyVariable: {
+          DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
+          if (!keyframe->GetAnimatableValue()->IsDouble()) {
+            // TODO(kevers): Extend support to other custom property types.
+            return FailureCode::Actionable(
+                "Accelerated animation cannot be applied to a custom property "
+                "that is not numeric-valued");
+          }
+          break;
+        }
         default:
           // any other types are not allowed to run on compositor.
           StringBuilder builder;
@@ -642,6 +652,18 @@ void CompositorAnimations::GetAnimationOnCompositor(
         transform_curve->SetTimingFunction(*timing.timing_function);
         transform_curve->SetScaledDuration(scale);
         curve = std::move(transform_curve);
+        break;
+      }
+      case CSSPropertyVariable: {
+        DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
+        target_property = CompositorTargetProperty::CSS_CUSTOM_PROPERTY;
+        // TODO(kevers): Extend support to non-float types.
+        std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
+            CompositorFloatAnimationCurve::Create();
+        AddKeyframesToCurve(*float_curve, values);
+        float_curve->SetTimingFunction(*timing.timing_function);
+        float_curve->SetScaledDuration(scale);
+        curve = std::move(float_curve);
         break;
       }
       default:

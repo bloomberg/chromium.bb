@@ -52,6 +52,7 @@ class MatchResult;
 class RuleSet;
 class CSSPropertyValueSet;
 class StyleRuleUsageTracker;
+class PropertyHandle;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
 
@@ -78,7 +79,7 @@ class CORE_EXPORT StyleResolver final
       Element&,
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,
-      const CSSProperty&,
+      const PropertyHandle&,
       const CSSValue*);
 
   scoped_refptr<ComputedStyle> PseudoStyleForElement(
