@@ -1058,7 +1058,6 @@ jumbo_source_set("browser") {
     "loader/resource_dispatcher_host_impl.h",
     "loader/resource_handler.cc",
     "loader/resource_handler.h",
-    "loader/resource_hints_impl.cc",
     "loader/resource_loader.cc",
     "loader/resource_loader.h",
     "loader/resource_loader_delegate.h",

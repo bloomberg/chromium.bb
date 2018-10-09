@@ -246,7 +246,6 @@ jumbo_source_set("browser_sources") {
     "resource_dispatcher_host.h",
     "resource_dispatcher_host_delegate.cc",
     "resource_dispatcher_host_delegate.h",
-    "resource_hints.h",
     "resource_request_info.h",
     "resource_throttle.cc",
     "resource_throttle.h",
