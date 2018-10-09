@@ -10,12 +10,15 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view.h"
 
+namespace message_center {
+class MessageView;
+}  // namespace message_center
+
 namespace ash {
 
 class ASH_EXPORT SlidableMessageView
     : public views::View,
-      public message_center::MessageView::SlideObserver,
-      public NotificationSwipeControlView::Observer {
+      public message_center::MessageView::SlideObserver {
  public:
   explicit SlidableMessageView(message_center::MessageView* message_view);
   ~SlidableMessageView() override;
@@ -26,10 +29,6 @@ class ASH_EXPORT SlidableMessageView
 
   // MessageView::SlideObserver
   void OnSlideChanged(const std::string& notification_id) override;
-
-  // NotificationSwipeControlView::Observer
-  void OnSettingsButtonPressed(const ui::Event& event) override;
-  void OnSnoozeButtonPressed(const ui::Event& event) override;
 
   void SetExpanded(bool expanded) {
     return message_view_->SetExpanded(expanded);
