@@ -122,10 +122,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
         box.metrics = box.text_metrics;
       else
         box.ResetTextMetrics();
-      if (box.needs_box_fragment) {
+      if (box.has_start_edge) {
         // Existing box states are wrapped before they were closed, and hence
         // they do not have start edges, unless 'box-decoration-break: clone'.
         box.has_start_edge =
+            box.needs_box_fragment &&
             box.style->BoxDecorationBreak() == EBoxDecorationBreak::kClone;
       }
       DCHECK(box.pending_descendants.IsEmpty());
@@ -698,7 +699,7 @@ NGLineHeightMetrics NGInlineBoxState::MetricsForTopAndBottomAlign() const {
 
 #if DCHECK_IS_ON()
 void NGInlineLayoutStateStack::CheckSame(
-    const NGInlineLayoutStateStack& other) {
+    const NGInlineLayoutStateStack& other) const {
   // At the beginning of each line, box_data_list_ should be empty.
   DCHECK_EQ(box_data_list_.size(), 0u);
   DCHECK_EQ(other.box_data_list_.size(), 0u);
@@ -709,29 +710,37 @@ void NGInlineLayoutStateStack::CheckSame(
   }
 }
 
-void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) {
-  // TODO(kojii): Some checks are disabled because they fail today. Fix the
-  // failure and re-enable them.
-
-  // DCHECK_EQ(fragment_start, other.fragment_start);
+void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
+  DCHECK_EQ(fragment_start, other.fragment_start);
   DCHECK_EQ(item, other.item);
   DCHECK_EQ(style, other.style);
   DCHECK_EQ(inline_container, other.inline_container);
-  // DCHECK_EQ(metrics, other.metrics);
-  // DCHECK_EQ(text_metrics, other.text_metrics);
-  // DCHECK_EQ(text_top, other.text_top);
-  // DCHECK_EQ(has_start_edge, other.has_start_edge);
-  // DCHECK_EQ(has_end_edge, other.has_end_edge);
+
+  DCHECK_EQ(metrics, other.metrics);
+  DCHECK_EQ(text_metrics, other.text_metrics);
+  DCHECK_EQ(text_top, other.text_top);
+  DCHECK_EQ(text_height, other.text_height);
+  if (!text_metrics.IsEmpty()) {
+    // |include_used_fonts| will be computed when computing |text_metrics|.
+    DCHECK_EQ(include_used_fonts, other.include_used_fonts);
+  }
+
+  // TODO(kojii): |needs_box_fragment| may not match due to
+  // |ParentNeedsBoxFragment|. Investigate how to match them.
+  // DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
+
+  DCHECK_EQ(has_start_edge, other.has_start_edge);
+  // |has_end_edge| may not match because it will be computed in |OnCloseTag|.
+
+  DCHECK_EQ(margin_inline_start, other.margin_inline_start);
   DCHECK_EQ(margin_inline_end, other.margin_inline_end);
   DCHECK_EQ(borders, other.borders);
   DCHECK_EQ(padding, other.padding);
+
   // At the beginning of each line, box_data_list_pending_descendants should be
   // empty.
   DCHECK_EQ(pending_descendants.size(), 0u);
   DCHECK_EQ(other.pending_descendants.size(), 0u);
-  // DCHECK_EQ(include_used_fonts, other.include_used_fonts);
-  // DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
-  DCHECK_EQ(needs_box_fragment_when_empty, other.needs_box_fragment_when_empty);
 }
 #endif
 

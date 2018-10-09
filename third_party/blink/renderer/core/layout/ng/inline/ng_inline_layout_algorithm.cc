@@ -137,6 +137,10 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
 void NGInlineLayoutAlgorithm::PrepareBoxStates(
     const NGLineInfo& line_info,
     const NGInlineBreakToken* break_token) {
+#if DCHECK_IS_ON()
+  is_box_states_from_context_ = false;
+#endif
+
   // Use the initial box states if no break token; i.e., a line from the start.
   if (!break_token) {
     box_states_ = context_->ResetBoxStates();
@@ -152,7 +156,7 @@ void NGInlineLayoutAlgorithm::PrepareBoxStates(
         context_->BoxStatesIfValidForItemIndex(items, break_token->ItemIndex());
     if (box_states_) {
 #if DCHECK_IS_ON()
-      CheckBoxStates(line_info, break_token);
+      is_box_states_from_context_ = true;
 #endif
       return;
     }
@@ -194,6 +198,9 @@ void NGInlineLayoutAlgorithm::CheckBoxStates(
     const NGInlineBreakToken* break_token) const {
   NGInlineLayoutStateStack rebuilt;
   RebuildBoxStates(line_info, break_token, &rebuilt);
+  rebuilt.OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+                            quirks_mode_);
+
   DCHECK(box_states_);
   box_states_->CheckSame(rebuilt);
 }
@@ -225,6 +232,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // The baseline is adjusted after the height of the line box is computed.
   NGInlineBoxState* box =
       box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
+#if DCHECK_IS_ON()
+  if (is_box_states_from_context_)
+    CheckBoxStates(*line_info, BreakToken());
+#endif
 
   // In order to match other browsers when list-style-type: none, pretend
   // there's an invisible marker here.

@@ -70,7 +70,6 @@ struct NGInlineBoxState {
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
   bool needs_box_fragment = false;
-  bool needs_box_fragment_when_empty = false;
 
   // True if this box has a metrics, including pending ones. Pending metrics
   // will be activated in |EndBoxState()|.
@@ -107,7 +106,7 @@ struct NGInlineBoxState {
   NGLineHeightMetrics MetricsForTopAndBottomAlign() const;
 
 #if DCHECK_IS_ON()
-  void CheckSame(const NGInlineBoxState&);
+  void CheckSame(const NGInlineBoxState&) const;
 #endif
 };
 
@@ -164,7 +163,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   void CreateBoxFragments(NGLineBoxFragmentBuilder::ChildList*);
 
 #if DCHECK_IS_ON()
-  void CheckSame(const NGInlineLayoutStateStack&);
+  void CheckSame(const NGInlineLayoutStateStack&) const;
 #endif
 
  private:
