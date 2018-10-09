@@ -35,6 +35,8 @@ EXPECTED_LINUX_SI_COUNTS = {
   'nacl_helper_bootstrap': 0,
 }
 
+EXPECTED_MAC_SI_COUNT = 1
+
 
 class ResultsCollector(object):
   def __init__(self):
@@ -174,7 +176,7 @@ def main_mac(options, args, results_collector):
 
       # For Release builds only, use dump-static-initializers.py to print the
       # list of static initializers.
-      if si_count > 0 and options.target == 'Release':
+      if si_count > EXPECTED_MAC_SI_COUNT and options.target == 'Release':
         result = 125
         results_collector.add_failure(
             'Expected 0 static initializers in %s, but found %d' %
