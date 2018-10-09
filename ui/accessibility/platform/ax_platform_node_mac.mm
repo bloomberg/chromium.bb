@@ -259,6 +259,8 @@ RoleMap BuildSubroleMap() {
 
 EventMap BuildEventMap() {
   const EventMap::value_type events[] = {
+      {ax::mojom::Event::kCheckedStateChanged,
+       NSAccessibilityValueChangedNotification},
       {ax::mojom::Event::kFocus,
        NSAccessibilityFocusedUIElementChangedNotification},
       {ax::mojom::Event::kFocusContext,
@@ -763,6 +765,13 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (ui::IsNameExposedInAXValueForRole(role))
     return [self getStringAttribute:ax::mojom::StringAttribute::kName];
 
+  if (node_->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+    // Mixed checkbox state not currently supported in views, but could be.
+    // See browser_accessibility_cocoa.mm for details.
+    const auto checkedState = static_cast<ax::mojom::CheckedState>(
+        node_->GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+    return checkedState == ax::mojom::CheckedState::kTrue ? @1 : @0;
+  }
   return [self getStringAttribute:ax::mojom::StringAttribute::kValue];
 }
 
