@@ -20,15 +20,9 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy)
-    : WorkletGlobalScope(
-          std::move(creation_params),
-          ToIsolate(frame),
-          reporting_proxy,
-          // Specify |kInternalLoading| because these task runners are used
-          // during module loading and this usage is not explicitly spec'ed.
-          frame->GetFrameScheduler()->GetTaskRunner(TaskType::kInternalLoading),
-          frame->GetFrameScheduler()->GetTaskRunner(
-              TaskType::kInternalLoading)),
+    : WorkletGlobalScope(std::move(creation_params),
+                         ToIsolate(frame),
+                         reporting_proxy),
       ContextClient(frame) {
   BindContentSecurityPolicyToExecutionContext();
 }

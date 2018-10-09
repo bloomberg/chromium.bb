@@ -29,9 +29,7 @@ namespace blink {
 WorkletGlobalScope::WorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
-    WorkerReportingProxy& reporting_proxy,
-    scoped_refptr<base::SingleThreadTaskRunner> document_loading_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> worklet_loading_task_runner)
+    WorkerReportingProxy& reporting_proxy)
     : WorkerOrWorkletGlobalScope(isolate,
                                  creation_params->worker_clients,
                                  reporting_proxy),

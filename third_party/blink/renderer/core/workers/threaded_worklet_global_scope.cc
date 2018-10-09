@@ -22,15 +22,9 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
     WorkerThread* thread)
-    : WorkletGlobalScope(
-          std::move(creation_params),
-          isolate,
-          thread->GetWorkerReportingProxy(),
-          // Specify |kInternalLoading| because these task runners are used
-          // during module loading and this usage is not explicitly spec'ed.
-          thread->GetParentExecutionContextTaskRunners()->Get(
-              TaskType::kInternalLoading),
-          thread->GetTaskRunner(TaskType::kInternalLoading)),
+    : WorkletGlobalScope(std::move(creation_params),
+                         isolate,
+                         thread->GetWorkerReportingProxy()),
       thread_(thread) {
   BindContentSecurityPolicyToExecutionContext();
 }
