@@ -22,6 +22,9 @@
 //
 // metrics_base.js and metrics.js initiates load performance tracking
 // so we want to parse it as early as possible.
+// error_util.js must be loaded before all other scripts of the Files app.
+// <include src="../../common/js/error_util.js">
+//
 // <include src="../../common/js/metrics_base.js">
 // <include src="../../common/js/metrics.js">
 // <include src="metrics_start.js">
@@ -78,8 +81,6 @@
 // 'strict mode' is invoked for this scope.
 'use strict';
 
-// error_util.js must be loaded before all other scripts of the Files app.
-// <include src="../../common/js/error_util.js">
 //
 // <include src="../../common/js/async_util.js">
 // <include src="../../common/js/file_type.js">

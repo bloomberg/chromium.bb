@@ -19,6 +19,13 @@ window.onerror = function(message, url) {
   window.JSErrorCount++;
 };
 
+/**
+ * Count uncaught errors in promises.
+ */
+window.addEventListener('unhandledrejection', (event) => {
+  console.error(event.reason);
+});
+
 // Overrides console.error() to count errors.
 /**
  * @param {...*} var_args Message to be logged.
@@ -69,5 +76,5 @@ Function.prototype.wrap = function(thisObject) {
       window.JSErrorCount++;
       throw e;
     }
-  }
+  };
 };
