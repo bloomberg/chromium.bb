@@ -237,11 +237,6 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
   layout->SetDefaultFlex(1);
   layout_ = SetLayoutManager(std::move(layout));
-
-  if (init_params.anchor_mode == AnchorMode::kRect) {
-    SetAnchorView(nullptr);
-    SetAnchorRect(init_params.anchor_rect);
-  }
 }
 
 TrayBubbleView::~TrayBubbleView() {
@@ -316,18 +311,7 @@ void TrayBubbleView::ResetDelegate() {
 }
 
 void TrayBubbleView::ChangeAnchorView(views::View* anchor_view) {
-  DCHECK(params_.anchor_mode == AnchorMode::kView);
   BubbleDialogDelegateView::SetAnchorView(anchor_view);
-}
-
-void TrayBubbleView::ChangeAnchorRect(const gfx::Rect& rect) {
-  DCHECK(params_.anchor_mode == AnchorMode::kRect);
-  BubbleDialogDelegateView::SetAnchorRect(rect);
-}
-
-void TrayBubbleView::ChangeAnchorAlignment(
-    TrayBubbleView::AnchorAlignment alignment) {
-  set_arrow(GetArrowAlignment(alignment));
 }
 
 int TrayBubbleView::GetDialogButtons() const {

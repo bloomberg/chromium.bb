@@ -209,7 +209,7 @@ int Shelf::GetDockedMagnifierHeight() const {
              : 0;
 }
 
-gfx::Rect Shelf::GetIdealBounds() const {
+gfx::Rect Shelf::GetIdealBounds() {
   return shelf_layout_manager_->GetIdealBounds();
 }
 
@@ -296,21 +296,6 @@ StatusAreaWidget* Shelf::GetStatusAreaWidget() const {
 
 TrayBackgroundView* Shelf::GetSystemTrayAnchor() const {
   return GetStatusAreaWidget()->GetSystemTrayAnchor();
-}
-
-gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
-  gfx::Rect shelf_bounds = GetIdealBounds();
-  switch (alignment_) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return gfx::Rect(shelf_bounds.right(), shelf_bounds.y(), 0, 0);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Rect(shelf_bounds.right(), shelf_bounds.bottom(), 0, 0);
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Rect(shelf_bounds.x(), shelf_bounds.bottom(), 0, 0);
-  }
-  NOTREACHED();
-  return gfx::Rect();
 }
 
 bool Shelf::ShouldHideOnSecondaryDisplay(session_manager::SessionState state) {

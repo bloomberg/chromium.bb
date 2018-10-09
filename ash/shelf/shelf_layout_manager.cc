@@ -210,7 +210,7 @@ bool ShelfLayoutManager::IsVisible() const {
            state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN));
 }
 
-gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
+gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   const int shelf_size = ShelfConstants::shelf_size();
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   gfx::Rect rect(screen_util::GetDisplayBoundsInParent(shelf_window));
