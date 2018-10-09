@@ -586,6 +586,27 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 2);
   }
+
+  {
+    // Verify a preview is only shown on slow networks.
+    base::HistogramTester histogram_tester;
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+    ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(200));
+
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kNetworkNotSlow,
+        1);
+
+    // Reset ECT for future tests.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+  }
 }
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
