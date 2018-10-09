@@ -70,9 +70,8 @@ void WebAppDataRetriever::GetIcons(const GURL& app_url,
 
   // Generate missing icons.
   static constexpr int kIconSizesToGenerate[] = {
-      web_app::icon_size::k32,  web_app::icon_size::k32 * 2,
-      web_app::icon_size::k48,  web_app::icon_size::k48 * 2,
-      web_app::icon_size::k128, web_app::icon_size::k128 * 2,
+      icon_size::k32,     icon_size::k32 * 2, icon_size::k48,
+      icon_size::k48 * 2, icon_size::k128,    icon_size::k128 * 2,
   };
 
   // Get the letter to use in the generated icon.
@@ -97,7 +96,7 @@ void WebAppDataRetriever::GetIcons(const GURL& app_url,
     WebApplicationInfo::IconInfo icon_info;
     icon_info.width = size;
     icon_info.height = size;
-    icon_info.data = web_app::GenerateBitmap(size, SK_ColorDKGRAY, icon_letter);
+    icon_info.data = GenerateBitmap(size, SK_ColorDKGRAY, icon_letter);
     icons.push_back(icon_info);
   }
 
