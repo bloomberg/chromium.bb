@@ -32,6 +32,9 @@ TEST_F(OmniboxPopupViewControllerTest, hasCellsWhenShortcutsEnabled) {
       (id<UITableViewDataSource>)popup_view_controller_;
   UITableView* tableView = [[UITableView alloc] init];
 
+  // A stub view controller.
+  UIViewController* shortcutsViewController = [[UIViewController alloc] init];
+
   // Shortcuts are not enabled by default.
   EXPECT_FALSE(popup_view_controller_.shortcutsEnabled);
 
@@ -39,7 +42,9 @@ TEST_F(OmniboxPopupViewControllerTest, hasCellsWhenShortcutsEnabled) {
   [popup_view_controller_ updateMatches:@[] withAnimation:NO];
   EXPECT_EQ([datasource tableView:tableView numberOfRowsInSection:0], 0);
 
-  // Enable shortcuts and verify they appear.
+  // Enable shortcuts and verify they appear. When enabling, the view controller
+  // has to be non-nil.
+  popup_view_controller_.shortcutsViewController = shortcutsViewController;
   popup_view_controller_.shortcutsEnabled = YES;
   EXPECT_EQ([datasource tableView:tableView numberOfRowsInSection:0], 1);
 
