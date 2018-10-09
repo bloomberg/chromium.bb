@@ -7,6 +7,8 @@
 import json
 import logging
 
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
+
 
 WPT_GH_ORG = 'web-platform-tests'
 WPT_GH_REPO_NAME = 'wpt'
@@ -23,7 +25,7 @@ DEFAULT_WPT_COMMITTER_NAME = 'Chromium WPT Sync'
 DEFAULT_WPT_COMMITTER_EMAIL = 'blink-w3c-test-autoroller@chromium.org'
 
 # TODO(qyearsley): Avoid hard-coding third_party/WebKit/LayoutTests.
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
+CHROMIUM_WPT_DIR = RELATIVE_WEB_TESTS + 'external/wpt/'
 
 _log = logging.getLogger(__name__)
 

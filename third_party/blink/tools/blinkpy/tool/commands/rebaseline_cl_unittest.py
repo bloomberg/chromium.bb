@@ -11,6 +11,7 @@ from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
 from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
@@ -36,8 +37,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
         git = MockGit(filesystem=self.tool.filesystem, executive=self.tool.executive)
         git.changed_files = lambda **_: [
-            'third_party/WebKit/LayoutTests/one/text-fail.html',
-            'third_party/WebKit/LayoutTests/one/flaky-fail.html',
+            RELATIVE_WEB_TESTS + 'one/text-fail.html',
+            RELATIVE_WEB_TESTS + 'one/flaky-fail.html',
         ]
         self.tool.git = lambda: git
 
@@ -170,13 +171,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_unstaged_baselines_aborts(self):
         git = self.tool.git()
         git.unstaged_changes = lambda: {
-            'third_party/WebKit/LayoutTests/my-test-expected.txt': '?'
+            RELATIVE_WEB_TESTS + 'my-test-expected.txt': '?'
         }
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
             'ERROR: Aborting: there are unstaged baselines:\n',
-            'ERROR:   /mock-checkout/third_party/WebKit/LayoutTests/'
+            'ERROR:   /mock-checkout/' + RELATIVE_WEB_TESTS +
             'my-test-expected.txt\n',
         ])
 

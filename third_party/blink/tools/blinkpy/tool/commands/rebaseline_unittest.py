@@ -8,6 +8,7 @@ import unittest
 
 from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.tool.commands.rebaseline import (
     AbstractParallelRebaselineCommand, Rebaseline, TestBaselineSet
@@ -138,17 +139,17 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
     def test_unstaged_baselines(self):
         git = self.tool.git()
         git.unstaged_changes = lambda: {
-            'third_party/WebKit/LayoutTests/x/foo-expected.txt': 'M',
-            'third_party/WebKit/LayoutTests/x/foo-expected.something': '?',
-            'third_party/WebKit/LayoutTests/x/foo-expected.png': '?',
-            'third_party/WebKit/LayoutTests/x/foo.html': 'M',
+            RELATIVE_WEB_TESTS + 'x/foo-expected.txt': 'M',
+            RELATIVE_WEB_TESTS + 'x/foo-expected.something': '?',
+            RELATIVE_WEB_TESTS + 'x/foo-expected.png': '?',
+            RELATIVE_WEB_TESTS + 'x/foo.html': 'M',
             'docs/something.md': '?',
         }
         self.assertEqual(
             self.command.unstaged_baselines(),
             [
-                '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.png',
-                '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.txt',
+                '/mock-checkout/' + RELATIVE_WEB_TESTS + 'x/foo-expected.png',
+                '/mock-checkout/' + RELATIVE_WEB_TESTS + 'x/foo-expected.txt',
             ])
 
 

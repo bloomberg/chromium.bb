@@ -47,6 +47,7 @@ from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest
@@ -254,6 +255,8 @@ class Port(object):
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT,
                 '--user-data-dir']
+        if TESTS_IN_BLINK:
+            flags += ['--tests-in-blink']
         return flags
 
     def supports_per_test_timeout(self):
@@ -1591,7 +1594,7 @@ class Port(object):
     def virtual_test_suites(self):
         if self._virtual_test_suites is None:
             path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
-            assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
+            assert self._filesystem.exists(path_to_virtual_test_suites), path_to_virtual_test_suites + ' not found'
             try:
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
                 self._virtual_test_suites = []

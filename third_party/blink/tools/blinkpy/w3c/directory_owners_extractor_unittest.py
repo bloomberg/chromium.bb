@@ -4,19 +4,21 @@
 
 import unittest
 
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 
 
-ABS_WPT_BASE = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
-REL_WPT_BASE = 'third_party/WebKit/LayoutTests/external/wpt'
+MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
+ABS_WPT_BASE = MOCK_WEB_TESTS + 'external/wpt'
+REL_WPT_BASE = RELATIVE_WEB_TESTS + 'external/wpt'
 
 class DirectoryOwnersExtractorTest(unittest.TestCase):
 
     def setUp(self):
         # We always have an OWNERS file at LayoutTests/external.
         self.filesystem = MockFileSystem(files={
-            '/mock-checkout/third_party/WebKit/LayoutTests/external/OWNERS': 'ecosystem-infra@chromium.org'
+            MOCK_WEB_TESTS + 'external/OWNERS': 'ecosystem-infra@chromium.org'
         })
         self.extractor = DirectoryOwnersExtractor(self.filesystem)
 
@@ -103,7 +105,7 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
             ABS_WPT_BASE + '/x/y/z.html': '',
         })
         self.assertEqual(self.extractor.find_owners_file(REL_WPT_BASE + '/x/y'),
-                         '/mock-checkout/third_party/WebKit/LayoutTests/external/OWNERS')
+                         MOCK_WEB_TESTS + 'external/OWNERS')
 
     def test_find_owners_file_takes_four_kinds_of_paths(self):
         owners_path = ABS_WPT_BASE + '/foo/OWNERS'
