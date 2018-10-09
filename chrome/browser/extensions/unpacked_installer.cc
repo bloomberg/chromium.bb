@@ -286,7 +286,7 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
 
   dnr_ruleset_checksum_ = result.ruleset_checksum;
   if (!result.warnings.empty())
-    extension_->AddInstallWarnings(result.warnings);
+    extension_->AddInstallWarnings(std::move(result.warnings));
 
   return true;
 }

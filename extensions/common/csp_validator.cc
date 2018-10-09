@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <initializer_list>
+#include <iterator>
 #include <vector>
 
 #include "base/bind.h"
@@ -463,8 +464,10 @@ std::string CSPEnforcer::Enforce(const std::string& policy,
         // This |status| falls back to "default-src". So warnings from
         // "default-src" will apply.
         if (warnings) {
-          warnings->insert(warnings->end(), default_src_csp_warnings.begin(),
-                           default_src_csp_warnings.end());
+          warnings->insert(
+              warnings->end(),
+              std::make_move_iterator(default_src_csp_warnings.begin()),
+              std::make_move_iterator(default_src_csp_warnings.end()));
         }
         break;
       }

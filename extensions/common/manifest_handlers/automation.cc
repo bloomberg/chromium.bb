@@ -168,7 +168,7 @@ bool AutomationHandler::Parse(Extension* extension, base::string16* error) {
   if (!error->empty())
     return false;
 
-  extension->AddInstallWarnings(install_warnings);
+  extension->AddInstallWarnings(std::move(install_warnings));
 
   if (!info)
     return true;

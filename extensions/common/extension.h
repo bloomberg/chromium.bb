@@ -274,8 +274,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
 
   // Appends |new_warning[s]| to install_warnings_.
-  void AddInstallWarning(const InstallWarning& new_warning);
-  void AddInstallWarnings(const std::vector<InstallWarning>& new_warnings);
+  void AddInstallWarning(InstallWarning new_warning);
+  void AddInstallWarnings(std::vector<InstallWarning> new_warnings);
   const std::vector<InstallWarning>& install_warnings() const {
     return install_warnings_;
   }

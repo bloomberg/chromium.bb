@@ -225,7 +225,7 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
   std::vector<InstallWarning> warnings;
   if (!ValidateExtension(extension.get(), error, &warnings))
     return NULL;
-  extension->AddInstallWarnings(warnings);
+  extension->AddInstallWarnings(std::move(warnings));
 
   return extension;
 }

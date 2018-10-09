@@ -464,7 +464,7 @@ void SandboxedUnpacker::ReadManifestDone(
     ReportUnpackExtensionFailed(error_msg);
     return;
   }
-  extension->AddInstallWarnings(warnings);
+  extension->AddInstallWarnings(std::move(warnings));
 
   UnpackExtensionSucceeded(std::move(manifest_dict));
 }
@@ -702,7 +702,7 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
     declarative_net_request::IndexAndPersistRulesResult result) {
   if (result.success) {
     if (!result.warnings.empty())
-      extension_->AddInstallWarnings(result.warnings);
+      extension_->AddInstallWarnings(std::move(result.warnings));
     ReportSuccess(std::move(manifest), result.ruleset_checksum);
     return;
   }
