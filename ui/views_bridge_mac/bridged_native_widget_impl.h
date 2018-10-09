@@ -96,11 +96,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
-  // Set the parent NSView for the widget.
-  // TODO(ccameron): Like SetWindow, this will need to pass a handle instead of
-  // an NSView across processes.
-  void SetParent(NSView* parent);
-
   // Changes the bounds of the window and the hosted layer if present. The
   // origin is a location in screen coordinates except for "child" windows,
   // which are positioned relative to their parent(). SetBounds() considers a
@@ -177,13 +172,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
     return child_windows_;
   }
 
-  // Re-parent a |native_view| in this Widget to be a child of |new_parent|.
-  // |native_view| must either be |ns_view()| or a descendant of |ns_view()|.
-  // |native_view| is added as a subview of |new_parent| unless it is the
-  // contentView of a top-level Widget. If |native_view| is |ns_view()|, |this|
-  // also becomes a child window of |new_parent|'s NSWindow.
-  void ReparentNativeView(NSView* native_view, NSView* new_parent);
-
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
   bool window_visible() const { return window_visible_; }
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
@@ -205,8 +193,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   base::TimeDelta PreCommitTimeout() override;
 
   // views_bridge_mac::mojom::BridgedNativeWidget:
-  void CreateWindow(views_bridge_mac::mojom::CreateWindowParamsPtr params,
-                    uint64_t parent_id) override;
+  void CreateWindow(
+      views_bridge_mac::mojom::CreateWindowParamsPtr params) override;
+  void SetParent(uint64_t parent_id) override;
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;
   void InitCompositorView() override;

@@ -108,14 +108,12 @@ int NativeWidgetMac::SheetPositionY() {
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
-
-  // Determine the factory through which to create the bridge
   BridgedNativeWidgetHostImpl* parent_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([params.parent window]);
-  BridgeFactoryHost* bridge_factory_host = GetBridgeFactoryHost();
-  if (parent_host)
-    bridge_factory_host = parent_host->bridge_factory_host();
 
+  // Determine the factory through which to create the bridge
+  BridgeFactoryHost* bridge_factory_host =
+      parent_host ? parent_host->bridge_factory_host() : GetBridgeFactoryHost();
   if (bridge_factory_host) {
     // Compute the parameters to describe the NSWindow.
     // TODO(ccameron): This is not yet adequate to capture all NSWindow
@@ -125,18 +123,14 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
         views_bridge_mac::mojom::CreateWindowParams::New();
     create_window_params->style_mask = StyleMaskForParams(params);
 
-    bridge_host_->CreateRemoteBridge(
-        bridge_factory_host, std::move(create_window_params),
-        parent_host ? parent_host->bridged_native_widget_id() : 0);
+    bridge_host_->CreateRemoteBridge(bridge_factory_host,
+                                     std::move(create_window_params));
   } else {
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
         [CreateNSWindow(params) retain]);
-    bridge_host_->CreateLocalBridge(std::move(window), params.parent);
+    bridge_host_->CreateLocalBridge(std::move(window));
   }
-
-  if (parent_host)
-    bridge_host_->SetParent(parent_host);
-
+  bridge_host_->SetParent(parent_host);
   bridge_host_->InitWindow(params);
 
   // Only set always-on-top here if it is true since setting it may affect how
@@ -794,6 +788,7 @@ void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
   DCHECK_NE(native_view, new_parent);
+  DCHECK([new_parent window]);
   if (!new_parent || [native_view superview] == new_parent) {
     NOTREACHED();
     return;
@@ -801,29 +796,55 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
   BridgedNativeWidgetHostImpl* bridge_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
+  DCHECK(bridge_host);
+  NSView* bridge_view = bridge_host->native_widget_mac()->GetNativeView();
+  NSWindow* bridge_window = bridge_host->native_widget_mac()->GetNativeWindow();
+  bool bridge_is_top_level =
+      bridge_host->native_widget_mac()->GetWidget()->is_top_level();
+  DCHECK([native_view isDescendantOf:bridge_view]);
+  DCHECK(bridge_window && ![bridge_window isSheet]);
+
   BridgedNativeWidgetHostImpl* parent_bridge_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([new_parent window]);
-  DCHECK(bridge_host);
-  if (Widget::GetWidgetForNativeView(native_view)->is_top_level() &&
-      bridge_host->parent() == parent_bridge_host)
-    return;
 
+  // Early out for no-op changes.
+  if (native_view == bridge_view && bridge_is_top_level &&
+      bridge_host->parent() == parent_bridge_host) {
+    return;
+  }
+
+  // First notify all the widgets that they are being disassociated from their
+  // previous parent.
   Widget::Widgets widgets;
   GetAllChildWidgets(native_view, &widgets);
-
-  // First notify all the widgets that they are being disassociated
-  // from their previous parent.
   for (auto* child : widgets)
     child->NotifyNativeViewHierarchyWillChange();
 
   // Update |brige_host|'s parent only if
   // BridgedNativeWidgetImpl::ReparentNativeView will.
-  bool native_view_is_root_view =
-      native_view == bridge_host->native_widget_mac()->GetNativeView();
-  if (native_view_is_root_view)
+  if (native_view == bridge_view) {
     bridge_host->SetParent(parent_bridge_host);
-
-  bridge_host->bridge_impl()->ReparentNativeView(native_view, new_parent);
+    if (!bridge_is_top_level) {
+      // Make |bridge_host|'s NSView be a child of |new_parent| by adding it as
+      // a subview. Note that this will have the effect of removing
+      // |bridge_host|'s NSView from its NSWindow. The |NSWindow| must remain
+      // visible because it controls the bounds and visibility of the ui::Layer,
+      // so just hide it by setting alpha value to zero.
+      // TODO(ccameron): This path likely violates assumptions. Verify that this
+      // path is unused and remove it.
+      LOG(ERROR) << "Reparenting a non-top-level BridgedNativeWidget. This is "
+                    "likely unsupported.";
+      [new_parent addSubview:native_view];
+      [bridge_window setAlphaValue:0];
+      [bridge_window setIgnoresMouseEvents:YES];
+    }
+  } else {
+    // TODO(ccameron): This path likely violates assumptions. Verify that this
+    // path is unused and remove it.
+    LOG(ERROR) << "Reparenting with a non-root BridgedNativeWidget NSView. "
+                  "This is likely unsupported.";
+    [new_parent addSubview:native_view];
+  }
 
   // And now, notify them that they have a brand new parent.
   for (auto* child : widgets)

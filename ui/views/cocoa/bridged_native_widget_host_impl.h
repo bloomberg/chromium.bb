@@ -103,14 +103,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   }
 
   // Create and set the bridge object to be in this process.
-  void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window,
-                         NSView* parent);
+  void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
   // Create and set the bridge object to be potentially in another process.
   void CreateRemoteBridge(
       BridgeFactoryHost* bridge_factory_host,
-      views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
-      uint64_t parent_bridge_id);
+      views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params);
 
   void InitWindow(const Widget::InitParams& params);
 
@@ -170,7 +168,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   gfx::Rect GetRestoredBounds() const;
 
   // Set |parent_| and update the old and new parents' |children_|. It is valid
-  // to set |new_parent| to nullptr.
+  // to set |new_parent| to nullptr. Propagate this to the BridgedNativeWidget.
   void SetParent(BridgedNativeWidgetHostImpl* new_parent);
 
   // Properties set and queried by views. Not actually native.

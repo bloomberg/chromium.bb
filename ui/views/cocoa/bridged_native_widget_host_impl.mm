@@ -125,20 +125,16 @@ BridgedNativeWidgetHostImpl::bridge() const {
 }
 
 void BridgedNativeWidgetHostImpl::CreateLocalBridge(
-    base::scoped_nsobject<NativeWidgetMacNSWindow> window,
-    NSView* parent) {
+    base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
   local_window_ = window;
   bridge_impl_ =
       std::make_unique<BridgedNativeWidgetImpl>(widget_id_, this, this);
   bridge_impl_->SetWindow(window);
-  if (parent)
-    bridge_impl_->SetParent(parent);
 }
 
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
     BridgeFactoryHost* bridge_factory_host,
-    views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
-    uint64_t parent_bridge_id) {
+    views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params) {
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
 
@@ -156,7 +152,7 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
       widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
-  bridge()->CreateWindow(std::move(window_create_params), parent_bridge_id);
+  bridge()->CreateWindow(std::move(window_create_params));
 }
 
 void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
@@ -408,9 +404,17 @@ void BridgedNativeWidgetHostImpl::SetParent(
     DCHECK(found != parent_->children_.end());
     parent_->children_.erase(found);
   }
+
   parent_ = new_parent;
-  if (parent_)
+  if (parent_) {
+    // We can only re-parent to another Widget if that Widget is hosted in the
+    // same process that we were already hosted by.
+    CHECK_EQ(bridge_factory_host_, parent_->bridge_factory_host());
     parent_->children_.push_back(this);
+    bridge()->SetParent(parent_->bridged_native_widget_id());
+  } else {
+    bridge()->SetParent(0);
+  }
 }
 
 void BridgedNativeWidgetHostImpl::SetAssociationForView(const View* view,

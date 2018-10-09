@@ -311,7 +311,12 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge_host_for_testing()->CreateLocalBridge(window, params.parent);
+    bridge_host_for_testing()->CreateLocalBridge(window);
+    if (BridgedNativeWidgetHostImpl* parent =
+            BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+                [params.parent window])) {
+      bridge_host_for_testing()->SetParent(parent);
+    }
     bridge_host_for_testing()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra

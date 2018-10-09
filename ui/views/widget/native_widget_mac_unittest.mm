@@ -2048,13 +2048,16 @@ TEST_F(NativeWidgetMacTest, ReparentNativeViewTypes) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   toplevel1->Init(toplevel_params);
+  toplevel1->Show();
 
   std::unique_ptr<Widget> toplevel2(new Widget);
   toplevel2->Init(toplevel_params);
+  toplevel2->Show();
 
   Widget* child = new Widget;
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child->Init(child_params);
+  child->Show();
 
   Widget::ReparentNativeView(child->GetNativeView(),
                              toplevel1->GetNativeView());
