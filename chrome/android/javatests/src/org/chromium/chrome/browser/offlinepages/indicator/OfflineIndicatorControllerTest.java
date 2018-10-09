@@ -68,8 +68,10 @@ public class OfflineIndicatorControllerTest {
         // our own testing.
         Features.getInstance().enable(ChromeFeatureList.OFFLINE_INDICATOR);
         OfflineIndicatorController.setTimeToWaitForStableOfflineForTesting(1);
-        ConnectivityDetector.skipSystemCheckForTesting();
-        ConnectivityDetector.skipHttpProbeForTesting();
+        // This test only cares about whether the network is disconnected or not. So there is no
+        // need to do http probes to validate the network in ConnectivityDetector.
+        ConnectivityDetector.setDelegateForTesting(new ConnectivityDetectorDelegateStub(
+                ConnectivityDetector.ConnectionState.NONE, true /*shouldSkipHttpProbes*/));
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             if (!NetworkChangeNotifier.isInitialized()) {
@@ -79,7 +81,7 @@ public class OfflineIndicatorControllerTest {
             OfflineIndicatorController.initialize();
             OfflineIndicatorController.getInstance()
                     .getConnectivityDetectorForTesting()
-                    .updateConnectionState(ConnectivityDetector.ConnectionState.VALIDATED);
+                    .setConnectionState(ConnectivityDetector.ConnectionState.VALIDATED);
         });
     }
 
@@ -273,7 +275,7 @@ public class OfflineIndicatorControllerTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             OfflineIndicatorController.getInstance()
                     .getConnectivityDetectorForTesting()
-                    .updateConnectionState(connected
+                    .setConnectionState(connected
                                     ? ConnectivityDetector.ConnectionState.VALIDATED
                                     : ConnectivityDetector.ConnectionState.DISCONNECTED);
         });
