@@ -16,6 +16,8 @@ cf5945085fe85456a1f74bf4cc7998b88b3f4b62 *invalid-oss-fuzz-10705.ivf
 758671858368ffd2a2c0727898de5661f7cf7d68 *invalid-oss-fuzz-10705.ivf.res
 88e29851122cca3f336824f7fa4d9f757f91110c *invalid-oss-fuzz-10723.ivf
 1af486cd2cc83ebeddc76ca7a1c512cc0ec568d5 *invalid-oss-fuzz-10723.ivf.res
+0784acc8931090ec24eba752d6c27e359e68fe7d *invalid-oss-fuzz-10779.ivf
+5d9474c0309b7ca09a182d888f73b37a8fe1362c *invalid-oss-fuzz-10779.ivf.res
 ccbe4081557eb44820a0e6337c4a094421826b9a *invalid-oss-fuzz-9288.ivf
 67c54283fe1a26ccf02cc991e4f9a1eea3ac5e78 *invalid-oss-fuzz-9288.ivf.res
 c0960f032484579f967881cc025b71cfd7a79ee1 *invalid-oss-fuzz-9463.ivf
