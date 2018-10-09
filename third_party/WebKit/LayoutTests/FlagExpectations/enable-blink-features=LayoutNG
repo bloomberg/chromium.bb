@@ -236,7 +236,6 @@ crbug.com/591099 external/wpt/fetch/api/redirect/redirect-count.any.html [ Pass 
 crbug.com/591099 external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Pass ]
 crbug.com/591099 external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Pass ]
 crbug.com/591099 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
-crbug.com/591099 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
 crbug.com/591099 external/wpt/html-media-capture/capture_audio_cancel-manual.html [ Failure ]
 crbug.com/591099 external/wpt/html-media-capture/capture_image_cancel-manual.html [ Failure ]
 crbug.com/591099 external/wpt/html-media-capture/capture_video_cancel-manual.html [ Failure ]
