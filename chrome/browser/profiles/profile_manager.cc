@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -163,8 +164,8 @@ enum class ProfileDeletionStage {
 };
 using ProfileDeletionMap = std::map<base::FilePath, ProfileDeletionStage>;
 ProfileDeletionMap& ProfilesToDelete() {
-  CR_DEFINE_STATIC_LOCAL(ProfileDeletionMap, profiles_to_delete, ());
-  return profiles_to_delete;
+  static base::NoDestructor<ProfileDeletionMap> profiles_to_delete;
+  return *profiles_to_delete;
 }
 
 int64_t ComputeFilesSize(const base::FilePath& directory,

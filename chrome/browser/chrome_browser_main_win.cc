@@ -22,6 +22,7 @@
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
@@ -743,6 +744,6 @@ base::string16 TranslationDelegate::GetLocalizedString(
 
 // static
 void ChromeBrowserMainPartsWin::SetupInstallerUtilStrings() {
-  CR_DEFINE_STATIC_LOCAL(TranslationDelegate, delegate, ());
-  installer::SetTranslationDelegate(&delegate);
+  static base::NoDestructor<TranslationDelegate> delegate;
+  installer::SetTranslationDelegate(delegate.get());
 }
