@@ -6,6 +6,7 @@
 
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -505,20 +506,40 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
 }
 
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
-    cc::ImageDecodeCache* cache,
-    const gfx::ColorSpace& target_color_space)
-    : playback_image_provider_(cache,
-                               target_color_space,
-                               cc::PlaybackImageProvider::Settings()),
-      weak_factory_(this) {}
+    cc::ImageDecodeCache* cache_n32,
+    cc::ImageDecodeCache* cache_f16,
+    const gfx::ColorSpace& target_color_space,
+    SkColorType canvas_color_type)
+    : playback_image_provider_n32_(cache_n32,
+                                   target_color_space,
+                                   cc::PlaybackImageProvider::Settings()),
+      weak_factory_(this) {
+  // If the image provider may require to decode to half float instead of
+  // 8-8-8-8, create a f16 PlaybackImageProvider with the passed cache.
+  if (canvas_color_type == kRGBA_F16_SkColorType) {
+    DCHECK(cache_f16);
+    playback_image_provider_f16_.emplace(cache_f16, target_color_space,
+                                         cc::PlaybackImageProvider::Settings());
+  }
+}
 
 CanvasResourceProvider::CanvasImageProvider::~CanvasImageProvider() = default;
 
 cc::ImageProvider::ScopedDecodedDrawImage
 CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
     const cc::DrawImage& draw_image) {
-  auto scoped_decoded_image =
-      playback_image_provider_.GetDecodedDrawImage(draw_image);
+  // If we like to decode high bit depth image source to half float backed
+  // image, we need to sniff the image bit depth here to avoid double decoding.
+  ImageProvider::ScopedDecodedDrawImage scoped_decoded_image;
+  if (playback_image_provider_f16_ &&
+      draw_image.paint_image().is_high_bit_depth()) {
+    DCHECK(playback_image_provider_f16_);
+    scoped_decoded_image =
+        playback_image_provider_f16_->GetDecodedDrawImage(draw_image);
+  } else {
+    scoped_decoded_image =
+        playback_image_provider_n32_.GetDecodedDrawImage(draw_image);
+  }
   if (!scoped_decoded_image.needs_unlock())
     return scoped_decoded_image;
 
@@ -596,7 +617,14 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
             ? ColorParams().GetStorageGfxColorSpace()
             : gfx::ColorSpace::CreateSRGB();
 
-    canvas_image_provider_.emplace(ImageDecodeCache(), target_color_space);
+    // Create an ImageDecodeCache for half float images only if the canvas is
+    // using half float back storage.
+    cc::ImageDecodeCache* cache_f16 = nullptr;
+    if (ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
+      cache_f16 = ImageDecodeCacheF16();
+    canvas_image_provider_.emplace(ImageDecodeCache(), cache_f16,
+                                   target_color_space,
+                                   color_params_.GetSkColorType());
     cc::ImageProvider* image_provider = &*canvas_image_provider_;
 
     cc::SkiaPaintCanvas::ContextFlushes context_flushes;
@@ -738,6 +766,14 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
         kN32_SkColorType);
   }
   return &Image::SharedCCDecodeCache(kN32_SkColorType);
+}
+
+cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
+  if (IsAccelerated() && context_provider_wrapper_) {
+    return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
+        kRGBA_F16_SkColorType);
+  }
+  return &Image::SharedCCDecodeCache(kRGBA_F16_SkColorType);
 }
 
 void CanvasResourceProvider::RecycleResource(

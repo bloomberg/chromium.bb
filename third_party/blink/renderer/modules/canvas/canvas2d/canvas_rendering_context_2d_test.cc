@@ -16,9 +16,11 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
@@ -34,9 +36,12 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 using testing::_;
 using testing::InSequence;
@@ -786,6 +791,113 @@ TEST_F(CanvasRenderingContext2DTest,
       IsCanvasResourceHostSet(CanvasElement().GetCanvas2DLayerBridge()));
 
   Mock::VerifyAndClearExpectations(surface_ptr);
+}
+
+static void TestDrawSingleHighBitDepthPNGOnCanvas(
+    String filepath,
+    CanvasRenderingContext2D* context,
+    Document& document,
+    ScriptState* script_state) {
+  scoped_refptr<SharedBuffer> pixel_buffer = test::ReadFromFile(filepath);
+  ASSERT_EQ(false, pixel_buffer->IsEmpty());
+
+  ImageResourceContent* resource_content =
+      ImageResourceContent::CreateNotStarted();
+  const bool all_data_received = true;
+  const bool is_multipart = false;
+  ImageResourceContent::UpdateImageResult update_result =
+      resource_content->UpdateImage(
+          pixel_buffer, ResourceStatus::kPending,
+          ImageResourceContent::UpdateImageOption::kUpdateImage,
+          all_data_received, is_multipart);
+  ASSERT_EQ(ImageResourceContent::UpdateImageResult::kNoDecodeError,
+            update_result);
+
+  HTMLImageElement* image_element = HTMLImageElement::Create(document);
+  image_element->SetImageForTest(resource_content);
+
+  context->clearRect(0, 0, 2, 2);
+  NonThrowableExceptionState exception_state;
+  CanvasImageSourceUnion image_union;
+  image_union.SetHTMLImageElement(image_element);
+  context->drawImage(script_state, image_union, 0, 0, exception_state);
+
+  ImageData* image_data = context->getImageData(0, 0, 2, 2, exception_state);
+  ImageDataArray data_array = image_data->dataUnion();
+  ASSERT_TRUE(data_array.IsFloat32Array());
+  DOMArrayBufferView* buffer_view = data_array.GetAsFloat32Array().View();
+  ASSERT_EQ(16u, buffer_view->byteLength() / buffer_view->TypeSize());
+  float* actual_pixels = static_cast<float*>(buffer_view->BaseAddress());
+
+  sk_sp<SkImage> decoded_image =
+      resource_content->GetImage()->PaintImageForCurrentFrame().GetSkImage();
+  ASSERT_EQ(kRGBA_F16_SkColorType, decoded_image->colorType());
+  sk_sp<SkImage> color_converted_image = decoded_image->makeColorSpace(
+      context->ColorParamsForTest().GetSkColorSpaceForSkSurfaces());
+  float expected_pixels[16];
+  SkImageInfo expected_info_no_color_space = SkImageInfo::Make(
+      2, 2, kRGBA_F32_SkColorType, kUnpremul_SkAlphaType, nullptr);
+  color_converted_image->readPixels(
+      expected_info_no_color_space, expected_pixels,
+      expected_info_no_color_space.minRowBytes(), 0, 0);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      actual_pixels, expected_pixels, 4, kPixelFormat_ffff);
+}
+
+static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
+    String canvas_color_space,
+    Document& document,
+    Persistent<HTMLCanvasElement> canvas,
+    ScriptState* script_state) {
+  // Prepare the wide gamut context with the given color space.
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = true;
+  attributes.color_space = canvas_color_space;
+  attributes.pixel_format = "float16";
+  CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
+      canvas->GetCanvasRenderingContext("2d", attributes));
+
+  // Prepare the png file path and call the test routine
+  std::vector<String> interlace_status = {"", "_interlaced"};
+  std::vector<String> color_profiles = {"_sRGB",      "_e-sRGB",   "_AdobeRGB",
+                                        "_DisplayP3", "_ProPhoto", "_Rec2020"};
+  std::vector<String> alpha_status = {"_opaque", "_transparent"};
+
+  String path = test::CoreTestDataPath();
+  path.append("/png-16bit/");
+  for (auto interlace : interlace_status) {
+    for (auto color_profile : color_profiles) {
+      for (auto alpha : alpha_status) {
+        String filename = "2x2_16bit";
+        filename.append(interlace);
+        filename.append(color_profile);
+        filename.append(alpha);
+        filename.append(".png");
+        String full_path = path;
+        full_path.append(filename);
+        TestDrawSingleHighBitDepthPNGOnCanvas(full_path, context, document,
+                                              script_state);
+      }
+    }
+  }
+}
+
+TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnLinearRGBCanvas) {
+  TestDrawHighBitDepthPNGsOnWideGamutCanvas(
+      "linear-rgb", GetDocument(),
+      Persistent<HTMLCanvasElement>(CanvasElement()), GetScriptState());
+}
+
+TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnP3Canvas) {
+  TestDrawHighBitDepthPNGsOnWideGamutCanvas(
+      "p3", GetDocument(), Persistent<HTMLCanvasElement>(CanvasElement()),
+      GetScriptState());
+}
+
+TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnRec2020Canvas) {
+  TestDrawHighBitDepthPNGsOnWideGamutCanvas(
+      "rec2020", GetDocument(), Persistent<HTMLCanvasElement>(CanvasElement()),
+      GetScriptState());
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
