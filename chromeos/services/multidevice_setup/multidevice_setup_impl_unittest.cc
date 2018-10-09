@@ -19,12 +19,13 @@
 #include "chromeos/services/multidevice_setup/fake_feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
-#include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
+#include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
@@ -32,7 +33,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -284,36 +284,42 @@ class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
   DISALLOW_COPY_AND_ASSIGN(FakeFeatureStateManagerFactory);
 };
 
-class FakeSetupFlowCompletionRecorderFactory
-    : public SetupFlowCompletionRecorderImpl::Factory {
+class FakeHostDeviceTimestampManagerFactory
+    : public HostDeviceTimestampManagerImpl::Factory {
  public:
-  FakeSetupFlowCompletionRecorderFactory(
+  FakeHostDeviceTimestampManagerFactory(
+      FakeHostStatusProviderFactory* fake_host_status_provider_factory,
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service)
-      : expected_testing_pref_service_(expected_testing_pref_service) {}
+      : fake_host_status_provider_factory_(fake_host_status_provider_factory),
+        expected_testing_pref_service_(expected_testing_pref_service) {}
 
-  ~FakeSetupFlowCompletionRecorderFactory() override = default;
+  ~FakeHostDeviceTimestampManagerFactory() override = default;
 
-  FakeSetupFlowCompletionRecorder* instance() { return instance_; }
+  FakeHostDeviceTimestampManager* instance() { return instance_; }
 
  private:
-  // SetupFlowCompletionRecorderImpl::Factory:
-  std::unique_ptr<SetupFlowCompletionRecorder> BuildInstance(
+  // HostDeviceTimestampManagerImpl::Factory:
+  std::unique_ptr<HostDeviceTimestampManager> BuildInstance(
+      HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       base::Clock* clock) override {
     EXPECT_FALSE(instance_);
+    EXPECT_EQ(fake_host_status_provider_factory_->instance(),
+              host_status_provider);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
 
-    auto instance = std::make_unique<FakeSetupFlowCompletionRecorder>();
+    auto instance = std::make_unique<FakeHostDeviceTimestampManager>();
     instance_ = instance.get();
     return instance;
   }
 
+  FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
 
-  FakeSetupFlowCompletionRecorder* instance_ = nullptr;
+  FakeHostDeviceTimestampManager* instance_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSetupFlowCompletionRecorderFactory);
+  DISALLOW_COPY_AND_ASSIGN(FakeHostDeviceTimestampManagerFactory);
 };
 
 class FakeAccountStatusChangeDelegateNotifierFactory
@@ -323,12 +329,12 @@ class FakeAccountStatusChangeDelegateNotifierFactory
       FakeHostStatusProviderFactory* fake_host_status_provider_factory,
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
-      FakeSetupFlowCompletionRecorderFactory*
-          fake_setup_flow_completion_recorder_factory)
+      FakeHostDeviceTimestampManagerFactory*
+          fake_host_device_timestamp_manager_factory)
       : fake_host_status_provider_factory_(fake_host_status_provider_factory),
         expected_testing_pref_service_(expected_testing_pref_service),
-        fake_setup_flow_completion_recorder_factory_(
-            fake_setup_flow_completion_recorder_factory) {}
+        fake_host_device_timestamp_manager_factory_(
+            fake_host_device_timestamp_manager_factory) {}
 
   ~FakeAccountStatusChangeDelegateNotifierFactory() override = default;
 
@@ -339,14 +345,14 @@ class FakeAccountStatusChangeDelegateNotifierFactory
   std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
-      SetupFlowCompletionRecorder* setup_flow_completion_recorder,
+      HostDeviceTimestampManager* host_device_timestamp_manager,
       base::Clock* clock) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_host_status_provider_factory_->instance(),
               host_status_provider);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
-    EXPECT_EQ(fake_setup_flow_completion_recorder_factory_->instance(),
-              setup_flow_completion_recorder);
+    EXPECT_EQ(fake_host_device_timestamp_manager_factory_->instance(),
+              host_device_timestamp_manager);
 
     auto instance = std::make_unique<FakeAccountStatusChangeDelegateNotifier>();
     instance_ = instance.get();
@@ -355,8 +361,8 @@ class FakeAccountStatusChangeDelegateNotifierFactory
 
   FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
-  FakeSetupFlowCompletionRecorderFactory*
-      fake_setup_flow_completion_recorder_factory_;
+  FakeHostDeviceTimestampManagerFactory*
+      fake_host_device_timestamp_manager_factory_;
 
   FakeAccountStatusChangeDelegateNotifier* instance_ = nullptr;
 
@@ -497,16 +503,16 @@ class MultiDeviceSetupImplTest : public testing::Test {
     FeatureStateManagerImpl::Factory::SetFactoryForTesting(
         fake_feature_state_manager_factory_.get());
 
-    fake_setup_flow_completion_recorder_factory_ =
-        std::make_unique<FakeSetupFlowCompletionRecorderFactory>(
-            test_pref_service_.get());
-    SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(
-        fake_setup_flow_completion_recorder_factory_.get());
+    fake_host_device_timestamp_manager_factory_ =
+        std::make_unique<FakeHostDeviceTimestampManagerFactory>(
+            fake_host_status_provider_factory_.get(), test_pref_service_.get());
+    HostDeviceTimestampManagerImpl::Factory::SetFactoryForTesting(
+        fake_host_device_timestamp_manager_factory_.get());
 
     fake_account_status_change_delegate_notifier_factory_ =
         std::make_unique<FakeAccountStatusChangeDelegateNotifierFactory>(
             fake_host_status_provider_factory_.get(), test_pref_service_.get(),
-            fake_setup_flow_completion_recorder_factory_.get());
+            fake_host_device_timestamp_manager_factory_.get());
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         fake_account_status_change_delegate_notifier_factory_.get());
 
@@ -539,7 +545,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
     HostStatusProviderImpl::Factory::SetFactoryForTesting(nullptr);
     FeatureStateManagerImpl::Factory::SetFactoryForTesting(nullptr);
-    SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
+    HostDeviceTimestampManagerImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
     DeviceReenroller::Factory::SetFactoryForTesting(nullptr);
@@ -728,8 +734,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return fake_feature_state_manager_factory_->instance();
   }
 
-  FakeSetupFlowCompletionRecorder* fake_setup_flow_completion_recorder() {
-    return fake_setup_flow_completion_recorder_factory_->instance();
+  FakeHostDeviceTimestampManager* fake_host_device_timestamp_manager() {
+    return fake_host_device_timestamp_manager_factory_->instance();
   }
 
   FakeAccountStatusChangeDelegateNotifier*
@@ -819,8 +825,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
       fake_host_status_provider_factory_;
   std::unique_ptr<FakeFeatureStateManagerFactory>
       fake_feature_state_manager_factory_;
-  std::unique_ptr<FakeSetupFlowCompletionRecorderFactory>
-      fake_setup_flow_completion_recorder_factory_;
+  std::unique_ptr<FakeHostDeviceTimestampManagerFactory>
+      fake_host_device_timestamp_manager_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
       fake_account_status_change_delegate_notifier_factory_;
   std::unique_ptr<FakeDeviceReenrollerFactory> fake_device_reenroller_factory_;
