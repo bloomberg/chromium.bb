@@ -29,8 +29,8 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   // The first output in the vector is always a primary output.
   bool IsPrimaryOutputReady() const;
 
-  void AddWaylandOutput(wl_output* output);
-  void RemoveWaylandOutput(wl_output* output);
+  void AddWaylandOutput(const uint32_t output_id, wl_output* output);
+  void RemoveWaylandOutput(const uint32_t output_id);
 
   // Creates a platform screen and feeds it with existing outputs.
   std::unique_ptr<WaylandScreen> CreateWaylandScreen();
@@ -39,12 +39,13 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   void OnWaylandOutputAdded(uint32_t output_id);
   void OnWaylandOutputRemoved(uint32_t output_id);
 
+  bool IsPrimaryOutput(uint32_t output_id) const;
+
   // WaylandOutput::Delegate:
   void OnOutputHandleMetrics(uint32_t output_id,
                              const gfx::Rect& new_bounds,
                              int32_t scale_factor) override;
 
-  int64_t next_display_id_ = 0;
   std::vector<std::unique_ptr<WaylandOutput>> output_list_;
 
   // Non-owned wayland screen instance.

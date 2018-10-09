@@ -15,7 +15,7 @@ namespace {
 constexpr float kDefaultScaleFactor = 1.0f;
 }
 
-WaylandOutput::WaylandOutput(const int64_t output_id, wl_output* output)
+WaylandOutput::WaylandOutput(const uint32_t output_id, wl_output* output)
     : output_id_(output_id),
       output_(output),
       device_scale_factor_(kDefaultScaleFactor),
