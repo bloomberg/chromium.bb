@@ -282,7 +282,11 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
-    : document_loader_(loader),
+    : BaseFetchContext(
+          document ? document->GetTaskRunner(blink::TaskType::kNetworking)
+                   : loader->GetFrame()->GetTaskRunner(
+                         blink::TaskType::kNetworking)),
+      document_loader_(loader),
       document_(document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
@@ -336,15 +340,15 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
 scoped_refptr<base::SingleThreadTaskRunner>
 FrameFetchContext::GetLoadingTaskRunner() {
   if (IsDetached())
-    return FetchContext::GetLoadingTaskRunner();
-  return GetFrame()->GetTaskRunner(TaskType::kNetworking);
+    return Platform::Current()->CurrentThread()->GetTaskRunner();
+  return FetchContext::GetLoadingTaskRunner();
 }
 
 std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
 FrameFetchContext::CreateResourceLoadingTaskRunnerHandle() {
   if (IsDetached()) {
     return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-        FetchContext::GetLoadingTaskRunner());
+        GetLoadingTaskRunner());
   }
   return GetFrame()
       ->GetFrameScheduler()

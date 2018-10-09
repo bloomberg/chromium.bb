@@ -116,7 +116,6 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
   bool DefersLoading() const override;
 
   std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
@@ -150,7 +149,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebURLLoaderFactory> script_loader_factory_;
 
   Member<SubresourceFilter> subresource_filter_;
-  const scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 
   const Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
 

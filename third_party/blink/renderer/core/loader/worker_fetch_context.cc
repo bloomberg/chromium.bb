@@ -92,10 +92,9 @@ WorkerFetchContext* WorkerFetchContext::Create(
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     std::unique_ptr<WebWorkerFetchContext> web_context)
-    : global_scope_(global_scope),
+    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
+      global_scope_(global_scope),
       web_context_(std::move(web_context)),
-      loading_task_runner_(
-          global_scope_->GetTaskRunner(TaskType::kInternalLoading)),
       fetch_client_settings_object_(
           new FetchClientSettingsObjectImpl(*global_scope_)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
@@ -404,11 +403,6 @@ void WorkerFetchContext::PopulateResourceRequest(
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerFetchContext::GetLoadingTaskRunner() {
-  return loading_task_runner_;
 }
 
 bool WorkerFetchContext::DefersLoading() const {

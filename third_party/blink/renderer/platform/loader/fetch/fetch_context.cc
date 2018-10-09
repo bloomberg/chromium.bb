@@ -35,11 +35,15 @@
 
 namespace blink {
 
-FetchContext& FetchContext::NullInstance() {
-  return *(new FetchContext);
+FetchContext& FetchContext::NullInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return *(new FetchContext(std::move(task_runner)));
 }
 
-FetchContext::FetchContext() : platform_probe_sink_(new PlatformProbeSink) {
+FetchContext::FetchContext(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : platform_probe_sink_(new PlatformProbeSink),
+      task_runner_(std::move(task_runner)) {
   platform_probe_sink_->addPlatformTraceEvents(new PlatformTraceEventsAgent);
 }
 

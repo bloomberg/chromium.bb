@@ -106,6 +106,10 @@ MessageSource ConvertLogSourceToMessageSource(FetchContext::LogSource source) {
 
 }  // namespace
 
+BaseFetchContext::BaseFetchContext(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : FetchContext(std::move(task_runner)) {}
+
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                    FetchResourceType type) {
   bool is_main_resource = type == kFetchMainResource;

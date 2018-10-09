@@ -68,6 +68,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                     mojom::RequestContextType) const override;
 
  protected:
+  explicit BaseFetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // Used for security checks.
   virtual bool AllowScriptFromSource(const KURL&) const = 0;
 

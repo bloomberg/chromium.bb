@@ -117,9 +117,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secure_url("https://secureorigin.test/image.png");
   // Try to request a url. The request should fail, and a resource in an error
   // state should be returned, and no resource should be present in the cache.
-  ResourceFetcher* fetcher =
-      ResourceFetcher::Create(&FetchContext::NullInstance());
-
+  ResourceFetcher* fetcher = ResourceFetcher::Create(
+      &FetchContext::NullInstance(platform_->test_task_runner()));
   ResourceRequest resource_request(secure_url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   FetchParameters fetch_params(resource_request);
