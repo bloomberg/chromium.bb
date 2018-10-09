@@ -45,7 +45,7 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 
 std::vector<AccountIds> AccountTracker::GetAccounts() const {
   const std::string active_account_id =
-      identity_manager_->GetPrimaryAccountInfo().account_id;
+      identity_manager_->GetPrimaryAccountId();
   std::vector<AccountIds> accounts;
 
   for (auto it = accounts_.begin(); it != accounts_.end(); ++it) {

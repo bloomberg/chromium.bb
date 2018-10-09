@@ -171,7 +171,7 @@ AccountInfo SetPrimaryAccount(SigninManagerBase* signin_manager,
 void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
                                       IdentityManager* identity_manager) {
   DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+  std::string account_id = identity_manager->GetPrimaryAccountId();
 
   std::string refresh_token = "refresh_token_for_" + account_id;
   SetRefreshTokenForAccount(token_service, identity_manager, account_id);
@@ -181,7 +181,7 @@ void SetInvalidRefreshTokenForPrimaryAccount(
     ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager) {
   DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+  std::string account_id = identity_manager->GetPrimaryAccountId();
 
   SetInvalidRefreshTokenForAccount(token_service, identity_manager, account_id);
 }
@@ -192,7 +192,7 @@ void RemoveRefreshTokenForPrimaryAccount(
   if (!identity_manager->HasPrimaryAccount())
     return;
 
-  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+  std::string account_id = identity_manager->GetPrimaryAccountId();
 
   RemoveRefreshTokenForAccount(token_service, identity_manager, account_id);
 }

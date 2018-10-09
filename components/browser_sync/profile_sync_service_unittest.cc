@@ -775,7 +775,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      identity_manager()->GetPrimaryAccountInfo().account_id;
+      identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -827,7 +827,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   service()->AddObserver(&observer);
 
   const std::string primary_account_id =
-      identity_manager()->GetPrimaryAccountInfo().account_id;
+      identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -883,7 +883,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      identity_manager()->GetPrimaryAccountInfo().account_id;
+      identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -972,7 +972,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      identity_manager()->GetPrimaryAccountInfo().account_id;
+      identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.
@@ -1035,7 +1035,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
             service()->GetTransportState());
 
   const std::string primary_account_id =
-      identity_manager()->GetPrimaryAccountInfo().account_id;
+      identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected credentials (correct account_id, empty access token)
   // were passed to the SyncEngine.

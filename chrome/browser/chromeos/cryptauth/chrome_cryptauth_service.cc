@@ -165,7 +165,7 @@ cryptauth::DeviceClassifier ChromeCryptAuthService::GetDeviceClassifier() {
 }
 
 std::string ChromeCryptAuthService::GetAccountId() {
-  return identity_manager_->GetPrimaryAccountInfo().account_id;
+  return identity_manager_->GetPrimaryAccountId();
 }
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>
