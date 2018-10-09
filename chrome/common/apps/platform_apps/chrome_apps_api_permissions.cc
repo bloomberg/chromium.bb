@@ -4,7 +4,7 @@
 
 #include "chrome/common/apps/platform_apps/chrome_apps_api_permissions.h"
 
-#include "extensions/common/permissions/media_galleries_permission.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 
 namespace chrome_apps_api_permissions {
 namespace {
@@ -25,7 +25,7 @@ constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
      extensions::APIPermissionInfo::kFlagCannotBeOptional},
     {extensions::APIPermission::kMediaGalleries, "mediaGalleries",
      extensions::APIPermissionInfo::kFlagNone,
-     &CreateAPIPermission<extensions::MediaGalleriesPermission>},
+     &CreateAPIPermission<chrome_apps::MediaGalleriesPermission>},
 };
 
 }  // namespace

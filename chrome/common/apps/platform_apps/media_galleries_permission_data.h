@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_DATA_H_
-#define EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_DATA_H_
+#ifndef CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_DATA_H_
+#define CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_DATA_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@ namespace base {
 class Value;
 }
 
-namespace extensions {
+namespace chrome_apps {
 
 // A MediaGalleriesPermissionData instance represents a single part of the
 // MediaGalleriesPermission. e.g. "read" or "allAutoDetected".
@@ -24,7 +24,7 @@ class MediaGalleriesPermissionData {
 
   // Check if |param| (which must be a MediaGalleriesPermission::CheckParam)
   // matches the encapsulated attribute.
-  bool Check(const APIPermission::CheckParam* param) const;
+  bool Check(const extensions::APIPermission::CheckParam* param) const;
 
   // Convert |this| into a base::Value.
   std::unique_ptr<base::Value> ToValue() const;
@@ -45,6 +45,6 @@ class MediaGalleriesPermissionData {
   std::string permission_;
 };
 
-}  // namespace extensions
+}  // namespace chrome_apps
 
-#endif  // EXTENSIONS_COMMON_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_DATA_H_
+#endif  // CHROME_COMMON_APPS_PLATFORM_APPS_MEDIA_GALLERIES_PERMISSION_DATA_H_

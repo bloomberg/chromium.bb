@@ -15,6 +15,7 @@
 #include "chrome/browser/media_galleries/media_gallery_context_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -22,7 +23,6 @@
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -125,10 +125,10 @@ base::string16 MediaGalleriesPermissionController::GetHeader() const {
 }
 
 base::string16 MediaGalleriesPermissionController::GetSubtext() const {
-  extensions::MediaGalleriesPermission::CheckParam copy_to_param(
-      extensions::MediaGalleriesPermission::kCopyToPermission);
-  extensions::MediaGalleriesPermission::CheckParam delete_param(
-      extensions::MediaGalleriesPermission::kDeletePermission);
+  chrome_apps::MediaGalleriesPermission::CheckParam copy_to_param(
+      chrome_apps::MediaGalleriesPermission::kCopyToPermission);
+  chrome_apps::MediaGalleriesPermission::CheckParam delete_param(
+      chrome_apps::MediaGalleriesPermission::kDeletePermission);
   const extensions::PermissionsData* permission_data =
       extension_->permissions_data();
   bool has_copy_to_permission = permission_data->CheckAPIPermissionWithParam(
