@@ -490,15 +490,9 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(
-        GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
-        DocPreTranslation()->Parent());
-  } else {
-    // Pre-BGPT we don't create the visual viewport property nodes.
-    EXPECT_TRUE(DocPreTranslation()->Parent()->IsRoot());
-  }
+  EXPECT_EQ(
+      GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
+      DocPreTranslation()->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             DocScrollTranslation()->Matrix());
   EXPECT_EQ(DocPreTranslation(), DocScrollTranslation()->Parent());
@@ -3840,18 +3834,12 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
   // The fixed position overflow scroll node is parented under the root, not the
   // dom-order parent or frame's scroll.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(GetDocument()
-                  .GetPage()
-                  ->GetVisualViewport()
-                  .GetScrollTranslationNode()
-                  ->ScrollNode(),
-              fixed_overflow_scroll_node->Parent());
-  } else {
-    // Pre-BGPT we don't create the visual viewport property nodes.
-    EXPECT_TRUE(fixed_overflow_scroll_node->Parent()->IsRoot());
-  }
+  EXPECT_EQ(GetDocument()
+                .GetPage()
+                ->GetVisualViewport()
+                .GetScrollTranslationNode()
+                ->ScrollNode(),
+            fixed_overflow_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
