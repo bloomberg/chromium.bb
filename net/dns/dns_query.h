@@ -65,6 +65,12 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // response.
   base::StringPiece question() const;
 
+  // Returns the size of the question section.
+  size_t question_size() const {
+    // QNAME + QTYPE + QCLASS
+    return qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
+  }
+
   // IOBuffer accessor to be used for writing out the query. The buffer has
   // the same byte layout as the DNS query wire format.
   IOBufferWithSize* io_buffer() const { return io_buffer_.get(); }
@@ -79,12 +85,6 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // "\x03""www""\x08""chromium""\x03""com""\x00". Use DNSDomainToString to
   // convert to the dotted format "www.chromium.com" with no trailing dot.
   bool ReadName(base::BigEndianReader* reader, std::string* out);
-
-  // Returns the size of the question section.
-  size_t question_size() const {
-    // QNAME + QTYPE + QCLASS
-    return qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
-  }
 
   // Size of the DNS name (*NOT* hostname) we are trying to resolve; used
   // to calculate offsets.

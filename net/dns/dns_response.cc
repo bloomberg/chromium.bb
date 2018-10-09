@@ -159,10 +159,12 @@ bool DnsRecordParser::SkipQuestion() {
   return true;
 }
 
-DnsResponse::DnsResponse(uint16_t id,
-                         bool is_authoritative,
-                         const std::vector<DnsResourceRecord>& answers,
-                         const base::Optional<DnsQuery>& query) {
+DnsResponse::DnsResponse(
+    uint16_t id,
+    bool is_authoritative,
+    const std::vector<DnsResourceRecord>& answers,
+    const std::vector<DnsResourceRecord>& additional_records,
+    const base::Optional<DnsQuery>& query) {
   bool has_query = query.has_value();
   dns_protocol::Header header;
   header.id = id;
@@ -178,23 +180,28 @@ DnsResponse::DnsResponse(uint16_t id,
     header.flags |= dns_protocol::kFlagAA;
   }
   header.ancount = answers.size();
+  header.arcount = additional_records.size();
 
   // Response starts with the header and the question section (if any).
-  size_t response_size =
-      has_query ? query.value().io_buffer()->size() : sizeof(header);
-  // Add the size of all answers.
-  response_size = std::accumulate(
-      answers.begin(), answers.end(), response_size,
-      [](size_t cur_size, const DnsResourceRecord& answer) {
-        bool has_final_dot = answer.name.back() == '.';
-        // Depending on if answer.name in the dotted format has the final dot
-        // for the root domain or not, the corresponding DNS domain name format
-        // to be written to rdata is 1 byte (with dot) or 2 bytes larger in
-        // size. See RFC 1035, Section 3.1 and DNSDomainFromDot.
-        return cur_size + answer.name.size() + (has_final_dot ? 1 : 2) +
-               kResourceRecordSizeInBytesWithoutNameAndRData +
-               answer.rdata.size();
-      });
+  size_t response_size = has_query
+                             ? sizeof(header) + query.value().question_size()
+                             : sizeof(header);
+  // Add the size of all answers and additional records.
+  auto do_accumulation = [](size_t cur_size, const DnsResourceRecord& answer) {
+    bool has_final_dot = answer.name.back() == '.';
+    // Depending on if answer.name in the dotted format has the final dot
+    // for the root domain or not, the corresponding DNS domain name format
+    // to be written to rdata is 1 byte (with dot) or 2 bytes larger in
+    // size. See RFC 1035, Section 3.1 and DNSDomainFromDot.
+    return cur_size + answer.name.size() + (has_final_dot ? 1 : 2) +
+           kResourceRecordSizeInBytesWithoutNameAndRData + answer.rdata.size();
+  };
+  response_size = std::accumulate(answers.begin(), answers.end(), response_size,
+                                  do_accumulation);
+
+  response_size =
+      std::accumulate(additional_records.begin(), additional_records.end(),
+                      response_size, do_accumulation);
 
   io_buffer_ = base::MakeRefCounted<IOBuffer>(response_size);
   io_buffer_size_ = response_size;
@@ -205,8 +212,14 @@ DnsResponse::DnsResponse(uint16_t id,
     success &= WriteQuestion(&writer, query.value());
     DCHECK(success);
   }
+  // Start the Answer section.
   for (const auto& answer : answers) {
     success &= WriteAnswer(&writer, answer, query);
+    DCHECK(success);
+  }
+  // Start the Additional section.
+  for (const auto& record : additional_records) {
+    success &= WriteRecord(&writer, record);
     DCHECK(success);
   }
   if (!success) {
@@ -434,6 +447,24 @@ bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
   return writer->WriteBytes(question.data(), question.size());
 }
 
+bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
+                              const DnsResourceRecord& record) {
+  if (!RecordRdata::HasValidSize(record.rdata, record.type)) {
+    VLOG(1) << "Invalid RDATA size for a record.";
+    return false;
+  }
+  std::string domain_name;
+  if (!DNSDomainFromDot(record.name, &domain_name)) {
+    VLOG(1) << "Invalid dotted name.";
+    return false;
+  }
+  return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
+         writer->WriteU16(record.type) && writer->WriteU16(record.klass) &&
+         writer->WriteU32(record.ttl) &&
+         writer->WriteU16(record.rdata.size()) &&
+         writer->WriteBytes(record.rdata.data(), record.rdata.size());
+}
+
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
                               const DnsResourceRecord& answer,
                               const base::Optional<DnsQuery>& query) {
@@ -441,20 +472,7 @@ bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
     VLOG(1) << "Mismatched answer resource record type and qtype.";
     return false;
   }
-  if (!RecordRdata::HasValidSize(answer.rdata, answer.type)) {
-    VLOG(1) << "Invalid RDATA size for an answer.";
-    return false;
-  }
-  std::string domain_name;
-  if (!DNSDomainFromDot(answer.name, &domain_name)) {
-    VLOG(1) << "Invalid dotted name.";
-    return false;
-  }
-  return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
-         writer->WriteU16(answer.type) && writer->WriteU16(answer.klass) &&
-         writer->WriteU32(answer.ttl) &&
-         writer->WriteU16(answer.rdata.size()) &&
-         writer->WriteBytes(answer.rdata.data(), answer.rdata.size());
+  return WriteRecord(writer, answer);
 }
 
 }  // namespace net

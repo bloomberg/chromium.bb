@@ -14,7 +14,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto packet = base::MakeRefCounted<net::IOBufferWithSize>(size);
   memcpy(packet->data(), data, size);
-  auto out = std::make_unique<net::DnsQuery>(packet.get());
+  auto out = std::make_unique<net::DnsQuery>(packet);
   out->Parse();
   return 0;
 }
