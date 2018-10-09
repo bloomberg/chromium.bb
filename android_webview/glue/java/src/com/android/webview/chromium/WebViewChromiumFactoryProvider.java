@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.os.UserManager;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
@@ -41,6 +40,7 @@ import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("deprecation")
 public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
-    private static final String TAG = "WebViewChromiumFactoryProvider";
+    private static final String TAG = "WVCFactoryProvider";
 
     private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
@@ -336,7 +336,19 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
+    private static @SplitApkWorkaround.Result int sSplitApkWorkaroundResult =
+            SplitApkWorkaround.Result.NOT_RUN;
+
     public static boolean preloadInZygote() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            // If we're on O, where the split APK handling bug exists, then go through the motions
+            // of applying the workaround - don't actually change anything, but do the reflection
+            // to check for compatibility issues. The result will be logged to UMA later, because
+            // we can't do very much in the restricted environment of the WebView zygote process.
+            sSplitApkWorkaroundResult = SplitApkWorkaround.apply(/* dryRun */ true);
+        }
+
         for (String library : NativeLibraries.LIBRARIES) {
             System.loadLibrary(library);
         }
