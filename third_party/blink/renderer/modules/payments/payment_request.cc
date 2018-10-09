@@ -1317,7 +1317,10 @@ void PaymentRequest::OnAbort(bool aborted_successfully) {
 }
 
 void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
-  DCHECK(can_make_payment_resolver_);
+  // TODO(https://crbug.com/891371): Understand how the resolver could be null
+  // here and prevent it.
+  if (!can_make_payment_resolver_)
+    return;
 
   switch (result) {
     case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
