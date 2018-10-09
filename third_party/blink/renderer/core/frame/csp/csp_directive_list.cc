@@ -1124,7 +1124,8 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
     return false;
   }
 
-  *name = String(name_begin, static_cast<wtf_size_t>(position - name_begin));
+  *name = String(name_begin, static_cast<wtf_size_t>(position - name_begin))
+              .LowerASCII();
 
   if (position == end)
     return true;
