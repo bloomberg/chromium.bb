@@ -175,6 +175,11 @@ extern const char kNewPasswordFormParsingDescription[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
 
+// Title and description for the flag to enable the "switch to this tab" option
+// in the omnibox suggestion. It doesn't add new suggestions.
+extern const char kOmniboxTabSwitchSuggestionsName[];
+extern const char kOmniboxTabSwitchSuggestionsDescription[];
+
 // Title and description for the flag to enable elision of the URL path, query,
 // and ref in omnibox URL suggestions.
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];

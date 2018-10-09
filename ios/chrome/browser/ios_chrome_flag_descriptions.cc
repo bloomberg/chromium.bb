@@ -215,6 +215,11 @@ const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
     "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
     "in the omnibox popup.";
 
+const char kOmniboxTabSwitchSuggestionsName[] =
+    "Enable 'switch to this tab' option";
+const char kOmniboxTabSwitchSuggestionsDescription[] =
+    "Enable the 'switch to this tab' options in the omnibox suggestions.";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
