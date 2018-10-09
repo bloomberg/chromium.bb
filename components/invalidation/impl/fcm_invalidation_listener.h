@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
-#define COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_FCM_INVALIDATION_LISTENER_H_
+#define COMPONENTS_INVALIDATION_IMPL_FCM_INVALIDATION_LISTENER_H_
 
 #include <memory>
 
@@ -30,9 +30,9 @@ class TopicInvalidationMap;
 // handles all the startup/shutdown details and hookups.
 // By implementing the AckHandler interface it tracks the messages
 // which were passed to InvalidationHandlers.
-class FCMSyncInvalidationListener : public InvalidationListener,
-                                    public AckHandler,
-                                    FCMSyncNetworkChannel::Observer {
+class FCMInvalidationListener : public InvalidationListener,
+                                public AckHandler,
+                                FCMSyncNetworkChannel::Observer {
  public:
   typedef base::OnceCallback<std::unique_ptr<InvalidationClient>(
       NetworkChannel* network_channel,
@@ -49,10 +49,10 @@ class FCMSyncInvalidationListener : public InvalidationListener,
     virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
   };
 
-  explicit FCMSyncInvalidationListener(
+  explicit FCMInvalidationListener(
       std::unique_ptr<FCMSyncNetworkChannel> network_channel);
 
-  ~FCMSyncInvalidationListener() override;
+  ~FCMInvalidationListener() override;
 
   void Start(
       CreateInvalidationClientCallback create_invalidation_client_callback,
@@ -90,7 +90,7 @@ class FCMSyncInvalidationListener : public InvalidationListener,
 
   TopicSet GetRegisteredIdsForTest() const;
 
-  base::WeakPtr<FCMSyncInvalidationListener> AsWeakPtr();
+  base::WeakPtr<FCMInvalidationListener> AsWeakPtr();
 
  private:
   void Stop();
@@ -137,11 +137,11 @@ class FCMSyncInvalidationListener : public InvalidationListener,
       per_user_topic_registration_manager_;
   std::string token_;
 
-  base::WeakPtrFactory<FCMSyncInvalidationListener> weak_factory_;
+  base::WeakPtrFactory<FCMInvalidationListener> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FCMSyncInvalidationListener);
+  DISALLOW_COPY_AND_ASSIGN(FCMInvalidationListener);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
+#endif  // COMPONENTS_INVALIDATION_IMPL_FCM_INVALIDATION_LISTENER_H_
