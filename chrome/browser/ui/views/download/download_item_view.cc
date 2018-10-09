@@ -481,19 +481,16 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetDescription(base::string16());
 }
 
+void DownloadItemView::AddedToWidget() {
+  // Only required because OnThemeChanged is not called when a View is added to
+  // a Widget.
+  UpdateDropdownButton();
+}
+
 void DownloadItemView::OnThemeChanged() {
   UpdateColorsFromTheme();
   SchedulePaint();
   UpdateDropdownButton();
-}
-
-void DownloadItemView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    // This is only required because OnThemeChanged is not called when a view is
-    // added as a child.
-    UpdateDropdownButton();
-  }
 }
 
 void DownloadItemView::AddInkDropLayer(ui::Layer* ink_drop_layer) {

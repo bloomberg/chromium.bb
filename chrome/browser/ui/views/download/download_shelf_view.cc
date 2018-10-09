@@ -74,11 +74,6 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);
 
-  mouse_watcher_.set_notify_on_exit_time(
-      base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
-  set_id(VIEW_ID_DOWNLOAD_SHELF);
-  parent->AddChildView(this);
-
   show_all_view_ = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
   AddChildView(show_all_view_);
@@ -96,6 +91,11 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_DOWNLOADS_BAR));
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
+
+  mouse_watcher_.set_notify_on_exit_time(
+      base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
+  set_id(VIEW_ID_DOWNLOAD_SHELF);
+  parent->AddChildView(this);
 }
 
 DownloadShelfView::~DownloadShelfView() {
@@ -278,13 +278,6 @@ void DownloadShelfView::Layout() {
   }
 }
 
-void DownloadShelfView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  View::ViewHierarchyChanged(details);
-  if (details.is_add)
-    UpdateColorsFromTheme();
-}
-
 bool DownloadShelfView::CanFitFirstDownloadItem() {
   if (download_views_.empty())
     return true;
@@ -309,8 +302,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  if (show_all_view_)
-    ConfigureButtonForTheme(show_all_view_);
+  ConfigureButtonForTheme(show_all_view_);
 
   SetBackground(views::CreateSolidBackground(
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
@@ -318,6 +310,10 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   views::SetImageFromVectorIcon(
       close_button_, vector_icons::kCloseRoundedIcon,
       DownloadItemView::GetTextColorForThemeProvider(GetThemeProvider()));
+}
+
+void DownloadShelfView::AddedToWidget() {
+  UpdateColorsFromTheme();
 }
 
 void DownloadShelfView::OnThemeChanged() {

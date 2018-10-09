@@ -44,7 +44,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   }
 
   // Second wave of MD colors (colors that only appear in secondary UI).
-  static const SkColor kPrimaryTextColor = SK_ColorBLACK;
+  static const SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
 
   switch (color_id) {
     // Labels
