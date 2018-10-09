@@ -32,6 +32,11 @@ void FrameResourceCoordinator::SetLifecycleState(
   service_->SetLifecycleState(state);
 }
 
+void FrameResourceCoordinator::SetHasNonEmptyBeforeUnload(
+    bool has_nonempty_beforeunload) {
+  service_->SetHasNonEmptyBeforeUnload(has_nonempty_beforeunload);
+}
+
 void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {
   service_->OnNonPersistentNotificationCreated();
 }

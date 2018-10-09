@@ -3573,6 +3573,7 @@ bool Document::CheckCompletedInternal() {
 
 bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
                                          bool is_reload,
+                                         bool auto_cancel,
                                          bool& did_allow_navigation) {
   if (!dom_window_)
     return true;
@@ -3603,6 +3604,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     kNoDialogNoUserGesture,
     kNoDialogMultipleConfirmationForNavigation,
     kShowDialog,
+    kNoDialogAutoCancelTrue,
     kDialogEnumMax
   };
   DEFINE_STATIC_LOCAL(EnumerationHistogram, beforeunload_dialog_histogram,
@@ -3632,6 +3634,15 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     Intervention::GenerateReport(frame_, "BeforeUnloadMultiple", message);
     return true;
   }
+
+  // If |auto_cancel| is set then do not ask the |chrome_client| to display a
+  // modal dialog. Simply indicate that the navigation should not proceed.
+  if (auto_cancel) {
+    beforeunload_dialog_histogram.Count(kNoDialogAutoCancelTrue);
+    did_allow_navigation = false;
+    return false;
+  }
+
   String text = before_unload_event.returnValue();
   beforeunload_dialog_histogram.Count(
       BeforeUnloadDialogHistogramEnum::kShowDialog);
