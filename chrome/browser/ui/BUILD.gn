@@ -103,8 +103,6 @@ jumbo_split_static_library("ui") {
       "cocoa/location_bar/location_bar_view_mac.h",
       "cocoa/location_bar/location_bar_view_mac.mm",
       "cocoa/main_menu_item.h",
-      "cocoa/nsview_additions.h",
-      "cocoa/nsview_additions.mm",
       "cocoa/restart_browser.h",
       "cocoa/restart_browser.mm",
       "cocoa/simple_message_box_cocoa.h",
@@ -131,8 +129,6 @@ jumbo_split_static_library("ui") {
       "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
       "cocoa/url_drop_target.h",
       "cocoa/url_drop_target.mm",
-      "cocoa/view_id_util.h",
-      "cocoa/view_id_util.mm",
       "cocoa/view_resizer.h",
 
       # TODO(estade): this class should be deleted in favor of a combobox model.
@@ -3627,8 +3623,6 @@ static_library("test_support") {
     "cocoa/test/cocoa_test_helper.mm",
     "cocoa/test/run_loop_testing.h",
     "cocoa/test/run_loop_testing.mm",
-    "cocoa/test/scoped_force_rtl_mac.h",
-    "cocoa/test/scoped_force_rtl_mac.mm",
     "content_settings/fake_owner.cc",
     "content_settings/fake_owner.h",
     "find_bar/find_bar_host_unittest_util.h",

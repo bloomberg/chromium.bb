@@ -23,11 +23,6 @@ GURL GetFileURLFromDropData(id<NSDraggingInfo> info);
 // URL, this checks if it is of a type that can be shown in the tab contents.
 BOOL IsUnsupportedDropData(Profile* profile, id<NSDraggingInfo> info);
 
-// Returns a drag image for a bookmark.
-NSImage* DragImageForBookmark(NSImage* favicon,
-                              const base::string16& title,
-                              CGFloat drag_image_width);
-
 }  // namespace drag_util
 
 #endif  // CHROME_BROWSER_UI_COCOA_DRAG_UTIL_H_
