@@ -579,22 +579,22 @@ TEST(WindowTreeTest, MovePressDragRelease) {
 
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  EXPECT_EQ("POINTER_MOVED 40,40",
+  EXPECT_EQ("MOUSE_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.PressLeftButton();
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("MOUSE_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.MoveMouseTo(0, 0);
-  EXPECT_EQ("POINTER_MOVED -10,-10",
+  EXPECT_EQ("MOUSE_DRAGGED -10,-10",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.ReleaseLeftButton();
-  EXPECT_EQ("POINTER_UP -10,-10",
+  EXPECT_EQ("MOUSE_RELEASED -10,-10",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 }
@@ -625,17 +625,17 @@ TEST(WindowTreeTest, TouchPressDragRelease) {
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.set_current_location(gfx::Point(50, 51));
   event_generator.PressTouch();
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("ET_TOUCH_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.MoveTouch(gfx::Point(5, 6));
-  EXPECT_EQ("POINTER_MOVED -5,-5",
+  EXPECT_EQ("ET_TOUCH_MOVED -5,-5",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.ReleaseTouch();
-  EXPECT_EQ("POINTER_UP -5,-5",
+  EXPECT_EQ("ET_TOUCH_RELEASED -5,-5",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 }
@@ -689,7 +689,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
 
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  EXPECT_EQ("POINTER_MOVED 40,40",
+  EXPECT_EQ("MOUSE_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -702,7 +702,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
   // Move the mouse over the non-client area.
   // The event is still sent to the client, and the delegate.
   event_generator.MoveMouseTo(15, 16);
-  EXPECT_EQ("POINTER_MOVED 5,6",
+  EXPECT_EQ("MOUSE_MOVED 5,6",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -732,7 +732,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
             EventToEventType(window_delegate.PopEvent().get()));
 
   event_generator.MoveMouseTo(26, 50);
-  EXPECT_EQ("POINTER_MOVED 16,40",
+  EXPECT_EQ("MOUSE_MOVED 16,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -742,7 +742,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
 
   // Press in client area. Only the client should get the event.
   event_generator.PressLeftButton();
-  EXPECT_EQ("POINTER_DOWN 16,40",
+  EXPECT_EQ("MOUSE_PRESSED 16,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -775,7 +775,7 @@ TEST(WindowTreeTest, MouseDownInNonClientWithChildWindow) {
   // should get the event.
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(15, 16);
-  EXPECT_EQ("POINTER_MOVED 5,6",
+  EXPECT_EQ("MOUSE_MOVED 5,6",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
   EXPECT_TRUE(window_tree_client->input_events().empty());
@@ -853,7 +853,7 @@ TEST(WindowTreeTest, SetHitTestInsets) {
 
   // Events in the hit test insets are seen by the delegate and client.
   event_generator.MoveMouseTo(50, 80);
-  EXPECT_EQ("POINTER_MOVED 40,70",
+  EXPECT_EQ("MOUSE_MOVED 40,70",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
   EXPECT_EQ("MOUSE_ENTERED 40,70", LocatedEventToEventTypeAndLocation(
@@ -931,7 +931,7 @@ TEST(WindowTreeTest, MatchesPointerWatcherSet) {
   TestWindowTreeClient::InputEvent press_input =
       window_tree_client->PopInputEvent();
   ASSERT_TRUE(press_input.event);
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("MOUSE_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(press_input.event.get()));
   EXPECT_TRUE(press_input.matches_pointer_watcher);
   // Because the event matches a pointer event there should be no observed
@@ -1007,7 +1007,7 @@ TEST(WindowTreeTest, TransferCaptureToClient) {
   event_generator.MoveMouseTo(8, 8);
   // Now the event should go to the client and not local.
   EXPECT_TRUE(window_delegate.events().empty());
-  EXPECT_EQ("POINTER_MOVED",
+  EXPECT_EQ("MOUSE_MOVED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
@@ -1043,7 +1043,7 @@ TEST(WindowTreeTest, TransferCaptureBetweenParentAndChild) {
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
   EXPECT_TRUE(window_delegate.events().empty());
   EXPECT_EQ(
-      "POINTER_MOVED",
+      "MOUSE_MOVED",
       EventToEventType(
           embedding_helper->window_tree_client.PopInputEvent().event.get()));
   EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
@@ -1051,7 +1051,7 @@ TEST(WindowTreeTest, TransferCaptureBetweenParentAndChild) {
   // Set capture from the parent, only the parent should get the event now.
   EXPECT_TRUE(setup.window_tree_test_helper()->SetCapture(top_level));
   event_generator.MoveMouseTo(8, 8);
-  EXPECT_EQ("POINTER_MOVED",
+  EXPECT_EQ("MOUSE_MOVED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
@@ -1177,7 +1177,7 @@ TEST(WindowTreeTest, EventsGoToCaptureWindow) {
   auto drag_event = setup.window_tree_client()->PopInputEvent();
   EXPECT_EQ(setup.window_tree_test_helper()->TransportIdForWindow(window),
             drag_event.window_id);
-  EXPECT_EQ("POINTER_MOVED -4,-4",
+  EXPECT_EQ("MOUSE_DRAGGED -4,-4",
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
 }
 
@@ -2042,10 +2042,10 @@ TEST(WindowTreeTest, DontSendGestures) {
   // never be forwarded to the client, as it's assumed the client runs its own
   // gesture recognizer.
   event_generator.GestureTapAt(gfx::Point(10, 10));
-  EXPECT_EQ("POINTER_DOWN",
+  EXPECT_EQ("ET_TOUCH_PRESSED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
-  EXPECT_EQ("POINTER_UP",
+  EXPECT_EQ("ET_TOUCH_RELEASED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());

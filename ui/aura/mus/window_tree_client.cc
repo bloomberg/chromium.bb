@@ -124,31 +124,6 @@ bool IsInternalProperty(const void* key) {
   return key == client::kModalKey;
 }
 
-// Create and return a MouseEvent or TouchEvent from |event| if |event| is a
-// PointerEvent, otherwise return the copy of |event|.
-std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
-  if (event.IsPointerEvent()) {
-    const ui::PointerEvent& pointer_event = *event.AsPointerEvent();
-    // Use a switch statement in case more pointer types are added.
-    switch (pointer_event.pointer_details().pointer_type) {
-      case ui::EventPointerType::POINTER_TYPE_MOUSE:
-        if (event.type() == ui::ET_POINTER_WHEEL_CHANGED)
-          return std::make_unique<ui::MouseWheelEvent>(pointer_event);
-        return std::make_unique<ui::MouseEvent>(pointer_event);
-      case ui::EventPointerType::POINTER_TYPE_TOUCH:
-      case ui::EventPointerType::POINTER_TYPE_PEN:
-        return std::make_unique<ui::TouchEvent>(pointer_event);
-      case ui::EventPointerType::POINTER_TYPE_ERASER:
-        NOTIMPLEMENTED();
-        break;
-      case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
-        NOTREACHED();
-        break;
-    }
-  }
-  return ui::Event::Clone(event);
-}
-
 }  // namespace
 
 // static
@@ -1295,10 +1270,22 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   DCHECK(event);
   WindowMus* window = GetWindowByServerId(window_id);  // May be null.
 
+  DCHECK(!event->IsPointerEvent());
+
   if (matches_pointer_watcher && has_pointer_watcher_) {
-    DCHECK(event->IsPointerEvent());
-    std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
-    NotifyPointerEventObserved(event_in_dip->AsPointerEvent(), display_id,
+    // TODO(sky): remove this once PointerWatcher doesn't need PointerEvent.
+    // https://crbug.com/865781
+    std::unique_ptr<ui::Event> pointer_event;
+    if (event->IsMouseEvent()) {
+      pointer_event =
+          std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
+    } else if (event->IsTouchEvent()) {
+      pointer_event =
+          std::make_unique<ui::PointerEvent>(*event->AsTouchEvent());
+    } else {
+      NOTREACHED();
+    }
+    NotifyPointerEventObserved(pointer_event->AsPointerEvent(), display_id,
                                window);
   }
 
@@ -1307,13 +1294,10 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   if (!window || !window->GetWindow()->GetHost()) {
     EnvInputStateController* env_controller =
         Env::GetInstance()->env_controller();
-    std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
-    if (mapped_event->IsMouseEvent()) {
-      env_controller->UpdateStateForMouseEvent(nullptr,
-                                               *mapped_event->AsMouseEvent());
-    } else if (mapped_event->IsTouchEvent()) {
-      env_controller->UpdateStateForTouchEvent(*mapped_event->AsTouchEvent());
-    }
+    if (event->IsMouseEvent())
+      env_controller->UpdateStateForMouseEvent(nullptr, *event->AsMouseEvent());
+    else if (event->IsTouchEvent())
+      env_controller->UpdateStateForTouchEvent(*event->AsTouchEvent());
     tree_->OnWindowInputEventAck(event_id, ws::mojom::EventResult::UNHANDLED);
     return;
   }
@@ -1327,10 +1311,6 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     }
   }
 
-  // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
-  // ui::TouchEvent once we have proper support for pointer events.
-  std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
-  ui::Event* event_to_dispatch = mapped_event.get();
   // |ack_handler| may use |event_to_dispatch| from its destructor, so it needs
   // to be destroyed after |event_to_dispatch| is destroyed.
   EventAckHandler ack_handler(CreateEventResultCallback(event_id));
@@ -1338,12 +1318,12 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   if (!event->IsKeyEvent()) {
     // Set |window| as the target, except for key events. Key events go to the
     // focused window, which may have changed by the time we process the event.
-    ui::Event::DispatcherApi(event_to_dispatch).set_target(window->GetWindow());
+    ui::Event::DispatcherApi(event.get()).set_target(window->GetWindow());
   }
 
-  GetWindowTreeHostMus(window)->SendEventToSink(event_to_dispatch);
+  GetWindowTreeHostMus(window)->SendEventToSink(event.get());
 
-  ack_handler.set_handled(event_to_dispatch->handled());
+  ack_handler.set_handled(event->handled());
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
