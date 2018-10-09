@@ -73,34 +73,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
       service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
-  // TODO(kerrnel): Delete this switch once the V2 sandbox is always enabled.
-  bool use_v2 = base::FeatureList::IsEnabled(features::kMacV2Sandbox);
-
-  switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
-      break;
-    case service_manager::SANDBOX_TYPE_CDM:
-    case service_manager::SANDBOX_TYPE_PPAPI:
-    case service_manager::SANDBOX_TYPE_RENDERER:
-    case service_manager::SANDBOX_TYPE_UTILITY:
-    case service_manager::SANDBOX_TYPE_NACL_LOADER:
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-    case service_manager::SANDBOX_TYPE_PROFILING:
-      // If the feature experiment is enabled and this process type supports
-      // the v2 sandbox, use it.
-      use_v2 &= true;
-      break;
-    case service_manager::SANDBOX_TYPE_AUDIO:
-      // The audio service only exists with the v2 sandbox.
-      use_v2 |= true;
-      break;
-    default:
-      // This is a 'break' because the V2 sandbox is not enabled for all
-      // processes yet, and so there are sandbox types like NETWORK that
-      // should not be run under the V2 sandbox.
-      use_v2 = false;
-      break;
-  }
+  bool use_v2 =
+      !no_sandbox && (sandbox_type != service_manager::SANDBOX_TYPE_GPU);
 
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
@@ -133,8 +107,16 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_PROFILING:
         profile += service_manager::kSeatbeltPolicyString_utility;
         break;
-      default:
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        // Put a separate CHECK() for the network sandbox so that crash reports
+        // will show which invalid case was hit.
         CHECK(false);
+        break;
+      case service_manager::SANDBOX_TYPE_INVALID:
+      case service_manager::SANDBOX_TYPE_FIRST_TYPE:
+      case service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE:
+        CHECK(false);
+        break;
     }
 
     // Disable os logging to com.apple.diagnosticd which is a performance
