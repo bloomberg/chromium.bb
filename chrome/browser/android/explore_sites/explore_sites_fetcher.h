@@ -43,18 +43,16 @@ class ExploreSitesFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       Callback callback);
 
-  // Creates a fetcher for the GetCategories RPC.
-  static std::unique_ptr<ExploreSitesFetcher> CreateForGetCategories(
-      bool is_immediate_fetch,
-      const std::string& catalog_version,
-      const std::string& accept_languages,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      Callback callback);
-
   ~ExploreSitesFetcher();
 
+  // Starts the fetching.
   void Start();
 
+  // Restarts as immediate fetching if background fetching is in progress.
+  // Nothing is done if already doing immediate fetching.
+  void RestartAsImmediateFetchIfNotYet();
+
+  bool is_immediate_fetch() const { return is_immediate_fetch_; }
   void disable_retry_for_testing() { disable_retry_for_testing_ = true; }
 
   // Delegate that knows how to get data from the device.  Can be overridden for
@@ -85,12 +83,16 @@ class ExploreSitesFetcher {
 
   void RetryWithBackoff();
 
+  // Updates the backoff values based on current fetch mode.
+  void UpdateBackoffEntry();
+
+  bool is_immediate_fetch_;
   std::string accept_languages_;
   std::string client_version_;
   GURL request_url_;
 
-  net::BackoffEntry backoff_entry_;
-  int max_failure_count_;
+  std::unique_ptr<net::BackoffEntry> backoff_entry_;
+  int max_failure_count_ = 0;
   bool disable_retry_for_testing_ = false;
 
   std::unique_ptr<DeviceDelegate> device_delegate_;

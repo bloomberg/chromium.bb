@@ -54,6 +54,8 @@ class ExploreSitesFetcherTest : public testing::Test {
 
   void SetUp() override;
 
+  std::unique_ptr<ExploreSitesFetcher> CreateFetcher(bool disable_retry,
+                                                     bool is_immediate_fetch);
   ExploreSitesRequestStatus RunFetcherWithNetError(net::Error net_error);
   ExploreSitesRequestStatus RunFetcherWithHttpError(
       net::HttpStatusCode http_error);
@@ -90,12 +92,17 @@ class ExploreSitesFetcherTest : public testing::Test {
 
   network::ResourceRequest last_resource_request;
 
+  ExploreSitesRequestStatus last_status() const { return last_status_; }
+  std::string last_data() const {
+    return last_data_ ? *last_data_ : std::string();
+  }
+  base::TestMockTimeTaskRunner* task_runner() const {
+    return task_runner_.get();
+  }
+
  private:
   ExploreSitesFetcher::Callback StoreResult();
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index);
-  std::unique_ptr<ExploreSitesFetcher> CreateFetcher(bool disable_retry,
-                                                     bool is_immediate_fetch);
+  network::TestURLLoaderFactory::PendingRequest* GetLastPendingRequest();
   ExploreSitesRequestStatus RunFetcher(
       base::OnceCallback<void(void)> respond_callback,
       std::string* data_received);
@@ -173,8 +180,9 @@ void ExploreSitesFetcherTest::RespondWithNetError(int net_error) {
   DCHECK(pending_requests_count > 0);
   network::URLLoaderCompletionStatus completion_status(net_error);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest(0)->request.url, completion_status,
-      network::ResourceResponseHead(), std::string());
+      GetLastPendingRequest()->request.url, completion_status,
+      network::ResourceResponseHead(), std::string(),
+      network::TestURLLoaderFactory::kMostRecentMatch);
 }
 
 void ExploreSitesFetcherTest::RespondWithHttpError(
@@ -183,24 +191,22 @@ void ExploreSitesFetcherTest::RespondWithHttpError(
   auto resource_response_head = network::CreateResourceResponseHead(http_error);
   DCHECK(pending_requests_count > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest(0)->request.url,
+      GetLastPendingRequest()->request.url,
       network::URLLoaderCompletionStatus(net::OK), resource_response_head,
-      std::string());
+      std::string(), network::TestURLLoaderFactory::kMostRecentMatch);
 }
 
 void ExploreSitesFetcherTest::RespondWithData(const std::string& data) {
   DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest(0)->request.url.spec(), data);
+      GetLastPendingRequest()->request.url.spec(), data, net::HTTP_OK,
+      network::TestURLLoaderFactory::kMostRecentMatch);
 }
 
 network::TestURLLoaderFactory::PendingRequest*
-ExploreSitesFetcherTest::GetPendingRequest(size_t index) {
-  if (index >= test_url_loader_factory_.pending_requests()->size())
-    return nullptr;
+ExploreSitesFetcherTest::GetLastPendingRequest() {
   network::TestURLLoaderFactory::PendingRequest* request =
-      &(*test_url_loader_factory_.pending_requests())[index];
-  DCHECK(request);
+      &(test_url_loader_factory_.pending_requests()->back());
   return request;
 }
 
@@ -509,6 +515,34 @@ TEST_F(ExploreSitesFetcherTest, ExceedMaxBackoffsForBackgroundFetch) {
                 ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch,
                 backoff_delays, std::move(respond_callbacks), &data));
   EXPECT_TRUE(data.empty());
+}
+
+TEST_F(ExploreSitesFetcherTest, RestartAsImmediateFetchIfNotYet) {
+  // Start as background fetch.
+  std::unique_ptr<ExploreSitesFetcher> fetcher =
+      CreateFetcher(false /*disable_retry*/, false /*is_immediate_fetch*/);
+  fetcher->Start();
+  EXPECT_FALSE(fetcher->is_immediate_fetch());
+
+  // Restart as immediate fetch.
+  fetcher->RestartAsImmediateFetchIfNotYet();
+  EXPECT_TRUE(fetcher->is_immediate_fetch());
+
+  // Fail the request in order to trigger the backoff.
+  RespondWithNetError(net::ERR_INTERNET_DISCONNECTED);
+  task_runner()->RunUntilIdle();
+
+  // Fast forward by the initial delay of the immediate fetch. The retry should
+  // be triggered.
+  task_runner()->FastForwardBy(base::TimeDelta::FromMilliseconds(
+      ExploreSitesFetcher::kImmediateFetchBackoffPolicy.initial_delay_ms));
+
+  // Make the request succeeded.
+  RespondWithData(kTestData);
+  task_runner()->RunUntilIdle();
+
+  EXPECT_EQ(ExploreSitesRequestStatus::kSuccess, last_status());
+  EXPECT_EQ(kTestData, last_data());
 }
 
 }  // namespace explore_sites

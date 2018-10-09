@@ -81,9 +81,18 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
     BooleanCallback callback) {
   if (!IsExploreSitesEnabled())
     return;
-  // If we are already fetching, don't interrupt a fetch in progress.
-  if (explore_sites_fetcher_ != nullptr)
+
+  update_catalog_callbacks_.push_back(std::move(callback));
+
+  // If we are already fetching, don't interrupt a fetch in progress unless
+  // immediate fetch is requested while currently running fetch is background
+  // fetch. This is because we want to get back the result asap for immediate
+  // fetch.
+  if (explore_sites_fetcher_ != nullptr) {
+    if (is_immediate_fetch)
+      explore_sites_fetcher_->RestartAsImmediateFetchIfNotYet();
     return;
+  }
 
   // TODO(petewil): Eventually get the catalog version from DB.
   std::string catalog_version = "";
@@ -93,19 +102,19 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
       is_immediate_fetch, catalog_version, accept_languages,
       url_loader_factory_,
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr()));
   explore_sites_fetcher_->Start();
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(
-    BooleanCallback callback,
     ExploreSitesRequestStatus status,
     std::unique_ptr<std::string> serialized_protobuf) {
   explore_sites_fetcher_.reset(nullptr);
 
   if (serialized_protobuf == nullptr) {
     DVLOG(1) << "Empty catalog response received from network.";
-    std::move(callback).Run(false);
+    NotifyCatalogUpdated(std::move(update_catalog_callbacks_), false);
+    update_catalog_callbacks_.clear();
     return;
   }
 
@@ -114,14 +123,20 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
       std::make_unique<explore_sites::GetCatalogResponse>();
   if (!catalog_response->ParseFromString(*serialized_protobuf.get())) {
     DVLOG(1) << "Failed to parse catalog";
-    std::move(callback).Run(false);
+    NotifyCatalogUpdated(std::move(update_catalog_callbacks_), false);
+    update_catalog_callbacks_.clear();
     return;
   }
   std::string catalog_version = catalog_response->version_token();
   std::unique_ptr<Catalog> catalog(catalog_response->release_catalog());
 
-  // Add the catalog to our internal database using AddUpdatedCatalog
-  AddUpdatedCatalog(catalog_version, std::move(catalog), std::move(callback));
+  // Add the catalog to our internal database.
+  task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
+      explore_sites_store_.get(), catalog_version, std::move(catalog),
+      base::BindOnce(&ExploreSitesServiceImpl::NotifyCatalogUpdated,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(update_catalog_callbacks_))));
+  update_catalog_callbacks_.clear();
 }
 
 void ExploreSitesServiceImpl::ComposeSiteImage(BitmapCallback callback,
@@ -140,15 +155,10 @@ void ExploreSitesServiceImpl::Shutdown() {}
 
 void ExploreSitesServiceImpl::OnTaskQueueIsIdle() {}
 
-void ExploreSitesServiceImpl::AddUpdatedCatalog(
-    std::string version_token,
-    std::unique_ptr<Catalog> catalog_proto,
-    BooleanCallback callback) {
-  if (!IsExploreSitesEnabled())
-    return;
-
-  task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
-      explore_sites_store_.get(), version_token, std::move(catalog_proto),
-      std::move(callback)));
+void ExploreSitesServiceImpl::NotifyCatalogUpdated(
+    std::vector<BooleanCallback> callbacks,
+    bool success) {
+  for (auto& callback : callbacks)
+    std::move(callback).Run(success);
 }
 }  // namespace explore_sites
