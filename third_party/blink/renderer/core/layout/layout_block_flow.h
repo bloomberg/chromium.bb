@@ -458,7 +458,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual NGPaintFragment* PaintFragment() const { return nullptr; }
   virtual scoped_refptr<NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
-      NGBreakToken*) const;
+      const NGBreakToken*) const;
   virtual scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting();
   virtual void SetCachedLayoutResult(const NGConstraintSpace&,
                                      const NGBreakToken*,

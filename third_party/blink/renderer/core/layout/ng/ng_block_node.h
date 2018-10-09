@@ -35,7 +35,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   scoped_refptr<NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
-      NGBreakToken* break_token = nullptr);
+      const NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this node's border
@@ -105,7 +105,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void PrepareForLayout();
 
   void FinishLayout(const NGConstraintSpace&,
-                    NGBreakToken*,
+                    const NGBreakToken*,
                     scoped_refptr<NGLayoutResult>);
 
   // After we run the layout algorithm, this function copies back the geometry

@@ -20,7 +20,7 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   DISALLOW_NEW();
 
  public:
-  NGUnpositionedFloat(NGBlockNode node, NGBlockBreakToken* token);
+  NGUnpositionedFloat(NGBlockNode node, const NGBlockBreakToken* token);
   ~NGUnpositionedFloat();
 
   NGUnpositionedFloat(NGUnpositionedFloat&&) noexcept = default;
@@ -29,7 +29,7 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   NGUnpositionedFloat& operator=(const NGUnpositionedFloat&) = default;
 
   NGBlockNode node;
-  scoped_refptr<NGBlockBreakToken> token;
+  scoped_refptr<const NGBlockBreakToken> token;
 
   // layout_result and margins are used as a cache when measuring the
   // inline_size of a float in an inline context.

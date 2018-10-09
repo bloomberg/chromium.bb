@@ -49,8 +49,8 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
 
 #define WITH_ALGORITHM(ret, func, argdecl, args)                             \
   ret func##WithAlgorithm(NGBlockNode node, const NGConstraintSpace& space,  \
-                          NGBreakToken* break_token, argdecl) {              \
-    auto* token = ToNGBlockBreakToken(break_token);                          \
+                          const NGBreakToken* break_token, argdecl) {        \
+    const auto* token = ToNGBlockBreakToken(break_token);                    \
     const ComputedStyle& style = node.Style();                               \
     if (node.GetLayoutBox()->IsLayoutNGFlexibleBox())                        \
       return NGFlexLayoutAlgorithm(node, space, token).func args;            \
@@ -173,7 +173,7 @@ LayoutUnit CalculateAvailableBlockSizeForLegacy(
 
 scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     const NGConstraintSpace& constraint_space,
-    NGBreakToken* break_token) {
+    const NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
     return RunOldLayout(constraint_space);
@@ -281,7 +281,7 @@ void NGBlockNode::PrepareForLayout() {
 }
 
 void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
-                               NGBreakToken* break_token,
+                               const NGBreakToken* break_token,
                                scoped_refptr<NGLayoutResult> layout_result) {
   if (!IsBlockLayoutComplete(constraint_space, *layout_result))
     return;

@@ -43,7 +43,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
  public:
   NGInlineLayoutAlgorithm(NGInlineNode,
                           const NGConstraintSpace&,
-                          NGInlineBreakToken*,
+                          const NGInlineBreakToken*,
                           NGInlineChildLayoutContext* context);
   ~NGInlineLayoutAlgorithm() override;
 

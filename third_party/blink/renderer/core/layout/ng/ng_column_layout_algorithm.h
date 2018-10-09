@@ -23,7 +23,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
  public:
   NGColumnLayoutAlgorithm(NGBlockNode node,
                           const NGConstraintSpace& space,
-                          NGBreakToken* break_token = nullptr);
+                          const NGBreakToken* break_token = nullptr);
 
   scoped_refptr<NGLayoutResult> Layout() override;
 

@@ -115,7 +115,7 @@ class CORE_EXPORT NGLayoutInputNode {
 
   // Performs layout on this input node, will return the layout result.
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
-                                       NGBreakToken*,
+                                       const NGBreakToken*,
                                        NGInlineChildLayoutContext*);
 
   // Returns border box.

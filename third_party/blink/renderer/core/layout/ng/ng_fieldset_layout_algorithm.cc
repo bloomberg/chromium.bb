@@ -21,7 +21,7 @@ namespace blink {
 NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
-    NGBreakToken* break_token)
+    const NGBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
 scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {

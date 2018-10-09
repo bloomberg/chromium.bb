@@ -91,7 +91,7 @@ NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
     const NGConstraintSpace& space,
-    NGInlineBreakToken* break_token,
+    const NGInlineBreakToken* break_token,
     NGInlineChildLayoutContext* context)
     : NGLayoutAlgorithm(
           inline_node,
@@ -695,7 +695,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
 
   NGExclusionSpace exclusion_space;
-  NGInlineBreakToken* break_token = BreakToken();
+  const NGInlineBreakToken* break_token = BreakToken();
 
   LayoutUnit line_block_size;
   LayoutUnit block_delta;

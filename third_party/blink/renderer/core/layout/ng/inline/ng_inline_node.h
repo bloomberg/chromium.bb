@@ -40,7 +40,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool InLineHeightQuirksMode() const;
 
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
-                                       NGBreakToken*,
+                                       const NGBreakToken*,
                                        NGInlineChildLayoutContext* context);
 
   // Computes the value of min-content and max-content for this anonymous block
@@ -96,7 +96,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
 
-  void ClearAssociatedFragments(NGInlineBreakToken*);
+  void ClearAssociatedFragments(const NGInlineBreakToken*);
 
   NGInlineNodeData* MutableData();
   const NGInlineNodeData& Data() const;
