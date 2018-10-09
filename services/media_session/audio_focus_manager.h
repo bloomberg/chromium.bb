@@ -23,6 +23,10 @@ class UnguessableToken;
 
 namespace media_session {
 
+namespace test {
+class MockMediaSession;
+}  // namespace test
+
 class AudioFocusManager : public mojom::AudioFocusManager,
                           public mojom::AudioFocusManagerDebug {
  public:
@@ -59,6 +63,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
  private:
   friend struct base::DefaultSingletonTraits<AudioFocusManager>;
   friend class AudioFocusManagerTest;
+  friend class test::MockMediaSession;
 
   // StackRow is an AudioFocusRequestClient and allows a media session to
   // control its audio focus.
