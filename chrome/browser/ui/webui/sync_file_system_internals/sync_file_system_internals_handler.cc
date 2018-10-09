@@ -147,9 +147,7 @@ void SyncFileSystemInternalsHandler::GetLog(
 
   // Collate events which haven't been sent to WebUI yet.
   base::ListValue list;
-  for (std::vector<EventLogger::Event>::const_iterator log_entry = log.begin();
-       log_entry != log.end();
-       ++log_entry) {
+  for (auto log_entry = log.begin(); log_entry != log.end(); ++log_entry) {
     if (log_entry->id <= last_log_id_sent)
       continue;
 

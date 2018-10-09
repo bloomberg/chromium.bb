@@ -124,8 +124,7 @@ void QuotaInternalsProxy::DidDumpQuotaTable(const QuotaTableEntries& entries) {
   std::vector<PerHostStorageInfo> host_info;
   host_info.reserve(entries.size());
 
-  typedef QuotaTableEntries::const_iterator iterator;
-  for (iterator itr(entries.begin()); itr != entries.end(); ++itr) {
+  for (auto itr(entries.begin()); itr != entries.end(); ++itr) {
     PerHostStorageInfo info(itr->host, itr->type);
     info.set_quota(itr->quota);
     host_info.push_back(info);
