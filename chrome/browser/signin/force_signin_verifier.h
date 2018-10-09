@@ -57,12 +57,7 @@ class ForceSigninVerifier
   //
   void SendRequest();
 
-  // Send the request if |network_type| is not CONNECTION_NONE and
-  // ShouldSendRequest returns true.
-  void SendRequestIfNetworkAvailable(
-      network::mojom::ConnectionType network_type);
-
-  bool ShouldSendRequest();
+  virtual bool ShouldSendRequest();
 
   virtual void CloseAllBrowserWindows();
 
