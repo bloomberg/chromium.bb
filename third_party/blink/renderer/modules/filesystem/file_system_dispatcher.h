@@ -144,6 +144,8 @@ class FileSystemDispatcher
   using ChooseEntryCallbacks =
       WebCallbacks<Vector<mojom::blink::FileSystemEntryPtr>, base::File::Error>;
   void ChooseEntry(mojom::blink::ChooseFileSystemEntryType,
+                   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr>,
+                   bool include_accepts_all,
                    std::unique_ptr<ChooseEntryCallbacks> callbacks);
 
  private:

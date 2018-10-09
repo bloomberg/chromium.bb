@@ -144,6 +144,8 @@ class ChooseEntryCallbacks
     resolver_->Reject(FileError::CreateDOMException(error));
   }
 
+  void Trace(Visitor* visitor) { visitor->Trace(options_); }
+
  private:
   ScriptPromise CreateFileHandle(
       const mojom::blink::FileSystemEntryPtr& entry) {
@@ -186,6 +188,20 @@ mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
   return mojom::blink::ChooseFileSystemEntryType::kOpenFile;
 }
 
+Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
+    const HeapVector<ChooseFileSystemEntriesOptionsAccepts>& accepts) {
+  Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> result;
+  result.ReserveInitialCapacity(accepts.size());
+  for (const auto& a : accepts) {
+    result.emplace_back(
+        blink::mojom::blink::ChooseFileSystemEntryAcceptsOption::New(
+            a.hasDescription() ? a.description() : g_empty_string,
+            a.hasMimeTypes() ? a.mimeTypes() : Vector<String>(),
+            a.hasExtensions() ? a.extensions() : Vector<String>()));
+  }
+  return result;
+}
+
 }  // namespace
 
 void LocalFileSystem::ChooseEntry(
@@ -197,8 +213,13 @@ void LocalFileSystem::ChooseEntry(
     return;
   }
 
+  Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;
+  if (options.hasAccepts())
+    accepts = ConvertAccepts(options.accepts());
+
   FileSystemDispatcher::From(resolver->GetExecutionContext())
       .ChooseEntry(ConvertChooserType(options.type(), options.multiple()),
+                   std::move(accepts), !options.excludeAcceptAllOption(),
                    std::make_unique<ChooseEntryCallbacks>(resolver, options));
 }
 

@@ -594,6 +594,8 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
 
 void FileSystemManagerImpl::ChooseEntry(
     blink::mojom::ChooseFileSystemEntryType type,
+    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
+    bool include_accepts_all,
     ChooseEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
@@ -605,7 +607,7 @@ void FileSystemManagerImpl::ChooseEntry(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &FileSystemChooser::CreateAndShow, process_id_, frame_id_, type,
-          std::move(callback),
+          std::move(accepts), include_accepts_all, std::move(callback),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
