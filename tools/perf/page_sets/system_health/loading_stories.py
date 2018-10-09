@@ -233,6 +233,13 @@ class LoadRedditDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+class LoadRedditDesktopStory2018(_LoadingStory):
+  NAME = 'load:news:reddit:2018'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadRedditMobileStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
