@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/fileapi/file_system_chooser_test_helpers.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -13,115 +15,6 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 
 namespace content {
-
-namespace {
-
-struct SelectFileDialogParams {
-  ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_NONE;
-};
-
-// A fake ui::SelectFileDialog, which will cancel the file selection instead of
-// selecting a file.
-class CancellingSelectFileDialog : public ui::SelectFileDialog {
- public:
-  CancellingSelectFileDialog(Listener* listener,
-                             std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)) {}
-
- protected:
-  void SelectFileImpl(Type type,
-                      const base::string16& title,
-                      const base::FilePath& default_path,
-                      const FileTypeInfo* file_types,
-                      int file_type_index,
-                      const base::FilePath::StringType& default_extension,
-                      gfx::NativeWindow owning_window,
-                      void* params) override {
-    listener_->FileSelectionCanceled(params);
-  }
-
-  bool IsRunning(gfx::NativeWindow owning_window) const override {
-    return false;
-  }
-  void ListenerDestroyed() override {}
-  bool HasMultipleFileTypeChoicesImpl() override { return false; }
-
- private:
-  ~CancellingSelectFileDialog() override = default;
-};
-
-class CancellingSelectFileDialogFactory : public ui::SelectFileDialogFactory {
- public:
-  CancellingSelectFileDialogFactory() {}
-
-  ui::SelectFileDialog* Create(
-      ui::SelectFileDialog::Listener* listener,
-      std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new CancellingSelectFileDialog(listener, std::move(policy));
-  }
-};
-
-// A fake ui::SelectFileDialog, which will select one or more pre-determined
-// files.
-class FakeSelectFileDialog : public ui::SelectFileDialog {
- public:
-  FakeSelectFileDialog(std::vector<base::FilePath> result,
-                       SelectFileDialogParams* out_params,
-                       Listener* listener,
-                       std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)),
-        result_(std::move(result)),
-        out_params_(out_params) {}
-
- protected:
-  void SelectFileImpl(Type type,
-                      const base::string16& title,
-                      const base::FilePath& default_path,
-                      const FileTypeInfo* file_types,
-                      int file_type_index,
-                      const base::FilePath::StringType& default_extension,
-                      gfx::NativeWindow owning_window,
-                      void* params) override {
-    if (out_params_) {
-      out_params_->type = type;
-    }
-    if (result_.size() == 1)
-      listener_->FileSelected(result_[0], 0, params);
-    else
-      listener_->MultiFilesSelected(result_, params);
-  }
-
-  bool IsRunning(gfx::NativeWindow owning_window) const override {
-    return false;
-  }
-  void ListenerDestroyed() override {}
-  bool HasMultipleFileTypeChoicesImpl() override { return false; }
-
- private:
-  ~FakeSelectFileDialog() override = default;
-  std::vector<base::FilePath> result_;
-  SelectFileDialogParams* out_params_;
-};
-
-class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
- public:
-  explicit FakeSelectFileDialogFactory(std::vector<base::FilePath> result,
-                                       SelectFileDialogParams* out_params)
-      : result_(std::move(result)), out_params_(out_params) {}
-
-  ui::SelectFileDialog* Create(
-      ui::SelectFileDialog::Listener* listener,
-      std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new FakeSelectFileDialog(result_, out_params_, listener,
-                                    std::move(policy));
-  }
-
- private:
-  std::vector<base::FilePath> result_;
-  SelectFileDialogParams* out_params_;
-};
-
-}  // namespace
 
 // This browser test implements end-to-end tests for the chooseFileSystemEntry
 // API.
@@ -262,6 +155,41 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new CancellingSelectFileDialogFactory(&dialog_params));
+  LoadDataWithBaseURL(shell(), kTestUrl, kBlankHtml, kTestUrl);
+  auto result = EvalJs(shell(),
+                       "self.chooseFileSystemEntries({accepts: ["
+                       "  {description: 'no-extensions'},"
+                       "  {description: 'foo', extensions: ['txt', 'Js']},"
+                       "  {mimeTypes: ['image/jpeg']}"
+                       "]})");
+  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+      << result.error;
+
+  ASSERT_TRUE(dialog_params.file_types);
+  EXPECT_TRUE(dialog_params.file_types->include_all_files);
+  ASSERT_EQ(2u, dialog_params.file_types->extensions.size());
+  ASSERT_EQ(2u, dialog_params.file_types->extensions[0].size());
+  EXPECT_EQ(FILE_PATH_LITERAL("Js"),
+            dialog_params.file_types->extensions[0][0]);
+  EXPECT_EQ(FILE_PATH_LITERAL("txt"),
+            dialog_params.file_types->extensions[0][1]);
+  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
+                                  FILE_PATH_LITERAL("jpg")));
+  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
+                                  FILE_PATH_LITERAL("jpeg")));
+
+  ASSERT_EQ(2u,
+            dialog_params.file_types->extension_description_overrides.size());
+  EXPECT_EQ(base::ASCIIToUTF16("foo"),
+            dialog_params.file_types->extension_description_overrides[0]);
+  EXPECT_EQ(base::ASCIIToUTF16(""),
+            dialog_params.file_types->extension_description_overrides[1]);
 }
 
 }  // namespace content

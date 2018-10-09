@@ -529,6 +529,7 @@ modules_dictionary_idl_files =
           "encryptedmedia/media_keys_policy.idl",
           "eventsource/event_source_init.idl",
           "filesystem/choose_file_system_entries_options.idl",
+          "filesystem/choose_file_system_entries_options_accepts.idl",
           "filesystem/file_system_directory_iterator_entry.idl",
           "filesystem/file_system_flags.idl",
           "filesystem/file_system_get_directory_options.idl",

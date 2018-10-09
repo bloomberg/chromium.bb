@@ -9,4 +9,6 @@ enum ChooseFileSystemEntriesType { "openFile", "saveFile", "openDirectory" };
 dictionary ChooseFileSystemEntriesOptions {
     ChooseFileSystemEntriesType type = "openFile";
     boolean multiple = false;
+    sequence<ChooseFileSystemEntriesOptionsAccepts> accepts;
+    boolean excludeAcceptAllOption = false;
 };
