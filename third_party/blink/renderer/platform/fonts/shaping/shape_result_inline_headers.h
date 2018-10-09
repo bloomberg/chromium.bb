@@ -118,7 +118,7 @@ struct ShapeResult::RunInfo {
                             float offset_x,
                             float offset_y);
 
-  size_t GlyphToCharacterIndex(size_t i) const {
+  unsigned GlyphToCharacterIndex(unsigned i) const {
     return start_index_ + glyph_data_[i].character_index;
   }
 
@@ -175,7 +175,8 @@ struct ShapeResult::RunInfo {
     DCHECK(end > start);
     unsigned number_of_characters = std::min(end - start, num_characters_);
     auto glyphs = FindGlyphDataRange(start, end);
-    unsigned number_of_glyphs = std::distance(glyphs.begin, glyphs.end);
+    unsigned number_of_glyphs =
+        static_cast<unsigned>(std::distance(glyphs.begin, glyphs.end));
 
     auto run = std::make_unique<RunInfo>(
         font_data_.get(), direction_, canvas_rotation_, script_,

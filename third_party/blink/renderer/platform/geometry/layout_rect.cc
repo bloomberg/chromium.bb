@@ -141,20 +141,19 @@ void LayoutRect::Scale(float x_axis_scale, float y_axis_scale) {
 LayoutRect UnionRect(const Vector<LayoutRect>& rects) {
   LayoutRect result;
 
-  size_t count = rects.size();
-  for (size_t i = 0; i < count; ++i)
-    result.Unite(rects[i]);
+  for (const LayoutRect& rect : rects)
+    result.Unite(rect);
 
   return result;
 }
 
 LayoutRect UnionRectEvenIfEmpty(const Vector<LayoutRect>& rects) {
-  size_t count = rects.size();
+  wtf_size_t count = rects.size();
   if (!count)
     return LayoutRect();
 
   LayoutRect result = rects[0];
-  for (size_t i = 1; i < count; ++i)
+  for (wtf_size_t i = 1; i < count; ++i)
     result.UniteEvenIfEmpty(rects[i]);
 
   return result;

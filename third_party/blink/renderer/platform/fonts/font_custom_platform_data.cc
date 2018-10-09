@@ -107,10 +107,9 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
 
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
       axes.ReserveCapacity(variation_settings->size() + axes.size());
-      for (size_t i = 0; i < variation_settings->size(); ++i) {
-        SkFontArguments::Axis axis = {
-            AtomicStringToFourByteTag(variation_settings->at(i).Tag()),
-            SkFloatToScalar(variation_settings->at(i).Value())};
+      for (const auto& setting : *variation_settings) {
+        SkFontArguments::Axis axis = {AtomicStringToFourByteTag(setting.Tag()),
+                                      SkFloatToScalar(setting.Value())};
         axes.push_back(axis);
       }
     }

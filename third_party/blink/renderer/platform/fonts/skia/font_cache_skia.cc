@@ -98,9 +98,9 @@ AtomicString FontCache::GetFamilyNameForCharacter(
     FontFallbackPriority fallback_priority) {
   DCHECK(fm);
 
-  const size_t kMaxLocales = 4;
+  const int kMaxLocales = 4;
   const char* bcp47_locales[kMaxLocales];
-  size_t locale_count = 0;
+  int locale_count = 0;
 
   // Fill in the list of locales in the reverse priority order.
   // Skia expects the highest array index to be the first priority.
