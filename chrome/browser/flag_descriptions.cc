@@ -2221,6 +2221,11 @@ const char kCCTModuleName[] = "Chrome Custom Tabs Module";
 const char kCCTModuleDescription[] =
     "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";
 
+const char kCCTModuleCacheName[] = "Chrome Custom Tabs Module Cache";
+const char kCCTModuleCacheDescription[] =
+    "Enables a cache for dynamically loaded modules in Chrome Custom Tabs, "
+    "on Android.";
+
 const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";

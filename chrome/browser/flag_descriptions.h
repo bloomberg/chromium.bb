@@ -1346,6 +1346,9 @@ extern const char kBackgroundTaskComponentUpdateDescription[];
 extern const char kCCTModuleName[];
 extern const char kCCTModuleDescription[];
 
+extern const char kCCTModuleCacheName[];
+extern const char kCCTModuleCacheDescription[];
+
 extern const char kChromeDuetName[];
 extern const char kChromeDuetDescription[];
 

@@ -143,7 +143,7 @@ public class ChromeApplication extends Application {
                 || level >= TRIM_MEMORY_MODERATE) {
             if (mReferencePool != null) mReferencePool.drain();
 
-            CustomTabsConnection.cleanUpUnusedSessions();
+            CustomTabsConnection.trimMemory();
         }
     }
 

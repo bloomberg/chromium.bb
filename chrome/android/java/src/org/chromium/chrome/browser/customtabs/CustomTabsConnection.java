@@ -241,7 +241,7 @@ public class CustomTabsConnection {
 
     private volatile ChainedTasks mWarmupTasks;
 
-    private ModuleLoader mModuleLoader;
+    private @Nullable ModuleLoader mModuleLoader;
     /**
      * <strong>DO NOT CALL</strong>
      * Public to be instanciable from {@link ChromeApplication}. This is however
@@ -1332,10 +1332,12 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Clean up unused sessions, i.e sessions without callback.
+     * Discards substantial objects that are not currently in use.
      */
-    public static void cleanUpUnusedSessions() {
-        if (hasInstance()) getInstance().mClientManager.cleanupUnusedSessions();
+    public static void trimMemory() {
+        if (!hasInstance()) return;
+        getInstance().mClientManager.cleanupUnusedSessions();
+        if (getInstance().mModuleLoader != null) getInstance().mModuleLoader.trimMemory();
     }
 
     @VisibleForTesting

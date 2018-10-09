@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.crash.CrashKeyIndex;
 import org.chromium.chrome.browser.crash.CrashKeys;
 
@@ -99,11 +100,22 @@ public class ModuleLoader {
     public void maybeUnloadModule() {
         if (mModuleEntryPoint == null) return;
         mModuleUseCount--;
-        if (mModuleUseCount == 0) {
-            mModuleEntryPoint.onDestroy();
-            CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
-            mModuleEntryPoint = null;
+        if (mModuleUseCount == 0
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CACHE)) {
+            destroyModule();
         }
+    }
+
+    public void trimMemory() {
+        if (mModuleEntryPoint == null || mModuleUseCount > 0) return;
+        destroyModule();
+    }
+
+    private void destroyModule() {
+        assert mModuleEntryPoint != null;
+        mModuleEntryPoint.onDestroy();
+        CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
+        mModuleEntryPoint = null;
     }
 
     /**
