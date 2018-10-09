@@ -310,7 +310,7 @@ TEST_F(AXSystemCaretWinTest, DISABLED_TestMovingWindow) {
   EXPECT_EQ(height, height3);
 }
 
-TEST_F(AXSystemCaretWinTest, TestCaretMSAAEvents) {
+TEST_F(AXSystemCaretWinTest, DISABLED_TestCaretMSAAEvents) {
   TextfieldTestApi textfield_test_api(textfield_);
   Microsoft::WRL::ComPtr<IAccessible> caret_accessible;
   gfx::NativeWindow native_window = widget_->GetNativeWindow();
