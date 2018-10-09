@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
@@ -150,6 +151,15 @@ void JSBasedEventListener::handleEvent(
   // to |current_event|.
   if (execution_context_of_listener->IsDocument())
     event_symbol.Set(global, current_event);
+}
+
+std::unique_ptr<SourceLocation> JSBasedEventListener::GetSourceLocation(
+    EventTarget& target) {
+  v8::HandleScope(GetIsolate());
+  v8::Local<v8::Value> effective_function = GetEffectiveFunction(target);
+  if (effective_function->IsFunction())
+    return SourceLocation::FromFunction(effective_function.As<v8::Function>());
+  return nullptr;
 }
 
 }  // namespace blink

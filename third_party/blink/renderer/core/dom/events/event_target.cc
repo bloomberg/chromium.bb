@@ -137,22 +137,9 @@ void ReportBlockedEvent(EventTarget& target,
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
       event.type().GetString().Utf8().data(), delayed.InMilliseconds());
-
-  {
-    v8::Isolate* isolate = ToIsolate(target.GetExecutionContext());
-    v8::HandleScope handle_scope(isolate);
-
-    // TODO(yukiy): create a method that returns SourceLocation of effective
-    // function in JSBasedEventListener.
-    v8::Local<v8::Value> handler = listener->GetEffectiveFunction(target);
-    PerformanceMonitor::ReportGenericViolation(
-        target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
-        message_text, delayed,
-        handler->IsFunction()
-            ? SourceLocation::FromFunction(handler.As<v8::Function>())
-            : nullptr);
-  }
-
+  PerformanceMonitor::ReportGenericViolation(
+      target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
+      message_text, delayed, listener->GetSourceLocation(target));
   registered_listener->SetBlockedEventWarningEmitted();
 }
 

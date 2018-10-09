@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -192,6 +193,17 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
       V8PrivateProperty::GetCustomWrappableEventHandler(GetIsolate()));
 
   return JSEventHandler::GetListenerObject(event_target);
+}
+
+std::unique_ptr<SourceLocation>
+JSEventHandlerForContentAttribute::GetSourceLocation(EventTarget& target) {
+  v8::HandleScope(GetIsolate());
+  auto source_location = JSEventHandler::GetSourceLocation(target);
+  if (source_location)
+    return source_location;
+  // Fallback to uncompiled source info.
+  return SourceLocation::Create(source_url_, position_.line_.ZeroBasedInt(),
+                                position_.column_.ZeroBasedInt(), nullptr);
 }
 
 }  // namespace blink

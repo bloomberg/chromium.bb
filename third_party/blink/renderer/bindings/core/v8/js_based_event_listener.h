@@ -14,6 +14,7 @@ namespace blink {
 class DOMWrapperWorld;
 class Event;
 class EventTarget;
+class SourceLocation;
 
 // |JSBasedEventListener| is the base class for JS-based event listeners,
 // i.e. EventListener and EventHandler in the standards.
@@ -66,6 +67,8 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
 
   // Only DevTools is allowed to use this method.
   DOMWrapperWorld& GetWorldForInspector() const { return GetWorld(); }
+
+  virtual std::unique_ptr<SourceLocation> GetSourceLocation(EventTarget&);
 
  protected:
   explicit JSBasedEventListener(ListenerType);
