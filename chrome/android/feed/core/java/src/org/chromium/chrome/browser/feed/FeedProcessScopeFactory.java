@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
+import com.google.android.libraries.feed.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
@@ -97,19 +98,23 @@ public class FeedProcessScopeFactory {
         sFeedScheduler = schedulerBridge;
         FeedAppLifecycleListener lifecycleListener =
                 new FeedAppLifecycleListener(new ThreadUtils());
+        // TODO(gangwu): Getting real build info if possible.
+        ApplicationInfo applicationInfo =
+                new ApplicationInfo.Builder(ContextUtils.getApplicationContext())
+                        .setAppType(ApplicationInfo.AppType.CHROME)
+                        .build();
         FeedContentStorage contentStorage = new FeedContentStorage(profile);
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
-        sFeedProcessScope =
-                new FeedProcessScope
-                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                new LoggingApiImpl(), networkClient,
-                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
-                                ContextUtils.getApplicationContext())
-                        .setContentStorage(contentStorage)
-                        .setJournalStorage(journalStorage)
-                        .build();
+        sFeedProcessScope = new FeedProcessScope
+                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                            new LoggingApiImpl(), networkClient, schedulerBridge,
+                                            lifecycleListener, DebugBehavior.SILENT,
+                                            ContextUtils.getApplicationContext(), applicationInfo)
+                                    .setContentStorage(contentStorage)
+                                    .setJournalStorage(journalStorage)
+                                    .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
@@ -134,11 +139,14 @@ public class FeedProcessScopeFactory {
             FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener) {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
         sFeedScheduler = feedScheduler;
+        ApplicationInfo applicationInfo =
+                new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
+
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), networkClient, sFeedScheduler,
                                             lifecycleListener, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext())
+                                            ContextUtils.getApplicationContext(), applicationInfo)
                                     .build();
         sFeedOfflineIndicator = feedOfflineIndicator;
         sFeedAppLifecycle = feedAppLifecycle;
