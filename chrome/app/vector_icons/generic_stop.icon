@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file cannot be named stop.icon because that expands to
+// kStopIcon which is a predefined constant in OSX's Dialogs.h
+
 CANVAS_DIMENSIONS, 20,
 ROUND_RECT, 7, 7, 6, 6, 0,
 NEW_PATH,
