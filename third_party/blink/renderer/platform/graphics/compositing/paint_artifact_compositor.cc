@@ -71,28 +71,11 @@ void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
 }
 
 void PaintArtifactCompositor::WillBeRemovedFromFrame() {
-  UnregisterAllElementIds();
   root_layer_->RemoveAllChildren();
   if (extra_data_for_testing_enabled_) {
     extra_data_for_testing_->content_layers.clear();
     extra_data_for_testing_->synthesized_clip_layers.clear();
     extra_data_for_testing_->scroll_hit_test_layers.clear();
-  }
-}
-
-void PaintArtifactCompositor::UnregisterAllElementIds() {
-  // Unregister element ids for all layers. For now we rely on the
-  // element id being set on the layer, but we'll be removing that for
-  // SPv2 soon. We may also shift to having multiple element ids per
-  // layer. When we do either of these, we'll need to keep around the
-  // element ids for unregistering in some other manner.
-  cc::LayerTreeHost* host = root_layer_->layer_tree_host();
-  if (!host)
-    return;
-  for (auto child : root_layer_->children()) {
-    auto element_id = child->element_id();
-    if (element_id)
-      host->UnregisterElement(element_id, cc::ElementListType::ACTIVE);
   }
 }
 
@@ -718,7 +701,6 @@ void PaintArtifactCompositor::Update(
   DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
          host->GetSettings().use_layer_lists);
 
-  UnregisterAllElementIds();
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_.reset(new ExtraDataForTesting);
 
@@ -767,6 +749,20 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
+    // Get the compositor element id for the layer. Scrollable layers are only
+    // associated with scroll element ids which are set in
+    // ScrollHitTestLayerForPendingLayer.
+    CompositorElementId element_id =
+        layer->scrollable()
+            ? layer->element_id()
+            : property_state.GetCompositorElementId(composited_element_ids);
+    // TODO(wkorman): Cease setting element id on layer once
+    // animation subsystem no longer requires element id to layer
+    // map. http://crbug.com/709137
+    // TODO(pdr): Element ids will still need to be set on scroll layers.
+    layer->SetElementId(element_id);
+    if (element_id)
+      composited_element_ids.insert(element_id);
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
@@ -783,32 +779,7 @@ void PaintArtifactCompositor::Update(
 
     layer->SetOffsetToTransformParent(layer_offset);
 
-    // Get the compositor element id for the layer. Scrollable layers are only
-    // associated with scroll element ids which are set in
-    // ScrollHitTestLayerForPendingLayer.
-    CompositorElementId element_id =
-        layer->scrollable()
-            ? layer->element_id()
-            : property_state.GetCompositorElementId(composited_element_ids);
-    if (element_id) {
-      // TODO(wkorman): Cease setting element id on layer once
-      // animation subsystem no longer requires element id to layer
-      // map. http://crbug.com/709137
-      // TODO(pdr): Element ids will still need to be set on scroll layers.
-      layer->SetElementId(element_id);
-      composited_element_ids.insert(element_id);
-    }
-
     layer_list_builder.Add(layer);
-
-    // TODO(wkorman): Once we've removed all uses of
-    // LayerTreeHost::{LayerByElementId,element_layers_map} we can
-    // revise element register/unregister to cease passing layer and
-    // only register/unregister element id with the mutator host.
-    if (element_id) {
-      host->RegisterElement(element_id, cc::ElementListType::ACTIVE,
-                            layer.get());
-    }
 
     layer->set_property_tree_sequence_number(
         root_layer_->property_tree_sequence_number());
