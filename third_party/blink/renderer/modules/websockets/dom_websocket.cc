@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/modules/websockets/dom_websocket.h"
 
+#include "base/feature_list.h"
 #include "base/location.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -47,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/websockets/close_event.h"
@@ -292,8 +295,11 @@ void DOMWebSocket::Connect(const String& url,
   NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
   url_ = KURL(NullURL(), url);
 
-  if (GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
-          kUpgradeInsecureRequests &&
+  if ((GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
+           kUpgradeInsecureRequests ||
+       (base::FeatureList::IsEnabled(
+            blink::features::kMixedContentAutoupgrade) &&
+        GetExecutionContext()->Url().ProtocolIs("https"))) &&
       url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(GetExecutionContext(),
