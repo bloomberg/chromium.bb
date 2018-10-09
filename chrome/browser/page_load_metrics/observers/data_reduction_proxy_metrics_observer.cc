@@ -23,6 +23,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_data.h"
@@ -43,6 +44,32 @@ namespace {
 std::string GetConstHistogramWithSuffix(const char* suffix) {
   return std::string(internal::kHistogramDataReductionProxyPrefix)
       .append(suffix);
+}
+
+PageloadMetrics_PageEndReason ConvertPLMPageEndReasonToProto(
+    page_load_metrics::PageEndReason reason) {
+  switch (reason) {
+    case page_load_metrics::END_NONE:
+      return PageloadMetrics_PageEndReason_END_NONE;
+    case page_load_metrics::END_RELOAD:
+      return PageloadMetrics_PageEndReason_END_RELOAD;
+    case page_load_metrics::END_FORWARD_BACK:
+      return PageloadMetrics_PageEndReason_END_FORWARD_BACK;
+    case page_load_metrics::END_CLIENT_REDIRECT:
+      return PageloadMetrics_PageEndReason_END_CLIENT_REDIRECT;
+    case page_load_metrics::END_NEW_NAVIGATION:
+      return PageloadMetrics_PageEndReason_END_NEW_NAVIGATION;
+    case page_load_metrics::END_STOP:
+      return PageloadMetrics_PageEndReason_END_STOP;
+    case page_load_metrics::END_CLOSE:
+      return PageloadMetrics_PageEndReason_END_CLOSE;
+    case page_load_metrics::END_PROVISIONAL_LOAD_FAILED:
+      return PageloadMetrics_PageEndReason_END_PROVISIONAL_LOAD_FAILED;
+    case page_load_metrics::END_RENDER_PROCESS_GONE:
+      return PageloadMetrics_PageEndReason_END_RENDER_PROCESS_GONE;
+    default:
+      return PageloadMetrics_PageEndReason_END_OTHER;
+  }
 }
 
 // A macro is needed because PAGE_LOAD_HISTOGRAM creates a static instance of
@@ -321,6 +348,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
   base::Optional<base::TimeDelta> first_input_delay;
   base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   base::Optional<base::TimeDelta> parse_stop;
+  base::Optional<base::TimeDelta> page_end_time;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
                                                       info)) {
     response_start = timing.response_start;
@@ -354,6 +382,13 @@ void DataReductionProxyMetricsObserver::SendPingback(
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_stop, info)) {
     parse_stop = timing.parse_timing->parse_stop;
+  }
+  if (info.started_in_foreground && info.page_end_time.has_value()) {
+    // This should be reported even when the app goes into the background which
+    // is excluded in |WasStartedInForegroundOptionalEventInForeground|.
+    page_end_time = info.page_end_time;
+  } else if (info.started_in_foreground) {
+    page_end_time = base::TimeTicks::Now() - info.navigation_start;
   }
 
   // If a crash happens, report the host |render_process_host_id_| to the
@@ -395,9 +430,11 @@ void DataReductionProxyMetricsObserver::SendPingback(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint, first_input_delay,
-      parse_blocked_on_script_load_duration, parse_stop, network_bytes,
-      original_network_bytes, total_page_size_bytes, cached_fraction,
-      app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id);
+      parse_blocked_on_script_load_duration, parse_stop, page_end_time,
+      network_bytes, original_network_bytes, total_page_size_bytes,
+      cached_fraction, app_background_occurred, opted_out_,
+      renderer_memory_usage_kb_, host_id,
+      ConvertPLMPageEndReasonToProto(info.page_end_reason));
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
