@@ -162,8 +162,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                           IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML);
   source->AddResourcePath("dialog_focus_manager.js",
                           IDR_MD_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS);
-  source->AddResourcePath("dnd_chip.html", IDR_MD_BOOKMARKS_DND_CHIP_HTML);
-  source->AddResourcePath("dnd_chip.js", IDR_MD_BOOKMARKS_DND_CHIP_JS);
   source->AddResourcePath("dnd_manager.html",
                           IDR_MD_BOOKMARKS_DND_MANAGER_HTML);
   source->AddResourcePath("dnd_manager.js", IDR_MD_BOOKMARKS_DND_MANAGER_JS);
