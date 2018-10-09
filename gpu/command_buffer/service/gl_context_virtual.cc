@@ -121,10 +121,6 @@ uint64_t GLContextVirtual::BackpressureFenceCreate() {
 void GLContextVirtual::BackpressureFenceWait(uint64_t fence) {
   shared_context_->BackpressureFenceWait(fence);
 }
-
-void GLContextVirtual::FlushForDriverCrashWorkaround() {
-  shared_context_->FlushForDriverCrashWorkaround();
-}
 #endif
 
 GLContextVirtual::~GLContextVirtual() {
