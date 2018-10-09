@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "content/public/browser/bluetooth_chooser.h"
@@ -124,6 +125,10 @@ class CastWebView {
   virtual void InitializeWindow(CastWindowManager* window_manager,
                                 CastWindowManager::WindowId z_order,
                                 VisibilityPriority initial_priority) = 0;
+
+  // Sets the activity context exposed to web view and content window. The exact
+  // format of context is defined by each activity.
+  virtual void SetContext(base::Value context) = 0;
 
   // Allows the page to be shown on the screen. The page cannot be shown on the
   // screen until this is called.
