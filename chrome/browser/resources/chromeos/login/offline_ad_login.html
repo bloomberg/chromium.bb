@@ -57,7 +57,7 @@
       <h1 slot="title" class="welcome-message">
         [[i18nDynamic(locale, 'adUnlockTitle')]]
       </h1>
-      <div slot="subtitle" class="unlock-subtitle">
+      <div slot="subtitle">
         [[i18nDynamic(locale, 'adUnlockSubtitle')]]
       </div>
       <div slot="footer" id="adUnlock">
@@ -84,7 +84,12 @@
       </hd-iron-icon>
       <h1 slot="title" id="welcomeMsg"
           class="welcome-message">[[adWelcomeMessage]]</h1>
-      <div slot="footer">
+      <div slot="subtitle" hidden="[[isDomainJoin]]">
+        [[i18nDynamic(locale, 'enterpriseInfoMessage', realm)]]
+      </div>
+      <paper-progress slot="progress" hidden="[[!loading]]" indeterminate>
+      </paper-progress>
+      <div slot="footer" hidden="[[loading]]">
         <div class="layout vertical" hidden id="joinConfig">
           <span class="select-divider-line top-line"></span>
           <div class="layout horizontal justified">
@@ -137,9 +142,11 @@
           </div>
         </div>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal">
+      <div slot="bottom-buttons" class="layout horizontal" hidden="[[loading]]">
         <oobe-back-button id="backToUnlockButton" on-click="onBackToUnlock_"
             disabled="[[disabled]]" hidden></oobe-back-button>
+        <oobe-back-button id="backButton" on-click="onBackButton_"
+            hidden="[[isDomainJoin]]"></oobe-back-button>
         <div class="flex"></div>
         <oobe-next-button id="nextButton" on-click="onSubmit_"
             disabled="[[disabled]]"></oobe-next-button>

@@ -53,7 +53,6 @@ constexpr char kAdUserInput[] = "$.userInput";
 constexpr char kAdPasswordInput[] = "$.passwordInput";
 constexpr char kAdCredsButton[] = "$$('#nextButton')";
 constexpr char kAdPasswordChangeButton[] = "$.inputForm.$.button";
-constexpr char kAdWelcomMessage[] = "$$('#welcomeMsg')";
 constexpr char kAdAutocompleteRealm[] = "$.userInput.querySelector('span')";
 
 constexpr char kAdPasswordChangeId[] = "active-directory-password-change";
@@ -143,17 +142,10 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".hidden");
     JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".hidden");
 
-    const std::string innerText(".innerText");
-    // Checks if Active Directory welcome message contains realm.
-    EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE,
-                                        base::UTF8ToUTF16(test_realm_)),
-              js_checker().GetString(
-                  JSElement(kAdOfflineAuthId, kAdWelcomMessage) + innerText));
-
     std::string autocomplete_domain_ui;
     base::TrimString(
         js_checker().GetString(
-            JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + innerText),
+            JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".innerText"),
         base::kWhitespaceASCII, &autocomplete_domain_ui);
     // Checks if realm is set to autocomplete username.
     EXPECT_EQ(autocomplete_realm_, autocomplete_domain_ui);
