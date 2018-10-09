@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,13 +79,6 @@ class FakeTabController : public TabController {
   }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
-  bool ShouldPaintTab(
-      const Tab* tab,
-      const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
-          border_callback,
-      gfx::Path* clip) override {
-    return true;
-  }
   bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override {
     return true;
   }
@@ -451,11 +445,11 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
         // Test layout for every width from standard to minimum.
         int width, min_width;
         if (is_pinned_tab) {
-          width = min_width = Tab::GetPinnedWidth();
+          width = min_width = TabStyle::GetPinnedWidth();
         } else {
-          width = Tab::GetStandardWidth();
-          min_width = is_active_tab ? Tab::GetMinimumActiveWidth()
-                                    : Tab::GetMinimumInactiveWidth();
+          width = TabStyle::GetStandardWidth();
+          min_width = is_active_tab ? TabStyle::GetMinimumActiveWidth()
+                                    : TabStyle::GetMinimumInactiveWidth();
         }
         const int height = GetLayoutConstant(TAB_HEIGHT);
         for (; width >= min_width; --width) {
@@ -697,7 +691,7 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
   controller.set_active_tab(false);
   Tab tab(&controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
-  const int width = Tab::GetContentsHorizontalInsets().width() +
+  const int width = tab.tab_style()->GetContentsInsets().width() +
                     Tab::kMinimumContentsWidthForCloseButtons;
   tab.SetBounds(0, 0, width, 50);
   const views::View* close = GetCloseButton(tab);
