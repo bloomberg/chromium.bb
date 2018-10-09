@@ -5,11 +5,16 @@
 #ifndef PDF_PDFIUM_PDFIUM_TEST_BASE_H_
 #define PDF_PDFIUM_PDFIUM_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_pdf {
+
+class PDFiumEngine;
+class TestClient;
 
 class PDFiumTestBase : public testing::Test {
  public:
@@ -21,11 +26,17 @@ class PDFiumTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Initializes a PDFiumEngine for use in testing with |client|. Loads a PDF
+  // named |pdf_name|.See TestDocumentLoader for more info about |pdf_name|.
+  std::unique_ptr<PDFiumEngine> InitializeEngine(
+      TestClient* client,
+      const base::FilePath::CharType* pdf_name);
+
+ private:
   // Sets the PDF to load for a test. This must be called for tests that use
   // TestDocumentLoader. See TestDocumentLoader for more info.
   void SetDocumentForTest(const base::FilePath::CharType* pdf_name);
 
- private:
   void InitializePDFium();
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumTestBase);

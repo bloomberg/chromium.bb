@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
 
 namespace chrome_pdf {
@@ -34,6 +35,19 @@ void PDFiumTestBase::TearDown() {
   PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(nullptr);
   g_test_pdf_name = nullptr;
   FPDF_DestroyLibrary();
+}
+
+std::unique_ptr<PDFiumEngine> PDFiumTestBase::InitializeEngine(
+    TestClient* client,
+    const base::FilePath::CharType* pdf_name) {
+  SetDocumentForTest(pdf_name);
+  pp::URLLoader dummy_loader;
+  auto engine = std::make_unique<PDFiumEngine>(client, true);
+  if (!engine->New("https://chromium.org/dummy.pdf", "") ||
+      !engine->HandleDocumentLoad(dummy_loader)) {
+    return nullptr;
+  }
+  return engine;
 }
 
 void PDFiumTestBase::SetDocumentForTest(
