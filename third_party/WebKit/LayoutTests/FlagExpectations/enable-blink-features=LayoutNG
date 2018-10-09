@@ -58,7 +58,7 @@ crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 # New failures are appended below by the script.
 crbug.com/591099 animations/animationworklet/worklet-animation-responsive-to-zoom.html [ Pass ]
 crbug.com/728378 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
-crbug.com/591099 compositing/iframes/floating-self-painting-frame.html [ Failure ]
+crbug.com/864398 compositing/iframes/floating-self-painting-frame.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Pass ]
