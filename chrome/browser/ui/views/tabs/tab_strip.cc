@@ -1107,9 +1107,9 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
     if (current_bounds.x() > next_bounds.x())
       return true;  // Can happen during dragging.
 
-    *clip = tab->GetTabStyle()->GetPath(
-        next_tab, TabStyle::PathType::kOutsideBorder, scale, false,
-        TabStyle::RenderUnits::kDips);
+    *clip =
+        tab->GetTabStyle()->GetPath(next_tab, TabStyle::PathType::kExteriorClip,
+                                    scale, false, TabStyle::RenderUnits::kDips);
 
     clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
   } else if (index > active_index && index > 0) {
@@ -1121,9 +1121,9 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
     if (current_bounds.x() < previous_bounds.x())
       return true;  // Can happen during dragging.
 
-    *clip = tab->GetTabStyle()->GetPath(
-        prev_tab, TabStyle::PathType::kOutsideBorder, scale, false,
-        TabStyle::RenderUnits::kDips);
+    *clip =
+        tab->GetTabStyle()->GetPath(prev_tab, TabStyle::PathType::kExteriorClip,
+                                    scale, false, TabStyle::RenderUnits::kDips);
     clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
   }
   return true;

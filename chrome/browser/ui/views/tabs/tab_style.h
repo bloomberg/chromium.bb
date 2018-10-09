@@ -22,18 +22,17 @@ class TabStyle {
     // Interior fill outline. Extends halfway into the border so there are no
     // gaps between border and fill.
     kFill,
-    // Inside path of the border. Border is currently the difference between
-    // outside and inside, allowing for a varying thickness of stroke.
-    kInsideBorder,
-    // Outside path of the border. Border is currently the difference between
-    // outside and inside, allowing for a varying thickness of stroke.
-    kOutsideBorder,
+    // Center of the border path. The path is guaranteed to fit into the tab
+    // bounds, including the stroke thickness.
+    kBorder,
     // The hit test region. May be extended into a rectangle that touches the
     // top of the bounding box when the window is maximized, for Fitts' Law.
     kHitTest,
     // The area inside the tab where children can be rendered, used to clip
     // child views. Does not have to be the same shape as the border.
-    kClip
+    kInteriorClip,
+    // The outline of the tab, used for occlusion in certain special situations.
+    kExteriorClip
   };
 
   // How we want the resulting path scaled.
