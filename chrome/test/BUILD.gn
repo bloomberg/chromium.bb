@@ -4120,15 +4120,11 @@ test("unit_tests") {
       cocoa_test_sources = [
         "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/browser_window_utils_unittest.mm",
-        "../browser/ui/cocoa/chrome_browser_window_unittest.mm",
         "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",
         "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
-        "../browser/ui/cocoa/constrained_window/constrained_window_custom_window_unittest.mm",
         "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
         "../browser/ui/cocoa/find_pasteboard_unittest.mm",
         "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
-        "../browser/ui/cocoa/framed_browser_window_unittest.mm",
         "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
         "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
         "../browser/ui/cocoa/history_overlay_controller_unittest.mm",
@@ -4140,7 +4136,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
         "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
         "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
-        "../browser/ui/cocoa/tabbed_browser_window_unittest.mm",
         "../browser/ui/cocoa/test/cocoa_profile_test.h",
         "../browser/ui/cocoa/test/cocoa_profile_test.mm",
         "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
@@ -4148,8 +4143,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
-        "../browser/ui/cocoa/view_resizer_pong.h",
-        "../browser/ui/cocoa/view_resizer_pong.mm",
         "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
       ]
     }
