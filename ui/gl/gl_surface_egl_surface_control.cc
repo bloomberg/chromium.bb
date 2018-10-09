@@ -47,7 +47,41 @@ bool GLSurfaceEGLSurfaceControl::IsOffscreen() {
 
 gfx::SwapResult GLSurfaceEGLSurfaceControl::SwapBuffers(
     const PresentationCallback& callback) {
+  NOTREACHED();
+  return gfx::SwapResult::SWAP_FAILED;
+}
+
+void GLSurfaceEGLSurfaceControl::SwapBuffersAsync(
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& presentation_callback) {
+  CommitPendingTransaction(completion_callback, presentation_callback);
+}
+
+gfx::SwapResult GLSurfaceEGLSurfaceControl::CommitOverlayPlanes(
+    const PresentationCallback& callback) {
+  NOTREACHED();
+  return gfx::SwapResult::SWAP_FAILED;
+}
+
+void GLSurfaceEGLSurfaceControl::CommitOverlayPlanesAsync(
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& presentation_callback) {
+  CommitPendingTransaction(completion_callback, presentation_callback);
+}
+
+void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& present_callback) {
   DCHECK(pending_transaction_);
+
+  // Release resources for the current frame once the next frame is acked.
+  ResourceRefs resources_to_release;
+  resources_to_release.swap(current_frame_resources_);
+  current_frame_resources_.clear();
+
+  // Track resources to be owned by the framework after this transaction.
+  current_frame_resources_.swap(pending_frame_resources_);
+  pending_frame_resources_.clear();
 
   pending_transaction_->Apply();
   pending_transaction_.reset();
@@ -65,11 +99,9 @@ gfx::SwapResult GLSurfaceEGLSurfaceControl::SwapBuffers(
       base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
       0 /* flags */);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, feedback));
-
-  // TODO(khushalsagar): Need to hook up transaction ack from the framework to
-  // delay this ack.
-  return gfx::SwapResult::SWAP_ACK;
+      FROM_HERE,
+      base::BindOnce(OnTransactionAck, feedback, present_callback,
+                     completion_callback, std::move(resources_to_release)));
 }
 
 gfx::Size GLSurfaceEGLSurfaceControl::GetSize() {
@@ -109,21 +141,19 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     // TODO(khushalsagar): Forward the transform once the NDK API is in place.
   }
 
-  auto* ahb_image = GLImageAHardwareBuffer::FromGLImage(image);
-  auto hardware_buffer =
-      ahb_image ? base::android::ScopedHardwareBufferHandle::Create(
-                      ahb_image->handle().get())
-                : base::android::ScopedHardwareBufferHandle();
-  if (uninitialized ||
-      surface_state.hardware_buffer.get() != hardware_buffer.get()) {
-    surface_state.hardware_buffer = std::move(hardware_buffer);
+  AHardwareBuffer* hardware_buffer = nullptr;
+  base::ScopedFD fence_fd;
+  auto scoped_hardware_buffer = image->GetAHardwareBuffer();
+  if (scoped_hardware_buffer) {
+    hardware_buffer = scoped_hardware_buffer->buffer();
+    fence_fd = scoped_hardware_buffer->TakeFence();
+    pending_frame_resources_.push_back(std::move(scoped_hardware_buffer));
+  }
 
-    // TODO(khushalsagar): We are currently using the same fence for all
-    // overlays but that won't work for video frames where the fence needs to
-    // come from the media codec by AImageReader. The release of this buffer to
-    // the AImageReader also needs to be tied to the transaction callbacks.
-    base::ScopedFD fence_fd;
-    if (gpu_fence && surface_state.hardware_buffer.get()) {
+  if (uninitialized || surface_state.hardware_buffer != hardware_buffer) {
+    surface_state.hardware_buffer = hardware_buffer;
+
+    if (!fence_fd.is_valid() && gpu_fence && surface_state.hardware_buffer) {
       auto fence_handle =
           gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
       DCHECK(!fence_handle.is_null());
@@ -131,7 +161,7 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     }
 
     pending_transaction_->SetBuffer(surface_state.surface,
-                                    surface_state.hardware_buffer.get(),
+                                    surface_state.hardware_buffer,
                                     std::move(fence_fd));
   }
 
@@ -170,6 +200,10 @@ void* GLSurfaceEGLSurfaceControl::GetHandle() {
   return nullptr;
 }
 
+bool GLSurfaceEGLSurfaceControl::SupportsAsyncSwap() {
+  return true;
+}
+
 bool GLSurfaceEGLSurfaceControl::SupportsPlaneGpuFences() const {
   return true;
 }
@@ -185,6 +219,17 @@ bool GLSurfaceEGLSurfaceControl::SupportsSwapBuffersWithBounds() {
 
 bool GLSurfaceEGLSurfaceControl::SupportsCommitOverlayPlanes() {
   return true;
+}
+
+// static
+void GLSurfaceEGLSurfaceControl::OnTransactionAck(
+    const gfx::PresentationFeedback& feedback,
+    const PresentationCallback& present_callback,
+    const SwapCompletionCallback& completion_callback,
+    ResourceRefs resources) {
+  completion_callback.Run(gfx::SwapResult::SWAP_ACK, nullptr);
+  present_callback.Run(feedback);
+  resources.clear();
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(

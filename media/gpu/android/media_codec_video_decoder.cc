@@ -100,6 +100,11 @@ void OutputBufferReleased(bool using_async_api,
   pump_cb.Run();
 }
 
+bool IsSurfaceControlEnabled(const gpu::GpuFeatureInfo& info) {
+  return info.status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+         gpu::kGpuFeatureStatusEnabled;
+}
+
 }  // namespace
 
 // static
@@ -115,6 +120,7 @@ PendingDecode::~PendingDecode() = default;
 
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     DeviceInfo* device_info,
     CodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
@@ -123,11 +129,13 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     std::unique_ptr<VideoFrameFactory> video_frame_factory)
     : codec_allocator_(codec_allocator),
       request_overlay_info_cb_(std::move(request_overlay_info_cb)),
+      is_surface_control_enabled_(IsSurfaceControlEnabled(gpu_feature_info)),
       surface_chooser_helper_(
           std::move(surface_chooser),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kForceVideoOverlays),
-          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively),
+          is_surface_control_enabled_),
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
@@ -302,14 +310,20 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
+
+  // SurfaceControl allows TextureOwner to be promoted to an overlay in the
+  // compositing pipeline itself.
+  const bool use_texture_owner_as_overlays = is_surface_control_enabled_;
+
   // Only ask for promotion hints if we can actually switch surfaces, since we
-  // wouldn't be able to do anything with them.  Also, if threaded texture
-  // mailboxes are enabled, then we turn off overlays anyway.
+  // wouldn't be able to do anything with them. Also, if threaded texture
+  // mailboxes are enabled, then we turn off overlays anyway. And if texture
+  // owner can be used as an overlay, no promotion hints are necessary.
   const bool want_promotion_hints =
       device_info_->IsSetOutputSurfaceSupported() &&
-      !enable_threaded_texture_mailboxes_;
+      !enable_threaded_texture_mailboxes_ && !use_texture_owner_as_overlays;
   video_frame_factory_->Initialize(
-      want_promotion_hints,
+      want_promotion_hints, use_texture_owner_as_overlays,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
 }

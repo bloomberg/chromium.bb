@@ -239,6 +239,11 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
     gpu_feature_info->status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
         kGpuFeatureStatusBlacklisted;
   }
+
+  if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
+    gpu_feature_info->status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+        kGpuFeatureStatusBlacklisted;
+  }
 }
 
 GPUInfo* g_gpu_info_cache = nullptr;

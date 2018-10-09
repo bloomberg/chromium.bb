@@ -235,4 +235,12 @@ void CodecImage::ReleaseCodecBuffer() {
   phase_ = Phase::kInvalidated;
 }
 
+std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+CodecImage::GetAHardwareBuffer() {
+  DCHECK(texture_owner_);
+
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestore);
+  return texture_owner_->GetAHardwareBuffer();
+}
+
 }  // namespace media

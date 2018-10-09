@@ -70,7 +70,7 @@ bool OverlayStrategyUnderlay::Attempt(
       candidate_list->AddPromotionHint(candidate);
       return true;
     } else {
-      // If |candidate| should get a promotion hint, then rememeber that now.
+      // If |candidate| should get a promotion hint, then remember that now.
       candidate_list->promotion_hint_info_map_.insert(
           new_candidate_list.promotion_hint_info_map_.begin(),
           new_candidate_list.promotion_hint_info_map_.end());
