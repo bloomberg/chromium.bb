@@ -478,6 +478,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ObserveTopmostWindow(mojom::MoveLoopSource source,
                             Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void CancelActiveTouchesExcept(Id not_cancelled_window_id) override;
+  void CancelActiveTouches(Id window_id) override;
+  void TransferGestureEventsTo(Id current_id,
+                               Id new_id,
+                               bool should_cancel) override;
 
   WindowService* window_service_;
 

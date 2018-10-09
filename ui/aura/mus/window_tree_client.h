@@ -61,6 +61,7 @@ class DragDropControllerMus;
 class EmbedRoot;
 class EmbedRootDelegate;
 class FocusSynchronizer;
+class GestureSynchronizer;
 class InFlightBoundsChange;
 class InFlightChange;
 class InFlightFocusChange;
@@ -527,6 +528,8 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<CaptureSynchronizer> capture_synchronizer_;
 
   std::unique_ptr<FocusSynchronizer> focus_synchronizer_;
+
+  std::unique_ptr<GestureSynchronizer> gesture_synchronizer_;
 
   mojo::Binding<ws::mojom::WindowTreeClient> binding_;
   ws::mojom::WindowTreePtr tree_ptr_;

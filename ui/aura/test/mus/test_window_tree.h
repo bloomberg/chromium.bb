@@ -117,6 +117,16 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return last_set_window_bounds_;
   }
 
+  ws::Id last_not_cancelled_window_id() const {
+    return last_not_cancelled_window_id_;
+  }
+  ws::Id last_cancelled_window_id() const { return last_cancelled_window_id_; }
+  ws::Id last_transfer_current() const { return last_transfer_current_; }
+  ws::Id last_transfer_new() const { return last_transfer_new_; }
+  bool last_transfer_should_cancel() const {
+    return last_transfer_should_cancel_;
+  }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -247,6 +257,11 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                             ws::Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) override;
+  void CancelActiveTouches(ws::Id window_id) override;
+  void TransferGestureEventsTo(ws::Id current_id,
+                               ws::Id new_id,
+                               bool should_cancel) override;
 
   struct AckedEvent {
     uint32_t event_id;
@@ -274,6 +289,12 @@ class TestWindowTree : public ws::mojom::WindowTree {
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 
   gfx::Rect last_set_window_bounds_;
+
+  ws::Id last_not_cancelled_window_id_ = 0u;
+  ws::Id last_cancelled_window_id_ = 0u;
+  ws::Id last_transfer_current_ = 0u;
+  ws::Id last_transfer_new_ = 0u;
+  bool last_transfer_should_cancel_ = false;
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;
