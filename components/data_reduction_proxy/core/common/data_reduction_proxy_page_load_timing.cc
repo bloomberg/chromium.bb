@@ -26,7 +26,9 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
     bool opt_out_occurred,
     int64_t renderer_memory_usage_kb,
     int host_id,
-    PageloadMetrics_PageEndReason page_end_reason)
+    PageloadMetrics_PageEndReason page_end_reason,
+    uint32_t touch_count,
+    uint32_t scroll_count)
     : navigation_start(navigation_start),
       response_start(response_start),
       load_event_start(load_event_start),
@@ -46,7 +48,9 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
       opt_out_occurred(opt_out_occurred),
       renderer_memory_usage_kb(renderer_memory_usage_kb),
       host_id(host_id),
-      page_end_reason(page_end_reason) {}
+      page_end_reason(page_end_reason),
+      touch_count(touch_count),
+      scroll_count(scroll_count) {}
 
 DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
     const DataReductionProxyPageLoadTiming& other) = default;

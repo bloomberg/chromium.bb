@@ -142,6 +142,8 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_total_page_size_bytes(timing.total_page_size_bytes);
   request->set_cached_fraction(timing.cached_fraction);
   request->set_renderer_memory_usage_kb(timing.renderer_memory_usage_kb);
+  request->set_touch_count(timing.touch_count);
+  request->set_scroll_count(timing.scroll_count);
 
   request->set_renderer_crash_type(crash_type);
 

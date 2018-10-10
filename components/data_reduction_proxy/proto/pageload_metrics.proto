@@ -56,7 +56,7 @@ message RequestInfo {
 
 // Metrics for a single pageload.
 message PageloadMetrics {
-  // Next ID: 29
+  // Next ID: 31
   reserved 3;
 
   // The possible effective connection type values.
@@ -245,4 +245,10 @@ message PageloadMetrics {
 
   // The reason that the page load ended.
   optional PageEndReason page_end_reason = 28;
+
+  // The number of touch events that happened on the page.
+  optional uint32 touch_count = 29;
+
+  // The number of scroll events that happened on the page.
+  optional uint32 scroll_count = 30;
 }
