@@ -1356,9 +1356,6 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       dm.DeviceRegisterRequest.ANDROID_BROWSER: [
           'google/android/user'
       ],
-      dm.DeviceRegisterRequest.IOS_BROWSER: [
-          'google/ios/user'
-      ],
       dm.DeviceRegisterRequest.TT: ['google/chromeos/user',
                                     'google/chrome/user'],
     }
