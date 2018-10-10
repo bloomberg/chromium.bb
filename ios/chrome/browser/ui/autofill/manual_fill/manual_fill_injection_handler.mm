@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/form_observer_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frames_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -86,8 +87,13 @@
 }
 
 - (JsSuggestionManager*)suggestionManager {
-  return base::mac::ObjCCastStrict<JsSuggestionManager>(
+  JsSuggestionManager* manager = base::mac::ObjCCastStrict<JsSuggestionManager>(
       [self.injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
+  web::WebState* webState = self.webStateList->GetActiveWebState();
+  if (webState) {
+    [manager setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+  }
+  return manager;
 }
 
 #pragma mark - Document Interaction

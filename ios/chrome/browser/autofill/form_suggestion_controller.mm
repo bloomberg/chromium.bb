@@ -23,6 +23,7 @@
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -133,6 +134,8 @@ AutofillSuggestionState::AutofillSuggestionState(
       base::mac::ObjCCast<JsSuggestionManager>(
           [webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
+  [jsSuggestionManager
+      setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
   return [self initWithWebState:webState
                       providers:providers
             JsSuggestionManager:jsSuggestionManager];

@@ -346,4 +346,27 @@ __gCrWeb.suggestion['hasPreviousElement'] = function(formName, fieldName) {
              currentElement, document.all) !== null;
 };
 
+/**
+ * @param {string} formName The name of the form containing the element.
+ * @param {string} fieldName The name of the field containing the element.
+ * @return {string} Whether there is an element in the sequential navigation
+ *     before and after currently active element. The result is returned as a
+ *     comma separated string of the strings |true| and |false|.
+ *     TODO(crbug.com/893368): Return a dictionary with the values instead.
+ */
+__gCrWeb.suggestion['hasPreviousNextElements'] =
+    function(formName, fieldName) {
+    return [
+      __gCrWeb.suggestion.hasPreviousElement(formName, fieldName),
+      __gCrWeb.suggestion.hasNextElement(formName, fieldName)
+    ].toString();
+}
+
+/**
+ * Blurs the |activeElement| of the current document.
+ */
+__gCrWeb.suggestion['blurActiveElement'] = function() {
+  document.activeElement.blur();
+};
+
 }());  // End of anonymous object
