@@ -81,7 +81,7 @@ void SecurityContext::ApplySandboxFlags(SandboxFlags mask,
   if (IsSandboxed(kSandboxOrigin) && GetSecurityOrigin() &&
       !GetSecurityOrigin()->IsOpaque()) {
     scoped_refptr<SecurityOrigin> security_origin =
-        SecurityOrigin::CreateUniqueOpaque();
+        GetSecurityOrigin()->DeriveNewOpaqueOrigin();
     security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
         is_potentially_trustworthy);
     SetSecurityOrigin(std::move(security_origin));
