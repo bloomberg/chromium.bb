@@ -87,8 +87,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
 void TrackedChildURLLoaderFactoryBundle::AddObserverOnMainThread() {
   DCHECK(main_thread_host_bundle_);
 
-  // TODO(chongz): Change this to a DCHECK once all call sites have a
-  // SequencedTaskRunnerHandle.
+  // Required by |SequencedTaskRunnerHandle::Get()| below.
   if (!base::SequencedTaskRunnerHandle::IsSet())
     return;
 
