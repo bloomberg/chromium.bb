@@ -24,6 +24,11 @@
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 #endif  // defined(TOOLKIT_VIEWS)
 
+#if defined(USE_AURA)
+#include "ui/aura/layout_manager.h"  // nogncheck
+#include "ui/aura/window.h"          // nogncheck
+#endif
+
 namespace content {
 
 namespace {
@@ -44,12 +49,68 @@ base::AtomicFlag& GetInServiceProcessFlag() {
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 
-NavigableContentsView::RemoteViewFactory& GetRemoteViewFactory() {
-  static base::NoDestructor<NavigableContentsView::RemoteViewFactory> factory;
-  return *factory;
+std::unique_ptr<NavigableContentsView::RemoteViewManager>&
+GetRemoteViewManager() {
+  static base::NoDestructor<
+      std::unique_ptr<NavigableContentsView::RemoteViewManager>>
+      manager;
+  return *manager;
 }
 
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+
+// Keeps child windows sized to the same bounds as the owning window.
+class LocalWindowLayoutManager : public aura::LayoutManager {
+ public:
+  explicit LocalWindowLayoutManager(aura::Window* owner) : owner_(owner) {}
+  ~LocalWindowLayoutManager() override = default;
+
+  // aura::LayoutManger:
+  void OnWindowResized() override { ResizeChildren(); }
+  void OnWindowAddedToLayout(aura::Window* child) override { ResizeChildren(); }
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {}
+
+ private:
+  void ResizeChildren() {
+    for (auto* child : owner_->children())
+      SetChildBoundsDirect(child, owner_->bounds());
+  }
+
+  aura::Window* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalWindowLayoutManager);
+};
+
+// Owns an Aura window which parents another Aura window in the same process,
+// corresponding to a web contents view hosted in the process.
+class LocalViewHost : public views::NativeViewHost {
+ public:
+  explicit LocalViewHost(aura::Window* window) : window_(window) {
+    window_->SetLayoutManager(new LocalWindowLayoutManager(window_));
+  }
+
+  ~LocalViewHost() override = default;
+
+  // views::View:
+  void AddedToWidget() override {
+    if (!native_view())
+      Attach(window_);
+  }
+
+ private:
+  aura::Window* const window_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalViewHost);
+};
+
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
 }  // namespace
 
@@ -66,18 +127,37 @@ bool NavigableContentsView::IsClientRunningInServiceProcess() {
 }
 
 NavigableContentsView::NavigableContentsView() {
-#if defined(TOOLKIT_VIEWS)
-  view_ = std::make_unique<views::View>();
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+  if (!IsClientRunningInServiceProcess()) {
+    RemoteViewManager* manager = GetRemoteViewManager().get();
+    if (manager)
+      view_ = manager->CreateRemoteViewHost();
+    else
+      view_ = std::make_unique<views::RemoteViewHost>();
+    view_->set_owned_by_client();
+    return;
+  }
+#endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
+  window_ = std::make_unique<aura::Window>(nullptr);
+  window_->set_owned_by_parent(false);
+  window_->SetName("NavigableContentsViewWindow");
+  window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  window_->Init(ui::LAYER_NOT_DRAWN);
+  window_->Show();
+
+  view_ = std::make_unique<LocalViewHost>(window_.get());
   view_->set_owned_by_client();
-  view_->SetLayoutManager(std::make_unique<views::FillLayout>());
-#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 }
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 
 // static
-void NavigableContentsView::SetRemoteViewFactory(RemoteViewFactory factory) {
-  GetRemoteViewFactory() = std::move(factory);
+void NavigableContentsView::SetRemoteViewManager(
+    std::unique_ptr<RemoteViewManager> manager) {
+  GetRemoteViewManager() = std::move(manager);
 }
 
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
@@ -87,24 +167,17 @@ void NavigableContentsView::EmbedUsingToken(
 #if defined(TOOLKIT_VIEWS)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   if (!IsClientRunningInServiceProcess()) {
-    const RemoteViewFactory& factory = GetRemoteViewFactory();
-    std::unique_ptr<views::NativeViewHost> remote_view_host;
-    if (factory) {
-      remote_view_host = factory.Run(token);
+    RemoteViewManager* manager = GetRemoteViewManager().get();
+    if (manager) {
+      manager->EmbedUsingToken(view_.get(), token);
     } else {
-      auto host = std::make_unique<views::RemoteViewHost>();
       constexpr uint32_t kEmbedFlags =
           ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
           ws::mojom::kEmbedFlagEmbedderControlsVisibility;
-      host->EmbedUsingToken(token, kEmbedFlags, base::DoNothing());
-      remote_view_host = std::move(host);
+      static_cast<views::RemoteViewHost*>(view_.get())
+          ->EmbedUsingToken(token, kEmbedFlags, base::DoNothing());
     }
 
-    auto* raw_remote_view_host = remote_view_host.release();
-    view_->AddChildView(raw_remote_view_host);
-    native_view_ = raw_remote_view_host->native_view();
-
-    view_->Layout();
     return;
   }
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
