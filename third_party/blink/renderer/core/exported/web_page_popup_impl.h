@@ -105,6 +105,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebInputEventResult HandleMouseWheel(LocalFrame& main_frame,
                                        const WebMouseWheelEvent&) override;
 
+  // This may only be called if page_ is non-null.
+  LocalFrame& MainFrame() const;
+
   bool IsViewportPointInWindow(int x, int y);
 
   // PagePopup function
@@ -120,6 +123,11 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   WebWidgetClient* widget_client_;
   WebViewImpl* web_view_;
+  // WebPagePopupImpl wraps its own Page that renders the content in the popup.
+  // This member is non-null between the call to Initialize() and the call to
+  // ClosePopup(). If page_ is non-null, it is guaranteed to have an attached
+  // main LocalFrame with a corresponding non-null LocalFrameView and non-null
+  // Document.
   Persistent<Page> page_;
   Persistent<PagePopupChromeClient> chrome_client_;
   PagePopupClient* popup_client_;
