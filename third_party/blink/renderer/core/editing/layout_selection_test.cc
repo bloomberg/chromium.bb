@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
-#include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -137,14 +136,6 @@ class LayoutSelectionTest : public EditingTestBase {
     std::stringstream stream;
     PrintDOMTreeInternal(Selection(), stream, *GetDocument().body(), 0u);
     return stream.str();
-  }
-
-  std::string ComputeLayoutSelection(const std::string& selection_text) {
-    Selection().SetSelection(SetSelectionTextToBody(selection_text),
-                             SetSelectionOptions());
-    Selection().CommitAppearanceIfNeeded();
-    const SelectionInDOMTree& result = Selection().ComputeLayoutSelection();
-    return GetSelectionTextFromBody(result);
   }
 };
 
@@ -904,55 +895,6 @@ TEST_F(LayoutSelectionTest, InvalidateSlot) {
       "      SLOT, <null LayoutObject> \n"
       "    'foo', None, ShouldInvalidate ",
       DumpSelectionInfo());
-}
-
-// Confirm LayoutSelection adjustment.
-#define EXPECT_EQ_LS(input, expect) \
-  EXPECT_EQ(ComputeLayoutSelection(input), expect)
-
-TEST_F(LayoutSelectionTest, ComputeLayoutSelectionBasic) {
-  EXPECT_EQ_LS("fo^o<br>ba|r", "fo^o<br>ba|r");
-  EXPECT_EQ_LS("fo|o<br>ba^r", "fo|o<br>ba^r");
-  EXPECT_EQ_LS("foo<!--|--><br><!--^-->bar", "foo|<br>^bar");
-}
-
-TEST_F(LayoutSelectionTest, ComputeLayoutSelectionBR) {
-  EXPECT_EQ_LS("fo^o<br>|", "fo^o<br>|");
-  EXPECT_EQ_LS("fo^o<br><br>|", "fo^o<br><br>|");
-  EXPECT_EQ_LS("foo<br>^<br>|", "foo<br>^<br>|");
-  EXPECT_EQ_LS("foo<!--|--><br>", "foo|<br>");
-  EXPECT_EQ_LS("foo<br>|", "foo<br>|");
-}
-
-TEST_F(LayoutSelectionTest, ComputeLayoutSelectionCaret) {
-  EXPECT_EQ_LS("fo|o", "fo|o");
-  EXPECT_EQ_LS("<!--|-->foo", "|foo");
-  EXPECT_EQ_LS("foo<!--|-->", "foo|");
-  EXPECT_EQ_LS("<div>|</div>", "<div>|</div>");
-  EXPECT_EQ_LS("<div contenteditable><div>|</div></div>",
-               "<div contenteditable><div>|</div></div>");
-  EXPECT_EQ_LS("<div contenteditable>foo<div>|</div>bar</div>",
-               "<div contenteditable>foo<div>|</div>bar</div>");
-  EXPECT_EQ_LS("<div contenteditable>|</div>", "<div contenteditable>|</div>");
-}
-
-TEST_F(LayoutSelectionTest, ComputeLayoutSelectionEdgeIsNone) {
-  EXPECT_EQ_LS("fo|o<b style=\"display:none;\">b^ar</b>",
-               "fo|o^<b style=\"display:none;\">bar</b>");
-  EXPECT_EQ_LS("<b style=\"display:none;\">f^oo</b>ba|r",
-               "<b style=\"display:none;\">foo</b>^ba|r");
-  EXPECT_EQ_LS(
-      "<b style=\"display:none;\">f^oo</b>"
-      "bar<b style=\"display:none;\">b|az</b>",
-      "<b style=\"display:none;\">foo</b>"
-      "^bar|<b style=\"display:none;\">baz</b>");
-}
-
-TEST_F(LayoutSelectionTest, ComputeLayoutSelectionInsideNone) {
-  EXPECT_EQ_LS("foo<b style=\"display:none;\">b^a|r</b>baz",
-               "foo<b style=\"display:none;\">bar</b>baz");
-  EXPECT_EQ_LS("<b style=\"display:none;\">b|a^r</b>baz",
-               "<b style=\"display:none;\">bar</b>baz");
 }
 
 static const NGPaintFragment* FindNGPaintFragmentInternal(
