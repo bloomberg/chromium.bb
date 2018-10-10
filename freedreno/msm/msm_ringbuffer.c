@@ -46,6 +46,9 @@ struct msm_cmd {
 	DECLARE_ARRAY(struct drm_msm_gem_submit_reloc, relocs);
 
 	uint32_t size;
+
+	/* has cmd already been added to parent rb's submit.cmds table? */
+	int is_appended_to_submit;
 };
 
 struct msm_ringbuffer {
@@ -91,6 +94,18 @@ struct msm_ringbuffer {
 
 	/* maps fd_bo to idx: */
 	void *bo_table;
+
+	/* maps msm_cmd to drm_msm_gem_submit_cmd in parent rb.  Each rb has a
+	 * list of msm_cmd's which correspond to each chunk of cmdstream in
+	 * a 'growable' rb.  For each of those we need to create one
+	 * drm_msm_gem_submit_cmd in the parent rb which collects the state
+	 * for the submit ioctl.  Because we can have multiple IB's to the same
+	 * target rb (for example, or same stateobj emit multiple times), and
+	 * because in theory we can have multiple different rb's that have a
+	 * reference to a given target, we need a hashtable to track this per
+	 * rb.
+	 */
+	void *cmd_table;
 };
 
 static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
@@ -234,13 +249,6 @@ static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t fl
 	return idx;
 }
 
-static int check_cmd_bo(struct fd_ringbuffer *ring,
-		struct drm_msm_gem_submit_cmd *cmd, struct fd_bo *bo)
-{
-	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	return msm_ring->submit.bos[cmd->submit_idx].handle == bo->handle;
-}
-
 /* Ensure that submit has corresponding entry in cmds table for the
  * target cmdstream buffer:
  *
@@ -253,15 +261,31 @@ static int get_cmd(struct fd_ringbuffer *ring, struct msm_cmd *target_cmd,
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct drm_msm_gem_submit_cmd *cmd;
 	uint32_t i;
+	void *val;
 
-	/* figure out if we already have a cmd buf: */
-	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
+	if (!msm_ring->cmd_table)
+		msm_ring->cmd_table = drmHashCreate();
+
+	/* figure out if we already have a cmd buf.. short-circuit hash
+	 * lookup if:
+	 *  - target cmd has never been added to submit.cmds
+	 *  - target cmd is not a streaming stateobj (which unlike longer
+	 *    lived CSO stateobj, is not expected to be reused with multiple
+	 *    submits)
+	 */
+	if (target_cmd->is_appended_to_submit &&
+			!(target_cmd->ring->flags & FD_RINGBUFFER_STREAMING) &&
+			!drmHashLookup(msm_ring->cmd_table, (unsigned long)target_cmd, &val)) {
+		i = VOID2U64(val);
 		cmd = &msm_ring->submit.cmds[i];
-		if ((cmd->submit_offset == submit_offset) &&
-				(cmd->size == size) &&
-				(cmd->type == type) &&
-				check_cmd_bo(ring, cmd, target_cmd->ring_bo))
-			return FALSE;
+
+		assert(cmd->submit_offset == submit_offset);
+		assert(cmd->size == size);
+		assert(cmd->type == type);
+		assert(msm_ring->submit.bos[cmd->submit_idx].handle ==
+				target_cmd->ring_bo->handle);
+
+		return FALSE;
 	}
 
 	/* create cmd buf if not: */
@@ -274,6 +298,13 @@ static int get_cmd(struct fd_ringbuffer *ring, struct msm_cmd *target_cmd,
 	cmd->submit_offset = submit_offset;
 	cmd->size = size;
 	cmd->pad = 0;
+
+	target_cmd->is_appended_to_submit = TRUE;
+
+	if (!(target_cmd->ring->flags & FD_RINGBUFFER_STREAMING)) {
+		drmHashInsert(msm_ring->cmd_table, (unsigned long)target_cmd,
+				U642VOID(i));
+	}
 
 	target_cmd->size = size;
 
@@ -332,6 +363,11 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	if (msm_ring->bo_table) {
 		drmHashDestroy(msm_ring->bo_table);
 		msm_ring->bo_table = NULL;
+	}
+
+	if (msm_ring->cmd_table) {
+		drmHashDestroy(msm_ring->cmd_table);
+		msm_ring->cmd_table = NULL;
 	}
 
 	if (msm_ring->is_growable) {
