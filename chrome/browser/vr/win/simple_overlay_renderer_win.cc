@@ -5,6 +5,9 @@
 #include <dxgi1_2.h>
 
 #include "chrome/browser/vr/win/simple_overlay_renderer_win.h"
+#include "content/public/browser/gpu_utils.h"
+#include "content/public/common/gpu_stream_constants.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace vr {
@@ -12,79 +15,95 @@ namespace vr {
 SimpleOverlayRenderer::SimpleOverlayRenderer() {}
 SimpleOverlayRenderer::~SimpleOverlayRenderer() {}
 
-void SimpleOverlayRenderer::Initialize() {
-  D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
-  D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_1;
-  D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, feature_levels,
-                    base::size(feature_levels), D3D11_SDK_VERSION,
-                    device_.GetAddressOf(), &feature_level_out,
-                    context_.GetAddressOf());
+bool SimpleOverlayRenderer::InitializeOnMainThread() {
+  gpu::GpuChannelEstablishFactory* factory =
+      content::GetGpuChannelEstablishFactory();
+  scoped_refptr<gpu::GpuChannelHost> host = factory->EstablishGpuChannelSync();
+
+  gpu::ContextCreationAttribs attributes;
+  attributes.alpha_size = -1;
+  attributes.red_size = 8;
+  attributes.green_size = 8;
+  attributes.blue_size = 8;
+  attributes.stencil_size = 0;
+  attributes.depth_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+
+  context_provider_ = base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+      host, factory->GetGpuMemoryBufferManager(), content::kGpuStreamIdDefault,
+      content::kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
+      GURL(std::string("chrome://gpu/SimpleOverlayRendererWin")),
+      false /* automatic flushes */, false /* support locking */,
+      false /* support grcontext */,
+      gpu::SharedMemoryLimits::ForMailboxContext(), attributes,
+      ws::command_buffer_metrics::ContextType::XR_COMPOSITING);
+  gpu_memory_buffer_manager_ = factory->GetGpuMemoryBufferManager();
+  return true;
+}
+
+void SimpleOverlayRenderer::InitializeOnGLThread() {
+  DCHECK(context_provider_);
+  if (context_provider_->BindToCurrentThread() == gpu::ContextResult::kSuccess)
+    gl_ = context_provider_->ContextGL();
 }
 
 void SimpleOverlayRenderer::Render() {
-  if (!device_)
+  if (!gl_)
     return;
-  if (!texture_) {
-    D3D11_TEXTURE2D_DESC desc = {
-        128,
-        128,
-        1,
-        1,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
-        {1, 0},
-        D3D11_USAGE_DEFAULT,
-        D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
-        0,
-        D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
-            D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX};
 
-    device_->CreateTexture2D(&desc, nullptr, texture_.GetAddressOf());
-    rtv_ = nullptr;
-  }
+  int width = 512;
+  int height = 512;
 
-  if (texture_ && !rtv_) {
-    D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
-    render_target_view_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-    render_target_view_desc.Texture2D.MipSlice = 0;
-    HRESULT hr = device_->CreateRenderTargetView(
-        texture_.Get(), &render_target_view_desc, rtv_.GetAddressOf());
-    if (FAILED(hr)) {
-      texture_ = nullptr;
-    }
-  }
+  // Create a memory buffer, and an image referencing that memory buffer.
+  if (!EnsureMemoryBuffer(width, height))
+    return;
 
-  if (texture_ && rtv_) {
-    Microsoft::WRL::ComPtr<IDXGIKeyedMutex> mutex;
-    HRESULT hr = texture_.As(&mutex);
-    if (SUCCEEDED(hr)) {
-      mutex->AcquireSync(0, INFINITE);
+  // Create a texture id, and associate it with our image.
+  GLuint dest_texture_id;
+  gl_->GenTextures(1, &dest_texture_id);
+  GLenum target = GL_TEXTURE_2D;
+  gl_->BindTexture(target, dest_texture_id);
+  gl_->TexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  gl_->TexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  gl_->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl_->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl_->BindTexImage2DCHROMIUM(target, image_id_);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
 
-      static constexpr float color[4] = {1, 0, 0, 0.5};
-      context_->ClearRenderTargetView(rtv_.Get(), color);
+  // Bind our image/texture/memory buffer as the draw framebuffer.
+  GLuint draw_frame_buffer_;
+  gl_->GenFramebuffers(1, &draw_frame_buffer_);
+  gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER, draw_frame_buffer_);
+  gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+                            dest_texture_id, 0);
 
-      mutex->ReleaseSync(1);
-    } else {
-      rtv_ = nullptr;
-      texture_ = nullptr;
-    }
-  }
+  // Do some drawing.
+  gl_->ClearColor(0, 1, 0, 0.5f);
+  gl_->Clear(GL_COLOR_BUFFER_BIT);
+
+  // Unbind the drawing buffer.
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  gl_->DeleteFramebuffers(1, &draw_frame_buffer_);
+  gl_->BindTexture(target, dest_texture_id);
+  gl_->ReleaseTexImage2DCHROMIUM(target, image_id_);
+  gl_->DeleteTextures(1, &dest_texture_id);
+  gl_->BindTexture(target, 0);
+
+  // Flush.
+  gl_->ShallowFlushCHROMIUM();
 }
 
 mojo::ScopedHandle SimpleOverlayRenderer::GetTexture() {
+  // Hand out the gpu memory buffer.
   mojo::ScopedHandle handle;
-
-  Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
-  if (FAILED(texture_.CopyTo(dxgi_resource.GetAddressOf())))
+  if (!gpu_memory_buffer_) {
     return handle;
+  }
 
-  HANDLE texture_handle;
-  if (FAILED(dxgi_resource->CreateSharedHandle(
-          nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
-          nullptr, &texture_handle)))
-    return handle;
-
-  return mojo::WrapPlatformFile(texture_handle);
+  gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer_->CloneHandle();
+  return mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle());
 }
 
 gfx::RectF SimpleOverlayRenderer::GetLeft() {
@@ -93,6 +112,44 @@ gfx::RectF SimpleOverlayRenderer::GetLeft() {
 
 gfx::RectF SimpleOverlayRenderer::GetRight() {
   return gfx::RectF(0.5, 0, 0.5, 1);
+}
+
+void SimpleOverlayRenderer::Cleanup() {
+  context_provider_ = nullptr;
+}
+
+bool SimpleOverlayRenderer::EnsureMemoryBuffer(int width, int height) {
+  if (last_width_ != width || last_height_ != height || !gpu_memory_buffer_) {
+    if (!gpu_memory_buffer_manager_)
+      return false;
+
+    if (image_id_) {
+      gl_->DestroyImageCHROMIUM(image_id_);
+      image_id_ = 0;
+    }
+
+    gpu_memory_buffer_ = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+        gfx::Size(width, height), gfx::BufferFormat::RGBA_8888,
+        gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle);
+    if (!gpu_memory_buffer_)
+      return false;
+
+    last_width_ = width;
+    last_height_ = height;
+
+    image_id_ = gl_->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
+                                         width, height, GL_RGBA);
+    if (!image_id_) {
+      gpu_memory_buffer_ = nullptr;
+      return false;
+    }
+  }
+  return true;
+}
+
+void SimpleOverlayRenderer::ResetMemoryBuffer() {
+  // Stop using a memory buffer if we had an error submitting with it.
+  gpu_memory_buffer_ = nullptr;
 }
 
 }  // namespace vr

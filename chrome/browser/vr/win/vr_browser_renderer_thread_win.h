@@ -21,16 +21,18 @@ class VRBrowserRendererThreadWin : base::Thread {
   VRBrowserRendererThreadWin();
   ~VRBrowserRendererThreadWin() override;
 
+  // base::Thread overrides
+  void CleanUp() override;
+
   // Initially we are just rendering a solid-color rectangle overlay as a
   // proof-of-concept.  Eventually, this will draw real content.
   void StartOverlay(device::mojom::XRCompositorHost* host);
-
-  void CleanUp() override;
 
  private:
   void StartOverlayOnRenderThread(
       device::mojom::ImmersiveOverlayPtrInfo overlay);
   void OnPose(device::mojom::XRFrameDataPtr data);
+  void SubmitResult(bool success);
 
   SimpleOverlayRenderer renderer_;
   device::mojom::ImmersiveOverlayPtr overlay_;

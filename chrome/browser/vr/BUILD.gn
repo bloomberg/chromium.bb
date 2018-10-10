@@ -304,10 +304,7 @@ component("vr_common") {
       "win/vr_renderloop_host_win.h",
     ]
 
-    libs = [
-      "d3d11.lib",
-      "DXGI.lib",
-    ]
+    deps += [ "//services/ws/public/cpp/gpu" ]
   }
 
   defines = [
