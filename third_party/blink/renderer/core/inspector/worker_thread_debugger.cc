@@ -78,7 +78,7 @@ void WorkerThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
                                                 SourceLocation* location) {
   if (!context)
     return;
-  ToWorkerOrWorkletGlobalScope(context)
+  To<WorkerOrWorkletGlobalScope>(context)
       ->GetThread()
       ->GetWorkerReportingProxy()
       .ReportConsoleMessage(source, level, message, location);
@@ -153,7 +153,7 @@ void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
 }
 
 int WorkerThreadDebugger::ContextGroupId(ExecutionContext* context) {
-  return ContextGroupId(ToWorkerOrWorkletGlobalScope(context)->GetThread());
+  return ContextGroupId(To<WorkerOrWorkletGlobalScope>(context)->GetThread());
 }
 
 void WorkerThreadDebugger::PauseWorkerOnStart(WorkerThread* worker_thread) {

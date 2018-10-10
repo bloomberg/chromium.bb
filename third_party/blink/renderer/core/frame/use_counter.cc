@@ -1399,9 +1399,8 @@ void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
     Count(*document, feature);
     return;
   }
-  if (context->IsWorkerOrWorkletGlobalScope()) {
-    ToWorkerOrWorkletGlobalScope(context)->CountFeature(feature);
-  }
+  if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context))
+    scope->CountFeature(feature);
 }
 
 bool UseCounter::IsCounted(Document& document, WebFeature feature) {

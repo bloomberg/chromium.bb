@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -132,12 +133,12 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   TraceWrapperMember<Modulator> modulator_;
 };
 
-DEFINE_TYPE_CASTS(
-    WorkerOrWorkletGlobalScope,
-    ExecutionContext,
-    context,
-    (context->IsWorkerGlobalScope() || context->IsWorkletGlobalScope()),
-    (context.IsWorkerGlobalScope() || context.IsWorkletGlobalScope()));
+template <>
+struct DowncastTraits<WorkerOrWorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsWorkerGlobalScope() || context.IsWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 
