@@ -620,22 +620,14 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   bool would_exceed_quota_;
   int64_t space_available_;
   int64_t new_origin_usage_;
-  int64_t max_appcache_origin_cache_size_;
   std::vector<int64_t> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
-    AppCacheStorageImpl* storage,
-    AppCacheGroup* group,
-    AppCache* newest_cache)
-    : StoreOrLoadTask(storage),
-      group_(group),
-      cache_(newest_cache),
-      success_(false),
-      would_exceed_quota_(false),
-      space_available_(-1),
-      new_origin_usage_(-1),
-      max_appcache_origin_cache_size_(kDefaultQuota) {
+    AppCacheStorageImpl* storage, AppCacheGroup* group, AppCache* newest_cache)
+    : StoreOrLoadTask(storage), group_(group), cache_(newest_cache),
+      success_(false), would_exceed_quota_(false),
+      space_available_(-1), new_origin_usage_(-1) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = url::Origin::Create(group_record_.manifest_url);
@@ -649,15 +641,6 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       &intercept_namespace_records_,
       &fallback_namespace_records_,
       &online_whitelist_records_);
-
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kMaxAppCacheOriginCacheSizeMb)) {
-    if (base::StringToInt64(command_line.GetSwitchValueASCII(
-                                switches::kMaxAppCacheOriginCacheSizeMb),
-                            &max_appcache_origin_cache_size_)) {
-      max_appcache_origin_cache_size_ *= kMB;
-    }
-  }
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
@@ -779,10 +762,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     return;
   }
 
-  // Use a user defined value or a simple hard-coded value when not using quota
-  // management.
+  // Use a simple hard-coded value when not using quota management.
   if (space_available_ == -1) {
-    if (new_origin_usage_ > max_appcache_origin_cache_size_) {
+    if (new_origin_usage_ > kDefaultQuota) {
       would_exceed_quota_ = true;
       success_ = false;
       return;
