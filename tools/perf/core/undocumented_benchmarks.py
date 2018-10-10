@@ -31,7 +31,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'rasterize_and_record_micro.partial_invalidation',
   'rasterize_and_record_micro.top_25',
   'resource_sizes',
-  'sizes (linux)',
   'sizes (mac)',
   'sizes (win)',
   'smoothness.gpu_rasterization.tough_pinch_zoom_cases',
