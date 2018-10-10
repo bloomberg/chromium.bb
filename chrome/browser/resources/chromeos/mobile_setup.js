@@ -115,7 +115,17 @@ cr.define('mobile', function() {
         return;
       }
 
-      chrome.send('paymentPortalLoad', ['ok']);
+      // Workaround for https://crbug.com/893248 - for some reason, the payment
+      // portal does not load properly after the payment frame submition.
+      // Reloading the frame seems to bypass the problem.
+      // TODO(tbarzic): Remove this once the problem has been properly
+      //     addressed.
+      if (!this.paymentPortalReloaded_) {
+        this.paymentPortalReloaded_ = true;
+        $('portalFrameWebview').reload();
+      } else {
+        chrome.send('paymentPortalLoad', ['ok']);
+      }
     },
 
     /**
@@ -158,6 +168,8 @@ cr.define('mobile', function() {
 
       var frame = document.createElement('webview');
       frame.id = 'portalFrameWebview';
+
+      this.paymentPortalReloaded_ = false;
 
       $('portalFrame').appendChild(frame);
 
