@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -155,23 +156,24 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   ReleaseCodec();
   codec_allocator_->StopThread(this);
-
-  if (!media_crypto_context_)
-    return;
-
-  // Cancel previously registered callback (if any).
-  media_crypto_context_->SetMediaCryptoReadyCB(
-      MediaCryptoContext::MediaCryptoReadyCB());
-
-  if (cdm_registration_id_)
-    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
   DVLOG(1) << __func__;
+
+  if (media_crypto_context_) {
+    // Cancel previously registered callback (if any).
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
+    if (cdm_registration_id_)
+      media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
+    media_crypto_context_ = nullptr;
+    cdm_registration_id_ = 0;
+  }
+
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     std::move(reset_cb_).Run();
+
   // Cancel callbacks we no longer want.
   codec_allocator_weak_factory_.InvalidateWeakPtrs();
   CancelPendingDecodes(DecodeStatus::ABORTED);

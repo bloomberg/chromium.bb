@@ -282,12 +282,13 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
   bool require_secure_video_decoder_ = false;
 
+  // This must outlive |mcvd_| .
+  std::unique_ptr<MockMediaCryptoContext> cdm_;
+
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
   MediaCodecVideoDecoder* mcvd_raw_;
   std::unique_ptr<MediaCodecVideoDecoder> mcvd_;
-  // This must outlive |mcvd_| .
-  std::unique_ptr<MockMediaCryptoContext> cdm_;
 };
 
 // Tests which only work for a single codec.
@@ -637,6 +638,46 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
   codec->ProduceOneOutput(MockMediaCodecBridge::kEos);
   PumpCodec();
   testing::Mock::VerifyAndClearExpectations(&reset_cb);
+}
+
+// Makes sure UnregisterPlayer() works with async decoder destruction.
+// Uses VP8 because this is the only codec that could trigger async destruction.
+// See https://crbug.com/893498
+TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeAsyncDestruction) {
+  CreateCdm(true, false);
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
+  auto* codec = InitializeFully_OneDecodePending(
+      TestVideoConfig::NormalEncrypted(codec_));
+
+  // Accept the first decode to transition out of the flushed state. This is
+  // necessary to make sure the decoder is destructed asynchronously.
+  codec->AcceptOneInput();
+  PumpCodec();
+
+  // When |mcvd_| is reset, expect that it will unregister itself immediately,
+  // before the decoder is actually destructed, asynchronously.
+  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
+  mcvd_.reset();
+
+  // Make sure the decoder has not been destroyed yet.
+  destruction_observer_->DoNotAllowDestruction();
+}
+
+// A reference test for UnregisterPlayerBeforeAsyncDestruction.
+TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeSyncDestruction) {
+  CreateCdm(true, false);
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
+  InitializeFully_OneDecodePending(TestVideoConfig::NormalEncrypted(codec_));
+
+  // Do not attempt any decode to keep the decoder in a clean state. This is
+  // necessary to make sure the decoder is destructed synchronously.
+
+  // When |mcvd_| is reset, expect that it will unregister itself immediately.
+  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
+  mcvd_.reset();
+
+  // Make sure the decoder is now destroyed.
+  destruction_observer_->ExpectDestruction();
 }
 
 TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
