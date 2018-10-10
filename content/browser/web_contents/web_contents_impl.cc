@@ -1674,12 +1674,7 @@ void WebContentsImpl::WasShown() {
     if (!parent)
       continue;
 
-    if (parent->cross_process_frame_connector()->IsVisible()) {
-      // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
-      // crash might have been already logged earlier as kCrashedWhileVisible.
-      parent->cross_process_frame_connector()->MaybeLogCrash(
-          CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing);
-    }
+    parent->cross_process_frame_connector()->DelegateWasShown();
   }
 }
 

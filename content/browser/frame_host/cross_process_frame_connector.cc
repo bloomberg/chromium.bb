@@ -145,6 +145,7 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
       MaybeLogCrash(CrashVisibility::kNeverVisibleAfterCrash);
     }
     is_crash_already_logged_ = has_crashed_ = false;
+    delegate_was_shown_after_crash_ = false;
 
     view_->SetFrameConnectorDelegate(this);
     if (is_hidden_)
@@ -369,20 +370,19 @@ void CrossProcessFrameConnector::OnUpdateViewportIntersection(
         viewport_intersection, compositor_visible_rect, occluded_or_obscured);
 
   if (IsVisible()) {
-    // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
-    // crash might have been already logged earlier as kCrashedWhileVisible or
-    // kShownAfterCrashing.
-    MaybeLogCrash(CrashVisibility::kShownAfterCrashing);
+    // Record metrics if a crashed subframe became visible as a result of this
+    // viewport intersection update.  For example, this might happen if a user
+    // scrolls to a crashed subframe.
+    MaybeLogShownCrash(ShownAfterCrashingReason::kViewportIntersection);
   }
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
   is_hidden_ = !visible;
   if (IsVisible()) {
-    // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
-    // crash might have been already logged earlier as kCrashedWhileVisible or
-    // kShownAfterCrashing.
-    MaybeLogCrash(CrashVisibility::kShownAfterCrashing);
+    // Record metrics if a crashed subframe became visible as a result of this
+    // visibility change.
+    MaybeLogShownCrash(ShownAfterCrashingReason::kVisibility);
   }
   if (!view_)
     return;
@@ -545,17 +545,53 @@ bool CrossProcessFrameConnector::IsSubtreeThrottled() const {
   return subtree_throttled_;
 }
 
-void CrossProcessFrameConnector::MaybeLogCrash(CrashVisibility visibility) {
+bool CrossProcessFrameConnector::MaybeLogCrash(CrashVisibility visibility) {
   if (!has_crashed_)
-    return;
+    return false;
 
   // Only log once per renderer crash.
   if (is_crash_already_logged_)
-    return;
+    return false;
   is_crash_already_logged_ = true;
 
   // Actually log the UMA.
   UMA_HISTOGRAM_ENUMERATION("Stability.ChildFrameCrash.Visibility", visibility);
+
+  return true;
+}
+
+void CrossProcessFrameConnector::MaybeLogShownCrash(
+    ShownAfterCrashingReason reason) {
+  if (!MaybeLogCrash(CrashVisibility::kShownAfterCrashing))
+    return;
+
+  // Identify cases where the sad frame was initially in a hidden tab, then the
+  // tab became visible, and finally the sad frame became visible because it
+  // was scrolled into view or its visibility changed.  Record these cases
+  // separately, since they might be avoided by reloading the tab when it
+  // becomes visible.
+  if (delegate_was_shown_after_crash_) {
+    if (reason == ShownAfterCrashingReason::kViewportIntersection)
+      reason = ShownAfterCrashingReason::kViewportIntersectionAfterTabWasShown;
+    else if (reason == ShownAfterCrashingReason::kVisibility)
+      reason = ShownAfterCrashingReason::kVisibilityAfterTabWasShown;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason", reason);
+}
+
+void CrossProcessFrameConnector::DelegateWasShown() {
+  if (IsVisible()) {
+    // MaybeLogShownCrash will check 1) if there was a crash or not and 2) if
+    // the crash might have been already logged earlier as
+    // kCrashedWhileVisible.
+    MaybeLogShownCrash(
+        CrossProcessFrameConnector::ShownAfterCrashingReason::kTabWasShown);
+  }
+
+  if (has_crashed_)
+    delegate_was_shown_after_crash_ = true;
 }
 
 bool CrossProcessFrameConnector::IsVisible() {

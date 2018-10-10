@@ -12660,13 +12660,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Verify that no child frame metrics got logged (yet - while WebContents are
   // hidden).
   histograms.ExpectTotalCount("Stability.ChildFrameCrash.Visibility", 0);
+  histograms.ExpectTotalCount(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason", 0);
 
-  // Show the web contents.
-  // and verify that the expected metrics got logged.
+  // Show the web contents and verify that the expected metrics got logged.
   web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
   histograms.ExpectUniqueSample(
       "Stability.ChildFrameCrash.Visibility",
       CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 10);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason",
+      CrossProcessFrameConnector::ShownAfterCrashingReason::kTabWasShown, 10);
 
   // Hide and show the web contents again and verify that no more metrics got
   // logged.
@@ -12675,6 +12679,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   histograms.ExpectUniqueSample(
       "Stability.ChildFrameCrash.Visibility",
       CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 10);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason",
+      CrossProcessFrameConnector::ShownAfterCrashingReason::kTabWasShown, 10);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
@@ -12744,6 +12751,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Verify that no child frame metrics got logged (yet - while the subframe is
   // below the fold / is not scrolled into view).
   histograms.ExpectTotalCount("Stability.ChildFrameCrash.Visibility", 0);
+  histograms.ExpectTotalCount(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason", 0);
 
   // Scroll the subframe into view and wait until the scrolled frame draws
   // itself.
@@ -12758,6 +12767,83 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   histograms.ExpectUniqueSample(
       "Stability.ChildFrameCrash.Visibility",
       CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 1);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason",
+      CrossProcessFrameConnector::ShownAfterCrashingReason::
+          kViewportIntersection,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
+  // Start on a page that has a single iframe, which is positioned out of
+  // view, and navigate that iframe cross-site.
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  NavigateFrameToURL(root->child_at(0),
+                     embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Hide the web contents (UpdateWebContentsVisibility is called twice to avoid
+  // hitting the |!did_first_set_visible_| case).
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+
+  // Kill the child frame.
+  base::HistogramTester histograms;
+  RenderProcessHost* child_process =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Verify that no child frame crash metrics got logged yet.
+  histograms.ExpectTotalCount("Stability.ChildFrameCrash.Visibility", 0);
+  histograms.ExpectTotalCount(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason", 0);
+
+  // Show the web contents.  The crash metrics still shouldn't be logged, since
+  // the crashed frame is out of view.
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  histograms.ExpectTotalCount("Stability.ChildFrameCrash.Visibility", 0);
+  histograms.ExpectTotalCount(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason", 0);
+
+  // Scroll the subframe into view and wait until the scrolled frame draws
+  // itself.
+  MainThreadFrameObserver main_widget_observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  std::string scrolling_script = R"(
+    var frame = document.body.querySelector("iframe");
+    frame.scrollIntoView();
+  )";
+  EXPECT_TRUE(ExecuteScript(root, scrolling_script));
+  main_widget_observer.Wait();
+
+  // Verify that the expected metrics got logged.
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.Visibility",
+      CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 1);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason",
+      CrossProcessFrameConnector::ShownAfterCrashingReason::
+          kViewportIntersectionAfterTabWasShown,
+      1);
+
+  // Hide and show the web contents again and verify that no more metrics got
+  // logged.
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.Visibility",
+      CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 1);
+  histograms.ExpectUniqueSample(
+      "Stability.ChildFrameCrash.ShownAfterCrashingReason",
+      CrossProcessFrameConnector::ShownAfterCrashingReason::
+          kViewportIntersectionAfterTabWasShown,
+      1);
 }
 
 // Check that when a frame changes a subframe's size twice and then sends a
