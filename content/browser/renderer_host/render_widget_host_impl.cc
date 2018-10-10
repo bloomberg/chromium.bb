@@ -269,10 +269,6 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
 
 class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
  public:
-  void FlushForTesting(FlushForTestingCallback callback) override {
-    CHECK(false) << "Flush for testing called on an unbound interface.";
-  }
-
   void SetFocus(bool focused) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
@@ -984,10 +980,11 @@ void RenderWidgetHostImpl::Blur() {
   focused_widget->SetPageFocus(false);
 }
 
-void RenderWidgetHostImpl::FlushForTesting(FlushForTestingCallback callback) {
-  // Flush IPC messages on WidgetInputHandler to ensure that SetFocus() messages
-  // have been processed.
-  GetWidgetInputHandler()->FlushForTesting(std::move(callback));
+void RenderWidgetHostImpl::FlushForTesting() {
+  if (associated_widget_input_handler_)
+    return associated_widget_input_handler_.FlushForTesting();
+  if (widget_input_handler_)
+    return widget_input_handler_.FlushForTesting();
 }
 
 void RenderWidgetHostImpl::SetPageFocus(bool focused) {

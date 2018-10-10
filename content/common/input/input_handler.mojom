@@ -198,10 +198,6 @@ interface WidgetInputHandlerHost {
 // an input interface for an associated Widget object. See FrameInputHandler
 // for an interface at the frame level.
 interface WidgetInputHandler {
-  // A simple mechanism by which the caller can ensure that all previous
-  // messages have been flushed.
-  FlushForTesting() => ();
-
   // Tells widget focus has been changed.
   SetFocus(bool focused);
 

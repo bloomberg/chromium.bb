@@ -187,7 +187,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void NotifyTextDirection() override;
   void Focus() override;
   void Blur() override;
-  void FlushForTesting(FlushForTestingCallback callback) override;
+  void FlushForTesting() override;
   void SetActive(bool active) override;
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardWheelEvent(const blink::WebMouseWheelEvent& wheel_event) override;

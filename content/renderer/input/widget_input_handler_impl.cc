@@ -67,18 +67,6 @@ void WidgetInputHandlerImpl::SetBinding(
       base::BindOnce(&WidgetInputHandlerImpl::Release, base::Unretained(this)));
 }
 
-void WidgetInputHandlerImpl::FlushForTesting(FlushForTestingCallback callback) {
-  auto run_on_this_thread = base::BindOnce(
-      [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-         FlushForTestingCallback callback) {
-        task_runner->PostTask(FROM_HERE, std::move(callback));
-      },
-      base::ThreadTaskRunnerHandle::Get(), std::move(callback));
-
-  // Hop to main thread to ensure everything there is flushed.
-  RunOnMainThread(std::move(run_on_this_thread));
-}
-
 void WidgetInputHandlerImpl::SetFocus(bool focused) {
   RunOnMainThread(
       base::BindOnce(&RenderWidget::OnSetFocus, render_widget_, focused));

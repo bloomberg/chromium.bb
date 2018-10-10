@@ -26,10 +26,6 @@ MockWidgetInputHandler::MockWidgetInputHandler(
 
 MockWidgetInputHandler::~MockWidgetInputHandler() {}
 
-void MockWidgetInputHandler::FlushForTesting(FlushForTestingCallback callback) {
-  std::move(callback).Run();
-}
-
 void MockWidgetInputHandler::SetFocus(bool focused) {
   dispatched_messages_.emplace_back(
       std::make_unique<DispatchedFocusMessage>(focused));

@@ -79,11 +79,6 @@ void LayoutTestRenderFrameObserver::ReplicateTestConfiguration(
       ->OnReplicateTestConfiguration(std::move(config));
 }
 
-void LayoutTestRenderFrameObserver::FlushForTesting(
-    FlushForTestingCallback callback) {
-  std::move(callback).Run();
-}
-
 void LayoutTestRenderFrameObserver::SetTestConfiguration(
     mojom::ShellTestConfigurationPtr config) {
   BlinkTestRunner::Get(render_frame()->GetRenderView())
