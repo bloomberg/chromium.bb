@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -71,6 +72,30 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
   return (app_url.host_piece() == page_url.host_piece() ||
           std::string("www.") + app_url.host() == page_url.host_piece()) &&
          app_url.port() == page_url.port();
+}
+
+// Returns true if |page_url| is in the scope of the app for |app_url|. If the
+// app has no scope defined (as in a bookmark app), we fall back to checking
+// |page_url| has the same origin as |app_url|.
+bool IsSameScope(const GURL& app_url,
+                 const GURL& page_url,
+                 content::BrowserContext* profile) {
+  // We can only check scope on apps that are installed PWAs, so fall
+  // back to same origin check if PWA windowing is not enabled
+  // (GetInstalledPwaForUrl requires this).
+  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
+    return IsSameHostAndPort(app_url, page_url);
+
+  const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
+      profile, app_url, extensions::LAUNCH_CONTAINER_WINDOW);
+
+  // We don't have a scope, fall back to same origin check.
+  if (!app_for_window)
+    return IsSameHostAndPort(app_url, page_url);
+
+  return app_for_window ==
+         extensions::util::GetInstalledPwaForUrl(
+             profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
 // Gets the icon to use if the extension app icon is not available.
@@ -189,10 +214,12 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
     return true;
   }
 
-  // Page URLs that do not match the launch URL's host and port show the
-  // location bar.
-  if (!IsSameHostAndPort(launch_url, last_committed_url) ||
-      !IsSameHostAndPort(launch_url, visible_url))
+  // Page URLs that are not within scope
+  // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+  // corresponding to |launch_url| show the location bar.
+  if (!IsSameScope(launch_url, last_committed_url,
+                   web_contents->GetBrowserContext()) ||
+      !IsSameScope(launch_url, visible_url, web_contents->GetBrowserContext()))
     return true;
 
   // Insecure external web sites show the location bar.
