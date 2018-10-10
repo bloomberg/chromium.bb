@@ -68,6 +68,15 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 // accounts have changed in the content-area.
 const char* const kGaiaCookieName = "APISID";
 
+// State of requests to Gaia logout endpoint. Used as entry for histogram
+// |Signin.GaiaCookieManager.Logout|.
+enum LogoutRequestState {
+  kStarted = 0,
+  kSuccess = 1,
+  kFailed = 2,
+  kMaxValue = kFailed
+};
+
 // Records metrics for ListAccounts failures.
 void RecordListAccountsFailure(GoogleServiceAuthError::State error_state) {
   UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsFailure", error_state,
@@ -77,6 +86,10 @@ void RecordListAccountsFailure(GoogleServiceAuthError::State error_state) {
 void RecordGetAccessTokenFinished(GoogleServiceAuthError error) {
   UMA_HISTOGRAM_ENUMERATION("Signin.GetAccessTokenFinished", error.state(),
                             GoogleServiceAuthError::NUM_STATES);
+}
+
+void RecordLogoutRequestState(LogoutRequestState logout_state) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.GaiaCookieManager.Logout", logout_state);
 }
 
 void RecordMultiloginFinished(GoogleServiceAuthError error) {
@@ -925,6 +938,7 @@ void GaiaCookieManagerService::OnListAccountsFailure(
 void GaiaCookieManagerService::OnLogOutSuccess() {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::OnLogOutSuccess";
+  RecordLogoutRequestState(LogoutRequestState::kSuccess);
 
   list_accounts_stale_ = true;
   fetcher_backoff_.InformOfRequest(true);
@@ -939,6 +953,7 @@ void GaiaCookieManagerService::OnLogOutFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::OnLogOutFailure";
+  RecordLogoutRequestState(LogoutRequestState::kFailed);
 
   if (++fetcher_retries_ < signin::kMaxFetcherRetries) {
     fetcher_backoff_.InformOfRequest(false);
@@ -1017,6 +1032,7 @@ void GaiaCookieManagerService::StartGaiaLogOut() {
 }
 
 void GaiaCookieManagerService::StartFetchingLogOut() {
+  RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
   gaia_auth_fetcher_->StartLogOut();
