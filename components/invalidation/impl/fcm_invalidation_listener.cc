@@ -97,10 +97,8 @@ void FCMInvalidationListener::DispatchInvalidations(
 void FCMInvalidationListener::SaveInvalidations(
     const TopicInvalidationMap& to_save) {
   ObjectIdSet objects_to_save = ConvertTopicsToIds(to_save.GetTopics());
-  for (ObjectIdSet::const_iterator it = objects_to_save.begin();
-       it != objects_to_save.end(); ++it) {
-    UnackedInvalidationsMap::iterator lookup =
-        unacked_invalidations_map_.find(*it);
+  for (auto it = objects_to_save.begin(); it != objects_to_save.end(); ++it) {
+    auto lookup = unacked_invalidations_map_.find(*it);
     if (lookup == unacked_invalidations_map_.end()) {
       lookup = unacked_invalidations_map_
                    .insert(std::make_pair(*it, UnackedInvalidationSet(*it)))
@@ -124,8 +122,7 @@ void FCMInvalidationListener::InformTokenRecieved(InvalidationClient* client,
 
 void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
                                           const syncer::AckHandle& handle) {
-  UnackedInvalidationsMap::iterator lookup =
-      unacked_invalidations_map_.find(id);
+  auto lookup = unacked_invalidations_map_.find(id);
   if (lookup == unacked_invalidations_map_.end()) {
     DLOG(WARNING) << "Received acknowledgement for untracked object ID";
     return;
@@ -135,8 +132,7 @@ void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
 
 void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
                                    const syncer::AckHandle& handle) {
-  UnackedInvalidationsMap::iterator lookup =
-      unacked_invalidations_map_.find(id);
+  auto lookup = unacked_invalidations_map_.find(id);
   if (lookup == unacked_invalidations_map_.end()) {
     DLOG(WARNING) << "Received drop for untracked object ID";
     return;
