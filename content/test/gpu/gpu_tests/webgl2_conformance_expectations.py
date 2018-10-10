@@ -463,23 +463,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_05.html',
-        ['highsierra', ('intel', 0xa2e)], bug=774826)
+        ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774826)
     self.Fail('conformance2/glsl3/array-assign.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/fborender/resize_03.html',
         ['highsierra', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_00.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_02.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_cube_00.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
 
     # Fails on multiple GPU types.
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',

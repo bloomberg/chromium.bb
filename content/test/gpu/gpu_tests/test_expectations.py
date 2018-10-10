@@ -9,7 +9,7 @@ import urlparse
 #
 # Operating systems:
 #     win, xp, vista, win7, win8, win10, mac, leopard, snowleopard,
-#     lion, mountainlion, mavericks, yosemite, sierra, highsierra,
+#     lion, mountainlion, mavericks, yosemite, sierra, highsierra, mojave
 #     linux, chromeos, android
 #
 # Browser types:
@@ -24,7 +24,7 @@ import urlparse
 
 WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
 MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
-                  'mavericks', 'yosemite', 'sierra', 'highsierra']
+                  'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
 
 OS_CONDITIONS = ['win', 'mac', 'linux', 'chromeos', 'android'] + \
                 WIN_CONDITIONS + MAC_CONDITIONS
