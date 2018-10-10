@@ -36,7 +36,6 @@
     <color name="black_alpha_65">#A6000000</color>
     <color name="white_alpha_50">#80FFFFFF</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
-    <color name="white_alpha_70">#B3FFFFFF</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
 
     <!-- Old color palette -->
@@ -138,7 +137,7 @@
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
-    <color name="locationbar_light_hint_text">@color/modern_grey_400</color>
+    <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
     <color name="locationbar_light_selection_color">#CC5595FE</color>
     <color name="locationbar_status_offline_color">@color/modern_grey_900</color>
     <color name="locationbar_status_offline_color_light">@android:color/white</color>
@@ -164,9 +163,6 @@
 
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">@color/modern_grey_50</color>
-
-    <!-- Bookmark UI colors -->
-    <color name="bookmark_detail_section">#7C7B79</color>
 
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#787878</color>

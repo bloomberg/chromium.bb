@@ -39,8 +39,7 @@
             android:includeFontPadding="false"
             android:singleLine="true"
             android:textAlignment="viewStart"
-            android:textColor="@drawable/dropdown_label_color"
-            android:textSize="@dimen/text_size_large" />
+            android:textAppearance="@style/BlackTitle1" />
 
         <TextView
             android:id="@+id/dropdown_sublabel"

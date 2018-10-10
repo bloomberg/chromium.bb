@@ -32,8 +32,8 @@ public class PhotoPickerToolbar extends SelectableListToolbar<PickerBitmap> {
 
         TextView up = (TextView) mNumberRollView.findViewById(R.id.up);
         TextView down = (TextView) mNumberRollView.findViewById(R.id.down);
-        ApiCompatibilityUtils.setTextAppearance(up, R.style.BlackHeadline2);
-        ApiCompatibilityUtils.setTextAppearance(down, R.style.BlackHeadline2);
+        ApiCompatibilityUtils.setTextAppearance(up, R.style.BlackHeadline);
+        ApiCompatibilityUtils.setTextAppearance(down, R.style.BlackHeadline);
     }
 
     @Override

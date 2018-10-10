@@ -154,7 +154,6 @@
     <dimen name="promo_dialog_padding">16dp</dimen>
     <dimen name="promo_dialog_max_content_width">320dp</dimen>
     <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
-    <dimen name="promo_dialog_title_text_size">23sp</dimen>
 
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">252dp</dimen>
@@ -304,6 +303,9 @@
     <dimen name="tile_view_width_condensed">64dp</dimen>
     <dimen name="tile_view_icon_size">48dp</dimen>
     <dimen name="tile_view_icon_size_modern">24dp</dimen>
+    <dimen name="tile_view_icon_min_size">24px</dimen>
+    <dimen name="tile_view_icon_corner_radius">4dp</dimen>
+    <dimen name="tile_view_icon_text_size">20dp</dimen>
     <dimen name="tile_view_monogram_size_modern">26dp</dimen>
     <dimen name="tile_view_icon_margin_top_modern">19dp</dimen>
     <dimen name="tile_view_monogram_margin_top_modern">18dp</dimen>

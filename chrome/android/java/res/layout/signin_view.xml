@@ -41,7 +41,7 @@
                 android:layout_marginStart="@dimen/signin_margin_start"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
-                android:textAppearance="@style/BlackHeadline1"
+                android:textAppearance="@style/BlackHeadline"
                 tools:text="@string/signin_title"/>
             <LinearLayout
                 android:id="@+id/signin_account_picker"

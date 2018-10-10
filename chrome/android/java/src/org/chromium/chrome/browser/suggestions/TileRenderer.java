@@ -41,10 +41,6 @@ import java.util.Map;
 public class TileRenderer {
     private static final String TAG = "TileRenderer";
 
-    private static final int ICON_CORNER_RADIUS_DP = 4;
-    private static final int ICON_TEXT_SIZE_DP = 20;
-    private static final int ICON_MIN_SIZE_PX = 24;
-
     private final Resources mResources;
     private final ImageFetcher mImageFetcher;
     private final RoundedIconGenerator mIconGenerator;
@@ -54,6 +50,7 @@ public class TileRenderer {
     private final int mTitleLinesCount;
     private final int mDesiredIconSize;
     private final int mMinIconSize;
+    private final float mIconCornerRadius;
 
     @LayoutRes
     private final int mLayout;
@@ -66,19 +63,19 @@ public class TileRenderer {
 
         mResources = context.getResources();
         mDesiredIconSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        int desiredIconSizeDp =
-                Math.round(mDesiredIconSize / mResources.getDisplayMetrics().density);
+        mIconCornerRadius = mResources.getDimension(R.dimen.tile_view_icon_corner_radius);
+        int minIconSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_min_size);
 
         // On ldpi devices, mDesiredIconSize could be even smaller than the global limit.
-        mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
+        mMinIconSize = Math.min(mDesiredIconSize, minIconSize);
 
         mLayout = getLayout();
 
-        int cornerRadiusDp = desiredIconSizeDp / 2;
         int iconColor = ApiCompatibilityUtils.getColor(
                 mResources, R.color.default_favicon_background_color);
-        mIconGenerator = new RoundedIconGenerator(mResources, desiredIconSizeDp, desiredIconSizeDp,
-                cornerRadiusDp, iconColor, ICON_TEXT_SIZE_DP);
+        int iconTextSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_text_size);
+        mIconGenerator = new RoundedIconGenerator(
+                mDesiredIconSize, mDesiredIconSize, mDesiredIconSize / 2, iconColor, iconTextSize);
     }
 
     /**
@@ -185,9 +182,8 @@ public class TileRenderer {
     }
 
     public void setTileIconFromBitmap(Tile tile, Bitmap icon) {
-        RoundedBitmapDrawable roundedIcon = ViewUtils.createRoundedBitmapDrawable(icon,
-                Math.round(ICON_CORNER_RADIUS_DP * mResources.getDisplayMetrics().density
-                        * icon.getWidth() / mDesiredIconSize));
+        RoundedBitmapDrawable roundedIcon = ViewUtils.createRoundedBitmapDrawable(
+                icon, Math.round(mIconCornerRadius * icon.getWidth() / mDesiredIconSize));
         roundedIcon.setAntiAlias(true);
         roundedIcon.setFilterBitmap(true);
 
