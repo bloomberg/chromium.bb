@@ -257,18 +257,27 @@ void CreditCardSaveManager::OnDidUploadCard(
         /*is_local=*/false);
   }
 
-  // We don't do anything user-visible if the upload attempt fails. If the
-  // upload succeeds and we can store unmasked cards on this OS, we will keep a
-  // copy of the card as a full server card on the device.
-  if (result == AutofillClient::SUCCESS && !server_id.empty() &&
-      OfferStoreUnmaskedCards() &&
-      !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled()) {
-    upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
-    upload_request_.card.SetServerStatus(CreditCard::OK);
-    upload_request_.card.set_server_id(server_id);
-    DCHECK(personal_data_manager_);
-    if (personal_data_manager_)
-      personal_data_manager_->AddFullServerCreditCard(upload_request_.card);
+  if (result == AutofillClient::SUCCESS) {
+    // If the upload succeeds and we can store unmasked cards on this OS, we
+    // will keep a copy of the card as a full server card on the device.
+    if (!server_id.empty() && OfferStoreUnmaskedCards() &&
+        !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled()) {
+      upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
+      upload_request_.card.SetServerStatus(CreditCard::OK);
+      upload_request_.card.set_server_id(server_id);
+      DCHECK(personal_data_manager_);
+      if (personal_data_manager_)
+        personal_data_manager_->AddFullServerCreditCard(upload_request_.card);
+    }
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillSaveCreditCardUsesStrikeSystem)) {
+      // Clear all strikes for this card, in case it is later removed.
+      StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+      strike_database->ClearAllStrikesForKey(
+          strike_database->GetKeyForCreditCardSave(
+              base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
+          base::DoNothing());
+    }
   }
 }
 
@@ -353,10 +362,8 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
         local_card_save_candidate_, show_save_prompt_.value(),
-        base::BindOnce(base::IgnoreResult(
-                           &PersonalDataManager::OnAcceptedLocalCreditCardSave),
-                       base::Unretained(personal_data_manager_),
-                       local_card_save_candidate_));
+        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptLocalSave,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Log metrics.
     if (local_card_save_candidate_.HasFirstAndLastName())
@@ -403,6 +410,24 @@ void CreditCardSaveManager::OfferCardUploadSave() {
         AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE;
   }
   LogCardUploadDecisions(upload_decision_metrics_);
+}
+
+void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
+  if (local_card_save_candidate_.HasFirstAndLastName())
+    AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(/*is_local=*/true);
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystem)) {
+    // Clear all strikes for this card, in case it is later removed.
+    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    strike_database->ClearAllStrikesForKey(
+        strike_database->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
+        base::DoNothing());
+  }
+
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(
+      local_card_save_candidate_);
 }
 
 void CreditCardSaveManager::SetProfilesForCreditCardUpload(

@@ -2014,9 +2014,6 @@ std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
   if (is_off_the_record_)
     return std::string();
 
-  if (imported_card.HasFirstAndLastName())
-    AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(/*is_local=*/true);
-
   return SaveImportedCreditCard(imported_card);
 }
 
