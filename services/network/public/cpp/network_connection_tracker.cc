@@ -89,8 +89,7 @@ bool NetworkConnectionTracker::IsOffline() {
       base::subtle::NoBarrier_Load(&connection_type_);
   if (type_value != kConnectionTypeInvalid) {
     auto type = static_cast<network::mojom::ConnectionType>(type_value);
-    return type == network::mojom::ConnectionType::CONNECTION_NONE ||
-           type == network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    return type == network::mojom::ConnectionType::CONNECTION_NONE;
   }
   return true;
 }
