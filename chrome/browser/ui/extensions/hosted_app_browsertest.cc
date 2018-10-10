@@ -373,6 +373,10 @@ class HostedAppTest
 
   static const char* GetInstallableAppName() { return "Manifest test app"; }
 
+  GURL GetURLForPath(std::string path) {
+    return https_server_.GetURL("app.com", path);
+  }
+
   GURL GetSecureIFrameAppURL() {
     net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
         https_server()->GetURL("foo.com", "/simple.html"));
@@ -931,6 +935,33 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
           app_browser_, app_browser_->tab_strip_model()->GetActiveWebContents(),
           GURL(kExampleURL)),
       GURL(kExampleURL));
+}
+
+// Test navigating to an out of scope url on the same origin causes the url
+// to be shown to the user.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       LocationBarIsVisibleOffScopeOnSameOrigin) {
+  // If the feature for remaining in window is not enabled, the out of scope url
+  // will open in a new tab.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAsStayInWindow);
+
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+
+  // Location bar should not be visible in the app.
+  ASSERT_FALSE(app_browser_->hosted_app_controller()->ShouldShowLocationBar());
+
+  // The installed PWA's scope is app.com:{PORT}/ssl,
+  // so app.com:{PORT}/accessibility_fail.html is out of scope.
+  const GURL& out_of_scope = GetURLForPath("/accessibility_fail.html");
+
+  NavigateToURLAndWait(app_browser_, out_of_scope);
+
+  // Location should be visible off scope.
+  ASSERT_TRUE(app_browser_->hosted_app_controller()->ShouldShowLocationBar());
 }
 
 // Tests that PWA menus have an uninstall option.
