@@ -252,6 +252,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Stops an embedded worker for this version.
   void StopWorker(base::OnceClosure callback);
 
+  // Asks the renderer to notify the browser that it becomes idle as soon as
+  // possible, and it results in letting idle termination occur earlier. This is
+  // typically used for activation. An active worker needs to be swapped out
+  // soon after the service worker becomes idle if a waiting worker exists.
+  void TriggerIdleTerminationAsap();
+
   // S13nServiceWorker:
   // Called when the renderer notifies the browser that the worker is now idle.
   // Returns true if the worker will be terminated and the worker should not
@@ -861,6 +867,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // been triggered. Set back to false if another event starts since the worker
   // is no longer idle.
   bool worker_is_idle_on_renderer_ = true;
+
+  // S13nServiceWorker: Set to true when the worker needs to be terminated as
+  // soon as possible (e.g. activation).
+  bool needs_to_be_terminated_asap_ = false;
 
   // Keeps track of the provider hosting this running service worker for this
   // version. |provider_host_| is always valid as long as this version is

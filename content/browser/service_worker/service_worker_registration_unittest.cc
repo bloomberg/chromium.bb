@@ -373,9 +373,8 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
 
 // Sets up a registration with a waiting worker, and an active worker
 // with a controllee and an inflight request.
-class ServiceWorkerActivationTest
-    : public ServiceWorkerRegistrationTest,
-      public testing::WithParamInterface<bool /* attach_devtools */> {
+class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
+                                    public testing::WithParamInterface<bool> {
  public:
   ServiceWorkerActivationTest() : ServiceWorkerRegistrationTest() {}
 
