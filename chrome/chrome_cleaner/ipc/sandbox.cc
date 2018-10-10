@@ -60,11 +60,17 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
   sandbox_result = policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
   CHECK_EQ(sandbox::SBOX_ALL_OK, sandbox_result);
 
-  // TODO(crbug.com/893740): Call SetAlternateDesktop. Chromium ignores
-  // failures on this function but logs a warning, so we should do the same.
+#ifdef NDEBUG
+  // Chromium ignores failures on this function but logs a warning. Do the same
+  // here.
   // https://chromium.googlesource.com/chromium/src/+/b6a4ff86c730756a73d63cc882ef818fb7818a53/content/common/sandbox_win.cc#420
-  // Currently we're not using SetAlternateDesktop because it has static
-  // internal state that causes DCHECK's in unit tests if called more than once.
+  // TODO(crbug.com/893740): SetAlternateDesktop can cause DCHECK's in unit
+  // tests if called more than once. Until we get to the bottom of why, it's
+  // only enabled in release builds.
+  sandbox::ResultCode result = policy->SetAlternateDesktop(true);
+  LOG_IF(WARNING, result != sandbox::SBOX_ALL_OK)
+      << "Failed to apply desktop security";
+#endif
 
   sandbox_result =
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
