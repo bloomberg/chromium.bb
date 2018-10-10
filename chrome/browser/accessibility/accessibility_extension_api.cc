@@ -32,6 +32,7 @@
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
@@ -299,6 +300,62 @@ AccessibilityPrivateEnableChromeVoxMouseEventsFunction::Run() {
 #else
   return RespondNow(Error(kErrorNotSupported));
 #endif
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
+  std::unique_ptr<accessibility_private::SendSyntheticMouseEvent::Params>
+      params = accessibility_private::SendSyntheticMouseEvent::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::SyntheticMouseEvent* mouse_data = &params->mouse_event;
+
+  // TODO(crbug/893752) Choose correct display
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  int x = (int)(mouse_data->x * display.device_scale_factor());
+  int y = (int)(mouse_data->y * display.device_scale_factor());
+
+  gfx::Point location(x, y);
+  ui::EventType type;
+  switch (mouse_data->type) {
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
+      type = ui::ET_MOUSE_PRESSED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_RELEASE:
+      type = ui::ET_MOUSE_RELEASED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_DRAG:
+      type = ui::ET_MOUSE_DRAGGED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_MOVE:
+      type = ui::ET_MOUSE_MOVED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_ENTER:
+      type = ui::ET_MOUSE_ENTERED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_EXIT:
+      type = ui::ET_MOUSE_EXITED;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+
+  std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
+      std::make_unique<ui::MouseEvent>(type, location, location,
+                                       ui::EventTimeForNow(), flags,
+                                       flags /* changed_button_flags */);
+
+  ws::mojom::EventInjectorPtr event_injector_ptr;
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
+                                            &event_injector_ptr);
+  event_injector_ptr->InjectEventNoAck(display.id(),
+                                       std::move(synthetic_mouse_event));
+
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
