@@ -21,9 +21,8 @@ namespace extensions {
 namespace {
 
 bool IsSupportedMimeType(const std::string& mime_type) {
-  static const base::flat_set<std::string> kSupportedTypes = {
-      "text/pdf", "application/pdf", "text/csv"};
-  return base::ContainsKey(kSupportedTypes, mime_type);
+  return mime_type == "text/pdf" || mime_type == "application/pdf" ||
+         mime_type == "text/csv";
 }
 
 }  // namespace

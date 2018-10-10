@@ -30,6 +30,8 @@ source_set("browser_context_keyed_service_factories") {
     "browser_context_keyed_service_factories.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//extensions/browser:browser_sources",
     "//extensions/browser/api",
@@ -409,6 +411,7 @@ jumbo_source_set("browser_sources") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
   ]
 }
 
