@@ -218,6 +218,7 @@ class TestRebaseline(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
@@ -250,6 +251,7 @@ class TestRebaseline(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7 (dbg)',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
@@ -282,6 +284,7 @@ class TestRebaseline(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]]
             ])
 
@@ -308,6 +311,7 @@ class TestRebaseline(BaseTestCase):
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7',
                     '--results-directory', '/tmp',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]],
             ])
 
@@ -334,6 +338,7 @@ class TestRebaseline(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win10',
                     '--builder', 'MOCK Win7',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',
@@ -638,6 +643,7 @@ class TestRebaselineExecute(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]]
             ])
 
@@ -675,6 +681,7 @@ class TestRebaselineExecute(BaseTestCase):
                         '--suffixes', 'txt,png',
                         '--port-name', 'test-win-win7',
                         '--builder', 'MOCK Win7',
+                        '--step-name', 'webkit_layout_tests (with patch)',
                     ],
                     [
                         'python', 'echo', 'rebaseline-test-internal',
@@ -683,6 +690,7 @@ class TestRebaselineExecute(BaseTestCase):
                         '--suffixes', 'txt,png',
                         '--port-name', 'test-win-win7',
                         '--builder', 'MOCK Win7',
+                        '--step-name', 'webkit_layout_tests (with patch)',
                     ]
                 ]
             ])

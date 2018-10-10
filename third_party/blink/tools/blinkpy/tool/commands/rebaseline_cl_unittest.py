@@ -380,6 +380,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Try Win',
                     '--build-number', '5000',
+                    '--step-name', 'webkit_layout_tests (with patch)',
                 ]],
                 [[
                     'python', 'echo', 'optimize-baselines',

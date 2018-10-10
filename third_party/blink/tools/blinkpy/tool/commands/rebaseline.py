@@ -296,6 +296,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 '--port-name', port_name,
             ])
 
+
             copy_command = [self._tool.executable, path_to_blink_tool, 'copy-existing-baselines-internal'] + args
             copy_baseline_commands.append(tuple([copy_command, cwd]))
 
@@ -304,6 +305,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 args.extend(['--build-number', str(build.build_number)])
             if options.results_directory:
                 args.extend(['--results-directory', options.results_directory])
+
+            step_name = self._tool.buildbot.get_layout_test_step_name(build)
+            if step_name:
+                args.extend(['--step-name', step_name])
 
             rebaseline_command = [self._tool.executable, path_to_blink_tool, 'rebaseline-test-internal'] + args
             rebaseline_commands.append(tuple([rebaseline_command, cwd]))
