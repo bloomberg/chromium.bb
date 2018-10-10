@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_IOVEC_H_
-#define NET_BASE_IOVEC_H_
+#ifndef NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_IOVEC_IMPL_H_
+#define NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_IOVEC_IMPL_H_
 
 #include <stddef.h>
 
@@ -12,11 +12,11 @@
 #if defined(OS_WIN) || defined(OS_NACL)
 /* Structure for scatter/gather I/O.  */
 struct iovec {
-  void* iov_base;  /* Pointer to data.  */
-  size_t iov_len;  /* Length of data.  */
+  void* iov_base; /* Pointer to data.  */
+  size_t iov_len; /* Length of data.  */
 };
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/uio.h>
 #endif  // defined(OS_WIN) || defined(OS_NACL)
 
-#endif  // NET_BASE_IOVEC_H_
+#endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_IOVEC_IMPL_H_

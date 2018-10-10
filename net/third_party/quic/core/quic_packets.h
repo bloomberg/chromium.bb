@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/iovec.h"
 #include "net/third_party/quic/core/frames/quic_frame.h"
 #include "net/third_party/quic/core/quic_ack_listener_interface.h"
 #include "net/third_party/quic/core/quic_bandwidth.h"

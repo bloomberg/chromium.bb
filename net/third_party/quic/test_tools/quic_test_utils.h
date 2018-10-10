@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/iovec.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
