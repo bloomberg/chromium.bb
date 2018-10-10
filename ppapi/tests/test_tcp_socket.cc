@@ -65,6 +65,7 @@ void TestTCPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocket, UnexpectedCalls, filter);
 
   RUN_CALLBACK_TEST(TestTCPSocket, ConnectFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, ConnectHangs, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, WriteFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, ReadFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, SetSendBufferSizeFails, filter);
@@ -72,11 +73,15 @@ void TestTCPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocket, SetNoDelayFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, BindFailsConnectSucceeds, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, BindFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, BindHangs, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, ListenFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, ListenHangs, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, AcceptFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, AcceptHangs, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, AcceptedSocketWriteFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, AcceptedSocketReadFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocket, BindConnectFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocket, BindConnectHangs, filter);
 }
 
 std::string TestTCPSocket::TestConnect() {
@@ -495,6 +500,13 @@ std::string TestTCPSocket::TestConnectFails() {
   PASS();
 }
 
+std::string TestTCPSocket::TestConnectHangs() {
+  pp::TCPSocket socket(instance_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  socket.Connect(test_server_addr_, DoNothingCallback());
+  PASS();
+}
+
 std::string TestTCPSocket::TestWriteFails() {
   pp::TCPSocket socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
@@ -623,6 +635,12 @@ std::string TestTCPSocket::TestBindFails() {
   PASS();
 }
 
+std::string TestTCPSocket::TestBindHangs() {
+  pp::TCPSocket socket(instance_);
+  socket.Bind(test_server_addr_, DoNothingCallback());
+  PASS();
+}
+
 std::string TestTCPSocket::TestListenFails() {
   pp::TCPSocket socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
@@ -640,6 +658,19 @@ std::string TestTCPSocket::TestListenFails() {
   // All subsequent calls on the socket should fail.
   ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(&socket, kAllCommands));
 
+  PASS();
+}
+
+std::string TestTCPSocket::TestListenHangs() {
+  pp::TCPSocket socket(instance_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  // The address doesn't matter here, other than that it should be valid.
+  callback.WaitForResult(
+      socket.Bind(test_server_addr_, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  socket.Listen(2 /* backlog */, DoNothingCallback());
   PASS();
 }
 
@@ -663,6 +694,24 @@ std::string TestTCPSocket::TestAcceptFails() {
   CHECK_CALLBACK_BEHAVIOR(accept_callback);
   ASSERT_EQ(PP_ERROR_FAILED, accept_callback.result());
 
+  PASS();
+}
+
+std::string TestTCPSocket::TestAcceptHangs() {
+  pp::TCPSocket socket(instance_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  // The address doesn't matter here, other than that it should be valid.
+  callback.WaitForResult(
+      socket.Bind(test_server_addr_, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  callback.WaitForResult(
+      socket.Listen(2 /* backlog */, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  socket.Accept(DoNothingCallbackWithOutput<pp::TCPSocket>());
   PASS();
 }
 
@@ -767,6 +816,18 @@ std::string TestTCPSocket::TestBindConnectFails() {
   // All subsequent calls on the socket should fail.
   ASSERT_SUBTEST_SUCCESS(RunCommandsExpendingFailures(&socket, kAllCommands));
 
+  PASS();
+}
+
+std::string TestTCPSocket::TestBindConnectHangs() {
+  pp::TCPSocket socket(instance_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+
+  cb.WaitForResult(socket.Bind(test_server_addr_, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
+
+  socket.Connect(test_server_addr_, DoNothingCallback());
   PASS();
 }
 

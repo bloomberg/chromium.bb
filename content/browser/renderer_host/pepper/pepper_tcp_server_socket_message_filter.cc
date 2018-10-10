@@ -68,7 +68,8 @@ PepperTCPServerSocketMessageFilter::PepperTCPServerSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_frame_id_(0) {
+      render_frame_id_(0),
+      weak_ptr_factory_(this) {
   ++g_num_instances;
   DCHECK(factory_);
   DCHECK(ppapi_host_);
@@ -178,7 +179,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
       mojo::MakeRequest(&socket_),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnListenCompleted,
-                         base::Unretained(this), reply_context),
+                         weak_ptr_factory_.GetWeakPtr(), reply_context),
           net::ERR_FAILED, base::nullopt /* local_addr_out */));
 
   return PP_OK_COMPLETIONPENDING;
@@ -371,8 +372,9 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread(
 void PepperTCPServerSocketMessageFilter::Close() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // This needs to be the first line, so if closing Mojo pipes results in
-  // invoking any callbacks, they can exit early.
+  // Need to do these first, as destroying Mojo pipes may invoke some of the
+  // callbacks with failure messages.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   state_ = STATE_CLOSED;
 
   socket_.reset();

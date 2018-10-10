@@ -35,10 +35,12 @@ class TestTCPSocket: public TestCase {
   std::string TestInterface_1_0();
   std::string TestUnexpectedCalls();
 
-  // The higher level test fixture is responsible for making the appropriate
-  // call in these tests fail with PP_ERROR_FAILED, and all prior events
-  // succeed.
+  // The higher level test fixture is responsible for making socket methods
+  // behave in the expected manner.  The *Fails tests expect the specified even
+  // to fail with PP_ERROR_FAILED, and the *Hangs test expect the specified
+  // operation to never complete, at least until teardown starts.
   std::string TestConnectFails();
+  std::string TestConnectHangs();
   std::string TestWriteFails();
   std::string TestReadFails();
   std::string TestSetSendBufferSizeFails();
@@ -49,11 +51,15 @@ class TestTCPSocket: public TestCase {
   // This is needed in addition to the above test in the case where a bind
   // failure is simulated in a way that also closes the NetworkContext pipe.
   std::string TestBindFails();
+  std::string TestBindHangs();
   std::string TestListenFails();
+  std::string TestListenHangs();
   std::string TestAcceptFails();
+  std::string TestAcceptHangs();
   std::string TestAcceptedSocketWriteFails();
   std::string TestAcceptedSocketReadFails();
   std::string TestBindConnectFails();
+  std::string TestBindConnectHangs();
 
   std::string ReadFirstLineFromSocket(pp::TCPSocket* socket, std::string* s);
   std::string ReadFirstLineFromSocket_1_0(PP_Resource socket,

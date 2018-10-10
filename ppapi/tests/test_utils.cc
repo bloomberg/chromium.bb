@@ -32,6 +32,8 @@ bool IsBigEndian() {
   return data.integer8[0] == 1;
 }
 
+void DoNothing(void* user_data, int32_t result) {}
+
 }  // namespace
 
 const int kActionTimeoutMs = 10000;
@@ -270,6 +272,11 @@ void NestedEvent::SignalOnMainThread() {
 
 void NestedEvent::SignalThunk(void* event, int32_t /* result */) {
   static_cast<NestedEvent*>(event)->SignalOnMainThread();
+}
+
+pp::CompletionCallback DoNothingCallback() {
+  return pp::CompletionCallback(&DoNothing, NULL,
+                                PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
