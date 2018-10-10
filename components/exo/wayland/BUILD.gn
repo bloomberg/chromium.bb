@@ -71,8 +71,6 @@ source_set("wayland") {
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
-    "//ui/message_center",
-    "//ui/message_center/public/cpp",
     "//ui/views",
     "//ui/wm:wm",
     "//ui/wm/public",

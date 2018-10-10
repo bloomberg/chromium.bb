@@ -80,6 +80,7 @@
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/keyboard_observer.h"
+#include "components/exo/notification.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
@@ -109,8 +110,6 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -5677,6 +5676,52 @@ void bind_text_input_manager(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// zcr_notification_shell_notification_v1 interface:
+
+// Implements notification interface.
+class WaylandNotificationShellNotification {
+ public:
+  WaylandNotificationShellNotification(const std::string& title,
+                                       const std::string& message,
+                                       const std::string& display_source,
+                                       const std::string& notification_id,
+                                       wl_resource* resource)
+      : resource_(resource), weak_ptr_factory_(this) {
+    notification_ = std::make_unique<Notification>(
+        title, message, display_source, notification_id,
+        kNotificationShellNotifierId,
+        base::BindRepeating(&WaylandNotificationShellNotification::OnClose,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void Close() { notification_->Close(); }
+
+ private:
+  void OnClose(bool by_user) {
+    zcr_notification_shell_notification_v1_send_closed(resource_, by_user);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
+  wl_resource* const resource_;
+  std::unique_ptr<Notification> notification_;
+
+  base::WeakPtrFactory<WaylandNotificationShellNotification> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandNotificationShellNotification);
+};
+
+void notification_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void notification_close(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<WaylandNotificationShellNotification>(resource)->Close();
+}
+
+const struct zcr_notification_shell_notification_v1_interface
+    notification_implementation = {notification_destroy, notification_close};
+
+////////////////////////////////////////////////////////////////////////////////
 // zcr_notification_shell_v1 interface:
 
 // Implements notification shell interface.
@@ -5687,28 +5732,17 @@ class WaylandNotificationShell {
   ~WaylandNotificationShell() = default;
 
   // Creates a notification on message center from textual information.
-  void CreateNotification(const std::string& title,
-                          const std::string& message,
-                          const std::string& display_source,
-                          const std::string& notification_key) {
+  std::unique_ptr<WaylandNotificationShellNotification> CreateNotification(
+      const std::string& title,
+      const std::string& message,
+      const std::string& display_source,
+      const std::string& notification_key,
+      wl_resource* notification_resource) {
     auto notification_id = base::StringPrintf(
         kNotificationShellNotificationIdFormat, id_, notification_key.c_str());
 
-    auto notifier_id = message_center::NotifierId(
-        message_center::NotifierId::APPLICATION, kNotificationShellNotifierId);
-    notifier_id.profile_id = ash::Shell::Get()
-                                 ->session_controller()
-                                 ->GetPrimaryUserSession()
-                                 ->user_info->account_id.GetUserEmail();
-
-    auto notification = std::make_unique<message_center::Notification>(
-        message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-        base::UTF8ToUTF16(title), base::UTF8ToUTF16(message), gfx::Image(),
-        base::UTF8ToUTF16(display_source), GURL(), notifier_id,
-        message_center::RichNotificationData(), nullptr /* delegate */);
-
-    message_center::MessageCenter::Get()->AddNotification(
-        std::move(notification));
+    return std::make_unique<WaylandNotificationShellNotification>(
+        title, message, display_source, notification_id, notification_resource);
   }
 
  private:
@@ -5720,12 +5754,22 @@ class WaylandNotificationShell {
 
 void notification_shell_create_notification(wl_client* client,
                                             wl_resource* resource,
+                                            uint32_t id,
                                             const char* title,
                                             const char* message,
                                             const char* display_source,
                                             const char* notification_key) {
-  GetUserDataAs<WaylandNotificationShell>(resource)->CreateNotification(
-      title, message, display_source, notification_key);
+  wl_resource* notification_resource = wl_resource_create(
+      client, &zcr_notification_shell_notification_v1_interface,
+      wl_resource_get_version(resource), id);
+
+  std::unique_ptr<WaylandNotificationShellNotification> notification =
+      GetUserDataAs<WaylandNotificationShell>(resource)->CreateNotification(
+          title, message, display_source, notification_key,
+          notification_resource);
+
+  SetImplementation(notification_resource, &notification_implementation,
+                    std::move(notification));
 }
 
 void notification_shell_get_notification_surface(wl_client* client,
