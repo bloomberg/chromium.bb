@@ -210,8 +210,16 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
         dryrun=True)
 
     self.assertEqual(commitMock.call_args_list, [
-        mock.call(self.manifest_versions_int, 'spec', 'int mani', True),
-        mock.call(self.manifest_versions_ext, 'spec', 'filtered mani', True),
+        mock.call(
+            self.manifest_versions_int,
+            ('https://chrome-internal.googlesource.com/chromeos/'
+             'manifest-versions'),
+            'spec', 'int mani', True),
+        mock.call(
+            self.manifest_versions_ext,
+            ('https://chromium.googlesource.com/chromiumos/'
+             'manifest-versions'),
+            'spec', 'filtered mani', True),
     ])
 
   def testPopulateAndPublishBuildSpecIntOnly(self):
@@ -231,7 +239,11 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
         dryrun=False)
 
     self.assertEqual(commitMock.call_args_list, [
-        mock.call(self.manifest_versions_int, 'spec', 'int mani', False),
+        mock.call(
+            self.manifest_versions_int,
+            ('https://chrome-internal.googlesource.com/chromeos/'
+             'manifest-versions'),
+            'spec', 'int mani', False),
     ])
 
 

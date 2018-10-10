@@ -184,17 +184,10 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
 
     # Use the manifest-versions directories that exist in the original
     # checkout. They may already be populated.
-    int_manifest_versions_path = os.path.join(
+    manifest_versions_int = os.path.join(
         self._orig_root, site_params.INTERNAL_MANIFEST_VERSIONS_PATH)
-    manifest_version.RefreshManifestCheckout(
-        int_manifest_versions_path,
-        site_params.MANIFEST_VERSIONS_INT_GOB_URL)
-
-    ext_manifest_versions_path = os.path.join(
+    manifest_versions_ext = os.path.join(
         self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
-    manifest_version.RefreshManifestCheckout(
-        ext_manifest_versions_path,
-        site_params.MANIFEST_VERSIONS_GOB_URL)
 
     repo = self.GetWorkspaceRepo()
 
@@ -207,8 +200,8 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     build_spec_path = manifest_version.GenerateAndPublishOfficialBuildSpec(
         repo,
         incr_type,
-        manifest_versions_int=int_manifest_versions_path,
-        manifest_versions_ext=ext_manifest_versions_path,
+        manifest_versions_int=manifest_versions_int,
+        manifest_versions_ext=manifest_versions_ext,
         dryrun=self._run.options.debug)
 
     if self._run.options.debug:

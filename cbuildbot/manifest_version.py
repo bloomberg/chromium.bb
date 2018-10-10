@@ -25,6 +25,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 
@@ -390,11 +391,17 @@ def CandidateBuildSpecPath(version_info,
       return spec_path
 
 
-def _CommitAndPush(manifest_repo, buildspec, contents, dryrun):
+@retry_util.WithRetry(max_retry=20)
+def _CommitAndPush(manifest_repo, git_url, buildspec, contents, dryrun):
   """Helper for committing and pushing buildspecs.
+
+  Will create/checkout/clean the manifest_repo checkout at the given
+  path with no assumptions about the previous state. It should NOT be
+  considered clean when this function exits.
 
   Args:
     manifest_repo: Path to root of git repo for manifest_versions (int or ext).
+    git_url: Git URL for remote git repository.
     buildspec: Relative path to buildspec in  repo.
     contents: String constaining contents of buildspec manifest.
     dryrun: Git push --dry-run if set to True.
@@ -402,10 +409,10 @@ def _CommitAndPush(manifest_repo, buildspec, contents, dryrun):
   Returns:
     Full path to buildspec created.
   """
+  RefreshManifestCheckout(manifest_repo, git_url)
+
   filename = os.path.join(manifest_repo, buildspec)
   assert not os.path.exists(filename)
-
-  logging.info('Creating buildspec: %s as %s', buildspec, filename)
 
   git.CreatePushBranch(PUSH_BRANCH, manifest_repo, sync=False)
   osutils.WriteFile(filename, contents, makedirs=True)
@@ -413,8 +420,9 @@ def _CommitAndPush(manifest_repo, buildspec, contents, dryrun):
   git.RunGit(manifest_repo, ['add', '-A'])
   message = 'Creating buildspec: %s' % buildspec
   git.RunGit(manifest_repo, ['commit', '-m', message])
-
   git.PushBranch(PUSH_BRANCH, manifest_repo, dryrun=dryrun)
+
+  logging.info('Created buildspec: %s as %s', buildspec, filename)
 
   return filename
 
@@ -431,6 +439,9 @@ def PopulateAndPublishBuildSpec(rel_build_spec,
 
   The new buildspec is created in manifest_versions and pushed remotely.
 
+  The manifest_versions paths do not need to be in a clean state, but should
+  be consistent from build to build for performance reasons.
+
   Args:
     rel_build_spec: Path relative to manifest_verions root for buildspec.
     manifest: Contents of the manifest to publish as a string.
@@ -438,9 +449,13 @@ def PopulateAndPublishBuildSpec(rel_build_spec,
     manifest_versions_ext: Path to manifest-versions checkout (public).
     dryrun: Git push --dry-run if set to True.
   """
+  site_params = config_lib.GetSiteParams()
+
   # Create and push internal buildspec.
   build_spec = _CommitAndPush(
-      manifest_versions_int, rel_build_spec, manifest, dryrun)
+      manifest_versions_int,
+      site_params.MANIFEST_VERSIONS_INT_GOB_URL,
+      rel_build_spec, manifest, dryrun)
 
   if manifest_versions_ext:
     # Create the external only manifest in a tmp file, read into string.
@@ -449,7 +464,9 @@ def PopulateAndPublishBuildSpec(rel_build_spec,
                                   whitelisted_remotes=whitelisted_remotes)
     manifest_ext = osutils.ReadFile(tmp_manifest)
 
-    _CommitAndPush(manifest_versions_ext, rel_build_spec, manifest_ext, dryrun)
+    _CommitAndPush(manifest_versions_ext,
+                   site_params.MANIFEST_VERSIONS_GOB_URL,
+                   rel_build_spec, manifest_ext, dryrun)
 
 
 def GenerateAndPublishOfficialBuildSpec(
