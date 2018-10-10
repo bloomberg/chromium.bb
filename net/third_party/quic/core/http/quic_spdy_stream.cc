@@ -27,7 +27,7 @@ namespace quic {
                                                         " ")
 
 QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
-    : QuicStream(id, spdy_session, /*is_static=*/false),
+    : QuicStream(id, spdy_session, /*is_static=*/false, BIDIRECTIONAL),
       spdy_session_(spdy_session),
       visitor_(nullptr),
       headers_decompressed_(false),

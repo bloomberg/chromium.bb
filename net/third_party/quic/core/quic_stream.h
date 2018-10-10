@@ -58,7 +58,12 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Creates a new stream with stream_id |id| associated with |session|. If
   // |is_static| is true, then the stream will be given precedence
   // over other streams when determing what streams should write next.
-  QuicStream(QuicStreamId id, QuicSession* session, bool is_static);
+  // |type| indicates whether the stream is bidirectional, read unidirectional
+  // or write unidirectional.
+  QuicStream(QuicStreamId id,
+             QuicSession* session,
+             bool is_static,
+             StreamType type);
   QuicStream(const QuicStream&) = delete;
   QuicStream& operator=(const QuicStream&) = delete;
 
@@ -449,6 +454,10 @@ class QUIC_EXPORT_PRIVATE QuicStream {
 
   // If initialized, reset this stream at this deadline.
   QuicTime deadline_;
+
+  // Indicates whether this stream is bidirectional, read unidirectional or
+  // write unidirectional.
+  const StreamType type_;
 };
 
 }  // namespace quic

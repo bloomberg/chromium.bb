@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
@@ -23,6 +24,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_flow_controller_peer.h"
@@ -103,11 +105,13 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 
 class TestStream : public QuicStream {
  public:
-  TestStream(QuicStreamId id, QuicSession* session)
-      : QuicStream(id, session, /*is_static=*/false) {}
+  TestStream(QuicStreamId id, QuicSession* session, StreamType type)
+      : QuicStream(id, session, /*is_static=*/false, type) {}
 
   using QuicStream::CloseReadSide;
   using QuicStream::CloseWriteSide;
+  using QuicStream::WriteMemSlices;
+  using QuicStream::WritevData;
 
   void OnDataAvailable() override {}
 
@@ -141,7 +145,8 @@ class TestSession : public QuicSession {
   }
 
   TestStream* CreateOutgoingDynamicStream() override {
-    TestStream* stream = new TestStream(GetNextOutgoingStreamId(), this);
+    TestStream* stream =
+        new TestStream(GetNextOutgoingStreamId(), this, BIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -154,7 +159,7 @@ class TestSession : public QuicSession {
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return nullptr;
     } else {
-      TestStream* stream = new TestStream(id, this);
+      TestStream* stream = new TestStream(id, this, BIDIRECTIONAL);
       ActivateStream(QuicWrapUnique(stream));
       return stream;
     }
@@ -215,6 +220,7 @@ class TestSession : public QuicSession {
     return WritevData(stream, stream->id(), bytes, 0, FIN);
   }
 
+  using QuicSession::ActivateStream;
   using QuicSession::closed_streams;
   using QuicSession::next_outgoing_stream_id;
   using QuicSession::PostProcessAfterData;
@@ -1538,6 +1544,87 @@ TEST_P(QuicSessionTestServer, CleanUpClosedStreamsAlarm) {
   alarm_factory_.FireAlarm(
       QuicSessionPeer::GetCleanUpClosedStreamsAlarm(&session_));
   EXPECT_TRUE(session_.closed_streams()->empty());
+}
+
+TEST_P(QuicSessionTestServer, WriteUnidirectionalStream) {
+  session_.set_writev_consumes_all_data(true);
+  TestStream* stream4 = new TestStream(4, &session_, WRITE_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+  QuicString body(100, '.');
+  stream4->WriteOrBufferData(body, false, nullptr);
+  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream4->id()));
+  stream4->WriteOrBufferData(body, true, nullptr);
+  EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), stream4->id()));
+}
+
+TEST_P(QuicSessionTestServer, ReceivedDataOnWriteUnidirectionalStream) {
+  TestStream* stream4 = new TestStream(4, &session_, WRITE_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_DATA_RECEIVED_ON_WRITE_UNIDIRECTIONAL_STREAM, _, _))
+      .Times(1);
+  QuicStreamFrame stream_frame(4, false, 0, 2);
+  session_.OnStreamFrame(stream_frame);
+}
+
+TEST_P(QuicSessionTestServer, ReadUnidirectionalStream) {
+  TestStream* stream4 = new TestStream(4, &session_, READ_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+  EXPECT_FALSE(stream4->IsWaitingForAcks());
+  // Discard all incoming data.
+  stream4->StopReading();
+
+  QuicString data(100, '.');
+  QuicStreamFrame stream_frame(4, false, 0, data);
+  stream4->OnStreamFrame(stream_frame);
+  EXPECT_TRUE(session_.closed_streams()->empty());
+
+  QuicStreamFrame stream_frame2(4, true, 100, data);
+  stream4->OnStreamFrame(stream_frame2);
+  EXPECT_EQ(1u, session_.closed_streams()->size());
+}
+
+TEST_P(QuicSessionTestServer, WriteOrBufferDataOnReadUnidirectionalStream) {
+  TestStream* stream4 = new TestStream(4, &session_, READ_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM, _, _))
+      .Times(1);
+  QuicString body(100, '.');
+  stream4->WriteOrBufferData(body, false, nullptr);
+}
+
+TEST_P(QuicSessionTestServer, WritevDataOnReadUnidirectionalStream) {
+  TestStream* stream4 = new TestStream(4, &session_, READ_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM, _, _))
+      .Times(1);
+  QuicString body(100, '.');
+  struct iovec iov = {const_cast<char*>(body.data()), body.length()};
+  stream4->WritevData(&iov, 1, false);
+}
+
+TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {
+  TestStream* stream4 = new TestStream(4, &session_, READ_UNIDIRECTIONAL);
+  session_.ActivateStream(QuicWrapUnique(stream4));
+
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM, _, _))
+      .Times(1);
+  char data[1024];
+  std::vector<std::pair<char*, size_t>> buffers;
+  buffers.push_back(std::make_pair(data, QUIC_ARRAYSIZE(data)));
+  buffers.push_back(std::make_pair(data, QUIC_ARRAYSIZE(data)));
+  QuicTestMemSliceVector vector(buffers);
+  stream4->WriteMemSlices(vector.span(), false);
 }
 
 }  // namespace

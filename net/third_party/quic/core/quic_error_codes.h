@@ -309,8 +309,13 @@ enum QuicErrorCode {
   IETF_QUIC_PROTOCOL_VIOLATION = 113,
   QUIC_INVALID_NEW_TOKEN = 114,
 
+  // Received stream data on a WRITE_UNIDIRECTIONAL stream.
+  QUIC_DATA_RECEIVED_ON_WRITE_UNIDIRECTIONAL_STREAM = 115,
+  // Try to send stream data on a READ_UNIDIRECTIONAL stream.
+  QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM = 116,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 115,
+  QUIC_LAST_ERROR = 117,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=
