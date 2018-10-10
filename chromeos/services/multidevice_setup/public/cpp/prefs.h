@@ -18,6 +18,7 @@ namespace multidevice_setup {
 extern const char kInstantTetheringAllowedPrefName[];
 extern const char kMessagesAllowedPrefName[];
 extern const char kSmartLockAllowedPrefName[];
+extern const char kSmartLockSigninAllowedPrefName[];
 
 // Preferences which represent whether features are enabled by the user via
 // settings. If a feature is prohibited (see above preferences), the "enabled"

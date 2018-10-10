@@ -14658,6 +14658,7 @@ Called by update_net_error_codes.py.-->
   <int value="485" label="VpnConfigAllowed"/>
   <int value="486" label="WebUsbAllowDevicesForUrls"/>
   <int value="487" label="BrowserSignin"/>
+  <int value="488" label="SmartLockSigninAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

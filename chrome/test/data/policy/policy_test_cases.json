@@ -3261,6 +3261,14 @@
     ]
   },
 
+  "SmartLockSigninAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "SmartLockSigninAllowed": false },
+    "pref_mappings": [
+      { "pref": "smart_lock_signin.allowed" }
+    ]
+  },
+
   "InstantTetheringAllowed": {
     "os": ["chromeos"],
     "test_policy": { "InstantTetheringAllowed": false },
