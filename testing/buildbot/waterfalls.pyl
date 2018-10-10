@@ -636,6 +636,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1247,7 +1248,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_gtests_experimental',
-          'isolated_scripts': 'chromeos_isolated_scripts',
+          'isolated_scripts': 'chromeos_isolated_scripts_experimental',
         },
         'swarming': {
           'dimension_sets': [
