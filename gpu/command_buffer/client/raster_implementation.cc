@@ -1018,6 +1018,11 @@ void* RasterImplementation::MapFontBuffer(size_t size) {
                "mapped font buffer with no raster buffer");
     return nullptr;
   }
+  if (size > std::numeric_limits<uint32_t>::max()) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
+               "trying to map too large font buffer");
+    return nullptr;
+  }
 
   font_mapped_buffer_.emplace(size, helper_, mapped_memory_.get());
   if (!font_mapped_buffer_->valid()) {
