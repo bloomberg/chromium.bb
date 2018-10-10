@@ -155,21 +155,6 @@ drm_public void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring,
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
-drm_public void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target, struct fd_ringmarker *end)
-{
-	uint32_t submit_offset, size;
-
-	/* This function is deprecated and not supported on 64b devices: */
-	assert(ring->pipe->gpu_id < 500);
-	assert(target->ring == end->ring);
-
-	submit_offset = offset_bytes(target->cur, target->ring->start);
-	size = offset_bytes(end->cur, target->cur);
-
-	ring->funcs->emit_reloc_ring(ring, target->ring, 0, submit_offset, size);
-}
-
 drm_public uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
 {
 	if (!ring->funcs->cmd_count)
@@ -196,45 +181,3 @@ fd_ringbuffer_size(struct fd_ringbuffer *ring)
 	return offset_bytes(ring->cur, ring->start);
 }
 
-/*
- * Deprecated ringmarker API:
- */
-
-drm_public struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
-{
-	struct fd_ringmarker *marker = NULL;
-
-	marker = calloc(1, sizeof(*marker));
-	if (!marker) {
-		ERROR_MSG("allocation failed");
-		return NULL;
-	}
-
-	marker->ring = ring;
-
-	marker->cur = marker->ring->cur;
-
-	return marker;
-}
-
-drm_public void fd_ringmarker_del(struct fd_ringmarker *marker)
-{
-	free(marker);
-}
-
-drm_public void fd_ringmarker_mark(struct fd_ringmarker *marker)
-{
-	marker->cur = marker->ring->cur;
-}
-
-drm_public uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
-					 struct fd_ringmarker *end)
-{
-	return end->cur - start->cur;
-}
-
-drm_public int fd_ringmarker_flush(struct fd_ringmarker *marker)
-{
-	struct fd_ringbuffer *ring = marker->ring;
-	return ring->funcs->flush(ring, marker->cur, -1, NULL);
-}

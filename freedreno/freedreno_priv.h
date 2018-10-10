@@ -131,11 +131,6 @@ struct fd_pipe {
 	const struct fd_pipe_funcs *funcs;
 };
 
-struct fd_ringmarker {
-	struct fd_ringbuffer *ring;
-	uint32_t *cur;
-};
-
 struct fd_ringbuffer_funcs {
 	void * (*hostptr)(struct fd_ringbuffer *ring);
 	int (*flush)(struct fd_ringbuffer *ring, uint32_t *last_start,

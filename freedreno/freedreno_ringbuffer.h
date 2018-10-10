@@ -37,7 +37,6 @@
  */
 
 struct fd_ringbuffer_funcs;
-struct fd_ringmarker;
 
 enum fd_ringbuffer_flags {
 
@@ -134,18 +133,9 @@ struct fd_reloc {
 
 void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
 will_be_deprecated void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
-will_be_deprecated void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target, struct fd_ringmarker *end);
 uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring);
 uint32_t fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx);
 uint32_t fd_ringbuffer_size(struct fd_ringbuffer *ring);
-
-will_be_deprecated struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring);
-will_be_deprecated void fd_ringmarker_del(struct fd_ringmarker *marker);
-will_be_deprecated void fd_ringmarker_mark(struct fd_ringmarker *marker);
-will_be_deprecated uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
-		struct fd_ringmarker *end);
-will_be_deprecated int fd_ringmarker_flush(struct fd_ringmarker *marker);
 
 #endif /* FREEDRENO_RINGBUFFER_H_ */
