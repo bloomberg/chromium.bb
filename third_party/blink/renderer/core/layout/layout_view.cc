@@ -255,8 +255,14 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
     if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
                               StyleRef().BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
-                               StyleRef().BackgroundLayers())))
+                               StyleRef().BackgroundLayers()))) {
       SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
+      // In case that the background will be painted on the scrolling contents
+      // layer, we need this to invalidate the background.
+      // TODO(wangxianzhu): Clean up and fix other such cases about invalidation
+      // of background painted on the scrolling contents layer.
+      SetBackgroundChangedSinceLastPaintInvalidation();
+    }
   }
 }
 
