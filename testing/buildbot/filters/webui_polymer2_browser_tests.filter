@@ -15,6 +15,7 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
+-CrSettingsSiteListEntryTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
@@ -29,9 +30,13 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
--CrSettingsFingerprintProgressArcTest.All
 -CrSettingsPeoplePageSetupPinDialogTest.All
+-DemoSetupTest.BackOnArcTermsScreen
+-DemoSetupTest.ClickConnectedNetworkOnNetworkScreen
+-DemoSetupTest.ClickNetworkOnNetworkScreen
 -DemoSetupTest.OfflineSetupFlowError
+-DemoSetupTest.OfflineSetupFlowSuccess
+-DemoSetupTest.OnlineSetupFlowCrosComponentFailure
 -DemoSetupTest.OnlineSetupFlowError
 -DemoSetupTest.OnlineSetupFlowSuccess
 -DemoSetupTest.ShowOfflineSetupOptionOnNetworkList
