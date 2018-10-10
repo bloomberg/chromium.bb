@@ -14,8 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/chrome_accept_language_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -25,7 +23,6 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -387,17 +384,6 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
-
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    auto* drp_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
-    if (drp_settings) {
-      network::mojom::CustomProxyConfigClientPtrInfo config_client_info;
-      network_context_params->custom_proxy_config_client_request =
-          mojo::MakeRequest(&config_client_info);
-      drp_settings->SetCustomProxyConfigClient(std::move(config_client_info));
-    }
-  }
 
   return network_context_params;
 }

@@ -61,17 +61,15 @@ class DataReductionProxyBrowsertest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDataReductionProxyEnabledWithNetworkService);
-    param_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection,
-        {{params::GetMissingViaBypassParamName(), "true"},
-         {params::GetWarmupCallbackParamName(), "true"}});
     ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyRobustConnection,
+        {{params::GetMissingViaBypassParamName(), "true"},
+         {params::GetWarmupCallbackParamName(), "true"}});
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
     EnableDataSaver(true);
   }
@@ -104,7 +102,6 @@ class DataReductionProxyBrowsertest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList param_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
