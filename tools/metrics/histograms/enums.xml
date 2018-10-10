@@ -29110,6 +29110,8 @@ from previous Chrome versions.
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201741587" label="DataReductionProxyDecidesTransform:disabled"/>
   <int value="-1201183153" label="enable-centered-app-list"/>
+  <int value="-1199159971"
+      label="ContextualSuggestionsIPHReverseScroll:enabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>
@@ -30613,6 +30615,8 @@ from previous Chrome versions.
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1792609232" label="NTPShortcuts:enabled"/>
+  <int value="1798347197"
+      label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
   <int value="1807374811" label="CCTModuleCache:enabled"/>

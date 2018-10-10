@@ -2731,6 +2731,11 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
+    public View getExperimentalButtonView() {
+        return mExperimentalButton;
+    }
+
+    @Override
     public void disableExperimentalButton() {
         if (mExperimentalButton == null || mExperimentalButton.getVisibility() == View.GONE) {
             return;

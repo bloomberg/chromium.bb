@@ -986,6 +986,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The experimental toolbar button if it exists.
+     */
+    public @Nullable View getExperimentalButtonView() {
+        if (mToolbar == null) return null;
+        return mToolbar.getExperimentalButtonView();
+    }
+
+    /**
      * @return The bookmarks bridge.
      */
     public BookmarkBridge getBookmarkBridge() {

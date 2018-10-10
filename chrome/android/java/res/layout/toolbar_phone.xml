@@ -51,19 +51,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end" >
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top" >
 
-            <ViewStub
-                android:id="@+id/experimental_button_stub"
-                android:inflatedId="@+id/experimental_toolbar_button"
-                android:layout="@layout/experimental_toolbar_button"
-                style="@style/ToolbarButton"
-                android:paddingStart="8dp"
-                android:visibility="gone" />
-        </FrameLayout>
+        <ViewStub
+            android:id="@+id/experimental_button_stub"
+            android:inflatedId="@+id/experimental_toolbar_button"
+            android:layout="@layout/experimental_toolbar_button"
+            style="@style/ToolbarButton"
+            android:paddingStart="8dp"
+            android:visibility="gone" />
 
         <ImageButton android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"

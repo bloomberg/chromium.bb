@@ -241,6 +241,12 @@ const char kContextualSuggestionsButtonName[] = "Contextual Suggestions Button";
 const char kContextualSuggestionsButtonDescription[] =
     "If enabled, shows a button to trigger contextual suggestions.";
 
+const char kContextualSuggestionsIPHReverseScrollName[] =
+    "Contextual Suggestions IPH Reverse Scroll";
+const char kContextualSuggestionsIPHReverseScrollDescription[] =
+    "Require a reverse scroll before showing in-product help for contextual "
+    "suggestions.";
+
 const char kContextualSuggestionsOptOutName[] =
     "Contextual Suggestions Opt-out";
 const char kContextualSuggestionsOptOutDescription[] =
