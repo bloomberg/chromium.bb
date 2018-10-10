@@ -661,8 +661,11 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		es->is_opaque = true;
 		break;
 	default:
-		weston_log("Unsupported SHM buffer format\n");
+		weston_log("Unsupported SHM buffer format 0x%x\n",
+			wl_shm_buffer_get_format(shm_buffer));
 		weston_buffer_reference(&ps->buffer_ref, NULL);
+                weston_buffer_send_server_error(buffer,
+			"disconnecting due to unhandled buffer type");
 		return;
 	break;
 	}

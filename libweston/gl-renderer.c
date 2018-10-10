@@ -2377,10 +2377,16 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		gl_renderer_attach_dmabuf(es, buffer, dmabuf);
 	else {
 		weston_log("unhandled buffer type!\n");
+		if (gr->has_bind_display) {
+		  weston_log("eglQueryWaylandBufferWL failed\n");
+		  gl_renderer_print_egl_error_state();
+		}
 		weston_buffer_reference(&gs->buffer_ref, NULL);
 		gs->buffer_type = BUFFER_TYPE_NULL;
 		gs->y_inverted = 1;
 		es->is_opaque = false;
+                weston_buffer_send_server_error(buffer,
+			"disconnecting due to unhandled buffer type");
 	}
 }
 

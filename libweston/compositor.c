@@ -7103,3 +7103,38 @@ weston_compositor_load_xwayland(struct weston_compositor *compositor)
 		return -1;
 	return 0;
 }
+
+/** Resolve an internal compositor error by disconnecting the client.
+ *
+ * This function is used in cases when the wl_buffer turns out
+ * unusable and there is no fallback path.
+ *
+ * It is possible the fault is caused by a compositor bug, the underlying
+ * graphics stack bug or normal behaviour, or perhaps a client mistake.
+ * In any case, the options are to either composite garbage or nothing,
+ * or disconnect the client. This is a helper function for the latter.
+ *
+ * The error is sent as an INVALID_OBJECT error on the client's wl_display.
+ *
+ * \param buffer The weston buffer that is unusable.
+ * \param msg A custom error message attached to the protocol error.
+ */
+WL_EXPORT void
+weston_buffer_send_server_error(struct weston_buffer *buffer,
+				      const char *msg)
+{
+	struct wl_client *client;
+	struct wl_resource *display_resource;
+	uint32_t id;
+
+	assert(buffer->resource);
+	id = wl_resource_get_id(buffer->resource);
+	client = wl_resource_get_client(buffer->resource);
+	display_resource = wl_client_get_object(client, 1);
+
+	assert(display_resource);
+	wl_resource_post_error(display_resource,
+			       WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "server error with "
+			       "wl_buffer@%u: %s", id, msg);
+}
