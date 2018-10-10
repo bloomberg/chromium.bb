@@ -22,19 +22,19 @@ namespace blink {
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
 constexpr size_t kNodeNumberLimit = 5000;
 
-static bool LargeTextOnTop(std::unique_ptr<TextRecord>& a,
-                           std::unique_ptr<TextRecord>& b) {
+static bool LargeTextOnTop(const std::unique_ptr<TextRecord>& a,
+                           const std::unique_ptr<TextRecord>& b) {
   return a->first_size < b->first_size;
 }
 
-static bool LateTextOnTop(std::unique_ptr<TextRecord>& a,
-                          std::unique_ptr<TextRecord>& b) {
+static bool LateTextOnTop(const std::unique_ptr<TextRecord>& a,
+                          const std::unique_ptr<TextRecord>& b) {
   return a->first_paint_time < b->first_paint_time;
 }
 
 TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
-    : largest_text_heap_(LargeTextOnTop),
-      latest_text_heap_(LateTextOnTop),
+    : largest_text_heap_(&LargeTextOnTop),
+      latest_text_heap_(&LateTextOnTop),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &TextPaintTimingDetector::TimerFired),

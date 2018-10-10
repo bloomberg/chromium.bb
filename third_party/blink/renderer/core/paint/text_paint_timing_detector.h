@@ -80,13 +80,13 @@ class CORE_EXPORT TextPaintTimingDetector final
   HashSet<DOMNodeId> size_zero_node_ids_;
   std::priority_queue<std::unique_ptr<TextRecord>,
                       std::vector<std::unique_ptr<TextRecord>>,
-                      std::function<bool(std::unique_ptr<TextRecord>&,
-                                         std::unique_ptr<TextRecord>&)>>
+                      bool (*)(const std::unique_ptr<TextRecord>&,
+                               const std::unique_ptr<TextRecord>&)>
       largest_text_heap_;
   std::priority_queue<std::unique_ptr<TextRecord>,
                       std::vector<std::unique_ptr<TextRecord>>,
-                      std::function<bool(std::unique_ptr<TextRecord>&,
-                                         std::unique_ptr<TextRecord>&)>>
+                      bool (*)(const std::unique_ptr<TextRecord>&,
+                               const std::unique_ptr<TextRecord>&)>
       latest_text_heap_;
   std::vector<TextRecord> texts_to_record_swap_time_;
 
