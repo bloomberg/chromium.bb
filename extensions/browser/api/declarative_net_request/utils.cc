@@ -17,7 +17,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "components/url_pattern_index/url_pattern_index.h"
@@ -135,7 +134,6 @@ const ExtensionResource* GetRulesetResource(const Extension& extension) {
 
 // Helper to retrieve the filename of the JSON ruleset provided by |extension|.
 std::string GetJSONRulesetFilename(const Extension& extension) {
-  base::AssertBlockingAllowed();
   return GetRulesetResource(extension)->GetFilePath().BaseName().AsUTF8Unsafe();
 }
 
@@ -145,7 +143,6 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
                                    const Extension& extension,
                                    std::vector<InstallWarning>* warnings,
                                    int* ruleset_checksum) {
-  base::AssertBlockingAllowed();
   DCHECK(warnings);
   DCHECK(ruleset_checksum);
 
@@ -266,7 +263,6 @@ IndexAndPersistRulesResult::IndexAndPersistRulesResult() = default;
 IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
     const Extension& extension) {
   DCHECK(IsAPIAvailable());
-  base::AssertBlockingAllowed();
 
   const ExtensionResource* resource = GetRulesetResource(extension);
   DCHECK(resource);
@@ -296,7 +292,6 @@ void IndexAndPersistRules(service_manager::Connector* connector,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback) {
   DCHECK(IsAPIAvailable());
-  base::AssertBlockingAllowed();
 
   const ExtensionResource* resource = GetRulesetResource(extension);
   DCHECK(resource);
