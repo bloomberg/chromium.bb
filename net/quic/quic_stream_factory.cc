@@ -155,6 +155,14 @@ void LogPlatformNotificationInHistogram(
                             notification, NETWORK_NOTIFICATION_MAX);
 }
 
+void LogStaleHostRacing(bool used) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleHostRacing", used);
+}
+
+void LogStaleAndFreshHostMatched(bool matched) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleAndFreshHostMatched", matched);
+}
+
 void SetInitialRttEstimate(base::TimeDelta estimate,
                            enum InitialRttEstimateSource source,
                            quic::QuicConfig* config) {
@@ -547,9 +555,11 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
       // Case where host resolution returns successfully, but stale connection
       // hasn't finished yet.
       if (DoesPeerAddressMatchWithFreshAddressList()) {
+        LogStaleAndFreshHostMatched(true);
         dns_race_ongoing_ = false;
         return;
       }
+      LogStaleAndFreshHostMatched(false);
       net_log_.AddEvent(
           NetLogEventType::
               QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
@@ -603,17 +613,22 @@ int QuicStreamFactory::Job::DoResolveHost() {
       base::Bind(&QuicStreamFactory::Job::OnResolveHostComplete, GetWeakPtr()),
       &request_, net_log_);
 
-  if (rv != ERR_IO_PENDING || !race_stale_dns_on_connection_)
+  if (rv != ERR_IO_PENDING || !race_stale_dns_on_connection_) {
+    if (race_stale_dns_on_connection_)
+      LogStaleHostRacing(false);
     return rv;
+  }
 
   HostCache::EntryStaleness stale_info;
   if (host_resolver_->ResolveStaleFromCache(
           HostResolver::RequestInfo(key_.destination()), &stale_address_list_,
           &stale_info, net_log_) == OK) {
     io_state_ = STATE_CONNECT;
+    LogStaleHostRacing(true);
     dns_race_ongoing_ = true;
     return OK;
   }
+  LogStaleHostRacing(false);
   net_log_.AddEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_FAILED);
   return ERR_IO_PENDING;
@@ -713,10 +728,12 @@ int QuicStreamFactory::Job::DoWaitForHostResolution() {
 // have finished successfully.
 int QuicStreamFactory::Job::DoValidateHost() {
   if (DoesPeerAddressMatchWithFreshAddressList()) {
+    LogStaleAndFreshHostMatched(true);
     io_state_ = STATE_CONFIRM_CONNECTION;
     return OK;
   }
 
+  LogStaleAndFreshHostMatched(false);
   net_log_.AddEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
   dns_race_ongoing_ = false;
@@ -726,6 +743,8 @@ int QuicStreamFactory::Job::DoValidateHost() {
 }
 
 int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
+  UMA_HISTOGRAM_TIMES("Net.QuicSession.TimeFromResolveHostToConfirmConnection",
+                      base::TimeTicks::Now() - dns_resolution_start_time_);
   net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT);
   if (session_ &&
       session_->error() == quic::QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
