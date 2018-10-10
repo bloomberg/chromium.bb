@@ -24,6 +24,7 @@
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
+#include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
@@ -231,6 +232,43 @@ class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
   FakeHostStatusProvider* instance_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostStatusProviderFactory);
+};
+
+class FakeGrandfatheredEasyUnlockHostDisablerFactory
+    : public GrandfatheredEasyUnlockHostDisabler::Factory {
+ public:
+  FakeGrandfatheredEasyUnlockHostDisablerFactory(
+      FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client,
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service)
+      : fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
+        expected_device_sync_client_(expected_device_sync_client),
+        expected_testing_pref_service_(expected_testing_pref_service) {}
+
+  ~FakeGrandfatheredEasyUnlockHostDisablerFactory() override = default;
+
+ private:
+  // GrandfatheredEasyUnlockHostDisabler::Factory:
+  std::unique_ptr<GrandfatheredEasyUnlockHostDisabler> BuildInstance(
+      HostBackendDelegate* host_backend_delegate,
+      device_sync::DeviceSyncClient* device_sync_client,
+      PrefService* pref_service,
+      std::unique_ptr<base::OneShotTimer> timer) override {
+    EXPECT_EQ(fake_host_backend_delegate_factory_->instance(),
+              host_backend_delegate);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
+    // Only check inputs and return nullptr. We do not want to trigger any logic
+    // in these unit tests.
+    return nullptr;
+  }
+
+  FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeGrandfatheredEasyUnlockHostDisablerFactory);
 };
 
 class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
@@ -495,6 +533,13 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostStatusProviderImpl::Factory::SetFactoryForTesting(
         fake_host_status_provider_factory_.get());
 
+    fake_grandfathered_easy_unlock_host_disabler_factory_ =
+        std::make_unique<FakeGrandfatheredEasyUnlockHostDisablerFactory>(
+            fake_host_backend_delegate_factory_.get(),
+            fake_device_sync_client_.get(), test_pref_service_.get());
+    GrandfatheredEasyUnlockHostDisabler::Factory::SetFactoryForTesting(
+        fake_grandfathered_easy_unlock_host_disabler_factory_.get());
+
     fake_feature_state_manager_factory_ =
         std::make_unique<FakeFeatureStateManagerFactory>(
             test_pref_service_.get(), fake_host_status_provider_factory_.get(),
@@ -544,6 +589,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
     HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
     HostStatusProviderImpl::Factory::SetFactoryForTesting(nullptr);
+    GrandfatheredEasyUnlockHostDisabler::Factory::SetFactoryForTesting(nullptr);
     FeatureStateManagerImpl::Factory::SetFactoryForTesting(nullptr);
     HostDeviceTimestampManagerImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
@@ -823,6 +869,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;
   std::unique_ptr<FakeHostStatusProviderFactory>
       fake_host_status_provider_factory_;
+  std::unique_ptr<FakeGrandfatheredEasyUnlockHostDisablerFactory>
+      fake_grandfathered_easy_unlock_host_disabler_factory_;
   std::unique_ptr<FakeFeatureStateManagerFactory>
       fake_feature_state_manager_factory_;
   std::unique_ptr<FakeHostDeviceTimestampManagerFactory>
