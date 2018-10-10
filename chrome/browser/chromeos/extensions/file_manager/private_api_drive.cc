@@ -1240,6 +1240,10 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
             this));
   } else {
     auto query = drivefs::mojom::QueryParameters::New();
+    query->sort_field =
+        drivefs::mojom::QueryParameters::SortField::kLastModified;
+    query->sort_direction =
+        drivefs::mojom::QueryParameters::SortDirection::kDescending;
     if (!params->search_params.query.empty()) {
       query->title = params->search_params.query;
       query->query_source =
