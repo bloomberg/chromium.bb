@@ -389,6 +389,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetOriginPolicy(const String& policy) { origin_policy_ = policy; }
   const String& GetOriginPolicy() const { return origin_policy_; }
 
+  void SetRequestedWith(const String& value) { requested_with_ = value; }
+  const String& GetRequestedWith() const { return requested_with_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -460,6 +463,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
+  String requested_with_;
 };
 
 }  // namespace blink

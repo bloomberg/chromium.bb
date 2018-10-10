@@ -315,6 +315,12 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT const WebString GetOriginPolicy() const;
   BLINK_PLATFORM_EXPORT void SetOriginPolicy(const WebString& policy);
 
+  // Remembers 'X-Requested-With' header value. Blink should not set this header
+  // value until CORS checks are done to avoid running checks even against
+  // headers that are internally set.
+  BLINK_PLATFORM_EXPORT const WebString GetRequestedWith() const;
+  BLINK_PLATFORM_EXPORT void SetRequestedWith(const WebString&);
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;
