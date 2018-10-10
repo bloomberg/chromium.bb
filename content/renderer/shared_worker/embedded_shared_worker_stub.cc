@@ -501,8 +501,9 @@ void EmbeddedSharedWorkerStub::Terminate() {
 }
 
 void EmbeddedSharedWorkerStub::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
     blink::mojom::DevToolsAgentAssociatedRequest request) {
-  impl_->BindDevToolsAgent(request.PassHandle());
+  impl_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
 }
 
 }  // namespace content

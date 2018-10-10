@@ -108,6 +108,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
   void BindDevToolsAgent(
+      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   mojo::Binding<mojom::SharedWorker> binding_;

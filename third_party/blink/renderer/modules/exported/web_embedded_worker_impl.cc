@@ -270,9 +270,14 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
 }
 
 void WebEmbeddedWorkerImpl::BindDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
-      std::move(devtools_agent_request)));
+  shadow_page_->DevToolsAgent()->BindRequest(
+      mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
+          std::move(devtools_agent_host_ptr_info),
+          mojom::blink::DevToolsAgentHost::Version_),
+      mojom::blink::DevToolsAgentAssociatedRequest(
+          std::move(devtools_agent_request)));
 }
 
 void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,

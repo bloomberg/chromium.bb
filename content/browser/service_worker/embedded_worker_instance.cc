@@ -56,10 +56,12 @@ const char kServiceWorkerTerminationCanceledMesage[] =
 void NotifyWorkerReadyForInspectionOnUI(
     int worker_process_id,
     int worker_route_id,
+    blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
     blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
-      worker_process_id, worker_route_id, std::move(devtools_agent_ptr_info));
+      worker_process_id, worker_route_id, std::move(host_request),
+      std::move(devtools_agent_ptr_info));
 }
 
 void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
@@ -315,12 +317,14 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   }
 
   void NotifyWorkerReadyForInspection(
+      blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
       blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(NotifyWorkerReadyForInspectionOnUI, process_id_,
-                       agent_route_id_, std::move(devtools_agent_ptr_info)));
+                       agent_route_id_, std::move(host_request),
+                       std::move(devtools_agent_ptr_info)));
   }
 
   void NotifyWorkerVersionInstalled() {
@@ -806,12 +810,16 @@ void EmbeddedWorkerInstance::CountFeature(blink::mojom::WebFeature feature) {
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {
-  if (devtools_proxy_) {
-    blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info;
-    client_->BindDevToolsAgent(mojo::MakeRequest(&devtools_agent_ptr_info));
-    devtools_proxy_->NotifyWorkerReadyForInspection(
-        std::move(devtools_agent_ptr_info));
-  }
+  if (!devtools_proxy_)
+    return;
+  blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::DevToolsAgentHostAssociatedRequest host_request =
+      mojo::MakeRequest(&host_ptr_info);
+  blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info;
+  client_->BindDevToolsAgent(std::move(host_ptr_info),
+                             mojo::MakeRequest(&devtools_agent_ptr_info));
+  devtools_proxy_->NotifyWorkerReadyForInspection(
+      std::move(host_request), std::move(devtools_agent_ptr_info));
 }
 
 void EmbeddedWorkerInstance::OnScriptReadStarted() {

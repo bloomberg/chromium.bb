@@ -505,8 +505,9 @@ void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
 }
 
 void SharedWorkerHost::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
     blink::mojom::DevToolsAgentAssociatedRequest request) {
-  worker_->BindDevToolsAgent(std::move(request));
+  worker_->BindDevToolsAgent(std::move(host), std::move(request));
 }
 
 void SharedWorkerHost::SetAppCacheHandle(

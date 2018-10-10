@@ -23,6 +23,7 @@ import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/platform/referrer.mojom";
 import "third_party/blink/public/web/commit_result.mojom";
+import "third_party/blink/public/web/devtools_agent.mojom";
 import "third_party/blink/public/web/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
@@ -151,6 +152,14 @@ interface FrameNavigationControl {
   // receiver's existing bundle.
   UpdateSubresourceLoaderFactories(
       URLLoaderFactoryBundle subresource_loader_factories);
+
+  // Returns a DevToolsAgent interface for this frame, used for
+  // remote debugging. See DevToolsAgent for details.
+  // Returned DevToolsAgent must be associated with navigation control,
+  // due to various ordering dependencies between DevTools protocol and
+  // navigation.
+  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
+                    associated blink.mojom.DevToolsAgent& agent);
 };
 
 // Implemented by the frame (e.g. renderer processes).

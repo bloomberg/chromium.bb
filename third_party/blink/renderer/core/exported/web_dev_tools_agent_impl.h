@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
@@ -79,7 +78,8 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void UpdateOverlays();
   bool HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
-  void BindRequest(mojom::blink::DevToolsAgentAssociatedRequest);
+  void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
+                   mojom::blink::DevToolsAgentAssociatedRequest);
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);

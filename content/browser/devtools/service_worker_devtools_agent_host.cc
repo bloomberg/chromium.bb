@@ -136,12 +136,14 @@ void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
+    blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
     blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
   blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
   agent_ptr.Bind(std::move(devtools_agent_ptr_info));
-  GetRendererChannel()->SetRenderer(std::move(agent_ptr), worker_process_id_,
+  GetRendererChannel()->SetRenderer(std::move(agent_ptr),
+                                    std::move(host_request), worker_process_id_,
                                     nullptr);
   if (!sessions().empty())
     UpdateIsAttached(true);
@@ -162,8 +164,8 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   state_ = WORKER_TERMINATED;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
-  GetRendererChannel()->SetRenderer(nullptr, ChildProcessHost::kInvalidUniqueID,
-                                    nullptr);
+  GetRendererChannel()->SetRenderer(
+      nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
   if (!sessions().empty())
     UpdateIsAttached(false);
 }

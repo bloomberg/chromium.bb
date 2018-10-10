@@ -13,14 +13,20 @@
 namespace content {
 
 DevToolsRendererChannel::DevToolsRendererChannel(DevToolsAgentHostImpl* owner)
-    : owner_(owner), process_id_(ChildProcessHost::kInvalidUniqueID) {}
+    : owner_(owner),
+      binding_(this),
+      process_id_(ChildProcessHost::kInvalidUniqueID) {}
 
 DevToolsRendererChannel::~DevToolsRendererChannel() = default;
 
 void DevToolsRendererChannel::SetRenderer(
     blink::mojom::DevToolsAgentAssociatedPtr agent_ptr,
+    blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
     int process_id,
     RenderFrameHostImpl* frame_host) {
+  binding_.Close();
+  if (host_request)
+    binding_.Bind(std::move(host_request));
   agent_ptr_ = std::move(agent_ptr);
   process_id_ = process_id;
   frame_host_ = frame_host;
@@ -42,8 +48,8 @@ void DevToolsRendererChannel::AttachSession(DevToolsSession* session) {
 void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {
   if (!agent_ptr_)
     owner_->UpdateRendererChannel(true /* force */);
-  // Previous call might update |agent_ptr_| via SetRenderer(),
-  // so we should check it again.
+  // Previous call might update |agent_ptr_|
+  // via SetRenderer(), so we should check it again.
   if (agent_ptr_)
     agent_ptr_->InspectElement(point);
 }

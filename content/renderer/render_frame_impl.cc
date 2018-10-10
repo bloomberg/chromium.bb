@@ -3589,6 +3589,12 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
       ->UpdateThisAndAllClones(std::move(subresource_loaders));
 }
 
+void RenderFrameImpl::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
+    blink::mojom::DevToolsAgentAssociatedRequest request) {
+  frame_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
+}
+
 // mojom::HostZoom implementation ----------------------------------------------
 
 void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {

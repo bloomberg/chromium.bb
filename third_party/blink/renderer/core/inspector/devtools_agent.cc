@@ -211,16 +211,21 @@ void DevToolsAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(sessions_);
 }
 
-void DevToolsAgent::WillBeDestroyed() {
+void DevToolsAgent::Dispose() {
   HeapHashSet<Member<Session>> copy(sessions_);
   for (auto& session : copy)
     session->Detach();
-  binding_.Close();
+  CleanupConnection();
 }
 
 void DevToolsAgent::BindRequest(
+    mojom::blink::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsAgentAssociatedRequest request) {
+  DCHECK(!binding_);
   binding_.Bind(std::move(request));
+  host_ptr_.Bind(std::move(host_ptr_info));
+  host_ptr_.set_connection_error_handler(
+      WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 }
 
 void DevToolsAgent::AttachDevToolsSession(
@@ -241,6 +246,11 @@ void DevToolsAgent::InspectElement(const WebPoint& point) {
 void DevToolsAgent::FlushProtocolNotifications() {
   for (auto& session : sessions_)
     session->inspector_session()->flushProtocolNotifications();
+}
+
+void DevToolsAgent::CleanupConnection() {
+  binding_.Close();
+  host_ptr_.reset();
 }
 
 }  // namespace blink

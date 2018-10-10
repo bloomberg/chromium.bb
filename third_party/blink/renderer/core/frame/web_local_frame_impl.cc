@@ -1809,12 +1809,6 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
     frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
   }
 
-  if (frame_->IsLocalRoot()) {
-    frame_->GetInterfaceRegistry()->AddAssociatedInterface(
-        WTF::BindRepeating(&WebLocalFrameImpl::BindDevToolsAgentRequest,
-                           WrapWeakPersistent(this)));
-  }
-
   if (!owner) {
     // This trace event is needed to detect the main frame of the
     // renderer in telemetry metrics. See crbug.com/692112#c11.
@@ -2542,11 +2536,25 @@ void WebLocalFrameImpl::SetDevToolsAgentImpl(WebDevToolsAgentImpl* agent) {
   dev_tools_agent_ = agent;
 }
 
-void WebLocalFrameImpl::BindDevToolsAgentRequest(
-    mojom::blink::DevToolsAgentAssociatedRequest request) {
+WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
+  if (!frame_->IsLocalRoot())
+    return nullptr;
   if (!dev_tools_agent_)
     dev_tools_agent_ = WebDevToolsAgentImpl::CreateForFrame(this);
-  dev_tools_agent_->BindRequest(std::move(request));
+  return dev_tools_agent_;
+}
+
+void WebLocalFrameImpl::BindDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
+  WebDevToolsAgentImpl* agent = DevToolsAgentImpl();
+  if (!agent)
+    return;
+  agent->BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
+                         std::move(devtools_agent_host_ptr_info),
+                         mojom::blink::DevToolsAgentHost::Version_),
+                     mojom::blink::DevToolsAgentAssociatedRequest(
+                         std::move(devtools_agent_request)));
 }
 
 }  // namespace blink

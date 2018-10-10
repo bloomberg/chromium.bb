@@ -165,6 +165,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
+  void BindDevToolsAgent(
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
   void SetMarkedText(const WebString&,
                      unsigned location,
                      unsigned length) override;
@@ -376,9 +379,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   }
 
   void SetDevToolsAgentImpl(WebDevToolsAgentImpl*);
-  WebDevToolsAgentImpl* DevToolsAgentImpl() const {
-    return dev_tools_agent_.Get();
-  }
+  WebDevToolsAgentImpl* DevToolsAgentImpl();
 
   // When a Find operation ends, we want to set the selection to what was active
   // and set focus to the first focusable node we find (starting with the first
@@ -473,8 +474,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DispatchPrintEventRecursively(const AtomicString& event_type);
 
   Node* ContextMenuNodeInner() const;
-
-  void BindDevToolsAgentRequest(mojom::blink::DevToolsAgentAssociatedRequest);
 
   WebLocalFrameClient* client_;
 

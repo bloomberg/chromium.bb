@@ -83,7 +83,8 @@ class EmbeddedWorkerTestHelper {
     void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                              const std::string& message) override;
     void BindDevToolsAgent(
-        blink::mojom::DevToolsAgentAssociatedRequest request) override {}
+        blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
+        blink::mojom::DevToolsAgentAssociatedRequest) override {}
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;

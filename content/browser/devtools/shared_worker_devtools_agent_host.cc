@@ -115,13 +115,18 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
 
 void SharedWorkerDevToolsAgentHost::UpdateRendererChannel(bool force) {
   if (state_ == WORKER_READY && force) {
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
+    blink::mojom::DevToolsAgentHostAssociatedRequest host_request =
+        mojo::MakeRequest(&host_ptr_info);
     blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-    worker_host_->BindDevToolsAgent(mojo::MakeRequest(&agent_ptr));
+    worker_host_->BindDevToolsAgent(std::move(host_ptr_info),
+                                    mojo::MakeRequest(&agent_ptr));
     GetRendererChannel()->SetRenderer(std::move(agent_ptr),
+                                      std::move(host_request),
                                       worker_host_->process_id(), nullptr);
   } else {
     GetRendererChannel()->SetRenderer(
-        nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
+        nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
   }
 }
 
