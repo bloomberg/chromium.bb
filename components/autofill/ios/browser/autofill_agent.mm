@@ -32,6 +32,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
@@ -197,6 +198,16 @@ void GetFormAndField(autofill::FormData* form,
   // Bridge to observe form activity in |webState_|.
   std::unique_ptr<autofill::FormActivityObserverBridge>
       formActivityObserverBridge_;
+
+  // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
+  // This is a workaround crbug.com/892612. On submission,
+  // AutofillDownloadManager and CreditCardSaveManager expect autofillManager
+  // and autofillDriver to live after web frame deletion so AutofillAgent will
+  // keep the latest submitted AutofillDriver alive.
+  // TODO(crbug.com/892612): remove this workaround once life cycle of autofill
+  // manager is fixed.
+  scoped_refptr<autofill::AutofillDriverIOSRefCountable>
+      last_submitted_autofill_driver_;
 }
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -242,6 +253,7 @@ void GetFormAndField(autofill::FormData* form,
 - (void)detachFromWebState {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
+  last_submitted_autofill_driver_ = nullptr;
   if (webState_) {
     formActivityObserverBridge_.reset();
     webState_->RemoveObserver(webStateObserverBridge_.get());
@@ -723,6 +735,20 @@ autofillManagerFromWebState:(web::WebState*)webState
       [self autofillManagerFromWebState:webState webFrame:frame];
   if (!autofillManager || !success || forms.empty())
     return;
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+    // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
+    // This is a workaround crbug.com/892612. On submission,
+    // AutofillDownloadManager and CreditCardSaveManager expect autofillManager
+    // and autofillDriver to live after web frame deletion so AutofillAgent will
+    // keep the latest submitted AutofillDriver alive.
+    // TODO(crbug.com/892612): remove this workaround once life cycle of
+    // autofill manager is fixed.
+    DCHECK(frame);
+    last_submitted_autofill_driver_ =
+        autofill::AutofillDriverIOSWebFrame::FromWebFrame(frame)
+            ->GetRetainableDriver();
+    DCHECK(last_submitted_autofill_driver_);
+  }
   DCHECK(forms.size() <= 1) << "Only one form should be extracted.";
   [self notifyAutofillManager:autofillManager
              ofFormsSubmitted:forms
