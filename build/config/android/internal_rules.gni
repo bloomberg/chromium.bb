@@ -1202,17 +1202,6 @@ if (enable_java_templates) {
         args += rebase_path(invoker.input_jars, root_build_dir)
       }
 
-      if (!is_java_debug) {
-        args += [ "--release" ]
-      }
-
-      if (defined(invoker.min_sdk_version)) {
-        args += [
-          "--min-api",
-          "${invoker.min_sdk_version}",
-        ]
-      }
-
       _d8_path = "//third_party/r8/lib/d8.jar"
       inputs += [ _d8_path ]
       args += [
