@@ -27,7 +27,6 @@ const CGFloat kCellHeight = 44;
 const CGFloat kInnerMargin = 11;
 const CGFloat kMargin = 15;
 const CGFloat kTopMargin = 8;
-const CGFloat kTopMarginBadge = 14;
 const CGFloat kMaxHeight = 100;
 NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
     @"kToolsMenuTextBadgeAccessibilityIdentifier";
@@ -130,6 +129,12 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
                                             UILayoutConstraintAxisHorizontal];
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
                                    forAxis:UILayoutConstraintAxisHorizontal];
+    // The compression resistance has to be higher priority than the minimal
+    // height constraint so it can increase the height of the cell to be
+    // displayed on multiple lines.
+    [_titleLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+                                        forAxis:UILayoutConstraintAxisVertical];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.adjustsFontForContentSizeCategory = YES;
 
@@ -150,14 +155,26 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
     [self.contentView addSubview:_numberBadgeView];
     [self.contentView addSubview:_textBadgeView];
 
+    [NSLayoutConstraint activateConstraints:@[
+      [_titleLabel.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+      // Align the center of image with the center of the capital letter of the
+      // first line of the title.
+      [_imageView.centerYAnchor
+          constraintEqualToAnchor:_titleLabel.firstBaselineAnchor
+                         constant:-[self titleFont].capHeight / 2.0],
+      [_numberBadgeView.centerYAnchor
+          constraintEqualToAnchor:_imageView.centerYAnchor],
+      [_textBadgeView.centerYAnchor
+          constraintEqualToAnchor:_imageView.centerYAnchor],
+      [self.contentView.heightAnchor
+          constraintGreaterThanOrEqualToConstant:kCellHeight],
+    ]];
     ApplyVisualConstraintsWithMetrics(
         @[
           @"H:|-(margin)-[image(imageLength)]-(innerMargin)-[label]",
           @"H:[numberBadge]-(margin)-|", @"H:[textBadge]-(margin)-|",
-          @"V:|-(topMargin)-[image(imageLength)]",
-          @"V:|-(topMarginBadge)-[numberBadge]",
-          @"V:|-(topMarginBadge)-[textBadge]",
-          @"V:|-(topMargin)-[label]-(topMargin)-|"
+          @"V:|-(>=topMargin)-[label]-(>=topMargin)-|"
         ],
         @{
           @"image" : _imageView,
@@ -169,18 +186,21 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
           @"margin" : @(kMargin),
           @"innerMargin" : @(kInnerMargin),
           @"topMargin" : @(kTopMargin),
-          @"topMarginBadge" : @(kTopMarginBadge),
           @"imageLength" : @(kImageLength),
         });
 
-    [self.contentView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kCellHeight]
-        .active = YES;
+    // The height constraint is used to have something as small as possible when
+    // calculating the size of the prototype cell.
+    NSLayoutConstraint* heightConstraint =
+        [self.contentView.heightAnchor constraintEqualToConstant:kCellHeight];
+    heightConstraint.priority = UILayoutPriorityDefaultLow;
+
     NSLayoutConstraint* trailingEdge = [_titleLabel.trailingAnchor
         constraintEqualToAnchor:self.contentView.trailingAnchor
                        constant:-kMargin];
     trailingEdge.priority = UILayoutPriorityDefaultHigh - 2;
-    trailingEdge.active = YES;
+    [NSLayoutConstraint
+        activateConstraints:@[ trailingEdge, heightConstraint ]];
 
     self.isAccessibilityElement = YES;
   }
