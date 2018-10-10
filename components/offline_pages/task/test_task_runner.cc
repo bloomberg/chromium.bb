@@ -30,7 +30,7 @@ void TestTaskRunner::RunTask(Task* task) {
                      &completed_task));
   task->Run();
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(task, completed_task);
+  EXPECT_EQ(task, completed_task) << "Task did not complete";
 }
 
 }  // namespace offline_pages
