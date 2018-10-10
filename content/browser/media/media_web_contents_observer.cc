@@ -217,9 +217,7 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
 
   UpdateVideoLock();
 
-  // TODO(872066): check for |pip_player_| fully matching paused player.
-  if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
-      pip_player_->render_frame_host == render_frame_host) {
+  if (!web_contents()->IsBeingDestroyed() && pip_player_ == player_id) {
     PictureInPictureWindowControllerImpl* pip_controller =
         PictureInPictureWindowControllerImpl::FromWebContents(
             web_contents_impl());
@@ -273,9 +271,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     return;
   }
 
-  // TODO(872066): check for |pip_player_| fully matching paused player.
-  if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
-      pip_player_->render_frame_host == render_frame_host) {
+  if (!web_contents()->IsBeingDestroyed() && pip_player_ == id) {
     PictureInPictureWindowControllerImpl* pip_controller =
         PictureInPictureWindowControllerImpl::FromWebContents(
             web_contents_impl());
