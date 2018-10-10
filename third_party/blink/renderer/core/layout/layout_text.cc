@@ -276,21 +276,43 @@ void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 
 Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   Vector<TextBoxInfo> results;
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+  if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      for (const NGPaintFragment* fragment : fragments) {
-        const NGPhysicalTextFragment& text_fragment =
-            ToNGPhysicalTextFragment(fragment->PhysicalFragment());
-        results.push_back(TextBoxInfo{
-            {fragment->InlineOffsetToContainerBox().ToLayoutPoint(),
-             text_fragment.Size().ToLayoutSize()},
-            // TODO(kojii): Compute DOM offset, not text content offset.
-            text_fragment.StartOffset(),
-            text_fragment.Length()});
+    for (const NGPaintFragment* fragment : fragments) {
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      // When the corresponding DOM range contains collapsed whitespaces, NG
+      // produces one fragment but legacy produces multiple text boxes broken at
+      // collapsed whitespaces. We break the fragment at collapsed whitespaces
+      // to match the legacy output.
+      // TODO(xiaochengh): We need to report boxes of ::before/after text, which
+      // |NGOffsetMapping| doesn't support.
+      for (const NGOffsetMappingUnit& unit :
+           mapping->GetMappingUnitsForTextContentOffsetRange(
+               text_fragment.StartOffset(), text_fragment.EndOffset())) {
+        if (unit.GetType() == NGOffsetMappingUnitType::kCollapsed)
+          continue;
+        // [clamped_start, clamped_end] of |fragment| matches a legacy text box.
+        const unsigned clamped_start =
+            std::max(unit.TextContentStart(), text_fragment.StartOffset());
+        const unsigned clamped_end =
+            std::min(unit.TextContentEnd(), text_fragment.EndOffset());
+        DCHECK_LT(clamped_start, clamped_end);
+        const unsigned box_length = clamped_end - clamped_start;
+
+        // Compute rect of the legacy text box.
+        LayoutRect rect =
+            text_fragment.LocalRect(clamped_start, clamped_end).ToLayoutRect();
+        rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
+
+        // Compute start of the legacy text box.
+        const base::Optional<unsigned> box_start =
+            CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
+        DCHECK(box_start.has_value());
+        results.push_back(TextBoxInfo{rect, box_start.value(), box_length});
       }
-      return results;
     }
+    return results;
   }
 
   for (const InlineTextBox* text_box : TextBoxes()) {
