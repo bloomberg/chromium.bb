@@ -61,7 +61,7 @@ bool g_save_to_file = false;
 // Threshold for mean absolute difference of hardware and software decode.
 // Absolute difference is to calculate the difference between each pixel in two
 // images. This is used for measuring of the similarity of two images.
-constexpr double kDecodeSimilarityThreshold = 1.0;
+constexpr double kDecodeSimilarityThreshold = 1.25;
 
 // Environment to create test data for all test cases.
 class JpegDecodeAcceleratorTestEnvironment;
