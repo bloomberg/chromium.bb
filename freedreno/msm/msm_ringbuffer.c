@@ -566,15 +566,14 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 }
 
 static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringbuffer *target, uint32_t cmd_idx,
-		uint32_t submit_offset, uint32_t size)
+		struct fd_ringbuffer *target, uint32_t cmd_idx)
 {
 	struct msm_cmd *cmd = NULL;
 	struct msm_ringbuffer *msm_target = to_msm_ringbuffer(target);
 	uint32_t idx = 0;
 	int added_cmd = FALSE;
-
-	submit_offset += msm_target->offset;
+	uint32_t size;
+	uint32_t submit_offset = msm_target->offset;
 
 	LIST_FOR_EACH_ENTRY(cmd, &msm_target->cmd_list, list) {
 		if (idx == cmd_idx)
@@ -593,6 +592,7 @@ static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		size = cmd->size;
 	} else {
 		struct fd_ringbuffer *parent = ring->parent ? ring->parent : ring;
+		size = offset_bytes(target->cur, target->start);
 		added_cmd = get_cmd(parent, cmd, submit_offset, size,
 				MSM_SUBMIT_CMD_IB_TARGET_BUF);
 	}

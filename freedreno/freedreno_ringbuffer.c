@@ -166,8 +166,7 @@ drm_public uint32_t
 fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx)
 {
-	uint32_t size = offset_bytes(target->cur, target->start);
-	return ring->funcs->emit_reloc_ring(ring, target, cmd_idx, 0, size);
+	return ring->funcs->emit_reloc_ring(ring, target, cmd_idx);
 }
 
 drm_public uint32_t
