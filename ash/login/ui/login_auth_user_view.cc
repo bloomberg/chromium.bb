@@ -33,6 +33,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -188,11 +189,15 @@ class LoginAuthUserView::FingerprintView : public views::View {
     switch (state) {
       case mojom::FingerprintUnlockState::UNAVAILABLE:
       case mojom::FingerprintUnlockState::AVAILABLE:
-      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
       case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(
             kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
-        return;
+        break;
+      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+        icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
+                                              kFingerprintIconSizeDp,
+                                              gfx::kGoogleGreenDark500));
+        break;
       case mojom::FingerprintUnlockState::AUTH_FAILED:
       case mojom::FingerprintUnlockState::AUTH_DISABLED:
         icon_->SetAnimationDecoder(
@@ -203,7 +208,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
                     kFingerprintFailedAnimationDurationMs),
                 kFingerprintFailedAnimationNumFrames),
             AnimatedRoundedImageView::Playback::kSingle);
-        return;
+        break;
     }
   }
 
@@ -212,12 +217,13 @@ class LoginAuthUserView::FingerprintView : public views::View {
       switch (state) {
         case mojom::FingerprintUnlockState::UNAVAILABLE:
         case mojom::FingerprintUnlockState::AVAILABLE:
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE;
+        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS;
         case mojom::FingerprintUnlockState::AUTH_FAILED:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE;
         case mojom::FingerprintUnlockState::AUTH_DISABLED:
+        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE;
       }
     };
