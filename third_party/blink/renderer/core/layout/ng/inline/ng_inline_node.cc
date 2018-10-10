@@ -235,33 +235,9 @@ NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
     block->ResetNGInlineNodeData();
 }
 
-bool NGInlineNode::InLineHeightQuirksMode() const {
-  return GetDocument().InLineHeightQuirksMode();
-}
-
-bool NGInlineNode::CanContainFirstFormattedLine() const {
-  DCHECK(GetLayoutBlockFlow());
-  return GetLayoutBlockFlow()->CanContainFirstFormattedLine();
-}
-
-NGInlineNodeData* NGInlineNode::MutableData() {
-  return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-}
-
 bool NGInlineNode::IsPrepareLayoutFinished() const {
   const NGInlineNodeData* data = ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   return data && !data->text_content.IsNull();
-}
-
-const NGInlineNodeData& NGInlineNode::Data() const {
-  DCHECK(IsPrepareLayoutFinished() &&
-         !GetLayoutBlockFlow()->NeedsCollectInlines());
-  return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
-}
-
-void NGInlineNode::InvalidatePrepareLayoutForTest() {
-  GetLayoutBlockFlow()->ResetNGInlineNodeData();
-  DCHECK(!IsPrepareLayoutFinished());
 }
 
 void NGInlineNode::PrepareLayoutIfNeeded() {
