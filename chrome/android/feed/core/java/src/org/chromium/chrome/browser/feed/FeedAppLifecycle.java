@@ -11,11 +11,8 @@ import com.google.android.libraries.feed.api.lifecycle.AppLifecycleListener;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.lang.ref.WeakReference;
@@ -89,14 +86,8 @@ public class FeedAppLifecycle
             mFeedScheduler.onForegrounded();
         }
 
-        // When running instrumentation tests, FeedAppLifecycle is constructed before native is
-        // initialized. Tests call registerListenersForTesting once native initialization is
-        // complete.
-        if (ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                        .hasNativeInitializationCompleted()) {
-            ApplicationStatus.registerStateListenerForAllActivities(this);
-            SigninManager.get().addSignInStateObserver(this);
-        }
+        SigninManager.get().addSignInStateObserver(this);
+        ApplicationStatus.registerStateListenerForAllActivities(this);
     }
 
     /**
@@ -167,12 +158,6 @@ public class FeedAppLifecycle
     @Override
     public void onSignedOut() {
         onClearAll();
-    }
-
-    @VisibleForTesting
-    void registerListenersForTesting() {
-        ApplicationStatus.registerStateListenerForAllActivities(this);
-        SigninManager.get().addSignInStateObserver(this);
     }
 
     private void onEnterForeground() {
