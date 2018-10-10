@@ -137,6 +137,10 @@ class SmbService : public KeyedService,
   // Set up NetBios host locator.
   void SetUpNetBiosHostLocator();
 
+  // Opens |file_system_id| in the File Manager. Must only be called on a
+  // mounted share.
+  void OpenFileManager(const std::string& file_system_id);
+
   // Whether Network File Shares are allowed to be used. Controlled via policy.
   bool IsAllowedByPolicy() const;
 

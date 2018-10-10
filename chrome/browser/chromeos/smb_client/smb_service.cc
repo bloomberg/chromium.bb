@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -186,6 +188,10 @@ void SmbService::OnMountResponse(
 
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
+
+  if (result == base::File::FILE_OK) {
+    OpenFileManager(mount_options.file_system_id);
+  }
 
   FireMountCallback(std::move(callback), TranslateErrorToMountResult(result));
 
@@ -372,6 +378,13 @@ void SmbService::SetUpNetBiosHostLocator() {
       GetSmbProviderClient());
 
   share_finder_->RegisterHostLocator(std::move(netbios_host_locator));
+}
+
+void SmbService::OpenFileManager(const std::string& file_system_id) {
+  base::FilePath mount_path = file_system_provider::util::GetMountPath(
+      profile_, provider_id_, file_system_id);
+
+  platform_util::ShowItemInFolder(profile_, mount_path);
 }
 
 bool SmbService::IsAllowedByPolicy() const {
