@@ -499,6 +499,11 @@ class DownloadsTestVolume : public LocalTestVolume {
     return volume->RegisterDownloadsDirectoryForTesting(root_path());
   }
 
+  void Unmount(Profile* profile) {
+    auto* volume = VolumeManager::Get(profile);
+    volume->RemoveDownloadsDirectoryForTesting();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsTestVolume);
 };
@@ -822,6 +827,8 @@ class DriveTestVolume : public TestVolume {
 
     return integration_service_;
   }
+
+  void Unmount() { integration_service_->SetEnabled(false); }
 
  private:
   virtual base::RepeatingCallback<
@@ -1345,6 +1352,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
+    return;
+  }
+
+  if (name == "mountDownloads") {
+    ASSERT_TRUE(local_volume_->Mount(profile()));
+    return;
+  }
+
+  if (name == "unmountDownloads") {
+    local_volume_->Unmount(profile());
+    return;
+  }
+
+  if (name == "unmountAllVolumes") {
+    local_volume_->Unmount(profile());
+    android_files_volume_->Unmount(profile());
+    drive_volume_->Unmount();
     return;
   }
 

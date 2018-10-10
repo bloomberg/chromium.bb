@@ -595,6 +595,15 @@ bool VolumeManager::RemoveAndroidFilesDirectoryForTesting(
   return true;
 }
 
+void VolumeManager::RemoveDownloadsDirectoryForTesting() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::FilePath path;
+  if (FindDownloadsMountPointPath(profile_, &path)) {
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   *Volume::CreateForDownloads(path));
+  }
+}
+
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

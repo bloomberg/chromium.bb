@@ -698,3 +698,15 @@ test.util.registerRemoteTestUtils = function() {
 test.util.sync.getMetadataStats = function(contentWindow) {
   return contentWindow.fileManager.metadataModel.getStats();
 };
+
+/**
+ * Returns true when FileManager has finished loading, by checking the attribute
+ * "loaded" on its root element.
+ */
+test.util.sync.isFileManagerLoaded = function(contentWindow) {
+  if (contentWindow && contentWindow.fileManager &&
+      contentWindow.fileManager.ui)
+    return contentWindow.fileManager.ui.element.hasAttribute('loaded');
+
+  return false;
+};

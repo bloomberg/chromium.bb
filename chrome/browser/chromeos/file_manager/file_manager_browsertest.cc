@@ -195,6 +195,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
         TestCase("fileSearch"),
+        TestCase("fileDisplayWithoutDownloadsVolume"),
+        TestCase("fileDisplayWithoutVolumes"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound")));
 
