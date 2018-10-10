@@ -439,8 +439,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
     DVLOGF(3) << "buffer[" << i << "]: picture_id=" << output_record.picture_id;
   }
 
-  DCHECK_EQ(output_queue_->FreeBuffersCount(), 0u);
-
   if (output_mode_ == Config::OutputMode::ALLOCATE) {
     ScheduleDecodeBufferTaskIfNeeded();
   }
