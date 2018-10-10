@@ -44,12 +44,13 @@
             android:contentDescription="@string/accessibility_toolbar_btn_forward"
             app:tint="@color/dark_mode_tint" />
 
+        <!-- The src will be set in onFinishInflate. -->
         <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/refresh_button"
             style="@style/ToolbarButton"
-            android:src="@drawable/btn_reload_stop"
             android:contentDescription="@string/accessibility_btn_refresh"
-            app:tint="@color/dark_mode_tint" />
+            tools:tint="@color/dark_mode_tint"
+            tools:src="@drawable/btn_reload_stop" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
             android:id="@+id/location_bar"

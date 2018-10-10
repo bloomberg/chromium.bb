@@ -10,6 +10,8 @@ import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageButton;
@@ -104,6 +106,13 @@ public class ToolbarTablet
         mBackButton = (AppCompatImageButton) findViewById(R.id.back_button);
         mForwardButton = (AppCompatImageButton) findViewById(R.id.forward_button);
         mReloadButton = (AppCompatImageButton) findViewById(R.id.refresh_button);
+        // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
+        // See https://crbug.com/891593 for details.
+        Drawable reloadIcon =
+                AppCompatResources.getDrawable(getContext(), R.drawable.btn_reload_stop);
+        DrawableCompat.setTintList(reloadIcon,
+                AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint));
+        mReloadButton.setImageDrawable(reloadIcon);
         mSecurityButton = (AppCompatImageButton) findViewById(R.id.security_button);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
