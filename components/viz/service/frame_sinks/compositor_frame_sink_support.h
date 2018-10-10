@@ -28,6 +28,10 @@
 
 namespace viz {
 
+namespace test {
+class FrameSinkManagerTest;
+}
+
 class FrameSinkManagerImpl;
 class LatestLocalSurfaceIdLookupDelegate;
 class Surface;
@@ -167,7 +171,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   static const char* GetSubmitResultAsString(SubmitResult result);
 
  private:
-  friend class FrameSinkManagerTest;
+  friend class test::FrameSinkManagerTest;
 
   SubmitResult MaybeSubmitCompositorFrameInternal(
       const LocalSurfaceId& local_surface_id,

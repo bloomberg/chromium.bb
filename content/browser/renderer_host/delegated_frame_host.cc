@@ -322,16 +322,6 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // If there's no primary surface, then we don't wish to display content at
-  // this time (e.g. the view is hidden) and so we don't need a fallback
-  // surface either. Since we won't use the fallback surface, we drop the
-  // temporary reference here to save resources.
-  if (!HasPrimarySurface()) {
-    DCHECK(host_frame_sink_manager_);
-    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
-    return;
-  }
-
   active_local_surface_id_ = surface_info.id().local_surface_id();
   active_device_scale_factor_ = surface_info.device_scale_factor();
 

@@ -48,8 +48,6 @@ viz_static_library("test_support") {
     "test_display_provider.h",
     "test_frame_sink_manager.cc",
     "test_frame_sink_manager.h",
-    "test_frame_sink_manager_client.cc",
-    "test_frame_sink_manager_client.h",
     "test_gles2_interface.cc",
     "test_gles2_interface.h",
     "test_gpu_memory_buffer_manager.cc",

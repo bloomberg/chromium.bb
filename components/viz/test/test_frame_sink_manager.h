@@ -43,9 +43,6 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   void UnregisterFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) override {}
-  void AssignTemporaryReference(const SurfaceId& surface_id,
-                                const FrameSinkId& owner) override {}
-  void DropTemporaryReference(const SurfaceId& surface_id) override {}
   void AddVideoDetectorObserver(
       mojom::VideoDetectorObserverPtr observer) override {}
   void CreateVideoCapturer(

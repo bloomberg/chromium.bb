@@ -12,6 +12,10 @@
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
+
+namespace test {
+class TestHitTestAggregator;
+}  // namespace test
 class HitTestAggregatorDelegate;
 struct HitTestRegion;
 
@@ -38,7 +42,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   void Aggregate(const SurfaceId& display_surface_id);
 
  private:
-  friend class TestHitTestAggregator;
+  friend class test::TestHitTestAggregator;
 
   void SendHitTestData();
 

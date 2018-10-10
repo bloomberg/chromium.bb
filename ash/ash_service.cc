@@ -122,7 +122,6 @@ void AshService::InitForMash() {
       this, context()->connector(), discardable_shared_memory_manager_.get());
 
   host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
-  host_frame_sink_manager_->WillAssignTemporaryReferencesExternally();
   CreateFrameSinkManager();
   io_thread_ = std::make_unique<base::Thread>("IOThread");
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);

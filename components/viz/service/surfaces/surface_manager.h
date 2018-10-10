@@ -39,9 +39,13 @@ class TickClock;
 namespace viz {
 
 namespace test {
+class CompositorFrameSinkSupportTest;
+class FrameSinkManagerTest;
+class HitTestAggregatorTest;
 class SurfaceReferencesTest;
 class SurfaceSynchronizationTest;
 }  // namespace test
+
 class Surface;
 struct BeginFrameAck;
 struct BeginFrameArgs;
@@ -174,13 +178,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // collection to delete unreachable surfaces.
   void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
-  // Assigns |owner| as the owner of the temporary reference to
-  // |surface_id|. If |owner| is invalidated the temporary reference
-  // will be removed. If a surface reference has already been added from the
-  // parent to |surface_id| then this will do nothing.
-  void AssignTemporaryReference(const SurfaceId& surface_id,
-                                const FrameSinkId& owner);
-
   // Drops the temporary reference for |surface_id|. If a surface reference has
   // already been added from the parent to |surface_id| then this will do
   // nothing.
@@ -209,29 +206,27 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void SurfaceWillBeDrawn(Surface* surface);
 
  private:
+  friend class test::CompositorFrameSinkSupportTest;
+  friend class test::FrameSinkManagerTest;
+  friend class test::HitTestAggregatorTest;
   friend class test::SurfaceSynchronizationTest;
   friend class test::SurfaceReferencesTest;
+  friend class test::SurfaceSynchronizationTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
   // The reason for removing a temporary reference.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class RemovedReason {
-    EMBEDDED,     // The surface was embedded.
-    DROPPED,      // The surface won't be embedded so it was dropped.
-    SKIPPED,      // A newer surface was embedded and the surface was skipped.
-    INVALIDATED,  // The expected embedder was invalidated.
-    EXPIRED,      // The surface was never embedded and expired.
+    EMBEDDED = 0,  // The surface was embedded.
+    DROPPED = 1,   // The surface won't be embedded so it was dropped.
+    SKIPPED = 2,   // A newer surface was embedded and the surface was skipped.
+    EXPIRED = 4,   // The surface was never embedded and expired.
     COUNT
   };
 
   struct TemporaryReferenceData {
-    TemporaryReferenceData();
-    ~TemporaryReferenceData();
-
-    // The FrameSinkId that is expected to embed this SurfaceId. This will
-    // initially be empty and set later by AssignTemporaryReference().
-    base::Optional<FrameSinkId> owner;
-
     // Used to track old surface references, will be marked as true on first
     // timer tick and will be true on second timer tick.
     bool marked_as_old = false;
