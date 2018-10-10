@@ -444,6 +444,17 @@ static const char kDispatchDeleteCustomLinkResult[] =
     "  true;"
     "}";
 
+static const char kDispatchDoesUrlResolveResultScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.doesurlresolve &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage.doesurlresolve =="
+    "        'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.doesurlresolve(%s);"
+    "  true;"
+    "}";
+
 static const char kDispatchInputCancelScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -1096,6 +1107,15 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
     bool success) {
   blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchDeleteCustomLinkResult, success ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
+void SearchBoxExtension::DispatchDoesUrlResolveResult(
+    blink::WebLocalFrame* frame,
+    bool resolves) {
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
+      kDispatchDoesUrlResolveResultScript, resolves ? "true" : "false")));
   Dispatch(frame, script);
 }
 

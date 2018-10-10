@@ -595,7 +595,7 @@ function reloadTiles() {
 /**
  * Callback for embeddedSearch.newTabPage.onaddcustomlinkdone. Called when the
  * custom link was successfully added. Shows the "Shortcut added" notification.
- * @param {string} success True if the link was successfully added.
+ * @param {boolean} success True if the link was successfully added.
  */
 function onAddCustomLinkDone(success) {
   if (success)
@@ -610,7 +610,7 @@ function onAddCustomLinkDone(success) {
  * Callback for embeddedSearch.newTabPage.onupdatecustomlinkdone. Called when
  * the custom link was successfully updated. Shows the "Shortcut edited"
  * notification.
- * @param {string} success True if the link was successfully updated.
+ * @param {boolean} success True if the link was successfully updated.
  */
 function onUpdateCustomLinkDone(success) {
   if (success)
@@ -624,13 +624,26 @@ function onUpdateCustomLinkDone(success) {
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
  * notification.
- * @param {string} success True if the link was successfully deleted.
+ * @param {boolean} success True if the link was successfully deleted.
  */
 function onDeleteCustomLinkDone(success) {
   if (success)
     showNotification(configData.translatedStrings.linkRemovedMsg);
   else
     showErrorNotification(configData.translatedStrings.linkCantRemove);
+}
+
+
+/**
+ * Callback for embeddedSearch.newTabPage.ondoesurlresolve. Called when we
+ * determine if a custom link URL can resolve. Notifies the edit custom link
+ * dialog with the result.
+ * @param {boolean} resolves True if the URL can resolve.
+ */
+function onDoesUrlResolve(resolves) {
+  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
+      .contentWindow.postMessage(
+          {cmd: 'doesUrlResolve', resolves: resolves}, '*');
 }
 
 
@@ -1099,6 +1112,7 @@ function init() {
       ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
       ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
       ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
+      ntpApiHandle.doesurlresolve = onDoesUrlResolve;
     }
 
     if (configData.isCustomBackgroundsEnabled ||
