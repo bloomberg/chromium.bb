@@ -960,7 +960,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
     case 1:
       frame = new VideoFrame(
           VideoFrameLayout(format, coded_size,
-                           {RowBytes(kYPlane, format, coded_size.width())}),
+                           std::vector<int>({RowBytes(kYPlane, format,
+                                                      coded_size.width())})),
           storage_type, visible_rect, natural_size, timestamp);
       frame->data_[kYPlane] = data;
       break;
