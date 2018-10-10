@@ -1447,9 +1447,6 @@ extern const char kEnableNtpAssetDownloadSuggestionsDescription[];
 extern const char kEnableNtpBookmarkSuggestionsName[];
 extern const char kEnableNtpBookmarkSuggestionsDescription[];
 
-extern const char kEnableNtpForeignSessionsSuggestionsName[];
-extern const char kEnableNtpForeignSessionsSuggestionsDescription[];
-
 extern const char kEnableNtpOfflinePageDownloadSuggestionsName[];
 extern const char kEnableNtpOfflinePageDownloadSuggestionsDescription[];
 

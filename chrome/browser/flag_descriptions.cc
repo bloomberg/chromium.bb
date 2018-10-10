@@ -2387,12 +2387,6 @@ const char kEnableNtpBookmarkSuggestionsDescription[] =
     "If enabled, the list of content suggestions on the New Tab page will "
     "contain recently visited bookmarks.";
 
-const char kEnableNtpForeignSessionsSuggestionsName[] =
-    "Show recent foreign tabs on the New Tab page";
-const char kEnableNtpForeignSessionsSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain recent foreign tabs.";
-
 const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
     "Show offline page downloads on the New Tab page";
 const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
