@@ -466,6 +466,11 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
   NOTREACHED();
 }
 
+void ServiceWorkerVersion::TriggerIdleTerminationAsap() {
+  needs_to_be_terminated_asap_ = true;
+  endpoint()->SetIdleTimerDelayToZero();
+}
+
 bool ServiceWorkerVersion::OnRequestTermination() {
   if (running_status() == EmbeddedWorkerStatus::STOPPING)
     return true;
@@ -477,12 +482,9 @@ bool ServiceWorkerVersion::OnRequestTermination() {
   bool will_be_terminated = HasNoWork();
   if (embedded_worker_->devtools_attached()) {
     // Basically the service worker won't be terminated if DevTools is attached.
-    will_be_terminated = false;
-
     // But when activation is happening and this worker needs to be terminated
     // asap, it'll be terminated.
-    // TODO(shimazu): implement it to make activation progress, otherwise
-    // activation won't be triggered until DevTools is closed.
+    will_be_terminated = needs_to_be_terminated_asap_;
   }
 
   if (will_be_terminated) {
@@ -1558,6 +1560,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
   worker_is_idle_on_renderer_ = false;
+  needs_to_be_terminated_asap_ = false;
 
   auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
   provider_host_ = ServiceWorkerProviderHost::PreCreateForController(

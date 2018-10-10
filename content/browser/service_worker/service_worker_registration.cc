@@ -219,7 +219,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
-      active_version()->endpoint()->SetIdleTimerDelayToZero();
+      active_version()->TriggerIdleTerminationAsap();
     }
     StartLameDuckTimer();
   }
@@ -302,7 +302,7 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
-      active_version()->endpoint()->SetIdleTimerDelayToZero();
+      active_version()->TriggerIdleTerminationAsap();
     }
     StartLameDuckTimer();
   }
