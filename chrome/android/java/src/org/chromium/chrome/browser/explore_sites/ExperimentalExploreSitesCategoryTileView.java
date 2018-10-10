@@ -60,7 +60,7 @@ public class ExperimentalExploreSitesCategoryTileView extends LinearLayout {
                 mResources.getDimensionPixelSize(R.dimen.experimental_explore_sites_radius),
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.default_favicon_background_color),
-                mResources.getDimensionPixelSize(R.dimen.headline_size_medium));
+                mResources.getDimensionPixelSize(R.dimen.tile_view_icon_text_size));
         updateIcon(null);
         mTitleView.setText(mCategoryData.getCategoryName());
     }

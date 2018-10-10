@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences.download;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.TextViewCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -128,17 +127,16 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         if (directoryOption == null) return view;
 
         TextView titleText = (TextView) view.findViewById(R.id.title);
-        titleText.setText(directoryOption.name);
-
         TextView summaryText = (TextView) view.findViewById(R.id.description);
-        if (isEnabled(position)) {
-            TextViewCompat.setTextAppearance(titleText, R.style.BlackTitle1);
-            TextViewCompat.setTextAppearance(summaryText, R.style.BlackBody);
+        boolean enabled = isEnabled(position);
+
+        titleText.setText(directoryOption.name);
+        titleText.setEnabled(enabled);
+        summaryText.setEnabled(enabled);
+        if (enabled) {
             summaryText.setText(DownloadUtils.getStringForAvailableBytes(
                     mContext, directoryOption.availableSpace));
         } else {
-            TextViewCompat.setTextAppearance(titleText, R.style.BlackDisabledText1);
-            TextViewCompat.setTextAppearance(summaryText, R.style.BlackDisabledText3);
             if (mErrorOptions.isEmpty()) {
                 summaryText.setText(mContext.getText(R.string.download_location_not_enough_space));
             } else {

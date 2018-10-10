@@ -92,11 +92,11 @@ public class ExploreSitesPage extends BasicNativePage {
         Context context = mView.getContext();
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         int iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        RoundedIconGenerator iconGenerator =
-                new RoundedIconGenerator(iconSizePx, iconSizePx, iconSizePx / 2,
-                        ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.default_favicon_background_color),
-                        context.getResources().getDimensionPixelSize(R.dimen.headline_size_medium));
+        RoundedIconGenerator iconGenerator = new RoundedIconGenerator(iconSizePx, iconSizePx,
+                iconSizePx / 2,
+                ApiCompatibilityUtils.getColor(
+                        context.getResources(), R.color.default_favicon_background_color),
+                context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_text_size));
 
         NativePageNavigationDelegateImpl navDelegate =
                 new NativePageNavigationDelegateImpl(activity, mProfile, host, mTabModelSelector);

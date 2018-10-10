@@ -70,7 +70,7 @@
                 android:layout_height="24dp"
                 android:layout_marginEnd="12dp"
                 android:src="@drawable/help_outline"
-                android:tint="@color/modern_grey_400"
+                android:tint="@color/light_icon_color"
                 android:background="?attr/selectableItemBackground"
                 android:contentDescription="@string/menu_send_feedback" />
 
@@ -79,7 +79,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/btn_delete_24dp"
-                android:tint="@color/modern_grey_400"
+                android:tint="@color/light_icon_color"
                 android:background="?attr/selectableItemBackground"
                 android:contentDescription="@string/close" />
         </LinearLayout>
