@@ -46,7 +46,7 @@ class TestStream : public QuicSpdyStream {
   TestStream(QuicStreamId id,
              QuicSpdySession* session,
              bool should_process_data)
-      : QuicSpdyStream(id, session),
+      : QuicSpdyStream(id, session, BIDIRECTIONAL),
         should_process_data_(should_process_data) {}
 
   void OnDataAvailable() override {

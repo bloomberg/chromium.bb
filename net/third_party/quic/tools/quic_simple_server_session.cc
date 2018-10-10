@@ -92,8 +92,8 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
     return nullptr;
   }
 
-  QuicSpdyStream* stream =
-      new QuicSimpleServerStream(id, this, quic_simple_server_backend_);
+  QuicSpdyStream* stream = new QuicSimpleServerStream(
+      id, this, BIDIRECTIONAL, quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }
@@ -104,7 +104,8 @@ QuicSimpleServerStream* QuicSimpleServerSession::CreateOutgoingDynamicStream() {
   }
 
   QuicSimpleServerStream* stream = new QuicSimpleServerStream(
-      GetNextOutgoingStreamId(), this, quic_simple_server_backend_);
+      GetNextOutgoingStreamId(), this, WRITE_UNIDIRECTIONAL,
+      quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }
