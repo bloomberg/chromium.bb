@@ -8,6 +8,14 @@
 
 #include <linux/in6.h>
 #include <linux/ipv6.h>
+// NOTE: Fixes libc/kernel header interaction on xenial where libc doesn't see
+// some kernel definitions.
+#ifndef __UAPI_LINUX_IN6_H
+#define __UAPI_LINUX_IN6_H
+#endif
+#ifndef __UAPI_IPV6_H
+#define __UAPI_IPV6_H
+#endif
 #include <netinet/ip.h>
 #include <sys/types.h>
 #include <unistd.h>
