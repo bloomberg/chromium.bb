@@ -784,18 +784,14 @@ void LayoutSelection::SetHasPendingSelection() {
   has_pending_selection_ = true;
 }
 
-static void AssertLayoutClean(Document* document) {
-  DCHECK(!document->NeedsLayoutTreeUpdate());
-  DCHECK_GE(document->Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
-  DCHECK(IsFlatTreeClean(*document));
-}
-
 void LayoutSelection::Commit() {
   if (!has_pending_selection_)
     return;
   has_pending_selection_ = false;
 
-  AssertLayoutClean(&frame_selection_->GetDocument());
+  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK_GE(frame_selection_->GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kLayoutClean);
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       frame_selection_->GetDocument().Lifecycle());
 
@@ -877,43 +873,6 @@ void LayoutSelection::InvalidatePaintForSelection() {
   } visitor;
   VisitSelectedInclusiveDescendantsOf(frame_selection_->GetDocument(),
                                       &visitor);
-}
-
-SelectionInDOMTree LayoutSelection::ComputeLayoutSelection() const {
-  AssertLayoutClean(&frame_selection_->GetDocument());
-  DCHECK(!has_pending_selection_);
-
-  const SelectionInDOMTree& raw_selection =
-      frame_selection_->GetSelectionInDOMTree();
-  if (raw_selection.IsNone() || raw_selection.IsCaret())
-    return raw_selection;
-
-  if (paint_range_->IsNull())
-    return {};
-  paint_range_->AssertSanity();
-  DCHECK(paint_range_->start_node);
-  DCHECK(paint_range_->end_node);
-  const Position& raw_start = raw_selection.ComputeStartPosition();
-  const Position& raw_end = raw_selection.ComputeEndPosition();
-  const Position& start = (paint_range_->start_node->IsTextNode() &&
-                           paint_range_->start_node == raw_start.AnchorNode())
-                              ? raw_start
-                              : Position::BeforeNode(*paint_range_->start_node);
-  const Position& end = (paint_range_->end_node->IsTextNode() &&
-                         paint_range_->end_node == raw_end.AnchorNode())
-                            ? raw_end
-                            : Position::AfterNode(*paint_range_->end_node);
-  const EphemeralRange range = {start, end};
-  SelectionInDOMTree::Builder builder;
-  if (raw_selection.IsBaseFirst())
-    builder.SetAsForwardSelection(range);
-  else
-    builder.SetAsBackwardSelection(range);
-  return builder.Build();
-}
-
-SelectionInDOMTree FrameSelection::ComputeLayoutSelection() const {
-  return layout_selection_->ComputeLayoutSelection();
 }
 
 void LayoutSelection::Trace(blink::Visitor* visitor) {

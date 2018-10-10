@@ -140,9 +140,6 @@ class CORE_EXPORT FrameSelection final
   void MoveCaretSelection(const IntPoint&);
 
   VisibleSelection ComputeVisibleSelectionInDOMTree() const;
-  // TODO(yoichio): Replace ComputeVisibleSelectionInDOMTree with
-  // ComputeLayoutSelection. See crbug.com/789870 for detail and tracking.
-  SelectionInDOMTree ComputeLayoutSelection() const;
   VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
 
   // TODO(editing-dev): We should replace
