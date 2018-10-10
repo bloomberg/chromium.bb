@@ -450,10 +450,6 @@ class OmniboxFieldTrial {
   // #upcoming-ui-features flag is enabled.
   static bool IsShowSuggestionFaviconsEnabled();
 
-  // Returns the size of the vertical margin that should be used in the
-  // suggestion view.
-  static int GetSuggestionVerticalMargin();
-
   // Returns true if the experimental keyword mode is enabled.
   static bool IsExperimentalKeywordModeEnabled();
 

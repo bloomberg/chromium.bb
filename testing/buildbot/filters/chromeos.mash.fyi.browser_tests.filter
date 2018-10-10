@@ -238,7 +238,7 @@
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
 
 # Needs EventGenerator to work across window tree hosts. crbug.com/814675
--RoundedOmniboxPopupContentsViewTest.ClickOmnibox*
+-OmniboxPopupContentsViewTest.ClickOmnibox
 
 # HostedAppMenu needs porting to BrowserNonClientFrameViewMash crbug.com/813666
 -HostedAppPWAOnlyTest.AppInfoOpensPageInfo*

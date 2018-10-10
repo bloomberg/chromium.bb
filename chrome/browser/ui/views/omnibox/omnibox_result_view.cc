@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -32,7 +31,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
@@ -41,17 +39,6 @@
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
-
-namespace {
-
-// Creates a views::Background for the current result style.
-std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
-  return ui::MaterialDesignController::IsNewerMaterialUi()
-             ? views::CreateSolidBackground(bg_color)
-             : std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color);
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
@@ -123,12 +110,10 @@ void OmniboxResultView::Invalidate() {
       GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
   // always have a background.
-  if (GetThemeState() == OmniboxPartState::NORMAL && !high_contrast) {
-    SetBackground(nullptr);
-  } else {
-    SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
-    SetBackground(CreateBackgroundWithColor(color));
-  }
+  SetBackground((GetThemeState() == OmniboxPartState::NORMAL && !high_contrast)
+                    ? nullptr
+                    : views::CreateSolidBackground(
+                          GetColor(OmniboxPart::RESULTS_BACKGROUND)));
 
   // Reapply the dim color to account for the highlight state.
   suggestion_view_->separator()->ApplyTextColor(
@@ -186,10 +171,10 @@ void OmniboxResultView::Invalidate() {
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
 
-    // Normally, OmniboxTextView caches its appearance, but in high contrast and
-    // on Windows in the pre-Refresh UI, selected-ness changes the text colors,
-    // so the styling of the text part of the results needs to be recomputed.
-    if (high_contrast || !ui::MaterialDesignController::IsRefreshUi()) {
+    // Normally, OmniboxTextView caches its appearance, but in high contrast,
+    // selected-ness changes the text colors, so the styling of the text part of
+    // the results needs to be recomputed.
+    if (high_contrast) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
     }
@@ -265,7 +250,7 @@ void OmniboxResultView::Layout() {
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   if (keyword_match) {
     const int max_kw_x =
-        suggestion_width - keyword_view_->IconWidthAndPadding();
+        suggestion_width - OmniboxMatchCellView::GetTextIndent();
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
   }
   if (suggestion_tab_switch_button_) {
@@ -277,7 +262,7 @@ void OmniboxResultView::Layout() {
 
       // Give the tab switch button a right margin matching the text.
       suggestion_width -=
-          ts_button_size.width() + OmniboxMatchCellView::kRefreshMarginRight;
+          ts_button_size.width() + OmniboxMatchCellView::kMarginRight;
 
       // Center the button vertically.
       const int vertical_margin =

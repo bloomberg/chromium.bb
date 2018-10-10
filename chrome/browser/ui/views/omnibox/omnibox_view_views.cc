@@ -50,7 +50,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -164,11 +163,10 @@ void OmniboxViewViews::Init() {
     SetReadOnly(true);
 
   if (location_bar_view_) {
-    if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-      InstallPlaceholderText();
-      scoped_template_url_service_observer_.Add(
-          model()->client()->GetTemplateURLService());
-    }
+    InstallPlaceholderText();
+    scoped_template_url_service_observer_.Add(
+        model()->client()->GetTemplateURLService());
+
     // Initialize the popup view using the same font.
     popup_view_.reset(
         new OmniboxPopupContentsView(this, model(), location_bar_view_));
