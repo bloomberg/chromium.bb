@@ -33177,6 +33177,8 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Google Maps"/>
   <int value="11" label="Information not available"/>
   <int value="12" label="Chrome Today Extension"/>
+  <int value="13" label="Chrome Search Extension"/>
+  <int value="14" label="Chrome Content Extension"/>
 </enum>
 
 <enum name="MobileSessionShutdownType">
