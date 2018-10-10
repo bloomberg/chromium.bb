@@ -18,12 +18,6 @@
  */
 
 (function () {
-  // Variables to DOM elements to avoid multiple document.getElement calls.
-  let omniboxDebugText;
-  let showIncompleteResults;
-  let showDetails;
-  let showAllProviders;
-
   /**
    * @type {number} the value for cursor position we sent with the most
    *     recent request.  We need to remember this in order to display it
@@ -32,25 +26,100 @@
    */
   let cursorPositionUsed = -1;
 
-  /**
-   * Register our event handlers.
-   */
-  function initializeEventHandlers() {
-    omniboxDebugText = $('omnibox-debug-text');
-    showIncompleteResults = $('show-incomplete-results');
-    showDetails = $('show-details');
-    showAllProviders = $('show-all-providers');
+  class OmniboxElement extends HTMLElement {
+    /** @param {string} templateId Template's HTML id attribute */
+    constructor(templateId) {
+      super();
+      /** @type {string} */
+      this.templateId = templateId;
+    }
 
-    let startOmniboxQuery = () => browserProxy.makeRequest();
+    /** @override */
+    connectedCallback() {
+      this.attachShadow({mode: 'open'});
+      let template = $(this.templateId).content.cloneNode(true);
+      this.shadowRoot.appendChild(template);
+    }
 
-    $('input-text').addEventListener('input', startOmniboxQuery);
-    $('prevent-inline-autocomplete')
-        .addEventListener('change', startOmniboxQuery);
-    $('prefer-keyword').addEventListener('change', startOmniboxQuery);
-    $('page-classification').addEventListener('change', startOmniboxQuery);
-    showIncompleteResults.addEventListener('change', refreshAllResults);
-    showDetails.addEventListener('change', refreshAllResults);
-    showAllProviders.addEventListener('change', refreshAllResults);
+    /**
+     * Searches local shadow root for element by id
+     * @param {string} id
+     * @return {Element}
+     */
+    $$(id) {
+      return this.shadowRoot.getElementById(id);
+    }
+  }
+
+  class OmniboxInputs extends OmniboxElement {
+    /** @return {string} */
+    static get is() {
+      return 'omnibox-inputs';
+    }
+
+    constructor() {
+      super('omnibox-inputs-template');
+    }
+
+    /** @override */
+    connectedCallback() {
+      super.connectedCallback();
+      this.setupElementListeners();
+    }
+
+    setupElementListeners() {
+      const onQueryInputsChanged = this.onQueryInputsChanged.bind(this);
+      const onDisplayInputsChagned = this.onDisplayInputsChagned.bind(this);
+
+      this.$$('input-text').addEventListener('input', onQueryInputsChanged);
+      [
+        this.$$('prevent-inline-autocomplete'),
+        this.$$('prefer-keyword'),
+        this.$$('page-classification'),
+      ].forEach(element => element.addEventListener('change', onQueryInputsChanged));
+      [
+        this.$$('show-incomplete-results'),
+        this.$$('show-details'),
+        this.$$('show-all-providers'),
+      ].forEach(element => element.addEventListener('change', onDisplayInputsChagned));
+    }
+
+    onQueryInputsChanged() {
+      this.dispatchEvent(new CustomEvent('query-inputs-changed', {
+        detail: {
+          inputText: this.$$('input-text').value,
+          cursorPosition: this.$$('input-text').selectionEnd,
+          preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
+          preferKeyword: this.$$('prefer-keyword').checked,
+          pageClassification: this.$$('page-classification').checked,
+        }
+      }));
+    }
+
+    onDisplayInputsChagned() {
+      this.dispatchEvent(new CustomEvent('display-inputs-changed'));
+    }
+  }
+
+  class OmniboxOutput extends OmniboxElement {
+    /** @return {string} */
+    static get is() {
+      return 'omnibox-output';
+    }
+
+    constructor() {
+      super('omnibox-output-template');
+    }
+
+    /** @param {Element} element the element to the output */
+    addOutput(element) {
+      this.$$('contents').appendChild(element);
+    }
+
+    clearOutput() {
+      while (this.$$('contents').firstChild)
+        this.$$('contents').removeChild(this.$$('contents').firstChild);
+    }
   }
 
   /**
@@ -162,12 +231,12 @@
     // show incomplete results mode.  We do the latter because without
     // these result-level features, one can't make sense of each
     // batch of results.
-    if (showDetails.checked || showIncompleteResults.checked) {
-      addParagraph(omniboxDebugText, `cursor position = ${cursorPositionUsed}`);
-      addParagraph(omniboxDebugText, `inferred input type = ${result.type}`);
-      addParagraph(
-          omniboxDebugText, `elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
-      addParagraph(omniboxDebugText, `all providers done = ${result.done}`);
+    if (omniboxInputs.$$('show-details').checked
+        || omniboxInputs.$$('show-incomplete-results').checked) {
+      addParagraph(`cursor position = ${cursorPositionUsed}`);
+      addParagraph(`inferred input type = ${result.type}`);
+      addParagraph(`elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
+      addParagraph(`all providers done = ${result.done}`);
       let p = document.createElement('p');
       p.textContent = `host = ${result.host}`;
       // The field isn't actually optional in the mojo object; instead it assumes
@@ -179,22 +248,22 @@
         p.textContent =
             p.textContent + ` has isTypedHost = ${result.isTypedHost}`;
       }
-      omniboxDebugText.appendChild(p);
+      omniboxOutput.addOutput(p);
     }
 
     // Combined results go after the lines below.
     let group = document.createElement('a');
     group.className = 'group-separator';
     group.textContent = 'Combined results.';
-    omniboxDebugText.appendChild(group);
+    omniboxOutput.addOutput(group);
 
     // Add combined/merged result table.
     let p = document.createElement('p');
     p.appendChild(addResultTableToOutput(result.combinedResults));
-    omniboxDebugText.appendChild(p);
+    omniboxOutput.addOutput(p);
 
     // Move forward only if you want to display per provider results.
-    if (!showAllProviders.checked) {
+    if (!omniboxInputs.$$('show-all-providers').checked) {
       return;
     }
 
@@ -202,7 +271,7 @@
     group = document.createElement('a');
     group.className = 'group-separator';
     group.textContent = 'Results for individual providers.';
-    omniboxDebugText.appendChild(group);
+    omniboxOutput.addOutput(group);
 
     // Add the per-provider result tables with labels. We do not append the
     // combined/merged result table since we already have the per provider
@@ -213,7 +282,7 @@
         return;
       let p = document.createElement('p');
       p.appendChild(addResultTableToOutput(providerResults.results));
-      omniboxDebugText.appendChild(p);
+      omniboxOutput.addOutput(p);
     });
   }
 
@@ -223,7 +292,7 @@
    *     representation of this object.
    */
   function addResultTableToOutput(result) {
-    let inDetailedMode = $('show-details').checked;
+    let inDetailedMode = omniboxInputs.$$('show-details').checked;
     // Create a table to hold all the autocomplete items.
     let table = document.createElement('table');
     table.className = 'autocomplete-results-table';
@@ -275,7 +344,7 @@
    */
   function createAutocompleteResultTableHeader() {
     let row = document.createElement('tr');
-    let inDetailedMode = $('show-details').checked;
+    let inDetailedMode = omniboxInputs.$$('show-details').checked;
     PROPERTY_OUTPUT_ORDER.forEach(property => {
       if (inDetailedMode || property.displayAlways) {
         let headerCell = document.createElement('th');
@@ -363,10 +432,10 @@
   /**
    * Appends a paragraph node containing text to the parent node.
    */
-  function addParagraph(parent, text) {
+  function addParagraph(text) {
     let p = document.createElement('p');
     p.textContent = text;
-    parent.appendChild(p);
+    omniboxOutput.addOutput(p);
   }
 
   /* Repaints the page based on the contents of the array
@@ -376,8 +445,8 @@
    * example of the output, play with chrome://omnibox/
    */
   function refreshAllResults() {
-    clearOutput();
-    if (showIncompleteResults.checked)
+    omniboxOutput.clearOutput();
+    if (omniboxInputs.$$('show-incomplete-results').checked)
       browserProxy.progressiveAutocompleteResults.forEach(addResultToOutput);
     else if (browserProxy.progressiveAutocompleteResults.length)
       addResultToOutput(
@@ -394,19 +463,11 @@
    * re-add previous results.
    */
   function refreshNewResult() {
-    if (!showIncompleteResults.checked)
-      clearOutput();
+    if (!omniboxInputs.$$('show-incomplete-results').checked)
+      omniboxOutput.clearOutput();
     addResultToOutput(
         browserProxy.progressiveAutocompleteResults
             [browserProxy.progressiveAutocompleteResults.length - 1]);
-  }
-
-  /*
-    Removes all results from the page.
-   */
-  function clearOutput() {
-    while (omniboxDebugText.firstChild)
-      omniboxDebugText.removeChild(omniboxDebugText.firstChild);
   }
 
   class BrowserProxy {
@@ -429,7 +490,7 @@
        * @type {!Array<mojom.OmniboxResult>} an array of all autocomplete
        *     results we've seen for this query.  We append to this list once for
        *     every call to handleNewAutocompleteResult.  See omnibox.mojom for
-       *     details..
+       *     details.
        */
       this.progressiveAutocompleteResults = [];
     }
@@ -439,8 +500,12 @@
      * C++ portion of chrome to handle.  The C++ code will iteratively
      * call handleNewAutocompleteResult as results come in.
      */
-    makeRequest() {
-      clearOutput();
+    makeRequest(inputString,
+                cursorPositionUsed,
+                preventInlineAutocomplete,
+                preferKeyword,
+                pageClassification) {
+      omniboxOutput.clearOutput();
       this.progressiveAutocompleteResults = [];
       // Then, call chrome with a five-element list:
       // - first element: the value in the text box
@@ -448,12 +513,12 @@
       // - third element: the value of prevent-inline-autocomplete
       // - forth element: the value of prefer-keyword
       // - fifth element: the value of page-classification
-      let inputTextElement = $('input-text');
-      cursorPositionUsed = inputTextElement.selectionEnd;
       this.pagehandlePtr_.startOmniboxQuery(
-          inputTextElement.value, cursorPositionUsed,
-          $('prevent-inline-autocomplete').checked, $('prefer-keyword').checked,
-          parseInt($('page-classification').value, 10));
+          inputString,
+          cursorPositionUsed,
+          preventInlineAutocomplete,
+          preferKeyword,
+          pageClassification);
     }
 
     handleNewAutocompleteResult(result) {
@@ -462,10 +527,33 @@
     }
   }
 
+  /** @type {BrowserProxy} */
   let browserProxy;
+  /** @type {OmniboxInputs} */
+  let omniboxInputs;
+  /** @type {OmniboxOutput} */
+  let omniboxOutput;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    browserProxy = new BrowserProxy();
-    initializeEventHandlers();
-  });
+  /** Defines our custom HTML elements. */
+  function init() {
+    window.customElements.define(OmniboxInputs.is, OmniboxInputs);
+    window.customElements.define(OmniboxOutput.is, OmniboxOutput);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      browserProxy = new BrowserProxy();
+      omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
+      omniboxOutput = /** @type {!OmniboxOutput} */ ($('omnibox-output'));
+      omniboxInputs.addEventListener('query-inputs-changed', event =>
+          browserProxy.makeRequest(
+              event.detail.inputText,
+              event.detail.cursorPosition,
+              event.detail.preventInlineAutocomplete,
+              event.detail.preferKeyword,
+              event.detail.pageClassification
+          ));
+      omniboxInputs.addEventListener('display-inputs-changed', refreshAllResults);
+    });
+  }
+
+  init();
 })();

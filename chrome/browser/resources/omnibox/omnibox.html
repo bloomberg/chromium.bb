@@ -12,7 +12,8 @@
   <script src="omnibox.js"></script>
 </head>
 <body>
-  <div id="omnibox-input-form" class="input-section">
+  <template id="omnibox-inputs-template">
+    <link rel="stylesheet" href="omnibox.css">
     <p>
       <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text" autofocus>
     </p>
@@ -62,7 +63,14 @@
         Show results per provider, not just merged results
       </label>
     </p>
-  </div>
-  <div id="omnibox-debug-text"></div>
+  </template>
+
+  <template id="omnibox-output-template">
+    <link rel="stylesheet" href="omnibox.css">
+    <div id="contents"></div>
+  </template>
+
+  <omnibox-inputs id="omnibox-inputs" class="section"></omnibox-inputs>
+  <omnibox-output id="omnibox-output" class="section"></omnibox-output>
 </body>
 </html>
