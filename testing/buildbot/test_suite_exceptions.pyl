@@ -100,15 +100,14 @@
       },
       # chromium.mac
       'Mac10.11 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
         'swarming': {
           'dimension_sets': [
             {
+              # A subset of tests seem to cause WindowServer deaths on VMs.
+              # crbug.com/828031 et al.
               'pool': 'Chrome-quarantine',
               'gpu': 'none',
             },
@@ -116,15 +115,14 @@
         },
       },
       'Mac10.12 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
         'swarming': {
           'dimension_sets': [
             {
+              # A subset of tests seem to cause WindowServer deaths on VMs.
+              # crbug.com/828031 et al.
               'pool': 'Chrome-quarantine',
               'gpu': 'none',
             },
@@ -132,16 +130,15 @@
         },
       },
       'Mac10.13 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
         'experiment_percentage': 50,
         'swarming': {
           'dimension_sets': [
             {
+              # A subset of tests seem to cause WindowServer deaths on VMs.
+              # crbug.com/828031 et al.
               'pool': 'Chrome-quarantine',
               'gpu': 'none',
             },
@@ -149,15 +146,14 @@
         },
       },
       'Mac10.13 Tests (dbg)': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
         'swarming': {
           'dimension_sets': [
             {
+              # A subset of tests seem to cause WindowServer deaths on VMs.
+              # crbug.com/828031 et al.
               'pool': 'Chrome-quarantine',
               'gpu': 'none',
             },
