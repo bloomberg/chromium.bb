@@ -100,7 +100,6 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@DisableFeatures("NetworkPrediction")
 @RetryOnFailure
 public class NewTabPageTest {
     @Rule
