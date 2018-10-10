@@ -74,6 +74,7 @@
       'mac-views-rel', # https://crbug.com/828031
       # chromium.mac
       'Mac10.10 Tests', # https://crbug.com/828031
+      'Mac10.13 Tests', # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
@@ -118,22 +119,6 @@
         'args': [
           '--gtest_shuffle',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              # A subset of tests seem to cause WindowServer deaths on VMs.
-              # crbug.com/828031 et al.
-              'pool': 'Chrome-quarantine',
-              'gpu': 'none',
-            },
-          ],
-        },
-      },
-      'Mac10.13 Tests': {
-        'args': [
-          '--gtest_shuffle',
-        ],
-        'experiment_percentage': 50,
         'swarming': {
           'dimension_sets': [
             {
