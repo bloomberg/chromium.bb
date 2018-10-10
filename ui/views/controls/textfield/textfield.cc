@@ -19,6 +19,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -204,11 +205,14 @@ ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id,
   return ui::TextEditCommand::INVALID_COMMAND;
 }
 
-base::TimeDelta GetPasswordRevealDuration() {
-  return ViewsDelegate::GetInstance()
-             ? ViewsDelegate::GetInstance()
-                   ->GetTextfieldPasswordRevealDuration()
-             : base::TimeDelta();
+base::TimeDelta GetPasswordRevealDuration(const ui::KeyEvent& event) {
+  // The key event may carries the property that indicates it was from the
+  // virtual keyboard.
+  // In that case, reveals the password characters for 1 second.
+  auto* properties = event.properties();
+  bool from_vk =
+      properties && properties->find(ui::kPropertyFromVK) != properties->end();
+  return from_vk ? base::TimeDelta::FromSeconds(1) : base::TimeDelta();
 }
 
 bool IsControlKeyModifier(int flags) {
@@ -1490,11 +1494,14 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
 
   DoInsertChar(ch);
 
-  if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
-      !GetPasswordRevealDuration().is_zero()) {
-    const size_t change_offset = model_->GetCursorPosition();
-    DCHECK_GT(change_offset, 0u);
-    RevealPasswordChar(change_offset - 1);
+  if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
+    password_char_reveal_index_ = -1;
+    base::TimeDelta duration = GetPasswordRevealDuration(event);
+    if (!duration.is_zero()) {
+      const size_t change_offset = model_->GetCursorPosition();
+      DCHECK_GT(change_offset, 0u);
+      RevealPasswordChar(change_offset - 1, duration);
+    }
   }
 }
 
@@ -2282,15 +2289,16 @@ bool Textfield::ImeEditingAllowed() const {
   return (t != ui::TEXT_INPUT_TYPE_NONE && t != ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
-void Textfield::RevealPasswordChar(int index) {
+void Textfield::RevealPasswordChar(int index, base::TimeDelta duration) {
   GetRenderText()->SetObscuredRevealIndex(index);
   SchedulePaint();
+  password_char_reveal_index_ = index;
 
   if (index != -1) {
     password_reveal_timer_.Start(
-        FROM_HERE, GetPasswordRevealDuration(),
+        FROM_HERE, duration,
         base::Bind(&Textfield::RevealPasswordChar,
-                   weak_ptr_factory_.GetWeakPtr(), -1));
+                   weak_ptr_factory_.GetWeakPtr(), -1, duration));
   }
 }
 

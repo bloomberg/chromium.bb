@@ -28,6 +28,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -554,9 +555,13 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     SendKeyEvent(key_code, false, false);
   }
 
-  void SendKeyEvent(base::char16 ch) { SendKeyEvent(ch, ui::EF_NONE); }
+  void SendKeyEvent(base::char16 ch) { SendKeyEvent(ch, ui::EF_NONE, false); }
 
   void SendKeyEvent(base::char16 ch, int flags) {
+    SendKeyEvent(ch, flags, false);
+  }
+
+  void SendKeyEvent(base::char16 ch, int flags, bool from_vk) {
     if (ch < 0x80) {
       ui::KeyboardCode code =
           ch == ' ' ? ui::VKEY_SPACE :
@@ -568,6 +573,11 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       // Mac, key events don't pass through InputMethod. Hence they are
       // dispatched regularly.
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::DomCode::NONE, flags);
+      if (from_vk) {
+        ui::Event::Properties properties;
+        properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+        event.SetProperties(properties);
+      }
 #if defined(OS_MACOSX)
       event_generator_->Dispatch(&event);
 #else
@@ -1293,8 +1303,15 @@ TEST_F(TextfieldTest, TextInputType_InsertionTest) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
 
   SendKeyEvent(ui::VKEY_A);
-  SendKeyEvent(kHebrewLetterSamekh);
+  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
+  SendKeyEvent(kHebrewLetterSamekh, ui::EF_NONE, true /* from_vk */);
+#if !defined(OS_MACOSX)
+  // Don't verifies the password character reveal on MacOS, because on MacOS,
+  // the text insertion is not done through TextInputClient::InsertChar().
+  EXPECT_EQ(1, textfield_->GetPasswordCharRevealIndex());
+#endif
   SendKeyEvent(ui::VKEY_B);
+  EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
 
   EXPECT_EQ(WideToUTF16(L"a\x05E1"
                         L"b"),

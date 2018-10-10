@@ -104,10 +104,6 @@ void ViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
     internal::NativeWidgetDelegate* delegate) {}
 
-base::TimeDelta ViewsDelegate::GetTextfieldPasswordRevealDuration() {
-  return base::TimeDelta();
-}
-
 bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   return false;
 }

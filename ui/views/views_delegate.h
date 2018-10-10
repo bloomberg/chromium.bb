@@ -23,10 +23,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace gfx {
 class ImageSkia;
 class Rect;
@@ -173,9 +169,6 @@ class VIEWS_EXPORT ViewsDelegate {
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
                                   internal::NativeWidgetDelegate* delegate);
-
-  // Returns the password reveal duration for Textfield.
-  virtual base::TimeDelta GetTextfieldPasswordRevealDuration();
 
   // Returns true if the operating system's window manager will always provide a
   // title bar with caption buttons (ignoring the setting to
