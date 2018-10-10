@@ -191,7 +191,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   static NSView* GetGlobalCaptureView();
 
  private:
-  gfx::Vector2d GetBoundsOffsetForParent() const;
   void UpdateCompositorProperties();
   void DestroyCompositor();
   void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;

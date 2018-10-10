@@ -337,6 +337,7 @@ void BridgedNativeWidgetImpl::InitWindow(
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
   widget_is_top_level_ = params->widget_is_top_level;
+  position_window_in_screen_coords_ = params->position_window_in_screen_coords;
 
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
@@ -374,8 +375,7 @@ void BridgedNativeWidgetImpl::InitWindow(
 
 void BridgedNativeWidgetImpl::SetInitialBounds(
     const gfx::Rect& new_bounds,
-    const gfx::Size& minimum_content_size,
-    const gfx::Vector2d& bounds_offset_for_parent) {
+    const gfx::Size& minimum_content_size) {
   gfx::Rect adjusted_bounds = new_bounds;
   if (new_bounds.IsEmpty()) {
     // If a position is set, but no size, complain. Otherwise, a 1x1 window
@@ -392,7 +392,6 @@ void BridgedNativeWidgetImpl::SetInitialBounds(
     adjusted_bounds = gfx::Rect(
         gfx::Point(), gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect)));
   }
-  adjusted_bounds.Offset(bounds_offset_for_parent);
   SetBounds(adjusted_bounds, minimum_content_size);
 }
 
@@ -421,12 +420,28 @@ void BridgedNativeWidgetImpl::SetBounds(const gfx::Rect& new_bounds,
       new_bounds.origin(),
       GetWindowSizeForClientSize(window_, clamped_content_size));
 
+  if (parent_ && !position_window_in_screen_coords_)
+    actual_new_bounds.Offset(parent_->GetChildWindowOffset());
+
   if (PositionWindowInNativeViewParent(bridged_view_))
     actual_new_bounds.Offset(GetNativeViewParentOffset(bridged_view_));
 
   [window_ setFrame:gfx::ScreenRectToNSRect(actual_new_bounds)
             display:YES
             animate:NO];
+}
+
+void BridgedNativeWidgetImpl::SetSizeAndCenter(
+    const gfx::Size& content_size,
+    const gfx::Size& minimum_content_size) {
+  gfx::Rect new_window_bounds = gfx::ScreenRectFromNSRect([window_ frame]);
+  new_window_bounds.set_size(GetWindowSizeForClientSize(window_, content_size));
+  SetBounds(new_window_bounds, minimum_content_size);
+
+  // Note that this is not the precise center of screen, but it is the standard
+  // location for windows like dialogs to appear on screen for Mac.
+  // TODO(tapted): If there is a parent window, center in that instead.
+  [window_ center];
 }
 
 void BridgedNativeWidgetImpl::DestroyContentView() {
