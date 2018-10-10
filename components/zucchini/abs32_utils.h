@@ -45,7 +45,7 @@ class AbsoluteAddress {
   // the write and returns true. On failure (invalid |offset|), returns false.
   bool Write(offset_t offset, MutableBufferView* image);
 
-  size_t width() const { return WidthOf(bitness_); }
+  uint32_t width() const { return WidthOf(bitness_); }
 
   // Exposing |value_| for testing.
   uint64_t* mutable_value() { return &value_; }
@@ -125,6 +125,13 @@ class Abs32WriterWin32 : public ReferenceWriter {
 
   DISALLOW_COPY_AND_ASSIGN(Abs32WriterWin32);
 };
+
+// Given a list of abs32 |locations|, removes all elements whose targets cannot
+// be translated. Returns the number of elements removed.
+size_t RemoveUntranslatableAbs32(ConstBufferView image,
+                                 AbsoluteAddress&& addr,
+                                 const AddressTranslator& translator,
+                                 std::vector<offset_t>* locations);
 
 // Given a sorted list of abs32 |locations|, removes all elements whose body
 // (with |width| given) overlaps with the body of a previous element.

@@ -19,6 +19,8 @@ namespace zucchini {
 
 namespace {
 
+constexpr uint64_t kElfImageBase = 0;
+
 // Determines whether |section| is a reloc section.
 template <class Traits>
 bool IsRelocSection(const typename Traits::Elf_Shdr& section) {
@@ -288,23 +290,33 @@ template <class Traits>
 void DisassemblerElf<Traits>::GetAbs32FromRelocSections() {
   constexpr int kAbs32Width = Traits::kVAWidth;
   DCHECK(abs32_locations_.empty());
-  auto relocs = MakeReadRelocs(0, offset_t(size()));
-  for (auto ref = relocs->GetNext(); ref; ref = relocs->GetNext()) {
-    // Reject null targets and targets outside |image_|. Note that here we
-    // assume abs32 targets are never "fake offsets".
-    if (ref->target > 0 && image_.covers({ref->target, kAbs32Width}))
-      abs32_locations_.push_back(ref->target);
-  }
-  abs32_locations_.shrink_to_fit();
+
+  // Read reloc targets as preliminary abs32 locations.
+  std::unique_ptr<ReferenceReader> relocs = MakeReadRelocs(0, offset_t(size()));
+  for (auto ref = relocs->GetNext(); ref.has_value(); ref = relocs->GetNext())
+    abs32_locations_.push_back(ref->target);
+
   std::sort(abs32_locations_.begin(), abs32_locations_.end());
 
+  // Abs32 references must have targets translatable to offsets. Remove those
+  // that are unable to do so.
+  // TODO(huangs): Investigate whether passing |Traits::kBitness| is correct:
+  // Some architectures using ELF might have 4-byte long abs32 body regardless
+  // of bitness.
+  size_t num_untranslatable =
+      RemoveUntranslatableAbs32(image_, {Traits::kBitness, kElfImageBase},
+                                translator_, &abs32_locations_);
+  LOG_IF(WARNING, num_untranslatable) << "Removed " << num_untranslatable
+                                      << " untranslatable abs32 references.";
+
   // Abs32 reference bodies must not overlap. If found, simply remove them.
-  size_t num_removed =
+  size_t num_overlapping =
       RemoveOverlappingAbs32Locations(kAbs32Width, &abs32_locations_);
-  if (num_removed) {
-    LOG(WARNING) << "Warning: Found and removed " << num_removed
-                 << " abs32 locations with overlapping bodies.";
-  }
+  LOG_IF(WARNING, num_overlapping)
+      << "Removed " << num_overlapping
+      << " abs32 references with overlapping bodies.";
+
+  abs32_locations_.shrink_to_fit();
 }
 
 template <class Traits>
@@ -392,9 +404,12 @@ template <class Traits>
 std::unique_ptr<ReferenceReader> DisassemblerElfIntel<Traits>::MakeReadAbs32(
     offset_t lo,
     offset_t hi) {
-  Abs32RvaExtractorWin32 abs_rva_extractor(this->image_,
-                                           AbsoluteAddress(Traits::kBitness, 0),
-                                           this->abs32_locations_, lo, hi);
+  // TODO(huangs): Don't use Abs32RvaExtractorWin32 here; use new class that
+  // caters to different ELF architectures (e.g., abs32 in AArch64 are 4 bytes
+  // long, not 8 bytes long).
+  Abs32RvaExtractorWin32 abs_rva_extractor(
+      this->image_, AbsoluteAddress(Traits::kBitness, kElfImageBase),
+      this->abs32_locations_, lo, hi);
   return std::make_unique<Abs32ReaderWin32>(std::move(abs_rva_extractor),
                                             this->translator_);
 }
@@ -402,8 +417,10 @@ std::unique_ptr<ReferenceReader> DisassemblerElfIntel<Traits>::MakeReadAbs32(
 template <class Traits>
 std::unique_ptr<ReferenceWriter> DisassemblerElfIntel<Traits>::MakeWriteAbs32(
     MutableBufferView image) {
+  // TODO(huangs): For AArch64, see if |Traits::kBitness| should be used here?
   return std::make_unique<Abs32WriterWin32>(
-      image, AbsoluteAddress(Traits::kBitness, 0), this->translator_);
+      image, AbsoluteAddress(Traits::kBitness, kElfImageBase),
+      this->translator_);
 }
 
 template <class Traits>
