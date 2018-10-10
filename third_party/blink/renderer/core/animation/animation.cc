@@ -958,6 +958,14 @@ bool Animation::Update(TimingUpdateReason reason) {
     if (inherited_time == 0 && playback_rate_ < 0)
       inherited_time = -1;
     content_->UpdateInheritedTime(inherited_time, reason);
+
+    // After updating the animation time if the animation is no longer current
+    // blink will no longer composite the element (see
+    // CompositingReasonFinder::RequiresCompositingFor*Animation). We cancel any
+    // running compositor animation so that we don't try to animate the
+    // non-existent element on the compositor.
+    if (!content_->IsCurrent())
+      CancelAnimationOnCompositor();
   }
 
   if ((idle || Limited()) && !finished_) {
