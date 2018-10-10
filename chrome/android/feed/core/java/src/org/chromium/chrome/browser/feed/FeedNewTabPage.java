@@ -319,7 +319,7 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(activity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                new FeedBasicLogging(profile), offlineIndicator,
+                                new FeedLoggingBridge(profile), offlineIndicator,
                                 (FeedAppLifecycleListener)
                                         feedProcessScope.getAppLifecycleListener())
                         .build();
