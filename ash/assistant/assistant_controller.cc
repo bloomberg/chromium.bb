@@ -209,12 +209,9 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
     case DeepLinkType::kScreenshot:
-      // TODO(dmblack): The user probably doesn't want their screenshot to
-      // include Assistant so we may want to hide it before calling this API.
-      // Unfortunately, hiding our UI immediately beforehand doesn't resolve the
-      // issue, so we may need to introduce a delay or visibility change
-      // callback to remedy this. For now, keeping Assistant UI open since it
-      // will be included in the screenshot anyway.
+      // We close the UI before taking the screenshot as it's probably not the
+      // user's intention to include the Assistant in the picture.
+      assistant_ui_controller_->CloseUi(AssistantSource::kUnspecified);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
