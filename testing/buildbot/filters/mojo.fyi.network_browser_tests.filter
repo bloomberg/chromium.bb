@@ -103,10 +103,6 @@
 
 # https://crbug.com/721403
 -ContextMenuBrowserTest.DataSaverOpenOrigImageInNewTab
--DataReductionProxyBrowsertest.ChromeProxyEctHeaderSet
--DataReductionProxyBrowsertest.ChromeProxyHeaderSet
--DataReductionProxyBrowsertest.ChromeProxyHeaderSetForSubresource
--DataReductionProxyBrowsertest.ProxyNotUsedWhenDisabled
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing

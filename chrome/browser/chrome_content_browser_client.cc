@@ -174,6 +174,9 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -4318,13 +4321,26 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
   ProfileIOData* io_data = nullptr;
-  // Null-check safe_browsing_service_ as in unit tests |resource_context| is a
+  // Only set |io_data| if needed, as in unit tests |resource_context| is a
   // MockResourceContext and the cast doesn't work.
-  if (safe_browsing_service_)
+  if (safe_browsing_service_ ||
+      data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     io_data = ProfileIOData::FromResourceContext(resource_context);
+  }
+
+  if (io_data && data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    net::HttpRequestHeaders headers;
+    data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
+        io_data->data_reduction_proxy_io_data()->request_options();
+    request_options->AddRequestHeader(&headers,
+                                      request_options->GeneratePageId());
+    result.push_back(std::make_unique<
+                     data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
+        headers));
+  }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  if (io_data) {
+  if (io_data && safe_browsing_service_) {
     bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
         request.url, io_data->safe_browsing_whitelist_domains());
     if (!matches_enterprise_whitelist &&
