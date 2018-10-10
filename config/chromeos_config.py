@@ -2870,6 +2870,13 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
+  site_config.AddTemplate(
+      'incremental_affinity',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      build_affinity=True,
+      luci_builder=config_lib.LUCI_BUILDER_INCREMENTAL,
+  )
+
   master_config = site_config.Add(
       'master-incremental',
       site_config.templates.incremental,
@@ -2887,11 +2894,11 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.Add(
           'daisy-incremental',
           site_config.templates.incremental,
+          site_config.templates.incremental_affinity,
           board_configs['daisy'],
           site_config.templates.external,
           manifest_version=True,
           useflags=append_useflags(['-chrome_internal']),
-          active_waterfall=waterfall.WATERFALL_EXTERNAL,
       )
   )
 
@@ -2899,11 +2906,10 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.Add(
           'amd64-generic-incremental',
           site_config.templates.incremental,
-          # This builder runs on a VM, so it can't run VM tests.
+          site_config.templates.incremental_affinity,
           site_config.templates.no_vmtest_builder,
           board_configs['amd64-generic'],
           manifest_version=True,
-          active_waterfall=waterfall.WATERFALL_EXTERNAL,
       )
   )
 
@@ -2912,9 +2918,9 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           'betty-incremental',
           site_config.templates.incremental,
           site_config.templates.internal_incremental,
+          site_config.templates.incremental_affinity,
           boards=['betty'],
           manifest_version=True,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=getInfoVMTest(),
           vm_tests_override=getInfoVMTest(),
       )
@@ -2925,9 +2931,9 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           'chell-incremental',
           site_config.templates.incremental,
           site_config.templates.internal_incremental,
+          site_config.templates.incremental_affinity,
           boards=['chell'],
           manifest_version=True,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
@@ -2936,11 +2942,11 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           'lakitu-incremental',
           site_config.templates.incremental,
           site_config.templates.internal_incremental,
+          site_config.templates.incremental_affinity,
           site_config.templates.lakitu_notification_emails,
           board_configs['lakitu'],
           site_config.templates.lakitu_test_customizations,
           manifest_version=True,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
@@ -2950,7 +2956,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'x32-generic-incremental',
       site_config.templates.incremental,
-      # This builder runs on a VM, so it can't run VM tests.
       site_config.templates.no_vmtest_builder,
       board_configs['x32-generic'],
   )
@@ -4406,6 +4411,7 @@ def TryjobMirrors(site_config):
         suite_scheduling=False,
         triggered_gitiles=None,
         important=True,
+        build_affinity=False,
     )
 
     # Force uprev. This is so patched in changes are always built.
