@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
@@ -49,6 +48,7 @@ class PasswordManagerPresenter
   void UpdatePasswordLists();
 
   // Gets the password entry at |index|.
+  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
   const autofill::PasswordForm* GetPassword(size_t index);
 
   // password::manager::CredentialProviderInterface:
@@ -56,14 +56,17 @@ class PasswordManagerPresenter
       override;
 
   // Gets the password exception entry at |index|.
+  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
   const autofill::PasswordForm* GetPasswordException(size_t index);
 
   // Removes the saved password entry at |index|.
   // |index| the entry index to be removed.
+  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
   void RemoveSavedPassword(size_t index);
 
   // Removes the saved password exception entry at |index|.
   // |index| the entry index to be removed.
+  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
   void RemovePasswordException(size_t index);
 
   // Undoes the last saved password or exception removal.
@@ -71,6 +74,7 @@ class PasswordManagerPresenter
 
   // Requests the plain text password for entry at |index| to be revealed.
   // |index| The index of the entry.
+  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
   void RequestShowPassword(size_t index);
 
   // Wrapper around |PasswordStore::AddLogin| that adds the corresponding undo
@@ -82,16 +86,23 @@ class PasswordManagerPresenter
   void RemoveLogin(const autofill::PasswordForm& form);
 
  private:
-  friend class PasswordManagerPresenterTest;
+  // Convenience typedef for a map containing PasswordForms grouped into
+  // equivalence classes. Each equivalence class corresponds to one entry shown
+  // in the UI, and deleting an UI entry will delete all PasswordForms that are
+  // a member of the corresponding equivalence class. The keys of the map are
+  // sort keys, obtained by password_manager::CreateSortKey(). Each value of the
+  // map contains forms with the same sort key.
+  using PasswordFormMap =
+      std::map<std::string,
+               std::vector<std::unique_ptr<autofill::PasswordForm>>>;
 
   // Simple two state enum to indicate whether we should operate on saved
   // passwords or saved exceptions.
   enum class EntryKind { kPassword, kException };
 
-  // Attempts to remove the entry corresponding to |index| from the list
-  // corresponding to |entry_kind|. This will also remove the corresponding
-  // entry from the duplicate maps. Returns whether removing the entry
-  // succeeded.
+  // Attempts to remove the entry corresponding to |index| from the map
+  // corresponding to |entry_kind|. This will also add a corresponding undo
+  // operation to |undo_manager_|. Returns whether removing the entry succeeded.
   bool TryRemovePasswordEntry(EntryKind entry_kind, size_t index);
 
   // PasswordStoreConsumer:
@@ -105,10 +116,8 @@ class PasswordManagerPresenter
   // Returns the password store associated with the currently active profile.
   password_manager::PasswordStore* GetPasswordStore();
 
-  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> password_exception_list_;
-  password_manager::DuplicatesMap password_duplicates_;
-  password_manager::DuplicatesMap password_exception_duplicates_;
+  PasswordFormMap password_map_;
+  PasswordFormMap exception_map_;
 
   UndoManager undo_manager_;
 
