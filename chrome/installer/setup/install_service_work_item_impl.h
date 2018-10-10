@@ -13,12 +13,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 
-namespace base {
-
-class CommandLine;
-
-}  // namespace base
-
 namespace installer {
 
 // Helper class for the implementation of InstallServiceWorkItem.
@@ -49,13 +43,12 @@ class InstallServiceWorkItemImpl {
 
   InstallServiceWorkItemImpl(const base::string16& service_name,
                              const base::string16& display_name,
-                             const base::CommandLine& service_cmd_line);
+                             const base::string16& service_cmd_line);
 
   ~InstallServiceWorkItemImpl();
 
   bool DoImpl();
   void RollbackImpl();
-  bool DeleteServiceImpl();
 
   // Member functions that help with service installation or upgrades.
   bool IsServiceCorrectlyConfigured(const ServiceConfig& config);

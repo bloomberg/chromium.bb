@@ -10,8 +10,6 @@
 
 #include <stddef.h>
 
-#include "base/files/file_path.h"
-
 namespace installer {
 
 // Return status of installer. Values in this enum must not change. Always add
@@ -219,9 +217,6 @@ extern const wchar_t kUninstallArgumentsField[];
 extern const wchar_t kUninstallDisplayNameField[];
 extern const wchar_t kUninstallInstallationDate[];
 extern const wchar_t kUninstallStringField[];
-
-// Elevation Service constants.
-extern const base::FilePath::CharType kElevationServiceExe[];
 
 // Google Update installer result API.
 extern const wchar_t kInstallerError[];

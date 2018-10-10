@@ -8,8 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_util.h"
@@ -22,8 +20,7 @@ namespace {
 
 constexpr base::char16 kServiceName[] = L"InstallServiceWorkItemService";
 constexpr base::char16 kServiceDisplayName[] = L"InstallServiceWorkItemService";
-constexpr base::FilePath::CharType kServiceProgramPath[] =
-    FILE_PATH_LITERAL("c:\\windows\\system32\\cmd.exe");
+constexpr base::char16 kServiceCmdLine[] = L"c:\\windows\\system32\\cmd.exe";
 
 }  // namespace
 
@@ -66,8 +63,7 @@ TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
 
 TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      kServiceName, kServiceDisplayName, kServiceCmdLine);
 
   ASSERT_TRUE(item->Do());
   EXPECT_TRUE(GetImpl(item.get())->OpenService());
@@ -77,30 +73,16 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   EXPECT_FALSE(GetImpl(item.get())->OpenService());
 }
 
-TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
-  auto item = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
-
-  ASSERT_TRUE(item->Do());
-  EXPECT_TRUE(GetImpl(item.get())->OpenService());
-  EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
-
-  EXPECT_TRUE(InstallServiceWorkItem::DeleteService(kServiceName));
-}
-
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   auto item = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      kServiceName, kServiceDisplayName, kServiceCmdLine);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
 
   // Same command line:
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      kServiceName, kServiceDisplayName, kServiceCmdLine);
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -111,16 +93,14 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
 
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   auto item = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      kServiceName, kServiceDisplayName, kServiceCmdLine);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
 
   // New command line.
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine::FromString(L"NewCmd.exe arg1 arg2"));
+      kServiceName, kServiceDisplayName, L"NewCmd.exe new cmd line");
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -139,8 +119,7 @@ TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
                        install_static::GetClientStateKeyPath().c_str(),
                        KEY_WRITE | KEY_WOW64_32KEY));
   auto item = std::make_unique<InstallServiceWorkItem>(
-      kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      kServiceName, kServiceDisplayName, kServiceCmdLine);
 
   EXPECT_STREQ(kServiceName,
                GetImpl(item.get())->GetCurrentServiceName().c_str());
