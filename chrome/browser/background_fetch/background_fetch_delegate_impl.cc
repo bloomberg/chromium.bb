@@ -44,6 +44,10 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
   DCHECK(profile_);
   DCHECK(!provider_namespace_.empty());
   offline_content_aggregator_->RegisterProvider(provider_namespace_, this);
+
+  // Ensure that downloads UI components are initialized to handle the UI
+  // updates.
+  content::BrowserContext::GetDownloadManager(profile_);
 }
 
 BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() {

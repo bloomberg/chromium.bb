@@ -12,10 +12,11 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/background_fetch_delegate.h"
 
 namespace {
-constexpr char kBackgroundFetchNamespacePrefix[] = "background_fetch_";
+constexpr char kBackgroundFetchNamespacePrefix[] = "background_fetch";
 }  // namespace
 
 // static
@@ -43,12 +44,9 @@ BackgroundFetchDelegateFactory::~BackgroundFetchDelegateFactory() {}
 
 KeyedService* BackgroundFetchDelegateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // Number of offline content aggregator registrations. There can be multiple
-  // incognito profiles created, and the provided namespace needs to be unique.
-  static int num_registrations = 0;
-
   std::string provider_namespace =
-      kBackgroundFetchNamespacePrefix + base::IntToString(++num_registrations);
+      offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
+          kBackgroundFetchNamespacePrefix, context->IsOffTheRecord());
   return new BackgroundFetchDelegateImpl(Profile::FromBrowserContext(context),
                                          provider_namespace);
 }

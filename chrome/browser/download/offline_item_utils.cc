@@ -57,14 +57,14 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
 
 }  // namespace
 
-OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
+OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
+                                                DownloadItem* download_item) {
   bool off_the_record =
       content::DownloadItemUtils::GetBrowserContext(download_item)
           ->IsOffTheRecord();
 
   OfflineItem item;
-  item.id =
-      ContentId(GetDownloadNamespace(off_the_record), download_item->GetGuid());
+  item.id = ContentId(name_space, download_item->GetGuid());
   item.title = download_item->GetFileNameToReportUser().AsUTF8Unsafe();
   item.description = download_item->GetFileNameToReportUser().AsUTF8Unsafe();
   item.filter = MimeTypeToOfflineItemFilter(download_item->GetMimeType());
@@ -126,7 +126,8 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(DownloadItem* download_item) {
   return item;
 }
 
-std::string OfflineItemUtils::GetDownloadNamespace(bool is_off_the_record) {
+std::string OfflineItemUtils::GetDownloadNamespacePrefix(
+    bool is_off_the_record) {
   return is_off_the_record ? kDownloadIncognitoNamespace : kDownloadNamespace;
 }
 
