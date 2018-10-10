@@ -256,10 +256,6 @@
 # Flaky segfaults: https://crbug.com/818147
 -ExtensionApiTest.BookmarkManager
 
-# Segfaults after massive recursion setting ash::kWindowStateTypeKey:
-# crbug.com/824458
--PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
-
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
 -WebViewFocusBrowserPluginSpecificTest.*
 -WebViewScrollBubbling/WebViewGuestScrollTest.ScrollLatchingPreservedInGuests/*
