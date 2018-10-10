@@ -72,6 +72,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     cell = [[PopupMenuToolsCell alloc] init];
+    [cell registerForContentSizeUpdates];
   });
 
   [self configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
@@ -122,7 +123,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
-    _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _titleLabel.font = [self titleFont];
     [_titleLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
@@ -130,6 +131,7 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
                                    forAxis:UILayoutConstraintAxisHorizontal];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _titleLabel.adjustsFontForContentSizeCategory = YES;
 
     _imageView = [[UIImageView alloc] init];
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -240,6 +242,18 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   return UIColorFromRGB(kEnabledDefaultColor);
 }
 
+- (void)registerForContentSizeUpdates {
+  // This is needed because if the cell is static (used for height),
+  // adjustsFontForContentSizeCategory isn't working.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(preferredContentSizeDidChange:)
+             name:UIContentSizeCategoryDidChangeNotification
+           object:nil];
+}
+
+#pragma mark - UIView
+
 - (void)layoutSubviews {
   [super layoutSubviews];
 
@@ -284,6 +298,16 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 }
 
 #pragma mark - Private
+
+// Callback when the preferred Content Size change.
+- (void)preferredContentSizeDidChange:(NSNotification*)notification {
+  self.titleLabel.font = [self titleFont];
+}
+
+// Font to be used for the title.
+- (UIFont*)titleFont {
+  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+}
 
 // Returns the color of the disabled button's title.
 + (UIColor*)disabledColor {
