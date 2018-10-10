@@ -120,13 +120,12 @@ class PageCappingObserverTest
 
   // Load a resource of size |bytes|.
   void SimulateBytes(int bytes) {
-    page_load_metrics::ExtraRequestCompleteInfo resource(
-        GURL(kTestURL), net::HostPortPair(), -1 /* frame_tree_node_id */,
-        false /* was_cached */, bytes /* raw_body_bytes */,
-        0 /* original_network_content_length */, nullptr,
-        content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
-        {} /* load_timing_info */);
-    SimulateLoadedResource(resource);
+    std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+    auto resource_data_update =
+        page_load_metrics::mojom::ResourceDataUpdate::New();
+    resource_data_update->delta_bytes = bytes;
+    resources.push_back(std::move(resource_data_update));
+    SimulateResourceDataUseUpdate(resources);
   }
 
  protected:
