@@ -52,6 +52,11 @@ VIEWS_EXPORT
   // Whether there's an active key down event which is not handled yet.
   BOOL hasUnhandledKeyDownEvent_;
 
+  // Whether any -insertFoo: selector (e.g. -insertNewLine:) was passed to
+  // -doCommandBySelector: during the processing of this keyDown. These must
+  // always be dispatched as a ui::KeyEvent in -keyDown:.
+  BOOL wantsKeyHandledForInsert_;
+
   // The last tooltip text, used to limit updates.
   base::string16 lastTooltipText_;
 }
