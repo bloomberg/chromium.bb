@@ -91,8 +91,8 @@ class PLATFORM_EXPORT TransformOperations {
     return operations_;
   }
 
-  size_t size() const { return operations_.size(); }
-  const TransformOperation* at(size_t index) const {
+  wtf_size_t size() const { return operations_.size(); }
+  const TransformOperation* at(wtf_size_t index) const {
     return index < operations_.size() ? operations_.at(index).get() : nullptr;
   }
 
