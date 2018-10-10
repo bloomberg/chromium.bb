@@ -106,12 +106,6 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   const std::string& source_name() const { return source_name_; }
 
-  // Flush any pending mojo messages for testing.
-  void FlushForTesting() {
-    session_.FlushForTesting();
-    binding_.FlushForTesting();
-  }
-
  private:
   void OnConnectionError() {
     // Since we have multiple pathways that can call |OnConnectionError| we
@@ -146,11 +140,6 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   DISALLOW_COPY_AND_ASSIGN(StackRow);
 };
-
-// static
-AudioFocusManager* AudioFocusManager::GetInstance() {
-  return base::Singleton<AudioFocusManager>::get();
-}
 
 void AudioFocusManager::RequestAudioFocus(
     mojom::AudioFocusRequestClientRequest request,
@@ -349,18 +338,6 @@ void AudioFocusManager::EnforceAudioFocusAbandon(mojom::AudioFocusType type) {
       }
       break;
   }
-}
-
-void AudioFocusManager::ResetForTesting() {
-  audio_focus_stack_.clear();
-  CloseAllMojoObjects();
-}
-
-void AudioFocusManager::FlushForTesting() {
-  observers_.FlushForTesting();
-
-  for (auto& session : audio_focus_stack_)
-    session->FlushForTesting();
 }
 
 AudioFocusManager::AudioFocusManager() {
