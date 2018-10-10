@@ -367,7 +367,10 @@ void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
   embed_frame_sink_id_ = frame_sink_id;
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
-  UpdatePrimarySurfaceId();
+  // We may not have allocated a LocalSurfaceId. Call OnWindowMusBoundsChanged()
+  // to trigger updating the LocalSurfaceId *and* notifying the server.
+  window_tree_client_->OnWindowMusBoundsChanged(this, window_->bounds(),
+                                                window_->bounds());
 }
 
 const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
