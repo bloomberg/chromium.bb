@@ -98,8 +98,7 @@ testcase.zipFileOpenUsb = function() {
     // Mount empty USB volume in the Drive window.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+      sendTestMessage({name: 'mountFakeUsbEmpty'}).then(this.next);
     },
     // Wait for the USB mount.
     function() {
@@ -263,8 +262,7 @@ testcase.zipCreateFileUsb = function() {
     // Mount empty USB volume in the Drive window.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+      sendTestMessage({name: 'mountFakeUsbEmpty'}).then(this.next);
     },
     // Wait for the USB mount.
     function() {
