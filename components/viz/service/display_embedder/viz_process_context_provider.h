@@ -75,6 +75,10 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
           callback);
   bool UseRGB565PixelFormat() const;
 
+  // Provides the GL internal format that should be used when calling
+  // glCopyTexImage2D() on the default framebuffer.
+  uint32_t GetCopyTextureInternalFormat();
+
  private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   ~VizProcessContextProvider() override;
