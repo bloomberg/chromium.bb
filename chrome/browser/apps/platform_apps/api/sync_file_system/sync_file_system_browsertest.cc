@@ -59,9 +59,7 @@ class FakeDriveServiceFactory
 class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
                            public drive::FakeDriveService::ChangeObserver {
  public:
-  SyncFileSystemTest()
-      : remote_service_(NULL) {
-  }
+  SyncFileSystemTest() : remote_service_(NULL) {}
 
   scoped_refptr<base::SequencedTaskRunner> MakeSequencedTaskRunner() {
     return base::CreateSequencedTaskRunnerWithTraits(
@@ -83,8 +81,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>
         drive_service_factory(new FakeDriveServiceFactory(this));
 
-    fake_signin_manager_.reset(new FakeSigninManagerForTesting(
-        browser()->profile()));
+    fake_signin_manager_.reset(
+        new FakeSigninManagerForTesting(browser()->profile()));
 
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
@@ -147,12 +145,12 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
-  ExtensionTestMessageListener open_failure(
-      "checkpoint: Failed to get syncfs", true);
-  ExtensionTestMessageListener bar_created(
-      "checkpoint: \"/bar\" created", true);
-  ExtensionTestMessageListener foo_created(
-      "checkpoint: \"/foo\" created", true);
+  ExtensionTestMessageListener open_failure("checkpoint: Failed to get syncfs",
+                                            true);
+  ExtensionTestMessageListener bar_created("checkpoint: \"/bar\" created",
+                                           true);
+  ExtensionTestMessageListener foo_created("checkpoint: \"/foo\" created",
+                                           true);
   extensions::ResultCatcher catcher;
 
   LoadAndLaunchPlatformApp("sync_file_system/authorization_test", "Launched");
@@ -178,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
 
   ASSERT_TRUE(bar_created.WaitUntilSatisfied());
 
-  // The app creates anohter file "/bar".  Since the user signed out from chrome
+  // The app creates another file "/bar".  Since the user signed out from chrome
   // The synchronization should fail and the service state should be
   // AUTHENTICATION_REQUIRED.
 

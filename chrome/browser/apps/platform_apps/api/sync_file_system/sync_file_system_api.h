@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,6 @@
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_file_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-#include "chrome/common/extensions/api/sync_file_system.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -21,7 +20,8 @@ namespace storage {
 class FileSystemContext;
 }
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 class SyncFileSystemDeleteFileSystemFunction
     : public ChromeAsyncExtensionFunction {
@@ -51,8 +51,8 @@ class SyncFileSystemGetFileStatusFunction
 
  private:
   void DidGetFileStatus(
-      const sync_file_system::SyncStatusCode sync_service_status,
-      const sync_file_system::SyncFileStatus sync_file_status);
+      const ::sync_file_system::SyncStatusCode sync_service_status,
+      const ::sync_file_system::SyncFileStatus sync_file_status);
 };
 
 class SyncFileSystemGetFileStatusesFunction
@@ -67,15 +67,17 @@ class SyncFileSystemGetFileStatusesFunction
   bool RunAsync() override;
 
  private:
-  typedef std::pair<sync_file_system::SyncStatusCode,
-                    sync_file_system::SyncFileStatus> FileStatusPair;
+  typedef std::pair<::sync_file_system::SyncStatusCode,
+                    ::sync_file_system::SyncFileStatus>
+      FileStatusPair;
   typedef std::map<storage::FileSystemURL,
                    FileStatusPair,
-                   storage::FileSystemURL::Comparator> URLToStatusMap;
+                   storage::FileSystemURL::Comparator>
+      URLToStatusMap;
 
   void DidGetFileStatus(const storage::FileSystemURL& file_system_url,
-                        sync_file_system::SyncStatusCode sync_status_code,
-                        sync_file_system::SyncFileStatus sync_file_statuses);
+                        ::sync_file_system::SyncStatusCode sync_status_code,
+                        ::sync_file_system::SyncFileStatus sync_file_statuses);
 
   unsigned int num_expected_results_;
   unsigned int num_results_received_;
@@ -152,6 +154,7 @@ class SyncFileSystemGetServiceStatusFunction
   ResponseAction Run() override;
 };
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_

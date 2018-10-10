@@ -84,7 +84,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kProcesses, "processes"},
     {APIPermission::kSessions, "sessions"},
     {APIPermission::kSignedInDevices, "signedInDevices"},
-    {APIPermission::kSyncFileSystem, "syncFileSystem"},
     {APIPermission::kTab, "tabs"},
     {APIPermission::kTopSites, "topSites"},
     {APIPermission::kTts, "tts", APIPermissionInfo::kFlagCannotBeOptional},

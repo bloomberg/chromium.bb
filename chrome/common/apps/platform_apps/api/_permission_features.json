@@ -55,5 +55,9 @@
       "A6C87307BBE5886CC5F1393025000E2FE8060BF2",
       "3407516021EA3669C0EC8E65E6B9837E5A521B9C"
     ]
+  },
+  "syncFileSystem": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
   }
 }

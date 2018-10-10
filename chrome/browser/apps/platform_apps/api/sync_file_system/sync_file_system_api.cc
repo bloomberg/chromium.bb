@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api.h"
+#include "chrome/browser/apps/platform_apps/api/sync_file_system/sync_file_system_api.h"
 
 #include <memory>
 #include <string>
@@ -12,13 +12,13 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
-#include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
+#include "chrome/browser/apps/platform_apps/api/sync_file_system/extension_sync_event_observer.h"
+#include "chrome/browser/apps/platform_apps/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/sync_file_status.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
-#include "chrome/common/extensions/api/sync_file_system.h"
+#include "chrome/common/apps/platform_apps/api/sync_file_system.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,12 +34,13 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using sync_file_system::ConflictResolutionPolicy;
-using sync_file_system::SyncFileStatus;
-using sync_file_system::SyncFileSystemServiceFactory;
-using sync_file_system::SyncStatusCode;
+using ::sync_file_system::ConflictResolutionPolicy;
+using ::sync_file_system::SyncFileStatus;
+using ::sync_file_system::SyncFileSystemServiceFactory;
+using ::sync_file_system::SyncStatusCode;
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 namespace {
 
@@ -48,10 +49,10 @@ const char kErrorMessage[] = "%s (error code: %d).";
 const char kUnsupportedConflictResolutionPolicy[] =
     "Policy %s is not supported.";
 
-sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
+::sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  sync_file_system::SyncFileSystemService* service =
+  ::sync_file_system::SyncFileSystemService* service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
   if (!service)
     return nullptr;
@@ -64,10 +65,9 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
 }
 
 std::string ErrorToString(SyncStatusCode code) {
-  return base::StringPrintf(
-      kErrorMessage,
-      sync_file_system::SyncStatusCodeToString(code),
-      static_cast<int>(code));
+  return base::StringPrintf(kErrorMessage,
+                            ::sync_file_system::SyncStatusCodeToString(code),
+                            static_cast<int>(code));
 }
 
 const char* QuotaStatusCodeToString(blink::mojom::QuotaStatusCode status) {
@@ -126,7 +126,8 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
+    error_ =
+        ErrorToString(::sync_file_system::FileErrorToSyncStatusCode(error));
     SetResult(std::make_unique<base::Value>(false));
     SendResponse(false);
     return;
@@ -179,7 +180,8 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
+    error_ =
+        ErrorToString(::sync_file_system::FileErrorToSyncStatusCode(error));
     SendResponse(false);
     return;
   }
@@ -202,7 +204,7 @@ bool SyncFileSystemGetFileStatusFunction::RunAsync() {
   storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  sync_file_system::SyncFileSystemService* sync_file_system_service =
+  ::sync_file_system::SyncFileSystemService* sync_file_system_service =
       GetSyncFileSystemService(GetProfile());
   if (!sync_file_system_service)
     return false;
@@ -217,14 +219,14 @@ void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
     const SyncStatusCode sync_status_code,
     const SyncFileStatus sync_file_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (sync_status_code != sync_file_system::SYNC_STATUS_OK) {
+  if (sync_status_code != ::sync_file_system::SYNC_STATUS_OK) {
     error_ = ErrorToString(sync_status_code);
     SendResponse(false);
     return;
   }
 
   // Convert from C++ to JavaScript enum.
-  results_ = api::sync_file_system::GetFileStatus::Results::Create(
+  results_ = sync_file_system::GetFileStatus::Results::Create(
       SyncFileStatusToExtensionEnum(sync_file_status));
   SendResponse(true);
 }
@@ -232,8 +234,8 @@ void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
 SyncFileSystemGetFileStatusesFunction::SyncFileSystemGetFileStatusesFunction() {
 }
 
-SyncFileSystemGetFileStatusesFunction::~SyncFileSystemGetFileStatusesFunction(
-    ) {}
+SyncFileSystemGetFileStatusesFunction::
+    ~SyncFileSystemGetFileStatusesFunction() {}
 
 bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
   // All FileEntries converted into array of URL Strings in JS custom bindings.
@@ -250,7 +252,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
   num_expected_results_ = file_entry_urls->GetSize();
   num_results_received_ = 0;
   file_sync_statuses_.clear();
-  sync_file_system::SyncFileSystemService* sync_file_system_service =
+  ::sync_file_system::SyncFileSystemService* sync_file_system_service =
       GetSyncFileSystemService(GetProfile());
   if (!sync_file_system_service)
     return false;
@@ -263,8 +265,8 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
 
     sync_file_system_service->GetFileSyncStatus(
         file_system_url,
-        Bind(&SyncFileSystemGetFileStatusesFunction::DidGetFileStatus,
-             this, file_system_url));
+        Bind(&SyncFileSystemGetFileStatusesFunction::DidGetFileStatus, this,
+             file_system_url));
   }
 
   return true;
@@ -298,14 +300,14 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
 
     storage::FileSystemURL url = it->first;
     SyncStatusCode file_error = it->second.first;
-    api::sync_file_system::FileStatus file_status =
+    sync_file_system::FileStatus file_status =
         SyncFileStatusToExtensionEnum(it->second.second);
 
     dict->Set("entry", CreateDictionaryValueForFileSystemEntry(
-        url, sync_file_system::SYNC_FILE_TYPE_FILE));
+                           url, ::sync_file_system::SYNC_FILE_TYPE_FILE));
     dict->SetString("status", ToString(file_status));
 
-    if (file_error == sync_file_system::SYNC_STATUS_OK)
+    if (file_error == ::sync_file_system::SYNC_STATUS_OK)
       continue;
     dict->SetString("error", ErrorToString(file_error));
 
@@ -365,10 +367,10 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
     return;
   }
 
-  api::sync_file_system::StorageInfo info;
+  sync_file_system::StorageInfo info;
   info.usage_bytes = usage;
   info.quota_bytes = quota;
-  results_ = api::sync_file_system::GetUsageAndQuota::Results::Create(info);
+  results_ = sync_file_system::GetUsageAndQuota::Results::Create(info);
   SendResponse(true);
 }
 
@@ -377,8 +379,8 @@ SyncFileSystemSetConflictResolutionPolicyFunction::Run() {
   std::string policy_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
   ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
-      api::sync_file_system::ParseConflictResolutionPolicy(policy_string));
-  if (policy != sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN) {
+      sync_file_system::ParseConflictResolutionPolicy(policy_string));
+  if (policy != ::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN) {
     return RespondNow(Error(base::StringPrintf(
         kUnsupportedConflictResolutionPolicy, policy_string.c_str())));
   }
@@ -388,19 +390,20 @@ SyncFileSystemSetConflictResolutionPolicyFunction::Run() {
 ExtensionFunction::ResponseAction
 SyncFileSystemGetConflictResolutionPolicyFunction::Run() {
   return RespondNow(
-      OneArgument(std::make_unique<base::Value>(api::sync_file_system::ToString(
-          api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN))));
+      OneArgument(std::make_unique<base::Value>(sync_file_system::ToString(
+          sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN))));
 }
 
 ExtensionFunction::ResponseAction
 SyncFileSystemGetServiceStatusFunction::Run() {
-  sync_file_system::SyncFileSystemService* service =
+  ::sync_file_system::SyncFileSystemService* service =
       GetSyncFileSystemService(browser_context());
   if (!service)
     return RespondNow(Error(kUnknownErrorDoNotUse));
   return RespondNow(
-      ArgumentList(api::sync_file_system::GetServiceStatus::Results::Create(
+      ArgumentList(sync_file_system::GetServiceStatus::Results::Create(
           SyncServiceStateToExtensionEnum(service->GetSyncServiceState()))));
 }
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
