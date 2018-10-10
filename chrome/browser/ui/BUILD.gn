@@ -1979,8 +1979,6 @@ jumbo_split_static_library("ui") {
       "cocoa/dock_icon.mm",
       "cocoa/drag_util.h",
       "cocoa/drag_util.mm",
-      "cocoa/extensions/extension_keybinding_registry_cocoa.h",
-      "cocoa/extensions/extension_keybinding_registry_cocoa.mm",
       "cocoa/first_run_dialog.h",
       "cocoa/first_run_dialog.mm",
       "cocoa/first_run_dialog_controller.h",
