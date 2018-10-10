@@ -70,6 +70,7 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
@@ -384,6 +385,12 @@ ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() = default;
 
 KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions)) {
+    return nullptr;
+  }
+#endif  // defined(OS_ANDROID)
+
 #if CONTENT_SUGGESTIONS_ENABLED
 
   using State = ContentSuggestionsService::State;
