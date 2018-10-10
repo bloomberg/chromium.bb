@@ -128,11 +128,15 @@ DriveSearchContentScanner.MAX_RESULTS_ = 100;
  */
 DriveSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  var numReadEntries = 0;
-  var readEntries = function(nextFeed) {
+  // Let's give another search a chance to cancel us before we begin.
+  setTimeout(() => {
+    // Check cancelled state before read the entries.
+    if (this.cancelled_) {
+      errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+      return;
+    }
     chrome.fileManagerPrivate.searchDrive(
-        {query: this.query_, nextFeed: nextFeed},
-        function(entries, nextFeed) {
+        {query: this.query_, nextFeed: ''}, (entries, nextFeed) => {
           if (this.cancelled_) {
             errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
             return;
@@ -141,41 +145,22 @@ DriveSearchContentScanner.prototype.scan = function(
           // TODO(tbarzic): Improve error handling.
           if (!entries) {
             console.error('Drive search encountered an error.');
-            errorCallback(util.createDOMError(
-                util.FileError.INVALID_MODIFICATION_ERR));
+            errorCallback(
+                util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
             return;
           }
 
-          var numRemainingEntries =
-              DriveSearchContentScanner.MAX_RESULTS_ - numReadEntries;
-          if (entries.length >= numRemainingEntries) {
-            // The limit is hit, so quit the scan here.
-            entries = entries.slice(0, numRemainingEntries);
-            nextFeed = '';
+          if (entries.length >= DriveSearchContentScanner.MAX_RESULTS_) {
+            // More results were received than expected, so trim.
+            entries = entries.slice(0, DriveSearchContentScanner.MAX_RESULTS_);
           }
 
-          numReadEntries += entries.length;
           if (entries.length > 0)
             entriesCallback(entries);
 
-          if (nextFeed === '')
-            successCallback();
-          else
-            readEntries(nextFeed);
-        }.bind(this));
-  }.bind(this);
-
-  // Let's give another search a chance to cancel us before we begin.
-  setTimeout(
-      function() {
-        // Check cancelled state before read the entries.
-        if (this.cancelled_) {
-          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
-          return;
-        }
-        readEntries('');
-      }.bind(this),
-      DriveSearchContentScanner.SCAN_DELAY_);
+          successCallback();
+        });
+  }, DriveSearchContentScanner.SCAN_DELAY_);
 };
 
 /**

@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/fake_drivefs.h"
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -95,12 +97,9 @@ struct FakeDriveFs::FileMetadata {
 class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
  public:
   SearchQuery(base::WeakPtr<FakeDriveFs> drive_fs,
-              const drivefs::mojom::QueryParameters& params)
+              drivefs::mojom::QueryParametersPtr params)
       : drive_fs_(std::move(drive_fs)),
-        query_(base::ToLowerASCII(
-            params.title.value_or(params.text_content.value_or("")))),
-        shared_with_me_(params.shared_with_me),
-        available_offline_(params.available_offline),
+        params_(std::move(params)),
         weak_ptr_factory_(this) {}
 
  private:
@@ -160,6 +159,9 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 
   void OnComplete() {
     if (--pending_callbacks_ == 0) {
+      auto query = base::ToLowerASCII(
+          params_->title.value_or(params_->text_content.value_or("")));
+
       // Filter out non-matching results.
       base::EraseIf(results_, [=](const auto& item_ptr) {
         if (!item_ptr->metadata) {
@@ -167,29 +169,58 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
         }
         const base::FilePath path = item_ptr->path;
         const drivefs::mojom::FileMetadata* metadata = item_ptr->metadata.get();
-        if (!query_.empty()) {
-          return base::ToLowerASCII(path.BaseName().value()).find(query_) ==
+        if (!query.empty()) {
+          return base::ToLowerASCII(path.BaseName().value()).find(query) ==
                  std::string::npos;
         }
-        if (available_offline_) {
+        if (params_->available_offline) {
           return !metadata->available_offline &&
                  metadata->type != mojom::FileMetadata::Type::kHosted;
         }
-        if (shared_with_me_) {
+        if (params_->shared_with_me) {
           return !metadata->shared;
         }
         return false;
       });
 
+      const auto sort_direction = params_->sort_direction;
+      switch (params_->sort_field) {
+        case mojom::QueryParameters::SortField::kLastModified:
+        case mojom::QueryParameters::SortField::kLastViewedByMe:
+          std::sort(
+              results_.begin(), results_.end(),
+              [sort_direction](const auto& a, const auto& b) {
+                auto a_fields = std::tie(a->metadata->last_viewed_by_me_time,
+                                         a->metadata->modification_time);
+                auto b_fields = std::tie(b->metadata->last_viewed_by_me_time,
+                                         b->metadata->modification_time);
+                if (sort_direction ==
+                    mojom::QueryParameters::SortDirection::kAscending) {
+                  return a_fields < b_fields;
+                }
+                return b_fields < a_fields;
+              });
+          break;
+
+        case mojom::QueryParameters::SortField::kFileSize:
+          NOTIMPLEMENTED();
+          break;
+
+        case mojom::QueryParameters::SortField::kNone:
+          break;
+      }
+
+      auto page_size = base::saturated_cast<size_t>(params_->page_size);
+      if (results_.size() > page_size) {
+        results_.resize(page_size);
+      }
       std::move(callback_).Run(drive::FileError::FILE_ERROR_OK,
                                {std::move(results_)});
     }
   }
 
   base::WeakPtr<FakeDriveFs> drive_fs_;
-  const std::string query_;
-  const bool shared_with_me_;
-  const bool available_offline_;
+  mojom::QueryParametersPtr params_;
   GetNextPageCallback callback_;
   std::vector<drivefs::mojom::QueryItemPtr> results_;
   size_t pending_callbacks_ = 0;
@@ -271,7 +302,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   auto metadata = drivefs::mojom::FileMetadata::New();
   metadata->size = info.size;
   metadata->modification_time = info.last_modified;
-  metadata->last_viewed_by_me_time = info.last_modified;
+  metadata->last_viewed_by_me_time = info.last_accessed;
 
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
@@ -366,8 +397,8 @@ void FakeDriveFs::CopyFile(const base::FilePath& source,
 void FakeDriveFs::StartSearchQuery(
     drivefs::mojom::SearchQueryRequest query,
     drivefs::mojom::QueryParametersPtr query_params) {
-  auto search_query =
-      std::make_unique<SearchQuery>(weak_factory_.GetWeakPtr(), *query_params);
+  auto search_query = std::make_unique<SearchQuery>(weak_factory_.GetWeakPtr(),
+                                                    std::move(query_params));
   mojo::MakeStrongBinding(std::move(search_query), std::move(query));
 }
 

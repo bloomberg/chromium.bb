@@ -138,6 +138,16 @@ class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   const base::FilePath drivefs_root_;
 };
 
+bool TouchFile(const base::FilePath& path,
+               base::StringPiece mtime_string,
+               base::StringPiece atime_string) {
+  base::Time mtime, atime;
+  auto result = base::Time::FromString(mtime_string.data(), &mtime) &&
+                base::Time::FromString(atime_string.data(), &atime) &&
+                base::TouchFile(path, atime, mtime);
+  return result;
+}
+
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
 // The directory is created at unique_temp_dir/|mount_point_name| path.
@@ -156,7 +166,7 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!base::CreateDirectory(test_dir))
     return false;
 
-  base::FilePath test_subdir = test_dir.AppendASCII("empty_test_dir");
+  base::FilePath test_subdir = test_dir.AppendASCII("empty_dir");
   if (!base::CreateDirectory(test_subdir))
     return false;
 
@@ -180,10 +190,42 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
-  test_file = test_dir.AppendASCII("empty_test_file.foo");
+  test_file = test_dir.AppendASCII("empty_file.foo");
   if (!google_apis::test_util::WriteStringToFile(test_file, ""))
     return false;
 
+  if (!TouchFile(test_dir.Append("empty_dir"), "2011-11-02T04:00:00.000Z",
+                 "2011-11-02T04:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("subdir"), "2011-04-01T18:34:08.234Z",
+                 "2012-01-02T00:00:01.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.xul"), "2011-12-14T00:40:47.330Z",
+                 "2012-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.xul.foo"),
+                 "2012-01-01T10:00:30.000Z", "2012-01-01T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.tiff"), "2011-04-03T11:11:10.000Z",
+                 "2012-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.tiff.foo"),
+                 "2011-12-14T00:40:47.330Z", "2010-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("empty_file.foo"), "2011-12-14T00:40:47.330Z",
+                 "2011-12-14T00:40:47.330Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir, "2012-01-02T00:00:00.000Z",
+                 "2012-01-02T00:00:01.000Z")) {
+    return false;
+  }
   return true;
 }
 
@@ -241,7 +283,7 @@ drive::FakeDriveService* CreateDriveService() {
   AddDirectoryToDriveService(service, service->GetRootResourceId(), "test_dir",
                              "2012-01-02T00:00:00.000Z",
                              "2012-01-02T00:00:01.000Z");
-  AddDirectoryToDriveService(service, "test_dir", "empty_test_dir",
+  AddDirectoryToDriveService(service, "test_dir", "empty_dir",
                              "2011-11-02T04:00:00.000Z",
                              "2011-11-02T04:00:00.000Z");
   AddDirectoryToDriveService(service, "test_dir", "subdir",
@@ -259,9 +301,8 @@ drive::FakeDriveService* CreateDriveService() {
   AddFileToDriveService(service, "test/rw", kTestFileContent, "test_dir",
                         "test_file.tiff.foo", "2011-12-14T00:40:47.330Z",
                         "2010-01-02T00:00:00.000Z");
-  AddFileToDriveService(service, "test/rw", "", "test_dir",
-                        "empty_test_file.foo", "2011-12-14T00:40:47.330Z",
-                        "2011-12-14T00:40:47.330Z");
+  AddFileToDriveService(service, "test/rw", "", "test_dir", "empty_file.foo",
+                        "2011-12-14T00:40:47.330Z", "2011-12-14T00:40:47.330Z");
   return service;
 }
 
@@ -794,7 +835,6 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileBrowserHandlers) {
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, Search) {
   // Configure the drive service to return only one search result at a time
   // to simulate paginated searches.
-  fake_drive_service_->set_default_max_results(1);
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/drive_search_test",
       FILE_PATH_LITERAL("manifest.json"),
