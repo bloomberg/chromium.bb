@@ -13,6 +13,7 @@
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
+#include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
@@ -93,6 +94,11 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               host_backend_delegate_.get(),
               host_verifier_.get(),
               device_sync_client)),
+      grandfathered_easy_unlock_host_disabler_(
+          GrandfatheredEasyUnlockHostDisabler::Factory::Get()->BuildInstance(
+              host_backend_delegate_.get(),
+              device_sync_client,
+              pref_service)),
       feature_state_manager_(
           FeatureStateManagerImpl::Factory::Get()->BuildInstance(
               pref_service,

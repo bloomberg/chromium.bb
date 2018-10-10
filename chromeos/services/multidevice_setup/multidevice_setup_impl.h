@@ -36,11 +36,12 @@ class AndroidSmsAppInstallingStatusObserver;
 class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class DeviceReenroller;
+class EligibleHostDevicesProvider;
+class GrandfatheredEasyUnlockHostDisabler;
 class HostBackendDelegate;
+class HostDeviceTimestampManager;
 class HostStatusProvider;
 class HostVerifier;
-class EligibleHostDevicesProvider;
-class HostDeviceTimestampManager;
 
 // Concrete MultiDeviceSetup implementation.
 class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
@@ -129,6 +130,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<HostVerifier> host_verifier_;
   std::unique_ptr<HostStatusProvider> host_status_provider_;
+  std::unique_ptr<GrandfatheredEasyUnlockHostDisabler>
+      grandfathered_easy_unlock_host_disabler_;
   std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<HostDeviceTimestampManager> host_device_timestamp_manager_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;

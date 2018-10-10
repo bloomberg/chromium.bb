@@ -7,6 +7,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
+#include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
@@ -28,6 +29,7 @@ void MultiDeviceSetupService::RegisterProfilePrefs(
   AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(registry);
   HostBackendDelegateImpl::RegisterPrefs(registry);
   HostVerifierImpl::RegisterPrefs(registry);
+  GrandfatheredEasyUnlockHostDisabler::RegisterPrefs(registry);
   RegisterFeaturePrefs(registry);
 }
 
