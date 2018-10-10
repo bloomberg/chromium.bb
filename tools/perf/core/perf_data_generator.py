@@ -645,7 +645,9 @@ NON_WATERFALL_BENCHMARKS = {
         BenchmarkMetadata('tapted@chromium.org'),
     'sizes (win)': BenchmarkMetadata('grt@chromium.org',
                                      'Internals>PlatformIntegration'),
-    'sizes (linux)': BenchmarkMetadata('thestig@chromium.org'),
+    'sizes (linux)': BenchmarkMetadata(
+        'thestig@chromium.org', 'thomasanderson@chromium.org',
+        'Internals>PlatformIntegration'),
     'resource_sizes': BenchmarkMetadata(
         'agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org'),
     'supersize_archive': BenchmarkMetadata('agrieve@chromium.org'),
@@ -790,7 +792,7 @@ def update_benchmark_csv(file_path):
                      ub_module.UNDOCUMENTED_BENCHMARKS)))
     if ub_module.UNDOCUMENTED_BENCHMARKS - undocumented_benchmarks:
       error_message += (
-          'These benchmarks are already documented. Please remove them from'
+          'These benchmarks are already documented. Please remove them from '
           'the UNDOCUMENTED_BENCHMARKS list in undocumented_benchmarks.py: %s' %
           (','.join(b for b in ub_module.UNDOCUMENTED_BENCHMARKS -
                     undocumented_benchmarks)))
