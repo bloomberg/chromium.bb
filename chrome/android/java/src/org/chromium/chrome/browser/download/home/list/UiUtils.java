@@ -114,12 +114,112 @@ public final class UiUtils {
                 R.string.download_manager_list_item_description, displaySize, displayUrl);
     }
 
+    /** @return Whether or not {@code item} can show a thumbnail in the UI. */
+    public static boolean canHaveThumbnails(OfflineItem item) {
+        switch (item.filter) {
+            case OfflineItemFilter.FILTER_PAGE:
+            case OfflineItemFilter.FILTER_VIDEO:
+            case OfflineItemFilter.FILTER_IMAGE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /** @return A drawable resource id representing an icon for {@code item}. */
+    public static @DrawableRes int getIconForItem(OfflineItem item) {
+        return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
+                DownloadUtils.IconSize.DP_24);
+    }
+
+    /**
+     * Generates a caption for downloads that are in-progress.
+     * @param item       The {@link OfflineItem} to generate a caption for.
+     * @param abbreviate Whether or not to abbreviate the caption for smaller UI surfaces.
+     * @return           The {@link CharSequence} representing the caption.
+     */
+    public static CharSequence generateInProgressCaption(OfflineItem item, boolean abbreviate) {
+        return abbreviate ? generateInProgressShortCaption(item)
+                          : generateInProgressLongCaption(item);
+    }
+
+    /**
+     * Populates a {@link CircularProgressView} based on the contents of an {@link OfflineItem}.
+     * This is a helper glue method meant to consolidate the setting of {@link CircularProgressView}
+     * state.
+     * @param view The {@link CircularProgressView} to update.
+     * @param item The {@link OfflineItem} to use as the source of the update state.
+     */
+    public static void setProgressForOfflineItem(CircularProgressView view, OfflineItem item) {
+        Progress progress = item.progress;
+        final boolean indeterminate = progress != null && progress.isIndeterminate();
+        final int determinateProgress =
+                progress != null && !indeterminate ? progress.getPercentage() : 0;
+        final int activeProgress =
+                indeterminate ? CircularProgressView.INDETERMINATE : determinateProgress;
+        final int inactiveProgress = indeterminate ? 0 : determinateProgress;
+
+        @UiState
+        int shownState;
+        int shownProgress;
+
+        switch (item.state) {
+            case OfflineItemState.PENDING: // Intentional fallthrough.
+            case OfflineItemState.IN_PROGRESS:
+                shownState = CircularProgressView.UiState.RUNNING;
+                break;
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED:
+                shownState = CircularProgressView.UiState.RETRY;
+                break;
+            case OfflineItemState.PAUSED:
+                shownState = CircularProgressView.UiState.PAUSED;
+                break;
+            case OfflineItemState.INTERRUPTED:
+                shownState = item.isResumable ? CircularProgressView.UiState.PAUSED
+                                              : CircularProgressView.UiState.RETRY;
+                break;
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false : "Unexpected state for progress bar.";
+                shownState = CircularProgressView.UiState.RETRY;
+                break;
+        }
+
+        switch (item.state) {
+            case OfflineItemState.PAUSED: // Intentional fallthrough.
+            case OfflineItemState.PENDING:
+                shownProgress = inactiveProgress;
+                break;
+            case OfflineItemState.IN_PROGRESS:
+                shownProgress = activeProgress;
+                break;
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED:
+                shownProgress = 0;
+                break;
+            case OfflineItemState.INTERRUPTED:
+                shownProgress = item.isResumable ? inactiveProgress : 0;
+                break;
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false : "Unexpected state for progress bar.";
+                shownProgress = 0;
+                break;
+        }
+
+        // TODO(dtrainor): This will need to be updated once we nail down failure cases
+        // (specifically non-retriable failures).
+        view.setState(shownState);
+        view.setProgress(shownProgress);
+    }
+
     /**
      * Generates a detailed caption for downloads that are in-progress.
      * @param item The {@link OfflineItem} to generate a caption for.
      * @return     The {@link CharSequence} representing the caption.
      */
-    public static CharSequence generateInProgressLongCaption(OfflineItem item) {
+    private static CharSequence generateInProgressLongCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
         assert item.state != OfflineItemState.COMPLETE;
 
@@ -176,7 +276,7 @@ public final class UiUtils {
      * @param item The {@link OfflineItem} to generate a short caption for.
      * @return     The {@link CharSequence} representing the caption.
      */
-    public static CharSequence generateInProgressShortCaption(OfflineItem item) {
+    private static CharSequence generateInProgressShortCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
 
         switch (item.state) {
@@ -199,87 +299,5 @@ public final class UiUtils {
                 assert false;
                 return "";
         }
-    }
-
-    /** @return Whether or not {@code item} can show a thumbnail in the UI. */
-    public static boolean canHaveThumbnails(OfflineItem item) {
-        switch (item.filter) {
-            case OfflineItemFilter.FILTER_PAGE:
-            case OfflineItemFilter.FILTER_VIDEO:
-            case OfflineItemFilter.FILTER_IMAGE:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    /** @return A drawable resource id representing an icon for {@code item}. */
-    public static @DrawableRes int getIconForItem(OfflineItem item) {
-        return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
-                DownloadUtils.IconSize.DP_24);
-    }
-
-    /**
-     * Populates a {@link CircularProgressView} based on the contents of an {@link OfflineItem}.
-     * This is a helper glue method meant to consolidate the setting of {@link CircularProgressView}
-     * state.
-     * @param view The {@link CircularProgressView} to update.
-     * @param item The {@link OfflineItem} to use as the source of the update state.
-     */
-    public static void setProgressForOfflineItem(CircularProgressView view, OfflineItem item) {
-        Progress progress = item.progress;
-        final boolean indeterminate = progress != null && progress.isIndeterminate();
-        final int determinateProgress =
-                progress != null && !indeterminate ? progress.getPercentage() : 0;
-        final int activeProgress =
-                indeterminate ? CircularProgressView.INDETERMINATE : determinateProgress;
-        final int inactiveProgress = indeterminate ? 0 : determinateProgress;
-
-        @UiState
-        int shownState;
-        int shownProgress;
-
-        switch (item.state) {
-            case OfflineItemState.PENDING: // Intentional fallthrough.
-            case OfflineItemState.IN_PROGRESS:
-                shownState = CircularProgressView.UiState.RUNNING;
-                break;
-            case OfflineItemState.FAILED: // Intentional fallthrough.
-            case OfflineItemState.CANCELLED:
-                shownState = CircularProgressView.UiState.RETRY;
-                break;
-            case OfflineItemState.PAUSED:
-            case OfflineItemState.INTERRUPTED:
-                shownState = CircularProgressView.UiState.PAUSED;
-                break;
-            case OfflineItemState.COMPLETE: // Intentional fallthrough.
-            default:
-                assert false : "Unexpected state for progress bar.";
-                shownState = CircularProgressView.UiState.RETRY;
-                break;
-        }
-
-        switch (item.state) {
-            case OfflineItemState.INTERRUPTED: // Intentional fallthrough.
-            case OfflineItemState.PAUSED: // Intentional fallthrough.
-            case OfflineItemState.PENDING:
-                shownProgress = inactiveProgress;
-                break;
-            case OfflineItemState.IN_PROGRESS:
-                shownProgress = activeProgress;
-                break;
-            case OfflineItemState.FAILED: // Intentional fallthrough.
-            case OfflineItemState.CANCELLED: // Intentional fallthrough.
-                shownProgress = 0;
-                break;
-            case OfflineItemState.COMPLETE: // Intentional fallthrough.
-            default:
-                assert false : "Unexpected state for progress bar.";
-                shownProgress = 0;
-                break;
-        }
-
-        view.setState(shownState);
-        view.setProgress(shownProgress);
     }
 }
