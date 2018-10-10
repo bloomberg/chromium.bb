@@ -1340,16 +1340,20 @@ create_cursors(struct display *display)
 	const char *config_file;
 	struct weston_config *config;
 	struct weston_config_section *s;
-	int size;
+	int size = 32;
 	char *theme = NULL;
 	unsigned int i, j;
 	struct wl_cursor *cursor;
 
+	theme = getenv("XCURSOR_THEME");
+	if (getenv("XCURSOR_SIZE"))
+		size = atoi(getenv("XCURSOR_SIZE"));
+
 	config_file = weston_config_get_name_from_env();
 	config = weston_config_parse(config_file);
 	s = weston_config_get_section(config, "shell", NULL, NULL);
-	weston_config_section_get_string(s, "cursor-theme", &theme, NULL);
-	weston_config_section_get_int(s, "cursor-size", &size, 32);
+	weston_config_section_get_string(s, "cursor-theme", &theme, theme);
+	weston_config_section_get_int(s, "cursor-size", &size, size);
 	weston_config_destroy(config);
 
 	display->cursor_theme = wl_cursor_theme_load(theme, size, display->shm);
