@@ -43,11 +43,6 @@ MainThreadWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetFrame()->GetFrameScheduler()->GetTaskRunner(type);
 }
 
-// TODO(nhiroki): Add tests for termination.
-void MainThreadWorkletGlobalScope::Terminate() {
-  Dispose();
-}
-
 void MainThreadWorkletGlobalScope::AddConsoleMessage(
     ConsoleMessage* console_message) {
   GetFrame()->Console().AddMessage(console_message);
