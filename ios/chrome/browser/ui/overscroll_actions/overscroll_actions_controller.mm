@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
@@ -22,12 +23,16 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using fullscreen::features::ViewportAdjustmentExperiment;
 
 namespace {
 // This enum is used to record the overscroll actions performed by the user on
@@ -213,6 +218,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @property(nonatomic, strong) UIPanGestureRecognizer* panGestureRecognizer;
 // Whether the scroll view is dragged by the user.
 @property(nonatomic, assign) BOOL scrollViewDragged;
+// Whether the scroll view's viewport is being adjusted by the content inset.
+@property(nonatomic, readonly) BOOL viewportAdjustsContentInset;
 
 // Registers notifications to lock the overscroll actions on certain UI states.
 - (void)registerNotifications;
@@ -369,9 +376,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       TopContentInset(self.scrollView, -[self scrollView].contentOffset.y);
   // Start pulling (on top).
   CGFloat contentOffsetFromTheTop = [self scrollView].contentOffset.y;
-  if (![_webViewProxy shouldUseViewContentInset]) {
-    // Content offset is shifted for WKWebView when the web view's
-    // |shouldUseViewContentInset| is NO, to workaround bug with
+  if (!self.viewportAdjustsContentInset) {
+    // Content offset is shifted for WKWebView when
+    // self.viewportAdjustsContentInset is NO, to workaround bug with
     // UIScollView.contentInset (rdar://23584409).
     contentOffsetFromTheTop -= _webViewProxy.contentInset.top;
   }
@@ -560,6 +567,17 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 #pragma mark - Private
+
+- (BOOL)viewportAdjustsContentInset {
+  if (_webViewProxy.shouldUseViewContentInset)
+    return YES;
+  ViewportAdjustmentExperiment experiment =
+      fullscreen::features::GetActiveViewportExperiment();
+  return experiment == ViewportAdjustmentExperiment::SMOOTH_SCROLLING &&
+         ios::GetChromeBrowserProvider()
+             ->GetFullscreenProvider()
+             ->IsInitialized();
+}
 
 - (void)recordMetricForTriggeredAction:(OverscrollAction)action {
   switch (action) {
@@ -850,9 +868,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (CGFloat)initialContentInset {
   // Content inset is not used for displaying header if the web view's
-  // |shouldUseViewContentInset| is NO, instead the whole web view frame is
-  // changed.
-  if (!_scrollview && ![_webViewProxy shouldUseViewContentInset])
+  // |self.viewportAdjustsContentInset| is NO, instead the whole web view frame
+  // is changed.
+  if (!_scrollview && !self.viewportAdjustsContentInset)
     return 0;
   return self.initialHeaderInset;
 }
