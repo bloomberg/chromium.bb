@@ -337,3 +337,58 @@ testcase.fileSearchNotFound = function() {
     }
   ]);
 };
+
+/**
+ * Tests Files app opening without errors when there isn't Downloads which is
+ * the default volume.
+ */
+testcase.fileDisplayWithoutDownloadsVolume = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Unmount Downloads volume which the default volume.
+    function() {
+      sendTestMessage({name: 'unmountDownloads'}).then(this.next);
+    },
+    // Open Files app without specifying the initial directory/root.
+    function() {
+      openNewWindow(null, null, this.next);
+    },
+    // Wait for Files app to finish loading.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'failed to open new window');
+      appId = result;
+      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests Files app opening without errors when there are no volumes at all.
+ */
+testcase.fileDisplayWithoutVolumes = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Unmount all default volumes.
+    function() {
+      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
+    },
+    // Open Files app without specifying the initial directory/root.
+    function() {
+      openNewWindow(null, null, this.next);
+    },
+    // Wait for Files app to finish loading.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'failed to open new window');
+      appId = result;
+      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
