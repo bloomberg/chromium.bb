@@ -660,7 +660,9 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   // intersection.
   // TODO(mash): Redesign this animation to position the widget to cover the
   // entire screen, then animate the layer up into position. crbug.com/768437
-  fullscreen_widget_->GetNativeView()->SetBounds(GetPreferredWidgetBounds());
+  // The initial bounds of app list should be the same as that in closed state.
+  fullscreen_widget_->GetNativeView()->SetBounds(
+      GetPreferredWidgetBoundsForState(AppListViewState::CLOSED));
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
@@ -1301,32 +1303,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
     return;
 
   const display::Display display = GetDisplayNearestView();
-  const int display_height = display.size().height();
-  int target_state_y = 0;
-
-  switch (target_state) {
-    case AppListViewState::PEEKING:
-      target_state_y =
-          display_height - AppListConfig::instance().peeking_app_list_height();
-      break;
-    case AppListViewState::HALF:
-      target_state_y = std::max(0, display_height - kHalfAppListHeight);
-      break;
-    case AppListViewState::FULLSCREEN_ALL_APPS:
-    case AppListViewState::FULLSCREEN_SEARCH:
-      // The ChromeVox panel as well as the Docked Magnifier viewport affect the
-      // workarea of the display. We need to account for that when applist is in
-      // fullscreen to avoid being shown below them.
-      target_state_y = display.work_area().y() - display.bounds().y();
-      break;
-
-    case AppListViewState::CLOSED:
-      // The close animation is handled by the delegate.
-      return;
-    default:
-      break;
-  }
-
+  const int target_state_y = GetPreferredWidgetYForState(target_state);
   gfx::Rect target_bounds = fullscreen_widget_->GetNativeView()->bounds();
   const int original_state_y = target_bounds.origin().y();
   target_bounds.set_y(target_state_y);
@@ -1636,7 +1613,8 @@ bool AppListView::CloseKeyboardIfVisible() {
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
   // Set the |fullscreen_widget_| size to fit the new display metrics.
-  fullscreen_widget_->GetNativeView()->SetBounds(GetPreferredWidgetBounds());
+  fullscreen_widget_->GetNativeView()->SetBounds(
+      GetPreferredWidgetBoundsForState(app_list_state_));
 
   // Update the |fullscreen_widget_| bounds to accomodate the new work
   // area.
@@ -1706,25 +1684,42 @@ bool AppListView::ShouldIgnoreScrollEvents() {
          GetRootAppsGridView()->pagination_model()->has_transition();
 }
 
-gfx::Rect AppListView::GetPreferredWidgetBounds() {
+int AppListView::GetPreferredWidgetYForState(AppListViewState state) {
+  // Note that app list container fills the screen, so we can treat the
+  // container's y as the top of display.
   const display::Display display = GetDisplayNearestView();
   const gfx::Rect work_area_bounds = display.work_area();
+  switch (state) {
+    case AppListViewState::PEEKING:
+      return display.bounds().height() -
+             AppListConfig::instance().peeking_app_list_height();
+    case AppListViewState::HALF:
+      return std::max(0, display.bounds().height() - kHalfAppListHeight);
+    case AppListViewState::FULLSCREEN_ALL_APPS:
+    case AppListViewState::FULLSCREEN_SEARCH:
+      // The ChromeVox panel as well as the Docked Magnifier viewport affect the
+      // workarea of the display. We need to account for that when applist is in
+      // fullscreen to avoid being shown below them.
+      return work_area_bounds.y() - display.bounds().y();
+    case AppListViewState::CLOSED:
+      // Align the widget y with shelf y to avoid flicker in show animation. In
+      // side shelf mode, the widget y is the top of work area because the
+      // widget does not animate.
+      return (is_side_shelf_ ? work_area_bounds.y()
+                             : work_area_bounds.bottom()) -
+             display.bounds().y();
+  }
+}
 
-  // Set the widget height to the shelf height to replace the shelf background
-  // on show animation with no flicker. In shelf mode we set the bounds to the
-  // top of the screen because the widget does not animate. Then convert to
-  // local coordinates since the app list container fills the screen.
-  const int overlay_view_bounds_y =
-      (is_side_shelf_ ? work_area_bounds.y() : work_area_bounds.bottom()) -
-      display.bounds().y();
-
+gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
+    AppListViewState state) {
   // Use parent's width instead of display width to avoid 1 px gap (See
   // https://crbug.com/884889).
   CHECK(fullscreen_widget_);
   aura::Window* parent = fullscreen_widget_->GetNativeView()->parent();
   CHECK(parent);
-  return gfx::Rect(0, overlay_view_bounds_y, parent->bounds().width(),
-                   GetFullscreenStateHeight());
+  return gfx::Rect(0, GetPreferredWidgetYForState(state),
+                   parent->bounds().width(), GetFullscreenStateHeight());
 }
 
 }  // namespace app_list

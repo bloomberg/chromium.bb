@@ -339,9 +339,14 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
-  // Returns preferred fullscreen widget bounds in parent window. Note that this
-  // function should only be called after the widget is initialized.
-  gfx::Rect GetPreferredWidgetBounds();
+  // Returns preferred y of fullscreen widget bounds in parent window for the
+  // specified state.
+  int GetPreferredWidgetYForState(AppListViewState state);
+
+  // Returns preferred fullscreen widget bounds in parent window for the
+  // specified state. Note that this function should only be called after the
+  // widget is initialized.
+  gfx::Rect GetPreferredWidgetBoundsForState(AppListViewState state);
 
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
