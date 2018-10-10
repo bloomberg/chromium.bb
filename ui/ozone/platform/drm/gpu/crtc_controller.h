@@ -20,7 +20,6 @@
 
 namespace ui {
 
-class DrmBuffer;
 class DrmDevice;
 
 // Wrapper around a CRTC.

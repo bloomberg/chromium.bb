@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_BUFFER_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_DRM_BUFFER_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_DUMB_BUFFER_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_DRM_DUMB_BUFFER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,10 +23,10 @@ class DrmDevice;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class DrmBuffer {
+class DrmDumbBuffer {
  public:
-  DrmBuffer(const scoped_refptr<DrmDevice>& drm);
-  ~DrmBuffer();
+  DrmDumbBuffer(const scoped_refptr<DrmDevice>& drm);
+  ~DrmDumbBuffer();
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
@@ -56,9 +56,9 @@ class DrmBuffer {
   // Wrapper around the native pixel memory.
   sk_sp<SkSurface> surface_;
 
-  DISALLOW_COPY_AND_ASSIGN(DrmBuffer);
+  DISALLOW_COPY_AND_ASSIGN(DrmDumbBuffer);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_BUFFER_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_DUMB_BUFFER_H_
