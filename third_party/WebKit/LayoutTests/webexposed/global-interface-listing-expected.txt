@@ -5155,6 +5155,11 @@ interface PerformanceEventTiming : PerformanceEntry
     getter processingStart
     method constructor
     method toJSON
+interface PerformanceLayoutJank : PerformanceEntry
+    attribute @@toStringTag
+    getter fraction
+    method constructor
+    method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry
     attribute @@toStringTag
     getter attribution

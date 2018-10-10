@@ -81,6 +81,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kFirstInput;
   if (entry_type == PerformanceEntryNames::element)
     return kElement;
+  if (entry_type == PerformanceEntryNames::layoutJank)
+    return kLayoutJank;
   return kInvalid;
 }
 
