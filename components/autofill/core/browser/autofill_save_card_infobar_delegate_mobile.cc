@@ -41,7 +41,9 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
       card_label_(card.NetworkAndLastFourDigits()),
-      card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
+      card_sub_label_(card.AbbreviatedExpirationDateForDisplay(
+          !features::
+              IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled())) {
   if (upload) {
     DCHECK(!upload_save_card_callback_.is_null());
     DCHECK(local_save_card_callback_.is_null());

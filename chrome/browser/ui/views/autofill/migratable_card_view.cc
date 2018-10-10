@@ -127,10 +127,10 @@ void MigratableCardView::Init(
   card_network_and_last_four_digits->AddChildView(card_description.release());
 
   std::unique_ptr<views::Label> card_expiration =
-      std::make_unique<views::Label>(migratable_credit_card.credit_card()
-                                         .AbbreviatedExpirationDateForDisplay(),
-                                     views::style::CONTEXT_LABEL,
-                                     ChromeTextStyle::STYLE_SECONDARY);
+      std::make_unique<views::Label>(
+          migratable_credit_card.credit_card()
+              .AbbreviatedExpirationDateForDisplay(/*with_prefix=*/true),
+          views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
   AddChildView(card_expiration.release());
 
   delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
