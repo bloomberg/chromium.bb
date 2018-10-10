@@ -48,7 +48,8 @@ AutofillDriverIOS* AutofillDriverIOS::FromWebStateAndWebFrame(
     web::WebFrame* web_frame) {
   if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     return AutofillDriverIOSWebFrameFactory::FromWebState(web_state)
-        ->AutofillDriverIOSFromWebFrame(web_frame);
+        ->AutofillDriverIOSFromWebFrame(web_frame)
+        ->driver();
   } else {
     return AutofillDriverIOSWebState::FromWebState(web_state);
   }
