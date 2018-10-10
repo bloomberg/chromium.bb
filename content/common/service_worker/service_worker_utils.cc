@@ -13,6 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
@@ -179,6 +180,35 @@ bool ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
   }
   NOTREACHED() << static_cast<int>(cache_mode);
   return false;
+}
+
+// static
+blink::mojom::FetchCacheMode ServiceWorkerUtils::GetCacheModeFromLoadFlags(
+    int load_flags) {
+  if (load_flags & net::LOAD_DISABLE_CACHE)
+    return blink::mojom::FetchCacheMode::kNoStore;
+
+  if (load_flags & net::LOAD_VALIDATE_CACHE)
+    return blink::mojom::FetchCacheMode::kValidateCache;
+
+  if (load_flags & net::LOAD_BYPASS_CACHE) {
+    if (load_flags & net::LOAD_ONLY_FROM_CACHE)
+      return blink::mojom::FetchCacheMode::kUnspecifiedForceCacheMiss;
+    return blink::mojom::FetchCacheMode::kBypassCache;
+  }
+
+  if (load_flags & net::LOAD_SKIP_CACHE_VALIDATION) {
+    if (load_flags & net::LOAD_ONLY_FROM_CACHE)
+      return blink::mojom::FetchCacheMode::kOnlyIfCached;
+    return blink::mojom::FetchCacheMode::kForceCache;
+  }
+
+  if (load_flags & net::LOAD_ONLY_FROM_CACHE) {
+    DCHECK(!(load_flags & net::LOAD_SKIP_CACHE_VALIDATION));
+    DCHECK(!(load_flags & net::LOAD_BYPASS_CACHE));
+    return blink::mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict;
+  }
+  return blink::mojom::FetchCacheMode::kDefault;
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
