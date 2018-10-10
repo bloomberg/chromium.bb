@@ -89,7 +89,6 @@ class TestAutofillClient : public AutofillClient {
   // http:// URL.
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
-  bool IsAutofillSupported() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
   // Initializes UKM source from form_origin_. This needs to be called

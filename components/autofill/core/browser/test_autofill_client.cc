@@ -182,10 +182,6 @@ bool TestAutofillClient::ShouldShowSigninPromo() {
 
 void TestAutofillClient::ExecuteCommand(int id) {}
 
-bool TestAutofillClient::IsAutofillSupported() {
-  return true;
-}
-
 bool TestAutofillClient::AreServerCardsSupported() {
   return true;
 }

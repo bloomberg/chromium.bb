@@ -235,10 +235,6 @@ class AutofillClient : public RiskDataLoader {
   // Whether it is appropriate to show a signin promo for this user.
   virtual bool ShouldShowSigninPromo() = 0;
 
-  // Whether Autofill is currently supported by the client. If false, all
-  // features of Autofill are disabled, including Autocomplete.
-  virtual bool IsAutofillSupported() = 0;
-
   // Whether server side cards are supported by the client. If false, only
   // local cards will be shown.
   virtual bool AreServerCardsSupported() = 0;

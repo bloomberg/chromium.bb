@@ -118,7 +118,6 @@ class AwAutofillClient : public autofill::AutofillClient,
   void DidInteractWithNonsecureCreditCardInput() override;
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
-  bool IsAutofillSupported() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
 

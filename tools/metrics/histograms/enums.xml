@@ -51351,21 +51351,26 @@ Full version information for the fingerprint enum values:
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
-  <int value="2" label="JS dialog was suppressed in VR"/>
-  <int value="3" label="Media permission was suppressed in VR"/>
-  <int value="4" label="Permission request was suppressed in VR"/>
-  <int value="5" label="Quota permission was suppressed in VR"/>
+  <int value="2" label="JS dialog was suppressed in VR (obsolete in M71)"/>
+  <int value="3"
+      label="Media permission was suppressed in VR (obsolete in M71)"/>
+  <int value="4"
+      label="Permission request was suppressed in VR (obsolete in M71)"/>
+  <int value="5"
+      label="Quota permission was suppressed in VR (obsolete in M71)"/>
   <int value="6" label="HTTP authentication dialog was suppressed in VR"/>
-  <int value="7" label="Download permission was suppressed in VR"/>
+  <int value="7"
+      label="Download permission was suppressed in VR (obsolete in M71)"/>
   <int value="8" label="File access permission was suppressed in VR"/>
   <int value="9" label="Password manager was disabled in VR"/>
-  <int value="10" label="Autofill was disabled in VR"/>
+  <int value="10" label="Autofill was disabled in VR (obsolete in M71)"/>
   <int value="11" label="USB chooser dialog was suppressed in VR"/>
   <int value="12" label="SSL client certificate selector was suppressed in VR"/>
   <int value="13"
       label="Media router presentation request dialog was suppressed in VR"/>
   <int value="14" label="Context menu was suppressed in VR"/>
-  <int value="15" label="Permission Bubble was suppressed in VR"/>
+  <int value="15"
+      label="Permission Bubble was suppressed in VR (obsolete in M71)"/>
 </enum>
 
 <enum name="VRUnsupportedMode">

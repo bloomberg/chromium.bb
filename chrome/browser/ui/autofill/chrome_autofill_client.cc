@@ -342,11 +342,6 @@ void ChromeAutofillClient::ShowAutofillPopup(
     const std::vector<autofill::Suggestion>& suggestions,
     bool autoselect_first_suggestion,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
-  // TODO(https://crbug.com/779126): We currently don't support rendering popups
-  // while in VR, so we just don't show it.
-  if (!IsAutofillSupported())
-    return;
-
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
@@ -494,17 +489,6 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
     }
 #endif
   }
-}
-
-bool ChromeAutofillClient::IsAutofillSupported() {
-  // VR browsing supports the autofill behind a flag. When the flag is removed
-  // we can remove this condition.
-  if (vr::VrTabHelper::IsUiSuppressedInVr(web_contents(),
-                                          vr::UiSuppressedElement::kAutofill)) {
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace autofill

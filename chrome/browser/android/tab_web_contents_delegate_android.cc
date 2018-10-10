@@ -278,10 +278,6 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          source, vr::UiSuppressedElement::kJavascriptDialog)) {
-    return nullptr;
-  }
   if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog) ||
       vr::VrTabHelper::IsInVr(source)) {
     return JavaScriptDialogTabHelper::FromWebContents(source);
@@ -301,12 +297,6 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          web_contents, vr::UiSuppressedElement::kMediaPermission)) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
-    return;
-  }
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, std::move(callback), nullptr);
 }

@@ -86,7 +86,6 @@ extern const base::Feature kTrustedWebActivityPostMessage;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;
-extern const base::Feature kVrBrowsingNativeAndroidUi;
 extern const base::Feature kVrBrowsingTabsView;
 
 }  // namespace android
