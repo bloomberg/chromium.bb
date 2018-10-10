@@ -3612,7 +3612,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessPasswordManagerBrowserTest,
 
 // Verify that there is no renderer kill when filling out a password on a
 // blob: URL.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithViewsFeature,
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoRendererKillWithBlobURLFrames) {
   // Start from a page without a password form.
   NavigateToFile("/password/other.html");
