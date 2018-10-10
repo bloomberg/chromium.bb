@@ -371,6 +371,7 @@ class BlinkPerfAccessibility(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(
+    component='Blink>Bindings',
     emails=['jbroman@chromium.org', 'yukishiino@chromium.org',
             'haraken@chromium.org'],
     documentation_url='https://bit.ly/blink-perf-benchmarks')
@@ -497,7 +498,8 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
     return 'blink_perf.paint'
 
 
-@benchmark.Info(emails=['jbroman@chromium.org',
+@benchmark.Info(component='Blink>Bindings',
+                emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
