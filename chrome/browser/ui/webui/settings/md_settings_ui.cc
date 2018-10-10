@@ -226,6 +226,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
+            profile->GetPrefs(),
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
                 GetForProfile(profile),
             std::make_unique<

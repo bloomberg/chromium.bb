@@ -30,6 +30,13 @@ cr.define('settings', function() {
      * PWA.
      */
     setUpAndroidSms() {}
+
+    /**
+     * Returns the value of the preference controlling whether Smart Lock may be
+     * used to sign-in the user (as opposed to unlocking the screen).
+     * @return {!Promise<boolean>}
+     */
+    getSmartLockSignInEnabled() {}
   }
 
   /**
@@ -65,6 +72,11 @@ cr.define('settings', function() {
     /** @override */
     setUpAndroidSms() {
       chrome.send('setUpAndroidSms');
+    }
+
+    /** @override */
+    getSmartLockSignInEnabled() {
+      return cr.sendWithPromise('getSmartLockSignInEnabled');
     }
   }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -297,10 +299,17 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[proximity_auth::prefs::kEasyUnlockProximityThreshold] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)[proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
+
+  // Only whitelist the Smart Lock 'sign-in enabled' pref in the pre-Multidevice
+  // case. In the Multidevice case, JS access to this pref is restricted.
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSettings)) {
+    (*s_whitelist)
+        [proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
+            settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  }
 
   // Accessibility.
   (*s_whitelist)[ash::prefs::kAccessibilitySpokenFeedbackEnabled] =
