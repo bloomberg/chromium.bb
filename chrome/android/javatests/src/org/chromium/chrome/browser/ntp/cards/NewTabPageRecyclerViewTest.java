@@ -24,7 +24,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -140,7 +139,6 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    @FlakyTest(message = "crbug.com/875544")
     public void testClickSuggestion() throws InterruptedException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
@@ -149,11 +147,9 @@ public class NewTabPageRecyclerViewTest {
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
         int suggestionPosition = getLastCardPosition();
         final View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
-        ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
-            @Override
-            public void run() {
-                TouchCommon.singleClickView(suggestionView);
-            }
+        ChromeTabUtils.waitForTabPageLoaded(mTab, () -> {
+            TestTouchUtils.performClickOnMainSync(
+                    InstrumentationRegistry.getInstrumentation(), suggestionView);
         });
         assertEquals(suggestion.mUrl, mTab.getUrl());
     }
