@@ -690,8 +690,11 @@ GURL AutocompleteMatch::ImageUrl() const {
 }
 
 void AutocompleteMatch::ApplyPedal() {
+  // TODO(orinj): It may make more sense to start from a clean slate and
+  // apply only the bits of state relevant to the Pedal, rather than
+  // eliminating parts of an existing match that are no longer useful.
+
   type = Type::PEDAL;
-  contents = pedal->GetLabelStrings().suggestion_contents;
   destination_url = pedal->GetNavigationUrl();
 
   // Normally this is computed by the match using a TemplateURLService
@@ -700,6 +703,13 @@ void AutocompleteMatch::ApplyPedal() {
   // meaningful like indicate the viewable scope of a settings page.  So here
   // we keep the URL exactly as the Pedal specifies it.
   stripped_destination_url = destination_url;
+
+  // Note: Always use empty classifications for empty text and non-empty
+  // classifications for non-empty text.
+  contents = pedal->GetLabelStrings().suggestion_contents;
+  contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
+  description.clear();
+  description_class.clear();
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
