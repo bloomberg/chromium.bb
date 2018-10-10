@@ -1259,7 +1259,6 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
         "swarming": {
@@ -2406,7 +2405,6 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
         "swarming": {
@@ -3638,7 +3636,6 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
         "experiment_percentage": 50,
@@ -4774,7 +4771,6 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
         "swarming": {
