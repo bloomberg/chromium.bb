@@ -465,14 +465,7 @@ void RenderViewImpl::Initialize(
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_ANDROID)
-  // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
-  // HandleNavigation codepath.
-  // Renderer-created RenderViews have a ShowCallback because they send a Show
-  // request (ViewHostMsg_ShowWidget, ViewHostMsg_ShowFullscreenWidget, or
-  // FrameHostMsg_ShowCreatedWindow) to the browser to attach them to the UI
-  // there. Browser-created RenderViews do not send a Show request to the
-  // browser, so have no such callback.
-  was_created_by_renderer_ = !!show_callback;
+  bool has_show_callback = !!show_callback;
 #endif
 
   WebFrame* opener_frame =
@@ -574,6 +567,17 @@ void RenderViewImpl::Initialize(
   page_zoom_level_ = 0;
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
+
+#if defined(OS_ANDROID)
+  // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
+  // HandleNavigation codepath.
+  // Renderer-created RenderViews have a ShowCallback because they send a Show
+  // request (ViewHostMsg_ShowWidget, ViewHostMsg_ShowFullscreenWidget, or
+  // FrameHostMsg_ShowCreatedWindow) to the browser to attach them to the UI
+  // there. Browser-created RenderViews do not send a Show request to the
+  // browser, so have no such callback.
+  was_created_by_renderer_ = has_show_callback;
+#endif
 }
 
 RenderViewImpl::~RenderViewImpl() {
