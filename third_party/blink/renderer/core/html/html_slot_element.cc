@@ -173,75 +173,13 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
-HeapVector<Member<Node>>
-HTMLSlotElement::DeleteCommonAssignedNodeAndReturnAddedAssignedNode(
-    const HeapVector<Member<Node>>& new_assigned_nodes) {
-  DCHECK(!assigned_nodes_candidates_.IsEmpty());
-  if (new_assigned_nodes.IsEmpty())
-    return new_assigned_nodes;
-  HeapVector<Member<Node>> added_assigned_nodes = new_assigned_nodes;
-  for (auto node : new_assigned_nodes) {
-    if (assigned_nodes_candidates_.Contains(node)) {
-      assigned_nodes_candidates_.erase(node);
-      added_assigned_nodes.EraseAt(added_assigned_nodes.Find(node));
-    }
-  }
-  return added_assigned_nodes;
-}
-
 void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
-  // There are the following 2 groups for each of assignednodescandidates:
-  // Previous AssignedNodesCandidates:     AssignedNodesCandidates:
-  // [{old_assigned_nodes} {same_nodes}]-> [{same_nodes} {new_assigned_nodes}]
-
-  // Classify above three groups and insert and call slot change for
-  // old_assigned_nodes
-  HeapVector<Member<Node>> added_assigned_nodes;
-  if (ContainingShadowRoot()) {
-    if (!assigned_nodes_candidates_.IsEmpty()) {
-      added_assigned_nodes =
-          DeleteCommonAssignedNodeAndReturnAddedAssignedNode(nodes);
-      ContainingShadowRoot()
-          ->GetSlotAssignment()
-          .CallSlotChangeAfterRemovedFromAssignFunction(*this);
-      ContainingShadowRoot()->GetSlotAssignment().DeleteSlotInChildSlotMap(
-          *this);
-    } else {
-      added_assigned_nodes = nodes;
-    }
-  }
-  // Refrash all assigned_nodes_candidates_
-  assigned_nodes_candidates_.clear();
-  for (Member<Node> child : nodes) {
-    assigned_nodes_candidates_.insert(child);
-  }
-  // Insert and call slot change for new_assigned_nodes
-  if (ContainingShadowRoot()) {
-    // TODO(crbug.com/869308): Don't call SetNeedsAssignmentRecalc if we can
-    // detect all possible slotchange surely
+  if (SupportsAssignment())
     ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
-    for (auto child : added_assigned_nodes) {
-      ContainingShadowRoot()->GetSlotAssignment().InsertSlotInChildSlotMap(
-          *this, *child);
-    }
-    ContainingShadowRoot()
-        ->GetSlotAssignment()
-        .CallSlotChangeAfterAdditionFromAssignFunction(*this,
-                                                       added_assigned_nodes);
+  assigned_nodes_candidates_.clear();
+  for (auto& node : nodes) {
+    assigned_nodes_candidates_.insert(node);
   }
-}
-
-bool HTMLSlotElement::ContainsInAssignedNodesCandidates(
-    Node& host_child) const {
-  return assigned_nodes_candidates_.Contains(&host_child);
-}
-
-void HTMLSlotElement::SignalSlotChange() {
-  DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
-}
-
-void HTMLSlotElement::SignalSlotChangeAfterRemoved() {
-  DidSlotChangeAfterRemovedFromShadowTree();
 }
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
