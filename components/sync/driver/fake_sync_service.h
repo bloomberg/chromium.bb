@@ -73,6 +73,7 @@ class FakeSyncService : public SyncService {
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
   UserShare* GetUserShare() const override;
   void ReenableDatatype(ModelType type) override;
+  void ReadyForStartChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;

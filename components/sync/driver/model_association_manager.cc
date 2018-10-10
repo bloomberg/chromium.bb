@@ -171,11 +171,18 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
     const ShutdownReason reason = dtc_and_reason.second;
     DVLOG(1) << "ModelAssociationManager: stop " << dtc->name() << " due to "
              << ShutdownReasonToString(reason);
-    StopDatatype(SyncError(), reason, dtc, barrier_closure);
+    StopDatatypeImpl(SyncError(), reason, dtc, barrier_closure);
   }
 }
 
-void ModelAssociationManager::StopDatatype(
+void ModelAssociationManager::StopDatatype(ModelType type,
+                                           ShutdownReason shutdown_reason,
+                                           SyncError error) {
+  DataTypeController* dtc = controllers_->find(type)->second.get();
+  StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
+}
+
+void ModelAssociationManager::StopDatatypeImpl(
     const SyncError& error,
     ShutdownReason shutdown_reason,
     DataTypeController* dtc,
@@ -286,7 +293,7 @@ void ModelAssociationManager::Stop(ShutdownReason shutdown_reason) {
         dtc->state() != DataTypeController::STOPPING) {
       // We don't really wait until all datatypes have been fully stopped, which
       // is only required (and in fact waited for) when Initialize() is called.
-      StopDatatype(SyncError(), shutdown_reason, dtc, base::DoNothing());
+      StopDatatypeImpl(SyncError(), shutdown_reason, dtc, base::DoNothing());
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
@@ -356,7 +363,8 @@ void ModelAssociationManager::TypeStartCallback(
     DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
     desired_types_.Remove(type);
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    StopDatatype(local_merge_result.error(), STOP_SYNC, dtc, base::DoNothing());
+    StopDatatypeImpl(local_merge_result.error(), STOP_SYNC, dtc,
+                     base::DoNothing());
     NotifyDelegateIfReadyForConfigure();
 
     // Update configuration result.
@@ -428,9 +436,9 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                                 ModelTypeToHistogramInt(dtc->type()),
                                 static_cast<int>(MODEL_TYPE_COUNT));
-      StopDatatype(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                             "Association timed out.", dtc->type()),
-                   STOP_SYNC, dtc, base::DoNothing());
+      StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                                 "Association timed out.", dtc->type()),
+                       STOP_SYNC, dtc, base::DoNothing());
     }
   }
 

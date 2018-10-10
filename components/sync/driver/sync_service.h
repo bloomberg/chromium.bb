@@ -311,6 +311,12 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // preferred state of a datatype, and is not persisted across restarts.
   virtual void ReenableDatatype(ModelType type) = 0;
 
+  // Informs the data type manager that the ready-for-start status of a
+  // controller has changed. If the controller is not ready any more, it will
+  // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
+  // started again.
+  virtual void ReadyForStartChanged(ModelType type) = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS
   //////////////////////////////////////////////////////////////////////////////

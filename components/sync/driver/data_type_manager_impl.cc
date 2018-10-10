@@ -112,6 +112,23 @@ void DataTypeManagerImpl::ReenableType(ModelType type) {
     return;
 
   DVLOG(1) << "Reenabling " << ModelTypeToString(type);
+  ForceReconfiguration();
+}
+
+void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
+  const auto& dtc_iter = controllers_->find(type);
+  if (dtc_iter == controllers_->end())
+    return;
+
+  if (dtc_iter->second->ReadyForStart()) {
+    ForceReconfiguration();
+  } else {
+    // Stop the datatype
+    model_association_manager_.StopDatatype(type, DISABLE_SYNC, SyncError());
+  }
+}
+
+void DataTypeManagerImpl::ForceReconfiguration() {
   needs_reconfigure_ = true;
   last_requested_context_.reason = CONFIGURE_REASON_PROGRAMMATIC;
   ProcessReconfigure();

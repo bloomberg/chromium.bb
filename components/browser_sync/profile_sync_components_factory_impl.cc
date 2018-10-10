@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
+#include "components/autofill/core/browser/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
@@ -177,7 +178,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     if (!wallet_disabled) {
       if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
         controllers.push_back(
-            CreateWebDataModelTypeControllerWithInMemorySupport(
+            CreateWalletModelTypeControllerWithInMemorySupport(
                 syncer::AUTOFILL_WALLET_DATA,
                 base::BindRepeating(&AutofillWalletDelegateFromDataService)));
       } else {
@@ -194,7 +195,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
       if (base::FeatureList::IsEnabled(
               switches::kSyncUSSAutofillWalletMetadata)) {
-        controllers.push_back(CreateWebDataModelTypeController(
+        controllers.push_back(CreateWalletModelTypeController(
             syncer::AUTOFILL_WALLET_METADATA,
             base::BindRepeating(
                 &AutofillWalletMetadataDelegateFromDataService)));
@@ -486,13 +487,28 @@ ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
                                 base::RetainedRef(web_data_service_on_disk_))));
 }
 
+std::unique_ptr<ModelTypeController>
+ProfileSyncComponentsFactoryImpl::CreateWalletModelTypeController(
+    syncer::ModelType type,
+    const base::RepeatingCallback<
+        base::WeakPtr<syncer::ModelTypeControllerDelegate>(
+            autofill::AutofillWebDataService*)>& delegate_from_web_data) {
+  return std::make_unique<AutofillWalletModelTypeController>(
+      type,
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          db_thread_,
+          base::BindRepeating(delegate_from_web_data,
+                              base::RetainedRef(web_data_service_on_disk_))),
+      sync_client_);
+}
+
 std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
-    CreateWebDataModelTypeControllerWithInMemorySupport(
+    CreateWalletModelTypeControllerWithInMemorySupport(
         syncer::ModelType type,
         const base::RepeatingCallback<
             base::WeakPtr<syncer::ModelTypeControllerDelegate>(
                 autofill::AutofillWebDataService*)>& delegate_from_web_data) {
-  return std::make_unique<ModelTypeController>(
+  return std::make_unique<AutofillWalletModelTypeController>(
       type, /*delegate_on_disk=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
@@ -502,7 +518,8 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,
-                              base::RetainedRef(web_data_service_in_memory_))));
+                              base::RetainedRef(web_data_service_in_memory_))),
+      sync_client_);
 }
 
 }  // namespace browser_sync
