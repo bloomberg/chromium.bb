@@ -537,6 +537,15 @@ enum WriteStreamDataResult {
   WRITE_FAILED,    // Trying to write nonexistent data of a stream
 };
 
+enum StreamType {
+  // Bidirectional streams allow for data to be sent in both directions.
+  BIDIRECTIONAL,
+
+  // Unidirectional streams carry data in one direction only.
+  WRITE_UNIDIRECTIONAL,
+  READ_UNIDIRECTIONAL,
+};
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TYPES_H_

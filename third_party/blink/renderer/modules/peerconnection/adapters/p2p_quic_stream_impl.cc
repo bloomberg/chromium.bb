@@ -10,7 +10,7 @@ namespace blink {
 
 P2PQuicStreamImpl::P2PQuicStreamImpl(quic::QuicStreamId id,
                                      quic::QuicSession* session)
-    : quic::QuicStream(id, session, /*is_static=*/false) {}
+    : quic::QuicStream(id, session, /*is_static=*/false, quic::BIDIRECTIONAL) {}
 
 P2PQuicStreamImpl::~P2PQuicStreamImpl() {}
 

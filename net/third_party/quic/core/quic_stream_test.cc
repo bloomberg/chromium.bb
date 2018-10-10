@@ -44,8 +44,8 @@ const size_t kDataLen = 9;
 
 class TestStream : public QuicStream {
  public:
-  TestStream(QuicStreamId id, QuicSession* session)
-      : QuicStream(id, session, /*is_static=*/false) {}
+  TestStream(QuicStreamId id, QuicSession* session, StreamType type)
+      : QuicStream(id, session, /*is_static=*/false, type) {}
 
   void OnDataAvailable() override {}
 
@@ -83,7 +83,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
     QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
         session_->config(), initial_flow_control_window_bytes_);
 
-    stream_ = new TestStream(kTestStreamId, session_.get());
+    stream_ = new TestStream(kTestStreamId, session_.get(), BIDIRECTIONAL);
     // session_ now owns stream_.
     session_->ActivateStream(QuicWrapUnique(stream_));
     // Ignore resetting when session_ is terminated.
