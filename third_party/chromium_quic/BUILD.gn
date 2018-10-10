@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 config("chromium_quic_config") {
+  cflags = [ "-Wno-error=attributes" ]
   include_dirs = [
     "//third_party/chromium_quic/src",
     "//third_party/chromium_quic/src/third_party/boringssl/src/include",
