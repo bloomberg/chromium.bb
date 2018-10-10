@@ -2264,15 +2264,28 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
 
   // Remove the source folder view if there is only 1 item in it, since the
   // source folder will be deleted after its only child item removed from it.
+  GridIndex target_override = target;
   if (source_folder->ChildItemCount() == 1u) {
     const int deleted_folder_index =
-        view_model_.GetIndexOfView(activated_folder_item_view());
+        view_model_.GetIndexOfView(activated_folder_item_view_);
+    const GridIndex deleted_folder_grid_index =
+        GetIndexOfView(activated_folder_item_view_);
     DeleteItemViewAtIndex(deleted_folder_index, false /* sanitize */);
 
     // Adjust |target_model_index| if it is beyond the deleted folder index.
     if (target_model_index > deleted_folder_index) {
       --target_model_index;
-      --target_item_index;
+
+      // Do not decrement |target_item_index| since the folder item has not been
+      // removed from the item list yet.
+    }
+
+    // Adjust |target_override| if it is beyond the deleted folder grid index in
+    // the same page.
+    if (IsAppsGridGapEnabled() &&
+        target.page == deleted_folder_grid_index.page &&
+        target.slot > deleted_folder_grid_index.slot) {
+      --target_override.slot;
     }
   }
 
@@ -2286,7 +2299,7 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
   model_->MoveItemToFolderAt(reparent_item, "", target_position);
   view_model_.Move(current_model_index, target_model_index);
   if (IsAppsGridGapEnabled())
-    view_structure_.Move(item_view, target);
+    view_structure_.Move(item_view, target_override);
   ReorderChildView(item_view,
                    GetAppListItemViewIndexOffset() + target_model_index);
 
