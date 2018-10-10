@@ -26,7 +26,8 @@ import java.util.concurrent.Executors;
 
 /** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
-    private static Boolean sIsDisabledForPolicy;
+    private static boolean sIsDisableForPolicy =
+            !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedAppLifecycle sFeedAppLifecycle;
     private static FeedProcessScope sFeedProcessScope;
@@ -77,16 +78,11 @@ public class FeedProcessScopeFactory {
      *         within the current session.
      */
     public static boolean isFeedProcessEnabled() {
-        return !sIsDisabledForPolicy
+        return !sIsDisableForPolicy
                 && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
     }
 
     private static void initialize() {
-        if (sIsDisabledForPolicy == null) {
-            sIsDisabledForPolicy =
-                    !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
-        }
-
         assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
                 && sFeedAppLifecycle == null;
         if (!isFeedProcessEnabled()) return;
@@ -142,11 +138,6 @@ public class FeedProcessScopeFactory {
             NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator,
             FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener) {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
-        // If you're using this, we presume that you want the Feed to be turned on.
-        if (sIsDisabledForPolicy == null) {
-            sIsDisabledForPolicy = false;
-        }
-
         sFeedScheduler = feedScheduler;
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
@@ -184,7 +175,7 @@ public class FeedProcessScopeFactory {
         // Should only be subscribed while it was enabled. A change should mean articles are now
         // disabled.
         assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
-        sIsDisabledForPolicy = true;
+        sIsDisableForPolicy = true;
         destroy();
     }
 
