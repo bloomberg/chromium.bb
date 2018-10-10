@@ -2,11 +2,12 @@
 
 <p>
 You must declare the <code>"declarativeNetRequest"</code> permission in the
-extension <a href="manifest">manifest</a> to use this API, along with the
-necessary <a href="declare_permissions">host permissions</a>. You must also
-declare the <code>"declarative_net_request"</code> manifest key, which should be
-a dictionary with a single key called <code>"rule_resources"</code>. It should
-be a list containing a single element, the path to a JSON file containing the
+extension <a href="manifest">manifest</a> to use this API.
+<a href="declare_permissions">Host permissions</a> are required if the extension
+wants to redirect requests. You must also declare the
+<code>"declarative_net_request"</code> manifest key, which should be a
+dictionary with a single key called <code>"rule_resources"</code>. It should be
+a list containing a single element, the path to a JSON file containing the
 declarative rules to use, as shown below.
 </p>
 
@@ -203,7 +204,11 @@ ruleset. The number of such patterns an extension can add is bound by the
     page; resulting in less memory consumption.
   </li>
   <li>
-    Unlike the webRequest API, blocking and redirecting requests using the
+    Unlike the webRequest API, blocking requests using the declarativeNetRequest
+    API requires no host permissions.
+  </li>
+  <li>
+    Unlike the webRequest API, redirecting requests using the
     declarativeNetRequest API requires host permissions to both the request URL
     and the request initiator.
   </li>

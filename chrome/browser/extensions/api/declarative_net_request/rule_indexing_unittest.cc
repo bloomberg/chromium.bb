@@ -132,11 +132,10 @@ class RuleIndexingTest : public DNRTestBase {
     if (rules_value_) {
       WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
                               kJSONRulesFilename, *rules_value_,
-                              {URLPattern::kAllUrlsPattern});
+                              {} /* hosts */);
     } else {
       WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
-                              kJSONRulesFilename, rules_list_,
-                              {URLPattern::kAllUrlsPattern});
+                              kJSONRulesFilename, rules_list_, {} /* hosts */);
     }
 
     // Overwrite the JSON rules file with some invalid json.
