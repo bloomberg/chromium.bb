@@ -55,6 +55,8 @@ NSString* const kHorizontalSizeClass = @"sizeclass";
 NSString* const kSignedIn = @"signIn";
 NSString* const kIsShowingPDF = @"pdf";
 NSString* const kVideoPlaying = @"avplay";
+NSString* const kIncognitoTabCount = @"incognito_tab_count";
+NSString* const kRegularTabCount = @"regular_tab_count";
 
 // Whether the crash reporter is enabled.
 bool g_crash_reporter_enabled = false;
@@ -276,6 +278,16 @@ void SetCurrentlySignedIn(bool signedIn) {
   } else {
     [[CrashReportUserApplicationState sharedInstance] removeValue:kSignedIn];
   }
+}
+
+void SetRegularTabCount(int tabCount) {
+  [[CrashReportUserApplicationState sharedInstance] setValue:kRegularTabCount
+                                                   withValue:tabCount];
+}
+
+void SetIncognitoTabCount(int tabCount) {
+  [[CrashReportUserApplicationState sharedInstance] setValue:kIncognitoTabCount
+                                                   withValue:tabCount];
 }
 
 void MediaStreamPlaybackDidStart() {
