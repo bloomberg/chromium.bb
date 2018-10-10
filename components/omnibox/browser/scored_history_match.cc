@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -641,12 +642,11 @@ float ScoredHistoryMatch::GetDocumentSpecificityScore(
     size_t num_matching_pages) const {
   // A mapping from the number of matching pages to their associated document
   // specificity scores.  See omnibox_field_trial.h for more details.
-  CR_DEFINE_STATIC_LOCAL(OmniboxFieldTrial::NumMatchesScores,
-                         default_matches_to_specificity,
-                         (OmniboxFieldTrial::HQPNumMatchesScores()));
+  static base::NoDestructor<OmniboxFieldTrial::NumMatchesScores>
+      default_matches_to_specificity(OmniboxFieldTrial::HQPNumMatchesScores());
   OmniboxFieldTrial::NumMatchesScores* matches_to_specificity =
       matches_to_specificity_override_ ? matches_to_specificity_override_
-                                       : &default_matches_to_specificity;
+                                       : default_matches_to_specificity.get();
 
   // The floating point value below must be less than the lowest score the
   // server would send down.
@@ -662,11 +662,11 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
                                                  float specificity_score) {
   // |relevance_buckets| gives a mapping from intemerdiate score to the final
   // relevance score.
-  CR_DEFINE_STATIC_LOCAL(ScoreMaxRelevances, default_relevance_buckets,
-                         (GetHQPBuckets()));
+  static base::NoDestructor<ScoreMaxRelevances> default_relevance_buckets(
+      GetHQPBuckets());
   ScoreMaxRelevances* relevance_buckets = relevance_buckets_override_
                                               ? relevance_buckets_override_
-                                              : &default_relevance_buckets;
+                                              : default_relevance_buckets.get();
   DCHECK(!relevance_buckets->empty());
   DCHECK_EQ(0.0, (*relevance_buckets)[0].first);
 

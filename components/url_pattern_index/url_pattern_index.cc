@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -36,49 +37,45 @@ using ElementTypeMap = base::flat_map<proto::ElementType, flat::ElementType>;
 
 // Maps proto::ActivationType to flat::ActivationType.
 const ActivationTypeMap& GetActivationTypeMap() {
-  CR_DEFINE_STATIC_LOCAL(
-      ActivationTypeMap, activation_type_map,
-      (
-          {
-              {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
-              {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
-              // ELEMHIDE is not supported.
-              {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
-              // GENERICHIDE is not supported.
-              {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
-              {proto::ACTIVATION_TYPE_GENERICBLOCK,
-               flat::ActivationType_GENERIC_BLOCK},
-          },
-          base::KEEP_FIRST_OF_DUPES));
-  return activation_type_map;
+  static base::NoDestructor<ActivationTypeMap> activation_type_map(
+      std::initializer_list<ActivationTypeMap::value_type>{
+          {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
+          {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
+          // ELEMHIDE is not supported.
+          {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
+          // GENERICHIDE is not supported.
+          {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
+          {proto::ACTIVATION_TYPE_GENERICBLOCK,
+           flat::ActivationType_GENERIC_BLOCK},
+      },
+      base::KEEP_FIRST_OF_DUPES);
+  return *activation_type_map;
 }
 
 // Maps proto::ElementType to flat::ElementType.
 const ElementTypeMap& GetElementTypeMap() {
-  CR_DEFINE_STATIC_LOCAL(
-      ElementTypeMap, element_type_map,
-      (
-          {
-              {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
-              {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
-              {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
-              {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
-              {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
-              {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
-              {proto::ELEMENT_TYPE_XMLHTTPREQUEST,
-               flat::ElementType_XMLHTTPREQUEST},
-              {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
-               flat::ElementType_OBJECT_SUBREQUEST},
-              {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
-              {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
-              {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
-              {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
-              // Filtering popups is not supported.
-              {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
-              {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
-          },
-          base::KEEP_FIRST_OF_DUPES));
-  return element_type_map;
+  static base::NoDestructor<ElementTypeMap> element_type_map(
+      std::initializer_list<ElementTypeMap::value_type>{
+          {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
+          {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
+          {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
+          {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
+          {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
+          {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
+          {proto::ELEMENT_TYPE_XMLHTTPREQUEST,
+           flat::ElementType_XMLHTTPREQUEST},
+          {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
+           flat::ElementType_OBJECT_SUBREQUEST},
+          {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
+          {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
+          {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
+          {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
+          // Filtering popups is not supported.
+          {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
+          {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
+      },
+      base::KEEP_FIRST_OF_DUPES);
+  return *element_type_map;
 }
 
 flat::ActivationType ProtoToFlatActivationType(proto::ActivationType type) {

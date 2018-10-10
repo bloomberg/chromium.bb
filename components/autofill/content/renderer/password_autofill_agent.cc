@@ -571,7 +571,7 @@ void AnnotateFormsAndFieldsWithSignatures(WebLocalFrame* frame,
 
 // Returns true iff there is a password field in |frame|.
 bool HasPasswordField(const WebLocalFrame& frame) {
-  CR_DEFINE_STATIC_LOCAL(WebString, kPassword, ("password"));
+  static base::NoDestructor<WebString> kPassword("password");
 
   const WebElementCollection elements = frame.GetDocument().All();
   for (WebElement element = elements.FirstItem(); !element.IsNull();
@@ -579,7 +579,7 @@ bool HasPasswordField(const WebLocalFrame& frame) {
     if (element.IsFormControlElement()) {
       const WebFormControlElement& control =
           element.To<WebFormControlElement>();
-      if (control.FormControlTypeForAutofill() == kPassword)
+      if (control.FormControlTypeForAutofill() == *kPassword)
         return true;
     }
   }

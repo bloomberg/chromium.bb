@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -146,8 +147,8 @@ bool EntityDataTraits::HasValue(const EntityData& value) {
 }
 
 const EntityData& EntityDataTraits::DefaultValue() {
-  CR_DEFINE_STATIC_LOCAL(EntityData, default_instance, ());
-  return default_instance;
+  static base::NoDestructor<EntityData> default_instance;
+  return *default_instance;
 }
 
 void PrintTo(const EntityData& entity_data, std::ostream* os) {
