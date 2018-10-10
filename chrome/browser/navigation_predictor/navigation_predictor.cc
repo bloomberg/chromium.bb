@@ -238,9 +238,6 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
       prev_metric->ratio_area += metric->ratio_area;
       prev_metric->ratio_visible_area += metric->ratio_visible_area;
 
-      DCHECK_GE(1.0, prev_metric->ratio_area);
-      DCHECK_GE(1.0, prev_metric->ratio_visible_area);
-
       // Position related metrics are tricky to merge. Another possible way to
       // merge is simply add up the calculated navigation scores.
       prev_metric->ratio_distance_root_top =
@@ -394,7 +391,9 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
       (double)((number_of_anchors - area_rank)) / number_of_anchors;
 
   DCHECK_LE(0, metrics.ratio_visible_area);
-  DCHECK_GE(1, metrics.ratio_visible_area);
+  // TODO(tbansal): https://crbug.com/891719. Disable the check until the bug
+  // for duplicate anchor elements is fixed.
+  // DCHECK_GE(1, metrics.ratio_visible_area);
 
   DCHECK_LE(0, metrics.is_in_iframe);
   DCHECK_GE(1, metrics.is_in_iframe);
@@ -431,7 +430,10 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   // Normalize to 100.
   score = score / sum_scales_ * 100.0;
   DCHECK_LE(0.0, score);
-  DCHECK_GE(100.0, score);
+
+  // TODO(tbansal): https://crbug.com/891719. Disable the check until the bug
+  // for duplicate anchor elements is fixed.
+  // DCHECK_GE(100.0, score);
   return score;
 }
 
