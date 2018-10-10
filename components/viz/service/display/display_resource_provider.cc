@@ -638,6 +638,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   for (ResourceId local_id : unused) {
     auto it = resources_.find(local_id);
     CHECK(it != resources_.end());
+
+    resource_sk_image_.erase(local_id);
+
     ChildResource& resource = it->second;
 
     ResourceId child_id = resource.transferable.id;
@@ -855,6 +858,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->transferable.format),
         kPremul_SkAlphaType, nullptr);
+    resource_provider_->resource_sk_image_[resource_id] = sk_image_;
     return;
   }
 
@@ -874,6 +878,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
   sk_bitmap.setImmutable();
   sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
+  resource_provider_->resource_sk_image_[resource_id] = sk_image_;
 }
 
 DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
