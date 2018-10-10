@@ -191,6 +191,7 @@ source_set("tests") {
     "injected_event_handler_unittest.cc",
     "screen_provider_unittest.cc",
     "server_window_unittest.cc",
+    "topmost_window_observer_unittest.cc",
     "user_activity_monitor_unittest.cc",
     "window_delegate_impl_unittest.cc",
     "window_service_observer_unittest.cc",
