@@ -1649,11 +1649,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_PASSPHRASE_TYPE_KEYSTORE" desc="Option to encrypt only passwords, using your Google credentials.">
         Encrypt passwords with Google credentials
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_TYPE_FROZEN" desc="Option to encrypt all data, using your Google password frozen on the substituted date.">
-        Encrypt all with Google password as of <ph name="TIME">%1$s<ex>Oct 3, 2014</ex></ph>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_FROZEN" desc="Option to encrypt sync data, using your Google password frozen on the substituted date.">
+        Encrypt synced data with Google password as of <ph name="TIME">%1$s<ex>Oct 3, 2014</ex></ph>
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM" desc="Option to encrypt all sync data with a custom passphrase.">
-        Encrypt all synced data with your own sync passphrase
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM" desc="Option to encrypt sync data with a custom passphrase.">
+        Encrypt synced data with your own sync passphrase
       </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM_DIALOG_TITLE" desc="Dialog title for custom passphrase creation.">
         Create passphrase
@@ -1662,7 +1662,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Google Account
       </message>
       <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
-        Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
+        Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT" desc="Hint for the passphrase field when user is to type in a passphrase. [CHAR-LIMIT=30]">
         Passphrase
@@ -1680,7 +1680,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Passphrases do not match
       </message>
       <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_RESET_INSTRUCTIONS" desc="Inform user how to change their encryption setting.">
-        To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
+        Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
+
+To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
       </message>
       <message name="IDS_SYNC_PASSPHRASE_INCORRECT" desc="Inform the user that the passphrase they entered for sync is incorrect. [CHAR-LIMIT=40]">
         Incorrect passphrase
