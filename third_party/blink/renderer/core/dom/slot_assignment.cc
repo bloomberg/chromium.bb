@@ -37,8 +37,8 @@ void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
 
   ++slot_count_;
   needs_collect_slots_ = true;
+
   if (owner_->IsManualSlotting()) {
-    DidAddSlotInternalInManualMode(slot);
     SetNeedsAssignmentRecalc();
     return;
   }
@@ -59,14 +59,12 @@ void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
 
   DCHECK_GT(slot_count_, 0u);
   --slot_count_;
+  needs_collect_slots_ = true;
+
   if (owner_->IsManualSlotting()) {
-    CallSlotChangeAfterRemoved(slot);
-    DeleteSlotInChildSlotMap(slot);
     SetNeedsAssignmentRecalc();
-    needs_collect_slots_ = true;
     return;
   }
-  needs_collect_slots_ = true;
 
   DCHECK(GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
   DidRemoveSlotInternal(slot, slot.GetName(), SlotMutationType::kRemoved);
@@ -121,13 +119,6 @@ void SlotAssignment::DidAddSlotInternal(HTMLSlotElement& slot) {
     // case 3
     slot.CheckFallbackAfterInsertedIntoShadowTree();
   }
-}
-
-void SlotAssignment::DidAddSlotInternalInManualMode(HTMLSlotElement& slot) {
-  for (auto node : slot.AssignedNodesCandidate()) {
-    InsertSlotInChildSlotMap(slot, *node);
-  }
-  CallSlotChangeAfterAddition(slot);
 }
 
 void SlotAssignment::DidRemoveSlotInternal(
@@ -258,10 +249,11 @@ void SlotAssignment::RecalcAssignment() {
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
       if (owner_->IsManualSlotting()) {
-        auto it = node_to_assigned_slot_candidate_in_tree_order_.find(&child);
-        if (it != node_to_assigned_slot_candidate_in_tree_order_.end()) {
-          DCHECK(!it.Get()->value.IsEmpty());
-          slot = it.Get()->value[0];
+        for (auto candidate_slot : Slots()) {
+          if (candidate_slot->AssignedNodesCandidate().Contains(&child)) {
+            slot = candidate_slot;
+            break;
+          }
         }
       } else {
         slot = FindSlotByName(child.SlotName());
@@ -302,7 +294,7 @@ HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) {
   if (owner_->IsUserAgent())
     return FindSlotInUserAgentShadow(node);
   return owner_->IsManualSlotting()
-             ? FindFirstAssignedSlot(const_cast<Node&>(node))
+             ? FindSlotInManualSlotting(const_cast<Node&>(node))
              : FindSlotByName(node.SlotName());
 }
 
@@ -322,134 +314,11 @@ HTMLSlotElement* SlotAssignment::FindSlotInUserAgentShadow(
   return user_agent_default_slot;
 }
 
-HTMLSlotElement* SlotAssignment::FindSlotChange(HTMLSlotElement& slot,
-                                                Node& child) {
-  // Find the changed slot to call slot change event
-
-  // There are the following 3 cases for addition:
-  //         Before:              After:                           Return
-  // case 1: []                -> [*slot*]                         *slot*
-  // case 2: [old_active, ...] -> [*slot*, old_active, ...]        old_active
-  // case 3: [old_active, ...] -> [old_active, ..., *slot*, ...]   nullptr
-
-  // Also, there are the following 3 cases for removal:
-  //         Before:                            After:             Return
-  // case 1: [*slot*]                        -> []                 *slot*
-  // case 2: [*slot*, new_active, ...]       -> [new_active, ...]  new_active
-  // case 3: [new_active, ..., *slot*, ...]  -> [new_active, ...]  nullptr
-
-  auto it = node_to_assigned_slot_candidate_in_tree_order_.find(&child);
-  if (it != node_to_assigned_slot_candidate_in_tree_order_.end()) {
-    HeapVector<Member<HTMLSlotElement>>& assigned_slots = it.Get()->value;
-    if (assigned_slots[0] == slot) {
-      if (assigned_slots.size() == 1) {
-        // case1
-        return &slot;
-      }
-      // case2
-      return assigned_slots[1];
-    }
+HTMLSlotElement* SlotAssignment::FindSlotInManualSlotting(const Node& node) {
+  for (auto& slot : Slots()) {
+    if (slot->AssignedNodesCandidate().Contains(const_cast<Node*>(&node)))
+      return slot;
   }
-  // case3 or no slot for the child
-  return nullptr;
-}
-
-void SlotAssignment::CallSlotChangeAfterRemovedFromAssignFunction(
-    HTMLSlotElement& slot) {
-  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    if (slot.AssignedNodesCandidate().Contains(&child)) {
-      CallSlotChangeIfNeeded(slot, child);
-    }
-  }
-}
-void SlotAssignment::CallSlotChangeAfterAdditionFromAssignFunction(
-    HTMLSlotElement& slot,
-    const HeapVector<Member<Node>>& added_assign_nodes) {
-  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    if (added_assign_nodes.Contains(&child)) {
-      CallSlotChangeIfNeeded(slot, child);
-    }
-  }
-}
-
-void SlotAssignment::CallSlotChangeAfterAddition(HTMLSlotElement& slot) {
-  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    CallSlotChangeIfNeeded(slot, child);
-  }
-}
-
-void SlotAssignment::CallSlotChangeIfNeeded(HTMLSlotElement& slot,
-                                            Node& child) {
-  auto* changed_slot = FindSlotChange(slot, child);
-  if (changed_slot) {
-    slot.SignalSlotChange();
-    if (changed_slot != slot)
-      changed_slot->SignalSlotChange();
-  }
-}
-
-void SlotAssignment::CallSlotChangeAfterRemoved(HTMLSlotElement& slot) {
-  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    auto* changed_slot = FindSlotChange(slot, child);
-    if (changed_slot) {
-      slot.SignalSlotChangeAfterRemoved();
-      if (changed_slot != slot)
-        changed_slot->SignalSlotChange();
-    }
-  }
-}
-
-void SlotAssignment::DeleteSlotInChildSlotMap(HTMLSlotElement& slot) {
-  for (auto itr = slot.AssignedNodesCandidate().begin();
-       itr != slot.AssignedNodesCandidate().end(); ++itr) {
-    auto it_child = node_to_assigned_slot_candidate_in_tree_order_.find(*itr);
-    if (it_child != node_to_assigned_slot_candidate_in_tree_order_.end()) {
-      HeapVector<Member<HTMLSlotElement>>& assigned_slots =
-          it_child.Get()->value;
-      auto position = assigned_slots.Find(slot);
-      if (assigned_slots.size() == 1) {
-        node_to_assigned_slot_candidate_in_tree_order_.erase(it_child);
-        continue;
-      }
-      it_child.Get()->value.EraseAt(position);
-    }
-  }
-}
-
-void SlotAssignment::InsertSlotInChildSlotMap(HTMLSlotElement& new_slot,
-                                              Node& child) {
-  auto child_it = node_to_assigned_slot_candidate_in_tree_order_.find(&child);
-  if (child_it == node_to_assigned_slot_candidate_in_tree_order_.end()) {
-    HeapVector<Member<HTMLSlotElement>> assigned_slot_;
-    assigned_slot_.push_back(new_slot);
-    node_to_assigned_slot_candidate_in_tree_order_.Set(&child, assigned_slot_);
-  } else {
-    // Find the correct spot for the slot, and the assigned_slots's contents
-    // line up in tree order, so that the first assigned slot in tree order
-    // can be found for each child.
-    unsigned int assigned_slot_order = 0;
-    HeapVector<Member<HTMLSlotElement>>& assigned_slots = child_it.Get()->value;
-    for (auto slot : Slots()) {
-      if (slot == new_slot) {
-        if (slot != assigned_slots[assigned_slot_order])
-          assigned_slots.insert(assigned_slot_order, new_slot);
-        break;
-      }
-      if (slot == assigned_slots[assigned_slot_order]) {
-        assigned_slot_order++;
-        if (assigned_slot_order == assigned_slots.size()) {
-          assigned_slots.push_back(new_slot);
-          break;
-        }
-      }
-    }
-  }
-}
-
-HTMLSlotElement* SlotAssignment::FindFirstAssignedSlot(Node& node) {
-  auto it = node_to_assigned_slot_candidate_in_tree_order_.find(&node);
-  if (it != node_to_assigned_slot_candidate_in_tree_order_.end())
-    return *it.Get()->value.begin();
   return nullptr;
 }
 
@@ -479,7 +348,6 @@ void SlotAssignment::Trace(blink::Visitor* visitor) {
   visitor->Trace(slots_);
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);
-  visitor->Trace(node_to_assigned_slot_candidate_in_tree_order_);
 }
 
 }  // namespace blink

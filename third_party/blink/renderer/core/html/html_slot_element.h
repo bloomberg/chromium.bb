@@ -104,15 +104,10 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static const AtomicString& UserAgentDefaultSlotName();
 
   // For imperative Shadow DOM distribution APIs
-  HeapVector<Member<Node>> DeleteCommonAssignedNodeAndReturnAddedAssignedNode(
-      const HeapVector<Member<Node>>& new_assigned_nodes);
   void assign(HeapVector<Member<Node>> nodes);
-  bool ContainsInAssignedNodesCandidates(Node&) const;
-  HeapHashSet<Member<Node>>& AssignedNodesCandidate() {
+  const HeapHashSet<Member<Node>>& AssignedNodesCandidate() const {
     return assigned_nodes_candidates_;
   }
-  void SignalSlotChange();
-  void SignalSlotChangeAfterRemoved();
 
   void Trace(blink::Visitor*) override;
 
