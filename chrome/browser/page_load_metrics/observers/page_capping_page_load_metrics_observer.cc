@@ -98,6 +98,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PageCappingPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  last_data_use_time_ = clock_->NowTicks();
   web_contents_ = navigation_handle->GetWebContents();
   page_cap_ = GetPageLoadCappingBytesThreshold(false /* media_page_load */);
   url_host_ = navigation_handle->GetURL().host();
@@ -109,13 +110,14 @@ PageCappingPageLoadMetricsObserver::OnCommit(
   return page_load_metrics::PageLoadMetricsObserver::CONTINUE_OBSERVING;
 }
 
-void PageCappingPageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  last_request_complete_time_ = clock_->NowTicks();
-  if (extra_request_complete_info.was_cached)
-    return;
-  network_bytes_ += extra_request_complete_info.raw_body_bytes;
+void PageCappingPageLoadMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  last_data_use_time_ = clock_->NowTicks();
+  for (auto const& resource : resources)
+    network_bytes_ += resource->delta_bytes;
+
+  DCHECK_LE(0u, network_bytes_);
   MaybeCreate();
 }
 
@@ -355,9 +357,9 @@ void PageCappingPageLoadMetricsObserver::TimeToExpire(
   DCHECK(time_to_expire);
   DCHECK_EQ(*time_to_expire, base::TimeDelta());
   DCHECK_EQ(PageCappingState::kInfoBarShown, page_capping_state_);
-  DCHECK(last_request_complete_time_);
+  DCHECK(last_data_use_time_);
   auto expiration_time =
-      (last_request_complete_time_.value() + GetPageLoadCappingTimeout());
+      (last_data_use_time_.value() + GetPageLoadCappingTimeout());
   if (expiration_time < clock_->NowTicks())
     return;
 

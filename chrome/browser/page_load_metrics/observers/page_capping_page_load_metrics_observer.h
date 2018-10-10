@@ -74,8 +74,9 @@ class PageCappingPageLoadMetricsObserver
 
  private:
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnDidFinishSubFrameNavigation(
@@ -165,7 +166,7 @@ class PageCappingPageLoadMetricsObserver
   // render frames of this page.
   std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr> handles_;
 
-  base::Optional<base::TimeTicks> last_request_complete_time_;
+  base::Optional<base::TimeTicks> last_data_use_time_;
 
   // Default clock unless SetClockForTesting is called.
   const base::TickClock* clock_;
