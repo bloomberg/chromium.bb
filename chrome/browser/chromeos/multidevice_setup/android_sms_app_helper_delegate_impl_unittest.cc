@@ -83,8 +83,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
       chromeos::android_sms::GetAndroidMessagesURLWithParams(),
       web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal,
       web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
-      true /* override_previous_user_uninstall */,
-      true /* bypass_service_worker_check */);
+      true);  // override_previous_user_uninstall
   EXPECT_EQ(expected_apps_to_install,
             test_pending_app_manager()->install_requests());
   EXPECT_EQ(ContentSetting::CONTENT_SETTING_ALLOW, GetNotificationSetting());

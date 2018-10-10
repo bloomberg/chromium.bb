@@ -55,10 +55,7 @@ void AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp(
           chromeos::android_sms::GetAndroidMessagesURLWithParams(),
           web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal,
           web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
-          true /* override_previous_user_uninstall */,
-          // The service worker does not load in time for the installability
-          // check so we bypass it as a workaround.
-          true /* bypass_service_worker_check */),
+          true),  // override_previous_user_uninstall
       base::BindOnce(&AndroidSmsAppHelperDelegateImpl::OnAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), launch_on_install));
 }
