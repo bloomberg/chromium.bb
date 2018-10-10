@@ -6,6 +6,11 @@
 
 #include <jni.h>
 
+#include "chrome/browser/android/feed/feed_host_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
+#include "components/feed/content/feed_host_service.h"
+#include "components/feed/core/feed_logging_metrics.h"
 #include "jni/FeedLoggingBridge_jni.h"
 
 namespace feed {
@@ -17,11 +22,19 @@ static jlong JNI_FeedLoggingBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_this,
     const JavaParamRef<jobject>& j_profile) {
-  FeedLoggingBridge* native_logging_bridge = new FeedLoggingBridge();
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  FeedHostService* host_service =
+      FeedHostServiceFactory::GetForBrowserContext(profile);
+  FeedLoggingMetrics* feed_logging_metrics = host_service->GetLoggingMetrics();
+  FeedLoggingBridge* native_logging_bridge =
+      new FeedLoggingBridge(feed_logging_metrics);
   return reinterpret_cast<intptr_t>(native_logging_bridge);
 }
 
-FeedLoggingBridge::FeedLoggingBridge() = default;
+FeedLoggingBridge::FeedLoggingBridge(FeedLoggingMetrics* feed_logging_metrics)
+    : feed_logging_metrics_(feed_logging_metrics) {
+  DCHECK(feed_logging_metrics_);
+}
 
 FeedLoggingBridge::~FeedLoggingBridge() = default;
 

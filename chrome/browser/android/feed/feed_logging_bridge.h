@@ -9,12 +9,14 @@
 
 namespace feed {
 
+class FeedLoggingMetrics;
+
 // Native counterpart of FeedLoggingBridge.java. Holds non-owning pointers
 // to native implementation, to which operations are delegated. This bridge is
 // instantiated, owned, and destroyed from Java.
 class FeedLoggingBridge {
  public:
-  FeedLoggingBridge();
+  explicit FeedLoggingBridge(FeedLoggingMetrics* feed_logging_metrics);
   ~FeedLoggingBridge();
 
   void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
@@ -67,6 +69,8 @@ class FeedLoggingBridge {
                              const base::android::JavaRef<jobject>& j_this);
 
  private:
+  FeedLoggingMetrics* feed_logging_metrics_;
+
   DISALLOW_COPY_AND_ASSIGN(FeedLoggingBridge);
 };
 

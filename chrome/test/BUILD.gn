@@ -11,6 +11,7 @@ import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
+import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
@@ -2954,6 +2955,11 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//components/offline_pages/core/prefetch:test_support",
     ]
+  }
+
+  if (enable_feed_in_chrome) {
+    sources +=
+        [ "../browser/android/feed/history/feed_history_helper_unittest.cc" ]
   }
 
   if (is_android) {

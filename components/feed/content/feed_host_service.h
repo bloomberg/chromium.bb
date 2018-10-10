@@ -12,6 +12,7 @@
 #include "components/feed/core/feed_content_database.h"
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_journal_database.h"
+#include "components/feed/core/feed_logging_metrics.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,7 +31,8 @@ class FeedHostService : public KeyedService {
                   std::unique_ptr<FeedSchedulerHost> scheduler_host,
                   std::unique_ptr<FeedContentDatabase> content_database,
                   std::unique_ptr<FeedJournalDatabase> journal_database,
-                  std::unique_ptr<FeedOfflineHost> offline_host);
+                  std::unique_ptr<FeedOfflineHost> offline_host,
+                  std::unique_ptr<FeedLoggingMetrics> logging_metrics);
   ~FeedHostService() override;
 
   FeedImageManager* GetImageManager();
@@ -39,6 +41,7 @@ class FeedHostService : public KeyedService {
   FeedContentDatabase* GetContentDatabase();
   FeedJournalDatabase* GetJournalDatabase();
   FeedOfflineHost* GetOfflineHost();
+  FeedLoggingMetrics* GetLoggingMetrics();
 
  private:
   std::unique_ptr<FeedImageManager> image_manager_;
@@ -50,6 +53,8 @@ class FeedHostService : public KeyedService {
   // Depends on the |scheduler_host_|, so must come after in this file to be
   // destroyed before the scheduler.
   std::unique_ptr<FeedOfflineHost> offline_host_;
+
+  std::unique_ptr<FeedLoggingMetrics> logging_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
 };
