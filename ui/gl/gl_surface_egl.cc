@@ -1483,9 +1483,14 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
   if (presentation_time_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
     return false;
   }
-  *presentation_time = base::TimeTicks() +
-                       base::TimeDelta::FromNanoseconds(presentation_time_ns);
-  *presentation_flags = presentation_flags_;
+  if (presentation_time_ns == EGL_TIMESTAMP_INVALID_ANDROID) {
+    *presentation_time = base::TimeTicks::Now();
+  } else {
+    *presentation_time = base::TimeTicks() +
+                         base::TimeDelta::FromNanoseconds(presentation_time_ns);
+    *presentation_flags = presentation_flags_;
+  }
+  DCHECK(!presentation_time->is_null());
   return true;
 }
 
