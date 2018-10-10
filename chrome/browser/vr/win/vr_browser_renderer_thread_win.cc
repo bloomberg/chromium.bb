@@ -19,6 +19,10 @@ void VRBrowserRendererThreadWin::StartOverlay(
   compositor->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_info));
 
   if (!IsRunning()) {
+    if (!renderer_.InitializeOnMainThread()) {
+      return;
+    }
+
     Start();
   }
 
@@ -30,6 +34,7 @@ void VRBrowserRendererThreadWin::StartOverlay(
 }
 
 void VRBrowserRendererThreadWin::CleanUp() {
+  renderer_.Cleanup();
   overlay_ = nullptr;
 }
 
@@ -37,7 +42,8 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
     device::mojom::ImmersiveOverlayPtrInfo overlay) {
   overlay_.Bind(std::move(overlay));
 
-  renderer_.Initialize();
+  renderer_.InitializeOnGLThread();
+
   overlay_->SetOverlayAndWebXRVisibility(true, true);
   overlay_->RequestNextOverlayPose(base::BindOnce(
       &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
@@ -45,9 +51,17 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
 
 void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
   renderer_.Render();
-  overlay_->SubmitOverlayTexture(data->frame_id, renderer_.GetTexture(),
-                                 renderer_.GetLeft(), renderer_.GetRight(),
-                                 base::BindOnce([](bool) {}));
+  overlay_->SubmitOverlayTexture(
+      data->frame_id, renderer_.GetTexture(), renderer_.GetLeft(),
+      renderer_.GetRight(),
+      base::BindOnce(&VRBrowserRendererThreadWin::SubmitResult,
+                     base::Unretained(this)));
+}
+
+void VRBrowserRendererThreadWin::SubmitResult(bool success) {
+  if (!success) {
+    renderer_.ResetMemoryBuffer();
+  }
   overlay_->RequestNextOverlayPose(base::BindOnce(
       &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
 }
