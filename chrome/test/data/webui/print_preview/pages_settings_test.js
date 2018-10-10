@@ -11,6 +11,8 @@ cr.define('pages_settings_test', function() {
     ClearInput: 'clear input',
     TabOrder: 'tab order',
     ClickingCustomFocusesInput: 'clicking custom focuses input',
+    InputNotDisabledOnValidityChange: 'input not disabled on validity change',
+    IgnoreInputKeyEvents: 'ignore input key events',
   };
 
   const suiteName = 'PagesSettingsTest';
@@ -186,6 +188,10 @@ cr.define('pages_settings_test', function() {
           .then(function() {
             validateState(oneToHundred, syntaxError, true);
             return setupInput('--', 100);
+          })
+          .then(function() {
+            validateState(oneToHundred, syntaxError, true);
+            return setupInput(' 1 1 ', 100);
           })
           .then(function() {
             validateState(oneToHundred, syntaxError, true);
@@ -407,6 +413,93 @@ cr.define('pages_settings_test', function() {
             pagesSection.$.customRadioButton.click();
             return whenCustomInputFocused;
           });
+    });
+
+    // Verifies that the input is never disabled when the validity of the
+    // setting changes.
+    test(assert(TestNames.InputNotDisabledOnValidityChange), function() {
+      // In the real UI, the print preview app listens for this event from this
+      // section and others and sets disabled to true if any change from true to
+      // false is detected. Imitate this here. Since we are only interacting
+      // with the pages input, at no point should the input be disabled, as it
+      // will lose focus.
+      pagesSection.addEventListener('setting-valid-changed', function(e) {
+        assertFalse(pagesSection.$.pageSettingsCustomInput.disabled);
+        pagesSection.set('disabled', !e.detail);
+        assertFalse(pagesSection.$.pageSettingsCustomInput.disabled);
+      });
+
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+
+      // Set a valid input
+      return setupInput('1', 3)
+          .then(function() {
+            validateState([1], '', false);
+            // Set invalid input
+            return setupInput('12', 3);
+          })
+          .then(function() {
+            validateState([1], limitError + '3', true);
+            // Restore valid input
+            return setupInput('1', 3);
+          })
+          .then(function() {
+            validateState([1], '', false);
+            // Invalid input again
+            return setupInput('8', 3);
+          })
+          .then(function() {
+            validateState([1], limitError + '3', true);
+            // Clear input
+            return setupInput('', 3);
+          })
+          .then(function() {
+            validateState([1], '', false);
+            // Set valid input
+            return setupInput('2', 3);
+          })
+          .then(function() {
+            validateState([2], '', false);
+          });
+    });
+
+    // Verifies that the arrow keys do not change the radio button selection
+    // when the custom input is the event target.
+    test(assert(TestNames.IgnoreInputKeyEvents), function() {
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+
+      /**
+       * @param {number} code The key code
+       * @param {string} key The key
+       * @return {!Promise} Promise that resolves when key event occurs.
+       */
+      const waitForKey = function(code, key) {
+        const whenKeyDown = test_util.eventToPromise(
+            'keydown', pagesSection.$.pageSettingsCustomInput);
+        MockInteractions.keyEventOn(input, 'keydown', code, [], key);
+        return whenKeyDown;
+      };
+
+      // Select a custom input and focus the input section.
+      return setupInput('1', 3)
+          .then(function() {
+            return waitForKey(40, 'ArrowDown');
+          })
+          .then(function() {
+            assertFalse(pagesSection.$.allRadioButton.checked);
+            assertTrue(pagesSection.$.customRadioButton.checked);
+            return waitForKey(37, 'ArrowLeft');
+          })
+          .then(function() {
+            assertFalse(pagesSection.$.allRadioButton.checked);
+            assertTrue(pagesSection.$.customRadioButton.checked);
+            return waitForKey(38, 'ArrowUp');
+          })
+          .then(function() {
+            assertFalse(pagesSection.$.allRadioButton.checked);
+            assertTrue(pagesSection.$.customRadioButton.checked);
+          });
+
     });
   });
 

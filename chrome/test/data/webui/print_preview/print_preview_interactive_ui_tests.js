@@ -148,6 +148,17 @@ TEST_F('PrintPreviewPagesSettingsTest', 'TabOrder', function() {
   this.runMochaTest(pages_settings_test.TestNames.TabOrder);
 });
 
+TEST_F(
+    'PrintPreviewPagesSettingsTest', 'InputNotDisabledOnValidityChange',
+    function() {
+      this.runMochaTest(
+          pages_settings_test.TestNames.InputNotDisabledOnValidityChange);
+    });
+
+TEST_F('PrintPreviewPagesSettingsTest', 'IgnoreInputKeyEvents', function() {
+  this.runMochaTest(pages_settings_test.TestNames.IgnoreInputKeyEvents);
+});
+
 PrintPreviewNumberSettingsSectionInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
