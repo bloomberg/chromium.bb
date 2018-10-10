@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -138,7 +139,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(),
-        &TemplateURLServiceFactory::BuildInstanceFor);
+        base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);

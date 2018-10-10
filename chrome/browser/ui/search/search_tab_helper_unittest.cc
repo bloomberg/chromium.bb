@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -117,9 +118,10 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
-    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
-                              BuildMockProfileSyncService);
+                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        ProfileSyncServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildMockProfileSyncService));
     return builder.Build().release();
   }
 
