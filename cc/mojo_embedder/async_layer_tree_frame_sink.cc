@@ -218,6 +218,14 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
         "SubmitCompositorFrame", "surface_id", local_surface_id_.ToString());
   }
 
+  // The trace_id is negated in order to keep the Graphics.Pipeline and
+  // Event.Pipeline flows separated.
+  const int64_t trace_id = ~frame.metadata.begin_frame_ack.trace_id;
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"),
+                         "Event.Pipeline", TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_OUT, "step",
+                         "SubmitHitTestData");
+
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
       tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()

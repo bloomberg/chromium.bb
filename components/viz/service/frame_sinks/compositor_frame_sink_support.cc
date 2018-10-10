@@ -437,6 +437,12 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
                                             last_begin_frame_args_);
   }
 
+  const int64_t trace_id = ~frame.metadata.begin_frame_ack.trace_id;
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"),
+                         "Event.Pipeline", TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "ReceiveHitTestData");
+
   // QueueFrame can fail in unit tests, so SubmitHitTestRegionList has to be
   // called before that.
   frame_sink_manager()->SubmitHitTestRegionList(
