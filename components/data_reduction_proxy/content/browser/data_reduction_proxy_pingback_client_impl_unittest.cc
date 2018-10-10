@@ -55,6 +55,8 @@ static const int64_t kTotalPageSizeBytes = 20000;
 static const float kCachedFraction = 0.5;
 static const int kCrashProcessId = 1;
 static const int64_t kRendererMemory = 1024;
+static const int64_t kTouchCount = 10;
+static const int64_t kScrollCount = 20;
 static const int kNumRequestInfo = 2;
 static const DataReductionProxyData::RequestInfo first_request_info(
     DataReductionProxyData::RequestInfo::Protocol::HTTP,
@@ -178,7 +180,8 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
         kCachedFraction /* cached_fraction */, app_background_occurred,
         opt_out_occurred, kRendererMemory,
         crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID,
-        PageloadMetrics_PageEndReason_END_NONE);
+        PageloadMetrics_PageEndReason_END_NONE, kTouchCount /* touch_count */,
+        kScrollCount /* scroll_count */);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -315,6 +318,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
   EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
   EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
+  EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
+  EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
   EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
   EXPECT_EQ(data_page_id, pageload_metrics.page_id());
   EXPECT_EQ(kNumRequestInfo,
@@ -484,6 +489,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
     EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
     EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
+    EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
+    EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
     EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
     EXPECT_EQ(kNumRequestInfo,
               pageload_metrics.main_frame_network_request_size());

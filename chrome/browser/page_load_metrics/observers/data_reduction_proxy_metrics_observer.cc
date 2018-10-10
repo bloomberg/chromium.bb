@@ -142,6 +142,8 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       process_id_(base::kNullProcessId),
       renderer_memory_usage_kb_(0),
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
+      touch_count_(0),
+      scroll_count_(0),
       weak_ptr_factory_(this) {}
 
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
@@ -434,7 +436,8 @@ void DataReductionProxyMetricsObserver::SendPingback(
       network_bytes, original_network_bytes, total_page_size_bytes,
       cached_fraction, app_background_occurred, opted_out_,
       renderer_memory_usage_kb_, host_id,
-      ConvertPLMPageEndReasonToProto(info.page_end_reason));
+      ConvertPLMPageEndReasonToProto(info.page_end_reason), touch_count_,
+      scroll_count_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
@@ -597,6 +600,20 @@ void DataReductionProxyMetricsObserver::OnEventOccurred(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opted_out_ = true;
+}
+
+void DataReductionProxyMetricsObserver::OnUserInput(
+    const blink::WebInputEvent& event) {
+  if (event.GetType() == blink::WebInputEvent::kMouseDown ||
+      event.GetType() == blink::WebInputEvent::kGestureTap) {
+    touch_count_++;
+  }
+
+  if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+    scroll_count_++;
+  }
 }
 
 void DataReductionProxyMetricsObserver::ProcessMemoryDump(

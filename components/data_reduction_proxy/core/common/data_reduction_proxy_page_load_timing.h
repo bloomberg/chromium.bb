@@ -36,7 +36,9 @@ struct DataReductionProxyPageLoadTiming {
       bool opt_out_occurred,
       int64_t renderer_memory_usage_kb,
       int host_id,
-      PageloadMetrics_PageEndReason page_end_reason);
+      PageloadMetrics_PageEndReason page_end_reason,
+      uint32_t touch_count,
+      uint32_t scroll_count);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -85,6 +87,10 @@ struct DataReductionProxyPageLoadTiming {
   const int host_id;
   // The reason that the page load ends.
   const PageloadMetrics_PageEndReason page_end_reason;
+  // The number of touch events that happened on the page.
+  const uint32_t touch_count;
+  // The number of scroll events that happened on the page.
+  const uint32_t scroll_count;
 };
 
 }  // namespace data_reduction_proxy
