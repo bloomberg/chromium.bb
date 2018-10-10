@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_cicerone_client.h"
 
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
@@ -110,6 +112,7 @@ void FakeCiceroneClient::CreateLxdContainer(
   signal.set_owner_id(request.owner_id());
   signal.set_vm_name(request.vm_name());
   signal.set_container_name(request.container_name());
+  signal.set_status(lxd_container_created_signal_status_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerCreated,
                                 base::Unretained(this), std::move(signal)));
