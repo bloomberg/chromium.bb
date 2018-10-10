@@ -178,8 +178,7 @@ testcase.openQuickViewUsb = function() {
     // Mount a USB volume.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsb'}), this.next);
+      sendTestMessage({name: 'mountFakeUsb'}).then(this.next);
     },
     // Wait for the USB volume to mount.
     function() {
@@ -225,8 +224,7 @@ testcase.openQuickViewMtp = function() {
     // Mount a non-empty MTP volume.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeMtp'}), this.next);
+      sendTestMessage({name: 'mountFakeMtp'}).then(this.next);
     },
     // Wait for the MTP volume to mount.
     function() {

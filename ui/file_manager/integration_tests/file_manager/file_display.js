@@ -175,8 +175,7 @@ testcase.fileDisplayMtp = function() {
     // Mount MTP volume in the Downloads window.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeMtp'}),
-                              this.next);
+      sendTestMessage({name: 'mountFakeMtp'}).then(this.next);
     },
     // Wait for the MTP mount.
     function() {
@@ -215,8 +214,7 @@ testcase.fileDisplayUsb = function() {
     // Mount USB volume in the Downloads window.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsb'}), this.next);
+      sendTestMessage({name: 'mountFakeUsb'}).then(this.next);
     },
     // Wait for the USB mount.
     function() {

@@ -149,8 +149,7 @@ testcase.directoryTreeRefresh = function() {
     // Mount a USB volume.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsb'}), this.next);
+      sendTestMessage({name: 'mountFakeUsb'}).then(this.next);
     },
     // Wait for the USB volume to mount.
     function() {

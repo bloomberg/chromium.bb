@@ -491,8 +491,7 @@ testcase.driveBackupPhotos = function() {
     // Mount USB volume in the Downloads window.
     function(results) {
       appId = results.windowId;
-      chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsbDcim'}), this.next);
+      sendTestMessage({name: 'mountFakeUsbDcim'}).then(this.next);
     },
     // Wait for the USB mount.
     function() {
