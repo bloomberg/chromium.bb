@@ -9,10 +9,10 @@
 #include <cstdint>
 
 #include "base/macros.h"
-#include "net/base/iovec.h"
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quic/platform/api/quic_iovec.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"

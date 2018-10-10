@@ -15,7 +15,6 @@
 #include <list>
 
 #include "base/macros.h"
-#include "net/base/iovec.h"
 #include "net/third_party/quic/core/http/quic_header_list.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
