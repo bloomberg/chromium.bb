@@ -7,6 +7,7 @@
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
+#import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
@@ -26,6 +27,7 @@
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frames_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -108,6 +110,9 @@
             webState->GetJSInjectionReceiver();
         _JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
             [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
+        [_JSSuggestionManager
+            setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+
         _providers = @[ FormSuggestionTabHelper::FromWebState(webState)
                             ->GetAccessoryViewProvider() ];
         _formActivityObserverBridge =
@@ -195,6 +200,9 @@
     return;
   }
 
+  [_formInputAccessoryHandler
+      setLastFocusFormActivityWebFrameID:base::SysUTF8ToNSString(
+                                             params.frame_id)];
   [self retrieveAccessoryViewForForm:params webState:webState];
 }
 
@@ -286,6 +294,8 @@
         webState->GetJSInjectionReceiver();
     self.JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
         [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
+    [self.JSSuggestionManager
+        setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
     self.providers = @[ FormSuggestionTabHelper::FromWebState(webState)
                             ->GetAccessoryViewProvider() ];
     _formInputAccessoryHandler.JSSuggestionManager = self.JSSuggestionManager;

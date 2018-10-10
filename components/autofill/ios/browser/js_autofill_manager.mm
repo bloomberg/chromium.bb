@@ -19,48 +19,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
+#import "components/autofill/ios/browser/autofill_util.h"
 #include "ios/web/public/web_state/web_frame.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// The timeout for any JavaScript call in this file.
-// It is only used if IsAutofillIFrameMessagingEnabled is enabled.
-const int64_t kJavaScriptExecutionTimeoutInSeconds = 5;
-}
-
-@interface JsAutofillManager ()
-
-// Executes the JavaScript function using WebState of WebFrame functions
-// depending on the value of IsAutofillIFrameMessagingEnabled.
-// If |completionHandler| is not nil, it will be called when the result of the
-// command is received, or immediatly if the command cannot be executed.
-// It will call the either |executeJavaScriptFunctionInWebFrameWithName:...|
-// or |executeJavaScriptFunctionInWebStateWithName:...| depending on the
-// IsAutofillIFrameMessagingEnabled value.
-- (void)
-executeJavaScriptFunctionWithName:(const std::string&)name
-                       parameters:(const std::vector<base::Value>&)parameters
-                          inFrame:(web::WebFrame*)frame
-                completionHandler:(void (^)(NSString*))completionHandler;
-
-- (void)executeInWebFrameJavaScriptFunctionWithName:(const std::string&)name
-                                         parameters:
-                                             (const std::vector<base::Value>&)
-                                                 parameters
-                                            inFrame:(web::WebFrame*)frame
-                                  completionHandler:
-                                      (void (^)(NSString*))completionHandler;
-- (void)executeInWebStateJavaScriptFunctionWithName:(const std::string&)name
-                                         parameters:
-                                             (const std::vector<base::Value>&)
-                                                 parameters
-                                  completionHandler:
-                                      (void (^)(NSString*))completionHandler;
-
-@end
 
 @implementation JsAutofillManager {
   // The injection receiver used to evaluate JavaScript.
@@ -76,81 +40,6 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   return self;
 }
 
-- (void)
-executeJavaScriptFunctionWithName:(const std::string&)name
-                       parameters:(const std::vector<base::Value>&)parameters
-                          inFrame:(web::WebFrame*)frame
-                completionHandler:(void (^)(NSString*))completionHandler {
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    [self executeInWebFrameJavaScriptFunctionWithName:name
-                                           parameters:parameters
-                                              inFrame:frame
-                                    completionHandler:completionHandler];
-  } else {
-    [self executeInWebStateJavaScriptFunctionWithName:name
-                                           parameters:parameters
-                                    completionHandler:completionHandler];
-  }
-}
-
-- (void)executeInWebFrameJavaScriptFunctionWithName:(const std::string&)name
-                                         parameters:
-                                             (const std::vector<base::Value>&)
-                                                 parameters
-                                            inFrame:(web::WebFrame*)frame
-                                  completionHandler:
-                                      (void (^)(NSString*))completionHandler {
-  if (!frame) {
-    if (completionHandler) {
-      completionHandler(nil);
-    }
-    return;
-  }
-  DCHECK(frame->CanCallJavaScriptFunction());
-  if (completionHandler) {
-    bool called = frame->CallJavaScriptFunction(
-        name, parameters, base::BindOnce(^(const base::Value* res) {
-          if (!res || !res->is_string()) {
-            completionHandler(nil);
-            return;
-          }
-          completionHandler(base::SysUTF8ToNSString(res->GetString()));
-        }),
-        base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
-    if (!called) {
-      completionHandler(nil);
-    }
-  } else {
-    frame->CallJavaScriptFunction(name, parameters);
-  }
-}
-
-- (void)executeInWebStateJavaScriptFunctionWithName:(const std::string&)name
-                                         parameters:
-                                             (const std::vector<base::Value>&)
-                                                 parameters
-                                  completionHandler:
-                                      (void (^)(NSString*))completionHandler {
-  std::string function_name = "__gCrWeb." + name;
-  NSMutableArray* JSONParameters = [[NSMutableArray alloc] init];
-  for (auto& value : parameters) {
-    std::string dataString;
-    base::JSONWriter::Write(value, &dataString);
-    [JSONParameters addObject:base::SysUTF8ToNSString(dataString)];
-  }
-  NSString* command = [NSString
-      stringWithFormat:@"%s(%@);", function_name.c_str(),
-                       [JSONParameters componentsJoinedByString:@", "]];
-  if (completionHandler) {
-    [_receiver executeJavaScript:command
-               completionHandler:^(id result, NSError* error) {
-                 completionHandler(base::mac::ObjCCastStrict<NSString>(result));
-               }];
-  } else {
-    [_receiver executeJavaScript:command completionHandler:nil];
-  }
-}
-
 - (void)addJSDelayInFrame:(web::WebFrame*)frame {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -162,10 +51,9 @@ executeJavaScriptFunctionWithName:(const std::string&)name
     if (base::StringToInt(delayString, &commandLineDelay)) {
       std::vector<base::Value> parameters;
       parameters.push_back(base::Value(commandLineDelay));
-      [self executeJavaScriptFunctionWithName:"autofill.setDelay"
-                                   parameters:parameters
-                                      inFrame:frame
-                            completionHandler:nil];
+      autofill::ExecuteJavaScriptFunction(
+          "autofill.setDelay", parameters, frame, _receiver,
+          base::OnceCallback<void(NSString*)>());
     }
   }
 }
@@ -181,10 +69,9 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(static_cast<int>(requiredFieldsCount)));
   parameters.push_back(base::Value(restrictUnownedFieldsToFormlessCheckout));
-  [self executeJavaScriptFunctionWithName:"autofill.extractForms"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:completionHandler];
+  autofill::ExecuteJavaScriptFunction("autofill.extractForms", parameters,
+                                      frame, _receiver,
+                                      base::BindOnce(completionHandler));
 }
 
 #pragma mark -
@@ -196,33 +83,28 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   DCHECK(data);
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*data));
-  [self executeJavaScriptFunctionWithName:"autofill.fillActiveFormField"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:^(NSString*) {
-                          if (completionHandler)
-                            completionHandler();
-                        }];
+  autofill::ExecuteJavaScriptFunction("autofill.fillActiveFormField",
+                                      parameters, frame, _receiver,
+                                      base::BindOnce(^(NSString*) {
+                                        completionHandler();
+                                      }));
 }
 
 - (void)toggleTrackingFormMutations:(BOOL)state inFrame:(web::WebFrame*)frame {
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(state ? 200 : 0));
-  [self executeJavaScriptFunctionWithName:"formHandlers.trackFormMutations"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:nil];
+  autofill::ExecuteJavaScriptFunction("formHandlers.trackFormMutations",
+                                      parameters, frame, _receiver,
+                                      base::OnceCallback<void(NSString*)>());
 }
 
 - (void)toggleTrackingUserEditedFields:(BOOL)state
                                inFrame:(web::WebFrame*)frame {
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(static_cast<bool>(state)));
-  [self executeJavaScriptFunctionWithName:
-            "formHandlers.toggleTrackingUserEditedFields"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:nil];
+  autofill::ExecuteJavaScriptFunction(
+      "formHandlers.toggleTrackingUserEditedFields", parameters, frame,
+      _receiver, base::OnceCallback<void(NSString*)>());
 }
 
 - (void)fillForm:(std::unique_ptr<base::Value>)data
@@ -238,12 +120,10 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*data));
   parameters.push_back(base::Value(fieldIdentifier));
-  [self executeJavaScriptFunctionWithName:"autofill.fillForm"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:^(NSString*) {
-                          completionHandler();
-                        }];
+  autofill::ExecuteJavaScriptFunction("autofill.fillForm", parameters, frame,
+                                      _receiver, base::BindOnce(^(NSString*) {
+                                        completionHandler();
+                                      }));
 }
 
 - (void)clearAutofilledFieldsForFormName:(NSString*)formName
@@ -254,12 +134,11 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(base::SysNSStringToUTF8(formName)));
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldIdentifier)));
-  [self executeJavaScriptFunctionWithName:"autofill.clearAutofilledFields"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:^(NSString*) {
-                          completionHandler();
-                        }];
+  autofill::ExecuteJavaScriptFunction("autofill.clearAutofilledFields",
+                                      parameters, frame, _receiver,
+                                      base::BindOnce(^(NSString*) {
+                                        completionHandler();
+                                      }));
 }
 
 - (void)fillPredictionData:(std::unique_ptr<base::Value>)data
@@ -267,10 +146,9 @@ executeJavaScriptFunctionWithName:(const std::string&)name
   DCHECK(data);
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*data));
-  [self executeJavaScriptFunctionWithName:"autofill.fillPredictionData"
-                               parameters:parameters
-                                  inFrame:frame
-                        completionHandler:nil];
+  autofill::ExecuteJavaScriptFunction("autofill.fillPredictionData", parameters,
+                                      frame, _receiver,
+                                      base::OnceCallback<void(NSString*)>());
 }
 
 @end

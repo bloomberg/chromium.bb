@@ -23,6 +23,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
@@ -181,14 +182,14 @@ TEST_F(CWVAutofillControllerTest, ClearForm) {
 
 // Tests CWVAutofillController focus previous field.
 TEST_F(CWVAutofillControllerTest, FocusPrevious) {
-  [[js_suggestion_manager_ expect] selectPreviousElement];
+  [[js_suggestion_manager_ expect] selectPreviousElementInFrameWithID:nil];
   [autofill_controller_ focusPreviousField];
   [js_suggestion_manager_ verify];
 }
 
 // Tests CWVAutofillController focus next field.
 TEST_F(CWVAutofillControllerTest, FocusNext) {
-  [[js_suggestion_manager_ expect] selectNextElement];
+  [[js_suggestion_manager_ expect] selectNextElementInFrameWithID:nil];
   [autofill_controller_ focusNextField];
   [js_suggestion_manager_ verify];
 }
@@ -198,8 +199,8 @@ TEST_F(CWVAutofillControllerTest, CheckFocus) {
   id completionHandler = ^(BOOL previous, BOOL next) {
   };
   [[js_suggestion_manager_ expect]
-      fetchPreviousAndNextElementsPresenceWithCompletionHandler:
-          completionHandler];
+      fetchPreviousAndNextElementsPresenceInFrameWithID:nil
+                                      completionHandler:completionHandler];
   [autofill_controller_
       checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
           completionHandler];

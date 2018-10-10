@@ -25,6 +25,7 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -498,6 +499,9 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
+  web::WebFramesManager* framesManager =
+      web::WebFramesManager::FromWebState(_webState.get());
+  [JSSuggestionManager setWebFramesManager:framesManager];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager

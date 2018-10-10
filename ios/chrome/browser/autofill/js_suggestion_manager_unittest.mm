@@ -12,6 +12,8 @@
 #include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/web_state/web_frame.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
 
@@ -28,6 +30,8 @@ class JsSuggestionManagerTest : public ChromeWebTest {
 
   JsSuggestionManagerTest()
       : ChromeWebTest(std::make_unique<ChromeWebClient>()) {}
+  // Returns the frame ID for the main frame of |web_state()|'s current page.
+  NSString* GetFrameIdForMainFrame();
   // Helper method that initializes a form with three fields. Can be used to
   // test whether adding an attribute on the second field causes it to be
   // skipped (or not, as is appropriate) by selectNextElement.
@@ -43,6 +47,14 @@ void JsSuggestionManagerTest::SetUp() {
   ChromeWebTest::SetUp();
   manager_ = [[JsSuggestionManager alloc]
       initWithReceiver:web_state()->GetJSInjectionReceiver()];
+  [manager_
+      setWebFramesManager:web::WebFramesManager::FromWebState(web_state())];
+}
+
+NSString* JsSuggestionManagerTest::GetFrameIdForMainFrame() {
+  web::WebFramesManager* manager =
+      web::WebFramesManager::FromWebState(web_state());
+  return base::SysUTF8ToNSString(manager->GetMainWebFrame()->GetFrameId());
 }
 
 TEST_F(JsSuggestionManagerTest, InitAndInject) {
@@ -216,21 +228,25 @@ TEST_F(JsSuggestionManagerTest, SequentialNavigation) {
             "</form></body></html>");
 
   ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
-  [manager_ selectNextElement];
+
+  [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
   EXPECT_NSEQ(@"lastname", GetActiveElementName());
   __block BOOL block_was_called = NO;
-  [manager_ fetchPreviousAndNextElementsPresenceWithCompletionHandler:^void(
-                BOOL has_previous_element, BOOL has_next_element) {
-    block_was_called = YES;
-    EXPECT_TRUE(has_previous_element);
-    EXPECT_TRUE(has_next_element);
-  }];
+  [manager_
+      fetchPreviousAndNextElementsPresenceInFrameWithID:GetFrameIdForMainFrame()
+                                      completionHandler:^void(
+                                          BOOL has_previous_element,
+                                          BOOL has_next_element) {
+                                        block_was_called = YES;
+                                        EXPECT_TRUE(has_previous_element);
+                                        EXPECT_TRUE(has_next_element);
+                                      }];
   base::test::ios::WaitUntilCondition(^bool() {
     return block_was_called;
   });
-  [manager_ selectNextElement];
+  [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
   EXPECT_NSEQ(@"email", GetActiveElementName());
-  [manager_ selectPreviousElement];
+  [manager_ selectPreviousElementInFrameWithID:GetFrameIdForMainFrame()];
   EXPECT_NSEQ(@"lastname", GetActiveElementName());
 }
 
@@ -245,7 +261,7 @@ void JsSuggestionManagerTest::SequentialNavigationSkipCheck(NSString* attribute,
                                       attribute]);
   ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
   EXPECT_NSEQ(@"firstname", GetActiveElementName());
-  [manager_ selectNextElement];
+  [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
   NSString* activeElementNameJS = GetActiveElementName();
   if (shouldSkip)
     EXPECT_NSEQ(@"lastname", activeElementNameJS);
@@ -311,7 +327,7 @@ TEST_F(JsSuggestionManagerTest, CloseKeyboardSafetyTest) {
       @"select.onblur = function(){window.location.href = '#test'}");
   ExecuteJavaScript(@"select.focus()");
   // In the failure condition the app will crash during the next line.
-  [manager_ closeKeyboard];
+  [manager_ closeKeyboardForFrameWithID:GetFrameIdForMainFrame()];
   // TODO(crbug.com/661624): add a check for the keyboard actually being
   // dismissed; unfortunately it is not known how to adapt
   // WaitForBackgroundTasks to yield for events wrapped with window.setTimeout()
@@ -339,8 +355,10 @@ class FetchPreviousAndNextExceptionTest : public JsSuggestionManagerTest {
       EXPECT_FALSE(hasNextElement);
       block_was_called = YES;
     };
-    [manager_ fetchPreviousAndNextElementsPresenceWithCompletionHandler:
-                  completionHandler];
+    [manager_
+        fetchPreviousAndNextElementsPresenceInFrameWithID:
+            GetFrameIdForMainFrame()
+                                        completionHandler:completionHandler];
     base::test::ios::WaitUntilCondition(^bool() {
       return block_was_called;
     });

@@ -5,6 +5,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
@@ -77,6 +78,8 @@
 
   // Handles password autofilling related logic.
   CWVPasswordController* _passwordController;
+
+  NSString* _lastFocusFormActivityWebFrameID;
 }
 
 @synthesize delegate = _delegate;
@@ -247,18 +250,21 @@
 }
 
 - (void)focusPreviousField {
-  [_JSSuggestionManager selectPreviousElement];
+  [_JSSuggestionManager
+      selectPreviousElementInFrameWithID:_lastFocusFormActivityWebFrameID];
 }
 
 - (void)focusNextField {
-  [_JSSuggestionManager selectNextElement];
+  [_JSSuggestionManager
+      selectNextElementInFrameWithID:_lastFocusFormActivityWebFrameID];
 }
 
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler {
   [_JSSuggestionManager
-      fetchPreviousAndNextElementsPresenceWithCompletionHandler:
-          completionHandler];
+      fetchPreviousAndNextElementsPresenceInFrameWithID:
+          _lastFocusFormActivityWebFrameID
+                                      completionHandler:completionHandler];
 }
 
 - (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
@@ -395,6 +401,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
   if (params.type == "focus") {
+    _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didFocusOnFieldWithName:fieldIdentifier
                                          :fieldType:formName:frameID:value:)]) {
@@ -407,6 +414,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                               value:nsValue];
     }
   } else if (params.type == "input") {
+    _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didInputInFieldWithName:fieldIdentifier
                                          :fieldType:formName:frameID:value:)]) {
