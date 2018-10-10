@@ -3492,6 +3492,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST" desc="Permission string for Declarative Web Request API.">
           Block parts of web pages
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_NET_REQUEST" desc="Permission string for Declarative Net Request API.">
+          Block content on any page you visit
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN" desc="Permission string for access to document scanning.">
           Access document scanners attached via USB or on the local network
         </message>

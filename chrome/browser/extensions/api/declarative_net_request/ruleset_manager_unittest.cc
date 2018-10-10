@@ -45,12 +45,12 @@ class RulesetManagerTest : public DNRTestBase {
   using Action = RulesetManager::Action;
 
   // Helper to create a ruleset matcher instance for the given |rules|.
-  void CreateMatcherForRules(const std::vector<TestRule>& rules,
-                             const std::string& extension_dirname,
-                             std::unique_ptr<RulesetMatcher>* matcher,
-                             const std::vector<std::string>& host_permissions =
-                                 {URLPattern::kAllUrlsPattern},
-                             bool has_background_script = false) {
+  void CreateMatcherForRules(
+      const std::vector<TestRule>& rules,
+      const std::string& extension_dirname,
+      std::unique_ptr<RulesetMatcher>* matcher,
+      const std::vector<std::string>& host_permissions = {},
+      bool has_background_script = false) {
     base::FilePath extension_dir =
         temp_dir().GetPath().AppendASCII(extension_dirname);
 
@@ -379,10 +379,9 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     rule2.condition->url_filter = std::string("*");
     rule2.condition->resource_types = std::vector<std::string>({"main_frame"});
 
-    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
-        {rule1, rule2}, "test extension", &matcher,
-        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
-        true /* background_script */));
+    ASSERT_NO_FATAL_FAILURE(
+        CreateMatcherForRules({rule1, rule2}, "test extension", &matcher, {},
+                              true /* background_script */));
 
     URLPatternSet pattern_set(
         {URLPattern(URLPattern::SCHEME_ALL, "http://google.com/allow*")});
@@ -526,61 +525,104 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   RulesetManager* manager = info_map()->GetRulesetManager();
   ASSERT_TRUE(manager);
 
+  // Add an extension which redirects all sub-resource and sub-frame requests
+  // made to example.com, to foo.com. By default, the "main_frame" type is
+  // excluded if no "resource_types" are specified.
+  std::unique_ptr<RulesetMatcher> redirect_matcher;
+  {
+    TestRule rule = CreateGenericRule();
+    rule.id = kMinValidID;
+    rule.priority = kMinValidPriority;
+    rule.condition->url_filter = std::string("example.com");
+    rule.action->type = std::string("redirect");
+    rule.action->redirect_url = std::string("https://foo.com");
+    std::vector<std::string> host_permissions = {"*://yahoo.com/*",
+                                                 "*://example.com/*"};
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "redirecting extension", &redirect_matcher, host_permissions,
+        false /* has_background_script */));
+  }
+  std::string redirect_extension_id = last_loaded_extension()->id();
+
   // Add an extension which blocks all sub-resource and sub-frame requests to
   // example.com. By default, the "main_frame" type is excluded if no
-  // "resource_types" are specified.
+  // "resource_types" are specified. The extension has no host permissions.
+  std::unique_ptr<RulesetMatcher> blocking_matcher;
   {
-    std::unique_ptr<RulesetMatcher> matcher;
-
     TestRule rule = CreateGenericRule();
     rule.id = kMinValidID;
     rule.condition->url_filter = std::string("example.com");
-
-    std::vector<std::string> host_permissions = {"*://yahoo.com/*",
-                                                 "*://example.com/*"};
-
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
-        {rule}, "test extension", &matcher, host_permissions,
-        false /* has_background_script */));
-
-    manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
-                        URLPatternSet());
+        {rule}, "blocking extension", &blocking_matcher,
+        {} /* host_permissions */, false /* has_background_script */));
   }
+  std::string blocking_extension_id = last_loaded_extension()->id();
 
-  struct {
+  struct TestCase {
     std::string url;
     base::Optional<url::Origin> initiator;
-    bool expect_blocked;
+    Action expected_action_redirect_extension;
+    Action expected_action_blocking_extension;
   } cases[] = {
-      // empty initiator. Has access.
-      {"https://example.com", base::nullopt, true},
+      // Empty initiator. Has access.
+      {"https://example.com", base::nullopt, Action::REDIRECT, Action::BLOCK},
       // Opaque origin as initiator. Has access.
-      {"https://example.com", url::Origin(), true},
+      {"https://example.com", url::Origin(), Action::REDIRECT, Action::BLOCK},
       // yahoo.com as initiator. Has access.
       {"https://example.com", url::Origin::Create(GURL("http://yahoo.com")),
-       true},
+       Action::REDIRECT, Action::BLOCK},
       // No matching rule.
       {"https://yahoo.com", url::Origin::Create(GURL("http://example.com")),
-       false},
-      // Doesn't have access to initiator.
+       Action::NONE, Action::NONE},
+      // Doesn't have access to initiator. But blocking a request doesn't
+      // require host permissions.
       {"https://example.com", url::Origin::Create(GURL("http://google.com")),
-       false},
+       Action::NONE, Action::BLOCK},
   };
 
-  for (const auto& test : cases) {
+  auto verify_test_case = [this, manager](
+                              const std::string& url,
+                              const base::Optional<url::Origin>& initiator,
+                              Action expected_action, GURL* redirect_url) {
     SCOPED_TRACE(base::StringPrintf(
-        "Url-%s initiator-%s", test.url.c_str(),
-        test.initiator ? test.initiator->Serialize().c_str() : "empty"));
+        "Url-%s initiator-%s", url.c_str(),
+        initiator ? initiator->Serialize().c_str() : "empty"));
 
-    WebRequestInfo request = GetRequestForURL(test.url);
-    request.initiator = test.initiator;
-    GURL redirect_url;
+    WebRequestInfo request = GetRequestForURL(url);
+    request.initiator = initiator;
 
-    RulesetManager::Action action = manager->EvaluateRequest(
-        request, false /* is_incognito_context */, &redirect_url);
-    EXPECT_EQ(test.expect_blocked ? RulesetManager::Action::BLOCK
-                                  : RulesetManager::Action::NONE,
-              action);
+    bool is_incognito_context = false;
+    EXPECT_EQ(
+        expected_action,
+        manager->EvaluateRequest(request, is_incognito_context, redirect_url));
+  };
+
+  // Test redirect extension.
+  {
+    SCOPED_TRACE("Testing redirect extension");
+    manager->AddRuleset(redirect_extension_id, std::move(redirect_matcher),
+                        URLPatternSet());
+    for (const auto& test : cases) {
+      GURL redirect_url;
+      verify_test_case(test.url, test.initiator,
+                       test.expected_action_redirect_extension, &redirect_url);
+      if (test.expected_action_redirect_extension == Action::REDIRECT)
+        EXPECT_EQ("https://foo.com/", redirect_url.spec());
+    }
+    manager->RemoveRuleset(redirect_extension_id);
+  }
+
+  // Test blocking extension.
+  {
+    SCOPED_TRACE("Testing blocking extension");
+    manager->AddRuleset(blocking_extension_id, std::move(blocking_matcher),
+                        URLPatternSet());
+    for (const auto& test : cases) {
+      GURL redirect_url;
+      verify_test_case(test.url, test.initiator,
+                       test.expected_action_blocking_extension, &redirect_url);
+    }
+    manager->RemoveRuleset(blocking_extension_id);
   }
 }
 
