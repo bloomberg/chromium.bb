@@ -18,7 +18,7 @@
           use_base_dir="false"
           type="BINDATA"
           compress="gzip" />
-      <if expr="chromeos">
+      <if expr="is_win or is_macosx or is_linux">
         <include name="IDR_MOJO_TIME_MOJOM_JS"
             file="${root_gen_dir}/mojo/public/mojom/base/time.mojom.js"
             use_base_dir="false"

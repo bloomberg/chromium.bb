@@ -19,8 +19,10 @@ WebUIGraphDumpImpl::WebUIGraphDumpImpl(CoordinationUnitGraph* graph)
 
 WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {}
 
-void WebUIGraphDumpImpl::Bind(mojom::WebUIGraphDumpRequest request) {
+void WebUIGraphDumpImpl::Bind(mojom::WebUIGraphDumpRequest request,
+                              base::OnceClosure error_handler) {
   binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(std::move(error_handler));
 }
 
 void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {

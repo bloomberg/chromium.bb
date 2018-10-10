@@ -73,6 +73,7 @@
         "unzip": [ "unzip_file" ],
         "util_win" : [ "shell_util_win" ],
         "wifi_util_win": [ "wifi_credentials" ],
+        "resource_coordinator": [ "webui_graph_dump" ],
         "xr_device_service": [ "xr_device_provider", "xr_device_test_hook" ]
       }
     },
@@ -113,6 +114,7 @@
           "mojom.ResetPasswordHandler",
           "mojom.SiteEngagementDetailsProvider",
           "mojom.UsbInternalsPageHandler",
+          "resource_coordinator.mojom.WebUIGraphDump",
           "snippets_internals.mojom.PageHandlerFactory",
           "web_ui_test.mojom.TestRunner"
         ],

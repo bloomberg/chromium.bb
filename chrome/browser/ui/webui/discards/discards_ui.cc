@@ -32,7 +32,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -410,13 +413,22 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   source->AddResourcePath(
       "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.js",
       IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS);
+  source->AddResourcePath("mojom/webui_graph_dump.mojom.js",
+                          IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS);
+
+  // Add the mojo base dependency for the WebUI Graph Dump.
+  source->AddResourcePath("mojo/public/mojom/base/process_id.mojom.js",
+                          IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_JS);
 
   source->SetDefaultResource(IDR_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
+
   AddHandlerToRegistry(base::BindRepeating(
       &DiscardsUI::BindDiscardsDetailsProvider, base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(
+      &DiscardsUI::BindWebUIGraphDumpProvider, base::Unretained(this)));
 
   data_store_inspector_ = resource_coordinator::
       LocalSiteCharacteristicsDataStoreInspector::GetForProfile(profile);
@@ -428,4 +440,16 @@ void DiscardsUI::BindDiscardsDetailsProvider(
     mojom::DiscardsDetailsProviderRequest request) {
   ui_handler_ = std::make_unique<DiscardsDetailsProviderImpl>(
       data_store_inspector_, std::move(request));
+}
+
+void DiscardsUI::BindWebUIGraphDumpProvider(
+    resource_coordinator::mojom::WebUIGraphDumpRequest request) {
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+
+  if (connector) {
+    // Forward the interface request directly to the service.
+    connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                             std::move(request));
+  }
 }

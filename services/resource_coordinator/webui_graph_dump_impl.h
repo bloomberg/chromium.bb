@@ -20,8 +20,9 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump {
   // WebUIGraphDump implementation.
   void GetCurrentGraph(GetCurrentGraphCallback callback) override;
 
-  // Bind this instance to |request|.
-  void Bind(mojom::WebUIGraphDumpRequest request);
+  // Bind this instance to |request| with the |error_handler|.
+  void Bind(mojom::WebUIGraphDumpRequest request,
+            base::OnceClosure error_handler);
 
  private:
   CoordinationUnitGraph* graph_;

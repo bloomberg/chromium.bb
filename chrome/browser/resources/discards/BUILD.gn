@@ -15,14 +15,13 @@ js_type_check("closure_compile") {
 js_library("sorted_table_behavior") {
   deps = [
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
   ]
 }
 
 js_library("discards") {
   deps = [
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
@@ -31,7 +30,7 @@ js_library("database_tab") {
     ":discards",
     ":sorted_table_behavior",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:cr",
   ]
   extra_deps = [ "//chrome/browser/ui/webui/discards:mojo_bindings_js" ]
   externs_list = [
