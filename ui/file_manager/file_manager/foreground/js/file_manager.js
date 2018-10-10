@@ -1464,33 +1464,7 @@ FileManager.prototype = /** @struct */ {
       this.ui_.addLoadedAttribute();
     }
 
-    if (this.dialogType === DialogType.FULL_PAGE) {
-      // In the FULL_PAGE mode if the restored URL points to a file we might
-      // have to invoke a task after selecting it.
-      if (this.launchParams_.action === 'select')
-        return;
-
-      var task = null;
-
-      // TODO(mtomasz): Implement remounting archives after crash.
-      //                See: crbug.com/333139
-
-      // If there is a task to be run, run it after the scan is completed.
-      if (task) {
-        var listener = function() {
-          if (!util.isSameEntry(this.directoryModel_.getCurrentDirEntry(),
-                                directoryEntry)) {
-            // Opened on a different URL. Probably fallbacked. Therefore,
-            // do not invoke a task.
-            return;
-          }
-          this.directoryModel_.removeEventListener(
-              'scan-completed', listener);
-          task();
-        }.bind(this);
-        this.directoryModel_.addEventListener('scan-completed', listener);
-      }
-    } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
+    if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
       this.ui_.dialogFooter.selectTargetNameInFilenameInput();
     }
