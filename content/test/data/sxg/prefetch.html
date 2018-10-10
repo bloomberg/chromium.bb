@@ -5,6 +5,9 @@ function addPrefetch(url) {
   let link = document.createElement('link');
   link.rel = 'prefetch';
   link.href = url;
+  link.addEventListener('error', () => {
+    document.title = 'FAIL';
+  });
   document.body.appendChild(link);
 }
 const sxg_url = location.hash.substr(1);
