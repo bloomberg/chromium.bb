@@ -683,20 +683,15 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
   DCHECK(new_selector_item_widget_.get());
 
   // Add the dragged window into new selector item area in overview if
-  // |should_drop_window_into_overview| is true or it has been dragged into it.
-  // Only consider add the dragged window into new selector item area if
-  // SelectedWindow is false since new selector item will not be selected and
-  // tab dragging might drag a tab window to merge it into a browser window in
-  // overview.
+  // |should_drop_window_into_overview| is true. Only consider add the dragged
+  // window into new selector item area if SelectedWindow is false since new
+  // selector item will not be selected and tab dragging might drag a tab window
+  // to merge it into a browser window in overview.
   if (SelectedWindow()) {
     SelectedWindow()->set_selected(false);
     selection_widget_.reset();
   } else if (should_drop_window_into_overview) {
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
-  } else {
-    aura::Window* target_window = GetTargetWindowOnLocation(location_in_screen);
-    if (target_window && IsNewSelectorItemWindow(target_window))
-      AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
   }
 
   window_selector_->RemoveWindowSelectorItem(
@@ -1076,6 +1071,18 @@ void WindowGrid::UpdateYPositionAndOpacity(
   for (const auto& window_item : window_list_) {
     window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
   }
+}
+
+aura::Window* WindowGrid::GetTargetWindowOnLocation(
+    const gfx::Point& location_in_screen) {
+  // Find the window selector item that contains |location_in_screen|.
+  auto iter = std::find_if(
+      window_list_.begin(), window_list_.end(),
+      [&location_in_screen](std::unique_ptr<WindowSelectorItem>& item) {
+        return item->target_bounds().Contains(location_in_screen);
+      });
+
+  return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
 
 void WindowGrid::InitShieldWidget() {
@@ -1493,18 +1500,6 @@ void WindowGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
   window_selector_->AddItem(dragged_window, /*reposition=*/false,
                             /*animate=*/false);
-}
-
-aura::Window* WindowGrid::GetTargetWindowOnLocation(
-    const gfx::Point& location_in_screen) {
-  // Find the window selector item that contains |location_in_screen|.
-  auto iter = std::find_if(
-      window_list_.begin(), window_list_.end(),
-      [location_in_screen](std::unique_ptr<WindowSelectorItem>& item) {
-        return item->target_bounds().Contains(location_in_screen);
-      });
-
-  return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
 
 }  // namespace ash

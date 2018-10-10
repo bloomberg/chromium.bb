@@ -3007,6 +3007,28 @@ TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   dragged_window->ClearProperty(ash::kIsShowingInOverviewKey);
 }
 
+// Tests that if window being dragged into new selector item when preview
+// area is shown, window should go to be snapped instead of being dropped into
+// overview.
+TEST_F(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndNewSelectorItem) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> browser_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  wm::GetWindowState(browser_window.get())->Maximize();
+
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(browser_window.get(), browser_window.get());
+  gfx::Rect item_bounds =
+      GetNewSelectorItemBoundsDuringDrag(browser_window.get());
+  // Drag window to inside the new selector item.
+  DragWindowTo(resizer.get(),
+               gfx::Point(item_bounds.x() + 5, item_bounds.y() + 5));
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
+  CompleteDrag(std::move(resizer));
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)
