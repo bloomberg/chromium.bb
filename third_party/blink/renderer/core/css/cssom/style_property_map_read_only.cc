@@ -134,19 +134,32 @@ bool StylePropertyMapReadOnly::has(const ExecutionContext* execution_context,
 }
 
 StylePropertyMapReadOnly::IterationSource*
-StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
+StylePropertyMapReadOnly::StartIteration(ScriptState* script_state,
+                                         ExceptionState&) {
   HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> result;
 
-  ForEachProperty([&result](const String& property_name,
-                            const CSSValue& css_value) {
+  const ExecutionContext& execution_context =
+      *ExecutionContext::From(script_state);
+
+  ForEachProperty([&result, &execution_context](const String& property_name,
+                                                const CSSValue& css_value) {
     const auto property_id = cssPropertyID(property_name);
 
-    AtomicString custom_property_name = property_id == CSSPropertyVariable
-                                            ? AtomicString(property_name)
-                                            : g_null_atom;
+    const CSSValue* value = &css_value;
+    AtomicString custom_property_name = g_null_atom;
+
+    if (property_id == CSSPropertyVariable) {
+      custom_property_name = AtomicString(property_name);
+
+      const auto* document = DynamicTo<Document>(execution_context);
+      if (document) {
+        value = PropertyRegistry::ParseIfRegistered(
+            *document, custom_property_name, value);
+      }
+    }
 
     auto values = StyleValueFactory::CssValueToStyleValueVector(
-        property_id, custom_property_name, css_value);
+        property_id, custom_property_name, *value);
     result.emplace_back(property_name, std::move(values));
   });
 
