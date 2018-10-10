@@ -193,21 +193,11 @@ TracingControllerImpl::GenerateMetadataDict() const {
   // OS
 #if defined(OS_CHROMEOS)
   metadata_dict->SetString("os-name", "CrOS");
-  int32_t major_version;
-  int32_t minor_version;
-  int32_t bugfix_version;
-  // OperatingSystemVersion only has a POSIX implementation which returns the
-  // wrong versions for CrOS.
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  metadata_dict->SetString(
-      "os-version", base::StringPrintf("%d.%d.%d", major_version, minor_version,
-                                       bugfix_version));
 #else
   metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
+#endif
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
-#endif
   metadata_dict->SetString("os-arch",
                            base::SysInfo::OperatingSystemArchitecture());
 
