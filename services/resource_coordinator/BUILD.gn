@@ -59,6 +59,8 @@ source_set("lib") {
     "webui_graph_dump_impl.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",

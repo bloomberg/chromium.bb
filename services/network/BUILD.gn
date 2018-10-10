@@ -170,6 +170,8 @@ jumbo_component("network_service") {
     ]
   }
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
     "//components/certificate_transparency",

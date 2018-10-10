@@ -9,6 +9,8 @@ component("resource_coordinator_cpp_base") {
     "coordination_unit_types.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   defines = [ "IS_SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_BASE_IMPL" ]
 
   deps = [
@@ -42,6 +44,8 @@ component("resource_coordinator_cpp") {
     "system_resource_coordinator.cc",
     "system_resource_coordinator.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   defines = [ "IS_SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPL" ]
 
