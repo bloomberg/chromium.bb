@@ -163,8 +163,8 @@ static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
 
 DownloadManagerService::DownloadManagerService()
     : is_history_query_complete_(false),
-      pending_get_downloads_actions_(NONE) {
-}
+      is_pending_downloads_loaded_(false),
+      pending_get_downloads_actions_(NONE) {}
 
 DownloadManagerService::~DownloadManagerService() {}
 
@@ -273,7 +273,7 @@ void DownloadManagerService::ResumeDownload(
     const JavaParamRef<jstring>& jdownload_guid,
     bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  if (is_history_query_complete_ || is_off_the_record)
+  if (is_pending_downloads_loaded_ || is_off_the_record)
     ResumeDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, RESUME);
@@ -285,7 +285,7 @@ void DownloadManagerService::PauseDownload(
     const JavaParamRef<jstring>& jdownload_guid,
     bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  if (is_history_query_complete_ || is_off_the_record)
+  if (is_pending_downloads_loaded_ || is_off_the_record)
     PauseDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, PAUSE);
@@ -381,7 +381,7 @@ void DownloadManagerService::CancelDownload(
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
   DownloadController::RecordDownloadCancelReason(
       DownloadController::CANCEL_REASON_ACTION_BUTTON);
-  if (is_history_query_complete_ || is_off_the_record)
+  if (is_pending_downloads_loaded_ || is_off_the_record)
     CancelDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, CANCEL);
@@ -389,26 +389,7 @@ void DownloadManagerService::CancelDownload(
 
 void DownloadManagerService::OnHistoryQueryComplete() {
   is_history_query_complete_ = true;
-  for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
-       ++iter) {
-    DownloadAction action = iter->second;
-    std::string download_guid = iter->first;
-    switch (action) {
-      case RESUME:
-        ResumeDownloadInternal(download_guid, false);
-        break;
-      case PAUSE:
-        PauseDownloadInternal(download_guid, false);
-        break;
-      case CANCEL:
-        CancelDownloadInternal(download_guid, false);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-  pending_actions_.clear();
+  OnPendingDownloadsLoaded();
 
   // Respond to any requests to get all downloads.
   if (pending_get_downloads_actions_ & REGULAR)
@@ -582,14 +563,34 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
       base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
           factory->Clone()));
   in_progress_manager_->NotifyWhenInitialized(
-      base::BindOnce(&DownloadManagerService::OnInProgressManagerInitiailized,
+      base::BindOnce(&DownloadManagerService::OnPendingDownloadsLoaded,
                      base::Unretained(this)));
   in_progress_manager_->set_download_start_observer(
       DownloadControllerBase::Get());
 }
 
-void DownloadManagerService::OnInProgressManagerInitiailized() {
-  // TODO(qinmin): carry out all the pending actions to be performed.
+void DownloadManagerService::OnPendingDownloadsLoaded() {
+  is_pending_downloads_loaded_ = true;
+  for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
+       ++iter) {
+    DownloadAction action = iter->second;
+    std::string download_guid = iter->first;
+    switch (action) {
+      case RESUME:
+        ResumeDownloadInternal(download_guid, false);
+        break;
+      case PAUSE:
+        PauseDownloadInternal(download_guid, false);
+        break;
+      case CANCEL:
+        CancelDownloadInternal(download_guid, false);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  pending_actions_.clear();
 }
 
 content::DownloadManager* DownloadManagerService::GetDownloadManager(
