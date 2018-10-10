@@ -459,6 +459,11 @@ void WindowSelector::CancelSelection() {
 }
 
 void WindowSelector::OnGridEmpty(WindowGrid* grid) {
+  // TODO(crbug.com/881089): Speculative fix based on the crash stack, needs
+  // confirming.
+  if (IsShuttingDown())
+    return;
+
   size_t index = 0;
   // If there are no longer any items on any of the grids, shutdown,
   // otherwise the empty grids will remain blurred but will have no items.
