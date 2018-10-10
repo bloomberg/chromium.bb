@@ -56,10 +56,6 @@ class UsbChooserContext : public ChooserContextBase,
                            const GURL& embedding_origin,
                            const device::mojom::UsbDeviceInfo& device_info);
 
-  bool HasDevicePermission(const GURL& requesting_origin,
-                           const GURL& embedding_origin,
-                           scoped_refptr<const device::UsbDevice> device);
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

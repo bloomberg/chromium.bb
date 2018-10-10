@@ -13,13 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
-#include "device/base/device_client.h"
 #include "device/usb/mojo/device_manager_impl.h"
-#include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/mojom/device.mojom.h"
-#include "device/usb/usb_device.h"
-
-using device::UsbDevice;
 
 namespace {
 
@@ -249,20 +244,6 @@ bool UsbChooserContext::HasDevicePermission(
   }
 
   return false;
-}
-
-bool UsbChooserContext::HasDevicePermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    scoped_refptr<const device::UsbDevice> device) {
-  if (!device)
-    return false;
-
-  device::mojom::UsbDeviceInfoPtr device_info =
-      device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-
-  return HasDevicePermission(requesting_origin, embedding_origin, *device_info);
 }
 
 void UsbChooserContext::GetDevices(
