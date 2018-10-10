@@ -857,6 +857,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
              */
             private void updateColor(Tab tab) {
                 final ToolbarManager manager = getToolbarManager();
+                if (manager == null) return;
+
                 // Record the original toolbar color in case we need to revert back to it later
                 // after a preview has been shown then the user navigates to another non-preview
                 // page.
