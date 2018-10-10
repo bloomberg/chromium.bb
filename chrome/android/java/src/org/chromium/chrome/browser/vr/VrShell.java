@@ -1232,7 +1232,7 @@ public class VrShell extends GvrLayout
     }
 
     @VisibleForTesting
-    public VrInputMethodManagerWrapper getInputMethodManageWrapperForTesting() {
+    public VrInputMethodManagerWrapper getInputMethodManagerWrapperForTesting() {
         return mInputMethodManagerWrapper;
     }
 
