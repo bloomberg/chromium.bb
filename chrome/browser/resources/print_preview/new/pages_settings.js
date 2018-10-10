@@ -19,6 +19,20 @@ const PagesValue = {
   CUSTOM: 'custom',
 };
 
+/**
+ * Used in place of Number.parseInt(), to ensure values like '1  2' or '1a2' are
+ * not allowed.
+ * @param {string} value The value to convert to a number.
+ * @return {number} The value converted to a number, or NaN if it cannot be
+ *     converted.
+ * @private
+ */
+function parseIntStrict(value) {
+  if (/^\d+$/.test(value.trim()))
+    return Number(value);
+  return NaN;
+}
+
 Polymer({
   is: 'print-preview-pages-settings',
 
@@ -49,6 +63,12 @@ Polymer({
 
     disabled: Boolean,
 
+    /** @private */
+    hasError_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Note: |disabled| specifies whether printing, and any settings section
      * not in an error state, is disabled. |controlsDisabled_| specifies whether
@@ -58,7 +78,7 @@ Polymer({
      */
     controlsDisabled_: {
       type: Boolean,
-      computed: 'computeControlsDisabled_(disabled, errorState_)',
+      computed: 'computeControlsDisabled_(disabled, hasError_)',
       observer: 'onControlsDisabledChanged_',
     },
 
@@ -116,14 +136,11 @@ Polymer({
 
   /**
    * @return {boolean} Whether the controls should be disabled.
-   * Does not need to depend on |errorState_|, since |errorState_| is always
-   * defined and any change to or from NO_ERROR will also trigger a change in
-   * |disabled|.
    * @private
    */
   computeControlsDisabled_: function() {
     // Disable the input if other settings are responsible for the error state.
-    return this.errorState_ == PagesInputErrorState.NO_ERROR && this.disabled;
+    return !this.hasError_ && this.disabled;
   },
 
   /**
@@ -167,7 +184,6 @@ Polymer({
     const ranges = this.inputString_.split(/,|\u3001/);
     const maxPage = this.allPagesArray_.length;
     for (let range of ranges) {
-      range = range.trim();
       if (range == '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
@@ -181,7 +197,7 @@ Polymer({
         return this.pagesToPrint_;
       }
 
-      let min = Number.parseInt(limits[0], 10);
+      let min = parseIntStrict(limits[0]);
       if ((limits[0].length > 0 && Number.isNaN(min)) || min < 1) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
@@ -200,7 +216,7 @@ Polymer({
         continue;
       }
 
-      let max = Number.parseInt(limits[1], 10);
+      let max = parseIntStrict(limits[1]);
       if (Number.isNaN(max) && limits[1].length > 0) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
@@ -290,18 +306,16 @@ Polymer({
 
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
       this.setSettingValid('pages', true);
-      this.$.pageSettingsCustomInput.invalid = false;
+      this.hasError_ = false;
       return;
     }
 
     if (this.errorState_ !== PagesInputErrorState.NO_ERROR) {
+      this.hasError_ = true;
       this.setSettingValid('pages', false);
-      this.$.pageSettingsCustomInput.invalid = true;
       return;
     }
 
-    this.$.pageSettingsCustomInput.invalid = false;
-    this.setSettingValid('pages', true);
     const nupPages = this.getNupPages_();
     const rangesChanged = !areRangesEqual(
         this.rangesToPrint_,
@@ -312,6 +326,8 @@ Polymer({
     }
     if (rangesChanged)
       this.setSetting('ranges', this.rangesToPrint_);
+    this.setSettingValid('pages', true);
+    this.hasError_ = false;
   },
 
   /** @private */
@@ -338,15 +354,13 @@ Polymer({
    * @param {!KeyboardEvent} e The keyboard event
    */
   onKeydown_: function(e) {
+    e.stopPropagation();
     if (e.key == 'Enter') {
       this.resetAndUpdate();
       this.resetIfEmpty_();
     } else if (e.shiftKey && e.key == 'Tab') {
       this.$.customRadioButton.focus();
-      e.stopPropagation();
       e.preventDefault();
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-      e.stopPropagation();
     }
   },
 
@@ -379,6 +393,14 @@ Polymer({
   onCustomInputFocus_: function() {
     if (this.optionSelected_ !== PagesValue.CUSTOM)
       this.optionSelected_ = PagesValue.CUSTOM;
+  },
+
+  /**
+   * @param {!Event} e Click event
+   * @private
+   */
+  onCustomInputClick_: function(e) {
+    e.stopPropagation();
   },
 
   /** @private */

@@ -61,8 +61,10 @@
                 data-timeout-delay="500" on-keydown="onKeydown_"
                 disabled$="[[controlsDisabled_]]" spellcheck="false"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
+                on-click="onCustomInputClick_"
                 tabindex="[[computeTabIndex_(optionSelected_)]]"
                 placeholder="$i18n{examplePageRangeText}"
+                invalid="[[hasError_]]"
                 error-message="[[getHintMessage_(errorState_,
                     documentInfo.pageCount)]]">
             </cr-input>
