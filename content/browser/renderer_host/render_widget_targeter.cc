@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -114,7 +115,9 @@ operator=(TargetingRequest&&) = default;
 RenderWidgetTargeter::TargetingRequest::~TargetingRequest() = default;
 
 RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
+    : trace_id_(base::RandUint64()),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
 
@@ -152,10 +155,17 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
   RenderWidgetTargetResult result =
       delegate_->FindTargetSynchronously(root_view, event);
 
+  const gfx::PointF event_location = ComputeEventLocation(event);
+
   RenderWidgetHostViewBase* target = result.view;
   auto* event_ptr = &event;
   async_depth_ = 0;
   if (result.should_query_view) {
+    TRACE_EVENT_WITH_FLOW2(
+        "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
+        TRACE_EVENT_FLAG_FLOW_OUT, "step", "QueryClient(Start)",
+        "event_location", event_location.ToString());
+
     // TODO(kenrb, sadrul): When all event types support asynchronous hit
     // testing, we should be able to have FindTargetSynchronously return the
     // view and location to use for the renderer hit test query.
@@ -164,8 +174,8 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     // root_view and the original event location for the initial query.
     // Do not compare hit test results if we are forced to do async hit testing
     // by HitTestQuery.
-    QueryClient(root_view, root_view, *event_ptr, latency,
-                ComputeEventLocation(event), nullptr, gfx::PointF());
+    QueryClient(root_view, root_view, *event_ptr, latency, event_location,
+                nullptr, gfx::PointF());
   } else {
     FoundTarget(root_view, target, *event_ptr, latency, result.target_location,
                 result.latched_target, viz::FrameSinkId());
@@ -173,7 +183,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     // --use-viz-hit-test-surface-layer is enabled.
     if (result.should_verify_result && !target->IsRenderWidgetHostViewGuest()) {
       QueryAndVerifyClient(root_view, root_view, *event_ptr, latency,
-                           ComputeEventLocation(event), nullptr, gfx::PointF(),
+                           event_location, nullptr, gfx::PointF(),
                            target->GetFrameSinkId());
     }
   }
@@ -227,8 +237,14 @@ void RenderWidgetTargeter::QueryClientInternal(
           last_target_location, ui::WebInputEventTraits::Clone(event), latency,
           expected_frame_sink_id),
       async_hit_test_timeout_delay_));
+
+  TRACE_EVENT_WITH_FLOW2(
+      "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "QueryClient", "event", blink::WebInputEvent::GetName(event.GetType()));
+
   target_client->FrameSinkIdAt(
-      gfx::ToCeiledPoint(target_location),
+      gfx::ToCeiledPoint(target_location), trace_id_,
       base::BindOnce(
           &RenderWidgetTargeter::FoundFrameSinkId,
           weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
@@ -347,6 +363,14 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   // asking the clients until a client claims an event for itself.
   if (view == target.get() ||
       unresponsive_views_.find(view) != unresponsive_views_.end()) {
+    // Reduced scope is required since FoundTarget can trigger another query
+    // which would end up linked to the current query.
+    {
+      TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Event.Pipeline",
+                             TRACE_ID_GLOBAL(trace_id_),
+                             TRACE_EVENT_FLAG_FLOW_IN, "step", "FoundTarget");
+    }
+
     FoundTarget(root_view.get(), view, *event, latency, target_location, false,
                 expected_frame_sink_id);
   } else {

@@ -5022,7 +5022,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-        point_in_child,
+        point_in_child, 0,
         base::BindLambdaForTesting(
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
@@ -5044,7 +5044,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-        gfx::ToCeiledPoint(point_in_nested_child),
+        gfx::ToCeiledPoint(point_in_nested_child), 0,
         base::BindLambdaForTesting(
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
