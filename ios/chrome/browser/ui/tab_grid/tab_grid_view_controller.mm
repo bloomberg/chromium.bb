@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -1247,12 +1248,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
-  } else if (IsClosingLastIncognitoTabEnabled() &&
-             gridViewController == self.incognitoTabsViewController) {
+    breakpad_helper::SetRegularTabCount(count);
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    breakpad_helper::SetIncognitoTabCount(count);
+
     // No assumption is made as to the state of the UI. This method can be
     // called with an incognito view controller and a current page that is not
     // the incognito tabs.
-    if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
+    if (IsClosingLastIncognitoTabEnabled() && count == 0 &&
+        self.currentPage == TabGridPageIncognitoTabs) {
       // Show the regular tabs to the user if the last incognito tab is closed.
       if (self.viewLoaded && self.view.window) {
         // Visibly scroll to the regular tabs panel after a slight delay when

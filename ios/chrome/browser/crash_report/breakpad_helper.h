@@ -89,6 +89,12 @@ void SetCurrentOrientation(int statusBarOrientation, int deviceOrientation);
 // values from 0 to 2).
 void SetCurrentHorizontalSizeClass(int horizontalSizeClass);
 
+// Sets a key in browser_state dictionary to store the count of regular tabs.
+void SetRegularTabCount(int tabCount);
+
+// Sets a key in browser_state dictionary to store the count of incognito tabs.
+void SetIncognitoTabCount(int tabCount);
+
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each
 // stream in the media (once or twice for audio, two or three times for video).

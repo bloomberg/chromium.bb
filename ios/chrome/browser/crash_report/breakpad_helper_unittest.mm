@@ -61,6 +61,16 @@ TEST_F(BreakpadHelperTest, HorizontalSizeClass) {
   breakpad_helper::SetCurrentHorizontalSizeClass(2);
 }
 
+TEST_F(BreakpadHelperTest, RegularTabCount) {
+  // Check that we do not overflow the size of a breakpad record.
+  breakpad_helper::SetRegularTabCount(999);
+}
+
+TEST_F(BreakpadHelperTest, IncognitoTabCount) {
+  // Check that we do not overflow the size of a breakpad record.
+  breakpad_helper::SetIncognitoTabCount(999);
+}
+
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {
   [mock_breakpad_controller_ cr_expectGetCrashReportCount:kCrashReportCount];
 
