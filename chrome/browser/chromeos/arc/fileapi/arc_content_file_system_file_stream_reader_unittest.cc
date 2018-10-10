@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
@@ -81,7 +82,8 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
     profile_ = std::make_unique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
     ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
-        profile_.get(), &CreateFileSystemOperationRunnerForTesting);
+        profile_.get(),
+        base::BindRepeating(&CreateFileSystemOperationRunnerForTesting));
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
     WaitForInstanceReady(
