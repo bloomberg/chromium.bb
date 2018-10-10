@@ -714,6 +714,12 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   }
 
   if (ShowCustomTitle()) {
+    if (!ShowCustomIcon()) {
+      // This matches native Windows 10 UWP apps that don't have window icons.
+      constexpr int kMinimumTitleLeftBorderMargin = 11;
+      DCHECK_LE(next_leading_x, kMinimumTitleLeftBorderMargin);
+      next_leading_x = kMinimumTitleLeftBorderMargin;
+    }
     window_title_->SetText(browser_view()->GetWindowTitle());
     const int max_text_width = std::max(0, next_trailing_x - next_leading_x);
     window_title_->SetBounds(next_leading_x, window_icon_bounds.y(),
