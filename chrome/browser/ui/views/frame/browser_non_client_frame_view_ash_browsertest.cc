@@ -320,6 +320,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
   manager->ShowWindowForUser(window, account_id2);
   EXPECT_TRUE(MultiUserWindowManager::ShouldShowAvatar(window));
+  EXPECT_TRUE(frame_view->profile_indicator_icon_);
 
   // Teleport the window back to owner desktop.
   manager->ShowWindowForUser(window, account_id1);

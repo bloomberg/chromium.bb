@@ -27,9 +27,6 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# The browser frame is a work in progress.
--BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
-
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.DisplayRotation
 -TopControlsSlideControllerTest.TestClosingATab
