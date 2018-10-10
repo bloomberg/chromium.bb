@@ -166,11 +166,6 @@ source_set("host_resolver") {
     # TODO(crbug.com/874654): Remove once migrated to network service IPC.
     "//components/network_hints/browser",
 
-    # content/public/browser/resource_hints.h
-    # Deprecated and soon to be removed.
-    # TODO(crbug.com/875238): Remove once code is removed.
-    "//content/public/browser:browser_sources",
-
     # headless/lib/browser/headless_url_request_context_getter.cc
     # URLRequestContext creation for headless.
     "//headless",
