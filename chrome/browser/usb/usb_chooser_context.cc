@@ -343,10 +343,6 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
   ephemeral_dicts_.clear();
 }
 
-void UsbChooserContext::DestroyDeviceManagerForTesting() {
-  device_manager_instance_.reset();
-}
-
 void UsbChooserContext::SetDeviceManagerForTesting(
     device::mojom::UsbDeviceManagerPtr fake_device_manager) {
   DCHECK(!device_manager_);

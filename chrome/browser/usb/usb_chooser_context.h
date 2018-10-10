@@ -71,7 +71,6 @@ class UsbChooserContext : public ChooserContextBase,
 
   base::WeakPtr<UsbChooserContext> AsWeakPtr();
 
-  void DestroyDeviceManagerForTesting();
   void SetDeviceManagerForTesting(
       device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
