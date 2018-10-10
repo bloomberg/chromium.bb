@@ -2148,7 +2148,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.master_android_pfq_mixin,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
-      schedule='with 150m interval',
+      schedule='with 60m interval',
   )
 
   _pi_no_hwtest_boards = frozenset([])
