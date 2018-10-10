@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/invalidation/impl/invalidation_logger.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -43,9 +45,16 @@ void InvalidationsMessageHandler::RegisterMessages() {
 }
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
-  invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
+  invalidation::ProfileInvalidationProvider* invalidation_provider;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
+    invalidation_provider =
+        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+            profile);
+  } else {
+    invalidation_provider = invalidation::
+        DeprecatedProfileInvalidationProviderFactory::GetForProfile(profile);
+  }
   if (invalidation_provider) {
     logger_ = invalidation_provider->GetInvalidationService()->
         GetInvalidationLogger();
