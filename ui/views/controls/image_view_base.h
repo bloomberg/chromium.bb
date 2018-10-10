@@ -56,6 +56,7 @@ class VIEWS_EXPORT ImageViewBase : public View {
   gfx::Size CalculatePreferredSize() const override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void PreferredSizeChanged() override;
 
  protected:
   // Returns the size the image will be painted.
@@ -64,15 +65,14 @@ class VIEWS_EXPORT ImageViewBase : public View {
   // The requested image size.
   base::Optional<gfx::Size> image_size_;
 
-  // The origin of the image.
-  gfx::Point image_origin_;
-
  private:
   friend class ImageViewTest;
 
-  // Compute the image origin given the desired size and the receiver alignment
-  // properties.
-  gfx::Point ComputeImageOrigin(const gfx::Size& image_size) const;
+  // Recomputes and updates the |image_origin_|.
+  void UpdateImageOrigin();
+
+  // The origin of the image.
+  gfx::Point image_origin_;
 
   // Horizontal alignment.
   Alignment horizontal_alignment_ = Alignment::CENTER;

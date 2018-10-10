@@ -18,7 +18,6 @@ ImageViewBase::~ImageViewBase() = default;
 
 void ImageViewBase::SetImageSize(const gfx::Size& image_size) {
   image_size_ = image_size;
-  image_origin_ = ComputeImageOrigin(GetImageSize());
   PreferredSizeChanged();
 }
 
@@ -29,49 +28,6 @@ gfx::Rect ImageViewBase::GetImageBounds() const {
 void ImageViewBase::ResetImageSize() {
   image_size_.reset();
   PreferredSizeChanged();
-  image_origin_ = ComputeImageOrigin(GetImageSize());
-}
-
-gfx::Point ImageViewBase::ComputeImageOrigin(
-    const gfx::Size& image_size) const {
-  gfx::Insets insets = GetInsets();
-
-  int x = 0;
-  // In order to properly handle alignment of images in RTL locales, we need
-  // to flip the meaning of trailing and leading. For example, if the
-  // horizontal alignment is set to trailing, then we'll use left alignment for
-  // the image instead of right alignment if the UI layout is RTL.
-  Alignment actual_horizontal_alignment = horizontal_alignment_;
-  if (base::i18n::IsRTL() && (horizontal_alignment_ != CENTER)) {
-    actual_horizontal_alignment =
-        (horizontal_alignment_ == LEADING) ? TRAILING : LEADING;
-  }
-  switch (actual_horizontal_alignment) {
-    case LEADING:
-      x = insets.left();
-      break;
-    case TRAILING:
-      x = width() - insets.right() - image_size.width();
-      break;
-    case CENTER:
-      x = (width() - insets.width() - image_size.width()) / 2 + insets.left();
-      break;
-  }
-
-  int y = 0;
-  switch (vertical_alignment_) {
-    case LEADING:
-      y = insets.top();
-      break;
-    case TRAILING:
-      y = height() - insets.bottom() - image_size.height();
-      break;
-    case CENTER:
-      y = (height() - insets.height() - image_size.height()) / 2 + insets.top();
-      break;
-  }
-
-  return gfx::Point(x, y);
 }
 
 void ImageViewBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -82,7 +38,7 @@ void ImageViewBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void ImageViewBase::SetHorizontalAlignment(Alignment alignment) {
   if (alignment != horizontal_alignment_) {
     horizontal_alignment_ = alignment;
-    image_origin_ = ComputeImageOrigin(GetImageSize());
+    UpdateImageOrigin();
     SchedulePaint();
   }
 }
@@ -94,7 +50,7 @@ ImageViewBase::Alignment ImageViewBase::GetHorizontalAlignment() const {
 void ImageViewBase::SetVerticalAlignment(Alignment alignment) {
   if (alignment != vertical_alignment_) {
     vertical_alignment_ = alignment;
-    image_origin_ = ComputeImageOrigin(GetImageSize());
+    UpdateImageOrigin();
     SchedulePaint();
   }
 }
@@ -151,7 +107,54 @@ views::PaintInfo::ScaleType ImageViewBase::GetPaintScaleType() const {
 }
 
 void ImageViewBase::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  image_origin_ = ComputeImageOrigin(GetImageSize());
+  UpdateImageOrigin();
+}
+
+void ImageViewBase::UpdateImageOrigin() {
+  gfx::Size image_size = GetImageSize();
+  gfx::Insets insets = GetInsets();
+
+  int x = 0;
+  // In order to properly handle alignment of images in RTL locales, we need
+  // to flip the meaning of trailing and leading. For example, if the
+  // horizontal alignment is set to trailing, then we'll use left alignment for
+  // the image instead of right alignment if the UI layout is RTL.
+  Alignment actual_horizontal_alignment = horizontal_alignment_;
+  if (base::i18n::IsRTL() && (horizontal_alignment_ != CENTER)) {
+    actual_horizontal_alignment =
+        (horizontal_alignment_ == LEADING) ? TRAILING : LEADING;
+  }
+  switch (actual_horizontal_alignment) {
+    case LEADING:
+      x = insets.left();
+      break;
+    case TRAILING:
+      x = width() - insets.right() - image_size.width();
+      break;
+    case CENTER:
+      x = (width() - insets.width() - image_size.width()) / 2 + insets.left();
+      break;
+  }
+
+  int y = 0;
+  switch (vertical_alignment_) {
+    case LEADING:
+      y = insets.top();
+      break;
+    case TRAILING:
+      y = height() - insets.bottom() - image_size.height();
+      break;
+    case CENTER:
+      y = (height() - insets.height() - image_size.height()) / 2 + insets.top();
+      break;
+  }
+
+  image_origin_ = gfx::Point(x, y);
+}
+
+void ImageViewBase::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+  UpdateImageOrigin();
 }
 
 }  // namespace views
