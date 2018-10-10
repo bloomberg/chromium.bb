@@ -356,12 +356,14 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
 
   /**
    * @type {!HTMLElement}
+   * @private
    * @const
    */
   var slideShowToolbar = util.createChild(
       this.container_, 'tool slideshow-toolbar');
-  util.createChild(slideShowToolbar, 'slideshow-play').
-      addEventListener('click', this.toggleSlideshowPause_.bind(this));
+  this.slideshowPlay_ = util.createChild(slideShowToolbar, 'slideshow-play');
+  this.slideshowPlay_.addEventListener('click',
+      this.toggleSlideshowPause_.bind(this));
   util.createChild(slideShowToolbar, 'slideshow-end').
       addEventListener('click', this.stopSlideshow_.bind(this));
 
@@ -1444,6 +1446,10 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   // Set the attribute early to prevent the toolbar from flashing when
   // the slideshow is being started from the mosaic view.
   this.container_.setAttribute('slideshow', 'playing');
+
+  // Hide the slideshow Play / Pause Button in the toolbar if
+  // there is less than two items and show it if there is more than 1 image.
+  this.slideshowPlay_.hidden = (this.getItemCount_() === 1);
 
   if (this.active_) {
     this.stopEditing_();
