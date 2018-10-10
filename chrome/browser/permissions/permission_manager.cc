@@ -31,7 +31,6 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -43,7 +42,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -385,13 +383,6 @@ int PermissionManager::RequestPermissions(
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
-
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          web_contents, vr::UiSuppressedElement::kPermissionRequest)) {
-    callback.Run(
-        std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
-    return content::PermissionController::kNoPendingOperation;
-  }
 
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   GURL canonical_requesting_origin =

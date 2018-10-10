@@ -294,10 +294,6 @@ void ChromeAutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool ChromeAutofillClientIOS::IsAutofillSupported() {
-  return true;
-}
-
 bool ChromeAutofillClientIOS::AreServerCardsSupported() {
   return true;
 }

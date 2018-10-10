@@ -199,10 +199,6 @@ void WebViewAutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool WebViewAutofillClientIOS::IsAutofillSupported() {
-  return autofill::prefs::IsAutofillEnabled(GetPrefs());
-}
-
 bool WebViewAutofillClientIOS::AreServerCardsSupported() {
   return true;
 }

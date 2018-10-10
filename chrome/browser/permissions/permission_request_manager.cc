@@ -18,8 +18,6 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
-#include "chrome/browser/vr/ui_suppressed_element.h"
-#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -99,13 +97,6 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {
-    request->PermissionDenied();
-    request->RequestFinished();
-    return;
-  }
-
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          web_contents(), vr::UiSuppressedElement::kPermissionBubbleRequest)) {
     request->PermissionDenied();
     request->RequestFinished();
     return;

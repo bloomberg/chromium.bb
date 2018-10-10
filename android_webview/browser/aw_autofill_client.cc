@@ -234,10 +234,6 @@ void AwAutofillClient::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool AwAutofillClient::IsAutofillSupported() {
-  return true;
-}
-
 bool AwAutofillClient::AreServerCardsSupported() {
   return true;
 }

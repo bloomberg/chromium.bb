@@ -1029,18 +1029,15 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return ::autofill::prefs::IsAutofillEnabled(client_->GetPrefs()) &&
-         client_->IsAutofillSupported();
+  return ::autofill::prefs::IsAutofillEnabled(client_->GetPrefs());
 }
 
 bool AutofillManager::IsProfileAutofillEnabled() const {
-  return ::autofill::prefs::IsProfileAutofillEnabled(client_->GetPrefs()) &&
-         client_->IsAutofillSupported();
+  return ::autofill::prefs::IsProfileAutofillEnabled(client_->GetPrefs());
 }
 
 bool AutofillManager::IsCreditCardAutofillEnabled() const {
-  return ::autofill::prefs::IsCreditCardAutofillEnabled(client_->GetPrefs()) &&
-         client_->IsAutofillSupported();
+  return ::autofill::prefs::IsCreditCardAutofillEnabled(client_->GetPrefs());
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {

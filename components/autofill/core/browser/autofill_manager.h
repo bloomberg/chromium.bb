@@ -187,8 +187,7 @@ class AutofillManager : public AutofillHandler,
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
-  // Returns true if the value of the AutofillEnabled pref is true and the
-  // client supports Autofill.
+  // Returns the value of AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
 
   // Returns true if the value of the AutofillProfileEnabled pref is true and

@@ -33,7 +33,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
@@ -207,11 +206,8 @@ public class VrShell extends GvrLayout
         if (mVrBrowsingEnabled) injectVrHostedUiView();
 
         // This has to happen after VrModalDialogManager is created.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
-            mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
-            UiWidgetFactory.setInstance(
-                    new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
-        }
+        mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
+        UiWidgetFactory.setInstance(new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
@@ -327,7 +323,6 @@ public class VrShell extends GvrLayout
     }
 
     private void injectVrHostedUiView() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) return;
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
         mNonVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
         mVrModalPresenter = new VrModalPresenter(this);
@@ -539,20 +534,6 @@ public class VrShell extends GvrLayout
     public void showPageInfo() {
         Tab tab = mActivity.getActivityTab();
         if (tab == null) return;
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
-            VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
-                @Override
-                public void onSucceeded() {
-                    PageInfoController.show(
-                            mActivity, tab, null, PageInfoController.OpenedFromSource.VR);
-                }
-
-                @Override
-                public void onDenied() {}
-            }, UiUnsupportedMode.UNHANDLED_PAGE_INFO);
-            return;
-        }
 
         PageInfoController.show(mActivity, tab, null, PageInfoController.OpenedFromSource.VR);
     }
