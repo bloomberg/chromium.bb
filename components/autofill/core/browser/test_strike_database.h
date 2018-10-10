@@ -31,7 +31,8 @@ class TestStrikeDatabase : public StrikeDatabase {
       const ClearStrikesCallback& outer_callback) override;
 
   // TestStrikeDatabase:
-  void AddEntryWithNumStrikes(std::string key, int num_strikes);
+  void AddEntryWithNumStrikes(const std::string& key, int num_strikes);
+  int GetStrikesForTesting(const std::string& key);
 
  private:
   // In-memory database of StrikeData.

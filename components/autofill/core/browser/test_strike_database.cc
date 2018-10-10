@@ -14,11 +14,7 @@ TestStrikeDatabase::~TestStrikeDatabase() {}
 
 void TestStrikeDatabase::GetStrikes(const std::string key,
                                     const StrikesCallback& outer_callback) {
-  std::unordered_map<std::string, StrikeData>::iterator it = db_.find(key);
-  if (it != db_.end())
-    outer_callback.Run(it->second.num_strikes());
-  else
-    outer_callback.Run(0);
+  outer_callback.Run(GetStrikesForTesting(key));
 }
 
 void TestStrikeDatabase::AddStrike(const std::string key,
@@ -42,13 +38,20 @@ void TestStrikeDatabase::ClearAllStrikesForKey(
   outer_callback.Run(/*success=*/true);
 }
 
-void TestStrikeDatabase::AddEntryWithNumStrikes(std::string key,
+void TestStrikeDatabase::AddEntryWithNumStrikes(const std::string& key,
                                                 int num_strikes) {
   StrikeData strike_data;
   strike_data.set_num_strikes(num_strikes);
   strike_data.set_last_update_timestamp(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   db_[key] = strike_data;
+}
+
+int TestStrikeDatabase::GetStrikesForTesting(const std::string& key) {
+  std::unordered_map<std::string, StrikeData>::iterator it = db_.find(key);
+  if (it != db_.end())
+    return it->second.num_strikes();
+  return 0;
 }
 
 }  // namespace autofill

@@ -7545,53 +7545,6 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
       AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 1);
 }
 
-TEST_F(AutofillMetricsTest, LocallySavedCardWithFirstAndLastName) {
-  base::HistogramTester histogram_tester;
-  // Save an imported card with a full name.
-  CreditCard card_full_name("10000000-0000-0000-0000-000000000001",
-                            "https://www.example.com");
-  test::SetCreditCardInfo(&card_full_name, "Biggie Smalls",
-                          "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
-
-  personal_data_->OnAcceptedLocalCreditCardSave(card_full_name);
-
-  // Expect that the metric was not recorded.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.SaveCardWithFirstAndLastNameComplete.Local", 0);
-
-  // Save an imported card with split names with first name first.
-  CreditCard card_split_names_first("10000000-0000-0000-0000-000000000002",
-                                    "https://www.example.com");
-  test::SetCreditCardInfo(&card_split_names_first, /*name_on_card=*/"",
-                          "4111 1111 1111 1112" /* Visa */, "01", "2998", "");
-  card_split_names_first.SetRawInfo(CREDIT_CARD_NAME_FIRST,
-                                    base::UTF8ToUTF16("Smally"));
-  card_split_names_first.SetRawInfo(CREDIT_CARD_NAME_LAST,
-                                    base::UTF8ToUTF16("Bigs"));
-
-  personal_data_->OnAcceptedLocalCreditCardSave(card_split_names_first);
-
-  // Expect that the metric was recorded.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.SaveCardWithFirstAndLastNameComplete.Local", 1);
-
-  // Save an imported card with split names with last name first.
-  CreditCard card_split_names_last("10000000-0000-0000-0000-000000000002",
-                                   "https://www.example.com");
-  test::SetCreditCardInfo(&card_split_names_last, /*name_on_card=*/"",
-                          "4111 1111 1111 1113" /* Visa */, "01", "2997", "");
-  card_split_names_last.SetRawInfo(CREDIT_CARD_NAME_LAST,
-                                   base::UTF8ToUTF16("Biggsy"));
-  card_split_names_last.SetRawInfo(CREDIT_CARD_NAME_FIRST,
-                                   base::UTF8ToUTF16("Smalls"));
-
-  personal_data_->OnAcceptedLocalCreditCardSave(card_split_names_last);
-
-  // Expect that the metric was recorded.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.SaveCardWithFirstAndLastNameComplete.Local", 2);
-}
-
 // Tests that the LogUserHappinessBySecurityLevel are recorded correctly.
 TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
   {

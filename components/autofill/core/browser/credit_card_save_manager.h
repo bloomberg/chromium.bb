@@ -108,8 +108,9 @@ class CreditCardSaveManager {
 
  protected:
   // Returns the result of an upload request. If |result| ==
-  // |AutofillClient::SUCCESS|, |server_id| may, optionally, contain the opaque
-  // identifier for the card on the server. Exposed for testing.
+  // |AutofillClient::SUCCESS|, clears strikes for the saved card. Additionally,
+  // |server_id| may, optionally, contain the opaque identifier for the card on
+  // the server. Exposed for testing.
   virtual void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                                const std::string& server_id);
 
@@ -158,6 +159,10 @@ class CreditCardSaveManager {
   // Offers credit card upload if Payments has allowed offering to save and the
   // Autofill StrikeSystem has made its decision.
   void OfferCardUploadSave();
+
+  // Clears strikes for the to-be-saved card and has |personal_data_manager_|
+  // save the card.
+  void OnUserDidAcceptLocalSave();
 
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
   // the risk data is available. Sets the cardholder name on the upload request
