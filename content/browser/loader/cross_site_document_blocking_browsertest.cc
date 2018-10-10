@@ -332,10 +332,10 @@ class DisableWebSecurityContentBrowserClient : public TestContentBrowserClient {
 // Note that this BaseTest class does not specify an isolation mode via
 // command-line flags.  Most of the tests are in the --site-per-process subclass
 // below.
-class CrossSiteDocumentBlockingTest : public ContentBrowserTest {
+class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
  public:
-  CrossSiteDocumentBlockingTest() {}
-  ~CrossSiteDocumentBlockingTest() override {}
+  CrossSiteDocumentBlockingTestBase() = default;
+  ~CrossSiteDocumentBlockingTestBase() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // EmbeddedTestServer::InitializeAndListen() initializes its |base_url_|
@@ -369,10 +369,38 @@ class CrossSiteDocumentBlockingTest : public ContentBrowserTest {
   DisableWebSecurityContentBrowserClient new_client;
   ContentBrowserClient* old_client = nullptr;
 
+  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTestBase);
+};
+
+enum class TestMode {
+  kWithoutOutOfBlinkCors,
+  kWithOutOfBlinkCors,
+};
+class CrossSiteDocumentBlockingTest
+    : public CrossSiteDocumentBlockingTestBase,
+      public testing::WithParamInterface<TestMode> {
+ public:
+  CrossSiteDocumentBlockingTest() {
+    switch (GetParam()) {
+      case TestMode::kWithoutOutOfBlinkCors:
+        scoped_feature_list_.InitAndDisableFeature(
+            network::features::kOutOfBlinkCORS);
+        break;
+      case TestMode::kWithOutOfBlinkCors:
+        scoped_feature_list_.InitAndEnableFeature(
+            network::features::kOutOfBlinkCORS);
+        break;
+    }
+  }
+  ~CrossSiteDocumentBlockingTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockDocuments) {
   // Load a page that issues illegal cross-site document requests to bar.com.
   // The page uses XHR to request HTML/XML/JSON documents from bar.com, and
   // inspects if any of them were successfully received. This test is only
@@ -380,6 +408,15 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
   // it to see the response body if it makes it to the renderer (even if the
   // renderer would normally block access to it).
   embedded_test_server()->StartAcceptingConnections();
+
+  // This test does not work and won't make much sense if kOutOfBlinkCORS is
+  // enabled. We need to rewrite this test once the feature is shipped. We would
+  // like to add other tests for verifying behavior for fetch mode "no-cors".
+  // See crbug.com/736308, and discussion at http://crrev.com/c/1253623.
+  // The test server should be started before to shutdown tests safely.
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
+    return;
+
   GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
@@ -494,8 +531,14 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
 // can't cause sniffing to fail to force a response to be allowed.  This won't
 // be a problem for script files mislabeled as HTML/XML/JSON/text (i.e., the
 // reason for sniffing), since script tags won't send Range headers.
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, RangeRequest) {
   embedded_test_server()->StartAcceptingConnections();
+
+  // This test does not work and won't make much sense if kOutOfBlinkCORS is
+  // enabled. See detailed comments on BlockDocuments above.
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
+    return;
+
   GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
@@ -536,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one
   // character string (' ') is returned instead, this tests that the renderer
@@ -556,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockForVariousTargets) {
 
 // Checks to see that CORB blocking applies to processes hosting error pages.
 // Regression test for https://crbug.com/814913.
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest,
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        BlockRequestFromErrorPage) {
   embedded_test_server()->StartAcceptingConnections();
   GURL error_url = embedded_test_server()->GetURL("bar.com", "/close-socket");
@@ -588,8 +631,13 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest,
   EXPECT_EQ("CORB WORKED", result);
 }
 
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
   embedded_test_server()->StartAcceptingConnections();
+
+  // This test does not work and won't make much sense if kOutOfBlinkCORS is
+  // enabled. See detailed comments on BlockDocuments above.
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
+    return;
 
   // Prepare to intercept the network request at the IPC layer.
   // This has to be done before the RenderFrameHostImpl is created.
@@ -639,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
   EXPECT_EQ(0u, interceptor.response_head().content_length);
 }
 
-IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
   // Prepare for intercepting the resource request for testing prefetching.
   const char* kPrefetchResourcePath = "/prefetch-test";
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
@@ -745,6 +793,14 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
                                     fetch_script, &response_body));
   EXPECT_EQ("<p>contents of the response</p>", response_body);
 }
+
+INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,
+                        CrossSiteDocumentBlockingTest,
+                        ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
+
+INSTANTIATE_TEST_CASE_P(WithOutOfBlinkCors,
+                        CrossSiteDocumentBlockingTest,
+                        ::testing::Values(TestMode::kWithOutOfBlinkCors));
 
 // This test class sets up a service worker that can be used to try to respond
 // to same-origin requests with cross-origin responses.
@@ -939,14 +995,14 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
 // Test class to verify that --disable-web-security turns off CORB.  This
 // inherits from CrossSiteDocumentBlockingTest, so it runs in SitePerProcess.
 class CrossSiteDocumentBlockingDisableWebSecurityTest
-    : public CrossSiteDocumentBlockingTest {
+    : public CrossSiteDocumentBlockingTestBase {
  public:
   CrossSiteDocumentBlockingDisableWebSecurityTest() {}
   ~CrossSiteDocumentBlockingDisableWebSecurityTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableWebSecurity);
-    CrossSiteDocumentBlockingTest::SetUpCommandLine(command_line);
+    CrossSiteDocumentBlockingTestBase::SetUpCommandLine(command_line);
   }
 
  private:
@@ -968,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingDisableWebSecurityTest,
 
 // Test class to verify that documents are blocked for isolated origins as well.
 class CrossSiteDocumentBlockingIsolatedOriginTest
-    : public CrossSiteDocumentBlockingTest {
+    : public CrossSiteDocumentBlockingTestBase {
  public:
   CrossSiteDocumentBlockingIsolatedOriginTest() {}
   ~CrossSiteDocumentBlockingIsolatedOriginTest() override {}
@@ -976,7 +1032,7 @@ class CrossSiteDocumentBlockingIsolatedOriginTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kIsolateOrigins,
                                     "http://bar.com");
-    CrossSiteDocumentBlockingTest::SetUpCommandLine(command_line);
+    CrossSiteDocumentBlockingTestBase::SetUpCommandLine(command_line);
   }
 
  private:
