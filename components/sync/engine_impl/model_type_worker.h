@@ -178,6 +178,14 @@ class ModelTypeWorker : public UpdateHandler,
   // ready (doesn't have pending keys).
   void NudgeIfReadyToCommit();
 
+  // Filters our duplicate updates from |pending_updates_| based on the server
+  // id. It discards all of them except the last one.
+  void DeduplicatePendingUpdatesBasedOnServerId();
+
+  // Filters our duplicate updates from |pending_updates_| based on the client
+  // tag hash. It discards all of them except the last one.
+  void DeduplicatePendingUpdatesBasedOnClientTagHash();
+
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;
 

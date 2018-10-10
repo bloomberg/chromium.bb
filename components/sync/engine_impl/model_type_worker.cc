@@ -39,6 +39,24 @@ bool ContainsDuplicate(std::vector<std::string> values) {
   return std::adjacent_find(values.begin(), values.end()) != values.end();
 }
 
+bool ContainsDuplicateClientTagHash(const UpdateResponseDataList& updates) {
+  std::vector<std::string> client_tag_hashes;
+  for (const UpdateResponseData& update : updates) {
+    if (!update.entity->client_tag_hash.empty()) {
+      client_tag_hashes.push_back(update.entity->client_tag_hash);
+    }
+  }
+  return ContainsDuplicate(std::move(client_tag_hashes));
+}
+
+bool ContainsDuplicateServerID(const UpdateResponseDataList& updates) {
+  std::vector<std::string> server_ids;
+  for (const UpdateResponseData& update : updates) {
+    server_ids.push_back(update.entity->id);
+  }
+  return ContainsDuplicate(std::move(server_ids));
+}
+
 // Enumeration of possible values for the positioning schemes used in Sync
 // entities. Used in UMA metrics. Do not re-order or delete these entries; they
 // are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
@@ -320,48 +338,41 @@ void ModelTypeWorker::ApplyPendingUpdates() {
 
   DCHECK(entries_pending_decryption_.empty());
 
-  // Check for duplicate client tag hashes.
-  std::vector<std::string> client_tag_hashes;
-  for (const UpdateResponseData& update : pending_updates_) {
-    if (!update.entity->client_tag_hash.empty()) {
-      client_tag_hashes.push_back(update.entity->client_tag_hash);
-    }
+  const bool contains_duplicate_server_ids =
+      ContainsDuplicateServerID(pending_updates_);
+  const bool contains_duplicate_client_tag_hashes =
+      ContainsDuplicateClientTagHash(pending_updates_);
+
+  // Having duplicates should be rare, so only do the de-duping if
+  // we've actually detected one.
+
+  // Deduplicate updates first based on server ids.
+  if (contains_duplicate_server_ids) {
+    DeduplicatePendingUpdatesBasedOnServerId();
   }
-  bool contains_duplicate = ContainsDuplicate(std::move(client_tag_hashes));
+
+  // Check for duplicate client tag hashes after removing duplicate server
+  // ids.
+  const bool contains_duplicate_client_tag_hashes_after_deduping_server_ids =
+      ContainsDuplicateClientTagHash(pending_updates_);
+
+  // Deduplicate updates based on client tag hashes.
+  if (contains_duplicate_client_tag_hashes_after_deduping_server_ids) {
+    DeduplicatePendingUpdatesBasedOnClientTagHash();
+  }
 
   std::string suffix = ModelTypeToHistogramSuffix(type_);
   base::UmaHistogramBoolean(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates." + suffix,
-      contains_duplicate);
-
-  // Having duplicates should be rare, so only do the de-duping if we've
-  // actually detected one.
-  if (contains_duplicate) {
-    UpdateResponseDataList candidates;
-    pending_updates_.swap(candidates);
-
-    std::map<std::string, size_t> tag_to_index;
-    for (const UpdateResponseData& candidate : candidates) {
-      // Items with empty client tag hash just get passed through.
-      if (candidate.entity->client_tag_hash.empty()) {
-        pending_updates_.push_back(candidate);
-        continue;
-      }
-      // Try to insert. If we already saw an item with the same client tag hash,
-      // this will fail but give us its iterator.
-      auto it_and_success = tag_to_index.insert(std::make_pair(
-          candidate.entity->client_tag_hash, pending_updates_.size()));
-      if (it_and_success.second) {
-        // New client tag hash, append at the end. Note that we already inserted
-        // the correct index (|pending_updates_.size()|) above.
-        pending_updates_.push_back(candidate);
-      } else {
-        // Duplicate! Overwrite the existing item.
-        size_t existing_index = it_and_success.first->second;
-        pending_updates_[existing_index] = candidate;
-      }
-    }
-  }
+      contains_duplicate_client_tag_hashes);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateServerIdInApplyPendingUpdates." + suffix,
+      contains_duplicate_server_ids);
+  base::UmaHistogramBoolean(
+      "Sync."
+      "DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates." +
+          suffix,
+      contains_duplicate_client_tag_hashes_after_deduping_server_ids);
 
   model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
@@ -506,6 +517,58 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update.entity = data->UpdateSpecifics(specifics);
     pending_updates_.push_back(decrypted_update);
     it = entries_pending_decryption_.erase(it);
+  }
+}
+
+void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
+  UpdateResponseDataList candidates;
+  pending_updates_.swap(candidates);
+
+  std::map<std::string, size_t> id_to_index;
+  for (UpdateResponseData& candidate : candidates) {
+    if (candidate.entity->id.empty()) {
+      continue;
+    }
+    // Try to insert. If we already saw an item with the same server id,
+    // this will fail but give us its iterator.
+    auto it_and_success =
+        id_to_index.emplace(candidate.entity->id, pending_updates_.size());
+    if (it_and_success.second) {
+      // New server id, append at the end. Note that we already inserted
+      // the correct index (|pending_updates_.size()|) above.
+      pending_updates_.push_back(std::move(candidate));
+    } else {
+      // Duplicate! Overwrite the existing item.
+      size_t existing_index = it_and_success.first->second;
+      pending_updates_[existing_index] = std::move(candidate);
+    }
+  }
+}
+
+void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
+  UpdateResponseDataList candidates;
+  pending_updates_.swap(candidates);
+
+  std::map<std::string, size_t> tag_to_index;
+  for (UpdateResponseData& candidate : candidates) {
+    // Items with empty client tag hash just get passed through.
+    if (candidate.entity->client_tag_hash.empty()) {
+      pending_updates_.push_back(std::move(candidate));
+      continue;
+    }
+    // Try to insert. If we already saw an item with the same client tag hash,
+    // this will fail but give us its iterator.
+    auto it_and_success = tag_to_index.emplace(
+        candidate.entity->client_tag_hash, pending_updates_.size());
+    if (it_and_success.second) {
+      // New client tag hash, append at the end. Note that we already inserted
+      // the correct index (|pending_updates_.size()|) above.
+      pending_updates_.push_back(std::move(candidate));
+    } else {
+      // Duplicate! Overwrite the existing item.
+      size_t existing_index = it_and_success.first->second;
+      pending_updates_[existing_index] = std::move(candidate);
+    }
   }
 }
 
